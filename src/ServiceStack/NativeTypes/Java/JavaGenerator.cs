@@ -583,7 +583,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (type == "Nullable`1")
                     return /*@Nullable*/ "{0}".Fmt(GenericArg(genericArgs[0]));
                 if (ArrayTypes.Contains(type))
-                    return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0]));
+                    return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "HashMap<{0},{1}>".Fmt(
                         GenericArg(genericArgs[0]),
@@ -604,6 +604,10 @@ namespace ServiceStack.NativeTypes.Java
                     var typeName = TypeAlias(type);
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);

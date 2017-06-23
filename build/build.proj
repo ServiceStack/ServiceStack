@@ -88,7 +88,7 @@
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/net45/ServiceStack.Razor.*"></RazorFiles>
 
-      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/net45/*.dll"></RazorBuildTaskFiles>
+      <RazorBuildTaskFiles Include="$(SrcDir)/ServiceStack.Razor.BuildTask/bin/$(Configuration)/*.dll"></RazorBuildTaskFiles>
 
       <ClientFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/net45/ServiceStack.Client.*"></ClientFiles>
       <ClientPclFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/portable45-net45+win8/ServiceStack.Client.*"></ClientPclFiles>

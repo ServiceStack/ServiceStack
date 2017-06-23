@@ -575,6 +575,10 @@ namespace ServiceStack.NativeTypes
 
         public MetadataPropertyType ToProperty(PropertyInfo pi, object instance = null)
         {
+            var genericArgs = pi.PropertyType.IsGenericType()
+                ? pi.PropertyType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
+                : null;
+
             var property = new MetadataPropertyType
             {
                 Name = pi.Name,
@@ -585,9 +589,7 @@ namespace ServiceStack.NativeTypes
                 IsEnum = pi.PropertyType.IsEnum() ? true : (bool?)null,
                 TypeNamespace = pi.PropertyType.Namespace,
                 DataMember = ToDataMember(pi.GetDataMember()),
-                GenericArgs = pi.PropertyType.IsGenericType()
-                    ? pi.PropertyType.GetGenericArguments().Select(x => x.ExpandTypeName()).ToArray()
-                    : null,
+                GenericArgs = genericArgs,
                 Description = pi.GetDescription(),
             };
 
@@ -1220,6 +1222,41 @@ namespace ServiceStack.NativeTypes
                 return true;
 
             return types.Any(x => x.IsGenericTypeDefinition() && target.IsOrHasGenericInterfaceTypeOf(x));
+        }
+
+        //Workaround to handle Nullable<T>[] arrays. Most languages don't support Nullable in nested types
+        internal static string StripNullable(this string type)
+        {
+            return StripGenericType(type, "Nullable");
+        }
+
+        public static string StripGenericType(string type, string subType)
+        {
+            if (string.IsNullOrEmpty(type) || string.IsNullOrEmpty(subType))
+                return type;
+
+            var pos = type.IndexOf(subType, StringComparison.OrdinalIgnoreCase);
+            if (pos >= 0)
+            {
+                var endsToEat = 1;
+                var startPos = pos + subType.Length + 1;
+                for (var i = startPos; i < type.Length; i++)
+                {
+                    if (type[i] == '<')
+                        endsToEat++;
+                    if (type[i] == '>')
+                    {
+                        if (--endsToEat == 0)
+                        {
+                            return type.Substring(0, pos)
+                                + type.Substring(startPos, i - startPos) 
+                                + type.Substring(i + 1);
+                        }
+                    }
+                }
+            }
+
+            return type;
         }
     }
 }

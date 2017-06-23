@@ -145,6 +145,19 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             Assert.That(args, Is.EquivalentTo(new[] { "String", "List<Dictionary<String,Dictionary<String,Poco>>>", "Int64" }));
         }
 
+        [Test]
+        public void Can_strip_nullables()
+        {
+            Assert.That(MetadataExtensions.StripGenericType("Nullable<Byte>", "Nullable"),
+                Is.EqualTo("Byte"));
+            Assert.That(MetadataExtensions.StripGenericType("Nullable<Byte>[]", "Nullable"),
+                Is.EqualTo("Byte[]"));
+            Assert.That(MetadataExtensions.StripGenericType("List<Nullable<Byte>>[]", "Nullable"),
+                Is.EqualTo("List<Byte>[]"));
+            Assert.That(MetadataExtensions.StripGenericType("List<Nullable<List<Byte>>>[]", "Nullable"),
+                Is.EqualTo("List<List<Byte>>[]"));
+        }
+
     }
 
     public class Root

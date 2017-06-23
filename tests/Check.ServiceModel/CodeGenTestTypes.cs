@@ -381,6 +381,12 @@ namespace Check.ServiceModel.Types
         public Poco[] PocoArray { get; set; }
         public List<Poco> PocoList { get; set; }
 
+        public byte?[] NullableByteArray { get; set; }
+        public List<byte?> NullableByteList { get; set; }
+
+        public DateTime?[] NullableDateTimeArray { get; set; }
+        public List<DateTime?> NullableDateTimeList { get; set; }
+
         public Dictionary<string, List<Poco>> PocoLookup { get; set; }
         public Dictionary<string, List<Dictionary<string,Poco>>> PocoLookupMap { get; set; } 
     }

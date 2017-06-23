@@ -107,6 +107,12 @@ namespace ServiceStack
 
         public static string GetOperationName(this Type type)
         {
+            //Need to expand Arrays of Generic Types like Nullable<Byte>[]
+            if (type.IsArray)
+            {
+                return type.GetElementType().ExpandTypeName() + "[]";
+            }
+
             string fullname = type.FullName;
             int genericPrefixIndex = type.IsGenericParameter ? 1 : 0;
                 
