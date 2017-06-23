@@ -54,6 +54,7 @@ namespace ServiceStack.OpenApi.Test.Services
     [ApiResponse(StatusCode = (int) HttpStatusCode.OK, Description = "All OK")]
     [ApiResponse(StatusCode = (int) HttpStatusCode.Forbidden, Description = "Forbidden Service",
         ResponseType = typeof(Return403Response))]
+    [ApiResponse(Description = "Default Response", ResponseType = typeof(Return200Response), IsDefaultResponse = true)]
     public class ReturnAnnotatedDtoRequest : IReturn<Return200Response>, IGet
     {
         public int Code { get; set; }

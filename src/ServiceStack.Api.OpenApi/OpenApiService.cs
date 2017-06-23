@@ -525,7 +525,7 @@ namespace ServiceStack.Api.OpenApi
         {
             if (schemaType == typeof(IReturnVoid))
             {
-                schemaDescription = string.Empty;
+                schemaDescription = "No Content";
                 return null;
             }
 
@@ -553,7 +553,16 @@ namespace ServiceStack.Api.OpenApi
             var responses = new OrderedDictionary<string, OpenApiResponse>();
 
             var responseSchema = GetResponseSchema(restPath, schemas, out string schemaDescription);
-            string statusCode;
+            //schema is null when return type is IReturnVoid
+            var statusCode = responseSchema == null && HostConfig.Instance.Return204NoContentForEmptyResponse
+                ? ((int)HttpStatusCode.NoContent).ToString()
+                : ((int)HttpStatusCode.OK).ToString();
+
+            responses.Add(statusCode, new OpenApiResponse
+            {
+                Schema = responseSchema,
+                Description = !string.IsNullOrEmpty(schemaDescription) ? schemaDescription : "Success"
+            });
 
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
             {
@@ -563,25 +572,16 @@ namespace ServiceStack.Api.OpenApi
                 {
                     Schema = attr.ResponseType != null
                         ? GetSchemaForResponseType(attr.ResponseType, schemas, out apiSchemaDescription)
-                        : responseSchema
+                        : responseSchema,
+                    Description = attr.Description ?? apiSchemaDescription
                 };
-                response.Description = attr.Description ?? apiSchemaDescription;
 
                 statusCode = attr.IsDefaultResponse ? "default" : attr.StatusCode.ToString();
-                responses.Add(statusCode, response);
+                if (!responses.ContainsKey(statusCode))
+                    responses.Add(statusCode, response);
+                else
+                    responses[statusCode] = response;
             }
-
-            //schema is null when return type is IReturnVoid
-            statusCode = responseSchema == null && HostConfig.Instance.Return204NoContentForEmptyResponse
-                ? HttpStatusCode.NoContent.ToString()
-                : HttpStatusCode.OK.ToString();
-
-            if (!responses.ContainsKey(statusCode))
-                responses.Add(statusCode, new OpenApiResponse
-                {
-                    Schema = responseSchema,
-                    Description = schemaDescription
-                });
 
             return responses;
         }
