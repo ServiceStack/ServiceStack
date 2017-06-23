@@ -38,7 +38,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.1" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
     <PackageReference Include="mongocsharpdriver" Version="2.3.0" />
     <PackageReference Include="MongoDB.Bson" Version="2.3.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.3.0" />
