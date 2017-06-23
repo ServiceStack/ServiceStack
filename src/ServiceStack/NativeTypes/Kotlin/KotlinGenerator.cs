@@ -549,7 +549,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (type == "Nullable`1")
                     return /*@Nullable*/ GenericArg(genericArgs[0]);
                 if (ArrayTypes.Contains(type))
-                    return $"ArrayList<{GenericArg(genericArgs[0])}>";
+                    return $"ArrayList<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return $"HashMap<{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}>";
 
@@ -568,6 +568,10 @@ namespace ServiceStack.NativeTypes.Kotlin
                     var typeName = TypeAlias(type);
                     return $"{typeName}<{StringBuilderCacheAlt.ReturnAndFree(args)}>";
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);

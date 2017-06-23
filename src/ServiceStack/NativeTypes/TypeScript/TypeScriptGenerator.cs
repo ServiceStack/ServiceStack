@@ -589,7 +589,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type == "Nullable`1")
                     return "{0}?".Fmt(GenericArg(genericArgs[0]));
                 if (ArrayTypes.Contains(type))
-                    return "{0}[]".Fmt(GenericArg(genericArgs[0]));
+                    return "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "{{ [index:{0}]: {1}; }}".Fmt(
                         GenericArg(genericArgs[0]),
@@ -610,6 +610,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                     var typeName = TypeAlias(type);
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);

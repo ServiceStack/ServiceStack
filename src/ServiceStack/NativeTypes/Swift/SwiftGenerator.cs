@@ -811,7 +811,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (type == "Nullable`1")
                     return "{0}?".Fmt(TypeAlias(GenericArg(genericArgs[0])));
                 if (ArrayTypes.Contains(type))
-                    return "[{0}]".Fmt(TypeAlias(GenericArg(genericArgs[0])));
+                    return "[{0}]".Fmt(TypeAlias(GenericArg(genericArgs[0]))).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "[{0}:{1}]".Fmt(
                         TypeAlias(GenericArg(genericArgs[0])),
@@ -832,6 +832,10 @@ namespace ServiceStack.NativeTypes.Swift
                     var typeName = TypeAlias(type);
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);
