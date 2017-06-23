@@ -10,10 +10,10 @@ namespace ServiceStack.OpenApi.Tests
     [TestFixture]
     class AllTypesTests : GeneratedClientTestBase
     {
-        [Test]
+        [Explicit, Test]
         public void Sleep()
         {
-            Thread.Sleep(10000);
+            Thread.Sleep(1000000);
         }
 
 

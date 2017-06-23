@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
@@ -513,26 +514,38 @@ namespace ServiceStack.Api.OpenApi
                 if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
                     var schemaType = i.GetGenericArguments()[0];
-                    ParseDefinitions(schemas, schemaType, null, null);
-
-                    var schema = GetDictionarySchema(schemas, schemaType, null, null)
-                        ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
-                        ?? GetListSchema(schemas, schemaType, null, null)
-                        ?? (IsSwaggerScalarType(schemaType)
-                            ? new OpenApiSchema {
-                                Title = GetSchemaTypeName(schemaType),
-                                Type = GetSwaggerTypeName(schemaType),
-                                Format = GetSwaggerTypeFormat(schemaType)
-                            }
-                            : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
-
-                    schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
-
-                    return schema;
+                    return GetSchemaForResponseType(schemaType, schemas, out schemaDescription);
                 }
             }
 
             return new OpenApiSchema { Ref = "#/definitions/Object" };
+        }
+
+        private OpenApiSchema GetSchemaForResponseType(Type schemaType, IDictionary<string, OpenApiSchema> schemas, out string schemaDescription)
+        {
+            if (schemaType == typeof(IReturnVoid))
+            {
+                schemaDescription = string.Empty;
+                return null;
+            }
+
+            ParseDefinitions(schemas, schemaType, null, null);
+
+            var schema = GetDictionarySchema(schemas, schemaType, null, null)
+                         ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
+                         ?? GetListSchema(schemas, schemaType, null, null)
+                         ?? (IsSwaggerScalarType(schemaType)
+                             ? new OpenApiSchema
+                             {
+                                 Title = GetSchemaTypeName(schemaType),
+                                 Type = GetSwaggerTypeName(schemaType),
+                                 Format = GetSwaggerTypeFormat(schemaType)
+                             }
+                             : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
+
+            schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
+
+            return schema;
         }
 
         private OrderedDictionary<string, OpenApiResponse> GetMethodResponseCodes(IRestPath restPath, IDictionary<string, OpenApiSchema> schemas, Type requestType)
@@ -540,19 +553,35 @@ namespace ServiceStack.Api.OpenApi
             var responses = new OrderedDictionary<string, OpenApiResponse>();
 
             var responseSchema = GetResponseSchema(restPath, schemas, out string schemaDescription);
-
-            responses.Add("default", new OpenApiResponse
-            {
-                Schema = responseSchema,
-                Description = schemaDescription
-            });
+            string statusCode;
 
             foreach (var attr in requestType.AllAttributes<ApiResponseAttribute>())
             {
-                responses.Add(attr.StatusCode.ToString(), new OpenApiResponse {
-                    Description = attr.Description,
-                });
+                string apiSchemaDescription = string.Empty;
+
+                var response = new OpenApiResponse
+                {
+                    Schema = attr.ResponseType != null
+                        ? GetSchemaForResponseType(attr.ResponseType, schemas, out apiSchemaDescription)
+                        : responseSchema
+                };
+                response.Description = attr.Description ?? apiSchemaDescription;
+
+                statusCode = attr.IsDefaultResponse ? "default" : attr.StatusCode.ToString();
+                responses.Add(statusCode, response);
             }
+
+            //schema is null when return type is IReturnVoid
+            statusCode = responseSchema == null && HostConfig.Instance.Return204NoContentForEmptyResponse
+                ? HttpStatusCode.NoContent.ToString()
+                : HttpStatusCode.OK.ToString();
+
+            if (!responses.ContainsKey(statusCode))
+                responses.Add(statusCode, new OpenApiResponse
+                {
+                    Schema = responseSchema,
+                    Description = schemaDescription
+                });
 
             return responses;
         }
