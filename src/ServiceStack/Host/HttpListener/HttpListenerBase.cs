@@ -268,8 +268,8 @@ namespace ServiceStack.Host.HttpListener
             }
             catch (Exception errorEx)
             {
-                var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}"
-                            .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message);
+                var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}\n{2}"
+                            .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message, ex);
                 Log.Error(error, errorEx);
             }
         }
