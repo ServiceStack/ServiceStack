@@ -50,6 +50,12 @@ namespace ServiceStack.Host.HttpListener
             base.OnAfterInit();
 
             SetAppDomainData();
+
+            if (ServiceStack.Text.Env.IsMono)
+            {
+                // Required or throws NRE in Xamarin.Mac
+                System.Web.Util.HttpEncoder.Current = System.Web.Util.HttpEncoder.Default;
+            }
         }
 
         public virtual void SetAppDomainData()
