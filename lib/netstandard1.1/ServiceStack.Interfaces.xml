@@ -109,6 +109,26 @@
             The description of a response status code
             </summary>
         </member>
+        <member name="P:ServiceStack.ApiResponseAttribute.StatusCode">
+            <summary>
+            HTTP status code of response
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiResponseAttribute.Description">
+            <summary>
+            End-user description of the data which is returned by response
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiResponseAttribute.IsDefaultResponse">
+            <summary>
+            If set to true, the response is default for all non-explicity defined status codes 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ApiResponseAttribute.ResponseType">
+            <summary>
+            Open API schema definition type for response
+            </summary>
+        </member>
         <member name="T:ServiceStack.Caching.ICacheClient">
             <summary>
             A common interface implementation that is implemented by most cache providers
