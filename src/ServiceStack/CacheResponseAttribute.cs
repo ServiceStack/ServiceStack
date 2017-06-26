@@ -35,6 +35,11 @@ namespace ServiceStack
         public string[] VaryByRoles { get; set; }
 
         /// <summary>
+        /// Vary cache for different HTTP Headers
+        /// </summary>
+        public string[] VaryByHeaders { get; set; }
+
+        /// <summary>
         /// Use HostContext.LocalCache or HostContext.Cache
         /// </summary>
         public bool LocalCache { get; set; }
@@ -87,6 +92,18 @@ namespace ServiceStack
                             if (userSession.HasRole(role, authRepo))
                                 modifiers += (modifiers.Length > 0 ? "+" : "") + "role:" + role;
                         }
+                    }
+                }
+            }
+
+            if (VaryByHeaders != null && VaryByHeaders.Length > 0)
+            {
+                foreach (var header in VaryByHeaders)
+                {
+                    var value = req.GetHeader(header);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        modifiers += (modifiers.Length > 0 ? "+" : "") + $"{header}:{value}";
                     }
                 }
             }
