@@ -33,7 +33,7 @@ namespace ServiceStack.Api.OpenApi
 
         public Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         
-        public Dictionary<string, string> RouteSummary { get; set; }
+        public List<OpenApiTag> Tags { get; set; }
 
         public List<string> AnyRouteVerbs { get; set; }
 
@@ -42,7 +42,7 @@ namespace ServiceStack.Api.OpenApi
         public OpenApiFeature()
         {
             LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
-            RouteSummary = new Dictionary<string, string>();
+            Tags = new List<OpenApiTag>();
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
 

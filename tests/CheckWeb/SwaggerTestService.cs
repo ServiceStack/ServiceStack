@@ -15,6 +15,7 @@ namespace CheckWeb
         Blue
     }
 
+    [Tag("TheTag")]
     [Api("SwaggerTest Service Description")]
     [ApiResponse(HttpStatusCode.BadRequest, "Your request was not understood")]
     [ApiResponse(HttpStatusCode.InternalServerError, "Oops, something broke")]

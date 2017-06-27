@@ -11,6 +11,7 @@ using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
 using ServiceStack.Api.OpenApi;
+using ServiceStack.Api.OpenApi.Specification;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
@@ -241,7 +242,22 @@ namespace CheckWeb
             razor.Deny.RemoveAt(0);
             Plugins.Add(razor);
 
-            Plugins.Add(new OpenApiFeature());
+            Plugins.Add(new OpenApiFeature
+            {
+                Tags =
+                {
+                    new OpenApiTag
+                    {
+                        Name = "TheTag",
+                        Description = "TheTag Description",
+                        ExternalDocs = new OpenApiExternalDocumentation
+                        {
+                            Description = "Link to External Docs Desc",
+                            Url = "http://example.org/docs/path",
+                        }
+                    }
+                }
+            });
 
             // Enable support for Swagger API browser
             //Plugins.Add(new SwaggerFeature

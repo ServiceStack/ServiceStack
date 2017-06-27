@@ -7,8 +7,10 @@ namespace ServiceStack.Api.OpenApi.Specification
     {
         [DataMember(Name = "name")]
         public string Name { get; set; }
+
         [DataMember(Name = "description")]
         public string Description { get; set; }
+
         [DataMember(Name = "externalDocs")]
         public OpenApiExternalDocumentation ExternalDocs { get; set; }
     }

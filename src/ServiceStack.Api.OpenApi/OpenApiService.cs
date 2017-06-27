@@ -12,7 +12,6 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Api.OpenApi.Support;
 using ServiceStack.Api.OpenApi.Specification;
-using ServiceStack;
 
 namespace ServiceStack.Api.OpenApi
 {
@@ -57,8 +56,9 @@ namespace ServiceStack.Api.OpenApi
                 paths.AddRange(visiblePaths);
             }
 
-            var definitions = new Dictionary<string, OpenApiSchema>() {
-                { "Object",  new OpenApiSchema() {Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>() } }
+            var definitions = new Dictionary<string, OpenApiSchema>
+            {
+                { "Object", new OpenApiSchema { Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>() } },
             };
 
             foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new { Value = x, Verb = y })))
@@ -87,7 +87,6 @@ namespace ServiceStack.Api.OpenApi
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
                 SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
             };
-
 
             if (OperationFilter != null)
                 apiPaths.Each(x => GetOperations(x.Value).Each(o => OperationFilter(o.Item1, o.Item2)));
@@ -532,16 +531,16 @@ namespace ServiceStack.Api.OpenApi
             ParseDefinitions(schemas, schemaType, null, null);
 
             var schema = GetDictionarySchema(schemas, schemaType, null, null)
-                         ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
-                         ?? GetListSchema(schemas, schemaType, null, null)
-                         ?? (IsSwaggerScalarType(schemaType)
-                             ? new OpenApiSchema
-                             {
-                                 Title = GetSchemaTypeName(schemaType),
-                                 Type = GetSwaggerTypeName(schemaType),
-                                 Format = GetSwaggerTypeFormat(schemaType)
-                             }
-                             : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
+                ?? GetKeyValuePairSchema(schemas, schemaType, null, null)
+                ?? GetListSchema(schemas, schemaType, null, null)
+                ?? (IsSwaggerScalarType(schemaType)
+                    ? new OpenApiSchema
+                    {
+                        Title = GetSchemaTypeName(schemaType),
+                        Type = GetSwaggerTypeName(schemaType),
+                        Format = GetSwaggerTypeFormat(schemaType)
+                    }
+                    : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
             schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
 
@@ -588,6 +587,7 @@ namespace ServiceStack.Api.OpenApi
 
         private OrderedDictionary<string, OpenApiPath> ParseOperations(List<RestPath> restPaths, Dictionary<string, OpenApiSchema> schemas, Dictionary<string, OpenApiTag> tags)
         {
+            var feature = HostContext.GetPlugin<OpenApiFeature>();
             var apiPaths = new OrderedDictionary<string, OpenApiPath>();
 
             foreach (var restPath in restPaths)
@@ -606,7 +606,13 @@ namespace ServiceStack.Api.OpenApi
 
                 if (!apiPaths.TryGetValue(restPath.Path, out curPath))
                 {
-                    curPath = new OpenApiPath() { Parameters = new List<OpenApiParameter> { new OpenApiParameter { Ref = "#/parameters/Accept" } } };
+                    curPath = new OpenApiPath
+                    {
+                        Parameters = new List<OpenApiParameter>
+                        {
+                            new OpenApiParameter { Ref = "#/parameters/Accept" }
+                        }
+                    };
                     apiPaths.Add(restPath.Path, curPath);
                 }
 
@@ -616,10 +622,10 @@ namespace ServiceStack.Api.OpenApi
                 var authAttrs = new[] { op.ServiceType, op.RequestType }
                     .SelectMany(x => x.AllAttributes().OfType<AuthenticateAttribute>()).ToList();
 
-                authAttrs.AddRange(
-                    actions.Where(x => x.Name.ToUpperInvariant() == "ANY")
+                authAttrs.AddRange(actions
+                    .Where(x => x.Name.ToUpperInvariant() == "ANY")
                     .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
-                    );
+                );
 
                 var annotatingTagAttributes = requestType.AllAttributes<TagAttribute>();
 
@@ -627,8 +633,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     var needAuth = authAttrs.Count > 0
                         || actions.Where(x => x.Name.ToUpperInvariant() == verb)
-                            .SelectMany(x => x.AllAttributes<AuthenticateAttribute>())
-                            .Count() > 0;
+                            .SelectMany(x => x.AllAttributes<AuthenticateAttribute>()).Any();
 
                     var userTags = new List<string>();
                     ApplyTo applyToVerb;
@@ -663,7 +668,12 @@ namespace ServiceStack.Api.OpenApi
                     foreach (var tag in operation.Tags)
                     {
                         if (!tags.ContainsKey(tag))
-                            tags.Add(tag, new OpenApiTag { Name = tag });
+                        {
+                            var tagObject = feature.Tags.FirstOrDefault(x => x.Name == tag)
+                                ?? new OpenApiTag { Name = tag };
+
+                            tags.Add(tag, tagObject);
+                        }
                     }
 
                     switch (verb)
@@ -718,7 +728,7 @@ namespace ServiceStack.Api.OpenApi
 
             var entries = route.Replace("{", string.Empty)
                 .Replace("}", string.Empty)
-                .Split(new [] { '/'}, StringSplitOptions.RemoveEmptyEntries);
+                .Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (entries.Length > 1)
                 pathPostfix = string.Join(string.Empty, entries, 1, entries.Length - 1);
@@ -785,7 +795,7 @@ namespace ServiceStack.Api.OpenApi
                 var inPath = (route ?? "").ToLowerInvariant().Contains("{" + propertyName.ToLowerInvariant() + "}");
                 var paramType = inPath
                     ? "path"
-                    : IsFormData(verb, apiAttr) ? "formData": "query";
+                    : IsFormData(verb, apiAttr) ? "formData" : "query";
 
 
                 var parameter = GetParameter(schemas, property.PropertyType,
@@ -913,7 +923,7 @@ namespace ServiceStack.Api.OpenApi
         private string GetTagName(string path)
         {
             var tags = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-            
+
             return tags.Length > 0 ? tags[0] : null;
         }
 
@@ -946,7 +956,7 @@ namespace ServiceStack.Api.OpenApi
                 Type = OpenApiType.String,
                 Name = "Accept",
                 Description = "Accept Header",
-                Enum = new List<string>() { "application/json"},
+                Enum = new List<string>() { "application/json" },
                 In = "header",
                 Required = true,
             };
