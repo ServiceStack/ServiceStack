@@ -1429,6 +1429,12 @@
             Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.
             </summary>
         </member>
+        <member name="T:ServiceStack.StrictModeException">
+            <summary>
+            Additional checks to notify of invalid state, configuration or use of ServiceStack libraries.
+            Can disable StrictMode checks with Config.StrictMode = false;
+            </summary>
+        </member>
         <member name="P:ServiceStack.TagAttribute.Name">
             <summary>
             Get or sets tag name
