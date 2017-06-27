@@ -177,6 +177,7 @@ namespace ServiceStack
             this.AllowJsonpRequests = instance.AllowJsonpRequests;
             this.AllowRouteContentTypeExtensions = instance.AllowRouteContentTypeExtensions;
             this.DebugMode = instance.DebugMode;
+            this.StrictMode = instance.StrictMode;
             this.DefaultDocuments = instance.DefaultDocuments;
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
@@ -242,6 +243,7 @@ namespace ServiceStack
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
+        public bool? StrictMode { get; set; }
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }

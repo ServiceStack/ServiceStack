@@ -190,6 +190,9 @@ namespace ServiceStack
             ServiceController.Init();
             Configure(Container);
 
+            if (Config.StrictMode == null && Config.DebugMode)
+                Config.StrictMode = true;
+
             ConfigurePlugins();
 
             List<IVirtualPathProvider> pathProviders = null;

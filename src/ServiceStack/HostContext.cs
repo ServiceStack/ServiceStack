@@ -13,7 +13,6 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
-using static System.String;
 
 namespace ServiceStack
 {
@@ -66,10 +65,12 @@ namespace ServiceStack
 
         public static bool DebugMode => AppHost?.Config?.DebugMode == true;
 
+        public static bool StrictMode => AppHost?.Config?.StrictMode == true;
+
         public static bool TestMode
         {
-            get { return ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode; }
-            set { ServiceStackHost.Instance.TestMode = value; }
+            get => ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode;
+            set => ServiceStackHost.Instance.TestMode = value;
         }
 
         public static List<HttpHandlerResolverDelegate> CatchAllHandlers => AssertAppHost().CatchAllHandlers;
@@ -208,13 +209,13 @@ namespace ServiceStack
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {
-            get { return defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace()); }
-            set { defaultOperationNamespace = value; }
+            get => defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace());
+            set => defaultOperationNamespace = value;
         }
 
         public static string GetDefaultNamespace()
         {
-            if (!IsNullOrEmpty(defaultOperationNamespace)) return null;
+            if (!string.IsNullOrEmpty(defaultOperationNamespace)) return null;
 
             foreach (var operationType in Metadata.RequestTypes)
             {
@@ -223,7 +224,7 @@ namespace ServiceStack
                 if (attrs.Length <= 0) continue;
 
                 var attr = attrs[0];
-                if (IsNullOrEmpty(attr.Namespace)) continue;
+                if (string.IsNullOrEmpty(attr.Namespace)) continue;
 
                 return attr.Namespace;
             }
