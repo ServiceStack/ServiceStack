@@ -510,6 +510,9 @@ namespace ServiceStack.Api.OpenApi
             // Given: class MyDto : IReturn<X>. Determine the type X.
             foreach (var i in restPath.RequestType.GetInterfaces())
             {
+                if (i == typeof(IReturnVoid))
+                    return GetSchemaForResponseType(typeof(void), schemas, out schemaDescription);
+
                 if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
                     var schemaType = i.GetGenericArguments()[0];
@@ -522,7 +525,7 @@ namespace ServiceStack.Api.OpenApi
 
         private OpenApiSchema GetSchemaForResponseType(Type schemaType, IDictionary<string, OpenApiSchema> schemas, out string schemaDescription)
         {
-            if (schemaType == typeof(IReturnVoid))
+            if (schemaType == typeof(IReturnVoid) || schemaType == typeof(void))
             {
                 schemaDescription = "No Content";
                 return null;
