@@ -15,19 +15,36 @@ namespace ServiceStack.Messaging
         IMessageFactory MessageFactory { get; }
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Host will process
+        /// Register DTOs and hanlders the MQ Server will process
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
         void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn);
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Host will process
+        /// Register DTOs and hanlders the MQ Server will process using specified number of threads
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="processMessageFn"></param>
+        /// <param name="noOfThreads"></param>
+        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads);
+
+        /// <summary>
+        /// Register DTOs and hanlders the MQ Server will process
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
         /// <param name="processExceptionEx"></param>
         void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx);
+
+        /// <summary>
+        /// Register DTOs and hanlders the MQ Server will process using specified number of threads
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="processMessageFn"></param>
+        /// <param name="processExceptionEx"></param>
+        /// <param name="noOfThreads"></param>
+        void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads);
 
         /// <summary>
         /// Get Total Current Stats for all Message Handlers
