@@ -944,18 +944,35 @@
         </member>
         <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object})">
             <summary>
-            Register DTOs and hanlders the MQ Host will process
+            Register DTOs and hanlders the MQ Server will process
             </summary>
             <typeparam name="T"></typeparam>
             <param name="processMessageFn"></param>
         </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object},System.Int32)">
+            <summary>
+            Register DTOs and hanlders the MQ Server will process using specified number of threads
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="processMessageFn"></param>
+            <param name="noOfThreads"></param>
+        </member>
         <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object},System.Action{ServiceStack.Messaging.IMessageHandler,ServiceStack.Messaging.IMessage{``0},System.Exception})">
             <summary>
-            Register DTOs and hanlders the MQ Host will process
+            Register DTOs and hanlders the MQ Server will process
             </summary>
             <typeparam name="T"></typeparam>
             <param name="processMessageFn"></param>
             <param name="processExceptionEx"></param>
+        </member>
+        <member name="M:ServiceStack.Messaging.IMessageService.RegisterHandler``1(System.Func{ServiceStack.Messaging.IMessage{``0},System.Object},System.Action{ServiceStack.Messaging.IMessageHandler,ServiceStack.Messaging.IMessage{``0},System.Exception},System.Int32)">
+            <summary>
+            Register DTOs and hanlders the MQ Server will process using specified number of threads
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="processMessageFn"></param>
+            <param name="processExceptionEx"></param>
+            <param name="noOfThreads"></param>
         </member>
         <member name="M:ServiceStack.Messaging.IMessageService.GetStats">
             <summary>
