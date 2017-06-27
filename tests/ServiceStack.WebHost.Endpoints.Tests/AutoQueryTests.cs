@@ -344,6 +344,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string OrLastName { get; set; }
     }
 
+    public class QueryRockstarAlias : QueryDb<Rockstar, RockstarAlias>,
+        IJoin<Rockstar, RockstarAlbum>
+    {
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+    }
+
+    [DataContract]
+    public class RockstarAlias
+    {
+        [DataMember]
+        [Alias("Id")]
+        public int RockstarId { get; set; }
+
+        [DataMember]
+        public string FirstName { get; set; }
+
+        [DataMember]
+        [Alias("LastName")]
+        public string Surname { get; set; }
+
+        [DataMember(Name = "album")]
+        public string RockstarAlbumName { get; set; }
+    }
+
     public class QueryFieldRockstarsDynamic : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
@@ -1097,6 +1122,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 FirstNameStartsWith = "Jim'\"",
             });
             Assert.That(response.Results.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Does_use_custom_model_to_select_columns()
+        {
+            var response = client.Get(new QueryRockstarAlias { RockstarAlbumName = "Nevermind" });
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].RockstarId, Is.EqualTo(3));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Kurt"));
+            Assert.That(response.Results[0].RockstarAlbumName, Is.EqualTo("Nevermind"));
         }
 
         [Test]
