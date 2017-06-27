@@ -105,6 +105,15 @@ namespace ServiceStack.Host
                 }
 
                 var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
+
+                if (HostContext.StrictMode)
+                {
+                    if (response != null && response.GetType().IsValueType())
+                        throw new StrictModeException($"'{requestDto.GetType().Name}' Service cannot return Value Types for its Service Responses. " +
+                                                      $"You can embed its '{response.GetType().Name}' return value in a Response DTO or return as raw data in a string or byte[]",
+                                                      StrictModeCodes.ReturnsValueType);
+                }
+
                 var error = response as IHttpError;
                 if (error != null)
                 {

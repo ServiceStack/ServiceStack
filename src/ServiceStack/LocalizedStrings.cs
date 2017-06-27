@@ -103,4 +103,10 @@
         public static string NativeTypesDtoOptionsTip =
             "To override a DTO option, remove \"{0}\" prefix before updating";
     }
+
+    public static class StrictModeCodes
+    {
+        public const string CyclicalUserSession = nameof(CyclicalUserSession);
+        public const string ReturnsValueType = nameof(ReturnsValueType);
+    }
 }

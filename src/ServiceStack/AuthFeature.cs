@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -117,6 +118,14 @@ namespace ServiceStack
 
             var unitTest = appHost == null;
             if (unitTest) return;
+
+            if (HostContext.StrictMode)
+            {
+                var sessionInstance = sessionFactory();
+                if (TypeSerializer.HasCircularReferences(sessionInstance))
+                    throw new StrictModeException($"User Session {sessionInstance.GetType().Name} cannot have circular dependencies", "sessionFactory",
+                        StrictModeCodes.CyclicalUserSession);
+            }
 
             foreach (var registerService in ServiceRoutes)
             {

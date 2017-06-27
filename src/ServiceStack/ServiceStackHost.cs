@@ -481,16 +481,16 @@ namespace ServiceStack
 
         public virtual void OnStartupException(Exception ex)
         {
+            if (Config.StrictMode == true)
+                throw ex;
+
             this.StartUpErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
         }
 
         private HostConfig config;
         public HostConfig Config
         {
-            get
-            {
-                return config;
-            }
+            get => config;
             set
             {
                 config = value;
