@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_call_overidden_AutoQueryData_Service_with_custom_MemorySource()
         {
-            var response = client.Get(new GetAllRockstarGenresData());
+            var response = client.Get(new GetAllRockstarGenresData { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
             Assert.That(response.Results.Count, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
 
@@ -72,7 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryServiceStackContributors
             {
                 Repo = "ServiceStack",
-                Take = 20
+                Take = 20,
+                Include = "Total"
             });
             Assert.That(response.Total, Is.GreaterThan(20));
             Assert.That(response.Results.Count, Is.EqualTo(20));
