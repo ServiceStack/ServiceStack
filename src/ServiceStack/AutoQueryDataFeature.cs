@@ -603,6 +603,8 @@ namespace ServiceStack
 
     public interface IAutoQueryData
     {
+        ITypedQueryData GetTypedQuery(Type dtoType, Type fromType);
+
         DataQuery<From> CreateQuery<From>(IQueryData<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
         QueryResponse<From> Execute<From>(IQueryData<From> request, DataQuery<From> q);
@@ -674,7 +676,7 @@ namespace ServiceStack
 
         private static Dictionary<Type, ITypedQueryData> TypedQueries = new Dictionary<Type, ITypedQueryData>();
 
-        public static ITypedQueryData GetTypedQuery(Type dtoType, Type fromType)
+        public ITypedQueryData GetTypedQuery(Type dtoType, Type fromType)
         {
             ITypedQueryData defaultValue;
             if (TypedQueries.TryGetValue(dtoType, out defaultValue)) return defaultValue;
@@ -776,7 +778,8 @@ namespace ServiceStack
 
             var ctx = new QueryDataContext { Dto = dto, DynamicParams = dynamicParams, Request = req };
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(ctx), dto, dynamicParams, this), dto, req);
+            var q = typedQuery.CreateQuery(GetDb<From>(ctx));
+            return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<From> Execute<From>(IQueryData<From> request, DataQuery<From> q)
@@ -792,7 +795,8 @@ namespace ServiceStack
 
             var ctx = new QueryDataContext { Dto = dto, DynamicParams = dynamicParams, Request = req };
             var typedQuery = GetTypedQuery(dto.GetType(), typeof(From));
-            return Filter<From>(typedQuery.CreateQuery(GetDb<From>(ctx), dto, dynamicParams, this), dto, req);
+            var q = typedQuery.CreateQuery(GetDb<From>(ctx));
+            return Filter<From>(typedQuery.AddToQuery(q, dto, dynamicParams, this), dto, req);
         }
 
         public QueryResponse<Into> Execute<From, Into>(IQueryData<From, Into> request, DataQuery<From> q)
@@ -1003,8 +1007,10 @@ namespace ServiceStack
 
     public interface ITypedQueryData
     {
-        IDataQuery CreateQuery(
-            IQueryDataSource db,
+        IDataQuery CreateQuery(IQueryDataSource db);
+
+        IDataQuery AddToQuery(
+            IDataQuery q,
             IQueryData request,
             Dictionary<string, string> dynamicParams,
             IAutoQueryDataOptions options = null);
@@ -1024,8 +1030,6 @@ namespace ServiceStack
 
     public class TypedQueryData<QueryModel, From> : ITypedQueryData
     {
-        private static ILog log = LogManager.GetLogger(typeof(AutoQueryDataFeature));
-
         static readonly Dictionary<string, GetMemberDelegate> RequestPropertyGetters =
             new Dictionary<string, GetMemberDelegate>();
 
@@ -1046,14 +1050,15 @@ namespace ServiceStack
             }
         }
 
-        public IDataQuery CreateQuery(
-            IQueryDataSource db,
+        public IDataQuery CreateQuery(IQueryDataSource db) => db.From<From>();
+
+        public IDataQuery AddToQuery(
+            IDataQuery q,
             IQueryData request,
             Dictionary<string, string> dynamicParams,
             IAutoQueryDataOptions options = null)
         {
             dynamicParams = new Dictionary<string, string>(dynamicParams, StringComparer.OrdinalIgnoreCase);
-            var q = db.From<From>();
 
             AppendJoins(q, request);
 
