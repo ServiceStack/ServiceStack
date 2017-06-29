@@ -35,8 +35,14 @@ namespace ServiceStack.OpenApi.Test.Services
     {
     }
 
+    [Route("/return-ireturnvoid", "GET")]
+    public class ReturnIReturnVoidDtoRequest : IReturn<IReturnVoid>, IGet
+    {
+    }
+
+
     [Route("/return-void", "GET")]
-    public class ReturnVoidDtoRequest : IReturn<IReturnVoid>, IGet
+    public class ReturnVoidDtoRequest : IReturnVoid
     {
     }
 
@@ -58,6 +64,16 @@ namespace ServiceStack.OpenApi.Test.Services
     public class ReturnAnnotatedDtoRequest : IReturn<Return200Response>, IGet
     {
         public int Code { get; set; }
+    }
+
+    [Route("/dhcp/servers/{ServerName}/scopes/{ScopeId}", "DELETE", Summary = "Deletes a DHCP scope.")]
+    public class DeleteDhcpScope : IReturnVoid
+    {
+        [ApiMember(ParameterType = "path", IsRequired = true, Description = "The FQDN of the DHCP server")]
+        public string ServerName { get; set; }
+
+        [ApiMember(ParameterType = "path", Description = "The Scope Id of the DHCP scope")]
+        public string ScopeId { get; set; }
     }
 
     public class ReturnGenericListServices : Service
@@ -87,6 +103,14 @@ namespace ServiceStack.OpenApi.Test.Services
         };
 
         public void Any(ReturnVoidDtoRequest request)
+        {
+        }
+
+        public void Any(ReturnIReturnVoidDtoRequest request)
+        {
+        }
+
+        public void Any(DeleteDhcpScope request)
         {
         }
 
