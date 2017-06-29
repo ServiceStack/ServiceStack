@@ -496,6 +496,41 @@
             Contract indication that the Response DTO has a ResponseStatus
             </summary>
         </member>
+        <member name="P:ServiceStack.IQuery.Skip">
+            <summary>
+            How many results to skip
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IQuery.Take">
+            <summary>
+            How many results to return
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IQuery.OrderBy">
+            <summary>
+            List of fields to sort by, can order by multiple fields and inverse order, e.g: Id,-Amount
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IQuery.OrderByDesc">
+            <summary>
+            List of fields to sort by descending, can order by multiple fields and inverse order, e.g: -Id,Amount
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IQuery.Include">
+            <summary>
+            Include aggregate data like Total, COUNT(*), COUNT(DISTINCT Field), Sum(Amount), etc
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IQuery.Fields">
+            <summary>
+            The fields to return
+            </summary>
+        </member>
+        <member name="P:ServiceStack.QueryResponse`1.Total">
+            <summary>
+            Populate with Include=Total or if registered with: AutoQueryFeature { IncludeTotal = true }
+            </summary>
+        </member>
         <member name="M:ServiceStack.IRequiresSchema.InitSchema">
             <summary>
             Unifed API to create any missing Tables, Data Structure Schema 

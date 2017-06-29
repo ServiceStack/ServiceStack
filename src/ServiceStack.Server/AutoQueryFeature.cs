@@ -10,11 +10,9 @@ using System.Threading;
 
 using Funq;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Reflection;
 using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Data;
-using ServiceStack.Logging;
 using ServiceStack.OrmLite;
 
 namespace ServiceStack
@@ -39,13 +37,13 @@ namespace ServiceStack
         public HashSet<string> IllegalSqlFragmentTokens { get; set; }
         public HashSet<Assembly> LoadFromAssemblies { get; set; } 
         public int? MaxLimit { get; set; }
-        public string UseNamedConnection { get; set; }
-        public bool StripUpperInLike { get; set; }
         public bool IncludeTotal { get; set; }
+        public bool StripUpperInLike { get; set; }
         public bool EnableUntypedQueries { get; set; }
         public bool EnableRawSqlFilters { get; set; }
         public bool EnableAutoQueryViewer { get; set; }
         public bool OrderByPrimaryKeyOnPagedQuery { get; set; }
+        public string UseNamedConnection { get; set; }
         public Type AutoQueryServiceBaseType { get; set; }
         public Dictionary<Type, QueryFilterDelegate> QueryFilters { get; set; }
         public List<Action<QueryDbFilterContext>> ResponseFilters { get; set; }
@@ -120,7 +118,7 @@ namespace ServiceStack
             AutoQueryServiceBaseType = typeof(AutoQueryServiceBase);
             QueryFilters = new Dictionary<Type, QueryFilterDelegate>();
             ResponseFilters = new List<Action<QueryDbFilterContext>> { IncludeAggregates };
-            IncludeTotal = true;
+            IncludeTotal = false;
             EnableUntypedQueries = true;
             EnableAutoQueryViewer = true;
             OrderByPrimaryKeyOnPagedQuery = true;
@@ -487,7 +485,7 @@ namespace ServiceStack
             return (SqlExpression<From>)q;
         }
 
-        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> sqlExpression, IQueryDb dto)
+        public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> expr, IQueryDb dto)
         {
             response.Meta = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -498,17 +496,23 @@ namespace ServiceStack
                 Db = Db,
                 Commands = commands,
                 Dto = dto,
-                SqlExpression = sqlExpression,
+                SqlExpression = expr,
                 Response = response,
             };
 
-            if (IncludeTotal)
+            var totalCommand = commands.FirstOrDefault(x => "Total".EqualsIgnoreCase(x.Name));
+            if (totalCommand != null)
             {
-                var totalCountRequested = commands.Any(x =>
-                    "COUNT".EqualsIgnoreCase(x.Name) &&
-                    (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+                totalCommand.Name = "COUNT";
+            }
 
-                if (!totalCountRequested)
+            var totalRequested = commands.Any(x =>
+                "COUNT".EqualsIgnoreCase(x.Name) &&
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+
+            if (IncludeTotal || totalRequested)
+            {
+                if (!totalRequested)
                     commands.Add(new Command { Name = "COUNT", Args = { "*" } });
 
                 foreach (var responseFilter in ResponseFilters)
@@ -519,10 +523,10 @@ namespace ServiceStack
                 string total;
                 response.Total = response.Meta.TryGetValue("COUNT(*)", out total)
                     ? total.ToInt()
-                    : (int)Db.Count(sqlExpression); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
+                    : (int)Db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
                 //reduce payload on wire
-                if (!totalCountRequested)
+                if (totalCommand != null || !totalRequested)
                 {
                     response.Meta.Remove("COUNT(*)");
                     if (response.Meta.Count == 0)

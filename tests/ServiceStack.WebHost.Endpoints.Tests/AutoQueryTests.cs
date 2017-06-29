@@ -753,7 +753,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_basic_query()
         {
-            var response = client.Get(new QueryRockstars());
+            var response = client.Get(new QueryRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
@@ -763,7 +763,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_basic_query_NamedRockstar()
         {
-            var response = client.Get(new QueryNamedRockstars());
+            var response = client.Get(new QueryNamedRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(1));
@@ -774,7 +774,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_overridden_basic_query()
         {
-            var response = client.Get(new QueryOverridedRockstars());
+            var response = client.Get(new QueryOverridedRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
@@ -792,9 +792,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_AdhocRockstars_query()
         {
-            var request = new QueryAdhocRockstars { FirstName = "Jimi" };
+            var request = new QueryAdhocRockstars { FirstName = "Jimi", Include = "Total" };
 
-            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi"));
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi&include=Total"));
 
             var response = client.Get(request);
 
@@ -839,7 +839,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_overridden_CustomRockstar()
         {
-            var response = client.Get(new QueryOverridedCustomRockstars { Age = 27 });
+            var response = client.Get(new QueryOverridedCustomRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(1));
@@ -848,17 +848,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_basic_query_with_limits()
         {
-            var response = client.Get(new QueryRockstars { Skip = 2 });
+            var response = client.Get(new QueryRockstars { Skip = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 2));
 
-            response = client.Get(new QueryRockstars { Take = 2 });
+            response = client.Get(new QueryRockstars { Take = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
-            response = client.Get(new QueryRockstars { Skip = 2, Take = 2 });
+            response = client.Get(new QueryRockstars { Skip = 2, Take = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(2));
@@ -867,7 +867,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition()
         {
-            var response = client.Get(new QueryRockstars { Age = 27 });
+            var response = client.Get(new QueryRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
@@ -876,7 +876,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_CustomRockstar()
         {
-            var response = client.Get(new QueryCustomRockstars { Age = 27 });
+            var response = client.Get(new QueryCustomRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
@@ -885,7 +885,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_CustomRockstarSchema()
         {
-            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27 });
+            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27, Include = "Total" });
 
             response.PrintDump();
 
@@ -902,6 +902,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstName", "Jim")
                 .AddQueryParam("LivingStatus", "Dead")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -916,6 +917,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstName", "Jim")
                 .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -926,6 +928,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstNameStartsWith", "Jim")
                 .AddQueryParam("FirstNameStartsWith", "Jimi")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -937,7 +940,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_implicit_IsNull_condition()
         {
-            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=")
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=&Include=Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -948,7 +951,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_JOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryJoinedRockstarAlbums());
+            var response = client.Get(new QueryJoinedRockstarAlbums { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -957,7 +960,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "MTV Unplugged in New York", "Foo Fighters", "Into the Wild",
             }));
 
-            response = client.Get(new QueryJoinedRockstarAlbums { Age = 27 });
+            response = client.Get(new QueryJoinedRockstarAlbums { Age = 27, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(6));
             Assert.That(response.Results.Count, Is.EqualTo(6));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -966,7 +969,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "MTV Unplugged in New York",
             }));
 
-            response = client.Get(new QueryJoinedRockstarAlbums { RockstarAlbumName = "Nevermind" });
+            response = client.Get(new QueryJoinedRockstarAlbums { RockstarAlbumName = "Nevermind", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -976,7 +979,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_multiple_JOINs_on_Rockstar_Albums_and_Genres()
         {
-            var response = client.Get(new QueryMultiJoinRockstar());
+            var response = client.Get(new QueryMultiJoinRockstar { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -990,13 +993,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "Rock", "Grunge", "Alternative Rock", "Folk Rock"
             }));
 
-            response = client.Get(new QueryMultiJoinRockstar { RockstarAlbumName = "Nevermind" });
+            response = client.Get(new QueryMultiJoinRockstar { RockstarAlbumName = "Nevermind", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] { "Nevermind" }));
 
-            response = client.Get(new QueryMultiJoinRockstar { RockstarGenreName = "Folk Rock" });
+            response = client.Get(new QueryMultiJoinRockstar { RockstarGenreName = "Folk Rock", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarGenreName);
@@ -1008,6 +1011,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
                 .AddQueryParam("Age", "27")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
             Assert.That(response.Total, Is.EqualTo(6));
@@ -1020,6 +1024,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
                 .AddQueryParam("RockstarAlbumName", "Nevermind")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
             Assert.That(response.Total, Is.EqualTo(1));
@@ -1031,7 +1036,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3 });
+            var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -1043,7 +1048,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_custom_LEFTJOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbumsCustomLeftJoin { IdNotEqualTo = 3 });
+            var response = client.Get(new QueryRockstarAlbumsCustomLeftJoin { IdNotEqualTo = 3, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -1500,6 +1505,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryUnknownRockstars {
                 UnknownProperty = "Foo",
                 UnknownInt = 1,
+                Include = "Total"
             });
 
             Assert.That(response.Offset, Is.EqualTo(0));
@@ -1571,7 +1577,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_populate_Total()
         {
-            var response = client.Get(new QueryRockstars());
+            var response = client.Get(new QueryRockstars { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
@@ -1581,7 +1587,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryRockstars { Include = "COUNT(*)" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
-            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus), Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
             response = client.Get(new QueryRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
@@ -1631,7 +1637,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_ignore_unknown_aggregate_commands()
         {
-            var response = client.Get(new QueryRockstars { Include = "FOO(1)" });
+            var response = client.Get(new QueryRockstars { Include = "FOO(1), Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
@@ -1810,15 +1816,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_return_MaxLimit_results()
         {
             QueryResponse<PagingTest> response;
-            response = client.Get(new QueryPagingTest());
+            response = client.Get(new QueryPagingTest { Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
 
-            response = client.Get(new QueryPagingTest { Skip = 200 });
+            response = client.Get(new QueryPagingTest { Skip = 200, Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(PagingTests.Skip(200).Count()));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
 
-            response = client.Get(new QueryPagingTest { Value = 1 });
+            response = client.Get(new QueryPagingTest { Value = 1, Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count(x => x.Value == 1)));
         }
@@ -1827,17 +1833,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_query_on_ForeignKey_and_Index()
         {
             QueryResponse<RockstarAlbum> response;
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3 }); //Hash
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Include = "Total" }); //Hash
             Assert.That(response.Results.Count, Is.EqualTo(5));
             Assert.That(response.Total, Is.EqualTo(5));
 
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Id = 3 }); //Hash + Range
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Id = 3, Include = "Total" }); //Hash + Range
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
 
             //Hash + Range BETWEEN
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, IdBetween = new[] { 2, 3 } });
+            response = client.Get(new QueryRockstarAlbums
+            {
+                RockstarId = 3,
+                IdBetween = new[] { 2, 3 },
+                Include = "Total"
+            });
             Assert.That(response.Results.Count, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(2));
 
@@ -1846,14 +1857,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RockstarId = 3,
                 IdBetween = new[] { 2, 3 },
-                Name = "Nevermind"
+                Name = "Nevermind",
+                Include = "Total"
             });
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Id, Is.EqualTo(3));
 
             //Hash + LocalSecondaryIndex
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Genre = "Grunge" });
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Genre = "Grunge", Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(4));
             Assert.That(response.Total, Is.EqualTo(4));
 

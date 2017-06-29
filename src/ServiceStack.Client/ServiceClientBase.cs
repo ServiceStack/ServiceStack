@@ -1427,6 +1427,13 @@ namespace ServiceStack
         public virtual IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
         {
             var query = (IQuery)queryDto;
+            if (query.Include == null || query.Include.IndexOf("total", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                if (!string.IsNullOrEmpty(query.Include))
+                    query.Include += ",";
+                query.Include += "Total";
+            }
+
             QueryResponse<TResponse> response;
             do
             {
