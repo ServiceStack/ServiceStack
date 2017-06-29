@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -12,6 +13,7 @@ namespace ServiceStack
     /// </summary>
     public class RequestLogEntry
     {
+        [AutoIncrement]
         public long Id { get; set; }
         public DateTime DateTime { get; set; }
         public int StatusCode { get; set; }
