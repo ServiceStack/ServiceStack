@@ -3,7 +3,7 @@ using ServiceStack;
 
 namespace Check.ServiceInterface
 {
-    [FallbackRoute("{PathInfo*}")]
+    //[FallbackRoute("{PathInfo*}")]
     public class FallbackRoute
     {
         public string PathInfo { get; set; }

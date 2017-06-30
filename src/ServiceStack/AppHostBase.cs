@@ -43,9 +43,33 @@ namespace ServiceStack
                 return null;
             }
         }
+
         public override string MapProjectPath(string relativePath)
         {
             return relativePath.MapHostAbsolutePath();
+        }
+
+        public override string GetBaseUrl(IRequest httpReq)
+        {
+            var useHttps = UseHttps(httpReq);
+            var baseUrl = HttpHandlerFactory.GetBaseUrl();
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            baseUrl = httpReq.AbsoluteUri.InferBaseUrl(fromPathInfo: httpReq.PathInfo);
+            if (baseUrl != null)
+                return baseUrl.NormalizeScheme(useHttps);
+
+            var handlerPath = Config.HandlerFactoryPath;
+
+            var aspReq = (HttpRequestBase)httpReq.OriginalRequest;
+            baseUrl = aspReq.Url.Scheme + "://" + aspReq.Url.Authority +
+                      aspReq.ApplicationPath?.TrimEnd('/') + "/";
+
+            return baseUrl
+                .NormalizeScheme(useHttps)
+                .CombineWith(handlerPath)
+                .TrimEnd('/');
         }
     }
 }

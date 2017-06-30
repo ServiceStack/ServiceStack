@@ -192,7 +192,7 @@ namespace ServiceStack.Platforms
             config.HandlerFactoryPath = locationPath ??
                 (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
-            config.MetadataRedirectPath = "metadata";
+            config.MetadataRedirectPath = "~/metadata";
         }
     }
 }
