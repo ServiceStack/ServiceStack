@@ -26,6 +26,7 @@
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
         public static string HasPreAuthenticated = "__haspreauth";
+        public static string HasLogged = "_logged";
         public static string DidAuthenticate = "__didauth";
         public static string IRequest = "__irequest";
         public static string RequestDuration = "_requestDurationStopwatch";

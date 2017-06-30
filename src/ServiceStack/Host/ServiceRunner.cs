@@ -57,15 +57,13 @@ namespace ServiceStack.Host
         public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
-            if (requestLogger != null)
+            if (requestLogger != null && !req.Items.ContainsKey(Keywords.HasLogged))
             {
                 try
                 {
+                    req.Items[Keywords.HasLogged] = true;
                     var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
-                    if (stopWatch != null)
-                    {
-                        requestLogger.Log(req, request, response, stopWatch.Elapsed);
-                    }
+                    requestLogger.Log(req, request, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
                 }
                 catch (Exception ex)
                 {

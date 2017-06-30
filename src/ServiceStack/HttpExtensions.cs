@@ -86,9 +86,19 @@ namespace ServiceStack
         public static void EndHttpHandlerRequest(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IResponse> afterHeaders = null)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+
             afterHeaders?.Invoke(httpRes);
+
+            var req = httpRes.Request;
+            if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                HostContext.TryResolve<IRequestLogger>()?
+                    .Log(req, req.Dto, null, TimeSpan.Zero);
+            }
+
             if (!skipClose && !httpRes.IsClosed) httpRes.Close();
-            HostContext.CompleteRequest(httpRes.Request);
+
+            HostContext.CompleteRequest(req);
         }
 
         /// <summary>

@@ -34,7 +34,6 @@ namespace ServiceStack
                 }
 
                 res.RedirectToUrl(req.AbsoluteUri.AsHttps());
-                res.EndRequest();
             }
         }
     }
