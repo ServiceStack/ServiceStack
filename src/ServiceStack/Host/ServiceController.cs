@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Funq;
+using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -484,6 +485,8 @@ namespace ServiceStack.Host
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
+            req.PopulateFromRequestIfHasSessionId(dto.Body);
+
             req.Dto = appHost.ApplyRequestConverters(req, dto.Body);
             if (appHost.ApplyMessageRequestFilters(req, req.Response, dto.Body))
                 return req.Response.Dto;
