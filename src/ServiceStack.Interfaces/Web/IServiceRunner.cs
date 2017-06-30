@@ -10,12 +10,12 @@ namespace ServiceStack.Web
 
     public interface IServiceRunner<TRequest> : IServiceRunner
     {
-        void OnBeforeExecute(IRequest requestContext, TRequest request);
-        object OnAfterExecute(IRequest requestContext, object response);
+        void OnBeforeExecute(IRequest req, TRequest request);
+        object OnAfterExecute(IRequest req, object response);
         object HandleException(IRequest request, TRequest requestDto, Exception ex);
 
-        object Execute(IRequest requestContext, object instance, TRequest requestDto);
-        object Execute(IRequest requestContext, object instance, IMessage<TRequest> request);
+        object Execute(IRequest req, object instance, TRequest requestDto);
+        object Execute(IRequest req, object instance, IMessage<TRequest> request);
         object ExecuteOneWay(IRequest requestContext, object instance, TRequest request);
     }
 }

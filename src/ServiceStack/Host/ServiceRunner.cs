@@ -43,52 +43,52 @@ namespace ServiceStack.Host
             return service;
         }
 
-        public virtual void BeforeEachRequest(IRequest requestContext, TRequest request)
+        public virtual void BeforeEachRequest(IRequest req, TRequest request)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
-                requestContext.SetItem(Keywords.RequestDuration, Stopwatch.StartNew());
+                req.SetItem(Keywords.RequestDuration, Stopwatch.StartNew());
             }
             
-            OnBeforeExecute(requestContext, request);
+            OnBeforeExecute(req, request);
         }
 
-        public virtual object AfterEachRequest(IRequest requestContext, TRequest request, object response)
+        public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
                 try
                 {
-                    var stopWatch = requestContext.GetItem(Keywords.RequestDuration) as Stopwatch;
+                    var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
                     if (stopWatch != null)
                     {
-                        requestLogger.Log(requestContext, request, response, stopWatch.Elapsed);
+                        requestLogger.Log(req, request, response, stopWatch.Elapsed);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Error while logging request: " + request.Dump(), ex);
+                    Log.Error("Error while logging req: " + request.Dump(), ex);
                 }
             }
 
             //only call OnAfterExecute if no exception occured
-            return response.IsErrorResponse() ? response : OnAfterExecute(requestContext, response);
+            return response.IsErrorResponse() ? response : OnAfterExecute(req, response);
         }
 
-        public virtual void OnBeforeExecute(IRequest requestContext, TRequest request) { }
+        public virtual void OnBeforeExecute(IRequest req, TRequest request) { }
 
-        public virtual object OnAfterExecute(IRequest requestContext, object response)
+        public virtual object OnAfterExecute(IRequest req, object response)
         {
             return response;
         }
 
-        public virtual object Execute(IRequest request, object instance, TRequest requestDto)
+        public virtual object Execute(IRequest req, object instance, TRequest requestDto)
         {
             try
             {
-                BeforeEachRequest(request, requestDto);
+                BeforeEachRequest(req, requestDto);
 
                 var container = HostContext.Container;
 
@@ -98,13 +98,13 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.RequestFilter(request, request.Response, requestDto);
+                        attrInstance.RequestFilter(req, req.Response, requestDto);
                         AppHost.Release(attrInstance);
-                        if (request.Response.IsClosed) return null;
+                        if (req.Response.IsClosed) return null;
                     }
                 }
 
-                var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
+                var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto));
 
                 if (HostContext.StrictMode)
                 {
@@ -118,7 +118,7 @@ namespace ServiceStack.Host
                 if (error != null)
                 {
                     var ex = (Exception) error;
-                    var result = HandleException(request, requestDto, ex);
+                    var result = HandleException(req, requestDto, ex);
 
                     if (result == null)
                         throw ex;
@@ -133,14 +133,14 @@ namespace ServiceStack.Host
                     {
                         taskResponse.Start();
                     }
-                    return HostContext.Async.ContinueWith(request, taskResponse, task =>
+                    return HostContext.Async.ContinueWith(req, taskResponse, task =>
                     {
                         if (task.IsFaulted)
                         {
                             var ex = task.Exception.UnwrapIfSingleException();
 
                             //Async Exception Handling
-                            var result = HandleException(request, requestDto, ex);
+                            var result = HandleException(req, requestDto, ex);
 
                             if (result == null)
                                 return ex;
@@ -157,10 +157,10 @@ namespace ServiceStack.Host
                                 var attrInstance = responseFilter.Copy();
                                 container.AutoWire(attrInstance);
 
-                                attrInstance.ResponseFilter(request, request.Response, response);
+                                attrInstance.ResponseFilter(req, req.Response, response);
                                 AppHost.Release(attrInstance);
 
-                                if (request.Response.IsClosed)
+                                if (req.Response.IsClosed)
                                     return null;
                             }
                         }
@@ -177,10 +177,10 @@ namespace ServiceStack.Host
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
 
-                        attrInstance.ResponseFilter(request, request.Response, response);
+                        attrInstance.ResponseFilter(req, req.Response, response);
                         AppHost.Release(attrInstance);
 
-                        if (request.Response.IsClosed) return null;
+                        if (req.Response.IsClosed) return null;
                     }
                 }
 
@@ -189,7 +189,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 //Sync Exception Handling
-                var result = HandleException(request, requestDto, ex);
+                var result = HandleException(req, requestDto, ex);
 
                 if (result == null) throw;
 
@@ -197,9 +197,9 @@ namespace ServiceStack.Host
             }
         }
 
-        public virtual object Execute(IRequest requestContext, object instance, IMessage<TRequest> request)
+        public virtual object Execute(IRequest req, object instance, IMessage<TRequest> request)
         {
-            return Execute(requestContext, instance, request.GetBody());
+            return Execute(req, instance, request.GetBody());
         }
 
         public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
@@ -220,8 +220,8 @@ namespace ServiceStack.Host
                 return Execute(requestContext, instance, request);
             }
 
-            //Capture and persist this async request on this Services 'In Queue' 
-            //for execution after this request has been completed
+            //Capture and persist this async req on this Services 'In Queue' 
+            //for execution after this req has been completed
             using (var producer = msgFactory.CreateMessageProducer())
             {
                 producer.Publish(request);
