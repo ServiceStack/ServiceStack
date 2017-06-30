@@ -452,6 +452,21 @@
             properties with this attribute are ignored when building sql sentences
             </summary>
         </member>
+        <member name="T:ServiceStack.DataAnnotations.IgnoreOnSelectAttribute">
+            <summary>
+            Ignore this property in SELECT statements
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.IgnoreOnUpdateAttribute">
+            <summary>
+            Ignore this property in UPDATE statements
+            </summary>
+        </member>
+        <member name="T:ServiceStack.DataAnnotations.IgnoreOnInsertAttribute">
+            <summary>
+            Ignore this property in INSERT statements
+            </summary>
+        </member>
         <member name="T:ServiceStack.DataAnnotations.MetaAttribute">
             <summary>
             Decorate any type or property with adhoc info
