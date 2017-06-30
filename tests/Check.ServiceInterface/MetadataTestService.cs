@@ -36,10 +36,10 @@ namespace Check.ServiceInterface
             };
         }
 
-        public object Any(MetadataRequest request)
-        {
-            return request;
-        }
+        public object Any(MetadataRequest request) => request;
+
+        public object Any(ExcludeMetadataType request) => request;
+        public object Any(ExcludeMetadataProperty request) => request;
     }
 
     public class MetadataRequest : IReturn<AutoQueryMetadataResponse>

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -676,7 +677,9 @@ namespace ServiceStack.NativeTypes
         {
             return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
                 .OnlySerializableProperties(type)
-                .Where(t => t.GetIndexParameters().Length == 0) // ignore indexed properties
+                .Where(t => 
+                    t.GetIndexParameters().Length == 0 && // ignore indexed properties
+                    !t.HasAttribute<ExcludeMetadata>())
                 .ToArray();
         }
     }
