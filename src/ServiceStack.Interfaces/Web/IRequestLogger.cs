@@ -34,6 +34,11 @@ namespace ServiceStack.Web
         string[] RequiredRoles { get; set; }
 
         /// <summary>
+        /// Don't log matching requests
+        /// </summary>
+        Func<IRequest, bool> SkipLogging { get; set; }
+
+        /// <summary>
         /// Don't log requests of these types.
         /// </summary>
         Type[] ExcludeRequestDtoTypes { get; set; }

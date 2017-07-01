@@ -139,10 +139,10 @@ namespace ServiceStack
 
         public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto?.GetType();
-
-            if (ExcludeRequestType(requestType))
+            if (ShouldSkip(request, requestDto))
                 return;
+
+            var requestType = requestDto?.GetType();
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
             lock (semaphore)

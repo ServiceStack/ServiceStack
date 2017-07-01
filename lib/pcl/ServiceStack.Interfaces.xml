@@ -1805,6 +1805,11 @@
             Limit access to /requestlogs service to role
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.SkipLogging">
+            <summary>
+            Don't log matching requests
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequestLogger.ExcludeRequestDtoTypes">
             <summary>
             Don't log requests of these types.

@@ -26,6 +26,8 @@ namespace ServiceStack.Host
 
         public string[] RequiredRoles { get; set; }
 
+        public Func<IRequest, bool> SkipLogging { get; set; }
+
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
@@ -37,12 +39,20 @@ namespace ServiceStack.Host
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
+        public virtual bool ShouldSkip(IRequest req, object requestDto)
+        {
+            var dto = requestDto ?? req.Dto;
+            var requestType = dto?.GetType();
+
+            return ExcludeRequestType(requestType) && SkipLogging?.Invoke(req) == true;
+        }
+
         public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto?.GetType();
-
-            if (ExcludeRequestType(requestType)) 
+            if (ShouldSkip(request, requestDto))
                 return;
+
+            var requestType = requestDto?.GetType();
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
 

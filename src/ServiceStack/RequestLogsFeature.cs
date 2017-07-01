@@ -34,6 +34,11 @@ namespace ServiceStack
         public bool EnableErrorTracking { get; set; }
 
         /// <summary>
+        /// Don't log matching requests
+        /// </summary>
+        public Func<IRequest, bool> SkipLogging { get; set; }
+
+        /// <summary>
         /// Size of InMemoryRollingRequestLogger circular buffer
         /// </summary>
         public int? Capacity { get; set; }
@@ -80,8 +85,9 @@ namespace ServiceStack
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
-            requestLogger.EnableErrorTracking = EnableErrorTracking;
+            requestLogger.SkipLogging = SkipLogging;
             requestLogger.RequiredRoles = RequiredRoles;
+            requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
 
