@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceStack
@@ -26,6 +27,8 @@ namespace ServiceStack
         Task<TResponse> PutAsync<TResponse>(object requestDto);
         Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request);
         Task PutAsync(IReturnVoid requestDto);
+
+        Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken));
 
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto);

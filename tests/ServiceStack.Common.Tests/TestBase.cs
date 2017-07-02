@@ -246,6 +246,11 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Patch(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
@@ -394,6 +399,12 @@ namespace ServiceStack.Common.Tests
             }
 
             public Task PutAsync(IReturnVoid requestDto)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
+                CancellationToken token = new CancellationToken())
             {
                 throw new NotImplementedException();
             }

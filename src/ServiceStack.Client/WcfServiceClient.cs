@@ -459,6 +459,11 @@ namespace ServiceStack
             throw new NotImplementedException();
         }
 
+        public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+        {
+            throw new NotImplementedException();
+        }
+
         public TResponse PostFile<TResponse>(string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
             throw new NotImplementedException();
@@ -604,6 +609,12 @@ namespace ServiceStack
         }
 
         public Task PutAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
+            CancellationToken token = new CancellationToken())
         {
             throw new NotImplementedException();
         }

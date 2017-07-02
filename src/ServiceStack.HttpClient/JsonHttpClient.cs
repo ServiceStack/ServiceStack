@@ -631,6 +631,11 @@ namespace ServiceStack
             return SendAllAsync<TResponse>(requests, default(CancellationToken)).GetSyncResponse();
         }
 
+        public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+        {
+            return SendAsync<TResponse>(httpMethod, relativeOrAbsoluteUrl, request).GetSyncResponse();
+        }
+
         public virtual void Publish(object request)
         {
             PublishAsync(request, default(CancellationToken)).Wait();

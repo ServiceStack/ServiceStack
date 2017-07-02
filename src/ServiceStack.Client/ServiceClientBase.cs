@@ -1180,6 +1180,11 @@ namespace ServiceStack
         }
 
 
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
+        {
+            return asyncClient.SendAsync<TResponse>(httpMethod, absoluteUrl, request, token);
+        }
+
         public virtual Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
         {
             return asyncClient.SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
@@ -1502,7 +1507,6 @@ namespace ServiceStack
         {
             return Send<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), requestDto);
         }
-
 
         public virtual void Put(IReturnVoid requestDto)
         {
@@ -2035,6 +2039,60 @@ namespace ServiceStack
             hasCookies.CookieContainer.SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
         }
 
+        public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody) =>
+            client.Send<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody) =>
+            client.Send<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody) =>
+            client.Send<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PostBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody) =>
+            client.Send<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+
+        public static TResponse PutBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody) =>
+            client.Send<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PutBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody) =>
+            client.Send<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PutBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody) =>
+            client.Send<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PutBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody) =>
+            client.Send<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+
+        public static TResponse PatchBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody) =>
+            client.Send<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PatchBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody) =>
+            client.Send<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PatchBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody) =>
+            client.Send<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+        public static TResponse PatchBody<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody) =>
+            client.Send<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody);
+
+        public static Task<TResponse> PostBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PostBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PostBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PostBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Post, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+
+        public static Task<TResponse> PutBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PutBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PutBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PutBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Put, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+
+        public static Task<TResponse> PatchBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, object requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PatchBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, string requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PatchBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, byte[] requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+        public static Task<TResponse> PatchBodyAsync<TResponse>(this IServiceClient client, IReturn<TResponse> toRequest, Stream requestBody, CancellationToken token = default(CancellationToken)) =>
+            client.SendAsync<TResponse>(HttpMethods.Patch, ((IServiceClientMeta)client).ResolveTypedUrl(HttpMethods.Get, toRequest), requestBody, token);
+
         public static void SetCookie(this CookieContainer cookieContainer, 
             Uri baseUri, string name, string value, DateTime? expiresAt,
             string path = "/", bool? httpOnly = null, bool? secure = null)
@@ -2135,6 +2193,9 @@ namespace ServiceStack
         bool AlwaysSendBasicAuthHeader { get; }
         int Version { get; }
         string SessionId { get; }
+
+        string ResolveTypedUrl(string httpMethod, object requestDto);
+        string ResolveUrl(string httpMethod, string relativeOrAbsoluteUrl);
     }
 
     public delegate string UrlResolverDelegate(IServiceClientMeta client, string httpMethod, string relativeOrAbsoluteUrl);
