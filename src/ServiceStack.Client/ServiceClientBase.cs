@@ -44,10 +44,7 @@ namespace ServiceStack
         /// </summary>
         public static Action<HttpWebRequest> GlobalRequestFilter
         {
-            get
-            {
-                return globalRequestFilter;
-            }
+            get => globalRequestFilter;
             set
             {
                 globalRequestFilter = value;
@@ -64,10 +61,7 @@ namespace ServiceStack
         /// </summary>
         public static Action<HttpWebResponse> GlobalResponseFilter
         {
-            get
-            {
-                return globalResponseFilter;
-            }
+            get => globalResponseFilter;
             set
             {
                 globalResponseFilter = value;
@@ -137,7 +131,7 @@ namespace ServiceStack
         /// </summary>
         public bool DisableAutoCompression
         {
-            get { return disableAutoCompression; }
+            get => disableAutoCompression;
             set
             {
                 disableAutoCompression = value;
@@ -153,7 +147,7 @@ namespace ServiceStack
         /// </summary>
         public string UserName
         {
-            get { return username; }
+            get => username;
             set
             {
                 username = value;
@@ -167,7 +161,7 @@ namespace ServiceStack
         /// </summary>
         public string Password
         {
-            get { return password; }
+            get => password;
             set
             {
                 password = value;
@@ -190,7 +184,7 @@ namespace ServiceStack
         /// </summary>
         public string BearerToken
         {
-            get { return bearerToken; }
+            get => bearerToken;
             set
             {
                 bearerToken = value;
@@ -212,10 +206,7 @@ namespace ServiceStack
 
         public string UserAgent
         {
-            get
-            {
-                return userAgent;
-            }
+            get => userAgent;
             set
             {
                 userAgent = value;
@@ -226,7 +217,7 @@ namespace ServiceStack
 
         public TimeSpan? Timeout
         {
-            get { return this.timeout; }
+            get => this.timeout;
             set
             {
                 this.timeout = value;
@@ -237,7 +228,7 @@ namespace ServiceStack
 
         public TimeSpan? ReadWriteTimeout
         {
-            get { return this.readWriteTimeout; }
+            get => this.readWriteTimeout;
             set
             {
                 this.readWriteTimeout = value;
@@ -258,39 +249,39 @@ namespace ServiceStack
         /// </summary>
         public bool CaptureSynchronizationContext
         {
-            get { return asyncClient.CaptureSynchronizationContext; }
-            set { asyncClient.CaptureSynchronizationContext = value; }
+            get => asyncClient.CaptureSynchronizationContext;
+            set => asyncClient.CaptureSynchronizationContext = value;
         }
 
         public bool HandleCallbackOnUiThread
         {
-            get { return asyncClient.HandleCallbackOnUiThread; }
-            set { asyncClient.HandleCallbackOnUiThread = value; }
+            get => asyncClient.HandleCallbackOnUiThread;
+            set => asyncClient.HandleCallbackOnUiThread = value;
         }
 
         public bool EmulateHttpViaPost
         {
-            get { return asyncClient.EmulateHttpViaPost; }
-            set { asyncClient.EmulateHttpViaPost = value; }
+            get => asyncClient.EmulateHttpViaPost;
+            set => asyncClient.EmulateHttpViaPost = value;
         }
 
         public ProgressDelegate OnDownloadProgress
         {
-            get { return asyncClient.OnDownloadProgress; }
-            set { asyncClient.OnDownloadProgress = value; }
+            get => asyncClient.OnDownloadProgress;
+            set => asyncClient.OnDownloadProgress = value;
         }
 
         public ProgressDelegate OnUploadProgress
         {
-            get { return asyncClient.OnUploadProgress; }
-            set { asyncClient.OnUploadProgress = value; }
+            get => asyncClient.OnUploadProgress;
+            set => asyncClient.OnUploadProgress = value;
         }
 
         private bool shareCookiesWithBrowser;
         public bool ShareCookiesWithBrowser
         {
-            get { return this.shareCookiesWithBrowser; }
-            set { asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value; }
+            get => this.shareCookiesWithBrowser;
+            set => asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value;
         }
 
 #if !SL5
@@ -306,7 +297,7 @@ namespace ServiceStack
         /// </summary>
         public ICredentials Credentials
         {
-            get { return this.credentials; }
+            get => this.credentials;
             set
             {
                 this.credentials = value;
@@ -320,8 +311,8 @@ namespace ServiceStack
         /// </summary>
         public bool AlwaysSendBasicAuthHeader
         {
-            get { return alwaysSendBasicAuthHeader; }
-            set { asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value; }
+            get => alwaysSendBasicAuthHeader;
+            set => asyncClient.AlwaysSendBasicAuthHeader = alwaysSendBasicAuthHeader = value;
         }
         private bool alwaysSendBasicAuthHeader;
 
@@ -330,27 +321,22 @@ namespace ServiceStack
         /// </summary>
         public bool StoreCookies
         {
-            get { return storeCookies; }
-            set { asyncClient.StoreCookies = storeCookies = value; }
+            get => storeCookies;
+            set => asyncClient.StoreCookies = storeCookies = value;
         }
         private bool storeCookies;
 
         public CookieContainer CookieContainer
         {
-            get { return cookieContainer; }
-            set { asyncClient.CookieContainer = cookieContainer = value; }
+            get => cookieContainer;
+            set => asyncClient.CookieContainer = cookieContainer = value;
         }
         private CookieContainer cookieContainer;
 
         public bool AllowAutoRedirect
         {
-            get { return allowAutoRedirect; }
-            set
-            {
-                allowAutoRedirect = value;
-                // TODO: Implement for async client.
-                // asyncClient.AllowAutoRedirect = value;
-            }
+            get => allowAutoRedirect;
+            set => allowAutoRedirect = value;
         }
         private bool allowAutoRedirect = true;
 
@@ -359,10 +345,7 @@ namespace ServiceStack
         /// </summary>
         public Action OnAuthenticationRequired
         {
-            get
-            {
-                return onAuthenticationRequired;
-            }
+            get => onAuthenticationRequired;
             set
             {
                 onAuthenticationRequired = value;
@@ -377,7 +360,7 @@ namespace ServiceStack
         /// </summary>
         public string RefreshToken
         {
-            get { return refreshToken; }
+            get => refreshToken;
             set
             {
                 refreshToken = value;
@@ -391,7 +374,7 @@ namespace ServiceStack
         /// </summary>
         public string RefreshTokenUri
         {
-            get { return refreshTokenUri; }
+            get => refreshTokenUri;
             set
             {
                 refreshTokenUri = value;
@@ -406,10 +389,7 @@ namespace ServiceStack
         /// </summary>
         public Action<HttpWebRequest> RequestFilter
         {
-            get
-            {
-                return requestFilter;
-            }
+            get => requestFilter;
             set
             {
                 requestFilter = value;
@@ -423,10 +403,7 @@ namespace ServiceStack
         /// </summary>
         public ResultsFilterDelegate ResultsFilter
         {
-            get
-            {
-                return resultsFilter;
-            }
+            get => resultsFilter;
             set
             {
                 resultsFilter = value;
@@ -440,10 +417,7 @@ namespace ServiceStack
         /// </summary>
         public ResultsFilterResponseDelegate ResultsFilterResponse
         {
-            get
-            {
-                return resultsFilterResponse;
-            }
+            get => resultsFilterResponse;
             set
             {
                 resultsFilterResponse = value;
@@ -457,10 +431,7 @@ namespace ServiceStack
         /// </summary>
         public ExceptionFilterDelegate ExceptionFilter
         {
-            get
-            {
-                return exceptionFilter;
-            }
+            get => exceptionFilter;
             set
             {
                 exceptionFilter = value;
@@ -476,10 +447,7 @@ namespace ServiceStack
         /// </summary>
         public Action<HttpWebResponse> ResponseFilter
         {
-            get
-            {
-                return responseFilter;
-            }
+            get => responseFilter;
             set
             {
                 responseFilter = value;
@@ -502,16 +470,12 @@ namespace ServiceStack
 
         public virtual string ResolveUrl(string httpMethod, string relativeOrAbsoluteUrl)
         {
-            return ToAbsoluteUrl((UrlResolver != null
-                ? UrlResolver(this, httpMethod, relativeOrAbsoluteUrl)
-                : null) ?? relativeOrAbsoluteUrl);
+            return ToAbsoluteUrl(UrlResolver?.Invoke(this, httpMethod, relativeOrAbsoluteUrl) ?? relativeOrAbsoluteUrl);
         }
 
         public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
         {
-            return ToAbsoluteUrl((TypedUrlResolver != null
-                ? TypedUrlResolver(this, httpMethod, requestDto)
-                : null) ?? requestDto.ToUrl(httpMethod, Format));
+            return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
         }
 
         [Obsolete("Renamed to ToAbsoluteUrl")]
@@ -612,10 +576,7 @@ namespace ServiceStack
                 ApplyWebResponseFilters(webResponse);
 
                 var response = GetResponse<TResponse>(webResponse);
-                if (ResultsFilterResponse != null)
-                {
-                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
-                }
+                ResultsFilterResponse?.Invoke(webResponse, response, httpMethod, requestUri, request);
 
                 DisposeIfRequired<TResponse>(webResponse);
 
@@ -704,8 +665,7 @@ namespace ServiceStack
                         return true;
                     }
 
-                    if (OnAuthenticationRequired != null)
-                        OnAuthenticationRequired();
+                    OnAuthenticationRequired?.Invoke();
 
                     var client = createWebRequest();
 
@@ -732,7 +692,7 @@ namespace ServiceStack
                 throw;
             }
 
-            if (ExceptionFilter != null && webEx != null && webEx.Response != null)
+            if (ExceptionFilter != null && webEx?.Response != null)
             {
                 var cachedResponse = ExceptionFilter(webEx, webEx.Response, requestUri, typeof(TResponse));
                 if (cachedResponse is TResponse)
@@ -926,7 +886,7 @@ namespace ServiceStack
         protected WebRequest PrepareWebRequest(string httpMethod, string requestUri, object request, Action<HttpWebRequest> sendRequestAction)
         {
             if (httpMethod == null)
-                throw new ArgumentNullException("httpMethod");
+                throw new ArgumentNullException(nameof(httpMethod));
 
             this.PopulateRequestMetadata(request);
 
@@ -985,8 +945,7 @@ namespace ServiceStack
                     if (RequestCompressionType != null)
                         client.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
-                    if (sendRequestAction != null)
-                        sendRequestAction(client);
+                    sendRequestAction?.Invoke(client);
                 }
             }
             catch (AuthenticationException ex)
@@ -1000,20 +959,14 @@ namespace ServiceStack
         {
             if (!(webResponse is HttpWebResponse)) return;
 
-            if (ResponseFilter != null)
-                ResponseFilter((HttpWebResponse)webResponse);
-
-            if (GlobalResponseFilter != null)
-                GlobalResponseFilter((HttpWebResponse)webResponse);
+            ResponseFilter?.Invoke((HttpWebResponse)webResponse);
+            GlobalResponseFilter?.Invoke((HttpWebResponse)webResponse);
         }
 
         private void ApplyWebRequestFilters(HttpWebRequest client)
         {
-            if (RequestFilter != null)
-                RequestFilter(client);
-
-            if (GlobalRequestFilter != null)
-                GlobalRequestFilter(client);
+            RequestFilter?.Invoke(client);
+            GlobalRequestFilter?.Invoke(client);
         }
 
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
@@ -1343,10 +1296,7 @@ namespace ServiceStack
                 ApplyWebResponseFilters(webResponse);
 
                 var response = GetResponse<TResponse>(webResponse);
-                if (ResultsFilterResponse != null)
-                {
-                    ResultsFilterResponse(webResponse, response, httpMethod, requestUri, request);
-                }
+                ResultsFilterResponse?.Invoke(webResponse, response, httpMethod, requestUri, request);
 
                 DisposeIfRequired<TResponse>(webResponse);
 

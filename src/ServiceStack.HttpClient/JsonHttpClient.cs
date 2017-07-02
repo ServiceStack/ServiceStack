@@ -108,16 +108,12 @@ namespace ServiceStack
 
         public virtual string ResolveUrl(string httpMethod, string relativeOrAbsoluteUrl)
         {
-            return ToAbsoluteUrl((UrlResolver != null
-                ? UrlResolver(this, httpMethod, relativeOrAbsoluteUrl)
-                : null) ?? relativeOrAbsoluteUrl);
+            return ToAbsoluteUrl(UrlResolver?.Invoke(this, httpMethod, relativeOrAbsoluteUrl) ?? relativeOrAbsoluteUrl);
         }
 
         public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
         {
-            return ToAbsoluteUrl((TypedUrlResolver != null
-                ? TypedUrlResolver(this, httpMethod, requestDto)
-                : null) ?? requestDto.ToUrl(httpMethod, Format));
+            return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
         }
 
         [Obsolete("Renamed to ToAbsoluteUrl")]
@@ -231,15 +227,12 @@ namespace ServiceStack
                 }
             }
 
-            if (ResultsFilter != null)
+            var response = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request);
+            if (response is TResponse)
             {
-                var response = ResultsFilter(typeof(TResponse), httpMethod, absoluteUrl, request);
-                if (response is TResponse)
-                {
-                    var tcs = new TaskCompletionSource<TResponse>();
-                    tcs.SetResult((TResponse)response);
-                    return tcs.Task;
-                }
+                var tcs = new TaskCompletionSource<TResponse>();
+                tcs.SetResult((TResponse)response);
+                return tcs.Task;
             }
 
             if (token == default(CancellationToken))
@@ -396,8 +389,7 @@ namespace ServiceStack
 
                         var response = (TResponse) (object) task.Result;
 
-                        if (ResultsFilterResponse != null)
-                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                        ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
 
                         return response;
                     }, token);
@@ -411,8 +403,7 @@ namespace ServiceStack
 
                         var response = (TResponse) (object) task.Result;
 
-                        if (ResultsFilterResponse != null)
-                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                        ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
 
                         return response;
                     }, token);
@@ -426,8 +417,7 @@ namespace ServiceStack
 
                         var response = (TResponse) (object) task.Result;
 
-                        if (ResultsFilterResponse != null)
-                            ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                        ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
 
                         return response;
                     }, token);
@@ -441,8 +431,7 @@ namespace ServiceStack
                     var body = task.Result;
                     var response = body.FromJson<TResponse>();
 
-                    if (ResultsFilterResponse != null)
-                        ResultsFilterResponse(httpRes, response, httpMethod, absoluteUrl, request);
+                    ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, absoluteUrl, request);
 
                     return response;
                 }, token);
@@ -463,11 +452,8 @@ namespace ServiceStack
 
         private void ApplyWebRequestFilters(HttpRequestMessage httpReq)
         {
-            if (RequestFilter != null)
-                RequestFilter(httpReq);
-
-            if (GlobalRequestFilter != null)
-                GlobalRequestFilter(httpReq);
+            RequestFilter?.Invoke(httpReq);
+            GlobalRequestFilter?.Invoke(httpReq);
         }
 
         public Action<HttpResponseMessage> ResponseFilter { get; set; }
@@ -475,11 +461,8 @@ namespace ServiceStack
 
         private void ApplyWebResponseFilters(HttpResponseMessage httpRes)
         {
-            if (ResponseFilter != null)
-                ResponseFilter(httpRes);
-
-            if (GlobalResponseFilter != null)
-                GlobalResponseFilter(httpRes);
+            ResponseFilter?.Invoke(httpRes);
+            GlobalResponseFilter?.Invoke(httpRes);
         }
 
 
@@ -505,10 +488,7 @@ namespace ServiceStack
 
         protected T ResultFilter<T>(T response, HttpResponseMessage httpRes, string httpMethod, string requestUri, object request)
         {
-            if (ResultsFilterResponse != null)
-            {
-                ResultsFilterResponse(httpRes, response, httpMethod, requestUri, request);
-            }
+            ResultsFilterResponse?.Invoke(httpRes, response, httpMethod, requestUri, request);
             return response;
         }
 
@@ -548,10 +528,7 @@ namespace ServiceStack
                 return bytes;
 
             var str = response as string;
-            if (str != null)
-                return str.ToUtf8Bytes();
-
-            return null;
+            return str?.ToUtf8Bytes();
         }
 
         public static WebServiceException ToWebServiceException(
