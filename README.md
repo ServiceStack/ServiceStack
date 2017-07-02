@@ -695,5 +695,5 @@ A big thanks to GitHub and all of ServiceStack's contributors:
 Similar Open source .NET projects for developing or accessing web services include:
 
  * [Nancy Fx](http://nancyfx.org) - A Sinatra-inspired lightweight Web Framework for .NET:
- * [Fubu MVC](http://mvc.fubu-project.org) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
+ * [Fubu MVC](https://fubumvc.github.io/) - A "Front Controller" pattern-style MVC framework designed for use in web applications built on ASP.NET:
  * [Rest Sharp](http://restsharp.org) - An open source REST client for .NET
