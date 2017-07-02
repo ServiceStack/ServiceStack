@@ -198,8 +198,7 @@ namespace ServiceStack
 
         public static string GetContentFormat(string contentType)
         {
-            var parts = contentType?.Split('/');
-            return parts?[parts.Length - 1];
+            return contentType?.RightPart('/');
         }
 
         public static string ToContentFormat(this string contentType)

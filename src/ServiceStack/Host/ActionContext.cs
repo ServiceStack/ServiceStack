@@ -27,5 +27,10 @@ namespace ServiceStack.Host
         {
             return AnyAction + " " + requestDtoName;
         }
+
+        public static string AnyFormatKey(string format, string requestDtoName)
+        {
+            return AnyAction + format + " " + requestDtoName;
+        }
     }
 }

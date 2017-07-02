@@ -24,6 +24,18 @@ namespace ServiceStack.Host
         public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
             = new Dictionary<string, StreamDeserializerDelegate>();
 
+        public static HashSet<string> KnownFormats = new HashSet<string>
+        {
+            "json",
+            "xml",
+            "jsv",
+            "csv",
+            "html",
+            "protobuf",
+            "msgpack",
+            "wire",
+        };
+
         public ContentTypes()
         {
             this.ContentTypeFormats = new Dictionary<string, string>();

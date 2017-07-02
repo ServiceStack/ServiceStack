@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Web;
@@ -33,7 +34,10 @@ namespace ServiceStack.Host
                     continue;
 
                 var actionName = mi.Name.ToUpper();
-                if (!HttpMethods.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                if (!HttpMethods.AllVerbs.Contains(actionName) && 
+                    actionName != ActionContext.AnyAction &&
+                    !HttpMethods.AllVerbs.Any(verb => ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
+                    !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
                     continue;
 
                 yield return mi;
@@ -115,7 +119,7 @@ namespace ServiceStack.Host
             var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
 
             Expression callExecute = Expression.Call(
-            serviceStrong, mi, requestDtoStrong);
+                serviceStrong, mi, requestDtoStrong);
 
             if (mi.ReturnType != typeof(void))
             {
@@ -139,10 +143,9 @@ namespace ServiceStack.Host
 
         private static IEnumerable<ActionContext> GetActionsFor<TRequest>()
         {
-            List<ActionContext> requestActions;
-            return actionMap.TryGetValue(typeof(TRequest), out requestActions)
-                   ? requestActions
-                   : new List<ActionContext>();
+            return actionMap.TryGetValue(typeof(TRequest), out List<ActionContext> requestActions)
+                ? requestActions
+                : new List<ActionContext>();
         }
 
         public static void CreateServiceRunnersFor<TRequest>()
@@ -165,17 +168,21 @@ namespace ServiceStack.Host
             if (overrideVerb != null)
                 actionName = overrideVerb;
 
+            var format = request.ResponseContentType.ToContentFormat()?.ToUpper();
+
             InstanceExecFn action;
-            if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
-                || execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
+            if (execMap.TryGetValue(ActionContext.Key(actionName + format, requestName), out action) ||
+                execMap.TryGetValue(ActionContext.AnyFormatKey(format, requestName), out action) ||
+                execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action) ||
+                execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
             {
                 return action(request, instance, requestDto);
             }
 
             var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLowerInvariant();
             throw new NotImplementedException(
-                "Could not find method named {1}({0}) or Any({0}) on Service {2}"
-                .Fmt(requestDto.GetType().GetOperationName(), expectedMethodName, typeof(TService).GetOperationName()));
+                $"Could not find method named {expectedMethodName}({requestDto.GetType().GetOperationName()}) " +
+                $"or Any({requestDto.GetType().GetOperationName()}) on Service {typeof(TService).GetOperationName()}");
         }
     }
 }
