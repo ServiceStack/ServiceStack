@@ -115,6 +115,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
         {
             [Required]
             [PrimaryKey]
+            [CustomField("CHAR(20)")]
             public string CustomId { get; set; }
 
             [Required]
@@ -145,19 +146,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
             {
                 db.DropAndCreateTable<CustomFields>();
-                db.Insert(new CustomFields { CustomId = "1", Byte = 1 });
-                db.Insert(new CustomFields { CustomId = "2", Byte = 2 });
+                db.Insert(new CustomFields { CustomId = "1001", Byte = 1 });
+                db.Insert(new CustomFields { CustomId = "1002", Byte = 2 });
             }
 
             var response = client.Get(new CustomFieldsQuery
             {
-                CustomIdIn = new[] { "1", "2" },
+                CustomIdIn = new[] { "1001", "1002" },
             });
             Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { 1, 2 }));
 
             response = client.Get(new CustomFieldsQuery
             {
-                CustomIdIn = new[] { "1", "2" },
+                CustomIdIn = new[] { "1001", "1002" },
                 Byte = 2
             });
             Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { (byte)2 }));
