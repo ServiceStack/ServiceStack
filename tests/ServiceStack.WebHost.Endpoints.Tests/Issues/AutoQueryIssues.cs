@@ -60,7 +60,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             public override void Configure(Container container)
             {
-                var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+                //var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+                var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
 
                 Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
@@ -108,6 +109,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             response.PrintDump();
             Assert.That(response.Results.All(x => x.Id == 0));
             Assert.That(response.Results.All(x => x.DepartmentId >= 10));
+        }
+
+        public partial class CustomFields
+        {
+            [Required]
+            [PrimaryKey]
+            public string CustomId { get; set; }
+
+            [Required]
+            [CustomField("TINYINT")]
+            public byte Byte { get; set; }
+        }
+
+        public partial class CustomFieldsQuery : QueryDb<CustomFields>
+        {
+            public string CustomId { get; set; }
+            public string[] CustomIdIn { get; set; }
+            public byte? Byte { get; set; }
+
+            public byte? ByteTo { get; set; }
+
+            public byte? ByteGreaterThanOrEqualTo { get; set; }
+            public byte? ByteGreaterThan { get; set; }
+            public byte? ByteLessThan { get; set; }
+            public byte? ByteLessThanOrEqualTo { get; set; }
+            public byte? ByteNotEqualTo { get; set; }
+            public byte[] ByteBetween { get; set; }
+            public byte[] ByteIn { get; set; }
+        }
+
+        [Test]
+        public void Can_query_Table_with_Byte_property()
+        {
+            using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<CustomFields>();
+                db.Insert(new CustomFields { CustomId = "1", Byte = 1 });
+                db.Insert(new CustomFields { CustomId = "2", Byte = 2 });
+            }
+
+            var response = client.Get(new CustomFieldsQuery
+            {
+                CustomIdIn = new[] { "1", "2" },
+            });
+            Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { 1, 2 }));
+
+            response = client.Get(new CustomFieldsQuery
+            {
+                CustomIdIn = new[] { "1", "2" },
+                Byte = 2
+            });
+            Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { (byte)2 }));
+
+            response = client.Get(new CustomFieldsQuery
+            {
+                ByteIn = new byte[] { 1, 2 }
+            });
+            Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { 1, 2 }));
         }
     }
 }
