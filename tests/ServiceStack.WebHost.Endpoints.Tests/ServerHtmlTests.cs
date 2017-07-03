@@ -30,7 +30,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 { "full-static-page.htm", "<html><head><title>Full Page</title><body><h1>Full Page</h1></body></html>" },
                 { "variable-layout-page.htm", @"
 <!--
-layout: /alt-layout.html
+template: /alt-layout.html
 title: Variable Layout
 -->
 
@@ -63,6 +63,7 @@ title: Variable Layout
 
         [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
 
+        [Explicit("developing...")]
         [Test]
         public void Calling_partial_page_returns_complete_page()
         {
