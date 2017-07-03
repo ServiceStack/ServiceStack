@@ -71,6 +71,9 @@ namespace ServiceStack
             for (var i = 0; i < commandsString.Length; i++)
             {
                 var c = commandsString[i];
+                if (char.IsWhiteSpace(c))
+                    continue;
+
                 if (inDoubleQuotes)
                 {
                     if (c == '"')
