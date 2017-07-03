@@ -124,6 +124,9 @@ namespace ServiceStack
                         if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos, StringComparison.OrdinalIgnoreCase) == endPos)
                             endPos += "as ".Length;
 
+                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString[endPos]))
+                            endPos++;
+
                         while (commandsString.Length > endPos && char.IsLetterOrDigit(commandsString[endPos]))
                             endPos++;
                     }

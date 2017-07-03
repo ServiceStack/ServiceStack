@@ -60,8 +60,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             public override void Configure(Container container)
             {
-                //var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
-                var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
+                var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+                //var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
 
                 Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
