@@ -44,7 +44,7 @@ namespace ServiceStack.Host
             var dto = requestDto ?? req.Dto;
             var requestType = dto?.GetType();
 
-            return ExcludeRequestType(requestType) && SkipLogging?.Invoke(req) == true;
+            return ExcludeRequestType(requestType) || SkipLogging?.Invoke(req) == true;
         }
 
         public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
