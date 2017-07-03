@@ -168,6 +168,7 @@ namespace ServiceStack.Common.Tests
         public void Can_parse_commands()
         {
             Assert.That("COUNT".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:]" }));
+            Assert.That("COUNT()".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:]" }));
             Assert.That("COUNT(*)".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:*]" }));
             Assert.That("COUNT(DISTINCT Name)".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:DISTINCT Name]" }));
             Assert.That("COUNT('Name')".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:'Name']" }));

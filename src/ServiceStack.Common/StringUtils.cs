@@ -53,7 +53,7 @@ namespace ServiceStack
 
     public static class StringUtils
     {
-        public static List<Command> ParseCommands(this string commandsString)
+        public static List<Command> ParseCommands(this string commandsString, char separator = ',', Func<string,int,int?> atEndIndex = null)
         {
             var to = new List<Command>();
 
@@ -65,6 +65,7 @@ namespace ServiceStack
             var inBraces = false;
 
             var pos = 0;
+            var endBlockPos = commandsString.Length;
             var cmd = new Command();
 
             for (var i = 0; i < commandsString.Length; i++)
@@ -104,12 +105,25 @@ namespace ServiceStack
                 {
                     inBraces = false;
                     var arg = commandsString.Substring(pos, i - pos).Trim();
-                    cmd.Args.Add(arg);
+                    if (arg != "")
+                        cmd.Args.Add(arg);
+
                     pos = i + 1;
 
+                    //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
                     var endPos = commandsString.IndexOf(',', pos);
                     if (endPos == -1)
-                        endPos = commandsString.Length;
+                    {
+                        endPos = pos;
+                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString[endPos]))
+                            endPos++;
+
+                        if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos, StringComparison.OrdinalIgnoreCase) == endPos)
+                            endPos += "as ".Length;
+
+                        while (commandsString.Length > endPos && char.IsLetterOrDigit(commandsString[endPos]))
+                            endPos++;
+                    }
 
                     cmd.Suffix = commandsString.Substring(pos, endPos - pos);
                     pos = endPos;
@@ -117,28 +131,32 @@ namespace ServiceStack
                     continue;
                 }
 
-                if (c == ',')
+                if (inBraces && c == ',')
                 {
-                    if (inBraces)
-                    {
-                        var arg = commandsString.Substring(pos, i - pos).Trim();
-                        cmd.Args.Add(arg);
-                        pos = i + 1;
-                    }
-                    else
-                    {
-                        if (cmd.Name == null)
-                            cmd.Name = commandsString.Substring(pos, i - pos).Trim();
+                    var arg = commandsString.Substring(pos, i - pos).Trim();
+                    cmd.Args.Add(arg);
+                    pos = i + 1;
+                }
+                else if (c == separator)
+                {
+                    if (cmd.Name == null)
+                        cmd.Name = commandsString.Substring(pos, i - pos).Trim();
 
-                        to.Add(cmd);
-                        cmd = new Command();
-                        pos = i + 1;
-                    }
+                    to.Add(cmd);
+                    cmd = new Command();
+                    pos = i + 1;
+                }
+
+                var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
+                if (atEndIndexPos != null)
+                {
+                    endBlockPos = atEndIndexPos.Value;
+                    break;
                 }
             }
 
-            var remaining = commandsString.Substring(pos, commandsString.Length - pos);
-            if (!string.IsNullOrEmpty(remaining))
+            var remaining = commandsString.Substring(pos, endBlockPos - pos);
+            if (remaining != null && remaining.Trim() != string.Empty)
                 cmd.Name = remaining.Trim();
 
             if (!string.IsNullOrEmpty(cmd.Name))
