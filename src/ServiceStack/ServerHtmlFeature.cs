@@ -44,39 +44,41 @@ namespace ServiceStack
     {
         static char[] VarDelimiters = { '|', '}' };
 
-        public static List<ServerHtmlFragment> ParseServerHtml(string html)
+        public static List<ServerHtmlFragment> ParseServerHtml(string htmlString)
         {
             var to = new List<ServerHtmlFragment>();
 
-            if (string.IsNullOrEmpty(html))
+            if (string.IsNullOrEmpty(htmlString))
                 return to;
+
+            var html = new StringSegment(htmlString);
 
             int pos;
             var lastPos = 0;
-            while ((pos = html.IndexOf("{{", lastPos, StringComparison.Ordinal)) != -1)
+            while ((pos = html.IndexOf("{{", lastPos)) != -1)
             {
-                var block = html.Substring(lastPos, pos - lastPos);
+                var block = html.Subsegment(lastPos, pos - lastPos);
                 to.Add(new ServerHtmlStringFragment(block));
 
                 var varStartPos = pos + 2;
                 var varEndPos = html.IndexOfAny(VarDelimiters, varStartPos);
-                var varName = html.Substring(varStartPos, varEndPos - varStartPos).Trim();
+                var varName = html.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
                 if (varEndPos == -1)
-                    throw new ArgumentException($"Invalid Server HTML Template at '{html.SafeSubstring(50)}...'", nameof(html));
+                    throw new ArgumentException($"Invalid Server HTML Template at '{html.SafeSubsegment(50)}...'", nameof(html));
 
                 List<Command> filterCommands = null;
                 
-                var isFilter = html[varEndPos] == '|';
+                var isFilter = html.GetChar(varEndPos) == '|';
                 if (isFilter)
                 {
-                    filterCommands = html.Substring(varEndPos + 1).ParseCommands(
+                    filterCommands = html.Subsegment(varEndPos + 1).ParseCommands(
                         separator: '|',
                         atEndIndex: (str, strPos) =>
                         {
-                            while (str.Length > strPos && char.IsWhiteSpace(str[strPos]))
+                            while (str.Length > strPos && char.IsWhiteSpace(str.GetChar(strPos)))
                                 strPos++;
 
-                            if (str.Length > strPos + 1 && str[strPos] == '}' && str[strPos + 1] == '}')
+                            if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
                             {
                                 varEndPos = varEndPos + 1 + strPos + 1;
                                 return strPos;
@@ -96,7 +98,7 @@ namespace ServiceStack
 
             if (lastPos != html.Length - 1)
             {
-                var lastBlock = lastPos == 0 ? html : html.Substring(lastPos);
+                var lastBlock = lastPos == 0 ? html : html.Subsegment(lastPos);
                 to.Add(new ServerHtmlStringFragment(lastBlock));
             }
 

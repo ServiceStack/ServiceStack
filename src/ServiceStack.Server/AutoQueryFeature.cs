@@ -10,10 +10,14 @@ using System.Threading;
 
 using Funq;
 using ServiceStack.MiniProfiler;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Text;
+
+#if NETSTANDARD1_6
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace ServiceStack
 {
@@ -284,31 +288,31 @@ namespace ServiceStack
             var aggregateCommands = new List<Command>();
             foreach (var cmd in commands)
             {
-                if (!SqlAggregateFunctions.Contains(cmd.Name))
+                if (!SqlAggregateFunctions.Contains(cmd.Name.ToString()))
                     continue;
 
                 aggregateCommands.Add(cmd);
 
                 if (cmd.Args.Count == 0)
-                    cmd.Args.Add("*");
+                    cmd.Args.Add("*".ToStringSegment());
 
-                cmd.Original = cmd.ToString();
+                cmd.Original = cmd.ToStringSegment();
 
-                var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
+                var hasAlias = !cmd.Suffix.IsNullOrWhiteSpace();
 
                 for (var i = 0; i < cmd.Args.Count; i++)
                 {
                     var arg = cmd.Args[i];
 
                     string modifier = "";
-                    if (arg.StartsWithIgnoreCase("DISTINCT "))
+                    if (arg.StartsWith("DISTINCT ", StringComparison.OrdinalIgnoreCase))
                     {
                         var argParts = arg.SplitOnFirst(' ');
                         modifier = argParts[0] + " ";
                         arg = argParts[1];
                     }
 
-                    var fieldRef = q.FirstMatchingField(arg);
+                    var fieldRef = q.FirstMatchingField(arg.ToString());
                     if (fieldRef != null)
                     {
                         //To return predictable aliases, if it's primary table don't fully qualify name
@@ -316,30 +320,30 @@ namespace ServiceStack
                         var needsRewrite = !fieldName.EqualsIgnoreCase(q.DialectProvider.NamingStrategy.GetColumnName(fieldName)); 
                         if (fieldRef.Item1 != q.ModelDef || fieldRef.Item2.Alias != null || needsRewrite || hasAlias)
                         {
-                            cmd.Args[i] = modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2);
+                            cmd.Args[i] = (modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2)).ToStringSegment();
                         }
                     }
                     else
                     {
                         double d;
-                        if (arg != "*" && !double.TryParse(arg, out d))
+                        if (!arg.Equals("*") && !double.TryParse(arg.ToString(), out d))
                         {
-                            cmd.Args[i] = "{0}".SqlFmt(arg);
+                            cmd.Args[i] = "{0}".SqlFmt(arg).ToStringSegment();
                         }
                     }
                 }
 
                 if (hasAlias)
                 {
-                    var alias = cmd.Suffix.TrimStart();
-                    if (alias.StartsWithIgnoreCase("as "))
+                    var alias = cmd.Suffix.TrimStart().ToString();
+                    if (alias.StartsWith("as ", StringComparison.OrdinalIgnoreCase))
                         alias = alias.Substring("as ".Length);
 
-                    cmd.Suffix = " " + alias.SafeVarName();
+                    cmd.Suffix = (" " + alias.SafeVarName()).ToStringSegment();
                 }
                 else
                 {
-                    cmd.Suffix = " " + q.DialectProvider.GetQuotedName(cmd.Original);
+                    cmd.Suffix = (" " + q.DialectProvider.GetQuotedName(cmd.Original.ToString())).ToStringSegment();
                 }
             }
 
@@ -500,20 +504,20 @@ namespace ServiceStack
                 Response = response,
             };
 
-            var totalCommand = commands.FirstOrDefault(x => "Total".EqualsIgnoreCase(x.Name));
+            var totalCommand = commands.FirstOrDefault(x => x.Name.EqualsIgnoreCase("Total"));
             if (totalCommand != null)
             {
-                totalCommand.Name = "COUNT";
+                totalCommand.Name = "COUNT".ToStringSegment();
             }
 
             var totalRequested = commands.Any(x =>
-                "COUNT".EqualsIgnoreCase(x.Name) &&
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+                x.Name.EqualsIgnoreCase("COUNT") &&
+                (x.Args.Count == 0 || x.Args.Count == 1 && x.Args[0].Equals("*")));
 
             if (IncludeTotal || totalRequested)
             {
                 if (!totalRequested)
-                    commands.Add(new Command { Name = "COUNT", Args = { "*" } });
+                    commands.Add(new Command { Name = "COUNT".ToStringSegment(), Args = { "*".ToStringSegment() } });
 
                 foreach (var responseFilter in ResponseFilters)
                 {

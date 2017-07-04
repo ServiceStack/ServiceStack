@@ -14,9 +14,13 @@ using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Reflection;
-using ServiceStack.Text;
 using ServiceStack.Web;
 using ServiceStack.Logging;
+using ServiceStack.Text;
+
+#if NETSTANDARD1_6
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace ServiceStack
 {
@@ -349,17 +353,17 @@ namespace ServiceStack
             foreach (var cmd in commands)
             {
                 if (cmd.Args.Count == 0)
-                    cmd.Args.Add("*");
+                    cmd.Args.Add(new StringSegment("*"));
 
-                var result = ctx.Db.SelectAggregate(ctx.Query, cmd.Name, cmd.Args);
+                var result = ctx.Db.SelectAggregate(ctx.Query, cmd.Name.ToString(), cmd.Args.ToStringList());
                 if (result == null)
                     continue;
 
-                var hasAlias = !string.IsNullOrWhiteSpace(cmd.Suffix);
+                var hasAlias = !cmd.Suffix.IsNullOrWhiteSpace();
                 var alias = cmd.ToString();
                 if (hasAlias)
                 {
-                    alias = cmd.Suffix.TrimStart();
+                    alias = cmd.Suffix.TrimStart().ToString();
                     if (alias.StartsWithIgnoreCase("as "))
                         alias = alias.Substring("as ".Length);
                 }
@@ -736,20 +740,20 @@ namespace ServiceStack
                 Response = response,
             };
 
-            var totalCommand = commands.FirstOrDefault(x => "Total".EqualsIgnoreCase(x.Name));
+            var totalCommand = commands.FirstOrDefault(x => x.Name.EqualsIgnoreCase("Total"));
             if (totalCommand != null)
             {
-                totalCommand.Name = "COUNT";
+                totalCommand.Name = "COUNT".ToStringSegment();
             }
 
             var totalRequested = commands.Any(x =>
-                "COUNT".EqualsIgnoreCase(x.Name) &&
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0] == "*")));
+                x.Name.EqualsIgnoreCase("COUNT") &&
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0].Equals("*"))));
 
             if (IncludeTotal || totalRequested)
             {
                 if (!totalRequested)
-                    commands.Add(new Command { Name = "COUNT", Args = { "*" } });
+                    commands.Add(new Command { Name = "COUNT".ToStringSegment(), Args = { "*".ToStringSegment() } });
 
                 foreach (var responseFilter in ResponseFilters)
                 {
@@ -949,10 +953,8 @@ namespace ServiceStack
 
         public virtual object SelectAggregate(IDataQuery q, string name, IEnumerable<string> args)
         {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            name = name?.ToUpper() ?? throw new ArgumentNullException(nameof(name));
 
-            name = name.ToUpper();
             if (name != "COUNT" && name != "MIN" && name != "MAX" && name != "AVG" && name != "SUM"
                 && name != "FIRST" && name != "LAST")
                 return null;

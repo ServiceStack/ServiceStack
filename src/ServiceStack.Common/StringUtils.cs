@@ -8,22 +8,26 @@ using System.Text;
 using System.Text.RegularExpressions;
 using ServiceStack.Text;
 
+#if NETSTANDARD1_3
+using Microsoft.Extensions.Primitives;
+#endif
+
 namespace ServiceStack
 {
     public class Command
     {
         public Command()
         {
-            Args = new List<string>();
+            Args = new List<StringSegment>();
         }
 
-        public string Name { get; set; }
+        public StringSegment Name { get; set; }
 
-        public List<string> Args { get; set; }
+        public List<StringSegment> Args { get; set; }
 
-        public string Suffix { get; set; }
+        public StringSegment Suffix { get; set; }
 
-        public string Original { get; set; }
+        public StringSegment Original { get; set; }
 
         //Output different format for debugging to verify command was parsed correctly
         public string ToDebugString()
@@ -49,15 +53,22 @@ namespace ServiceStack
             }
             return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)}){Suffix}";
         }
+
+        public StringSegment ToStringSegment() => ToString().ToStringSegment();
     }
 
     public static class StringUtils
     {
-        public static List<Command> ParseCommands(this string commandsString, char separator = ',', Func<string,int,int?> atEndIndex = null)
+        public static List<Command> ParseCommands(this string commandsString)
+        {
+            return ParseCommands(new StringSegment(commandsString), ',');
+        }
+
+        public static List<Command> ParseCommands(this StringSegment commandsString, char separator = ',', Func<StringSegment, int,int?> atEndIndex = null)
         {
             var to = new List<Command>();
 
-            if (string.IsNullOrEmpty(commandsString))
+            if (commandsString.IsNullOrEmpty())
                 return to;
 
             var inDoubleQuotes = false;
@@ -70,7 +81,7 @@ namespace ServiceStack
 
             for (var i = 0; i < commandsString.Length; i++)
             {
-                var c = commandsString[i];
+                var c = commandsString.GetChar(i);
                 if (char.IsWhiteSpace(c))
                     continue;
 
@@ -100,15 +111,15 @@ namespace ServiceStack
                 if (c == '(')
                 {
                     inBraces = true;
-                    cmd.Name = commandsString.Substring(pos, i - pos).Trim();
+                    cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                     pos = i + 1;
                     continue;
                 }
                 if (c == ')')
                 {
                     inBraces = false;
-                    var arg = commandsString.Substring(pos, i - pos).Trim();
-                    if (arg != "")
+                    var arg = commandsString.Subsegment(pos, i - pos).Trim();
+                    if (!arg.IsNullOrEmpty())
                         cmd.Args.Add(arg);
 
                     pos = i + 1;
@@ -118,20 +129,20 @@ namespace ServiceStack
                     if (endPos == -1)
                     {
                         endPos = pos;
-                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString[endPos]))
+                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
                             endPos++;
 
-                        if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos, StringComparison.OrdinalIgnoreCase) == endPos)
+                        if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos) == endPos)
                             endPos += "as ".Length;
 
-                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString[endPos]))
+                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
                             endPos++;
 
-                        while (commandsString.Length > endPos && char.IsLetterOrDigit(commandsString[endPos]))
+                        while (commandsString.Length > endPos && char.IsLetterOrDigit(commandsString.GetChar(endPos)))
                             endPos++;
                     }
 
-                    cmd.Suffix = commandsString.Substring(pos, endPos - pos);
+                    cmd.Suffix = commandsString.Subsegment(pos, endPos - pos);
                     pos = endPos;
 
                     continue;
@@ -139,14 +150,14 @@ namespace ServiceStack
 
                 if (inBraces && c == ',')
                 {
-                    var arg = commandsString.Substring(pos, i - pos).Trim();
+                    var arg = commandsString.Subsegment(pos, i - pos).Trim();
                     cmd.Args.Add(arg);
                     pos = i + 1;
                 }
                 else if (c == separator)
                 {
-                    if (cmd.Name == null)
-                        cmd.Name = commandsString.Substring(pos, i - pos).Trim();
+                    if (!cmd.Name.HasValue)
+                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
 
                     to.Add(cmd);
                     cmd = new Command();
@@ -161,11 +172,11 @@ namespace ServiceStack
                 }
             }
 
-            var remaining = commandsString.Substring(pos, endBlockPos - pos);
-            if (remaining != null && remaining.Trim() != string.Empty)
+            var remaining = commandsString.Subsegment(pos, endBlockPos - pos);
+            if (!remaining.Trim().IsNullOrEmpty())
                 cmd.Name = remaining.Trim();
 
-            if (!string.IsNullOrEmpty(cmd.Name))
+            if (!cmd.Name.IsNullOrEmpty())
                 to.Add(cmd);
 
             return to;
