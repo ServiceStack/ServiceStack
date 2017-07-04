@@ -17,6 +17,7 @@
     <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <dependencies>
       <group targetFramework=".NETStandard1.1">
+        <dependency id="Microsoft.Extensions.Primitives" version="[1.1.1, )" />
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
         <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
         <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
@@ -25,6 +26,7 @@
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />
       </group>
       <group targetFramework=".NETStandard1.6">
+        <dependency id="Microsoft.Extensions.Primitives" version="[1.1.1, )" />
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
         <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
         <dependency id="System.Collections.Specialized" version="[4.3.0, )" />

@@ -17,6 +17,7 @@
     <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <dependencies>
       <group targetFramework=".NETStandard1.3">
+        <dependency id="Microsoft.Extensions.Primitives" version="[1.1.1, )" />
         <dependency id="System.Dynamic.Runtime" version="[4.3.0, )" />
         <dependency id="System.Data.Common" version="[4.3.0, )" />
         <dependency id="System.ComponentModel.Primitives" version="[4.3.0, )" />
