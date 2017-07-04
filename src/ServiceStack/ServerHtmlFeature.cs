@@ -2,6 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using ServiceStack.IO;
+using ServiceStack.Text;
+
+#if NETSTANDARD1_6
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace ServiceStack
 {
