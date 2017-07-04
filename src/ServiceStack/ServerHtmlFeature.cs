@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
@@ -12,7 +15,7 @@ namespace ServiceStack
 {
     public class ServerHtmlFeature : IPlugin
     {
-        public string PageExtension { get; set; } = ".htm";
+        public string PageExtension { get; set; } = ".html";
 
         static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
 
@@ -23,20 +26,14 @@ namespace ServiceStack
                 if (catchAllPathsNotFound.ContainsKey(pathInfo))
                     return null;
 
-                
 
+
+                if (catchAllPathsNotFound.Count > 10000) //prevent DDOS
+                    catchAllPathsNotFound.Clear();
+
+                catchAllPathsNotFound[pathInfo] = 1;
                 return null;
             });
-        }
-    }
-
-    public class ServerHtmlFile
-    {
-        private IVirtualFile file;
-
-        public ServerHtmlFile(IVirtualFile file)
-        {
-            this.file = file;
         }
     }
 
@@ -45,19 +42,81 @@ namespace ServiceStack
         
     }
 
+    public class ServerHtmlPage
+    {
+        public IVirtualFile File { get; set; }
+        public StringSegment ServerHtml { get; set; }
+        public StringSegment PageHtml { get; set; }
+        public Dictionary<string, string> PageVars { get; set; }
+        public List<ServerHtmlFragment> PageFragments { get; set; }
+        public DateTime LastModified { get; set; }
+
+        public ServerHtmlPage(IVirtualFile file)
+        {
+            File = file;
+        }
+
+        public async Task<ServerHtmlPage> Load()
+        {
+            LastModified = File.LastModified;
+
+            using (var stream = File.OpenRead())
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                ServerHtml = (await reader.ReadToEndAsync()).ToStringSegment();
+
+                bool inBlockComments = false;
+                PageVars = new Dictionary<string, string>();
+
+                int pos = 0;
+                while (char.IsWhiteSpace(ServerHtml.GetChar(pos)))
+                    pos++;
+
+                ServerHtml.TryReadLine(out StringSegment line, ref pos);
+                if (line.StartsWith("<!--"))
+                {
+                    while (ServerHtml.TryReadLine(out line, ref pos))
+                    {
+                        if (line.Trim().Length == 0)
+                            continue;
+
+
+                        if (line.StartsWith("-->"))
+                            break;
+
+                        var kvp = line.SplitOnFirst(':');
+                        PageVars[kvp[0].ToString()] = kvp.Length > 1 ? kvp[1].ToString().Trim() : "";
+                    }
+                }
+                else
+                {
+                    pos = 0;
+                }
+
+                PageHtml = ServerHtml.Subsegment(pos);
+                PageFragments = ServerHtmlUtils.ParseServerHtml(PageHtml);
+            }
+
+            return this;
+        }
+    }
+
     public static class ServerHtmlUtils
     {
         static char[] VarDelimiters = { '|', '}' };
 
         public static List<ServerHtmlFragment> ParseServerHtml(string htmlString)
         {
+            return ParseServerHtml(new StringSegment(htmlString));
+        }
+
+        public static List<ServerHtmlFragment> ParseServerHtml(StringSegment html)
+        {
             var to = new List<ServerHtmlFragment>();
 
-            if (string.IsNullOrEmpty(htmlString))
+            if (html.IsNullOrWhiteSpace())
                 return to;
-
-            var html = new StringSegment(htmlString);
-
+            
             int pos;
             var lastPos = 0;
             while ((pos = html.IndexOf("{{", lastPos)) != -1)

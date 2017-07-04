@@ -9,11 +9,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack
 {
-    public class ServerHtmlPage 
-    {
-
-    }
-
     public abstract class ServerHtmlFragment
     {
     }
