@@ -91,9 +91,10 @@ namespace ServiceStack
                     varEndPos += 1;
                 }
 
-                to.Add(new ServerHtmlVariableFragment(varName, filterCommands));
-
                 lastPos = varEndPos + 1;
+                var originalText = html.Subsegment(pos, lastPos - pos);
+
+                to.Add(new ServerHtmlVariableFragment(originalText, varName, filterCommands));
             }
 
             if (lastPos != html.Length - 1)

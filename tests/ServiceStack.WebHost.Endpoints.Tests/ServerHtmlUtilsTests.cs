@@ -26,6 +26,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands, Is.Null);
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
@@ -42,6 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
@@ -51,6 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter() }}</h1>");
 
             varFragment2 = fragments[1] as ServerHtmlVariableFragment;
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter() }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
@@ -79,6 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{title|filter}}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
@@ -97,6 +101,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
@@ -116,6 +121,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
@@ -139,6 +145,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as ServerHtmlStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(3));
 
@@ -174,6 +181,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
 
+            Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter1"));
@@ -181,6 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>\n<p>"));
 
+            Assert.That(varFragment4.OriginalText, Is.EqualTo("{{ content | filter2(a) }}"));
             Assert.That(varFragment4.Name, Is.EqualTo("content"));
             Assert.That(varFragment4.FilterCommands.Count, Is.EqualTo(1));
             Assert.That(varFragment4.FilterCommands[0].Name, Is.EqualTo("filter2"));
