@@ -60,6 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             public override void Configure(Container container)
             {
+                SetConfig(new HostConfig{ UseCamelCase = true});
                 var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
                 //var dbFactory = new OrmLiteConnectionFactory(Tests.Config.SqlServerConnString, SqlServerDialect.Provider);
                 container.Register<IDbConnectionFactory>(dbFactory);
@@ -116,28 +117,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             [Required]
             [PrimaryKey]
             [CustomField("CHAR(20)")]
-            public string CustomId { get; set; }
-
+            public string StringId { get; set; }
             [Required]
             [CustomField("TINYINT")]
             public byte Byte { get; set; }
         }
 
-        public partial class CustomFieldsQuery : QueryDb<CustomFields>
+        [Route("/Queries/CustomFields", "GET")]
+        public partial class CustomFieldsQuery
+            : QueryDb<CustomFields>, IReturn<QueryResponse<CustomFields>>
         {
-            public string CustomId { get; set; }
-            public string[] CustomIdIn { get; set; }
-            public byte? Byte { get; set; }
+            public CustomFieldsQuery()
+            {
+                StringIdBetween = new string[] { };
+                StringIdIn = new string[] { };
+                ByteBetween = new byte[] { };
+                ByteIn = new byte[] { };
+            }
 
-            public byte? ByteTo { get; set; }
-
-            public byte? ByteGreaterThanOrEqualTo { get; set; }
-            public byte? ByteGreaterThan { get; set; }
-            public byte? ByteLessThan { get; set; }
-            public byte? ByteLessThanOrEqualTo { get; set; }
-            public byte? ByteNotEqualTo { get; set; }
-            public byte[] ByteBetween { get; set; }
-            public byte[] ByteIn { get; set; }
+            public virtual string StringId { get; set; }
+            public virtual string StringIdStartsWith { get; set; }
+            public virtual string StringIdEndsWith { get; set; }
+            public virtual string StringIdContains { get; set; }
+            public virtual string StringIdLike { get; set; }
+            public virtual string[] StringIdBetween { get; set; }
+            public virtual string[] StringIdIn { get; set; }
+            public virtual byte? Byte { get; set; }
+            public virtual byte? ByteGreaterThanOrEqualTo { get; set; }
+            public virtual byte? ByteGreaterThan { get; set; }
+            public virtual byte? ByteLessThan { get; set; }
+            public virtual byte? ByteLessThanOrEqualTo { get; set; }
+            public virtual byte? ByteNotEqualTo { get; set; }
+            public virtual byte[] ByteBetween { get; set; }
+            public virtual byte[] ByteIn { get; set; }
         }
 
         [Test]
@@ -146,19 +158,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             using (var db = appHost.Resolve<IDbConnectionFactory>().Open())
             {
                 db.DropAndCreateTable<CustomFields>();
-                db.Insert(new CustomFields { CustomId = "1001", Byte = 1 });
-                db.Insert(new CustomFields { CustomId = "1002", Byte = 2 });
+                db.Insert(new CustomFields { StringId = "1001", Byte = 1 });
+                db.Insert(new CustomFields { StringId = "1002", Byte = 2 });
             }
 
             var response = client.Get(new CustomFieldsQuery
             {
-                CustomIdIn = new[] { "1001", "1002" },
+                StringIdIn = new[] { "1001", "1002" },
             });
             Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { 1, 2 }));
 
             response = client.Get(new CustomFieldsQuery
             {
-                CustomIdIn = new[] { "1001", "1002" },
+                StringIdIn = new[] { "1001", "1002" },
                 Byte = 2
             });
             Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { (byte)2 }));
@@ -169,5 +181,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             });
             Assert.That(response.Results.Map(x => x.Byte), Is.EquivalentTo(new[] { 1, 2 }));
         }
+        
     }
 }

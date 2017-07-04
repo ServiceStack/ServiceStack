@@ -658,7 +658,7 @@ namespace ServiceStack
 
             AppendTypedQueries(q, dto, dynamicParams, defaultTerm, options, aliases);
 
-            if (options != null && options.EnableUntypedQueries)
+            if (options?.EnableUntypedQueries == true && dynamicParams.Count > 0)
             {
                 AppendUntypedQueries(q, dynamicParams, defaultTerm, options, aliases);
             }
@@ -767,6 +767,8 @@ namespace ServiceStack
             {
                 var name = entry.Key.LeftPart('#');
 
+                dynamicParams.Remove(name);
+
                 QueryDbFieldAttribute implicitQuery;
                 QueryFieldMap.TryGetValue(name, out implicitQuery);
 
@@ -787,7 +789,37 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
-                dynamicParams.Remove(entry.Key);
+                AddCondition(q, defaultTerm, quotedColumn, value, implicitQuery);
+            }
+        }
+
+        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
+        {
+            foreach (var entry in dynamicParams)
+            {
+                var name = entry.Key.LeftPart('#');
+
+                var match = GetQueryMatch(q, name, options, aliases);
+                if (match == null)
+                    continue;
+
+                var implicitQuery = match.ImplicitQuery;
+                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
+
+                var strValue = !string.IsNullOrEmpty(entry.Value)
+                    ? entry.Value
+                    : null;
+                var fieldType = match.FieldDef.FieldType;
+                var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
+                    || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
+
+                var value = strValue == null ?
+                      null
+                    : isMultiple ?
+                      TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
+                    : fieldType == typeof(string) ?
+                      strValue
+                    : strValue.ChangeTo(fieldType);
 
                 AddCondition(q, defaultTerm, quotedColumn, value, implicitQuery);
             }
@@ -820,6 +852,8 @@ namespace ServiceStack
 
                     if (implicitQuery.ValueStyle == ValueStyle.Multiple)
                     {
+                        if (value == null)
+                            return;
                         if (seq == null)
                             throw new ArgumentException($"{implicitQuery.Field} requires {implicitQuery.ValueArity} values");
 
@@ -842,6 +876,8 @@ namespace ServiceStack
                     }
                     if (implicitQuery.ValueStyle == ValueStyle.List)
                     {
+                        if (value == null)
+                            return;
                         if (seq == null)
                             throw new ArgumentException("{0} expects a list of values".Fmt(implicitQuery.Field));
 
@@ -866,38 +902,6 @@ namespace ServiceStack
             }
 
             q.AddCondition(defaultTerm, format, value);
-        }
-
-        private static void AppendUntypedQueries(SqlExpression<From> q, Dictionary<string, string> dynamicParams, string defaultTerm, IAutoQueryOptions options, Dictionary<string, string> aliases)
-        {
-            foreach (var entry in dynamicParams)
-            {
-                var name = entry.Key.LeftPart('#');
-
-                var match = GetQueryMatch(q, name, options, aliases);
-                if (match == null)
-                    continue;
-
-                var implicitQuery = match.ImplicitQuery;
-                var quotedColumn = q.DialectProvider.GetQuotedColumnName(match.ModelDef, match.FieldDef);
-
-                var strValue = !string.IsNullOrEmpty(entry.Value)
-                    ? entry.Value
-                    : null;
-                var fieldType = match.FieldDef.FieldType;
-                var isMultiple = (implicitQuery != null && (implicitQuery.ValueStyle > ValueStyle.Single))
-                    || string.Compare(name, match.FieldDef.Name + Pluralized, StringComparison.OrdinalIgnoreCase) == 0;
-                
-                var value = strValue == null ? 
-                      null 
-                    : isMultiple ? 
-                      TypeSerializer.DeserializeFromString(strValue, Array.CreateInstance(fieldType, 0).GetType())
-                    : fieldType == typeof(string) ? 
-                      strValue
-                    : strValue.ChangeTo(fieldType);
-
-                AddCondition(q, defaultTerm, quotedColumn, value, implicitQuery);
-            }
         }
 
         class MatchQuery
