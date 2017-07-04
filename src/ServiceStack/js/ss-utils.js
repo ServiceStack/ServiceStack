@@ -508,7 +508,7 @@
                 cmd = tokens[0], cssSel = tokens[1],
                 $els = cssSel && $(cssSel), el = $els && $els[0];
 
-            $.extend(e, { cmd: cmd, op: op, selector: selector, target: target, cssSelector: cssSel, json: json });
+            $.extend(e, { cmd: cmd, op: op, selector: selector, "$target": target, cssSelector: cssSel, json: json }); //target is readonly field
             if (op === "cmd") {
                 if (cmd === "onConnect") {
                     $.extend(opt, msg);
