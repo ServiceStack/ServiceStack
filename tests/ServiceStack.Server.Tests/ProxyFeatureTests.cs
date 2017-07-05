@@ -337,13 +337,11 @@ namespace ServiceStack.Server.Tests
         [Test]
         public void Can_proxy_chunked_encoding_responses()
         {
-            var client = new JsonServiceClient(ListeningOn.CombineWith("imgur-netcore"));
+            var html = ListeningOn.CombineWith("imgur-netcore").GetStringFromUrl(accept:MimeTypes.Html);
 
-            var imgBytes = client.Get<byte[]>("/uploads/320x480/cc5aed6418b858f957a3e4046a912973.png");
-
-            imgBytes.Length.Print();
+            html.Length.Print();
             
-            Assert.That(imgBytes.Length, Is.GreaterThan(10000));
+            Assert.That(html.Length, Is.GreaterThan(1000));
         }
     }
 }
