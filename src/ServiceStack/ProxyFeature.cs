@@ -155,7 +155,10 @@ namespace ServiceStack
             res.StatusCode = (int) webRes.StatusCode;
             res.StatusDescription = webRes.StatusDescription;
             res.ContentType = webRes.ContentType;
-            res.SetContentLength(webRes.ContentLength);
+            if (webRes.ContentLength >= 0)
+            {
+                res.SetContentLength(webRes.ContentLength);
+            }
 
             foreach (var header in webRes.Headers.AllKeys)
             {

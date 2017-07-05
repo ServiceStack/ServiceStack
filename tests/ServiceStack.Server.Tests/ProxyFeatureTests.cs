@@ -38,6 +38,11 @@ namespace ServiceStack.Server.Tests
                     TransformRequest = TransformRequest,
                     TransformResponse = TransformResponse,
                 });
+                
+                Plugins.Add(new ProxyFeature(
+                    matchingRequests: req => req.PathInfo.StartsWith("/imgur-netcore"),
+                    resolveUrl: req => "http://imgur.netcore.io" + req.RawUrl.Replace("/imgur-netcore", "/"))
+                );
 
                 //Allow this proxy server to issue ss-id/ss-pid Session Cookies
                 //Plugins.Add(new SessionFeature());
@@ -326,6 +331,19 @@ namespace ServiceStack.Server.Tests
                 Assert.That(status.ErrorCode, Is.EqualTo("Unauthorized"));
                 Assert.That(status.Message, Is.EqualTo("Invalid UserName or Password"));
             }
+        }
+
+        [Explicit("Ephemeral external host + state dependency")]
+        [Test]
+        public void Can_proxy_chunked_encoding_responses()
+        {
+            var client = new JsonServiceClient(ListeningOn.CombineWith("imgur-netcore"));
+
+            var imgBytes = client.Get<byte[]>("/uploads/320x480/cc5aed6418b858f957a3e4046a912973.png");
+
+            imgBytes.Length.Print();
+            
+            Assert.That(imgBytes.Length, Is.GreaterThan(10000));
         }
     }
 }
