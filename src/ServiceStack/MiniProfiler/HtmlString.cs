@@ -4,11 +4,6 @@ using System.IO;
 
 namespace ServiceStack.MiniProfiler
 {
-	public interface IHtmlString
-	{
-		string ToHtmlString();
-	}
-
     public class HtmlString : IHtmlString, System.Web.IHtmlString
 	{
 		private string value;
@@ -35,12 +30,7 @@ namespace ServiceStack.MiniProfiler
 
 		public HelperResult(Action<TextWriter> action)
 		{
-			if (action == null)
-			{
-				throw new ArgumentNullException("action", "The action parameter cannot be null.");
-			}
-
-			this.action = action;
+			this.action = action ?? throw new ArgumentNullException(nameof(action), "The action parameter cannot be null.");
 		}
 
 		public string ToHtmlString()
