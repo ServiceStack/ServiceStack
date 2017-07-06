@@ -119,7 +119,7 @@ namespace ServiceStack
 
             OnBeginRequest(context);
 
-            threadPoolManager.QueueWorkItem(() => ProcessRequestContext(context));
+            threadPoolManager.QueueWorkItem(ProcessRequestContext, context);
         }
     }
 }

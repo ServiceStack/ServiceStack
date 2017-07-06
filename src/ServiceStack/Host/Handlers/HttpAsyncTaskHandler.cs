@@ -19,30 +19,6 @@ namespace ServiceStack.Host.Handlers
 
         public virtual bool RunAsAsync() => false;
 
-#if !NETSTANDARD1_6
-        protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
-
-        protected static bool DefaultHandledRequest(HttpContextBase context) => false;
-
-        public virtual Task ProcessRequestAsync(HttpContextBase context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            RememberLastRequestInfo(operationName, context.Request.PathInfo);
-
-            if (string.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
-
-            if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
-
-            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
-
-            if (RunAsAsync())
-                return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
-
-            return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
-        }
-#endif
-
         protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
         {
 #if !NETSTANDARD1_6
@@ -92,18 +68,9 @@ namespace ServiceStack.Host.Handlers
         }
 
 #if !NETSTANDARD1_6
-        public virtual void ProcessRequest(HttpContextBase context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
+        protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
 
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
-
-            ProcessRequest(httpReq, httpReq.Response, operationName);
-        }
+        protected static bool DefaultHandledRequest(HttpContextBase context) => false;
 
         public virtual void ProcessRequest(HttpListenerContext context)
         {
@@ -120,6 +87,35 @@ namespace ServiceStack.Host.Handlers
             ProcessRequest(httpReq, httpReq.Response, operationName);
         }
 
+        public virtual void ProcessRequest(HttpContextBase context)
+        {
+            var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+            if (string.IsNullOrEmpty(operationName)) return;
+
+            if (DefaultHandledRequest(context)) return;
+
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
+
+            ProcessRequest(httpReq, httpReq.Response, operationName);
+        }
+
+        //ASP.NET IHttpHandler entryPoint
+        void IHttpHandler.ProcessRequest(HttpContext context)
+        {
+            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
+
+            if (task.Status == TaskStatus.Created)
+            {
+                task.RunSynchronously();
+            }
+            else
+            {
+                task.Wait();
+            }
+        }
+
+        //ASP.NET IHttpAsyncHandler entryPoint
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
             if (cb == null)
@@ -146,6 +142,27 @@ namespace ServiceStack.Host.Handlers
             // http://blogs.msdn.com/b/pfxteam/archive/2012/03/25/10287435.aspx
             // http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt4.html
             //task.Dispose();
+        }
+
+        //Called by both ASP.NET IHttpHandler/IHttpAsyncHandler Requests
+        public virtual Task ProcessRequestAsync(HttpContextBase context)
+        {
+            RequestContext.Instance.StartRequestContext();
+            
+            var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+            RememberLastRequestInfo(operationName, context.Request.PathInfo);
+
+            if (string.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
+
+            if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
+
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
+
+            if (RunAsAsync())
+                return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
+
+            return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
         }
 #else
         public virtual Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next)
@@ -188,22 +205,6 @@ namespace ServiceStack.Host.Handlers
                 httpRes.EndRequest(skipHeaders: true);
             }
         }
-
-#if !NETSTANDARD1_6
-        void IHttpHandler.ProcessRequest(HttpContext context)
-        {
-            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
-
-            if (task.Status == TaskStatus.Created)
-            {
-                task.RunSynchronously();
-            }
-            else
-            {
-                task.Wait();
-            }
-        }
-#endif
 
     }
 }

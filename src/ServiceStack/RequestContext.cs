@@ -30,15 +30,18 @@ namespace ServiceStack
         public static IDictionary RequestItems;
 #else
         public static AsyncLocal<IDictionary> AsyncRequestItems = new AsyncLocal<IDictionary>();
+#endif
 
         /// <summary>
         /// Start a new Request context, everything deeper in Async pipeline will get this new RequestContext dictionary.
         /// </summary>
         public void StartRequestContext()
         {
+            // This fixes problems if the RequestContext.Instance.Items was touched on startup or outside of request context.
+            // It would turn it into a static dictionary instead flooding request with each-others values.
+            // This can already happen if I register a Funq.Container Request Scope type and Resolve it on startup.
             CreateItems();
         }
-#endif
 
         /// <summary>
         /// Gets a list of items for this request. 

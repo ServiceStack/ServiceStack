@@ -221,8 +221,6 @@ namespace ServiceStack.Host.HttpListener
                 ListenForNextRequest.Set();
             }
 
-            if (context == null) return;
-
             if (Config.DebugMode)
                 Log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
@@ -243,7 +241,7 @@ namespace ServiceStack.Host.HttpListener
             try
             {
                 var task = this.ProcessRequestAsync(context);
-                HostContext.Async.ContinueWith(task, x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
+                task = HostContext.Async.ContinueWith(task, x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
 
                 if (task.Status == TaskStatus.Created)
                 {

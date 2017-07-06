@@ -40,10 +40,12 @@ namespace ServiceStack
             HandlerPath = handlerPath;
         }
 
-        protected override Task ProcessRequestAsync(HttpListenerContext context)
+        protected override async Task ProcessRequestAsync(HttpListenerContext context)
         {
             if (string.IsNullOrEmpty(context.Request.RawUrl))
-                return TypeConstants.EmptyTask;
+                return;
+            
+            RequestContext.Instance.StartRequestContext();
 
             var operationName = context.Request.GetOperationName().UrlDecode();
 
@@ -61,14 +63,13 @@ namespace ServiceStack
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                await HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
-                return task;
+                return;
             }
 
-            return new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}")
-                .AsTaskException();
+            throw new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}");
         }
 
         public override void OnConfigLoad()
