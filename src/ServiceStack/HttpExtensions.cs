@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Web;
 
@@ -51,6 +53,11 @@ namespace ServiceStack
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
         }
 
+        public static Task EndRequestAsync(this IResponse httpRes, bool skipHeaders = false)
+        {
+            return httpRes.EndHttpHandlerRequestAsync(skipHeaders: skipHeaders);
+        }
+        
 #if !NETSTANDARD1_6
         /// <summary>
         /// End a ServiceStack Request
@@ -88,6 +95,27 @@ namespace ServiceStack
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
 
             afterHeaders?.Invoke(httpRes);
+
+            var req = httpRes.Request;
+            if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                HostContext.TryResolve<IRequestLogger>()?
+                    .Log(req, req.Dto, null, TimeSpan.Zero);
+            }
+
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+
+            HostContext.CompleteRequest(req);
+        }
+
+        public static async Task EndHttpHandlerRequestAsync(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Func<IResponse,Task> afterHeaders = null)
+        {
+            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+
+            if (afterHeaders != null)
+            {
+                await afterHeaders(httpRes);
+            }
 
             var req = httpRes.Request;
             if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))

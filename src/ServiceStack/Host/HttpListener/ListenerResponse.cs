@@ -106,10 +106,7 @@ namespace ServiceStack.Host.HttpListener
             try
             {
                 var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-                response.ContentLength64 = bOutput.Length;
-
                 OutputStream.Write(bOutput, 0, bOutput.Length);
-                Close();
             }
             catch (Exception ex)
             {

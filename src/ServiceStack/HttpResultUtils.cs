@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text.Pools;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -96,13 +97,11 @@ namespace ServiceStack
             response.SetContentLength(rangeEnd - rangeStart + 1);
         }
 
-        public static int PartialBufferSize = 32 * 1024;
-        [ThreadStatic]
-        private static byte[] PartialBuffer;
 
         /// <summary>
         /// Writes partial range as specified by start-end, from fromStream to toStream.
         /// </summary>
+        [Obsolete("Use WritePartialToAsync")]
         public static void WritePartialTo(this Stream fromStream, Stream toStream, long start, long end)
         {
             if (!fromStream.CanSeek)
@@ -111,22 +110,21 @@ namespace ServiceStack
 
             long totalBytesToSend = end - start + 1;
 
-            if (PartialBuffer == null || PartialBufferSize != PartialBuffer.Length)
-                PartialBuffer = new byte[PartialBufferSize];
+            var buf = SharedPools.AsyncByteArray.Allocate();
 
             long bytesRemaining = totalBytesToSend;
 
             fromStream.Seek(start, SeekOrigin.Begin);
             while (bytesRemaining > 0)
             {
-                var count = bytesRemaining <= PartialBuffer.Length
-                    ? fromStream.Read(PartialBuffer, 0, (int)Math.Min(bytesRemaining, int.MaxValue))
-                    : fromStream.Read(PartialBuffer, 0, PartialBuffer.Length);
+                var count = bytesRemaining <= buf.Length
+                    ? fromStream.Read(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue))
+                    : fromStream.Read(buf, 0, buf.Length);
 
                 try
                 {
                     //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
-                    toStream.Write(PartialBuffer, 0, count);
+                    toStream.Write(buf, 0, count);
                     toStream.Flush();
                     bytesRemaining -= count;
                 }
@@ -144,8 +142,10 @@ namespace ServiceStack
                     throw;
                 }
             }
+            
+            SharedPools.AsyncByteArray.Free(buf);
         }
-
+        
         /// <summary>
         /// Writes partial range as specified by start-end, from fromStream to toStream.
         /// </summary>
@@ -157,22 +157,21 @@ namespace ServiceStack
 
             long totalBytesToSend = end - start + 1;
 
-            if (PartialBuffer == null || PartialBufferSize != PartialBuffer.Length)
-                PartialBuffer = new byte[PartialBufferSize];
+            var buf = SharedPools.AsyncByteArray.Allocate();
 
             long bytesRemaining = totalBytesToSend;
 
             fromStream.Seek(start, SeekOrigin.Begin);
             while (bytesRemaining > 0)
             {
-                var count = bytesRemaining <= PartialBuffer.Length
-                    ? await fromStream.ReadAsync(PartialBuffer, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token)
-                    : await fromStream.ReadAsync(PartialBuffer, 0, PartialBuffer.Length, token);
-
                 try
                 {
+                    var count = bytesRemaining <= buf.Length
+                        ? await fromStream.ReadAsync(buf, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token)
+                        : await fromStream.ReadAsync(buf, 0, buf.Length, token);
+
                     //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
-                    await toStream.WriteAsync(PartialBuffer, 0, count, token);
+                    await toStream.WriteAsync(buf, 0, count, token);
                     await toStream.FlushAsync(token);
                     bytesRemaining -= count;
                 }
@@ -190,6 +189,8 @@ namespace ServiceStack
                     throw;
                 }
             }
+            
+            SharedPools.AsyncByteArray.Free(buf);
         }
 
     }

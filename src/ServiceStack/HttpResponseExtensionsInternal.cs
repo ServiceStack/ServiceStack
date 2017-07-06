@@ -55,34 +55,34 @@ namespace ServiceStack
             var streamWriter = result as IStreamWriterAsync;
             if (streamWriter != null)
             {
-                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await streamWriter.WriteToAsync(response.OutputStream, token);
-                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;
             }
 
             var stream = result as Stream;
             if (stream != null)
             {
-                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await stream.CopyToAsync(response.OutputStream, token);
-                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;
             }
 
             var bytes = result as byte[];
             if (bytes != null)
             {
-                var bodyPadding = bodyPrefix?.Length ?? 0;
-                if (bodySuffix != null)
-                    bodyPadding += bodySuffix.Length;
+                var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                          bytes.Length +
+                          (bodySuffix?.Length).GetValueOrDefault();
 
+                response.SetContentLength(len);
                 response.ContentType = MimeTypes.Binary;
-                response.SetContentLength(bytes.Length + bodyPadding);
 
-                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
-                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, token);
-                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
+                await response.OutputStream.WriteAsync(bytes, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;
             }
 
@@ -275,19 +275,26 @@ namespace ServiceStack
                         if (httpResult != null)
                             result = httpResult.Response;
 
-                        var responseText = result as string;
-                        if (responseText != null)
+                        if (result is string responseText)
                         {
-                            if (bodyPrefix != null) 
-                                await response.OutputStream.WriteAsync(bodyPrefix, token);
+                            var strBytes = responseText.ToUtf8Bytes();
+                            var len = (bodyPrefix?.Length).GetValueOrDefault() +
+                                      strBytes.Length +
+                                      (bodySuffix?.Length).GetValueOrDefault();
 
+                            response.SetContentLength(len);
+                            
                             if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                                 response.ContentType = defaultContentType;
 
-                            await response.OutputStream.WriteAsync(responseText, token);
+                            if (bodyPrefix != null) 
+                                await response.OutputStream.WriteAsync(bodyPrefix, token);
+
+                            await response.OutputStream.WriteAsync(strBytes, token);
 
                             if (bodySuffix != null) 
                                 await response.OutputStream.WriteAsync(bodySuffix, token);
+
                             return true;
                         }
 
@@ -317,7 +324,7 @@ namespace ServiceStack
                 }
                 finally
                 {
-                    response.EndRequest(skipHeaders: true);
+                    await response.EndRequestAsync(skipHeaders: true);
                 }
             }
         }
