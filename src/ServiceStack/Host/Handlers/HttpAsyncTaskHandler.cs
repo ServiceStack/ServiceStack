@@ -60,6 +60,9 @@ namespace ServiceStack.Host.Handlers
             throw new NotImplementedException();
         }
 
+        //.NET Core entry point for: 
+        // - .NET Core from AppHostBase.ProcessRequest() 
+        // - HttpListener from AppHostHttpListenerBase.ProcessRequestAsync()
         public virtual Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var task = CreateProcessRequestTask(httpReq, httpRes, operationName);
@@ -72,35 +75,7 @@ namespace ServiceStack.Host.Handlers
 
         protected static bool DefaultHandledRequest(HttpContextBase context) => false;
 
-        public virtual void ProcessRequest(HttpListenerContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            RememberLastRequestInfo(operationName, context.Request.RawUrl);
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            var httpReq = ((HttpListener.HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);
-
-            ProcessRequest(httpReq, httpReq.Response, operationName);
-        }
-
-        public virtual void ProcessRequest(HttpContextBase context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
-
-            ProcessRequest(httpReq, httpReq.Response, operationName);
-        }
-
-        //ASP.NET IHttpHandler entryPoint
+        //ASP.NET IHttpHandler entry point 
         void IHttpHandler.ProcessRequest(HttpContext context)
         {
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
@@ -115,7 +90,7 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        //ASP.NET IHttpAsyncHandler entryPoint
+        //ASP.NET IHttpAsyncHandler entry point
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
             if (cb == null)

@@ -1,19 +1,12 @@
 using System.Net;
-using System.Web;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
     public class IndexPageHttpHandler : HttpAsyncTaskHandler
     {
-        public IndexPageHttpHandler()
-        {
-            this.RequestName = GetType().Name;
-        }
+        public IndexPageHttpHandler() => this.RequestName = nameof(IndexPageHttpHandler);
 
-        /// <summary>
-        /// Non ASP.NET requests
-        /// </summary>
         public override void ProcessRequest(IRequest request, IResponse response, string operationName)
         {
             var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
@@ -32,31 +25,6 @@ namespace ServiceStack.Host.Handlers
             }
             response.EndHttpHandlerRequest(skipHeaders:true);
         }
-
-#if !NETSTANDARD1_6
-        /// <summary>
-        /// ASP.NET requests
-        /// </summary>
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var defaultUrl = HostContext.Config.ServiceEndpointsMetadataConfig.DefaultMetadataUri;
-
-            if (context.Request.PathInfo == "/"
-                || context.Request.FilePath.EndsWith("/"))
-            {
-                //new NotFoundHttpHandler().ProcessRequest(context); return;
-
-                var relativeUrl = defaultUrl.Substring(defaultUrl.IndexOf('/'));
-                var absoluteUrl = context.Request.Url.AbsoluteUri.TrimEnd('/') + relativeUrl;
-                context.Response.Redirect(absoluteUrl);
-            }
-            else
-            {
-                context.Response.Redirect(defaultUrl);
-            }
-            context.EndHttpHandlerRequest(skipHeaders: true);
-        }
-#endif
 
         public override bool IsReusable => true;
     }

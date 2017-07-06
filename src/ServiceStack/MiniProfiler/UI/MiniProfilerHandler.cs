@@ -132,15 +132,6 @@ namespace ServiceStack.MiniProfiler.UI
 			get { return true; }
 		}
 
-		/// <summary>
-		/// Returns either includes' css/javascript or results' html.
-		/// </summary>
-		public override void ProcessRequest(HttpContextBase context)
-		{
-		    var request = context.ToRequest();
-			ProcessRequestAsync(request, request.Response, null);
-		}
-
 		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;

@@ -1,6 +1,5 @@
 #if !NETSTANDARD1_6
 
-using System.Web;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
 
@@ -30,39 +29,11 @@ namespace ServiceStack.Host.Handlers
         : Soap12Handler
     {
         public Soap12MessageOneWayHttpHandler() : base(RequestAttributes.Soap12) { }
-
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            if (context.Request.HttpMethod == HttpMethods.Get)
-            {
-                var wsdl = new Soap12WsdlMetadataHandler();
-                wsdl.Execute(context);
-                return;
-            }
-
-            SendOneWay(null);
-        }
     }
 
     public class Soap12MessageReplyHttpHandler : Soap12Handler
     {
         public Soap12MessageReplyHttpHandler() : base(RequestAttributes.Soap12) { }
-
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            if (context.Request.HttpMethod == HttpMethods.Get)
-            {
-                var wsdl = new Soap12WsdlMetadataHandler();
-                wsdl.Execute(context);
-                return;
-            }
-
-            var responseMessage = Send(null);
-
-            context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
-
-            HostContext.AppHost.WriteSoapMessage(context.Request.ToRequest(), responseMessage, context.Response.OutputStream);
-        }
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {

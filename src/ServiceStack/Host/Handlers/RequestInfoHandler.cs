@@ -253,13 +253,6 @@ namespace ServiceStack.Host.Handlers
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
 
-#if !NETSTANDARD1_6
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var request = context.ToRequest(GetType().GetOperationName());
-            ProcessRequestAsync(request, request.Response, request.OperationName);
-        }
-#endif
         public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();

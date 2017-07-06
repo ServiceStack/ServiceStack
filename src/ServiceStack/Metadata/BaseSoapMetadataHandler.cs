@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Web;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Web;
@@ -15,14 +14,6 @@ namespace ServiceStack.Metadata
         }
 
         public string OperationName { get; set; }
-
-#if !NETSTANDARD1_6
-        public override void Execute(HttpContextBase context)
-        {
-            var httpReq = context.ToRequest(OperationName);
-            ProcessRequestAsync(httpReq, httpReq.Response, OperationName);
-        }
-#endif
 
         public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
