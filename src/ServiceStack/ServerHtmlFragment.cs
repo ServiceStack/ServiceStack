@@ -42,7 +42,7 @@ namespace ServiceStack
 
         public HtmlResult(ServerHtmlPage page)
         {
-            Page = page;
+            Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
             Filters = new List<ServerHtmlFilter>();
             Options = new Dictionary<string, string>
@@ -76,47 +76,53 @@ namespace ServiceStack
                 {
                     if (fragment is ServerHtmlStringFragment str)
                     {
-                        var bytes = str.Value.ToString().ToUtf8Bytes();
-                        await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
+                        await responseStream.WriteAsync(str.ValueBytes, token);
                     }
                     else if (fragment is ServerHtmlVariableFragment var)
                     {
                         if (var.Name.Equals("body"))
                         {
-                            await WritePage(Page, responseStream, token);
+                            await WritePage(responseStream, token);
                         }
                         else
                         {
-                            var bytes = var.OriginalText.ToString().ToUtf8Bytes();
-                            await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
+                            var htmlBytes = HtmlPageUtils.ToHtmlUtf8Bytes(GetValue(var));
+                            await responseStream.WriteAsync(htmlBytes, token);
                         }
                     }
                 }
             }
             else
             {
-                await WritePage(Page, responseStream, token);
+                await WritePage(responseStream, token);
             }
         }
 
-        public static async Task WritePage(ServerHtmlPage page, Stream responseStream, CancellationToken token = new CancellationToken())
+        public async Task WritePage(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            if (page == null)
+            if (Page == null)
                 return;
             
-            foreach (var fragment in page.PageFragments)
+            foreach (var fragment in Page.PageFragments)
             {
                 if (fragment is ServerHtmlStringFragment str)
                 {
-                    var bytes = str.Value.ToString().ToUtf8Bytes();
-                    await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
+                    await responseStream.WriteAsync(str.ValueBytes, token);
                 }
                 else if (fragment is ServerHtmlVariableFragment var)
                 {
-                    var bytes = var.OriginalText.ToString().ToUtf8Bytes();
-                    await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
+                    var htmlBytes = HtmlPageUtils.ToHtmlUtf8Bytes(GetValue(var));
+                    await responseStream.WriteAsync(htmlBytes, token);
                 }
             }
+        }
+
+        public object GetValue(ServerHtmlVariableFragment var)
+        {
+            return Args.TryGetValue(var.NameString, out object value) 
+                ? value 
+                : Page.GetValue(var) ?? 
+                  (LayoutPage != null && LayoutPage != Page.LayoutPage ? LayoutPage.GetValue(var) : null);
         }
     }
 
@@ -151,7 +157,13 @@ namespace ServiceStack
     public class ServerHtmlVariableFragment : ServerHtmlFragment
     {
         public StringSegment OriginalText { get; set; }
+        private byte[] originalTextBytes;
+        public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
+        
         public StringSegment Name { get; set; }
+        private string nameString;
+        public string NameString => nameString ?? (nameString = Name.Value);
+        
         public List<Command> FilterCommands { get; set; }
 
         public ServerHtmlVariableFragment(StringSegment originalText, StringSegment name, List<Command> filterCommands)
@@ -166,9 +178,31 @@ namespace ServiceStack
     {
         public StringSegment Value { get; set; }
 
+        private byte[] valueBytes;
+        public byte[] ValueBytes => valueBytes ?? (valueBytes = Value.ToUtf8Bytes());
+
         public ServerHtmlStringFragment(StringSegment value)
         {
             Value = value;
         }
+    }
+
+    public static class HtmlPageUtils
+    {
+        public static byte[] ToHtmlUtf8Bytes(object value)
+        {
+            if (value == null)
+                return TypeConstants.EmptyByteArray;
+            
+            if (value is IHtmlString htmlString)
+                return htmlString.ToHtmlString().ToUtf8Bytes();
+
+            var str = value.ToString();
+            if (str == string.Empty)
+                return TypeConstants.EmptyByteArray;
+
+            return PclExportClient.Instance.HtmlEncode(str).ToUtf8Bytes();
+        }
+
     }
 }

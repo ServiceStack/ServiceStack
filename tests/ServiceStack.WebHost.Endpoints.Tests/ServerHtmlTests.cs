@@ -41,9 +41,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>
             {
-                { "_layout.html", "<html><head><title>{{ title }}</title></head><body>{{ body }}</body></html>" },
-                { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body style='color:green'>{{ body }}</body></html>" },
-                { "root-static-page.html", "<h1>/root-static Page!</h1>" },
+                { "_layout.html", "<html><head><title>{{ title }}</title></head><body id='layout'>{{ body }}</body></html>" },
+                { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='alt-layout'>{{ body }}</body></html>" },
+                { "root-static-page.html", "<h1>/root-static page!</h1>" },
                 { "full-static-page.html", "<html><head><title>Full Page</title></head><body><h1>Full Page</h1></body></html>" },
                 { "variable-layout-page.html", @"
 <!--
@@ -52,6 +52,17 @@ title: Variable Layout
 -->
 
 <h1>Variable Page</h1>" },
+                { "htmlencode-layout.html", @"
+<!--
+layoutvar: layoutvar(< & > "" ')
+-->
+<html><head><title>{{ title }}</title></head><body id='htmlencode-layout'>{{ body }}<p>{{ layoutvar }}</p></body></html>" },
+                { "htmlencode-page.html", @"
+<!--
+layout: htmlencode-layout.html
+title: We encode < & >
+-->
+<h1>/htmlencode-page!</h1>" },
             };
 
             public override List<IVirtualPathProvider> GetVirtualFileSources()
@@ -80,13 +91,37 @@ title: Variable Layout
         [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
 
         [Test]
-        public void Calling_partial_page_returns_complete_page()
+        public void Request_for_partial_page_returns_complete_page_with_default_layout()
         {
             var html = Config.ListeningOn.CombineWith("root-static-page.html")
                 .GetStringFromUrl(accept: MimeTypes.Html);
 
             Assert.That(html, Does.StartWith("<html><head><title>"));
-            Assert.That(html, Does.Contain("<body><h1>/root-static Page!</h1></body>"));
+            Assert.That(html, Does.Contain("id='layout'"));
+            Assert.That(html, Does.Contain("<h1>/root-static page!</h1>"));
+        }
+
+        [Test]
+        public void Request_for_variable_page_returns_complete_page_with_alt_layout()
+        {
+            var html = Config.ListeningOn.CombineWith("variable-layout-page.html")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+
+            Assert.That(html, Does.StartWith("<html><head><title>Variable Layout</title>"));
+            Assert.That(html, Does.Contain("id='alt-layout'"));
+            Assert.That(html, Does.Contain("<h1>Variable Page</h1>"));
+        }
+
+        [Test]
+        public void Request_for_htmlencode_pages_returns_htmlencoded_variables()
+        {
+            var html = Config.ListeningOn.CombineWith("htmlencode-page.html")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+
+            Assert.That(html, Does.StartWith("<html><head><title>We encode &lt; &amp; &gt;</title>"));
+            Assert.That(html, Does.Contain("id='htmlencode-layout'"));
+            Assert.That(html, Does.Contain("<h1>/htmlencode-page!</h1>"));
+            Assert.That(html, Does.Contain("<p>layoutvar(&lt; &amp; &gt; &quot; &#39;)</p>"));
         }
 
         [Test]
@@ -117,7 +152,7 @@ title: Variable Layout
 
             Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body>"));
+            Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body id='layout'>"));
             Assert.That(varFragment4.Name, Is.EqualTo("body"));
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }

@@ -214,6 +214,13 @@ namespace ServiceStack
 
             return this;
         }
+
+        public object GetValue(ServerHtmlVariableFragment var)
+        {
+            return PageVars.TryGetValue(var.NameString, out string value)
+                ? value
+                : LayoutPage?.GetValue(var);
+        }
     }
 
     public static class ServerHtmlUtils
