@@ -1684,6 +1684,16 @@
             Write a partial content result
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IPartialWriterAsync.IsPartialRequest">
+            <summary>
+            Whether this HttpResult allows Partial Response
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IPartialWriterAsync.WritePartialToAsync(ServiceStack.Web.IResponse,System.Threading.CancellationToken)">
+            <summary>
+            Write a partial content result
+            </summary>
+        </member>
         <member name="T:ServiceStack.Web.IRequest">
             <summary>
             A thin wrapper around each host's Request e.g: ASP.NET, HttpListener, MQ, etc

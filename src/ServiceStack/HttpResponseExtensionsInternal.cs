@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Web;
 using System.Collections.Generic;
+using System.Threading;
 using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.Logging;
@@ -20,6 +21,7 @@ namespace ServiceStack
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpResponseExtensionsInternal));
 
+        [Obsolete("Use WriteToOutputStreamAsync")]
         public static bool WriteToOutputStream(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
             var partialResult = result as IPartialWriter;
@@ -38,12 +40,33 @@ namespace ServiceStack
                 return true;
             }
 
+            return false;
+        }
+
+        public static async Task<bool> WriteToOutputStreamAsync(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token=default(CancellationToken))
+        {
+            var partialResult = result as IPartialWriterAsync;
+            if (HostContext.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
+            {
+                await partialResult.WritePartialToAsync(response, token);
+                return true;
+            }
+
+            var streamWriter = result as IStreamWriterAsync;
+            if (streamWriter != null)
+            {
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
+                await streamWriter.WriteToAsync(response.OutputStream, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
+                return true;
+            }
+
             var stream = result as Stream;
             if (stream != null)
             {
-                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                stream.WriteTo(response.OutputStream);
-                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
+                await stream.CopyToAsync(response.OutputStream, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
                 return true;
             }
 
@@ -57,27 +80,27 @@ namespace ServiceStack
                 response.ContentType = MimeTypes.Binary;
                 response.SetContentLength(bytes.Length + bodyPadding);
 
-                if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
-                response.OutputStream.Write(bytes, 0, bytes.Length);
-                if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+                if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, 0, bodyPrefix.Length, token);
+                await response.OutputStream.WriteAsync(bytes, 0, bytes.Length, token);
+                if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, 0, bodySuffix.Length, token);
                 return true;
             }
 
             return false;
         }
 
-        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, string contentType)
+        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, string contentType, CancellationToken token=default(CancellationToken))
         {
             var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-            return httpRes.WriteToResponse(result, serializer, new BasicRequest { ContentType = contentType });
+            return httpRes.WriteToResponse(result, serializer, new BasicRequest { ContentType = contentType }, token);
         }
 
-        public static Task<bool> WriteToResponse(this IResponse httpRes, IRequest httpReq, object result)
+        public static Task<bool> WriteToResponse(this IResponse httpRes, IRequest httpReq, object result, CancellationToken token = default(CancellationToken))
         {
-            return WriteToResponse(httpRes, httpReq, result, null, null);
+            return WriteToResponse(httpRes, httpReq, result, null, null, token);
         }
 
-        public static Task<bool> WriteToResponse(this IResponse httpRes, IRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix)
+        public static Task<bool> WriteToResponse(this IResponse httpRes, IRequest httpReq, object result, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
         {
             if (result == null)
             {
@@ -96,16 +119,16 @@ namespace ServiceStack
                 httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
                 var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(httpReq.ResponseContentType)
                     ?? httpResult.ResponseFilter.GetResponseSerializer(HostContext.Config.DefaultContentType);
-                return httpRes.WriteToResponse(httpResult, httpResSerializer, httpReq, bodyPrefix, bodySuffix);
+                return httpRes.WriteToResponse(httpResult, httpResSerializer, httpReq, bodyPrefix, bodySuffix, token);
             }
 
             var serializer = HostContext.ContentTypes.GetResponseSerializer(httpReq.ResponseContentType);
-            return httpRes.WriteToResponse(result, serializer, httpReq, bodyPrefix, bodySuffix);
+            return httpRes.WriteToResponse(result, serializer, httpReq, bodyPrefix, bodySuffix, token);
         }
 
-        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequest serializationContext)
+        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequest serializationContext, CancellationToken token = default(CancellationToken))
         {
-            return httpRes.WriteToResponse(result, serializer, serializationContext, null, null);
+            return httpRes.WriteToResponse(result, serializer, serializationContext, null, null, token);
         }
 
         /// <summary>
@@ -119,7 +142,7 @@ namespace ServiceStack
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
         /// <param name="bodySuffix">Add suffix to response body if any</param>
         /// <returns></returns>
-        public static Task<bool> WriteToResponse(this IResponse response, object result, ResponseSerializerDelegate defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix)
+        public static async Task<bool> WriteToResponse(this IResponse response, object result, ResponseSerializerDelegate defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
         {
             using (Profiler.Current.Step("Writing to Response"))
             {
@@ -129,7 +152,7 @@ namespace ServiceStack
                     if (result == null)
                     {
                         response.EndRequestWithNoContent();
-                        return TypeConstants.TrueTask;
+                        return true;
                     }
 
                     ApplyGlobalResponseHeaders(response);
@@ -158,7 +181,7 @@ namespace ServiceStack
                             if (response.HandleCustomErrorHandler(request,
                                 defaultContentType, httpError.Status, response.Dto))
                             {
-                                return TypeConstants.TrueTask;
+                                return true;
                             }
                         }
 
@@ -239,7 +262,14 @@ namespace ServiceStack
                         {
                             response.Flush(); //required for Compression
                             disposableResult?.Dispose();
-                            return TypeConstants.TrueTask;
+                            return true;
+                        }
+
+                        if (await WriteToOutputStreamAsync(response, result, bodyPrefix, bodySuffix, token))
+                        {
+                            await response.FlushAsync(token);
+                            disposableResult?.Dispose();
+                            return true;
                         }
 
                         if (httpResult != null)
@@ -248,14 +278,17 @@ namespace ServiceStack
                         var responseText = result as string;
                         if (responseText != null)
                         {
-                            if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                            if (bodyPrefix != null) 
+                                await response.OutputStream.WriteAsync(bodyPrefix, token);
 
                             if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                                 response.ContentType = defaultContentType;
-                            response.Write(responseText);
 
-                            if (bodySuffix != null) response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
-                            return TypeConstants.TrueTask;
+                            await response.OutputStream.WriteAsync(responseText, token);
+
+                            if (bodySuffix != null) 
+                                await response.OutputStream.WriteAsync(bodySuffix, token);
+                            return true;
                         }
 
                         if (defaultAction == null)
@@ -265,22 +298,22 @@ namespace ServiceStack
                         }
 
                         if (bodyPrefix != null)
-                            response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
+                            await response.OutputStream.WriteAsync(bodyPrefix, token);
 
                         if (result != null)
                             defaultAction(request, result, response);
 
                         if (bodySuffix != null)
-                            response.OutputStream.Write(bodySuffix, 0, bodySuffix.Length);
+                            await response.OutputStream.WriteAsync(bodySuffix, token);
 
                         disposableResult?.Dispose();
                     }
 
-                    return TypeConstants.FalseTask;
+                    return false;
                 }
                 catch (Exception originalEx)
                 {
-                    return HandleResponseWriteException(originalEx, request, response, defaultContentType);
+                    return await HandleResponseWriteException(originalEx, request, response, defaultContentType);
                 }
                 finally
                 {

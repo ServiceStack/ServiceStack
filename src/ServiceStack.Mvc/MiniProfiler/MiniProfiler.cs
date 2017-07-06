@@ -62,7 +62,7 @@ namespace ServiceStack.Mvc.MiniProfiler
 				.ToMvcHtmlString();
 		}		 
 
-		public static System.Web.Mvc.MvcHtmlString ToMvcHtmlString(this ServiceStack.MiniProfiler.IHtmlString htmlString)
+		public static System.Web.Mvc.MvcHtmlString ToMvcHtmlString(this IHtmlString htmlString)
 		{
 			return System.Web.Mvc.MvcHtmlString.Create(htmlString.ToString());
 		}

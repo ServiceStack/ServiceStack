@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -13,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [Route("/customresult")]
     public class CustomResult { }
 
-    public class CustomXmlResult : IStreamWriter, IHasOptions
+    public class CustomXmlResult : IStreamWriterAsync, IHasOptions
     {
         public IDictionary<string, string> Options { get; set; }
 
@@ -26,9 +27,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        public void WriteTo(Stream stream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            stream.Write("<Foo bar=\"baz\">quz</Foo>");
+            await responseStream.WriteAsync("<Foo bar=\"baz\">quz</Foo>", token);
         }
     }
 

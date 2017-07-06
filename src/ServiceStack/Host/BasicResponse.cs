@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -80,6 +82,8 @@ namespace ServiceStack.Host
         public void Flush()
         {
         }
+
+        public Task FlushAsync(CancellationToken token = default(CancellationToken)) => TypeConstants.EmptyTask;
 
         public bool IsClosed { get; set; }
 

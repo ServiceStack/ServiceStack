@@ -3,6 +3,8 @@ using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -77,6 +79,8 @@ namespace ServiceStack.Testing
         {
             OutputStream.Flush();
         }
+
+        public Task FlushAsync(CancellationToken token = default(CancellationToken)) => OutputStream.FlushAsync(token);
 
         public string ReadAsString()
         {

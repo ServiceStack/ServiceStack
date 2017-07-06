@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.IntegrationTests.Services
@@ -54,7 +57,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
     public class HelloImage3 {}
 
     //Your own Custom Result, writes directly to response stream
-    public class ImageResult : IDisposable, IStreamWriter, IHasOptions
+    public class ImageResult : IDisposable, IStreamWriterAsync, IHasOptions
     {
         private readonly Image image;
         private readonly ImageFormat imgFormat;
@@ -68,17 +71,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             };
         }
 
-        public void WriteTo(Stream responseStream)
-        {
-            image.Save(responseStream, imgFormat);
-        }
-
         public void Dispose()
         {
             this.image.Dispose();
         }
 
         public IDictionary<string, string> Options { get; set; }
+
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
+        {
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                image.Save(ms, imgFormat);
+
+                ms.Position = 0;
+                await ms.CopyToAsync(responseStream, token);
+            }
+        }
     }
 
     public class HelloImage3Service : IService

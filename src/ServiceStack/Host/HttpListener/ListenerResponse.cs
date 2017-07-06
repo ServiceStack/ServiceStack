@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -145,6 +147,24 @@ namespace ServiceStack.Host.HttpListener
             FlushBufferIfAny();
 
             response.OutputStream.Flush();
+        }
+
+        public async Task FlushAsync(CancellationToken token = new CancellationToken())
+        {
+            if (BufferedStream != null)
+            {
+                var bytes = BufferedStream.ToArray();
+                try
+                {
+                    SetContentLength(bytes.Length); //safe to set Length in Buffered Response
+                }
+                catch { }
+
+                await response.OutputStream.WriteAsync(bytes, token);
+                BufferedStream = MemoryStreamFactory.GetStream();
+            }
+
+            await response.OutputStream.FlushAsync(token);
         }
 
         public bool IsClosed

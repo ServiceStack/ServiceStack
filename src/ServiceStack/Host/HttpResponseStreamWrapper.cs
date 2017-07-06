@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -87,6 +89,8 @@ namespace ServiceStack.Host
         {
             OutputStream.Flush();
         }
+
+        public Task FlushAsync(CancellationToken token = new CancellationToken()) => OutputStream.FlushAsync(token);
 
         public bool IsClosed { get; private set; }
 

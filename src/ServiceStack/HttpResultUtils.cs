@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -126,6 +128,52 @@ namespace ServiceStack
                     //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
                     toStream.Write(PartialBuffer, 0, count);
                     toStream.Flush();
+                    bytesRemaining -= count;
+                }
+                catch (Exception httpException)
+                {
+                    /* in Asp.Net we can call HttpResponseBase.IsClientConnected
+                        * to see if the client broke off the connection
+                        * and avoid trying to flush the response stream.
+                        * I'm not quite I can do the same here without some invasive changes,
+                        * so instead I'll swallow the exception that IIS throws in this situation.*/
+
+                    if (httpException.Message == "An error occurred while communicating with the remote host. The error code is 0x80070057.")
+                        return;
+
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes partial range as specified by start-end, from fromStream to toStream.
+        /// </summary>
+        public static async Task WritePartialToAsync(this Stream fromStream, Stream toStream, long start, long end, CancellationToken token = default(CancellationToken))
+        {
+            if (!fromStream.CanSeek)
+                throw new InvalidOperationException(
+                    "Sending Range Responses requires a seekable stream eg. FileStream or MemoryStream");
+
+            long totalBytesToSend = end - start + 1;
+
+            if (PartialBuffer == null || PartialBufferSize != PartialBuffer.Length)
+                PartialBuffer = new byte[PartialBufferSize];
+
+            long bytesRemaining = totalBytesToSend;
+
+            fromStream.Seek(start, SeekOrigin.Begin);
+            while (bytesRemaining > 0)
+            {
+                var count = bytesRemaining <= PartialBuffer.Length
+                    ? await fromStream.ReadAsync(PartialBuffer, 0, (int)Math.Min(bytesRemaining, int.MaxValue), token)
+                    : await fromStream.ReadAsync(PartialBuffer, 0, PartialBuffer.Length, token);
+
+                try
+                {
+                    //Log.DebugFormat("Writing {0} to response",System.Text.Encoding.UTF8.GetString(buffer));
+                    await toStream.WriteAsync(PartialBuffer, 0, count, token);
+                    await toStream.FlushAsync(token);
                     bytesRemaining -= count;
                 }
                 catch (Exception httpException)

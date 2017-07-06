@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 #if NETFX_CORE
@@ -10,7 +12,7 @@ using System.Net.Http.Headers;
 namespace ServiceStack
 {
     public class CompressedFileResult
-        : IStreamWriter, IHasOptions
+        : IStreamWriterAsync, IHasOptions
     {
         public const int Adler32ChecksumLength = 4;
 
@@ -55,14 +57,14 @@ namespace ServiceStack
             }
         }
 #else
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
             using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
             {
                 fs.Position = Adler32ChecksumLength;
 
-                fs.WriteTo(responseStream);
-                responseStream.Flush();
+                await fs.CopyToAsync(responseStream, token);
+                await responseStream.FlushAsync(token);
             }
         }
 #endif

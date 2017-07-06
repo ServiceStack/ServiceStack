@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Web
 {
@@ -66,6 +68,8 @@ namespace ServiceStack.Web
         /// Response.Flush() and OutputStream.Flush() seem to have different behaviour in ASP.NET
         /// </summary>
         void Flush();
+
+        Task FlushAsync(CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Gets a value indicating whether this instance is closed.

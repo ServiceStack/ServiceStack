@@ -4,6 +4,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Host;
@@ -214,6 +216,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             {
                 MemoryStream.Flush();
             }
+
+            public Task FlushAsync(CancellationToken token = new CancellationToken()) => MemoryStream.FlushAsync(token);
 
             public bool IsClosed { get; private set; }
 

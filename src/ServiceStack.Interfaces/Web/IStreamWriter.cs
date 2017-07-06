@@ -1,9 +1,11 @@
+using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace ServiceStack.Web
 {
+    [Obsolete("Use IStreamWriterAsync")]
     public interface IStreamWriter
     {
         void WriteTo(Stream responseStream);

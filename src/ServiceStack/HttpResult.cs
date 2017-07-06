@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host;
 using ServiceStack.IO;
@@ -13,7 +15,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     public class HttpResult
-        : IHttpResult, IStreamWriter, IPartialWriter, IDisposable
+        : IHttpResult, IStreamWriterAsync, IPartialWriterAsync, IDisposable
     {
         public HttpResult()
             : this((object)null, null) { }
@@ -239,12 +241,12 @@ namespace ServiceStack
 
         public int PaddingLength { get; set; }
 
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
             try
             {
-                WriteTo(responseStream, PaddingLength);
-                responseStream.Flush();
+                await WriteToAsync(responseStream, PaddingLength, token);
+                await responseStream.FlushAsync(token);
             }
             finally
             {
@@ -252,7 +254,7 @@ namespace ServiceStack
             }
         }
 
-        private void WriteTo(Stream responseStream, int paddingLength)
+        private async Task WriteToAsync(Stream responseStream, int paddingLength, CancellationToken token)
         {
             var response = RequestContext?.Response;
             if (this.FileInfo != null)
@@ -261,7 +263,7 @@ namespace ServiceStack
 
                 using (var fs = this.FileInfo.OpenRead())
                 {
-                    fs.WriteTo(responseStream);
+                    await fs.CopyToAsync(responseStream, token);
                     return;
                 }
             }
@@ -278,12 +280,12 @@ namespace ServiceStack
                             var bytes = ms.ToArray();
                             response.SetContentLength(bytes.Length + paddingLength);
 
-                            responseStream.Write(bytes, 0, bytes.Length);
+                            responseStream.Write(bytes, 0, bytes.Length); //Write Sync to MemoryStream
                             return;
                         }
                     }
 
-                    this.ResponseStream.WriteTo(responseStream);
+                    await ResponseStream.CopyToAsync(responseStream, token);
                     return;
                 }
                 finally
@@ -297,7 +299,7 @@ namespace ServiceStack
                 var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
                 response?.SetContentLength(bytes.Length + paddingLength);
 
-                responseStream.Write(bytes, 0, bytes.Length);
+                await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
                 return;
             }
 
@@ -311,7 +313,7 @@ namespace ServiceStack
             {
                 response?.SetContentLength(bytesResponse.Length + paddingLength);
 
-                responseStream.Write(bytesResponse, 0, bytesResponse.Length);
+                await responseStream.WriteAsync(bytesResponse, 0, bytesResponse.Length, token);
                 return;
             }
 
@@ -328,7 +330,7 @@ namespace ServiceStack
         public bool IsPartialRequest => 
             AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null;
 
-        public void WritePartialTo(IResponse response)
+        public async Task WritePartialToAsync(IResponse response, CancellationToken token = new CancellationToken())
         {
             var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
             var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);
@@ -346,14 +348,14 @@ namespace ServiceStack
             {
                 using (var fs = FileInfo.OpenRead())
                 {
-                    fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
             }
             else if (ResponseStream != null)
             {
                 try
                 {
-                    ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    await ResponseStream.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token: token);
                 }
                 finally
                 {
@@ -364,7 +366,7 @@ namespace ServiceStack
             {
                 using (var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText)))
                 {
-                    ms.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    ms.WritePartialTo(outputStream, rangeStart, rangeEnd); //Write Sync to MemoryStream
                 }
             }
             else

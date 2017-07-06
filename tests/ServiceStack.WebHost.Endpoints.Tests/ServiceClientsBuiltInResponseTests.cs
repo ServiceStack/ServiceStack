@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -79,13 +80,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Guid(request.Text).ToByteArray();
         }
 
-        public IStreamWriter Any(StreamWriters request)
+        public IStreamWriterAsync Any(StreamWriters request)
         {
             return new StreamWriterResult(new Guid(request.Text).ToByteArray());
         }
     }
 
-    public class StreamWriterResult : IStreamWriter
+    public class StreamWriterResult : IStreamWriterAsync
     {
         private byte[] result;
 
@@ -94,11 +95,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             this.result = result;
         }
 
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            responseStream.Write(result, 0, result.Length);
+            await responseStream.WriteAsync(result, token);
         }
     }
+    
     
     public class BuiltInTypesAppHost : AppHostHttpListenerBase
     {

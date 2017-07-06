@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -138,6 +140,13 @@ namespace ServiceStack.Host.AspNet
             FlushBufferIfAny();
 
             response.Flush();
+        }
+
+        public Task FlushAsync(CancellationToken token = default(CancellationToken))
+        {
+            Flush(); //FlushAsync() only added in .NET 4.6
+
+            return TypeConstants.EmptyTask;
         }
 
         public bool IsClosed
