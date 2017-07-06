@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -45,6 +46,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='alt-layout'>{{ body }}</body></html>" },
                 { "root-static-page.html", "<h1>/root-static page!</h1>" },
                 { "full-static-page.html", "<html><head><title>Full Page</title></head><body><h1>Full Page</h1></body></html>" },
+                { "noprefix-page.html", @"
+<!--
+layout: alt-layout
+-->
+<h1>/noprefix page!</h1>" },
+                { "dir/alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='dir-alt-layout'>{{ body }}</body></html>" },
+                { "dir/index.html", @"
+<!--
+layout: alt-layout
+title: no prefix @ /dir
+-->
+<h1>/dir/noprefix page!</h1>" },
                 { "variable-layout-page.html", @"
 <!--
 layout: alt-layout.html
@@ -102,6 +115,17 @@ title: We encode < & >
         }
 
         [Test]
+        public void Request_for_noprefix_page_returns_alt_layout()
+        {
+            var html = Config.ListeningOn.CombineWith("noprefix-page")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+
+            Assert.That(html, Does.StartWith("<html><head><title>"));
+            Assert.That(html, Does.Contain("id='alt-layout'"));
+            Assert.That(html, Does.Contain("<h1>/noprefix page!</h1>"));
+        }
+
+        [Test]
         public void Request_for_variable_page_returns_complete_page_with_alt_layout()
         {
             var html = Config.ListeningOn.CombineWith("variable-layout-page.html")
@@ -123,6 +147,44 @@ title: We encode < & >
             Assert.That(html, Does.Contain("<h1>/htmlencode-page!</h1>"));
             Assert.That(html, Does.Contain("<p>layoutvar(&lt; &amp; &gt; &quot; &#39;)</p>"));
         }
+
+        [Test]
+        public void Request_for_dir_index_page_using_supported_conventions()
+        {
+            var htmlOrig = Config.ListeningOn.CombineWith("dir/index.html")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            
+            Assert.That(htmlOrig, Does.StartWith("<html><head><title>no prefix @ /dir</title>"));
+            Assert.That(htmlOrig, Does.Contain("id='dir-alt-layout'"));
+            Assert.That(htmlOrig, Does.Contain("<h1>/dir/noprefix page!</h1>"));
+            
+            var html = Config.ListeningOn.CombineWith("dir/index")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            Assert.That(html, Is.EqualTo(htmlOrig));
+            
+            html = Config.ListeningOn.CombineWith("dir/")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            Assert.That(html, Is.EqualTo(htmlOrig));
+            
+            html = Config.ListeningOn.CombineWith("dir")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            Assert.That(html, Is.EqualTo(htmlOrig));
+        }
+
+#if NET45
+        [Test]
+        public void Request_for_dir_index_page_without_trailing_slash_auto_redirects()
+        {
+            Config.ListeningOn.CombineWith("dir")
+                .GetStringFromUrl(accept: MimeTypes.Html, 
+                    requestFilter: req => req.AllowAutoRedirect = false,
+                    responseFilter: res =>
+                    {
+                        Assert.That(res.StatusCode, Is.EqualTo(HttpStatusCode.MovedPermanently));
+                        Assert.That(res.Headers[HttpHeaders.Location], Is.EqualTo(Config.ListeningOn.CombineWith("dir/")));
+                    });
+        }
+#endif
 
         [Test]
         public async Task Can_parse_page_with_page_variables()

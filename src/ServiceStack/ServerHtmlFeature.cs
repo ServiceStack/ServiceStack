@@ -2,11 +2,14 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Web;
 using System.Threading.Tasks;
+using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Text;
+using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 #if NETSTANDARD1_6
@@ -17,20 +20,22 @@ namespace ServiceStack
 {
     public class ServerHtmlFeature : IPlugin
     {
+        public static int PreventDosMaxSize = 10000; 
+        
         public string PageExtension { get; set; } = "html";
+        
+        public string IndexPage { get; set; } = "index";
 
-        public string LayoutName { get; set; } = "layout";
+        public string DefaultLayoutPage { get; set; } = "_layout";
         
-        public string DefaultLayout { get; set; } = "_layout.html";
-        
-        public bool CheckModifiedPages { get; set; }
+        public string LayoutVarName { get; set; } = "layout";
+
+        public bool CheckModifiedPages { get; set; } = false;
 
         public ServerHtmlPages HtmlPages { get; set; }
 
         public void Register(IAppHost appHost)
         {
-            DefaultLayout = $"_{LayoutName}.{PageExtension}";
-            
             HtmlPages = new ServerHtmlPages(appHost, this);
             appHost.Register<IHtmlPages>(HtmlPages);
             appHost.CatchAllHandlers.Add(HtmlPages.RequestHandler);
@@ -59,12 +64,15 @@ namespace ServiceStack
             if (catchAllPathsNotFound.ContainsKey(pathInfo))
                 return null;
 
-            var page = feature.HtmlPages.GetPage(pathInfo);
+            var page = GetPage(pathInfo);
 
             if (page != null)
                 return new ServerHtmlHandler(page);
+            
+            if (!pathInfo.EndsWith("/") && appHost.VirtualFileSources.DirectoryExists(pathInfo.TrimPrefixes("/")))
+                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
 
-            if (catchAllPathsNotFound.Count > 10000) //prevent DDOS
+            if (catchAllPathsNotFound.Count > ServerHtmlFeature.PreventDosMaxSize)
                 catchAllPathsNotFound.Clear();
 
             catchAllPathsNotFound[pathInfo] = 1;
@@ -76,7 +84,7 @@ namespace ServiceStack
             if (!page.HasInit)
                 throw new ArgumentException($"Page {page.File.VirtualPath} has not been initialized");
 
-            var layoutWithoutExt = (page.Layout ?? feature.DefaultLayout).LeftPart('.');
+            var layoutWithoutExt = (page.Layout ?? feature.DefaultLayoutPage).LeftPart('.');
 
             var dir = page.File.Directory;
             do
@@ -99,12 +107,17 @@ namespace ServiceStack
 
         public ServerHtmlPage GetPage(string path)
         {
-            var santizePath = path.Replace('\\','/').TrimPrefixes("/");
+            if (string.IsNullOrEmpty(path))
+                return null;
+            
+            var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
             if (pageMap.TryGetValue(santizePath, out ServerHtmlPage page))
                 return page;
             
-            var file = appHost.VirtualFileSources.GetFile(santizePath);
+            var file = !santizePath.EndsWith("/")
+                ? appHost.VirtualFileSources.GetFile($"{santizePath}.{feature.PageExtension}")
+                : appHost.VirtualFileSources.GetFile($"{santizePath}{feature.IndexPage}.{feature.PageExtension}");
             if (file != null)
                 return pageMap[file.VirtualPath.WithoutExtension()] = new ServerHtmlPage(file);
 
