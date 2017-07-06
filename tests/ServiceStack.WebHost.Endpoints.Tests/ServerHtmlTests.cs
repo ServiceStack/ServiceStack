@@ -13,6 +13,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int Id { get; set; }
     }
+
+    [Route("/existing-page")]
+    public class OverrideExistingPage
+    {
+        public string RequestVar { get; set; }
+    }
     
     public class ServerHtmlService : Service
     {
@@ -20,10 +26,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         public object AnyHtml(GetProduct request)
         {
-            return new HtmlResult(HtmlPages.GetPage("product-view.html"))
+            return new HtmlResult(HtmlPages.GetPage("product-view"))
             {
                 Model = request,
-                LayoutPage = HtmlPages.GetPage("alt-layout.html"),
+                LayoutPage = HtmlPages.GetPage("product-layout"),
+            };
+        }
+
+        public object Any(OverrideExistingPage request)
+        {
+            return new HtmlResult(HtmlPages.GetPage("override-page"))
+            {
+                Model = request,
+                Args =
+                {
+                    { "title", "Service Title" }
+                },
+                LayoutPage = HtmlPages.GetPage("override-layout"),
             };
         }
     }
@@ -44,8 +63,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 { "_layout.html", "<html><head><title>{{ title }}</title></head><body id='layout'>{{ body }}</body></html>" },
                 { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='alt-layout'>{{ body }}</body></html>" },
+                { "override-layout.html", "<html><head><title>{{ title }}</title></head><body id='override-layout'>{{ body }}</body></html>" },
                 { "root-static-page.html", "<h1>/root-static page!</h1>" },
                 { "full-static-page.html", "<html><head><title>Full Page</title></head><body><h1>Full Page</h1></body></html>" },
+                { "existing-page.html", "<h1>Existing Page</h1>" },
+                { "override-page.html", @"
+<!--
+layout: alt-layout
+title: Override Title
+-->
+<h1>Override Page</h1>" },
                 { "noprefix-page.html", @"
 <!--
 layout: alt-layout
@@ -187,6 +214,45 @@ title: We encode < & >
 #endif
 
         [Test]
+        public void Request_for_page_with_underscore_prefix_is_forbidden()
+        {
+            try
+            {
+                Config.ListeningOn.CombineWith("_layout.html")
+                    .GetStringFromUrl(accept: MimeTypes.Html);
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+            }
+            
+            try
+            {
+                Config.ListeningOn.CombineWith("_layout")
+                    .GetStringFromUrl(accept: MimeTypes.Html);
+                
+                Assert.Fail("Should throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(((HttpWebResponse)ex.Response).StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+            }
+        }
+
+        [Test]
+        public void Request_for_existing_page_can_be_overridden_by_Service()
+        {
+            var html = Config.ListeningOn.CombineWith("existing-page")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+
+            Assert.That(html, Does.StartWith("<html><head><title>Service Title</title>"));
+            Assert.That(html, Does.Contain("id='override-layout'"));
+            Assert.That(html, Does.Contain("<h1>Override Page</h1>"));
+        }
+
+        [Test]
         public async Task Can_parse_page_with_page_variables()
         {
             var file = HostContext.AppHost.VirtualFileSources.GetFile("variable-layout-page.html");
@@ -218,7 +284,6 @@ title: We encode < & >
             Assert.That(varFragment4.Name, Is.EqualTo("body"));
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }
-
         
     }
 }

@@ -67,7 +67,12 @@ namespace ServiceStack
             var page = GetPage(pathInfo);
 
             if (page != null)
+            {
+                if (page.File.Name.StartsWith("_"))
+                    return new ForbiddenHttpHandler();
+                
                 return new ServerHtmlHandler(page);
+            }
             
             if (!pathInfo.EndsWith("/") && appHost.VirtualFileSources.DirectoryExists(pathInfo.TrimPrefixes("/")))
                 return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
