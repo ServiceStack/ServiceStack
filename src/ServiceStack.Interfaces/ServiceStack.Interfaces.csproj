@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>portable40-net45+sl5+win8+wp8+wpa81;netstandard1.1</TargetFrameworks>
     <AssemblyName>ServiceStack.Interfaces</AssemblyName>
@@ -18,35 +17,28 @@
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyFile>servicestack-sn.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Optimize>true</Optimize>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
   </ItemGroup>
-
   <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
     <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
     <DefineConstants>$(DefineConstants);NETSTANDARD1_1</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
     <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'portable40-net45+sl5+win8+wp8+wpa81' ">
     <DefineConstants>$(DefineConstants);PCL;PORTABLE328</DefineConstants>
     <TargetFrameworkIdentifier>.NETPortable</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Profile328</TargetFrameworkProfile>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'portable40-net45+sl5+win8+wp8+wpa81' ">
     <Reference Include="mscorlib" />
     <Reference Include="System" />
@@ -54,5 +46,4 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
-
 </Project>

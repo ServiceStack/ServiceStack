@@ -19,7 +19,7 @@ namespace ServiceStack.Templates
         
         public Dictionary<string, object> Args { get; set; }
         
-        public List<PageTemplateFilter> Filters { get; set; }
+        public List<TemplateFilter> Filters { get; set; }
 
         public IDictionary<string, string> Options { get; set; }
 
@@ -27,7 +27,7 @@ namespace ServiceStack.Templates
         {
             Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
-            Filters = new List<PageTemplateFilter>();
+            Filters = new List<TemplateFilter>();
             Options = new Dictionary<string, string>
             {
                 { HttpHeaders.ContentType, MimeTypes.Html },

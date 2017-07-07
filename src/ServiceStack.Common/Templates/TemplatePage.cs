@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
-
 #if NETSTANDARD1_3
 using Microsoft.Extensions.Primitives;
+
 #endif
 
 namespace ServiceStack.Templates
@@ -40,7 +40,7 @@ namespace ServiceStack.Templates
                 ? this
                 : await Load();
         }
-        
+
         public async Task<TemplatePage> Load()
         {
             string serverHtml;
@@ -84,7 +84,7 @@ namespace ServiceStack.Templates
 
                 PageHtml = ServerHtml.Subsegment(pos).TrimStart();
                 PageFragments = TemplatePageUtils.ParseTemplatePage(PageHtml);
-                IsCompletePage = Context.IsCompletePage(PageHtml);                
+                IsCompletePage = Context.IsCompletePage(PageHtml);
 
                 HasInit = true;
 

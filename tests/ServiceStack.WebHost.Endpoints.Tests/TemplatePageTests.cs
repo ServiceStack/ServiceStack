@@ -3,6 +3,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
@@ -21,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RequestVar { get; set; }
     }
     
-    public class ServerHtmlService : Service
+    public class TemplatePagesService : Service
     {
         public ITemplatePages TemplatePages { get; set; }
         
@@ -53,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(ServerHtmlTests), typeof(ServerHtmlService).GetAssembly()) { }
+                : base(nameof(ServerHtmlTests), typeof(TemplatePagesService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
