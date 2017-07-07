@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ServiceStack.IO;
@@ -8,6 +9,8 @@ namespace ServiceStack.VirtualPath
 {
     public abstract class AbstractVirtualFileBase : IVirtualFile
     {
+        public static List<string> ScanSkipPaths { get; set; } = new List<string>();
+
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
         public string Extension => Name.LastRightPart('.');
@@ -111,14 +114,10 @@ namespace ServiceStack
     {
         public static bool ShouldSkipPath(this IVirtualNode node)
         {
-            var appHost = HostContext.AppHost;
-            if (appHost != null)
+            foreach (var skipPath in AbstractVirtualFileBase.ScanSkipPaths)
             {
-                foreach (var skipPath in appHost.Config.ScanSkipPaths)
-                {
-                    if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase))
-                        return true;
-                }
+                if (node.VirtualPath.StartsWith(skipPath.TrimStart('/'), StringComparison.OrdinalIgnoreCase))
+                    return true;
             }
             return false;
         }

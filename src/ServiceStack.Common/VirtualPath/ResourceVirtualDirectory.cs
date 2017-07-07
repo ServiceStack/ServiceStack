@@ -11,6 +11,8 @@ namespace ServiceStack.VirtualPath
 {
     public class ResourceVirtualDirectory : AbstractVirtualDirectoryBase
     {
+        public static HashSet<string> EmbeddedResourceTreatAsFiles { get; set; } = new HashSet<string>();
+
         private static ILog Log = LogManager.GetLogger(typeof(ResourceVirtualDirectory));
 
         protected Assembly backingAssembly;
@@ -27,17 +29,19 @@ namespace ServiceStack.VirtualPath
 
         public string DirectoryName { get; set; }
 
-        public override DateTime LastModified => GetLastWriteTimeOfBackingAsm();
+        public override DateTime LastModified { get; }
 
         internal Assembly BackingAssembly => backingAssembly;
 
         public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, 
             IVirtualDirectory parentDir, 
             Assembly backingAsm, 
+            DateTime lastModified,
             string rootNamespace)
         : this(owningProvider, 
             parentDir, 
             backingAsm, 
+            lastModified,
             rootNamespace,
             rootNamespace, 
             GetResourceNames(backingAsm, rootNamespace)) { }
@@ -45,18 +49,17 @@ namespace ServiceStack.VirtualPath
         public ResourceVirtualDirectory(IVirtualPathProvider owningProvider, 
             IVirtualDirectory parentDir, 
             Assembly backingAsm, 
+            DateTime lastModified,
             string rootNamespace, 
             string directoryName, 
             List<string> manifestResourceNames)
             : base(owningProvider, parentDir)
         {
-            if (backingAsm == null)
-                throw new ArgumentNullException(nameof(backingAsm));
-
             if (string.IsNullOrEmpty(directoryName))
                 throw new ArgumentNullException(nameof(directoryName));
 
-            this.backingAssembly = backingAsm;
+            this.backingAssembly = backingAsm ?? throw new ArgumentNullException(nameof(backingAsm));
+            this.LastModified = lastModified;
             this.rootNamespace = rootNamespace;
             this.DirectoryName = directoryName;
 
@@ -74,10 +77,9 @@ namespace ServiceStack.VirtualPath
         {
             SubDirectories = new List<ResourceVirtualDirectory>();
             SubFiles = new List<ResourceVirtualFile>();
-            var treatAsFiles = (HostContext.Config != null ? HostContext.Config.EmbeddedResourceTreatAsFiles : null) ?? new HashSet<string>();
 
             SubFiles.AddRange(manifestResourceNames
-                .Where(n => n.Count(c => c == '.') <= 1 || treatAsFiles.Contains(n))
+                .Where(n => n.Count(c => c == '.') <= 1 || EmbeddedResourceTreatAsFiles.Contains(n))
                 .Select(CreateVirtualFile)
                 .Where(f => f != null)
                 .OrderBy(f => f.Name));
@@ -89,17 +91,11 @@ namespace ServiceStack.VirtualPath
                 .OrderBy(d => d.Name));
         }
 
-        private DateTime GetLastWriteTimeOfBackingAsm()
-        {
-            var fInfo = new FileInfo(BackingAssembly.Location);
-            return fInfo.LastWriteTime;
-        }
-
         protected virtual ResourceVirtualDirectory CreateVirtualDirectory(IGrouping<string, string[]> subResources)
         {
             var remainingResourceNames = subResources.Select(g => g[1]);
             var subDir = new ResourceVirtualDirectory(
-                VirtualPathProvider, this, backingAssembly, rootNamespace, subResources.Key, remainingResourceNames.ToList());
+                VirtualPathProvider, this, backingAssembly, LastModified, rootNamespace, subResources.Key, remainingResourceNames.ToList());
 
             return subDir;
         }

@@ -16,7 +16,7 @@ namespace ServiceStack.VirtualPath
 
         public override string RealPath => GetRealPathToRoot();
 
-        public override DateTime LastModified => GetLastWriteTimeOfBackingAsm();
+        public override DateTime LastModified => Directory.LastModified;
 
         private long? length;
         public override long Length
@@ -34,29 +34,20 @@ namespace ServiceStack.VirtualPath
             }
         }
 
-        public ResourceVirtualFile(IVirtualPathProvider owningProvider, ResourceVirtualDirectory directory,  string fileName)
+        public ResourceVirtualFile(IVirtualPathProvider owningProvider, ResourceVirtualDirectory directory, string fileName)
             : base(owningProvider, directory)
         {
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentNullException(nameof(fileName));
 
-            if (directory.BackingAssembly == null)
-                throw new ArgumentNullException(nameof(directory));
-
             this.FileName = fileName;
-            this.BackingAssembly = directory.BackingAssembly;
+            this.BackingAssembly = directory.BackingAssembly ?? throw new ArgumentNullException(nameof(directory));
         }
 
         public override Stream OpenRead()
         {
             var fullName = RealPath;
             return BackingAssembly.GetManifestResourceStream(fullName);
-        }
-
-        private DateTime GetLastWriteTimeOfBackingAsm()
-        {
-            var fInfo = new FileInfo(BackingAssembly.Location);
-            return fInfo.LastWriteTime;
         }
     }
 }

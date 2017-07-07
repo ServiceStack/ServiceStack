@@ -14,16 +14,15 @@ namespace ServiceStack.VirtualPath
         public override IVirtualDirectory RootDirectory => RootDir;
         public override string VirtualPathSeparator => "/";
         public override string RealPathSeparator => ".";
+        
+        public DateTime LastModified { get; set; } 
 
         public ResourceVirtualPathProvider(Type baseTypeInAssmebly)
             : this(baseTypeInAssmebly.GetAssembly(), GetNamespace(baseTypeInAssmebly)) { }
 
         public ResourceVirtualPathProvider(Assembly backingAssembly, string rootNamespace=null)
         {
-            if (backingAssembly == null)
-                throw new ArgumentNullException(nameof(backingAssembly));
-
-            this.BackingAssembly = backingAssembly;
+            this.BackingAssembly = backingAssembly ?? throw new ArgumentNullException(nameof(backingAssembly));
             this.RootNamespace = rootNamespace ?? backingAssembly.GetName().Name;
 
             Initialize();
@@ -38,7 +37,7 @@ namespace ServiceStack.VirtualPath
         protected sealed override void Initialize()
         {
             var asm = BackingAssembly;
-            RootDir = new ResourceVirtualDirectory(this, null, asm, RootNamespace);
+            RootDir = new ResourceVirtualDirectory(this, null, asm, LastModified, RootNamespace);
         }
 
         public override string CombineVirtualPath(string basePath, string relativePath)

@@ -75,9 +75,9 @@ namespace ServiceStack
                 ?? pathProvider.GetDirectory(virtualPath);
         }
 
-        public static IVirtualFile GetDefaultDocument(this IVirtualDirectory dir)
+        public static IVirtualFile GetDefaultDocument(this IVirtualDirectory dir, List<string> defaultDocuments)
         {
-            foreach (var defaultDoc in HostContext.Config.DefaultDocuments)
+            foreach (var defaultDoc in defaultDocuments)
             {
                 var defaultFile = dir.GetFile(defaultDoc);
                 if (defaultFile == null) continue;

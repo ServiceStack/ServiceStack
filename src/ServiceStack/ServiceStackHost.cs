@@ -180,6 +180,9 @@ namespace ServiceStack
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
 
+            AbstractVirtualFileBase.ScanSkipPaths = Config.ScanSkipPaths;
+            ResourceVirtualDirectory.EmbeddedResourceTreatAsFiles = Config.EmbeddedResourceTreatAsFiles;
+
             Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
             if (Config.DebugMode)
             {
@@ -261,12 +264,23 @@ namespace ServiceStack
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(x)));
+                .Map(x => new ResourceVirtualPathProvider(x) { LastModified = GetAssemblyLastModified(x.GetAssembly()) } ));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(x)));
+                .Map(x => new ResourceVirtualPathProvider(x) { LastModified = GetAssemblyLastModified(x) } ));
 
             return pathProviders;
+        }
+
+        private static DateTime GetAssemblyLastModified(Assembly asm)
+        {
+            try
+            {
+                if (asm.Location != null)
+                    return new FileInfo(asm.Location).LastWriteTime;
+            }
+            catch (Exception) { /* ignored */ }
+            return default(DateTime);
         }
 
         /// <summary>

@@ -28,12 +28,6 @@ namespace ServiceStack.VirtualPath
             Initialize();
         }
 
-        public FileSystemVirtualPathProvider(IAppHost appHost)
-            : this(appHost.Config.WebHostPhysicalPath)
-        {
-            Initialize();
-        }
-
         protected sealed override void Initialize()
         {
             if (!RootDirInfo.Exists)

@@ -115,7 +115,7 @@ namespace ServiceStack.Host.Handlers
                     var dir = node as IVirtualDirectory;
                     if (dir != null)
                     {
-                        file = dir.GetDefaultDocument();
+                        file = dir.GetDefaultDocument(HostContext.AppHost.Config.DefaultDocuments);
                         if (file != null && HostContext.Config.RedirectToDefaultDocuments)
                         {
                             r.Redirect(request.GetPathUrl() + '/' + file.Name);
