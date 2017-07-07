@@ -157,29 +157,5 @@ namespace ServiceStack
             var bytes = Encoding.UTF8.GetBytes(text);
             stream.Write(bytes, 0, bytes.Length);
         }
-
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
-        public static string ToMd5Hash(this Stream stream)
-        {
-            var hash = MD5.Create().ComputeHash(stream);
-            var sb = StringBuilderCache.Allocate();
-            foreach (byte b in hash)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public static string ToMd5Hash(this byte[] bytes)
-        {
-            var hash = MD5.Create().ComputeHash(bytes);
-            var sb = StringBuilderCache.Allocate();
-            foreach (byte b in hash)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-#endif
     }
 }
