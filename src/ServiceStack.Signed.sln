@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.13
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Signed", "ServiceStack\ServiceStack.Signed.csproj", "{680A1709-25EB-4D52-A87F-EE03FFD94BAA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -62,6 +62,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C55AB065-DCB1-4724-8266-E70A18F44EAC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SignedConsole.Tests", "..\tests\SignedConsole.Tests\SignedConsole.Tests.csproj", "{23B46D25-0928-4D49-BA3B-92D200A75883}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Interfaces", "ServiceStack.Interfaces\ServiceStack.Interfaces.csproj", "{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -235,6 +237,18 @@ Global
 		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|Any CPU.Build.0 = Release|Any CPU
 		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|x86.ActiveCfg = Release|Any CPU
 		{23B46D25-0928-4D49-BA3B-92D200A75883}.Signed|x86.Build.0 = Release|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Debug|x86.Build.0 = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Release|x86.ActiveCfg = Release|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Release|x86.Build.0 = Release|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Signed|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Signed|Any CPU.Build.0 = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Signed|x86.ActiveCfg = Debug|Any CPU
+		{7A11D2A0-82F2-4892-80B1-E04A1D8FCF6E}.Signed|x86.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

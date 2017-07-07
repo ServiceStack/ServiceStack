@@ -269,6 +269,7 @@ namespace ServiceStack.Host.HttpListener
                 var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}\n{2}"
                             .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message, ex);
                 Log.Error(error, errorEx);
+                context.Response.Close();
             }
         }
 
