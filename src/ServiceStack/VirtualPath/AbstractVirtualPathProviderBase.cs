@@ -13,10 +13,7 @@ namespace ServiceStack.VirtualPath
 
         protected AbstractVirtualPathProviderBase(IAppHost appHost)
         {
-            if (appHost == null)
-                throw new ArgumentNullException(nameof(appHost));
-
-            AppHost = appHost;
+            AppHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
         }
 
         public virtual string CombineVirtualPath(string basePath, string relativePath)
@@ -36,7 +33,9 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualFile GetFile(string virtualPath)
         {
-            return RootDirectory.GetFile(virtualPath).Refresh();
+            var virtualFile = RootDirectory.GetFile(virtualPath);
+            virtualFile?.Refresh();
+            return virtualFile;
         }
 
         public virtual string GetFileHash(string virtualPath)

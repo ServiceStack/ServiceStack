@@ -33,10 +33,7 @@ namespace ServiceStack.VirtualPath
         public FileSystemVirtualDirectory(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory, DirectoryInfo dInfo)
             : base(owningProvider, parentDirectory)
         {
-            if (dInfo == null)
-                throw new ArgumentNullException(nameof(dInfo));
-
-            this.BackingDirInfo = dInfo;
+            this.BackingDirInfo = dInfo ?? throw new ArgumentNullException(nameof(dInfo));
         }
 
         public override IEnumerator<IVirtualNode> GetEnumerator()

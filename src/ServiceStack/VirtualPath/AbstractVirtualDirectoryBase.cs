@@ -28,10 +28,7 @@ namespace ServiceStack.VirtualPath
 
         protected AbstractVirtualDirectoryBase(IVirtualPathProvider owningProvider, IVirtualDirectory parentDirectory)
         {
-            if (owningProvider == null)
-                throw new ArgumentNullException(nameof(owningProvider));
-
-            this.VirtualPathProvider = owningProvider;
+            this.VirtualPathProvider = owningProvider ?? throw new ArgumentNullException(nameof(owningProvider));
             this.ParentDirectory = parentDirectory;
         }
 

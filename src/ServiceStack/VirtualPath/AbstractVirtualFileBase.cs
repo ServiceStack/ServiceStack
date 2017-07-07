@@ -21,17 +21,10 @@ namespace ServiceStack.VirtualPath
         public abstract DateTime LastModified { get; }
         public abstract long Length { get; }
 
-        protected AbstractVirtualFileBase(
-            IVirtualPathProvider owningProvider, IVirtualDirectory directory)
+        protected AbstractVirtualFileBase(IVirtualPathProvider owningProvider, IVirtualDirectory directory)
         {
-            if (owningProvider == null)
-                throw new ArgumentNullException(nameof(owningProvider));
-
-            if (directory == null)
-                throw new ArgumentNullException(nameof(directory));
-
-            this.VirtualPathProvider = owningProvider;
-            this.Directory = directory;
+            this.VirtualPathProvider = owningProvider ?? throw new ArgumentNullException(nameof(owningProvider));
+            this.Directory = directory ?? throw new ArgumentNullException(nameof(directory));
         }
 
         public virtual string GetFileHash()
@@ -128,16 +121,6 @@ namespace ServiceStack
                 }
             }
             return false;
-        }
-
-        /// <summary>
-        /// Refresh file stats for this node if supported
-        /// </summary>
-        public static IVirtualFile Refresh(this IVirtualFile node)
-        {
-            var file = node as AbstractVirtualFileBase;
-            file?.Refresh();
-            return node;
         }
     }
     

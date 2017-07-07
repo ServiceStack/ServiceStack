@@ -15,5 +15,10 @@ namespace ServiceStack.IO
         string ReadAllText();
 
         long Length { get; }
+
+        /// <summary>
+        /// Refresh file stats for this node if supported
+        /// </summary>
+        void Refresh();
     }
 }
