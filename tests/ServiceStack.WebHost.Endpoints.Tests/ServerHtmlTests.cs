@@ -130,6 +130,9 @@ title: We encode < & >
 
         [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
 
+        ServerHtmlPage CreatePage(IVirtualFile file) =>
+            new ServerHtmlPage(appHost.GetPlugin<ServerHtmlFeature>(), file);
+
         [Test]
         public void Request_for_partial_page_returns_complete_page_with_default_layout()
         {
@@ -257,7 +260,7 @@ title: We encode < & >
         {
             var file = HostContext.AppHost.VirtualFileSources.GetFile("variable-layout-page.html");
             
-            var page = await new ServerHtmlPage(file).Init();
+            var page = await CreatePage(file).Init();
 
             Assert.That(page.PageVars["layout"], Is.EqualTo("alt-layout.html"));
             Assert.That(page.PageVars["title"], Is.EqualTo("Variable Layout"));
@@ -269,7 +272,7 @@ title: We encode < & >
         {
             var file = HostContext.AppHost.VirtualFileSources.GetFile("_layout.html");
             
-            var page = await new ServerHtmlPage(file).Init();
+            var page = await CreatePage(file).Init();
 
             Assert.That(page.PageFragments.Count, Is.EqualTo(5));
             var strFragment1 = (ServerHtmlStringFragment)page.PageFragments[0];

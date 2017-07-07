@@ -26,19 +26,13 @@ namespace ServiceStack
 
         public ServerHtmlPage LayoutPage { get; set; }
 
-        public object Model
-        {
-            get => Args.TryGetValue("model", out object model) ? model : null;
-            set => Args["model"] = value;
-        }
+        public object Model { get; set;  }
         
         public Dictionary<string, object> Args { get; set; }
         
         public List<ServerHtmlFilter> Filters { get; set; }
 
         public IDictionary<string, string> Options { get; set; }
-
-        private ServerHtmlFeature feature;
 
         public HtmlResult(ServerHtmlPage page)
         {
@@ -49,7 +43,6 @@ namespace ServiceStack
             {
                 { HttpHeaders.ContentType, MimeTypes.Html },
             };
-            feature = HostContext.GetPlugin<ServerHtmlFeature>();
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
@@ -86,8 +79,8 @@ namespace ServiceStack
                         }
                         else
                         {
-                            var htmlBytes = HtmlPageUtils.ToHtmlUtf8Bytes(GetValue(var));
-                            await responseStream.WriteAsync(htmlBytes, token);
+                            var bytes = Page.Feature.EncodeValue(GetValue(var));
+                            await responseStream.WriteAsync(bytes, token);
                         }
                     }
                 }
@@ -111,8 +104,8 @@ namespace ServiceStack
                 }
                 else if (fragment is ServerHtmlVariableFragment var)
                 {
-                    var htmlBytes = HtmlPageUtils.ToHtmlUtf8Bytes(GetValue(var));
-                    await responseStream.WriteAsync(htmlBytes, token);
+                    var bytes = Page.Feature.EncodeValue(GetValue(var));
+                    await responseStream.WriteAsync(bytes, token);
                 }
             }
         }
@@ -185,24 +178,5 @@ namespace ServiceStack
         {
             Value = value;
         }
-    }
-
-    public static class HtmlPageUtils
-    {
-        public static byte[] ToHtmlUtf8Bytes(object value)
-        {
-            if (value == null)
-                return TypeConstants.EmptyByteArray;
-            
-            if (value is IHtmlString htmlString)
-                return htmlString.ToHtmlString().ToUtf8Bytes();
-
-            var str = value.ToString();
-            if (str == string.Empty)
-                return TypeConstants.EmptyByteArray;
-
-            return PclExportClient.Instance.HtmlEncode(str).ToUtf8Bytes();
-        }
-
     }
 }
