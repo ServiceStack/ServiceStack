@@ -17,7 +17,13 @@ namespace ServiceStack.Host.Handlers
 
         public string RequestName { get; set; }
 
-        public virtual bool RunAsAsync() => false;
+        private Type[] ProcessRequestArgTypes = new[] {typeof(IRequest), typeof(IResponse), typeof(string)};
+
+        public virtual bool RunAsAsync()
+        {
+            var implementsMethod = GetType().GetMethodInfo(nameof(ProcessRequest), ProcessRequestArgTypes);
+            return implementsMethod.DeclaringType == typeof(HttpAsyncTaskHandler);
+        }
 
         protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
         {
@@ -57,7 +63,8 @@ namespace ServiceStack.Host.Handlers
 
         public virtual void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            throw new NotImplementedException();
+            Log.Error($"HttpAsyncTaskHandler.ProcessRequest() that should never have been called, was just called from: {Environment.StackTrace}");
+            ProcessRequestAsync(httpReq, httpRes, operationName).Wait();
         }
 
         //.NET Core entry point for: 
