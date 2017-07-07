@@ -74,6 +74,11 @@ namespace ServiceStack.ExpressionUtil
                    && this.Equals(other);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
             combiner.AddObject(Method);
@@ -231,6 +236,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && this.Equals(other);
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     internal sealed class ConstantExpressionFingerprint : ExpressionFingerprint
@@ -248,6 +258,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && this.Equals(other);
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     internal sealed class DefaultExpressionFingerprint : ExpressionFingerprint
@@ -264,6 +279,11 @@ namespace ServiceStack.ExpressionUtil
             DefaultExpressionFingerprint other = obj as DefaultExpressionFingerprint;
             return (other != null)
                    && this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
     }
 
@@ -745,6 +765,11 @@ namespace ServiceStack.ExpressionUtil
                    && this.Equals(other);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
             combiner.AddObject(Indexer);
@@ -767,6 +792,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && this.Equals(other);
         }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     internal sealed class MemberExpressionFingerprint : ExpressionFingerprint
@@ -786,6 +816,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && Equals(this.Member, other.Member)
                    && this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
@@ -817,6 +852,11 @@ namespace ServiceStack.ExpressionUtil
                    && this.Equals(other);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
             combiner.AddObject(Method);
@@ -843,6 +883,11 @@ namespace ServiceStack.ExpressionUtil
                    && this.Equals(other);
         }
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
         {
             combiner.AddInt32(ParameterIndex);
@@ -867,6 +912,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && Equals(this.TypeOperand, other.TypeOperand)
                    && this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
@@ -896,6 +946,11 @@ namespace ServiceStack.ExpressionUtil
             return (other != null)
                    && Equals(this.Method, other.Method)
                    && this.Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
         }
 
         internal override void AddToHashCodeCombiner(HashCodeCombiner combiner)
