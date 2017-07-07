@@ -1085,6 +1085,16 @@
             retry attempts and store the message straight into the DLQ
             </summary>
         </member>
+        <member name="T:ServiceStack.PageAttribute">
+            <summary>
+            Specify a VirtualPath or Layout for a Code Page
+            </summary>
+        </member>
+        <member name="T:ServiceStack.PageArgAttribute">
+            <summary>
+            Specify static page arguments
+            </summary>
+        </member>
         <member name="T:ServiceStack.Redis.Generic.IRedisList`1">
             <summary>
             Wrap the common redis list operations under a IList[string] interface.
