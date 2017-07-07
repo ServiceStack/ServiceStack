@@ -4,15 +4,15 @@ using System.Linq;
 using System.Net;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class BaseMetadataHandler : HttpHandlerBase
+    public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
     {
         public abstract Format Format { get; }
 

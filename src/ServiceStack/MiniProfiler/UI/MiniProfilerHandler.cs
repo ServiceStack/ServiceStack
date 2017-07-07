@@ -117,22 +117,11 @@ namespace ServiceStack.MiniProfiler.UI
 		//}
 
 		/// <summary>
-		/// Returns this <see cref="MiniProfilerHandler"/> to handle <paramref name="requestContext"/>.
-		/// </summary>
-		//public IHttpHandler GetHttpHandler(RequestContext requestContext)
-		//{
-		//    return this; // elegant? I THINK SO.
-		//}
-
-		/// <summary>
 		/// Try to keep everything static so we can easily be reused.
 		/// </summary>
-		public bool IsReusable
-		{
-			get { return true; }
-		}
+		public bool IsReusable => true;
 
-		public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+	    public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;
 

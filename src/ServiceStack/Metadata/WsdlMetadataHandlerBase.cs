@@ -2,14 +2,14 @@
 
 using System;
 using ServiceStack.Host;
-using ServiceStack.Support.WebHost;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 using ServiceStack.Logging;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class WsdlMetadataHandlerBase : HttpHandlerBase
+    public abstract class WsdlMetadataHandlerBase : HttpAsyncTaskHandler
     {
         private readonly ILog log = LogManager.GetLogger(typeof(WsdlMetadataHandlerBase));
 
