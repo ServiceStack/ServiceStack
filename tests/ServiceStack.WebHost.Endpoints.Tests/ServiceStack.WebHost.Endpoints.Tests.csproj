@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
-
   <PropertyGroup>
     <TargetFrameworks>net45;netcoreapp1.1</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
@@ -18,7 +17,6 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.6.1" />
     <PackageReference Include="Wire" Version="0.8.2" />
@@ -34,11 +32,9 @@
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
     <PackageReference Include="Mysql.Data" Version="6.9.9" />
@@ -50,7 +46,6 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
-
     <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
@@ -60,11 +55,9 @@
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
     <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
@@ -72,7 +65,6 @@
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.0.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
-
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
@@ -83,7 +75,6 @@
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="TestExistingDir\default.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -101,5 +92,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
 </Project>

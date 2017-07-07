@@ -18,8 +18,7 @@ namespace ServiceStack.VirtualPath
         , IWriteableVirtualPathProvider
 #pragma warning restore 618
     {
-        public InMemoryVirtualPathProvider(IAppHost appHost)
-            : base(appHost)
+        public InMemoryVirtualPathProvider()
         {
             this.files = new List<InMemoryVirtualFile>();
             this.rootDirectory = new InMemoryVirtualDirectory(this, null);

@@ -15,8 +15,7 @@ namespace ServiceStack.VirtualPath
         public override string VirtualPathSeparator => "/";
         public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
 
-        public MultiVirtualPathProvider(IAppHost appHost, params IVirtualPathProvider[] childProviders) 
-            : base(appHost)
+        public MultiVirtualPathProvider(params IVirtualPathProvider[] childProviders) 
         {
             if (childProviders == null || childProviders.Length == 0)
                 throw new ArgumentNullException(nameof(childProviders));

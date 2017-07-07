@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         [SetUp]
         public void SetUp()
         {
-            ServiceStackHost.Instance.VirtualFileSources = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
+            ServiceStackHost.Instance.VirtualFileSources = pathProvider = new InMemoryVirtualPathProvider();
             markdownFormat = new MarkdownFormat
             {
                 VirtualPathProvider = pathProvider,

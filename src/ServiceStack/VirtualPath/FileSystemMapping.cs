@@ -15,12 +15,11 @@ namespace ServiceStack.VirtualPath
         public override string VirtualPathSeparator => "/";
         public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
 
-        public FileSystemMapping(IAppHost appHost, string alias, string rootDirectoryPath)
-            : this(appHost, alias, new DirectoryInfo(rootDirectoryPath))
+        public FileSystemMapping(string alias, string rootDirectoryPath)
+            : this(alias, new DirectoryInfo(rootDirectoryPath))
         { }
 
-        public FileSystemMapping(IAppHost appHost, string alias, DirectoryInfo rootDirInfo)
-            : base(appHost)
+        public FileSystemMapping(string alias, DirectoryInfo rootDirInfo)
         {
             if (alias == null)
                 throw new ArgumentNullException(nameof(alias));
@@ -28,11 +27,8 @@ namespace ServiceStack.VirtualPath
             if (alias.IndexOfAny(new []{ '/', '\\' }) >= 0)
                 throw new ArgumentException($"Alias '{alias}' cannot contain directory separators");
 
-            if (rootDirInfo == null)
-                throw new ArgumentNullException(nameof(rootDirInfo));
-
             this.Alias = alias;
-            this.RootDirInfo = rootDirInfo;
+            this.RootDirInfo = rootDirInfo ?? throw new ArgumentNullException(nameof(rootDirInfo));
             Initialize();
         }
 
@@ -70,7 +66,7 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerable<IVirtualDirectory> GetRootDirectories()
         {
-            return new[] { new InMemoryVirtualDirectory(new InMemoryVirtualPathProvider(base.AppHost), Alias), };
+            return new[] { new InMemoryVirtualDirectory(new InMemoryVirtualPathProvider(), Alias), };
         }
 
         public override IEnumerable<IVirtualFile> GetRootFiles()

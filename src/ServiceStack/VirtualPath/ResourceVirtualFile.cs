@@ -41,7 +41,7 @@ namespace ServiceStack.VirtualPath
                 throw new ArgumentNullException(nameof(fileName));
 
             if (directory.BackingAssembly == null)
-                throw new ArgumentNullException("parentDirectory");
+                throw new ArgumentNullException(nameof(directory));
 
             this.FileName = fileName;
             this.BackingAssembly = directory.BackingAssembly;

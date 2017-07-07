@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override IVirtualPathProvider GetPathProvider()
         {
-            return new FileSystemVirtualPathProvider(appHost, RootDir);
+            return new FileSystemVirtualPathProvider(RootDir);
         }
     }
 
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override IVirtualPathProvider GetPathProvider()
         {
-            return new InMemoryVirtualPathProvider(appHost);
+            return new InMemoryVirtualPathProvider();
         }
     }
 

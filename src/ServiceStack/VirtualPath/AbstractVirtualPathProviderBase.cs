@@ -6,15 +6,9 @@ namespace ServiceStack.VirtualPath
 {
     public abstract class AbstractVirtualPathProviderBase : IVirtualPathProvider
     {
-        public IAppHost AppHost { get; protected set; }
         public abstract IVirtualDirectory RootDirectory { get; }
         public abstract string VirtualPathSeparator { get; }
         public abstract string RealPathSeparator { get; }
-
-        protected AbstractVirtualPathProviderBase(IAppHost appHost)
-        {
-            AppHost = appHost ?? throw new ArgumentNullException(nameof(appHost));
-        }
 
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {

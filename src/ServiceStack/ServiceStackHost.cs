@@ -201,7 +201,7 @@ namespace ServiceStack
                 pathProviders = GetVirtualFileSources().Where(x => x != null).ToList();
 
                 VirtualFileSources = pathProviders.Count > 1
-                    ? new MultiVirtualPathProvider(this, pathProviders.ToArray())
+                    ? new MultiVirtualPathProvider(pathProviders.ToArray())
                     : pathProviders.First();
             }
 
@@ -257,14 +257,14 @@ namespace ServiceStack
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
-                new FileSystemVirtualPathProvider(this, GetWebRootPath())
+                new FileSystemVirtualPathProvider(GetWebRootPath())
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(this, x)));
+                .Map(x => new ResourceVirtualPathProvider(x)));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(this, x)));
+                .Map(x => new ResourceVirtualPathProvider(x)));
 
             return pathProviders;
         }

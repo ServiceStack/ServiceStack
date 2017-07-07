@@ -27,7 +27,7 @@ namespace ServiceStack
 
         public CsvRequestLogger(IVirtualFiles files = null, string requestLogsPattern = null, string errorLogsPattern = null, TimeSpan? appendEvery = null)
         {
-            this.files = files ?? new FileSystemVirtualPathProvider(HostContext.AppHost, HostContext.Config.WebHostPhysicalPath);
+            this.files = files ?? new FileSystemVirtualPathProvider(HostContext.Config.WebHostPhysicalPath);
             this.requestLogsPattern = requestLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}.csv";
             this.errorLogsPattern = errorLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv";
             this.appendEverySecs = (int)appendEvery.GetValueOrDefault(TimeSpan.FromSeconds(1)).TotalSeconds;

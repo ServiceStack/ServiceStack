@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             var markdownFormat = new MarkdownFormat
             {
-                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
+                VirtualPathProvider = new InMemoryVirtualPathProvider()
             };
 
             markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);

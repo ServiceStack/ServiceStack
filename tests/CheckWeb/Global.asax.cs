@@ -273,7 +273,7 @@ namespace CheckWeb
             var existingProviders = base.GetVirtualFileSources();
             //return existingProviders;
 
-            var memFs = new InMemoryVirtualPathProvider(this);
+            var memFs = new InMemoryVirtualPathProvider();
 
             //Get FileSystem Provider
             var fs = existingProviders.First(x => x is FileSystemVirtualPathProvider);

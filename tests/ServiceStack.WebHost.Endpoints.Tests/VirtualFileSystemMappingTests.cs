@@ -55,8 +55,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override List<IVirtualPathProvider> GetVirtualFileSources()
             {
                 var existingSources = base.GetVirtualFileSources();
-                existingSources.Add(new FileSystemMapping(this, "vfs1", MapProjectPath("~/App_Data/mount1")));
-                existingSources.Add(new FileSystemMapping(this, "vfs2", MapProjectPath("~/App_Data/mount2")));
+                existingSources.Add(new FileSystemMapping("vfs1", MapProjectPath("~/App_Data/mount1")));
+                existingSources.Add(new FileSystemMapping("vfs2", MapProjectPath("~/App_Data/mount2")));
                 return existingSources;
             }
         }

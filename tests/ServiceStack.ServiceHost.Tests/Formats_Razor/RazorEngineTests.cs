@@ -37,7 +37,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         {
             RazorFormat.Instance = null;
 
-            var fileSystem = new InMemoryVirtualPathProvider(new BasicAppHost());
+            var fileSystem = new InMemoryVirtualPathProvider();
             fileSystem.WriteFile("/views/TheLayout.cshtml", LayoutHtml);
             InitializeFileSystem(fileSystem);
 
