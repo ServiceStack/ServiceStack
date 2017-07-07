@@ -26,23 +26,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         public object AnyHtml(GetProduct request)
         {
-            return new HtmlResult(HtmlPages.GetPage("product-view"))
+            return new HtmlResult(HtmlPages.GetOrCreatePage("product-view"))
             {
                 Model = request,
-                LayoutPage = HtmlPages.GetPage("product-layout"),
+                LayoutPage = HtmlPages.GetOrCreatePage("product-layout"),
             };
         }
 
         public object Any(OverrideExistingPage request)
         {
-            return new HtmlResult(HtmlPages.GetPage("override-page"))
+            return new HtmlResult(HtmlPages.GetOrCreatePage("override-page"))
             {
                 Model = request,
                 Args =
                 {
                     { "title", "Service Title" }
                 },
-                LayoutPage = HtmlPages.GetPage("override-layout"),
+                LayoutPage = HtmlPages.GetOrCreatePage("override-layout"),
             };
         }
     }
