@@ -4,4 +4,9 @@
     {
         string ToHtmlString();
     }
+
+    public interface IRawString
+    {
+        string ToRawString();
+    }
 }
