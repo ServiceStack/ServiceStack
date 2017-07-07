@@ -77,23 +77,5 @@ namespace ServiceStack.Templates
             return to;
         }
         
-        public static string HtmlEncodeValue(object value)
-        {
-            if (value == null)
-                return string.Empty;
-            
-            if (value is IRawString rawString)
-                return rawString.ToRawString();
-            
-            if (value is IHtmlString htmlString)
-                return htmlString.ToHtmlString();
-
-            var str = value.ToString();
-            if (str == string.Empty)
-                return string.Empty;
-
-            return StringUtils.HtmlEncode(str);
-        }
-        
     }
 }

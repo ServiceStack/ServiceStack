@@ -6,7 +6,7 @@ namespace ServiceStack.Templates
 {
     public interface ITemplatePages
     {
-        TemplatePage ResolveLayoutPage(TemplatePage page);
+        TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
         TemplatePage GetOrCreatePage(string virtualPath);
@@ -22,12 +22,12 @@ namespace ServiceStack.Templates
         
         static readonly ConcurrentDictionary<string, TemplatePage> pageMap = new ConcurrentDictionary<string, TemplatePage>(); 
 
-        public virtual TemplatePage ResolveLayoutPage(TemplatePage page)
+        public virtual TemplatePage ResolveLayoutPage(TemplatePage page, string layout)
         {
             if (!page.HasInit)
                 throw new ArgumentException($"Page {page.File.VirtualPath} has not been initialized");
 
-            var layoutWithoutExt = (page.Layout ?? Context.DefaultLayoutPage).LeftPart('.');
+            var layoutWithoutExt = (layout ?? Context.DefaultLayoutPage).LeftPart('.');
 
             var dir = page.File.Directory;
             do
@@ -36,11 +36,14 @@ namespace ServiceStack.Templates
 
                 if (pageMap.TryGetValue(layoutPath, out TemplatePage layoutPage))
                     return layoutPage;
-                
-                var layoutFile = dir.GetFile($"{layoutWithoutExt}.{Context.PageExtension}");
-                if (layoutFile != null)
-                    return AddPage(layoutPath, layoutFile);
 
+                foreach (var format in Context.PageFormats)
+                {
+                    var layoutFile = dir.GetFile($"{layoutWithoutExt}.{format.Extension}");
+                    if (layoutFile != null)
+                        return AddPage(layoutPath, layoutFile);
+                }
+                
                 dir = dir.ParentDirectory;
 
             } while (!dir.IsRoot);
@@ -72,12 +75,16 @@ namespace ServiceStack.Templates
             var page = GetPage(santizePath);
             if (page != null)
                 return page;
-            
-            var file = !santizePath.EndsWith("/")
-                ? Context.VirtualFileSources.GetFile($"{santizePath}.{Context.PageExtension}")
-                : Context.VirtualFileSources.GetFile($"{santizePath}{Context.IndexPage}.{Context.PageExtension}");
-            if (file != null)
-                return AddPage(file.VirtualPath.WithoutExtension(), file);
+
+            foreach (var format in Context.PageFormats)
+            {
+                var file = !santizePath.EndsWith("/")
+                    ? Context.VirtualFileSources.GetFile($"{santizePath}.{format.Extension}")
+                    : Context.VirtualFileSources.GetFile($"{santizePath}{Context.IndexPage}.{format.Extension}");
+
+                if (file != null)
+                    return AddPage(file.VirtualPath.WithoutExtension(), file);
+            }
 
             return null; 
         }

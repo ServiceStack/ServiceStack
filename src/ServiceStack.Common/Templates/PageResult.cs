@@ -30,7 +30,7 @@ namespace ServiceStack.Templates
             Filters = new List<TemplateFilter>();
             Options = new Dictionary<string, string>
             {
-                { HttpHeaders.ContentType, MimeTypes.Html },
+                { HttpHeaders.ContentType, Page.Format.ContentType },
             };
         }
 
@@ -68,7 +68,7 @@ namespace ServiceStack.Templates
                         }
                         else
                         {
-                            var bytes = Page.Context.EncodeValue(GetValue(var));
+                            var bytes = Page.Format.EncodeValue(GetValue(var));
                             await responseStream.WriteAsync(bytes, token);
                         }
                     }
@@ -93,7 +93,7 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    var bytes = Page.Context.EncodeValue(GetValue(var));
+                    var bytes = Page.Format.EncodeValue(GetValue(var));
                     await responseStream.WriteAsync(bytes, token);
                 }
             }

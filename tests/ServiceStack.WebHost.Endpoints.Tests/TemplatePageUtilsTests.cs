@@ -3,7 +3,7 @@ using ServiceStack.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class ServerHtmlUtilsTests
+    public class TemplatePageUtilsTests
     {
         [Test]
         public void Can_parse_template_with_no_vars()

@@ -49,12 +49,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class ServerHtmlTests
+    public class TemplatePageTests
     {
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(ServerHtmlTests), typeof(TemplatePagesService).GetAssembly()) { }
+                : base(nameof(TemplatePageTests), typeof(TemplatePagesService).GetAssembly()) { }
 
             public override void Configure(Container container)
             {
@@ -123,7 +123,7 @@ title: We encode < & >
         }
 
         private readonly ServiceStackHost appHost;
-        public ServerHtmlTests()
+        public TemplatePageTests()
         {
             appHost = new AppHost()
                 .Init()

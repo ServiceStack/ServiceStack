@@ -10,6 +10,9 @@ namespace ServiceStack
 {
     public class TemplatePagesFeature : TemplatePagesContext, IPlugin
     {
+        public static int PreventDosMaxSize = 10000;
+        private static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
+
         public void Register(IAppHost appHost)
         {
             DebugMode = appHost.Config.DebugMode;
@@ -17,8 +20,6 @@ namespace ServiceStack
             appHost.Register(TemplatePages);
             appHost.CatchAllHandlers.Add(RequestHandler);
         }
-
-        static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
 
         protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
         {
@@ -66,8 +67,6 @@ namespace ServiceStack
 
             await result.WriteToAsync(httpRes.OutputStream);
         }
-
-        public override bool RunAsAsync() => true;
     }
     
 }

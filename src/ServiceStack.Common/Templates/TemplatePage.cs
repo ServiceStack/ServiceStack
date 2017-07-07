@@ -7,31 +7,33 @@ using ServiceStack.IO;
 using ServiceStack.Text;
 #if NETSTANDARD1_3
 using Microsoft.Extensions.Primitives;
-
 #endif
 
 namespace ServiceStack.Templates
 {
     public class TemplatePage
     {
-        public IVirtualFile File { get; set; }
-        public StringSegment ServerHtml { get; set; }
-        public StringSegment PageHtml { get; set; }
-        public Dictionary<string, string> PageVars { get; set; }
-        public string Layout { get; set; }
+        public IVirtualFile File { get; }
+        public StringSegment FileContents { get; private set; }
+        public StringSegment BodyContents { get; private set; }
+        public Dictionary<string, string> PageVars { get; private set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
-        public bool IsCompletePage { get; set; }
         public bool HasInit { get; private set; }
 
         public TemplatePagesContext Context { get; }
+        public PageFormat Format { get; }
         private readonly object semaphore = new object();
 
-        public TemplatePage(TemplatePagesContext feature, IVirtualFile file)
+        public TemplatePage(TemplatePagesContext context, IVirtualFile file, PageFormat format=null)
         {
-            this.Context = feature ?? throw new ArgumentNullException(nameof(feature));
+            Context = context ?? throw new ArgumentNullException(nameof(context));
             File = file ?? throw new ArgumentNullException(nameof(file));
+            
+            Format = format ?? Context.GetFormat(File.Extension);
+            if (Format == null)
+                throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
         public async Task<TemplatePage> Init()
@@ -43,58 +45,55 @@ namespace ServiceStack.Templates
 
         public async Task<TemplatePage> Load()
         {
-            string serverHtml;
+            string contents;
             using (var stream = File.OpenRead())
             using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                serverHtml = await reader.ReadToEndAsync();
+                contents = await reader.ReadToEndAsync();
             }
+
+            var lastModified = File.LastModified;
+            var fileContents = contents.ToStringSegment();
+            var pageVars = new Dictionary<string, string>();
+
+            var pos = 0;
+            while (char.IsWhiteSpace(fileContents.GetChar(pos)))
+                pos++;
+
+            fileContents.TryReadLine(out StringSegment line, ref pos);
+            if (line.StartsWith(Format.ArgsPrefix))
+            {
+                while (fileContents.TryReadLine(out line, ref pos))
+                {
+                    if (line.Trim().Length == 0)
+                        continue;
+
+
+                    if (line.StartsWith(Format.ArgsSuffix))
+                        break;
+
+                    var kvp = line.SplitOnFirst(':');
+                    pageVars[kvp[0].Trim().ToString()] = kvp.Length > 1 ? kvp[1].Trim().ToString() : "";
+                }
+            }
+            else
+            {
+                pos = 0;
+            }
+
+            var bodyContents = fileContents.Subsegment(pos).TrimStart();
+            var pageFragments = TemplatePageUtils.ParseTemplatePage(bodyContents);
 
             lock (semaphore)
             {
-                LastModified = File.LastModified;
-
-                ServerHtml = serverHtml.ToStringSegment();
-                PageVars = new Dictionary<string, string>();
-
-                var pos = 0;
-                while (char.IsWhiteSpace(ServerHtml.GetChar(pos)))
-                    pos++;
-
-                ServerHtml.TryReadLine(out StringSegment line, ref pos);
-                if (line.StartsWith("<!--"))
-                {
-                    while (ServerHtml.TryReadLine(out line, ref pos))
-                    {
-                        if (line.Trim().Length == 0)
-                            continue;
-
-
-                        if (line.StartsWith("-->"))
-                            break;
-
-                        var kvp = line.SplitOnFirst(':');
-                        PageVars[kvp[0].Trim().ToString()] = kvp.Length > 1 ? kvp[1].Trim().ToString() : "";
-                    }
-                }
-                else
-                {
-                    pos = 0;
-                }
-
-                PageHtml = ServerHtml.Subsegment(pos).TrimStart();
-                PageFragments = TemplatePageUtils.ParseTemplatePage(PageHtml);
-                IsCompletePage = Context.IsCompletePage(PageHtml);
+                LastModified = lastModified;
+                FileContents = fileContents;
+                PageVars = pageVars;
+                BodyContents = bodyContents;
+                PageFragments = pageFragments;
 
                 HasInit = true;
-
-                if (!IsCompletePage)
-                {
-                    if (PageVars.TryGetValue(TemplatePages.Layout, out string layout))
-                        Layout = layout;
-
-                    LayoutPage = Context.TemplatePages.ResolveLayoutPage(this);
-                }
+                LayoutPage = Format.ResolveLayout(this);
             }
 
             if (LayoutPage != null)
@@ -123,7 +122,7 @@ namespace ServiceStack.Templates
 
         public string GetEncodedValue(PageVariableFragment var)
         {
-            return Context.EncodeValue(GetValue(var));
+            return Format.EncodeValue(GetValue(var));
         }
     }
 }
