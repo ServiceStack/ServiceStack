@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
+using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -22,27 +23,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class ServerHtmlService : Service
     {
-        public IHtmlPages HtmlPages { get; set; }
+        public ITemplatePages TemplatePages { get; set; }
         
         public object AnyHtml(GetProduct request)
         {
-            return new HtmlResult(HtmlPages.GetOrCreatePage("product-view"))
+            return new PageResult(TemplatePages.GetOrCreatePage("product-view"))
             {
                 Model = request,
-                LayoutPage = HtmlPages.GetOrCreatePage("product-layout"),
+                LayoutPage = TemplatePages.GetOrCreatePage("product-layout"),
             };
         }
 
         public object Any(OverrideExistingPage request)
         {
-            return new HtmlResult(HtmlPages.GetOrCreatePage("override-page"))
+            return new PageResult(TemplatePages.GetOrCreatePage("override-page"))
             {
                 Model = request,
                 Args =
                 {
                     { "title", "Service Title" }
                 },
-                LayoutPage = HtmlPages.GetOrCreatePage("override-layout"),
+                LayoutPage = TemplatePages.GetOrCreatePage("override-layout"),
             };
         }
     }
@@ -56,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new ServerHtmlFeature());
+                Plugins.Add(new TemplatePagesFeature());
             }
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>
@@ -130,8 +131,8 @@ title: We encode < & >
 
         [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
 
-        ServerHtmlPage CreatePage(IVirtualFile file) =>
-            new ServerHtmlPage(appHost.GetPlugin<ServerHtmlFeature>(), file);
+        TemplatePage CreatePage(IVirtualFile file) =>
+            new TemplatePage(appHost.GetPlugin<TemplatePagesFeature>(), file);
 
         [Test]
         public void Request_for_partial_page_returns_complete_page_with_default_layout()
@@ -264,7 +265,7 @@ title: We encode < & >
 
             Assert.That(page.PageVars["layout"], Is.EqualTo("alt-layout.html"));
             Assert.That(page.PageVars["title"], Is.EqualTo("Variable Layout"));
-            Assert.That(((ServerHtmlStringFragment)page.PageFragments[0]).Value, Is.EqualTo("<h1>Variable Page</h1>"));
+            Assert.That(((PageStringFragment)page.PageFragments[0]).Value, Is.EqualTo("<h1>Variable Page</h1>"));
         }
 
         [Test]
@@ -275,11 +276,11 @@ title: We encode < & >
             var page = await CreatePage(file).Init();
 
             Assert.That(page.PageFragments.Count, Is.EqualTo(5));
-            var strFragment1 = (ServerHtmlStringFragment)page.PageFragments[0];
-            var varFragment2 = (ServerHtmlVariableFragment)page.PageFragments[1];
-            var strFragment3 = (ServerHtmlStringFragment)page.PageFragments[2];
-            var varFragment4 = (ServerHtmlVariableFragment)page.PageFragments[3];
-            var strFragment5 = (ServerHtmlStringFragment)page.PageFragments[4];
+            var strFragment1 = (PageStringFragment)page.PageFragments[0];
+            var varFragment2 = (PageVariableFragment)page.PageFragments[1];
+            var strFragment3 = (PageStringFragment)page.PageFragments[2];
+            var varFragment4 = (PageVariableFragment)page.PageFragments[3];
+            var strFragment5 = (PageStringFragment)page.PageFragments[4];
 
             Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));

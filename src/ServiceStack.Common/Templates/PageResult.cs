@@ -4,35 +4,30 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
-using ServiceStack.Text;
 
-#if NETSTANDARD1_6
-using Microsoft.Extensions.Primitives;
-#endif
-
-namespace ServiceStack
+namespace ServiceStack.Templates
 {
-    public interface IHtmlResult {}
+    public interface IPageResult {}
 
-    public class HtmlResult : IHtmlResult, IStreamWriterAsync, IHasOptions
+    public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions
     {
-        public ServerHtmlPage Page { get; set; }
+        public TemplatePage Page { get; set; }
 
-        public ServerHtmlPage LayoutPage { get; set; }
+        public TemplatePage LayoutPage { get; set; }
 
         public object Model { get; set;  }
         
         public Dictionary<string, object> Args { get; set; }
         
-        public List<ServerHtmlFilter> Filters { get; set; }
+        public List<PageTemplateFilter> Filters { get; set; }
 
         public IDictionary<string, string> Options { get; set; }
 
-        public HtmlResult(ServerHtmlPage page)
+        public PageResult(TemplatePage page)
         {
             Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
-            Filters = new List<ServerHtmlFilter>();
+            Filters = new List<PageTemplateFilter>();
             Options = new Dictionary<string, string>
             {
                 { HttpHeaders.ContentType, MimeTypes.Html },
@@ -61,11 +56,11 @@ namespace ServiceStack
             {
                 foreach (var fragment in LayoutPage.PageFragments)
                 {
-                    if (fragment is ServerHtmlStringFragment str)
+                    if (fragment is PageStringFragment str)
                     {
                         await responseStream.WriteAsync(str.ValueBytes, token);
                     }
-                    else if (fragment is ServerHtmlVariableFragment var)
+                    else if (fragment is PageVariableFragment var)
                     {
                         if (var.Name.Equals("body"))
                         {
@@ -92,11 +87,11 @@ namespace ServiceStack
             
             foreach (var fragment in Page.PageFragments)
             {
-                if (fragment is ServerHtmlStringFragment str)
+                if (fragment is PageStringFragment str)
                 {
                     await responseStream.WriteAsync(str.ValueBytes, token);
                 }
-                else if (fragment is ServerHtmlVariableFragment var)
+                else if (fragment is PageVariableFragment var)
                 {
                     var bytes = Page.Context.EncodeValue(GetValue(var));
                     await responseStream.WriteAsync(bytes, token);
@@ -104,49 +99,12 @@ namespace ServiceStack
             }
         }
 
-        public object GetValue(ServerHtmlVariableFragment var)
+        public object GetValue(PageVariableFragment var)
         {
             return Args.TryGetValue(var.NameString, out object value) 
                 ? value 
                 : Page.GetValue(var) ?? 
                   (LayoutPage != null && LayoutPage != Page.LayoutPage ? LayoutPage.GetValue(var) : null);
-        }
-    }
-
-    public class ServerHtmlFilter {}
-
-    public abstract class ServerHtmlFragment {}
-
-    public class ServerHtmlVariableFragment : ServerHtmlFragment
-    {
-        public StringSegment OriginalText { get; set; }
-        private byte[] originalTextBytes;
-        public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
-        
-        public StringSegment Name { get; set; }
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Name.Value);
-        
-        public List<Command> FilterCommands { get; set; }
-
-        public ServerHtmlVariableFragment(StringSegment originalText, StringSegment name, List<Command> filterCommands)
-        {
-            OriginalText = originalText;
-            Name = name;
-            FilterCommands = filterCommands;
-        }
-    }
-
-    public class ServerHtmlStringFragment : ServerHtmlFragment
-    {
-        public StringSegment Value { get; set; }
-
-        private byte[] valueBytes;
-        public byte[] ValueBytes => valueBytes ?? (valueBytes = Value.ToUtf8Bytes());
-
-        public ServerHtmlStringFragment(StringSegment value)
-        {
-            Value = value;
         }
     }
 }

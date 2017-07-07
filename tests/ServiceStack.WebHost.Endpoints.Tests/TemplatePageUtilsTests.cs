@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using ServiceStack.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -7,23 +8,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_no_vars()
         {
-            Assert.That(ServerHtmlUtils.ParseServerHtml("").Count, Is.EqualTo(0));
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>title</h1>");
+            Assert.That(TemplatePageUtils.ParseTemplatePage("").Count, Is.EqualTo(0));
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>title</h1>");
             Assert.That(fragments.Count, Is.EqualTo(1));
 
-            var strFragment = fragments[0] as ServerHtmlStringFragment;
+            var strFragment = fragments[0] as PageStringFragment;
             Assert.That(strFragment.Value, Is.EqualTo("<h1>title</h1>"));
         }
 
         [Test]
         public void Can_parse_template_with_variable()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title }}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title }}"));
@@ -35,12 +36,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_filter()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter }}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter }}"));
@@ -50,9 +51,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
 
-            fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter() }}</h1>");
+            fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter() }}</h1>");
 
-            varFragment2 = fragments[1] as ServerHtmlVariableFragment;
+            varFragment2 = fragments[1] as PageVariableFragment;
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter() }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
@@ -63,23 +64,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_filter_without_whitespace()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{title}}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title}}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterCommands, Is.Null);
 
-            fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{title|filter}}</h1>");
+            fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title|filter}}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            strFragment1 = fragments[0] as PageStringFragment;
+            varFragment2 = fragments[1] as PageVariableFragment;
+            strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{title|filter}}"));
@@ -93,12 +94,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_filter_with_arg()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter(1) }}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter(1) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1) }}"));
@@ -113,12 +114,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_filter_with_multiple_args()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1,2.2,'a',\"b\",true) }}"));
@@ -137,12 +138,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_multiple_filters_and_multiple_args()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}"));
@@ -170,14 +171,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_template_with_multiple_variables_and_filters()
         {
-            var fragments = ServerHtmlUtils.ParseServerHtml("<h1>{{ title | filter1 }}</h1>\n<p>{{ content | filter2(a) }}</p>");
+            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter1 }}</h1>\n<p>{{ content | filter2(a) }}</p>");
             Assert.That(fragments.Count, Is.EqualTo(5));
 
-            var strFragment1 = fragments[0] as ServerHtmlStringFragment;
-            var varFragment2 = fragments[1] as ServerHtmlVariableFragment;
-            var strFragment3 = fragments[2] as ServerHtmlStringFragment;
-            var varFragment4 = fragments[3] as ServerHtmlVariableFragment;
-            var strFragment5 = fragments[4] as ServerHtmlStringFragment;
+            var strFragment1 = fragments[0] as PageStringFragment;
+            var varFragment2 = fragments[1] as PageVariableFragment;
+            var strFragment3 = fragments[2] as PageStringFragment;
+            var varFragment4 = fragments[3] as PageVariableFragment;
+            var strFragment5 = fragments[4] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
 
