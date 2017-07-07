@@ -511,6 +511,11 @@
             Contract indication that the Response DTO has a ResponseStatus
             </summary>
         </member>
+        <member name="M:ServiceStack.IO.IVirtualFile.Refresh">
+            <summary>
+            Refresh file stats for this node if supported
+            </summary>
+        </member>
         <member name="P:ServiceStack.IQuery.Skip">
             <summary>
             How many results to skip
