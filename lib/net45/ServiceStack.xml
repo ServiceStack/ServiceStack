@@ -817,6 +817,11 @@
             Vary cache for users in these roles
             </summary>
         </member>
+        <member name="P:ServiceStack.CacheResponseAttribute.VaryByHeaders">
+            <summary>
+            Vary cache for different HTTP Headers
+            </summary>
+        </member>
         <member name="P:ServiceStack.CacheResponseAttribute.LocalCache">
             <summary>
             Use HostContext.LocalCache or HostContext.Cache
@@ -4339,11 +4344,6 @@
             Non ASP.NET requests
             </summary>
         </member>
-        <member name="M:ServiceStack.Host.Handlers.IndexPageHttpHandler.ProcessRequest(System.Web.HttpContextBase)">
-            <summary>
-            ASP.NET requests
-            </summary>
-        </member>
         <member name="M:ServiceStack.Host.Handlers.RedirectHttpHandler.ProcessRequest(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
             <summary>
             Non ASP.NET requests
@@ -4351,12 +4351,6 @@
             <param name="request"></param>
             <param name="response"></param>
             <param name="operationName"></param>
-        </member>
-        <member name="M:ServiceStack.Host.Handlers.RedirectHttpHandler.ProcessRequest(System.Web.HttpContextBase)">
-            <summary>
-            ASP.NET requests
-            </summary>
-            <param name="context"></param>
         </member>
         <member name="M:ServiceStack.Host.Handlers.StaticFileHandler.#ctor(System.String)">
             <summary>
@@ -4925,7 +4919,7 @@
             Deletes a specified cookie by setting its value to empty and expiration to -1 days
             </summary>
         </member>
-        <member name="M:ServiceStack.HttpResponseExtensionsInternal.WriteToResponse(ServiceStack.Web.IResponse,System.Object,ServiceStack.Web.ResponseSerializerDelegate,ServiceStack.Web.IRequest,System.Byte[],System.Byte[])">
+        <member name="M:ServiceStack.HttpResponseExtensionsInternal.WriteToResponse(ServiceStack.Web.IResponse,System.Object,ServiceStack.Web.ResponseSerializerDelegate,ServiceStack.Web.IRequest,System.Byte[],System.Byte[],System.Threading.CancellationToken)">
             <summary>
             Writes to response.
             Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
@@ -4995,6 +4989,11 @@
             </summary>
         </member>
         <member name="M:ServiceStack.HttpResultUtils.WritePartialTo(System.IO.Stream,System.IO.Stream,System.Int64,System.Int64)">
+            <summary>
+            Writes partial range as specified by start-end, from fromStream to toStream.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.HttpResultUtils.WritePartialToAsync(System.IO.Stream,System.IO.Stream,System.Int64,System.Int64,System.Threading.CancellationToken)">
             <summary>
             Writes partial range as specified by start-end, from fromStream to toStream.
             </summary>
@@ -6637,7 +6636,7 @@
             Try to keep everything static so we can easily be reused.
             </summary>
         </member>
-        <member name="M:ServiceStack.MiniProfiler.UI.MiniProfilerHandler.ProcessRequest(System.Web.HttpContextBase)">
+        <member name="M:ServiceStack.MiniProfiler.UI.MiniProfilerHandler.ProcessRequest(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
             <summary>
             Returns either includes' css/javascript or results' html.
             </summary>
@@ -6846,6 +6845,11 @@
             Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
             </summary>
         </member>
+        <member name="M:ServiceStack.RequestContext.StartRequestContext">
+            <summary>
+            Start a new Request context, everything deeper in Async pipeline will get this new RequestContext dictionary.
+            </summary>
+        </member>
         <member name="P:ServiceStack.RequestContext.Items">
             <summary>
             Gets a list of items for this request. 
@@ -6955,6 +6959,11 @@
         <member name="P:ServiceStack.RequestLogsFeature.EnableErrorTracking">
             <summary>
             Turn On/Off Tracking of Exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RequestLogsFeature.SkipLogging">
+            <summary>
+            Don't log matching requests
             </summary>
         </member>
         <member name="P:ServiceStack.RequestLogsFeature.Capacity">
