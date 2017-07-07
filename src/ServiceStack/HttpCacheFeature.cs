@@ -85,7 +85,7 @@ namespace ServiceStack
         {
             var httpResult = response as IHttpResult;
             var dto = httpResult != null ? httpResult.Response : response;
-            if (dto == null || dto is IPartialWriter || dto is IStreamWriter)
+            if (dto == null || dto is IPartialWriter || dto is IPartialWriterAsync || dto is IStreamWriter || dto is IStreamWriterAsync)
                 return false;
 
             var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);

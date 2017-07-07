@@ -54,10 +54,7 @@ namespace ServiceStack
         public HttpResult(FileInfo fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
-            if (fileResponse == null)
-                throw new ArgumentNullException(nameof(fileResponse));
-
-            this.FileInfo = fileResponse;
+            this.FileInfo = fileResponse ?? throw new ArgumentNullException(nameof(fileResponse));
             this.LastModified = fileResponse.LastWriteTime;
             this.AllowsPartialResponse = true;
             if (!FileInfo.Exists)
@@ -299,7 +296,7 @@ namespace ServiceStack
                 var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
                 response?.SetContentLength(bytes.Length + paddingLength);
 
-                await responseStream.WriteAsync(bytes, 0, bytes.Length, token);
+                await responseStream.WriteAsync(bytes, token);
                 return;
             }
 
@@ -313,7 +310,7 @@ namespace ServiceStack
             {
                 response?.SetContentLength(bytesResponse.Length + paddingLength);
 
-                await responseStream.WriteAsync(bytesResponse, 0, bytesResponse.Length, token);
+                await responseStream.WriteAsync(bytesResponse, token);
                 return;
             }
 
@@ -330,7 +327,7 @@ namespace ServiceStack
         public bool IsPartialRequest => 
             AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null;
 
-        public async Task WritePartialToAsync(IResponse response, CancellationToken token = new CancellationToken())
+        public async Task WritePartialToAsync(IResponse response, CancellationToken token = default(CancellationToken))
         {
             var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
             var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);
@@ -355,7 +352,7 @@ namespace ServiceStack
             {
                 try
                 {
-                    await ResponseStream.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token: token);
+                    await ResponseStream.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
                 finally
                 {
@@ -366,7 +363,7 @@ namespace ServiceStack
             {
                 using (var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText)))
                 {
-                    ms.WritePartialTo(outputStream, rangeStart, rangeEnd); //Write Sync to MemoryStream
+                    await ms.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
             }
             else

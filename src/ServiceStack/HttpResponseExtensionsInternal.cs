@@ -342,13 +342,14 @@ namespace ServiceStack
             {
                 if (!response.IsClosed)
                 {
-                    response.WriteErrorToResponse(
+                    return response.WriteErrorToResponse(
                         request,
                         defaultContentType ?? request.ResponseContentType,
                         request.OperationName,
                         errorMessage,
                         originalEx,
-                        (int)HttpStatusCode.InternalServerError);
+                        (int) HttpStatusCode.InternalServerError)
+                    .ContinueWith(x => true);
                 }
             }
             catch (Exception writeErrorEx)
@@ -360,6 +361,7 @@ namespace ServiceStack
             return TypeConstants.TrueTask;
         }
 
+        [Obsolete("Use WriteBytesToResponseAsync")]
         public static void WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType)
         {
             res.ContentType = HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType)
@@ -377,6 +379,30 @@ namespace ServiceStack
             catch (Exception ex)
             {
                 ex.HandleResponseWriteException(res.Request, res, contentType);
+            }
+            finally
+            {
+                res.EndRequest(skipHeaders: true);
+            }
+        }
+
+        public static async Task WriteBytesToResponseAsync(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default(CancellationToken))
+        {
+            res.ContentType = HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(contentType)
+                ? contentType + ContentFormat.Utf8Suffix
+                : contentType;
+
+            res.ApplyGlobalResponseHeaders();
+            res.SetContentLength(responseBytes.Length);
+
+            try
+            {
+                await res.OutputStream.WriteAsync(responseBytes, token);
+                await res.FlushAsync(token);
+            }
+            catch (Exception ex)
+            {
+                await ex.HandleResponseWriteException(res.Request, res, contentType);
             }
             finally
             {

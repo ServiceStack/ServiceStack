@@ -5,10 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Web;
 
-#if NETFX_CORE
-using System.Net.Http.Headers;
-#endif
-
 namespace ServiceStack
 {
     public class CompressedFileResult
@@ -44,19 +40,6 @@ namespace ServiceStack
             };
         }
 
-#if NETFX_CORE
-        public async void WriteTo(Stream responseStream)
-        {
-            var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(this.FilePath);
-            using (var fs = await file.OpenStreamForWriteAsync())
-            {
-                fs.Position = Adler32ChecksumLength;
-
-                fs.WriteTo(responseStream);
-                responseStream.Flush();
-            }
-        }
-#else
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
             using (var fs = new FileStream(this.FilePath, FileMode.Open, FileAccess.Read))
@@ -67,7 +50,5 @@ namespace ServiceStack
                 await responseStream.FlushAsync(token);
             }
         }
-#endif
-
     }
 }

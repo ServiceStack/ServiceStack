@@ -91,7 +91,7 @@ namespace ServiceStack
             var response = RequestContext?.Response;
             response?.SetContentLength(this.Contents.Length + PaddingLength);
 
-            await responseStream.WriteAsync(this.Contents, 0, this.Contents.Length, token);
+            await responseStream.WriteAsync(this.Contents, token);
             //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 
             await responseStream.FlushAsync(token);

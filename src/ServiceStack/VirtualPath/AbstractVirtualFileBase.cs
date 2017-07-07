@@ -136,10 +136,7 @@ namespace ServiceStack
         public static IVirtualFile Refresh(this IVirtualFile node)
         {
             var file = node as AbstractVirtualFileBase;
-            if (file != null)
-            {
-                file.Refresh();
-            }
+            file?.Refresh();
             return node;
         }
     }

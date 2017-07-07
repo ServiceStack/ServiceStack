@@ -19,10 +19,7 @@ namespace ServiceStack.VirtualPath
         public FileSystemVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory, FileInfo fInfo) 
             : base(owningProvider, directory)
         {
-            if (fInfo == null)
-                throw new ArgumentNullException(nameof(fInfo));
-
-            this.BackingFile = fInfo;
+            this.BackingFile = fInfo ?? throw new ArgumentNullException(nameof(fInfo));
         }
 
         public override Stream OpenRead()

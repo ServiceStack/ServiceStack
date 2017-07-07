@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -100,12 +101,12 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        public override async Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
         {
             HostContext.ApplyCustomHandlerRequestFilters(request, response);
             if (response.IsClosed) return;
 
-            response.EndHttpHandlerRequest(afterHeaders: r =>
+            await response.EndHttpHandlerRequestAsync(afterHeaders: async r =>
             {
                 var node = this.VirtualNode ?? request.GetVirtualNode();
                 var file = node as IVirtualFile;
@@ -190,7 +191,8 @@ namespace ServiceStack.Host.Handlers
 
                         if (!shouldCompress)
                         {
-                            r.OutputStream.Write(DefaultFileContents, 0, DefaultFileContents.Length);
+                            await r.OutputStream.WriteAsync(DefaultFileContents);
+                            await r.OutputStream.FlushAsync();
                         }
                         else
                         {
@@ -211,8 +213,8 @@ namespace ServiceStack.Host.Handlers
                             }
                             r.AddHeader(HttpHeaders.ContentEncoding, encoding);
                             r.SetContentLength(zipBytes.Length);
-                            r.OutputStream.Write(zipBytes, 0, zipBytes.Length);
-                            r.OutputStream.Flush();
+                            await r.OutputStream.WriteAsync(zipBytes);
+                            await r.OutputStream.FlushAsync();
                         }
 
                         r.Close();
@@ -243,22 +245,22 @@ namespace ServiceStack.Host.Handlers
                     {
                         if (rangeStart != 0 || rangeEnd != file.Length - 1)
                         {
-                            fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                            await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd);
                         }
                         else
                         {
                             if (!shouldCompress)
                             {
                                 r.SetContentLength(contentLength);
-                                fs.CopyTo(outputStream, BufferSize);
+                                await fs.CopyToAsync(outputStream, BufferSize);
                                 outputStream.Flush();
                             }
                             else
                             {
                                 r.AddHeader(HttpHeaders.ContentEncoding, encoding);
                                 outputStream = outputStream.CompressStream(encoding);
-                                fs.CopyTo(outputStream);
-                                outputStream.Flush();
+                                await fs.CopyToAsync(outputStream);
+                                await outputStream.FlushAsync();
                                 outputStream.Close();
                             }
                         }
