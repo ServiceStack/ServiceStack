@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 #if NETSTANDARD1_6
@@ -18,7 +17,68 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack
 {
-    public class ServerHtmlFeature : IPlugin
+    public class ServerHtmlFeature : ServerHtmlContext, IPlugin
+    {
+        public void Register(IAppHost appHost)
+        {
+            VirtualFileSources = appHost.VirtualFileSources;
+            appHost.Register<IHtmlPages>(HtmlPages);
+            appHost.CatchAllHandlers.Add(RequestHandler);
+        }
+
+        static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
+
+        protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
+        {
+            if (catchAllPathsNotFound.ContainsKey(pathInfo))
+                return null;
+
+            var page = HtmlPages.GetOrCreatePage(pathInfo);
+
+            if (page != null)
+            {
+                if (page.File.Name.StartsWith("_"))
+                    return new ForbiddenHttpHandler();
+                
+                return new ServerHtmlHandler(page);
+            }
+            
+            if (!pathInfo.EndsWith("/") && VirtualFileSources.DirectoryExists(pathInfo.TrimPrefixes("/")))
+                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
+
+            if (catchAllPathsNotFound.Count > ServerHtmlContext.PreventDosMaxSize)
+                catchAllPathsNotFound.Clear();
+
+            catchAllPathsNotFound[pathInfo] = 1;
+            return null;
+        }
+    }
+
+    public class ServerHtmlHandler : HttpAsyncTaskHandler
+    {
+        private readonly ServerHtmlPage page;
+        private readonly ServerHtmlPage layoutPage;
+
+        public ServerHtmlHandler(ServerHtmlPage page, ServerHtmlPage layoutPage = null)
+        {
+            this.page = page;
+            this.layoutPage = layoutPage;
+        }
+
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        {
+            var result = new HtmlResult(page)
+            {
+                LayoutPage = layoutPage
+            };
+
+            await result.WriteToAsync(httpRes.OutputStream);
+        }
+
+        public override bool RunAsAsync() => true;
+    }
+    
+    public class ServerHtmlContext
     {
         public static int PreventDosMaxSize = 10000; 
         
@@ -32,64 +92,45 @@ namespace ServiceStack
 
         public bool CheckModifiedPages { get; set; } = false;
 
-        public ServerHtmlPages HtmlPages { get; set; }
+        public IHtmlPages HtmlPages { get; set; }
 
-        public void Register(IAppHost appHost)
+        public IVirtualPathProvider VirtualFileSources { get; set; }
+
+        public Func<object, string> EncodeValue { get; set; } = ServerHtmlUtils.HtmlEncodeValue;
+
+        public Func<StringSegment, bool> IsCompletePage = page => 
+            page.StartsWith("<!DOCTYPE HTML>") || page.StartsWithIgnoreCase("<html");
+        
+        public ServerHtmlContext()
         {
-            HtmlPages = new ServerHtmlPages(appHost, this);
-            appHost.Register<IHtmlPages>(HtmlPages);
-            appHost.CatchAllHandlers.Add(HtmlPages.RequestHandler);
+            HtmlPages = new ServerHtmlPages(this);
         }
     }
-
+    
+    public interface IHtmlPages
+    {
+        ServerHtmlPage ResolveLayoutPage(ServerHtmlPage page);
+        ServerHtmlPage AddPage(string virtualPath, IVirtualFile file);
+        ServerHtmlPage GetPage(string virtualPath);
+        ServerHtmlPage GetOrCreatePage(string virtualPath);
+    }
+    
     public class ServerHtmlPages : IHtmlPages
     {
+        public ServerHtmlContext Context { get; }
+
+        public ServerHtmlPages(ServerHtmlContext context) => this.Context = context;
+
         public static string Layout = "layout";
-        
-        private readonly IAppHost appHost;
-        private readonly ServerHtmlFeature feature;
-
-        public ServerHtmlPages(IAppHost appHost, ServerHtmlFeature feature)
-        {
-            this.appHost = appHost;
-            this.feature = feature;
-        }
-
-        static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
         
         static readonly ConcurrentDictionary<string, ServerHtmlPage> pageMap = new ConcurrentDictionary<string, ServerHtmlPage>(); 
 
-        public virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
-        {
-            if (catchAllPathsNotFound.ContainsKey(pathInfo))
-                return null;
-
-            var page = GetPage(pathInfo);
-
-            if (page != null)
-            {
-                if (page.File.Name.StartsWith("_"))
-                    return new ForbiddenHttpHandler();
-                
-                return new ServerHtmlHandler(page);
-            }
-            
-            if (!pathInfo.EndsWith("/") && appHost.VirtualFileSources.DirectoryExists(pathInfo.TrimPrefixes("/")))
-                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
-
-            if (catchAllPathsNotFound.Count > ServerHtmlFeature.PreventDosMaxSize)
-                catchAllPathsNotFound.Clear();
-
-            catchAllPathsNotFound[pathInfo] = 1;
-            return null;
-        }
-
-        public ServerHtmlPage ResolveLayoutPage(ServerHtmlPage page)
+        public virtual ServerHtmlPage ResolveLayoutPage(ServerHtmlPage page)
         {
             if (!page.HasInit)
                 throw new ArgumentException($"Page {page.File.VirtualPath} has not been initialized");
 
-            var layoutWithoutExt = (page.Layout ?? feature.DefaultLayoutPage).LeftPart('.');
+            var layoutWithoutExt = (page.Layout ?? Context.DefaultLayoutPage).LeftPart('.');
 
             var dir = page.File.Directory;
             do
@@ -99,9 +140,9 @@ namespace ServiceStack
                 if (pageMap.TryGetValue(layoutPath, out ServerHtmlPage layoutPage))
                     return layoutPage;
                 
-                var layoutFile = dir.GetFile($"{layoutWithoutExt}.{feature.PageExtension}");
+                var layoutFile = dir.GetFile($"{layoutWithoutExt}.{Context.PageExtension}");
                 if (layoutFile != null)
-                    return pageMap[layoutPath] = new ServerHtmlPage(layoutFile);
+                    return AddPage(layoutPath, layoutFile);
 
                 dir = dir.ParentDirectory;
 
@@ -110,21 +151,36 @@ namespace ServiceStack
             return null;
         }
 
-        public ServerHtmlPage GetPage(string path)
+        public virtual ServerHtmlPage AddPage(string virtualPath, IVirtualFile file)
+        {
+            return pageMap[virtualPath] = new ServerHtmlPage(Context, file);
+        }
+
+        public virtual ServerHtmlPage GetPage(string path)
+        {
+            var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
+
+            return pageMap.TryGetValue(santizePath, out ServerHtmlPage page) 
+                ? page 
+                : null;
+        }
+
+        public virtual ServerHtmlPage GetOrCreatePage(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return null;
             
             var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            if (pageMap.TryGetValue(santizePath, out ServerHtmlPage page))
+            var page = GetPage(santizePath);
+            if (page != null)
                 return page;
             
             var file = !santizePath.EndsWith("/")
-                ? appHost.VirtualFileSources.GetFile($"{santizePath}.{feature.PageExtension}")
-                : appHost.VirtualFileSources.GetFile($"{santizePath}{feature.IndexPage}.{feature.PageExtension}");
+                ? Context.VirtualFileSources.GetFile($"{santizePath}.{Context.PageExtension}")
+                : Context.VirtualFileSources.GetFile($"{santizePath}{Context.IndexPage}.{Context.PageExtension}");
             if (file != null)
-                return pageMap[file.VirtualPath.WithoutExtension()] = new ServerHtmlPage(file);
+                return AddPage(file.VirtualPath.WithoutExtension(), file);
 
             return null; 
         }
@@ -140,12 +196,15 @@ namespace ServiceStack
         public ServerHtmlPage LayoutPage { get; set; }
         public List<ServerHtmlFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
-        public bool IsCompleteHtml { get; set; }
+        public bool IsCompletePage { get; set; }
         public bool HasInit { get; private set; }
+
+        public ServerHtmlContext Context { get; }
         private readonly object semaphore = new object();
 
-        public ServerHtmlPage(IVirtualFile file)
+        public ServerHtmlPage(ServerHtmlContext feature, IVirtualFile file)
         {
+            this.Context = feature ?? throw new ArgumentNullException(nameof(feature));
             File = file ?? throw new ArgumentNullException(nameof(file));
         }
 
@@ -164,8 +223,6 @@ namespace ServiceStack
             {
                 serverHtml = await reader.ReadToEndAsync();
             }
-
-            var feature = HostContext.GetPlugin<ServerHtmlFeature>();
 
             lock (semaphore)
             {
@@ -201,18 +258,16 @@ namespace ServiceStack
 
                 PageHtml = ServerHtml.Subsegment(pos).TrimStart();
                 PageFragments = ServerHtmlUtils.ParseServerHtml(PageHtml);
-
-                IsCompleteHtml = PageHtml.StartsWith("<!DOCTYPE HTML>")
-                     || PageHtml.StartsWithIgnoreCase("<html");
+                IsCompletePage = Context.IsCompletePage(PageHtml);                
 
                 HasInit = true;
 
-                if (!IsCompleteHtml)
+                if (!IsCompletePage)
                 {
                     if (PageVars.TryGetValue(ServerHtmlPages.Layout, out string layout))
                         Layout = layout;
 
-                    LayoutPage = feature.HtmlPages.ResolveLayoutPage(this);
+                    LayoutPage = Context.HtmlPages.ResolveLayoutPage(this);
                 }
             }
 
@@ -222,7 +277,7 @@ namespace ServiceStack
                 {
                     await LayoutPage.Load();
                 }
-                else if (feature.CheckModifiedPages || HostContext.DebugMode)
+                else if (Context.CheckModifiedPages || HostContext.DebugMode)
                 {
                     LayoutPage.File.Refresh();
                     if (LayoutPage.File.LastModified > LayoutPage.LastModified)
@@ -239,11 +294,16 @@ namespace ServiceStack
                 ? value
                 : LayoutPage?.GetValue(var);
         }
+
+        public string GetEncodedValue(ServerHtmlVariableFragment var)
+        {
+            return Context.EncodeValue(GetValue(var));
+        }
     }
 
     public static class ServerHtmlUtils
     {
-        static char[] VarDelimiters = { '|', '}' };
+        static readonly char[] VarDelimiters = { '|', '}' };
 
         public static List<ServerHtmlFragment> ParseServerHtml(string htmlString)
         {
@@ -308,6 +368,24 @@ namespace ServiceStack
             }
 
             return to;
+        }
+        
+        public static string HtmlEncodeValue(object value)
+        {
+            if (value == null)
+                return string.Empty;
+            
+            if (value is IRawString rawString)
+                return rawString.ToRawString();
+            
+            if (value is IHtmlString htmlString)
+                return htmlString.ToHtmlString();
+
+            var str = value.ToString();
+            if (str == string.Empty)
+                return string.Empty;
+
+            return PclExportClient.Instance.HtmlEncode(str);
         }
     }
 }
