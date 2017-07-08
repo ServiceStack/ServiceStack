@@ -20,7 +20,7 @@ namespace ServiceStack
         }
         
         public static int PreventDosMaxSize = 10000;
-        private static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
+        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
 
         public void Register(IAppHost appHost)
         {

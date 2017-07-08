@@ -64,7 +64,7 @@ Brackets in Layout < & >
 
 {{ page }}");
 
-            context.VirtualFileSources.AppendFile("page.md",  @"### {{ title }}");
+            context.VirtualFileSources.AppendFile("page.md",  @"## {{ title }}");
 
             var page = context.Pages.GetOrCreatePage("page");
             var result = new PageResult(page)
@@ -79,9 +79,9 @@ Brackets in Layout < & >
 
             var html = await result.RenderToStringAsync();
             
-            Assert.That(html.Trim(), Is.EqualTo(@"<h1>The Title</h1>
+            Assert.That(html.SanitizeNewLines(), Is.EqualTo(@"<h1>The Title</h1>
 <p>Brackets in Layout &lt; &amp; &gt; </p>
-<h3>The Title</h3>".Replace("\r","")));
+<h2>The Title</h2>".SanitizeNewLines()));
             
         }
 

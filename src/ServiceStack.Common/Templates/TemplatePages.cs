@@ -20,7 +20,7 @@ namespace ServiceStack.Templates
 
         public static string Layout = "layout";
         
-        static readonly ConcurrentDictionary<string, TemplatePage> pageMap = new ConcurrentDictionary<string, TemplatePage>(); 
+        readonly ConcurrentDictionary<string, TemplatePage> pageMap = new ConcurrentDictionary<string, TemplatePage>(); 
 
         public virtual TemplatePage ResolveLayoutPage(TemplatePage page, string layout)
         {
