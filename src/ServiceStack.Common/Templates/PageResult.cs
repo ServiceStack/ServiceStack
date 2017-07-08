@@ -118,7 +118,7 @@ namespace ServiceStack.Templates
                     }
                     else if (fragment is PageVariableFragment var)
                     {
-                        if (var.Name.Equals("body"))
+                        if (var.Name.Equals("page"))
                         {
                             await WritePageAsync(responseStream, token);
                         }

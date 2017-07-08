@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
   <title>{{ title }}</title>
 </head>
 <body>
-  {{ body }}
+  {{ page }}
 </body>");
 
             context.VirtualFileSources.AppendFile("page.html", @"<h1>{{ title }}</h1>");
@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 Brackets in Layout < & > 
 
-{{ body }}");
+{{ page }}");
 
             context.VirtualFileSources.AppendFile("page.md",  @"### {{ title }}");
 
@@ -102,7 +102,7 @@ Brackets in Layout < & >
   <title>{{ title }}</title>
 </head>
 <body>
-  {{ body }}
+  {{ page }}
 </body>");
 
             context.VirtualFileSources.AppendFile("page.md",  @"### {{ title }}");

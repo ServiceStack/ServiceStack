@@ -63,9 +63,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>
             {
-                { "_layout.html", "<html><head><title>{{ title }}</title></head><body id='layout'>{{ body }}</body></html>" },
-                { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='alt-layout'>{{ body }}</body></html>" },
-                { "override-layout.html", "<html><head><title>{{ title }}</title></head><body id='override-layout'>{{ body }}</body></html>" },
+                { "_layout.html", "<html><head><title>{{ title }}</title></head><body id='layout'>{{ page }}</body></html>" },
+                { "alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='alt-layout'>{{ page }}</body></html>" },
+                { "override-layout.html", "<html><head><title>{{ title }}</title></head><body id='override-layout'>{{ page }}</body></html>" },
                 { "root-static-page.html", "<h1>/root-static page!</h1>" },
                 { "full-static-page.html", "<html><head><title>Full Page</title></head><body><h1>Full Page</h1></body></html>" },
                 { "existing-page.html", "<h1>Existing Page</h1>" },
@@ -80,7 +80,7 @@ title: Override Title
 layout: alt-layout
 -->
 <h1>/noprefix page!</h1>" },
-                { "dir/alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='dir-alt-layout'>{{ body }}</body></html>" },
+                { "dir/alt-layout.html", "<html><head><title>{{ title }}</title></head><body id='dir-alt-layout'>{{ page }}</body></html>" },
                 { "dir/index.html", @"
 <!--
 layout: alt-layout
@@ -98,7 +98,7 @@ title: Variable Layout
 <!--
 layoutvar: layoutvar(< & > "" ')
 -->
-<html><head><title>{{ title }}</title></head><body id='htmlencode-layout'>{{ body }}<p>{{ layoutvar }}</p></body></html>" },
+<html><head><title>{{ title }}</title></head><body id='htmlencode-layout'>{{ page }}<p>{{ layoutvar }}</p></body></html>" },
                 { "htmlencode-page.html", @"
 <!--
 layout: htmlencode-layout.html
@@ -286,7 +286,7 @@ title: We encode < & >
             Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
             Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body id='layout'>"));
-            Assert.That(varFragment4.Name, Is.EqualTo("body"));
+            Assert.That(varFragment4.Name, Is.EqualTo("page"));
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }
         
