@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.Configuration
+﻿using System;
+
+namespace ServiceStack.Configuration
 {
     public interface IResolver
     {
@@ -13,5 +15,10 @@
     public interface IHasResolver
     {
         IResolver Resolver { get; }
+    }
+
+    public interface IRuntimeResolver
+    {
+        object TryResolve(Type type);
     }
 }
