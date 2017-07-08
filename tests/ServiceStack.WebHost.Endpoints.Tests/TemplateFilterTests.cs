@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(context.TemplateFilters.Count, Is.EqualTo(1));
             Assert.That(context.TemplateFilters[0].Pages, Is.EqualTo(context.Pages));
-            Assert.That(((FilterExamples)context.TemplateFilters[0]).Pages, Is.Null);
+            Assert.That(((FilterExamples)context.TemplateFilters[0]).AppSettings, Is.Null);
         }
     }
 }
