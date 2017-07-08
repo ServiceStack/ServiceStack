@@ -17,7 +17,7 @@ namespace ServiceStack
         {
             DebugMode = appHost.Config.DebugMode;
             VirtualFileSources = appHost.VirtualFileSources;
-            appHost.Register(TemplatePages);
+            appHost.Register(Pages);
             appHost.CatchAllHandlers.Add(RequestHandler);
         }
 
@@ -26,7 +26,7 @@ namespace ServiceStack
             if (catchAllPathsNotFound.ContainsKey(pathInfo))
                 return null;
 
-            var page = TemplatePages.GetOrCreatePage(pathInfo);
+            var page = Pages.GetOrCreatePage(pathInfo);
 
             if (page != null)
             {

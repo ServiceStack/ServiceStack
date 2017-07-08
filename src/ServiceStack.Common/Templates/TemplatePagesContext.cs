@@ -22,7 +22,7 @@ namespace ServiceStack.Templates
 
         public bool CheckModifiedPages { get; set; } = false;
 
-        public ITemplatePages TemplatePages { get; set; }
+        public ITemplatePages Pages { get; set; }
 
         public IVirtualPathProvider VirtualFileSources { get; set; }
         
@@ -32,7 +32,7 @@ namespace ServiceStack.Templates
 
         public TemplatePagesContext()
         {
-            TemplatePages = new TemplatePages(this);
+            Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
         }
     }
@@ -72,7 +72,7 @@ namespace ServiceStack.Templates
         public TemplatePage DefaultResolveLayout(TemplatePage page)
         {
             page.PageVars.TryGetValue(TemplatePages.Layout, out string layout);
-            return page.Context.TemplatePages.ResolveLayoutPage(page, layout);
+            return page.Context.Pages.ResolveLayoutPage(page, layout);
         }
     }
 
