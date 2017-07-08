@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Templates
 {
     public interface IPageResult {}
 
+    // Render a Template Page to the Response OutputStream
     public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions
     {
         public TemplatePage Page { get; set; }
@@ -17,24 +19,78 @@ namespace ServiceStack.Templates
 
         public object Model { get; set;  }
         
+        /// <summary>
+        /// Add additional Args available to all pages 
+        /// </summary>
         public Dictionary<string, object> Args { get; set; }
-        
-        public List<TemplateFilter> Filters { get; set; }
+
+        /// <summary>
+        /// Add additional template filters available to all pages
+        /// </summary>
+        public List<TemplateFilter> TemplateFilters { get; set; }
 
         public IDictionary<string, string> Options { get; set; }
+
+        /// <summary>
+        /// Specify the Content-Type of the Response 
+        /// </summary>
+        public string ContentType
+        {
+            get => Options.TryGetValue(HttpHeaders.ContentType, out string contentType) ? contentType : null;
+            set => Options[HttpHeaders.ContentType] = value;
+        }
+        
+        /// <summary>
+        /// Transform the Page output using a chain of filters
+        /// </summary>
+        public List<Func<Stream,Task<Stream>>> PageFilters { get; set; }
+
+        /// <summary>
+        /// Transform the entire output using a chain of filters
+        /// </summary>
+        public List<Func<Stream,Task<Stream>>> OutputFilters { get; set; }
 
         public PageResult(TemplatePage page)
         {
             Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
-            Filters = new List<TemplateFilter>();
+            TemplateFilters = new List<TemplateFilter>();
+            PageFilters = new List<Func<Stream,Task<Stream>>>();
+            OutputFilters = new List<Func<Stream,Task<Stream>>>();
             Options = new Dictionary<string, string>
             {
                 { HttpHeaders.ContentType, Page.Format.ContentType },
             };
         }
 
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
+        {
+            if (OutputFilters.Count == 0)
+            {
+                await WriteToAsyncInternal(responseStream, token);
+                return;
+            }
+
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                await WriteToAsyncInternal(ms, token);
+                Stream stream = ms;
+
+                foreach (var filter in OutputFilters)
+                {
+                    stream.Position = 0;
+                    stream = await filter(stream);
+                }
+
+                using (stream)
+                {
+                    stream.Position = 0;
+                    await stream.CopyToAsync(responseStream);
+                }
+            }
+        }
+
+        internal async Task WriteToAsyncInternal(Stream responseStream, CancellationToken token)
         {
             if (LayoutPage != null)
             {
@@ -64,7 +120,7 @@ namespace ServiceStack.Templates
                     {
                         if (var.Name.Equals("body"))
                         {
-                            await WritePage(responseStream, token);
+                            await WritePageAsync(responseStream, token);
                         }
                         else
                         {
@@ -76,15 +132,39 @@ namespace ServiceStack.Templates
             }
             else
             {
-                await WritePage(responseStream, token);
+                await WritePageAsync(responseStream, token);
             }
         }
 
-        public async Task WritePage(Stream responseStream, CancellationToken token = new CancellationToken())
+        public async Task WritePageAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
         {
-            if (Page == null)
+            if (PageFilters.Count == 0)
+            {
+                await WritePageAsyncInternal(responseStream, token);
                 return;
-            
+            }
+
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                await WritePageAsyncInternal(ms, token);
+                Stream stream = ms;
+
+                foreach (var filter in PageFilters)
+                {
+                    stream.Position = 0;
+                    stream = await filter(stream);
+                }
+
+                using (stream)
+                {
+                    stream.Position = 0;
+                    await stream.CopyToAsync(responseStream);
+                }
+            }
+        }
+
+        internal async Task WritePageAsyncInternal(Stream responseStream, CancellationToken token = default(CancellationToken))
+        {
             foreach (var fragment in Page.PageFragments)
             {
                 if (fragment is PageStringFragment str)

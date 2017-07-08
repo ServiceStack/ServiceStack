@@ -31,7 +31,7 @@ namespace ServiceStack
         public CompressedFileResult(string filePath, string compressionType, string contentMimeType)
         {
             if (!CompressionTypes.IsValid(compressionType))
-                throw new ArgumentException("Must be either 'deflate' or 'gzip'", compressionType);
+                throw new ArgumentException(@"Must be either 'deflate' or 'gzip'", compressionType);
 
             this.FilePath = filePath;
             this.Headers = new Dictionary<string, string> {

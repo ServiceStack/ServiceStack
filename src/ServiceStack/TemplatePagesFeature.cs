@@ -1,15 +1,24 @@
 ﻿using System.Collections.Concurrent;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Templates;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class TemplatePagesFeature : TemplatePagesContext, IPlugin
     {
+        public string HtmlExtension
+        {
+            get => PageFormats.First(x => x is HtmlPageFormat).Extension;
+            set => PageFormats.First(x => x is HtmlPageFormat).Extension = value;
+        }
+        
         public static int PreventDosMaxSize = 10000;
         private static readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
 
@@ -68,5 +77,26 @@ namespace ServiceStack
             await result.WriteToAsync(httpRes.OutputStream);
         }
     }
-    
+
+    public class MarkdownPageFormat : PageFormat
+    {
+        public MarkdownPageFormat()
+        {
+            Extension = "md";
+            ContentType = MimeTypes.MarkdownText;
+        }
+
+        private static readonly MarkdownSharp.Markdown markdown = new MarkdownSharp.Markdown();
+
+        public static async Task<Stream> TransformToHtml(Stream markdownStream)
+        {
+            using (var reader = new StreamReader(markdownStream))
+            {
+                var md = await reader.ReadToEndAsync();
+                var html = markdown.Transform(md);
+
+                return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
+            }
+        }
+    }
 }
