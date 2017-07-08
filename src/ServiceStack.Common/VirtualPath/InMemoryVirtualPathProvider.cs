@@ -15,6 +15,7 @@ namespace ServiceStack.VirtualPath
     /// <summary>
     /// In Memory Virtual Path Provider.
     /// </summary>
+    [Obsolete("Renamed to MemoryVirtualFiles")]
     public class InMemoryVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
 #pragma warning disable 618
         , IWriteableVirtualPathProvider

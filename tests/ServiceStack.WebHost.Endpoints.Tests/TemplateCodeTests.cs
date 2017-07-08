@@ -28,17 +28,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 ";            
     }
 
-    public class FilterExamples : TemplateFilter
-    {
-        public IAppSettings AppSettings { get; set; }
-
-        public string appsetting(string name) => AppSettings.GetString(name);
-        
-        public string capitalise(string text) => text.ToPascalCase();
-
-        public int add(int target, int value) => target + value;
-    }
-
     public class TemplateCodeTests
     {
     }

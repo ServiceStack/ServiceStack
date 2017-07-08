@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
@@ -30,10 +33,103 @@ namespace ServiceStack.Templates
 
         public PageFormat GetFormat(string extension) => PageFormats.FirstOrDefault(x => x.Extension == extension);
 
+        public List<Type> ScanTypes { get; set; } = new List<Type>();
+
+        public List<Assembly> ScanAssemblies{ get; set; } = new List<Assembly>();
+
+        public IResolver Resolver { get; set; }
+        
+        public List<TemplateFilter> TemplateFilters { get; set; } = new List<TemplateFilter>();
+
+        public Dictionary<Type, Func<object>> Factory { get; } = new Dictionary<Type, Func<object>>();
+
         public TemplatePagesContext()
         {
+            Resolver = new SingletonFactoryResolver(this);
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
+            
+            Factory[typeof(ITemplatePages)] = () => Pages;
+        }
+
+        public TemplatePagesContext Init()
+        {
+            foreach (var type in ScanTypes)
+            {
+                ScanType(type);
+            }
+
+            foreach (var assembly in ScanAssemblies)
+            {
+                foreach (var type in assembly.GetTypes())
+                {
+                    ScanType(type);
+                }
+            }
+
+            return this;
+        }
+
+        public void ScanType(Type type)
+        {
+            if (typeof(TemplateFilter).IsAssignableFromType(type))
+            {
+                var filter = (TemplateFilter)Resolver.TryResolve(type);
+                AutoWire(filter);
+                TemplateFilters.Add(filter.Init());
+            }
+            else if (typeof(TemplateCode).IsAssignableFromType(type))
+            {
+                var code = (TemplateCode)Resolver.TryResolve(type);
+                AutoWire(code);
+                code.Init();
+//                TemplateFilters.Add(code);
+            }
+        }
+
+        private Dictionary<Type, Action<object>[]> autoWireCache = new Dictionary<Type, Action<object>[]>();
+
+        public HashSet<string> IgnorePropertyTypeFullNames { get; } = new HashSet<string>();
+
+        protected bool IsPublicWritableUserPropertyType(PropertyInfo pi)
+        {
+            return pi.CanWrite
+                   && !pi.PropertyType.IsValueType()
+                   && pi.PropertyType != typeof(string)
+                   && !IgnorePropertyTypeFullNames.Contains(pi.PropertyType.FullName);
+        }
+
+        protected void AutoWire(object instance)
+        {
+            var instanceType = instance.GetType();
+            var props = TypeProperties.Get(instanceType);
+            
+            Action<object>[] setters;
+            if (!autoWireCache.TryGetValue(instanceType, out setters))
+            {
+                setters = props.PublicPropertyInfos
+                    .Where(IsPublicWritableUserPropertyType)
+                    .Select(pi =>  {
+                        var fn = props.GetPublicSetter(pi);
+                        return (Action<object>)(o => fn(o, Resolver.TryResolve(pi.PropertyType)));
+                    })
+                    .ToArray();
+
+                Dictionary<Type, Action<object>[]> snapshot, newCache;
+                do
+                {
+                    snapshot = autoWireCache;
+                    newCache = new Dictionary<Type, Action<object>[]>(autoWireCache) {
+                        [instanceType] = setters
+                    };
+                } while (!ReferenceEquals(
+                    Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
+            }
+
+            foreach (var setter in setters)
+            {
+                setter(instance);
+            }
         }
     }
 

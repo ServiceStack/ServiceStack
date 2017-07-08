@@ -15,5 +15,10 @@ namespace ServiceStack.Templates
             VirtualPath = virtualPath;
             Layout = layout;
         }
+
+        public TemplateCode Init()
+        {
+            return this;
+        }
     }
 }
