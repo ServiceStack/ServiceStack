@@ -17,8 +17,14 @@ namespace ServiceStack.Configuration
         IResolver Resolver { get; }
     }
 
-    public interface IRuntimeResolver
+    public interface IContainer
     {
-        object TryResolve(Type type);
+        Func<object> CreateFactory(Type type);
+
+        void AddSingleton(Type type, Func<object> factory);
+        
+        void AddTransient(Type type, Func<object> factory);
+
+        object Resolve(Type type);
     }
 }
