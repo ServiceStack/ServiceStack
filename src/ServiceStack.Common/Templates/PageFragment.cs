@@ -50,11 +50,14 @@ namespace ServiceStack.Templates
 
                 value = literal.Substring(1, literal.Length - 2);
             }
-            else if (literal.GetChar(0) >= '0' && literal.GetChar(0) <= '9')
+            else if (literal.GetChar(0) >= '0' && literal.GetChar(0) <= '9' || literal.GetChar(0) == '-' || literal.GetChar(0) == '+')
             {
-                value = literal.IndexOf('.') >= 0
-                    ? double.Parse(literal.ToString())
-                    : int.Parse(literal.ToString());
+                //Weird behavior: turning this into a ?: statement results in inverse condition for some unexplained reason
+                //http://gistlyn.com/?gist=f9889fdf116076b6bc11c5d81d88bed0
+                if (literal.IndexOf('.') >= 0) 
+                    value = double.Parse(literal.Value);
+                else 
+                    value = int.Parse(literal.Value);
             }
             else if (literal.Equals("true"))
             {

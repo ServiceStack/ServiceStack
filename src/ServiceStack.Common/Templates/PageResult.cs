@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -224,7 +225,15 @@ namespace ServiceStack.Templates
                         : outValue;
                 }
 
-                value = invoker(filter, args);
+                try
+                {
+                    value = invoker(filter, args);
+                }
+                catch (Exception ex)
+                {
+                    var argStr = args.Map(x => x.ToString()).Join(",");
+                    throw new TargetInvocationException($"Failed to invoke filter {cmd.Name}({argStr})", ex);
+                }
             }
 
             if (value == null)

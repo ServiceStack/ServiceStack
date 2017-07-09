@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -100,5 +101,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(html, Is.EqualTo("<h1>bar</h1>"));
         }
+            
+        [Test]
+        public async Task Does_call_add_filter_with_args()
+        {
+            var context = CreateContext().Init();
+            
+            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(2) }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>3</h1>"));
+        }
+
     }
 }

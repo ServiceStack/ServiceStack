@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -131,18 +132,27 @@ namespace ServiceStack
             var paramInstance = Expression.Parameter(typeof(object), "instance");
             var paramArgs = Expression.Parameter(typeof(object[]), "args");
 
+            var convertFromMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertFromObject));
+
             var exprArgs = new Expression[pi.Length];
             for (int i = 0; i < pi.Length; i++)
             {
                 var index = Expression.Constant(i);
                 var paramType = pi[i].ParameterType;
                 var paramAccessorExp = Expression.ArrayIndex(paramArgs, index);
-                var paramCastExp = Expression.Convert(paramAccessorExp, paramType);
-                exprArgs[i] = paramCastExp;
+                var convertParam = convertFromMethod.MakeGenericMethod(paramType);
+                exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
             }
-
+            
             var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
-            var lambda = Expression.Lambda(typeof(MethodInvoker), methodCall, paramInstance, paramArgs);
+
+            var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
+            var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
+            
+            var lambda = Expression.Lambda(typeof(MethodInvoker), 
+                Expression.Call(convertReturn, methodCall), 
+                paramInstance, 
+                paramArgs);
 
             var fn = (MethodInvoker)lambda.Compile();
             return fn;
@@ -169,6 +179,22 @@ namespace ServiceStack
                 Interlocked.CompareExchange(ref invokerCache, newCache, snapshot), snapshot));
 
             return fn;
+        }
+
+        public static T ConvertFromObject<T>(object value)
+        {
+            if (value == null)
+                return default(T);
+            
+            if (value is T)
+                return (T)value;
+
+            return value.ConvertTo<T>();
+        }
+
+        public static object ConvertToObject<T>(T value)
+        {
+            return value;
         }
     }
 
