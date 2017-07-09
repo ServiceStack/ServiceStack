@@ -52,8 +52,7 @@ namespace ServiceStack.Templates
             }
             else if (literal.GetChar(0) >= '0' && literal.GetChar(0) <= '9' || literal.GetChar(0) == '-' || literal.GetChar(0) == '+')
             {
-                //Weird behavior: turning this into a ?: statement results in inverse condition for some unexplained reason
-                //http://gistlyn.com/?gist=f9889fdf116076b6bc11c5d81d88bed0
+                //don't convert into ternary to avoid Type coercion
                 if (literal.IndexOf('.') >= 0) 
                     value = double.Parse(literal.Value);
                 else 
