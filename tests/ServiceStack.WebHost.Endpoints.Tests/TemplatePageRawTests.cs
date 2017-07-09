@@ -11,12 +11,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public async Task Can_generate_html_template_with_layout_in_memory()
         {
-            var context = new TemplatePagesContext
-            {
-                VirtualFileSources = new MemoryVirtualFiles(),
-            };
+            var context = new TemplatePagesContext();
 
-            context.VirtualFileSources.AppendFile("_layout.html", @"
+            context.VirtualFiles.AppendFile("_layout.html", @"
 <html>
   <title>{{ title }}</title>
 </head>
@@ -24,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
   {{ page }}
 </body>");
 
-            context.VirtualFileSources.AppendFile("page.html", @"<h1>{{ title }}</h1>");
+            context.VirtualFiles.AppendFile("page.html", @"<h1>{{ title }}</h1>");
 
             var page = context.Pages.GetOrCreatePage("page");
             var result = new PageResult(page)
@@ -50,21 +47,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var context = new TemplatePagesContext
             {
-                VirtualFileSources = new MemoryVirtualFiles(),
                 PageFormats =
                 {
                     new MarkdownPageFormat()
                 }
             };
             
-            context.VirtualFileSources.AppendFile("_layout.md", @"
+            context.VirtualFiles.AppendFile("_layout.md", @"
 # {{ title }}
 
 Brackets in Layout < & > 
 
 {{ page }}");
 
-            context.VirtualFileSources.AppendFile("page.md",  @"## {{ title }}");
+            context.VirtualFiles.AppendFile("page.md",  @"## {{ title }}");
 
             var page = context.Pages.GetOrCreatePage("page");
             var result = new PageResult(page)
@@ -90,14 +86,13 @@ Brackets in Layout < & >
         {
             var context = new TemplatePagesContext
             {
-                VirtualFileSources = new MemoryVirtualFiles(),
                 PageFormats =
                 {
                     new MarkdownPageFormat()
                 }
             };
             
-            context.VirtualFileSources.AppendFile("_layout.html", @"
+            context.VirtualFiles.AppendFile("_layout.html", @"
 <html>
   <title>{{ title }}</title>
 </head>
@@ -105,7 +100,7 @@ Brackets in Layout < & >
   {{ page }}
 </body>");
 
-            context.VirtualFileSources.AppendFile("page.md",  @"### {{ title }}");
+            context.VirtualFiles.AppendFile("page.md",  @"### {{ title }}");
 
             var page = context.Pages.GetOrCreatePage("page");
             var result = new PageResult(page)

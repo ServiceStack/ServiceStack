@@ -6,7 +6,7 @@ using System.Threading;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
-
+using ServiceStack.VirtualPath;
 #if NETSTANDARD1_3
 using Microsoft.Extensions.Primitives;
 #endif
@@ -27,7 +27,7 @@ namespace ServiceStack.Templates
 
         public ITemplatePages Pages { get; set; }
 
-        public IVirtualPathProvider VirtualFileSources { get; set; }
+        public IVirtualPathProvider VirtualFiles { get; set; } = new MemoryVirtualFiles();
         
         public bool DebugMode { get; set; }
 
@@ -39,20 +39,20 @@ namespace ServiceStack.Templates
 
         public IContainer Container { get; set; } = new SimpleContainer();
         
-        public List<TemplateFilter> TemplateFilters { get; set; } = new List<TemplateFilter>();
+        public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
-        public List<TemplateCode> CodePages { get; set; } = new List<TemplateCode>();
+        public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
 
         public TemplatePagesContext()
         {
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
-            
-            Container.AddSingleton(() => Pages);
         }
 
         public TemplatePagesContext Init()
         {
+            Container.AddSingleton(() => Pages);
+
             foreach (var type in ScanTypes)
             {
                 ScanType(type);
@@ -66,23 +66,40 @@ namespace ServiceStack.Templates
                 }
             }
 
+            foreach (var filter in TemplateFilters)
+            {
+                if (filter.Pages == null)
+                    filter.Pages = Pages;
+
+                filter.Init();
+            }
+
+            foreach (var page in CodePages)
+            {
+                if (page.Pages == null)
+                    page.Pages = Pages;
+
+                page.Init();
+            }
+
             return this;
         }
 
-        public void ScanType(Type type)
+        public TemplatePagesContext ScanType(Type type)
         {
             if (typeof(TemplateFilter).IsAssignableFromType(type))
             {
                 Container.AddSingleton(type);
                 var filter = (TemplateFilter)Container.Resolve(type);
-                TemplateFilters.Add(filter.Init());
+                TemplateFilters.Add(filter);
             }
             else if (typeof(TemplateCode).IsAssignableFromType(type))
             {
                 Container.AddSingleton(type);
                 var codePage = (TemplateCode)Container.Resolve(type);
-                CodePages.Add(codePage.Init());
+                CodePages.Add(codePage);
             }
+            return this;
         }
     }
 

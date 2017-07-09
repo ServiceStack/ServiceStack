@@ -79,8 +79,8 @@ namespace ServiceStack.Templates
             foreach (var format in Context.PageFormats)
             {
                 var file = !santizePath.EndsWith("/")
-                    ? Context.VirtualFileSources.GetFile($"{santizePath}.{format.Extension}")
-                    : Context.VirtualFileSources.GetFile($"{santizePath}{Context.IndexPage}.{format.Extension}");
+                    ? Context.VirtualFiles.GetFile($"{santizePath}.{format.Extension}")
+                    : Context.VirtualFiles.GetFile($"{santizePath}{Context.IndexPage}.{format.Extension}");
 
                 if (file != null)
                     return AddPage(file.VirtualPath.WithoutExtension(), file);

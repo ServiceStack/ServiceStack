@@ -53,7 +53,7 @@ namespace ServiceStack.Common.Tests
         {
             using (new BasicAppHost
             {
-                ConfigureAppHost = host => host.VirtualFiles = new InMemoryVirtualPathProvider(),
+                ConfigureAppHost = host => host.VirtualFiles = new MemoryVirtualFiles(),
             }.Init())
             {
                 var ms = new MemoryStream("mocked".ToUtf8Bytes());

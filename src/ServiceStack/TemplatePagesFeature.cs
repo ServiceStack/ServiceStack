@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -25,13 +26,15 @@ namespace ServiceStack
 
         public TemplatePagesFeature()
         {
-            ScanAssemblies.AddRange(HostContext.AssertAppHost().ServiceAssemblies);
+            var appHost = HostContext.AssertAppHost();
+            ScanAssemblies.AddRange(appHost.ServiceAssemblies);
+            Container = appHost.Container;
         }
 
         public void Register(IAppHost appHost)
         {
             DebugMode = appHost.Config.DebugMode;
-            VirtualFileSources = appHost.VirtualFileSources;
+            VirtualFiles = appHost.VirtualFileSources;
             appHost.Register(Pages);
             appHost.CatchAllHandlers.Add(RequestHandler);
         }
@@ -51,7 +54,7 @@ namespace ServiceStack
                 return new TemplatePagesHandler(page);
             }
             
-            if (!pathInfo.EndsWith("/") && VirtualFileSources.DirectoryExists(pathInfo.TrimPrefixes("/")))
+            if (!pathInfo.EndsWith("/") && VirtualFiles.DirectoryExists(pathInfo.TrimPrefixes("/")))
                 return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
 
             if (catchAllPathsNotFound.Count > PreventDosMaxSize)
