@@ -137,7 +137,7 @@ namespace ServiceStack.Templates
 
         public TemplatePage DefaultResolveLayout(TemplatePage page)
         {
-            page.PageVars.TryGetValue(TemplatePages.Layout, out string layout);
+            page.Args.TryGetValue(TemplatePages.Layout, out string layout);
             return page.Context.Pages.ResolveLayoutPage(page, layout);
         }
     }

@@ -264,8 +264,8 @@ title: We encode < & >
             
             var page = await CreatePage(file).Init();
 
-            Assert.That(page.PageVars["layout"], Is.EqualTo("alt-layout.html"));
-            Assert.That(page.PageVars["title"], Is.EqualTo("Variable Layout"));
+            Assert.That(page.Args["layout"], Is.EqualTo("alt-layout.html"));
+            Assert.That(page.Args["title"], Is.EqualTo("Variable Layout"));
             Assert.That(((PageStringFragment)page.PageFragments[0]).Value, Is.EqualTo("<h1>Variable Page</h1>"));
         }
 

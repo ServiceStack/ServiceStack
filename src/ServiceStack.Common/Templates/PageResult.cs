@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
+#if NETSTANDARD1_3
+using Microsoft.Extensions.Primitives;
+#endif
+
 namespace ServiceStack.Templates
 {
     public interface IPageResult {}
@@ -124,8 +128,7 @@ namespace ServiceStack.Templates
                         }
                         else
                         {
-                            var bytes = Page.Format.EncodeValue(GetValue(var));
-                            await responseStream.WriteAsync(bytes, token);
+                            await responseStream.WriteAsync(EvaluateVarAsBytes(var), token);
                         }
                     }
                 }
@@ -173,18 +176,99 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    var bytes = Page.Format.EncodeValue(GetValue(var));
-                    await responseStream.WriteAsync(bytes, token);
+                    await responseStream.WriteAsync(EvaluateVarAsBytes(var), token);
                 }
             }
         }
 
-        public object GetValue(PageVariableFragment var)
+        private byte[] EvaluateVarAsBytes(PageVariableFragment var)
         {
-            return Args.TryGetValue(var.NameString, out object value) 
-                ? value 
-                : Page.GetValue(var) ?? 
-                  (LayoutPage != null && LayoutPage != Page.LayoutPage ? LayoutPage.GetValue(var) : null);
+            var value = Evaluate(var);
+            var bytes = value != null
+                ? Page.Format.EncodeValue(value).ToUtf8Bytes()
+                : var.OriginalTextBytes;
+            return bytes;
+        }
+        
+        private object Evaluate(PageVariableFragment var)
+        {
+            var value = var.Value ?? GetValue(var.NameString);
+
+            if (value == null)
+                return null;
+
+            for (var i = 0; i < var.FilterCommands.Length; i++)
+            {
+                var cmd = var.FilterCommands[i];
+                var invoker = GetFilterInvoker(cmd, out TemplateFilter filter);
+                if (invoker == null)
+                {
+                    if (i == 0)
+                        return null; // ignore on server if first filter is missing  
+                    
+                    throw new Exception($"Filter not found: {cmd} in '{Page.File.VirtualPath}'"); 
+                }
+
+                var args = new object[1 + cmd.Args.Count];
+                args[0] = value;
+
+                for (var cmdIndex = 0; cmdIndex < cmd.Args.Count; cmdIndex++)
+                {
+                    var arg = cmd.Args[cmdIndex];
+                    StringSegment outName;
+                    object outValue;
+                    var.ParseLiteral(arg, out outName, out outValue);
+
+                    args[1 + cmdIndex] = !outName.IsNullOrEmpty()
+                        ? GetValue(outName.Value)
+                        : outValue;
+                }
+
+                value = invoker(filter, args);
+            }
+
+            if (value == null)
+                return string.Empty; // treat as empty value if evaluated to null
+
+            return value;
+        }
+
+        private MethodInvoker GetFilterInvoker(Command cmd, out TemplateFilter filter)
+        {
+            foreach (var tplFilter in TemplateFilters)
+            {
+                var invoker = tplFilter.GetInvoker(cmd.Name, 1 + cmd.Args.Count);
+                if (invoker != null)
+                {
+                    filter = tplFilter;
+                    return invoker;
+                }
+            }
+
+            foreach (var tplFilter in Page.Context.TemplateFilters)
+            {
+                var invoker = tplFilter.GetInvoker(cmd.Name, 1 + cmd.Args.Count);
+                if (invoker != null)
+                {
+                    filter = tplFilter;
+                    return invoker;
+                }
+            }
+
+            filter = null;
+            return null;
+        }
+
+        private object GetValue(string name)
+        {
+            var value = Args.TryGetValue(name, out object obj)
+                ? obj
+                : Page.Args.TryGetValue(name, out string strValue)
+                    ? strValue
+                    : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out strValue))
+                        ? strValue
+                        : null;
+            return value;
         }
     }
 }

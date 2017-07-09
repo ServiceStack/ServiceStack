@@ -8,6 +8,8 @@ namespace ServiceStack
 {
     public delegate object ObjectActivator(params object[] args);
 
+    public delegate object MethodInvoker(object instance, params object[] args);
+
     public static class TypeExtensions
     {
         public static Type[] GetReferencedTypes(this Type type)
@@ -100,13 +102,13 @@ namespace ServiceStack
             return ctorFn;
         }
 
-        static Dictionary<ConstructorInfo, ObjectActivator> ActivatorCache =
+        static Dictionary<ConstructorInfo, ObjectActivator> activatorCache =
             new Dictionary<ConstructorInfo, ObjectActivator>();
 
         public static ObjectActivator GetActivator(this ConstructorInfo ctor)
         {
             ObjectActivator fn;
-            if (ActivatorCache.TryGetValue(ctor, out fn))
+            if (activatorCache.TryGetValue(ctor, out fn))
                 return fn;
 
             fn = GetActivatorToCache(ctor);
@@ -114,15 +116,60 @@ namespace ServiceStack
             Dictionary<ConstructorInfo, ObjectActivator> snapshot, newCache;
             do
             {
-                snapshot = ActivatorCache;
-                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(ActivatorCache) { [ctor] = fn };
+                snapshot = activatorCache;
+                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(activatorCache) { [ctor] = fn };
 
             } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref ActivatorCache, newCache, snapshot), snapshot));
+                Interlocked.CompareExchange(ref activatorCache, newCache, snapshot), snapshot));
 
             return fn;
         }
 
+        public static MethodInvoker GetInvokerToCache(MethodInfo method)
+        {
+            var pi = method.GetParameters();
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var exprArgs = new Expression[pi.Length];
+            for (int i = 0; i < pi.Length; i++)
+            {
+                var index = Expression.Constant(i);
+                var paramType = pi[i].ParameterType;
+                var paramAccessorExp = Expression.ArrayIndex(paramArgs, index);
+                var paramCastExp = Expression.Convert(paramAccessorExp, paramType);
+                exprArgs[i] = paramCastExp;
+            }
+
+            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+            var lambda = Expression.Lambda(typeof(MethodInvoker), methodCall, paramInstance, paramArgs);
+
+            var fn = (MethodInvoker)lambda.Compile();
+            return fn;
+        }
+
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache =
+            new Dictionary<MethodInfo, MethodInvoker>();
+
+        public static MethodInvoker GetInvoker(this MethodInfo method)
+        {
+            MethodInvoker fn;
+            if (invokerCache.TryGetValue(method, out fn))
+                return fn;
+
+            fn = GetInvokerToCache(method);
+
+            Dictionary<MethodInfo, MethodInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = invokerCache;
+                newCache = new Dictionary<MethodInfo, MethodInvoker>(invokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref invokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
     }
 
 }

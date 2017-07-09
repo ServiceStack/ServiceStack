@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands, Is.Null);
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             varFragment2 = fragments[1] as PageVariableFragment;
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter() }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
         }
@@ -73,7 +73,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands, Is.Null);
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(0));
 
             fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title|filter}}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{title|filter}}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
@@ -104,7 +104,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Args[0], Is.EqualTo("1"));
@@ -124,7 +124,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(5));
             Assert.That(varFragment2.FilterCommands[0].Args[0], Is.EqualTo("1"));
@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(3));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(3));
 
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter1"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
@@ -184,7 +184,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 }}"));
             Assert.That(varFragment2.Name, Is.EqualTo("title"));
-            Assert.That(varFragment2.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterCommands[0].Name, Is.EqualTo("filter1"));
             Assert.That(varFragment2.FilterCommands[0].Args.Count, Is.EqualTo(0));
 
@@ -192,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(varFragment4.OriginalText, Is.EqualTo("{{ content | filter2(a) }}"));
             Assert.That(varFragment4.Name, Is.EqualTo("content"));
-            Assert.That(varFragment4.FilterCommands.Count, Is.EqualTo(1));
+            Assert.That(varFragment4.FilterCommands.Length, Is.EqualTo(1));
             Assert.That(varFragment4.FilterCommands[0].Name, Is.EqualTo("filter2"));
             Assert.That(varFragment4.FilterCommands[0].Args.Count, Is.EqualTo(1));
             Assert.That(varFragment4.FilterCommands[0].Args[0], Is.EqualTo("a"));

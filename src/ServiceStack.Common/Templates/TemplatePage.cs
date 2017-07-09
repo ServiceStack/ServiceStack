@@ -16,7 +16,7 @@ namespace ServiceStack.Templates
         public IVirtualFile File { get; }
         public StringSegment FileContents { get; private set; }
         public StringSegment BodyContents { get; private set; }
-        public Dictionary<string, string> PageVars { get; private set; }
+        public Dictionary<string, string> Args { get; private set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
@@ -88,7 +88,7 @@ namespace ServiceStack.Templates
             {
                 LastModified = lastModified;
                 FileContents = fileContents;
-                PageVars = pageVars;
+                Args = pageVars;
                 BodyContents = bodyContents;
                 PageFragments = pageFragments;
 
@@ -111,18 +111,6 @@ namespace ServiceStack.Templates
             }
 
             return this;
-        }
-
-        public object GetValue(PageVariableFragment var)
-        {
-            return PageVars.TryGetValue(var.NameString, out string value)
-                ? value
-                : LayoutPage?.GetValue(var);
-        }
-
-        public string GetEncodedValue(PageVariableFragment var)
-        {
-            return Format.EncodeValue(GetValue(var));
         }
     }
 }

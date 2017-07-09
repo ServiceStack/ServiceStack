@@ -1,7 +1,10 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -10,11 +13,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public IAppSettings AppSettings { get; set; }
 
-        public string appsetting(string name) => AppSettings.GetString(name);
+        public string appsetting(string name) => 
+            AppSettings.GetString(name);
 
-        public string capitalise(string text) => text.ToPascalCase();
+        public string capitalise(string text) => 
+            text.ToPascalCase();
 
-        public int add(int target, int value) => target + value;
+        public int add(int target, int value) => 
+            target + value;
     }
 
     public class TemplateFilterTests
@@ -32,7 +38,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
                 },
-                new TemplatePagesContext().ScanType(typeof(FilterExamples)),
                 new TemplatePagesContext
                 {
                     TemplateFilters = {new FilterExamples {AppSettings = new DictionarySettings()}}
@@ -68,15 +73,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        public TemplatePagesContext CreateContext() =>
-            new TemplatePagesContext { ScanAssemblies = { typeof(FilterExamples).GetAssembly() } }.Init();
-
-        [Test]
-        public void Does_call_simple_filter()
+        public TemplatePagesContext CreateContext()
         {
-            var context = CreateContext();
+            var context = new TemplatePagesContext
+            {
+                ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
+            };
+
+            context.Container.AddSingleton<IAppSettings>(() => new DictionarySettings(new Dictionary<string, string> {
+                { "foo", "bar" },
+            }));
+
+            return context;
+        }
             
-            context.VirtualFiles.AppendFile("");
+        [Test]
+        public async Task Does_call_simple_filter()
+        {
+            var context = CreateContext().Init();
+            
+            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 'foo' | appsetting }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>bar</h1>"));
         }
     }
 }

@@ -24,6 +24,9 @@ namespace ServiceStack.Templates
 
         public virtual TemplatePage ResolveLayoutPage(TemplatePage page, string layout)
         {
+            if (page == null)
+                throw new ArgumentNullException(nameof(page));
+            
             if (!page.HasInit)
                 throw new ArgumentException($"Page {page.File.VirtualPath} has not been initialized");
 
@@ -32,7 +35,7 @@ namespace ServiceStack.Templates
             var dir = page.File.Directory;
             do
             {
-                var layoutPath = dir.VirtualPath.CombineWith(layoutWithoutExt);
+                var layoutPath = (dir.VirtualPath ?? "").CombineWith(layoutWithoutExt);
 
                 if (pageMap.TryGetValue(layoutPath, out TemplatePage layoutPage))
                     return layoutPage;
@@ -46,7 +49,7 @@ namespace ServiceStack.Templates
                 
                 dir = dir.ParentDirectory;
 
-            } while (!dir.IsRoot);
+            } while (dir != null && !dir.IsRoot);
             
             return null;
         }

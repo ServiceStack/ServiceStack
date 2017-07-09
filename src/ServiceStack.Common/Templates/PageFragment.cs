@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
@@ -19,13 +20,54 @@ namespace ServiceStack.Templates
         private string nameString;
         public string NameString => nameString ?? (nameString = Name.Value);
         
-        public List<Command> FilterCommands { get; set; }
+        public object Value { get; set; }
+        
+        public Command[] FilterCommands { get; set; }
 
         public PageVariableFragment(StringSegment originalText, StringSegment name, List<Command> filterCommands)
         {
             OriginalText = originalText;
-            Name = name;
-            FilterCommands = filterCommands;
+            FilterCommands = filterCommands?.ToArray() ?? TypeConstants<Command>.EmptyArray;
+
+            ParseLiteral(name, out StringSegment outName, out object value);
+
+            Name = outName;
+            Value = value;
+        }
+
+        public void ParseLiteral(StringSegment literal, out StringSegment name, out object value)
+        {
+            name = default(StringSegment);
+            value = null;
+
+            if (literal.IsNullOrEmpty())
+                return;
+
+            if (literal.StartsWith("'") || literal.StartsWith("\""))
+            {
+                if (!literal.EndsWith("'") && !literal.EndsWith("\""))
+                    throw new Exception($"Invalid literal: {literal} in '{OriginalText}'");
+
+                value = literal.Substring(1, literal.Length - 2);
+            }
+            else if (literal.GetChar(0) >= '0' && literal.GetChar(0) <= '9')
+            {
+                value = literal.IndexOf('.') >= 0
+                    ? double.Parse(literal.ToString())
+                    : int.Parse(literal.ToString());
+            }
+            else if (literal.Equals("true"))
+            {
+                value = true;
+            }
+            else if (literal.Equals("false"))
+            {
+                value = false;
+            }
+            else
+            {
+                name = literal;
+            }
         }
     }
 
