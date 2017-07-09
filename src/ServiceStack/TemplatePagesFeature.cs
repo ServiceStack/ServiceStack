@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -21,6 +22,11 @@ namespace ServiceStack
         
         public static int PreventDosMaxSize = 10000;
         private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
+
+        public TemplatePagesFeature()
+        {
+            ScanAssemblies.AddRange(HostContext.AssertAppHost().ServiceAssemblies);
+        }
 
         public void Register(IAppHost appHost)
         {

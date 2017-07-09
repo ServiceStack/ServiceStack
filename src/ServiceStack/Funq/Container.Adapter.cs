@@ -11,7 +11,7 @@ using ServiceStack.Text;
 
 namespace Funq
 {
-    public partial class Container : IResolver
+    public partial class Container : IResolver, IContainer
     {
         public IContainerAdapter Adapter { get; set; }
 
@@ -308,6 +308,78 @@ namespace Funq
                 Interlocked.CompareExchange(ref tryResolveCache, newCache, snapshot), snapshot));
 
             return fn(this);
+        }
+
+        public object RequiredResolve(Type type, Type ownerType)
+        {
+            var instance = Resolve(type);
+            if (instance == null)
+                throw new ArgumentNullException($"Required Type of '{type.Name}' in '{ownerType.Name}' constructor was not registered in '{GetType().Name}'");
+
+            return instance;
+        }
+
+        private static Type[] TryResolveArgs = new[] {typeof(Type)};
+
+        public Func<object> CreateFactory(Type type)
+        {
+            var containerParam = Expression.Constant(this);
+            var memberBindings = type.GetPublicProperties()
+                .Where(IsPublicWritableUserPropertyType)
+                .Select(x =>
+                    Expression.Bind
+                    (
+                        x,
+                        Expression.TypeAs(Expression.Call(containerParam, GetType().GetMethodInfo(nameof(TryResolve), TryResolveArgs), Expression.Constant(x.PropertyType)), x.PropertyType)
+                    )
+                ).ToArray();
+
+            var ctorWithMostParameters = GetConstructorWithMostParams(type);
+            if (ctorWithMostParameters == null)
+                throw new Exception($"Constructor not found for Type '{type.Name}");
+
+            var constructorParameterInfos = ctorWithMostParameters.GetParameters();
+            var regParams = constructorParameterInfos
+                .Select(x => 
+                    Expression.TypeAs(Expression.Call(containerParam, GetType().GetMethodInfo(nameof(RequiredResolve)), Expression.Constant(x.ParameterType), Expression.Constant(type)), x.ParameterType)
+                );
+
+            return Expression.Lambda<Func<object>>
+            (
+                Expression.TypeAs(Expression.MemberInit
+                (
+                    Expression.New(ctorWithMostParameters, regParams.ToArray()),
+                    memberBindings
+                ), typeof(object))
+            ).Compile();
+        }
+
+        public IRegistration<TService> RegisterFactory<TService>(Func<object> factory)
+        {
+            return Register(null, c => (TService)factory());
+        }
+        
+        public IContainer AddSingleton(Type type, Func<object> factory)
+        {
+            var methodInfo = typeof(Container).GetMethodInfo(nameof(RegisterFactory));
+            var registerMethodInfo = methodInfo.MakeGenericMethod(type);
+            var registration = (IRegistration)registerMethodInfo.Invoke(this, new object[]{ factory });
+            registration.ReusedWithin(ReuseScope.Container);
+            return this;
+        }
+
+        public IContainer AddTransient(Type type, Func<object> factory)
+        {
+            var methodInfo = typeof(Container).GetMethodInfo(nameof(RegisterFactory));
+            var registerMethodInfo = methodInfo.MakeGenericMethod(type);
+            var registration = (IRegistration)registerMethodInfo.Invoke(this, new object[]{ factory });
+            registration.ReusedWithin(ReuseScope.None);
+            return this;
+        }
+
+        public object Resolve(Type type)
+        {
+            return TryResolve(type);
         }
     }
 }

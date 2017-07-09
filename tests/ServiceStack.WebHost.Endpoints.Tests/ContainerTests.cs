@@ -1,14 +1,32 @@
 using System;
 using System.Collections.Generic;
-using Funq;
 using NUnit.Framework;
+using ServiceStack.Configuration;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class SimpleContainerTests
+    class SimpleContainerTests : ContainerTests
     {
+        protected override IContainer CreateContainer()
+        {
+            return new SimpleContainer();
+        }
+    }
+
+    class FunqContainerTests : ContainerTests
+    {
+        protected override IContainer CreateContainer()
+        {
+            return new Funq.Container();
+        }
+    }
+
+    public abstract class ContainerTests
+    {
+        protected abstract IContainer CreateContainer();
+
         public class Foo : IFoo
         {
         }
@@ -66,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_register_transient()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddTransient(() => new Test());
 
@@ -83,12 +101,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var ifoo = container.Resolve<IFoo>();
             Assert.That(ifoo, Is.Not.Null);
             Assert.That(container.Resolve<IFoo>(), Is.Not.EqualTo(ifoo));
-        }    
-        
+        }
+
         [Test]
         public void Can_register_singleton()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddSingleton(() => new Test());
 
@@ -110,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_register_Autowired_Transient()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddTransient<IFoo>(() => new Foo());
             container.AddTransient<IBar>(() => new Bar());
@@ -142,7 +160,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_register_Autowired_Singleton()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddSingleton<IFoo>(() => new Foo());
             container.AddSingleton<IBar>(() => new Bar());
@@ -174,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Resolve_does_use_ctor_and_property_injection()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddTransient<IFoo>(() => new Foo());
             container.AddTransient<IBar>(() => new Bar());
@@ -192,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Missing_ctor_dependency_should_throw()
         {
-            var container = new SimpleContainer();
+            var container = CreateContainer();
             
             container.AddTransient<IFoo>(() => new Foo());
             container.AddTransient<IBar>(() => new Bar());
@@ -204,11 +222,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var instance = container.Resolve<TestCtor>();
                 Assert.Fail("Should throw");
             }
-            catch (ArgumentNullException e)
+            catch (Exception e)
             {
-                e.Message.Print();
+                e.ToString().Print();
+            }
+
+            try
+            {
+                var instance = container.Resolve(typeof(TestCtor));
+                Assert.Fail("Should throw");
+            }
+            catch (Exception e)
+            {
+                e.ToString().Print();
             }
         }
-
     }
 }
