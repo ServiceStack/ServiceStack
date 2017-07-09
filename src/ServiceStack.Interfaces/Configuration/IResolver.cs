@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ServiceStack.Configuration
+﻿namespace ServiceStack.Configuration
 {
     public interface IResolver
     {
@@ -15,16 +13,5 @@ namespace ServiceStack.Configuration
     public interface IHasResolver
     {
         IResolver Resolver { get; }
-    }
-
-    public interface IContainer
-    {
-        Func<object> CreateFactory(Type type);
-
-        void AddSingleton(Type type, Func<object> factory);
-        
-        void AddTransient(Type type, Func<object> factory);
-
-        object Resolve(Type type);
     }
 }

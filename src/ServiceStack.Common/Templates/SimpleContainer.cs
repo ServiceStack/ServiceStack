@@ -26,19 +26,21 @@ namespace ServiceStack.Templates
         {
             var instance = Resolve(type);
             if (instance == null)
-                throw new ArgumentNullException($"Required Type of '{type.Name}' in '{ownerType.Name}' constructor was not registered in '{GetType().Name}'");
+                throw new Exception($"Required Type of '{type.Name}' in '{ownerType.Name}' constructor was not registered in '{GetType().Name}'");
 
             return instance;
         }
 
-        public void AddSingleton(Type type, Func<object> factory)
+        public IContainer AddSingleton(Type type, Func<object> factory)
         {
             Factory[type] = () => InstanceCache.GetOrAdd(type, factory());
+            return this;
         }
 
-        public void AddTransient(Type type, Func<object> factory)
+        public IContainer AddTransient(Type type, Func<object> factory)
         {
             Factory[type] = factory;
+            return this;
         }
 
         public T TryResolve<T>() => (T) Resolve(typeof(T));
@@ -106,49 +108,31 @@ namespace ServiceStack.Templates
 
     public static class ContainerExtensions
     {
-        public static T Resolve<T>(this IContainer container)
-        {
-            return (T)container.Resolve(typeof(T));
-        }
+        public static T Resolve<T>(this IContainer container) => 
+            (T)container.Resolve(typeof(T));
 
-        public static void AddTransient<TService>(this IContainer container)
-        {
+        public static IContainer AddTransient<TService>(this IContainer container) => 
             container.AddTransient(typeof(TService), container.CreateFactory(typeof(TService)));
-        }
-        
-        public static void AddTransient<TService>(this IContainer container, Func<TService> factory)
-        {
+
+        public static IContainer AddTransient<TService>(this IContainer container, Func<TService> factory) => 
             container.AddTransient(typeof(TService), () => factory());
-        }
-        
-        public static void AddTransient<TService, TImpl>(this IContainer container) where TImpl : TService
-        {
+
+        public static IContainer AddTransient<TService, TImpl>(this IContainer container) where TImpl : TService => 
             container.AddTransient(typeof(TService), container.CreateFactory(typeof(TImpl)));
-        }
 
-        public static void AddTransient(this IContainer container, Type type)
-        {
+        public static IContainer AddTransient(this IContainer container, Type type) => 
             container.AddTransient(type, container.CreateFactory(type));
-        }
 
-        public static void AddSingleton<TService>(this IContainer container)
-        {
+        public static IContainer AddSingleton<TService>(this IContainer container) => 
             container.AddSingleton(typeof(TService), container.CreateFactory(typeof(TService)));
-        }
 
-        public static void AddSingleton<TService>(this IContainer container, Func<TService> factory)
-        {
+        public static IContainer AddSingleton<TService>(this IContainer container, Func<TService> factory) => 
             container.AddSingleton(typeof(TService), () => factory());
-        }
-        
-        public static void AddSingleton<TService, TImpl>(this IContainer container) where TImpl : TService
-        {
-            container.AddSingleton(typeof(TService), container.CreateFactory(typeof(TImpl)));
-        }
 
-        public static void AddSingleton(this IContainer container, Type type)
-        {
+        public static IContainer AddSingleton<TService, TImpl>(this IContainer container) where TImpl : TService => 
+            container.AddSingleton(typeof(TService), container.CreateFactory(typeof(TImpl)));
+
+        public static IContainer AddSingleton(this IContainer container, Type type) => 
             container.AddSingleton(type, container.CreateFactory(type));
-        }
     }
 }
