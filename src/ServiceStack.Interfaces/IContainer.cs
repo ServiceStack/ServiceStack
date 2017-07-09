@@ -1,6 +1,6 @@
 using System;
 
-namespace ServiceStack.Configuration
+namespace ServiceStack
 {
     public interface IContainer
     {

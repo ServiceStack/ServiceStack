@@ -4339,19 +4339,6 @@
             Deletes a specified cookie by setting its value to empty and expiration to -1 days
             </summary>
         </member>
-        <member name="M:ServiceStack.Host.Handlers.IndexPageHttpHandler.ProcessRequest(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
-            <summary>
-            Non ASP.NET requests
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Host.Handlers.RedirectHttpHandler.ProcessRequest(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
-            <summary>
-            Non ASP.NET requests
-            </summary>
-            <param name="request"></param>
-            <param name="response"></param>
-            <param name="operationName"></param>
-        </member>
         <member name="M:ServiceStack.Host.Handlers.StaticFileHandler.#ctor(System.String)">
             <summary>
             Return File at specified virtualPath from AppHost.VirtualFiles ContentRootPath
@@ -6636,11 +6623,6 @@
             Try to keep everything static so we can easily be reused.
             </summary>
         </member>
-        <member name="M:ServiceStack.MiniProfiler.UI.MiniProfilerHandler.ProcessRequest(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
-            <summary>
-            Returns either includes' css/javascript or results' html.
-            </summary>
-        </member>
         <member name="M:ServiceStack.MiniProfiler.UI.MiniProfilerHandler.Includes(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse,System.String)">
             <summary>
             Handles rendering static content files.
@@ -7468,16 +7450,6 @@
             </summary>
             <param name="container">The IoC container</param>
             <param name="assemblies">The assemblies to scan for a validator</param>
-        </member>
-        <member name="T:ServiceStack.VirtualPath.InMemoryVirtualPathProvider">
-            <summary>
-            In Memory Virtual Path Provider.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.VirtualFileExtensions.Refresh(ServiceStack.IO.IVirtualFile)">
-            <summary>
-            Refresh file stats for this node if supported
-            </summary>
         </member>
         <member name="T:Funq.Container">
             <summary>

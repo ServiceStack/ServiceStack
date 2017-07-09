@@ -402,6 +402,31 @@
             to provide a detailed analysis of your logs.
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.Args">
+            <summary>
+            Add additional Args available to all pages 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.TemplateFilters">
+            <summary>
+            Add additional template filters available to all pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.ContentType">
+            <summary>
+            Specify the Content-Type of the Response 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.PageFilters">
+            <summary>
+            Transform the Page output using a chain of filters
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.OutputFilters">
+            <summary>
+            Transform the entire output using a chain of filters
+            </summary>
+        </member>
         <member name="T:ServiceStack.UrnId">
             <summary>
             Creates a Unified Resource Name (URN) with the following formats:
@@ -409,6 +434,11 @@
             	- urn:{TypeName}:{IdFieldValue}						e.g. urn:UserSession:1
             	- urn:{TypeName}:{IdFieldName}:{IdFieldValue}		e.g. urn:UserSession:UserId:1			
             
+            </summary>
+        </member>
+        <member name="T:ServiceStack.VirtualPath.InMemoryVirtualPathProvider">
+            <summary>
+            In Memory Virtual Path Provider.
             </summary>
         </member>
     </members>
