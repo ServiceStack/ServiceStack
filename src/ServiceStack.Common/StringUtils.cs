@@ -113,15 +113,15 @@ namespace ServiceStack
                     inBraces = true;
                     cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                     pos = i + 1;
+
+                    cmd.Args = ParseArguments(commandsString.Subsegment(pos), out int endPos);
+                    i += endPos;
+                    pos = i + 1;
                     continue;
                 }
                 if (c == ')')
                 {
                     inBraces = false;
-                    var arg = commandsString.Subsegment(pos, i - pos).Trim();
-                    if (!arg.IsNullOrEmpty())
-                        cmd.Args.Add(arg);
-
                     pos = i + 1;
 
                     //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
@@ -142,7 +142,7 @@ namespace ServiceStack
                             endPos++;
                     }
 
-                    cmd.Suffix = commandsString.Subsegment(pos, endPos - pos);
+                    cmd.Suffix = commandsString.Subsegment(pos, endPos - pos).TrimEnd();
                     pos = endPos;
 
                     continue;
@@ -182,6 +182,82 @@ namespace ServiceStack
             return to;
         }
 
+        // ( {args} , {args} )
+        //   ^
+        public static List<StringSegment> ParseArguments(StringSegment argsString, out int endPos) 
+        {
+            var to = new List<StringSegment>();
+
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBraces = 0;
+            var lastPos = 0;
+            
+            for (var i=0; i<argsString.Length; i++)
+            {
+                var c = argsString.GetChar(i);
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                        inDoubleQuotes = false;
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                        inSingleQuotes = false;
+                    continue;
+                }
+                if (inBraces > 0)
+                {
+                    if (c == '(')
+                        ++inBraces;
+                    if (c == ')')
+                        --inBraces;
+                    continue;
+                }
+                if (c == '"')
+                {
+                    inDoubleQuotes = true;
+                    continue;
+                }
+                if (c == '\'')
+                {
+                    inSingleQuotes = true;
+                    continue;
+                }
+                if (c == '(')
+                {
+                    inBraces++;
+                    continue;
+                }
+
+                if (c == ',')
+                {
+                    var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                    to.Add(arg);
+                    lastPos = i + 1;
+                    continue;
+                }
+
+                if (c == ')')
+                {
+                    var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                    if (!arg.IsNullOrEmpty())
+                    {
+                        to.Add(arg);
+                    }
+                    
+                    endPos = i;
+                    return to;
+                }
+            }
+
+            endPos = argsString.Length;
+
+            return to;
+        }
+                
         /// <summary>
         /// Protect against XSS by cleaning non-standared User Input
         /// </summary>

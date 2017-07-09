@@ -203,5 +203,15 @@ namespace ServiceStack.Common.Tests
             Assert.That("1,000.00".SafeInput(), Is.EqualTo("1,000.00"));
             Assert.That("a b c".SafeInput(), Is.EqualTo("a b c"));
         }
+
+        [Test]
+        public void Does_parse_complex_arguments()
+        {
+            Assert.That("add(1,add(2,3))".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(2,3)]" }));
+            Assert.That(" add ( 1, add(2,3) ) ".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(2,3)]" }));
+            Assert.That("cat('1',cat(\"2\",'3'))".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[cat:'1'|cat(\"2\",'3')]" }));
+            
+            Assert.That(" add ( 1, add(add(2,3),4) ) ".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(add(2,3),4)]" }));
+        }
     }
 }

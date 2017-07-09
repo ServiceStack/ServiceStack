@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
 
 #if NETSTANDARD1_3
@@ -29,16 +30,17 @@ namespace ServiceStack.Templates
             OriginalText = originalText;
             FilterCommands = filterCommands?.ToArray() ?? TypeConstants<Command>.EmptyArray;
 
-            ParseLiteral(name, out StringSegment outName, out object value);
+            ParseLiteral(name, out StringSegment outName, out object value, out Command cmd);
 
             Name = outName;
             Value = value;
         }
 
-        public void ParseLiteral(StringSegment literal, out StringSegment name, out object value)
+        public void ParseLiteral(StringSegment literal, out StringSegment name, out object value, out Command cmd)
         {
             name = default(StringSegment);
             value = null;
+            cmd = null;
 
             if (literal.IsNullOrEmpty())
                 return;
@@ -65,6 +67,10 @@ namespace ServiceStack.Templates
             else if (literal.Equals("false"))
             {
                 value = false;
+            }
+            else if (literal.IndexOf('(') >= 0)
+            {
+                cmd = literal.ParseCommands().FirstOrDefault();
             }
             else
             {

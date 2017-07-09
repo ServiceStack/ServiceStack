@@ -29,6 +29,8 @@ namespace ServiceStack.Templates
 
         public IVirtualPathProvider VirtualFiles { get; set; } = new MemoryVirtualFiles();
         
+        public Dictionary<string, object> Args { get; } = new Dictionary<string, object>();
+        
         public bool DebugMode { get; set; }
 
         public PageFormat GetFormat(string extension) => PageFormats.FirstOrDefault(x => x.Extension == extension);

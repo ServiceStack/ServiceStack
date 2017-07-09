@@ -115,6 +115,85 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(html, Is.EqualTo("<h1>3</h1>"));
         }
+            
+        [Test]
+        public async Task Does_call_multiple_add_filters_with_args()
+        {
+            var context = CreateContext().Init();
+            
+            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(2) | add(3) }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
 
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>6</h1>"));
+        }
+
+        [Test]
+        public async Task Can_use_add_filter_with_page_and_result_args()
+        {
+            var context = CreateContext().Init();
+            
+            context.VirtualFiles.AppendFile("page.html", @"
+<!--
+pageArg: 2
+-->
+
+<h1>{{ 1 | add(pageArg) | add(resultArg) }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"))
+            {
+                Args =
+                {
+                    { "resultArg", "3" },
+                }
+            };
+
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>6</h1>"));
+        }
+
+        [Test]
+        public async Task Does_call_recursive_add_filter_with_args()
+        {
+            var context = CreateContext().Init();
+            
+            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(add(2,3)) }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>6</h1>"));
+        }
+
+        [Test]
+        public async Task Can_use_nested_add_filter_with_page_and_result_args()
+        {
+            var context = CreateContext().Init();
+
+            context.Args["contextArg"] = 10;
+            
+            context.VirtualFiles.AppendFile("page.html", @"
+<!--
+pageArg: 2
+-->
+
+<h1>{{ 1 | add(pageArg) | add( add(add(2,resultArg),contextArg) ) }}</h1>");
+            
+            var result = new PageResult(context.Pages.GetOrCreatePage("page"))
+            {
+                Args =
+                {
+                    { "resultArg", "3" },
+                }
+            };
+
+            var html = await result.RenderToStringAsync();
+            
+            Assert.That(html, Is.EqualTo("<h1>18</h1>"));
+        }
     }
 }

@@ -201,7 +201,7 @@ namespace ServiceStack.Templates
             for (var i = 0; i < var.FilterCommands.Length; i++)
             {
                 var cmd = var.FilterCommands[i];
-                var invoker = GetFilterInvoker(cmd, out TemplateFilter filter);
+                var invoker = GetFilterInvoker(cmd.Name, 1 + cmd.Args.Count, out TemplateFilter filter);
                 if (invoker == null)
                 {
                     if (i == 0)
@@ -216,24 +216,12 @@ namespace ServiceStack.Templates
                 for (var cmdIndex = 0; cmdIndex < cmd.Args.Count; cmdIndex++)
                 {
                     var arg = cmd.Args[cmdIndex];
-                    StringSegment outName;
-                    object outValue;
-                    var.ParseLiteral(arg, out outName, out outValue);
+                    var varValue = Evaluate(var, arg);
 
-                    args[1 + cmdIndex] = !outName.IsNullOrEmpty()
-                        ? GetValue(outName.Value)
-                        : outValue;
+                    args[1 + cmdIndex] = varValue;
                 }
 
-                try
-                {
-                    value = invoker(filter, args);
-                }
-                catch (Exception ex)
-                {
-                    var argStr = args.Map(x => x.ToString()).Join(",");
-                    throw new TargetInvocationException($"Failed to invoke filter {cmd.Name}({argStr})", ex);
-                }
+                value = InvokeFilter(invoker, filter, args, cmd);
             }
 
             if (value == null)
@@ -242,11 +230,56 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private MethodInvoker GetFilterInvoker(Command cmd, out TemplateFilter filter)
+        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, Command cmd)
+        {
+            try
+            {
+                return invoker(filter, args);
+            }
+            catch (Exception ex)
+            {
+                var argStr = args.Map(x => x.ToString()).Join(",");
+                throw new TargetInvocationException($"Failed to invoke filter {cmd.Name}({argStr})", ex);
+            }
+        }
+
+        private object Evaluate(PageVariableFragment var, StringSegment arg)
+        {
+            var.ParseLiteral(arg, out StringSegment outName, out object outValue, out Command cmd);
+
+            if (!outName.IsNullOrEmpty())
+            {
+                return GetValue(outName.Value);
+            }
+            if (cmd != null)
+            {
+                var value = Evaluate(var, cmd);
+                return value;
+            }
+            return outValue;
+        }
+
+        private object Evaluate(PageVariableFragment var, Command cmd)
+        {
+            var invoker = GetFilterInvoker(cmd.Name, cmd.Args.Count, out TemplateFilter filter);
+
+            var args = new object[cmd.Args.Count];
+            for (var i = 0; i < cmd.Args.Count; i++)
+            {
+                var arg = cmd.Args[i];
+                var varValue = Evaluate(var, arg);
+                args[i] = varValue;
+            }
+            
+            var value = InvokeFilter(invoker, filter, args, cmd);
+            return value;
+        }
+        
+        private MethodInvoker GetFilterInvoker(StringSegment name, int argsCount, out TemplateFilter filter)
         {
             foreach (var tplFilter in TemplateFilters)
             {
-                var invoker = tplFilter.GetInvoker(cmd.Name, 1 + cmd.Args.Count);
+                var invoker = tplFilter.GetInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -256,7 +289,7 @@ namespace ServiceStack.Templates
 
             foreach (var tplFilter in Page.Context.TemplateFilters)
             {
-                var invoker = tplFilter.GetInvoker(cmd.Name, 1 + cmd.Args.Count);
+                var invoker = tplFilter.GetInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -276,7 +309,9 @@ namespace ServiceStack.Templates
                     ? strValue
                     : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out strValue))
                         ? strValue
-                        : null;
+                        : Page.Context.Args.TryGetValue(name, out obj)
+                            ? obj
+                            : null;
             return value;
         }
     }
