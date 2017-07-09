@@ -66,7 +66,7 @@ namespace ServiceStack.VirtualPath
 
         public override IEnumerable<IVirtualDirectory> GetRootDirectories()
         {
-            return new[] { new InMemoryVirtualDirectory(new InMemoryVirtualPathProvider(), Alias), };
+            return new[] { new InMemoryVirtualDirectory(new MemoryVirtualFiles(), Alias), };
         }
 
         public override IEnumerable<IVirtualFile> GetRootFiles()

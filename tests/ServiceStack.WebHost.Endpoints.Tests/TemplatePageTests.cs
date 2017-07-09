@@ -110,7 +110,7 @@ title: We encode < & >
             public override List<IVirtualPathProvider> GetVirtualFileSources()
             {
                 var existingProviders = base.GetVirtualFileSources();
-                var memFs = new InMemoryVirtualPathProvider();
+                var memFs = new MemoryVirtualFiles();
 
                 foreach (var entry in HtmlFiles)
                 {

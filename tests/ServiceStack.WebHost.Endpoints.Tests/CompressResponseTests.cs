@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override List<IVirtualPathProvider> GetVirtualFileSources()
             {
                 var existingProviders = base.GetVirtualFileSources();
-                var memFs = new InMemoryVirtualPathProvider();
+                var memFs = new MemoryVirtualFiles();
 
                 memFs.WriteFile("/file.js", "console.log('foo')");
                 memFs.WriteFile("/file.css", ".foo{}");

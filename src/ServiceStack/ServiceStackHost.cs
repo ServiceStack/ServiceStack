@@ -204,13 +204,13 @@ namespace ServiceStack
                 pathProviders = GetVirtualFileSources().Where(x => x != null).ToList();
 
                 VirtualFileSources = pathProviders.Count > 1
-                    ? new MultiVirtualPathProvider(pathProviders.ToArray())
+                    ? new MultiVirtualFiles(pathProviders.ToArray())
                     : pathProviders.First();
             }
 
             if (VirtualFiles == null)
-                VirtualFiles = pathProviders?.FirstOrDefault(x => x is FileSystemVirtualPathProvider) as IVirtualFiles
-                    ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualPathProvider) as IVirtualFiles;
+                VirtualFiles = pathProviders?.FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles
+                    ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles;
 
             OnAfterInit();
 
@@ -260,14 +260,14 @@ namespace ServiceStack
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
             var pathProviders = new List<IVirtualPathProvider> {
-                new FileSystemVirtualPathProvider(GetWebRootPath())
+                new FileSystemVirtualFiles(GetWebRootPath())
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(x) { LastModified = GetAssemblyLastModified(x.GetAssembly()) } ));
+                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x.GetAssembly()) } ));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
-                .Map(x => new ResourceVirtualPathProvider(x) { LastModified = GetAssemblyLastModified(x) } ));
+                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x) } ));
 
             return pathProviders;
         }

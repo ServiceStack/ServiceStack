@@ -6,7 +6,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.VirtualPath
 {
-    public static class VirtualPathProviderExtensions
+    public static class VirtualFilesExtensions
     {
         private const string ErrorNotWritable = "{0} does not implement IVirtualFiles";
 

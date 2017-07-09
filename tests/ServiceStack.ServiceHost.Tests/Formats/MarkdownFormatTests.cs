@@ -47,7 +47,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             markdownFormat = new MarkdownFormat
             {
-                VirtualPathProvider = new FileSystemVirtualPathProvider("~/".MapProjectPath()),
+                VirtualPathProvider = new FileSystemVirtualFiles("~/".MapProjectPath()),
             };
         }
 

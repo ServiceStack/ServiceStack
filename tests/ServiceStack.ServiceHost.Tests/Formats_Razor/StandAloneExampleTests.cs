@@ -29,7 +29,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             RazorFormat.Instance = null;
             var razor = new RazorFormat
             {
-                VirtualFileSources = new InMemoryVirtualPathProvider(),
+                VirtualFileSources = new MemoryVirtualFiles(),
                 EnableLiveReload = false,
             }.Init();
 

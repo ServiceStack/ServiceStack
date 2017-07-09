@@ -273,10 +273,10 @@ namespace CheckWeb
             var existingProviders = base.GetVirtualFileSources();
             //return existingProviders;
 
-            var memFs = new InMemoryVirtualPathProvider();
+            var memFs = new MemoryVirtualFiles();
 
             //Get FileSystem Provider
-            var fs = existingProviders.First(x => x is FileSystemVirtualPathProvider);
+            var fs = existingProviders.First(x => x is FileSystemVirtualFiles);
 
             //Process all .html files:
             foreach (var file in fs.GetAllMatchingFiles("*.html"))

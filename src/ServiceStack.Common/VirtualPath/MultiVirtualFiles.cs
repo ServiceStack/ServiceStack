@@ -6,6 +6,12 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
+    public class MultiVirtualFiles : MultiVirtualPathProvider
+    {
+        public MultiVirtualFiles(params IVirtualPathProvider[] childProviders) : base(childProviders) {}
+    }
+    
+    [Obsolete("Renamed to MultiVirtualFiles")]
     public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase
     {
         protected IList<IVirtualPathProvider> ChildProviders;

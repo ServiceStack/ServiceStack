@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         const string View2Html = "<div class='view2'>@DateTime.Now</div>";
         const string View3Html = "<div class='view3'>@DateTime.Now</div>";
 
-        protected override void InitializeFileSystem(InMemoryVirtualPathProvider fileSystem)
+        protected override void InitializeFileSystem(MemoryVirtualFiles fileSystem)
         {
             base.InitializeFileSystem(fileSystem);
 

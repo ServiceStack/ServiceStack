@@ -36,7 +36,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         {
             RazorFormat.Instance = null;
 
-            var fileSystem = new InMemoryVirtualPathProvider();
+            var fileSystem = new MemoryVirtualFiles();
 
             RazorFormat = new RazorFormat
             {

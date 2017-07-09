@@ -5,7 +5,14 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
-    public class ResourceVirtualPathProvider : AbstractVirtualPathProviderBase
+    public class ResourceVirtualFiles : ResourceVirtualPathProvider
+    {
+        public ResourceVirtualFiles(Type baseTypeInAssmebly) : base(baseTypeInAssmebly) {}
+        public ResourceVirtualFiles(Assembly backingAssembly, string rootNamespace = null) : base(backingAssembly, rootNamespace) {}
+    }
+    
+    [Obsolete("Renamed to ResourceVirtualFiles")]
+    public abstract class ResourceVirtualPathProvider : AbstractVirtualPathProviderBase
     {
         protected ResourceVirtualDirectory RootDir;
         protected Assembly BackingAssembly;

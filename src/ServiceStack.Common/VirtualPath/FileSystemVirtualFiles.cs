@@ -5,7 +5,14 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
-    public class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
+    public class FileSystemVirtualFiles : FileSystemVirtualPathProvider
+    {
+        public FileSystemVirtualFiles(string rootDirectoryPath) : base(rootDirectoryPath) {}
+        public FileSystemVirtualFiles(DirectoryInfo rootDirInfo) : base(rootDirInfo) {}
+    }
+
+    [Obsolete("Renamed to FileSystemVirtualFiles")]
+    public abstract class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
 #pragma warning disable 618
         , IWriteableVirtualPathProvider
 #pragma warning restore 618
@@ -19,8 +26,7 @@ namespace ServiceStack.VirtualPath
         public override string RealPathSeparator => Convert.ToString(Path.DirectorySeparatorChar);
 
         public FileSystemVirtualPathProvider(string rootDirectoryPath)
-            : this(new DirectoryInfo(rootDirectoryPath))
-        { }
+            : this(new DirectoryInfo(rootDirectoryPath)) {}
 
         public FileSystemVirtualPathProvider(DirectoryInfo rootDirInfo)
         {
