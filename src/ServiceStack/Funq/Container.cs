@@ -61,9 +61,16 @@ namespace Funq
             return new Container { parent = this };
         }
 
+        private bool hasDisposed = false;
+
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
         public virtual void Dispose()
         {
+            if (hasDisposed)
+                return;
+
+            hasDisposed = true;
+            
             lock (disposables)
             {
                 while (disposables.Count > 0)
