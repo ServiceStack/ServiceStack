@@ -485,6 +485,8 @@ namespace ServiceStack.Host
         /// </summary>
         public object ExecuteMessage(IMessage dto, IRequest req)
         {
+            RequestContext.Instance.StartRequestContext();
+            
             req.PopulateFromRequestIfHasSessionId(dto.Body);
 
             req.Dto = appHost.ApplyRequestConverters(req, dto.Body);
