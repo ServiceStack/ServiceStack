@@ -13,6 +13,8 @@ namespace ServiceStack.Validation
     {
         public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
+        public bool ScanAppHostAssemblies { get; set; }
+
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -30,6 +32,11 @@ namespace ServiceStack.Validation
             {
                 appHost.GlobalMessageRequestFilters.Add(ValidationFilters.RequestFilter);
                 appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+            }
+
+            if (ScanAppHostAssemblies)
+            {
+                appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies);
             }
         }
        
