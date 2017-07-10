@@ -152,5 +152,119 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             result = await new PageResult(context.GetPage("page-culture")) {Args = {["culture"] = "fr-FR"}}.RenderToStringAsync();
             Assert.That(result, Is.EqualTo("Cost: 99,99 €"));
         }
+
+        [Test]
+        public async Task Does_default_filter_format()
+        {
+            var context = CreateContext().Init();
+            context.VirtualFiles.WriteFile("page.html", "{{ 3.14159 | format('{0:N2}') }}");
+            
+            var result = await new PageResult(context.GetPage("page")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("3.14"));
+        }
+
+        [Test]
+        public async Task Does_default_filter_dateFormat()
+        {
+            var context = CreateContext().Init();
+            context.VirtualFiles.WriteFile("dateFormat-default.html", "{{ date | dateFormat }}");
+            context.VirtualFiles.WriteFile("dateFormat-custom.html", "{{ date | dateFormat(format) }}");
+            
+            var result = await new PageResult(context.GetPage("dateFormat-default"))
+            {
+                Args = { ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc) }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("2001-01-01"));
+
+            context.Args[TemplateConstants.DefaultDateFormat] = "dd/MM/yyyy";
+            result = await new PageResult(context.GetPage("dateFormat-default"))
+            {
+                Args = { ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc) }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("01/01/2001"));
+
+            result = await new PageResult(context.GetPage("dateFormat-custom"))
+            {
+                Args =
+                {
+                    ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc),
+                    ["format"] = "dd.MM.yyyy",
+                }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("01.01.2001"));
+        }
+
+        [Test]
+        public async Task Does_default_filter_dateTimeFormat()
+        {
+            var context = CreateContext().Init();
+            context.VirtualFiles.WriteFile("dateTimeFormat-default.html", "{{ date | dateTimeFormat }}");
+            context.VirtualFiles.WriteFile("dateTimeFormat-custom.html", "{{ date | dateFormat(format) }}");
+            
+            var result = await new PageResult(context.GetPage("dateTimeFormat-default"))
+            {
+                Args = { ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc) }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("2001-01-01 01:01:01Z"));
+
+            context.Args[TemplateConstants.DefaultDateTimeFormat] = "dd/MM/yyyy hh:mm";
+            result = await new PageResult(context.GetPage("dateTimeFormat-default"))
+            {
+                Args = { ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc) }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("01/01/2001 01:01"));
+
+            result = await new PageResult(context.GetPage("dateTimeFormat-custom"))
+            {
+                Args =
+                {
+                    ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc),
+                    ["format"] = "dd.MM.yyyy hh.mm.ss",
+                }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("01.01.2001 01.01.01"));
+        }
+
+        [Test]
+        public async Task Does_default_filter_string_filters()
+        {
+            var context = CreateContext().Init();
+
+            context.VirtualFiles.WriteFile("page-humanize.html", "{{ 'a_varName' | humanize }}");
+            var result = await new PageResult(context.GetPage("page-humanize")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("A Var Name"));
+
+            context.VirtualFiles.WriteFile("page-titleCase.html", "{{ 'war and peace' | titleCase }}");
+            result = await new PageResult(context.GetPage("page-titleCase")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("War And Peace"));
+
+            context.VirtualFiles.WriteFile("page-lower.html", "{{ 'Title Case' | lower }}");
+            result = await new PageResult(context.GetPage("page-lower")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("title case"));
+
+            context.VirtualFiles.WriteFile("page-upper.html", "{{ 'Title Case' | upper }}");
+            result = await new PageResult(context.GetPage("page-upper")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("TITLE CASE"));
+
+            context.VirtualFiles.WriteFile("page-pascalCase.html", "{{ 'camelCase' | pascalCase }}");
+            result = await new PageResult(context.GetPage("page-pascalCase")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("CamelCase"));
+
+            context.VirtualFiles.WriteFile("page-camelCase.html", "{{ 'PascalCase' | camelCase }}");
+            result = await new PageResult(context.GetPage("page-camelCase")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("pascalCase"));
+
+            context.VirtualFiles.WriteFile("page-substring.html", "{{ 'This is a short sentence' | substring(8) }}... {{ 'These three words' | substring(6,5) }}");
+            result = await new PageResult(context.GetPage("page-substring")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("a short sentence... three"));
+
+            context.VirtualFiles.WriteFile("page-pad.html", "<h1>{{ '7' | padLeft(3) }}</h1><h2>{{ 'tired' | padRight(10) }}</h2>");
+            result = await new PageResult(context.GetPage("page-pad")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<h1>  7</h1><h2>tired     </h2>"));
+
+            context.VirtualFiles.WriteFile("page-padchar.html", "<h1>{{ '7' | padLeft(3,'0') }}</h1><h2>{{ 'tired' | padRight(10,'z') }}</h2>");
+            result = await new PageResult(context.GetPage("page-padchar")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<h1>007</h1><h2>tiredzzzzz</h2>"));
+        }
     }
 }
