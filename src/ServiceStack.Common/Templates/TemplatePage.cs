@@ -16,7 +16,7 @@ namespace ServiceStack.Templates
         public IVirtualFile File { get; }
         public StringSegment FileContents { get; private set; }
         public StringSegment BodyContents { get; private set; }
-        public Dictionary<string, string> Args { get; private set; }
+        public Dictionary<string, object> Args { get; private set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
@@ -38,9 +38,17 @@ namespace ServiceStack.Templates
 
         public async Task<TemplatePage> Init()
         {
-            return HasInit
-                ? this
-                : await Load();
+            if (HasInit)
+            {
+                if (!Context.DebugMode)
+                    return this;
+
+                File.Refresh();
+                if (File.LastModified == LastModified)
+                    return this;
+            }
+            
+            return await Load();
         }
 
         public async Task<TemplatePage> Load()
@@ -54,7 +62,7 @@ namespace ServiceStack.Templates
 
             var lastModified = File.LastModified;
             var fileContents = contents.ToStringSegment();
-            var pageVars = new Dictionary<string, string>();
+            var pageVars = new Dictionary<string, object>();
 
             var pos = 0;
             while (char.IsWhiteSpace(fileContents.GetChar(pos)))
