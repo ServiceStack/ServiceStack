@@ -315,7 +315,12 @@ namespace ServiceStack
                 .Success(t =>
                 {
                     if (cancel.IsCancellationRequested)
+                    {
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Heartbeat is cancelled.");
+
                         return;
+                    }
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
@@ -325,7 +330,12 @@ namespace ServiceStack
                 .Error(ex =>
                 {
                     if (cancel.IsCancellationRequested)
+                    {
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Heartbeat error. Heartbeat is cancelled.");
+
                         return;
+                    }
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Error from Heartbeat: " + ex.UnwrapIfSingleException().Message);
