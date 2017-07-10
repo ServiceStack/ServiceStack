@@ -23,6 +23,8 @@ namespace ServiceStack.Templates
         
         public object Value { get; set; }
         
+        public Command Command { get; set; }
+        
         public Command[] FilterCommands { get; set; }
 
         public PageVariableFragment(StringSegment originalText, StringSegment name, List<Command> filterCommands)
@@ -30,10 +32,11 @@ namespace ServiceStack.Templates
             OriginalText = originalText;
             FilterCommands = filterCommands?.ToArray() ?? TypeConstants<Command>.EmptyArray;
 
-            ParseLiteral(name, out StringSegment outName, out object value, out Command cmd);
+            ParseLiteral(name, out StringSegment outName, out object value, out Command command);
 
             Name = outName;
             Value = value;
+            Command = command;
         }
 
         public void ParseLiteral(StringSegment literal, out StringSegment name, out object value, out Command cmd)
@@ -67,6 +70,10 @@ namespace ServiceStack.Templates
             else if (literal.Equals("false"))
             {
                 value = false;
+            }
+            else if (literal.Equals("null"))
+            {
+                value = NullValue.Instance;
             }
             else if (literal.IndexOf('(') >= 0)
             {

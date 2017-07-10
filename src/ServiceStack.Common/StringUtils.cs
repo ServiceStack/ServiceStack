@@ -73,7 +73,7 @@ namespace ServiceStack
 
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
-            var inBraces = false;
+            var inBrackets = false;
 
             var pos = 0;
             var endBlockPos = commandsString.Length;
@@ -110,7 +110,7 @@ namespace ServiceStack
 
                 if (c == '(')
                 {
-                    inBraces = true;
+                    inBrackets = true;
                     cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                     pos = i + 1;
 
@@ -121,7 +121,7 @@ namespace ServiceStack
                 }
                 if (c == ')')
                 {
-                    inBraces = false;
+                    inBrackets = false;
                     pos = i + 1;
 
                     //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
@@ -148,7 +148,7 @@ namespace ServiceStack
                     continue;
                 }
 
-                if (inBraces && c == ',')
+                if (inBrackets && c == ',')
                 {
                     var arg = commandsString.Subsegment(pos, i - pos).Trim();
                     cmd.Args.Add(arg);
@@ -190,6 +190,7 @@ namespace ServiceStack
 
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
+            var inBrackets = 0;
             var inBraces = 0;
             var lastPos = 0;
             
@@ -210,12 +211,21 @@ namespace ServiceStack
                 }
                 if (inBraces > 0)
                 {
-                    if (c == '(')
+                    if (c == '{')
                         ++inBraces;
-                    if (c == ')')
+                    if (c == '}')
                         --inBraces;
                     continue;
                 }
+                if (inBrackets > 0)
+                {
+                    if (c == '(')
+                        ++inBrackets;
+                    if (c == ')')
+                        --inBrackets;
+                    continue;
+                }
+                
                 if (c == '"')
                 {
                     inDoubleQuotes = true;
@@ -226,9 +236,14 @@ namespace ServiceStack
                     inSingleQuotes = true;
                     continue;
                 }
-                if (c == '(')
+                if (c == '{')
                 {
                     inBraces++;
+                    continue;
+                }
+                if (c == '(')
+                {
+                    inBrackets++;
                     continue;
                 }
 

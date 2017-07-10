@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using ServiceStack.Text;
 
 #if NETSTANDARD1_3
@@ -8,6 +9,19 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
+    public class RawString : IRawString
+    {
+        private string value;
+        public RawString(string value) => this.value = value;
+        public string ToRawString() => value;
+    }
+
+    public class NullValue : RawString
+    {
+        public static NullValue Instance = new NullValue();
+        private NullValue() : base("null") {}
+    }
+
     public static class TemplatePageUtils
     {
         static readonly char[] VarDelimiters = { '|', '}' };
@@ -68,7 +82,7 @@ namespace ServiceStack.Templates
                 to.Add(new PageVariableFragment(originalText, varName, filterCommands));
             }
 
-            if (lastPos != text.Length - 1)
+            if (lastPos != text.Length)
             {
                 var lastBlock = lastPos == 0 ? text : text.Subsegment(lastPos);
                 to.Add(new PageStringFragment(lastBlock));
@@ -77,5 +91,12 @@ namespace ServiceStack.Templates
             return to;
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IRawString ToRawString(this string value) => 
+            new RawString(value ?? "");
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IRawString ToRawString(this StringSegment value) => 
+            new RawString(value.HasValue ? value.Value : "");
     }
 }

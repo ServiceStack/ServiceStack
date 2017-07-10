@@ -13,6 +13,7 @@ namespace ServiceStack.Templates
 {
     public class TemplateFilter
     {
+        public TemplatePagesContext Context { get; set; }
         public ITemplatePages Pages { get; set; }
         
         readonly ConcurrentDictionary<string, MethodInvoker> invokerCache = new ConcurrentDictionary<string, MethodInvoker>();

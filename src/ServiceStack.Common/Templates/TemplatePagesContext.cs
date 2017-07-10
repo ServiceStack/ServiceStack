@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,7 +15,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
-    public class TemplatePagesContext
+    public class TemplatePagesContext : IDisposable
     {
         public List<PageFormat> PageFormats { get; set; } = new List<PageFormat>();
         
@@ -30,8 +32,8 @@ namespace ServiceStack.Templates
         public IVirtualPathProvider VirtualFiles { get; set; } = new MemoryVirtualFiles();
         
         public Dictionary<string, object> Args { get; } = new Dictionary<string, object>();
-        
-        public bool DebugMode { get; set; }
+
+        public bool DebugMode { get; set; } = true;
 
         public PageFormat GetFormat(string extension) => PageFormats.FirstOrDefault(x => x.Extension == extension);
 
@@ -47,14 +49,29 @@ namespace ServiceStack.Templates
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
 
+        public TemplatePage GetPage(string virtualPath)
+        {
+            var page = Pages.GetPage(virtualPath);
+            if (page == null)
+                throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");
+
+            return page;
+        }
+
         public TemplatePagesContext()
         {
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
+            TemplateFilters.Add(new TemplateDefaultFilters());
+
+            Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
+            Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
+            Args[TemplateConstants.DefaultDateTimeFormat] = "u";
         }
 
         public TemplatePagesContext Init()
         {
+            Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
 
             foreach (var type in ScanTypes)
@@ -72,6 +89,8 @@ namespace ServiceStack.Templates
 
             foreach (var filter in TemplateFilters)
             {
+                if (filter.Context == null)
+                    filter.Context = this;
                 if (filter.Pages == null)
                     filter.Pages = Pages;
 
@@ -80,6 +99,8 @@ namespace ServiceStack.Templates
 
             foreach (var page in CodePages)
             {
+                if (page.Context == null)
+                    page.Context = this;
                 if (page.Pages == null)
                     page.Pages = Pages;
 
@@ -110,6 +131,14 @@ namespace ServiceStack.Templates
         {
             using (Container as IDisposable) {}
         }
+    }
+
+    public static class TemplateConstants
+    {
+        public const string DefaultDateFormat = nameof(DefaultDateFormat);
+        public const string DefaultDateTimeFormat = nameof(DefaultDateTimeFormat);
+        public const string DefaultCulture = nameof(DefaultCulture);
+        public const string Model = "model";
     }
 
     public class PageFormat
@@ -146,8 +175,8 @@ namespace ServiceStack.Templates
 
         public TemplatePage DefaultResolveLayout(TemplatePage page)
         {
-            page.Args.TryGetValue(TemplatePages.Layout, out string layout);
-            return page.Context.Pages.ResolveLayoutPage(page, layout);
+            page.Args.TryGetValue(TemplatePages.Layout, out object layout);
+            return page.Context.Pages.ResolveLayoutPage(page, layout as string);
         }
     }
 

@@ -203,10 +203,15 @@ namespace ServiceStack.Templates
         
         private object Evaluate(PageVariableFragment var)
         {
-            var value = var.Value ?? GetValue(var.NameString);
+            var value = var.Value ?? 
+                (var.Name.HasValue ? GetValue(var.NameString) : 
+                 var.Command != null ? Evaluate(var, var.Command) : null);
 
             if (value == null)
                 return null;
+
+            if (value == NullValue.Instance)
+                value = null;
 
             for (var i = 0; i < var.FilterCommands.Length; i++)
             {
@@ -313,12 +318,15 @@ namespace ServiceStack.Templates
 
         private object GetValue(string name)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
             var value = Args.TryGetValue(name, out object obj)
                 ? obj
-                : Page.Args.TryGetValue(name, out string strValue)
-                    ? strValue
-                    : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out strValue))
-                        ? strValue
+                : Page.Args.TryGetValue(name, out obj)
+                    ? obj
+                    : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj))
+                        ? obj
                         : Page.Context.Args.TryGetValue(name, out obj)
                             ? obj
                             : null;

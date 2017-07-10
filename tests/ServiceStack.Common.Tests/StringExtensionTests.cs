@@ -213,5 +213,17 @@ namespace ServiceStack.Common.Tests
             
             Assert.That(" add ( 1, add(add(2,3),4) ) ".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(add(2,3),4)]" }));
         }
+
+        [Test]
+        public void Does_preserve_js_literal_string()
+        {
+            Assert.That("li({ id:'id-{name}', className:'cls'})".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[li:{ id:'id-{name}', className:'cls'}]" }));
+        }
+
+        [Test]
+        public void Does_preserve_ternary_expression()
+        {
+            Assert.That("filter( true ? 'Y' : 'N' )".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[filter:true ? 'Y' : 'N']" }));
+        }
     }
 }
