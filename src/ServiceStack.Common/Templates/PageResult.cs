@@ -97,6 +97,16 @@ namespace ServiceStack.Templates
 
         internal async Task WriteToAsyncInternal(Stream responseStream, CancellationToken token)
         {
+            if (Model != null)
+            {
+                var explodeModel = Model.ToObjectDictionary();
+                foreach (var entry in explodeModel)
+                {
+                    Args[entry.Key] = entry.Value;
+                }
+            }
+            Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
+            
             if (LayoutPage != null)
             {
                 await Task.WhenAll(LayoutPage.Init(), Page.Init());

@@ -1,3 +1,6 @@
+using System;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Templates;
@@ -13,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var context = new TemplatePagesContext();
 
-            context.VirtualFiles.AppendFile("_layout.html", @"
+            context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
   <title>{{ title }}</title>
 </head>
@@ -21,9 +24,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
   {{ page }}
 </body>");
 
-            context.VirtualFiles.AppendFile("page.html", @"<h1>{{ title }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", @"<h1>{{ title }}</h1>");
 
-            var page = context.Pages.GetOrCreatePage("page");
+            var page = context.GetPage("page");
             var result = new PageResult(page)
             {
                 Args =
@@ -53,16 +56,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
             };
             
-            context.VirtualFiles.AppendFile("_layout.md", @"
+            context.VirtualFiles.WriteFile("_layout.md", @"
 # {{ title }}
 
 Brackets in Layout < & > 
 
 {{ page }}");
 
-            context.VirtualFiles.AppendFile("page.md",  @"## {{ title }}");
+            context.VirtualFiles.WriteFile("page.md",  @"## {{ title }}");
 
-            var page = context.Pages.GetOrCreatePage("page");
+            var page = context.GetPage("page");
             var result = new PageResult(page)
             {
                 Args =
@@ -92,7 +95,7 @@ Brackets in Layout < & >
                 }
             };
             
-            context.VirtualFiles.AppendFile("_layout.html", @"
+            context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
   <title>{{ title }}</title>
 </head>
@@ -100,9 +103,9 @@ Brackets in Layout < & >
   {{ page }}
 </body>");
 
-            context.VirtualFiles.AppendFile("page.md",  @"### {{ title }}");
+            context.VirtualFiles.WriteFile("page.md",  @"### {{ title }}");
 
-            var page = context.Pages.GetOrCreatePage("page");
+            var page = context.GetPage("page");
             var result = new PageResult(page)
             {
                 Args =
@@ -122,9 +125,72 @@ Brackets in Layout < & >
   <h3>The Title</h3>
 
 </body>".SanitizeNewLines()));
-            
         }
 
+        [Test]
+        public async Task Does_explode_Model_properties_into_scope()
+        {
+            var context = new TemplatePagesContext();
+            
+            context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
+            
+            var result = await new PageResult(context.GetPage("page"))
+            {
+                Model = new Model { Id = 1, Name = "<foo>" }
+            }.RenderToStringAsync();
+            
+            Assert.That(result, Is.EqualTo("Id: 1, Name: &lt;foo&gt;"));
+        }
+
+        [Test]
+        public async Task Does_explode_Model_properties_of_anon_object_into_scope()
+        {
+            var context = new TemplatePagesContext();
+            
+            context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
+            
+            var result = await new PageResult(context.GetPage("page"))
+            {
+                Model = new { Id = 1, Name = "<foo>" }
+            }.RenderToStringAsync();
+            
+            Assert.That(result, Is.EqualTo("Id: 1, Name: &lt;foo&gt;"));
+        }
+
+        [Test]
+        public async Task Does_reload_modified_page_contents_in_DebugMode()
+        {
+            var context = new TemplatePagesContext
+            {
+                DebugMode = true, //default
+            };
+            
+            context.VirtualFiles.WriteFile("page.html", "<h1>Original</h1>");
+            Assert.That(await new PageResult(context.GetPage("page")).RenderToStringAsync(), Is.EqualTo("<h1>Original</h1>"));
+
+            await Task.Delay(1); //Memory VFS is too fast!
+            
+            context.VirtualFiles.WriteFile("page.html", "<h1>Updated</h1>");
+            Assert.That(await new PageResult(context.GetPage("page")).RenderToStringAsync(), Is.EqualTo("<h1>Updated</h1>"));
+        }
+
+        [Test]
+        public void Context_Throws_FileNotFoundException_when_page_does_not_exist()
+        {
+            var context = new TemplatePagesContext();
+
+            Assert.That(context.Pages.GetPage("not-exists.html"), Is.Null);
+
+            try
+            {
+                var page = context.GetPage("not-exists.html");
+                Assert.Fail("Should throw");
+            }
+            catch (FileNotFoundException e)
+            {
+                e.ToString().Print();
+            }
+        }
     }
     
     public static class TestUtils
