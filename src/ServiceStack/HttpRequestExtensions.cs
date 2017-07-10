@@ -6,11 +6,14 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Data;
+using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 using static System.String;
 
@@ -281,6 +284,27 @@ namespace ServiceStack
                 StatusCode = error.Status,
                 StatusDescription = error.StatusDescription,
                 ResponseDto = error.Response,
+            };
+
+            return to;
+        }
+
+        public static WebServiceException ToWebServiceException(this ValidationResult validationResult, object requestDto, ValidationFeature feature)
+        {
+            var validationError = validationResult.ToException();
+            var errorResponse = DtoUtils.CreateErrorResponse(requestDto, validationError);
+            if (feature?.ErrorResponseFilter != null)
+            {
+                errorResponse = feature.ErrorResponseFilter(validationResult, errorResponse);
+            }
+
+            var status = errorResponse.GetResponseStatus();
+            
+            var to = new WebServiceException(status.ErrorCode, validationError)
+            {
+                StatusCode = 400,
+                StatusDescription = status.ErrorCode,
+                ResponseDto = errorResponse,                
             };
 
             return to;

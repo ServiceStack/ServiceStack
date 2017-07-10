@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ServiceStack.Web;
 using System;
 using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Validation;
 
 namespace ServiceStack
@@ -58,20 +59,7 @@ namespace ServiceStack
                     return default(TResponse);
             }
 
-            if (HostContext.HasPlugin<ValidationFeature>())
-            {
-                var validator = ValidatorCache.GetValidator(req, request.GetType());
-                if (validator != null)
-                {
-                    var ruleSet = (string)(req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
-                    var result = validator.Validate(new ValidationContext(
-                        request, null, new MultiRuleSetValidatorSelector(ruleSet)) {
-                        Request = req
-                    });
-                    if (!result.IsValid)
-                        throw new ValidationException(result.Errors);
-                }
-            }
+            ExecValidators(request).Wait();
 
             var response = HostContext.ServiceController.Execute(request, req);
             var responseTask = response as Task;
@@ -79,6 +67,55 @@ namespace ServiceStack
                 response = responseTask.GetResult();
 
             return ConvertToResponse<TResponse>(response);
+        }
+
+        private async Task<TResponse> ExecAsync<TResponse>(object request)
+        {
+            foreach (var filter in HostContext.AppHost.GatewayRequestFilters)
+            {
+                filter(req, request);
+                if (req.Response.IsClosed)
+                    return default(TResponse);
+            }
+            
+            await ExecValidators(request);
+
+            var response = await HostContext.ServiceController.ExecuteAsync(request, req, applyFilters: false);
+            var responseTask = response as Task;
+            if (responseTask != null)
+                response = responseTask.GetResult();
+
+            return ConvertToResponse<TResponse>(response);
+        }
+
+        private async Task ExecValidators(object request)
+        {
+            var feature = HostContext.GetPlugin<ValidationFeature>();
+            if (feature != null)
+            {
+                var validator = ValidatorCache.GetValidator(req, request.GetType());
+                if (validator != null)
+                {
+                    var ruleSet = (string) (req.GetItem(Keywords.InvokeVerb) ?? req.Verb);
+                    var validationContext = new ValidationContext(request, null, new MultiRuleSetValidatorSelector(ruleSet))
+                    {
+                        Request = req
+                    };
+                    
+                    ValidationResult result;
+                    if (!validator.HasAsyncValidators())
+                    {
+                        result = validator.Validate(validationContext);
+                    }
+                    else
+                    {
+                        result = await validator.ValidateAsync(validationContext);
+                    }
+                    
+                    if (!result.IsValid)
+                        throw result.ToWebServiceException(request, feature);
+                }
+            }
         }
 
         private TResponse ConvertToResponse<TResponse>(object response)
@@ -97,12 +134,6 @@ namespace ServiceStack
             }
 
             return (TResponse) responseDto;
-        }
-
-        private Task<TResponse> ExecAsync<TResponse>(object request)
-        {
-            var responseTask = HostContext.ServiceController.ExecuteAsync(request, req, applyFilters:false);
-            return HostContext.Async.ContinueWith(req, responseTask, task => ConvertToResponse<TResponse>(task.Result));
         }
 
         public TResponse Send<TResponse>(object requestDto)
@@ -124,7 +155,7 @@ namespace ServiceStack
             }
         }
 
-        public Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
+        public async Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
             var holdAttrs = req.RequestAttributes;
@@ -132,13 +163,17 @@ namespace ServiceStack
 
             req.RequestAttributes |= RequestAttributes.InProcess;
 
-            var responseTask = ExecAsync<TResponse>(requestDto);
-            return HostContext.Async.ContinueWith(req, responseTask, task => {
-                    req.Dto = holdDto;
-                    req.RequestAttributes = holdAttrs;
-                    ResetVerb(holdVerb);
-                    return task.Result;
-                }, token);
+            try
+            {
+                var response = await ExecAsync<TResponse>(requestDto);
+                return response;
+            }
+            finally
+            {
+                req.Dto = holdDto;
+                req.RequestAttributes = holdAttrs;
+                ResetVerb(holdVerb);
+            }
         }
 
         private static object[] CreateTypedArray(IEnumerable<object> requestDtos)
