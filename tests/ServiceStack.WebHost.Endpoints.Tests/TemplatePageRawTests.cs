@@ -224,6 +224,54 @@ Brackets in Layout < & >
             Assert.That(result, Is.EqualTo("<h1>Hello foo</h1>"));
         }
 
+        [Test]
+        public async Task Does_embed_pages()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["copyright"] = "Copyright &copy; ServiceStack 2008-2017",
+                    ["footer"] = "global-footer"
+                }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+<head><title>{{ title }}</title></head>
+<body>
+{{ 'header' | page }}
+<div id='content'>{{ page }}</div>
+{{ footer | page }}
+</body>
+</html>
+");
+            context.VirtualFiles.WriteFile("header.html", "<header>{{ pageTitle | titleCase }}</header>");
+            context.VirtualFiles.WriteFile("page.html", "<h2>{{ contentTitle }}</h2><section>{{ 'page-content' | page }}</section>");
+            context.VirtualFiles.WriteFile("page-content.html", "<p>{{ contentBody | padRight(20,'.') }}</p>");
+            context.VirtualFiles.WriteFile("global-footer.html", "<footer>{{ copyright | raw }}</footer>");
+            
+            var result = await new PageResult(context.GetPage("page"))
+            {
+                Args =
+                {
+                    ["pageTitle"] = "I'm in your header",
+                    ["contentTitle"] = "Content is King!",
+                    ["contentBody"] = "About this page",
+                }
+            }.RenderToStringAsync();
+            
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+<html>
+<head><title>{{ title }}</title></head>
+<body>
+<header>I&#39;m In Your Header</header>
+<div id='content'><h2>Content is King!</h2><section><p>About this page.....</p></section></div>
+<footer>Copyright &copy; ServiceStack 2008-2017</footer>
+</body>
+</html>
+".SanitizeNewLines()));
+        }
     }
     
     public static class TestUtils

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -138,9 +139,15 @@ namespace ServiceStack.Templates
                     }
                     else if (fragment is PageVariableFragment var)
                     {
-                        if (var.Name.Equals("page"))
+                        if (var.Name.Equals(TemplateConstants.Page))
                         {
-                            await WritePageAsync(responseStream, token);
+                            await WritePageAsync(Page, responseStream, token);
+                        }
+                        else if (var.FilterCommands.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                        {
+                            var value = GetValue(var);
+                            var page = await Page.Context.GetPage(value.ToString()).Init();
+                            await WritePageAsync(page, responseStream, token);
                         }
                         else
                         {
@@ -151,21 +158,21 @@ namespace ServiceStack.Templates
             }
             else
             {
-                await WritePageAsync(responseStream, token);
+                await WritePageAsync(Page, responseStream, token);
             }
         }
 
-        public async Task WritePageAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
+        public async Task WritePageAsync(TemplatePage page, Stream responseStream, CancellationToken token = default(CancellationToken))
         {
             if (PageFilters.Count == 0)
             {
-                await WritePageAsyncInternal(responseStream, token);
+                await WritePageAsyncInternal(page, responseStream, token);
                 return;
             }
 
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                await WritePageAsyncInternal(ms, token);
+                await WritePageAsyncInternal(page, ms, token);
                 Stream stream = ms;
 
                 foreach (var filter in PageFilters)
@@ -182,9 +189,9 @@ namespace ServiceStack.Templates
             }
         }
 
-        internal async Task WritePageAsyncInternal(Stream responseStream, CancellationToken token = default(CancellationToken))
+        internal async Task WritePageAsyncInternal(TemplatePage page, Stream responseStream, CancellationToken token = default(CancellationToken))
         {
-            foreach (var fragment in Page.PageFragments)
+            foreach (var fragment in page.PageFragments)
             {
                 if (fragment is PageStringFragment str)
                 {
@@ -192,7 +199,16 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    await responseStream.WriteAsync(EvaluateVarAsBytes(var), token);
+                    if (var.FilterCommands.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                    {
+                        var value = GetValue(var);
+                        var subPage = await Page.Context.GetPage(value.ToString()).Init();
+                        await WritePageAsync(subPage, responseStream, token);
+                    }
+                    else
+                    {
+                        await responseStream.WriteAsync(EvaluateVarAsBytes(var), token);
+                    }
                 }
             }
         }
@@ -204,6 +220,14 @@ namespace ServiceStack.Templates
                 ? Page.Format.EncodeValue(value).ToUtf8Bytes()
                 : var.OriginalTextBytes;
             return bytes;
+        }
+
+        private object GetValue(PageVariableFragment var)
+        {
+            var value = var.Value ?? 
+                (var.Name.HasValue ? GetValue(var.NameString) :null);
+            
+            return value;
         }
         
         private object Evaluate(PageVariableFragment var)
