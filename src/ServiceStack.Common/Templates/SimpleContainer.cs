@@ -8,7 +8,7 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.Templates
 {
-    public class SimpleContainer : IContainer, IResolver
+    public class SimpleContainer : IContainer, IResolver 
     {
         public HashSet<string> IgnoreTypesNamed { get; } = new HashSet<string>();
 
@@ -95,7 +95,9 @@ namespace ServiceStack.Templates
         
         public void Dispose()
         {
-            foreach (var instance in InstanceCache)
+            var hold = InstanceCache;
+            InstanceCache.Clear();
+            foreach (var instance in hold)
             {
                 try
                 {

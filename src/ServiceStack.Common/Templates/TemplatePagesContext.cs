@@ -41,6 +41,8 @@ namespace ServiceStack.Templates
 
         public IContainer Container { get; set; } = new SimpleContainer();
         
+        public IAppSettings AppSettings { get; set; } = new SimpleAppSettings();
+
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
@@ -102,6 +104,11 @@ namespace ServiceStack.Templates
                 CodePages.Add(codePage);
             }
             return this;
+        }
+
+        public void Dispose()
+        {
+            using (Container as IDisposable) {}
         }
     }
 
