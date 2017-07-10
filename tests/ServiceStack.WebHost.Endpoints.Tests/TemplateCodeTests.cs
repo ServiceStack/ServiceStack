@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [PageArg("title", "Code Layout Title")]
     public class LayoutTemplateCode : TemplateCode
     {
-        string render(string title, string content) => $@"
+        public string render(string title, string content) => $@"
 <h1>{title}</h1>
 <p>
     {content}
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public IAppSettings AppSettings { get; set; }
 
-        string render(string title, string[] items) => $@"
+        public string render(string title, string[] items) => $@"
 <h1>{title}</h1>
 <ul>
     {items.Map(x => $"<li>{x}</li>").Join("")}        

@@ -24,29 +24,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class TemplatePagesService : Service
     {
-        public ITemplatePages TemplatePages { get; set; }
+        public ITemplatePages Pages { get; set; }
         
         public object AnyHtml(GetProduct request)
         {
-            return new PageResult(TemplatePages.GetOrCreatePage("product-view"))
+            return new PageResult(Pages.GetPage("product-view"))
             {
                 Model = request,
-                LayoutPage = TemplatePages.GetOrCreatePage("product-layout"),
+                LayoutPage = Pages.GetPage("product-layout"),
             };
         }
 
         public object Any(OverrideExistingPage request)
         {
-            return new PageResult(TemplatePages.GetOrCreatePage("override-page"))
+            return new PageResult(Pages.GetPage("override-page"))
             {
                 Model = request,
                 Args =
                 {
                     { "title", "Service Title" }
                 },
-                LayoutPage = TemplatePages.GetOrCreatePage("override-layout"),
+                LayoutPage = Pages.GetPage("override-layout"),
             };
         }
+    }
+
+    class Model
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
     }
 
     public class TemplatePageTests

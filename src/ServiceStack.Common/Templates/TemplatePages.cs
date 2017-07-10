@@ -9,7 +9,6 @@ namespace ServiceStack.Templates
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
-        TemplatePage GetOrCreatePage(string virtualPath);
     }
 
     public class TemplatePages : ITemplatePages
@@ -59,7 +58,7 @@ namespace ServiceStack.Templates
             return pageMap[virtualPath] = new TemplatePage(Context, file);
         }
 
-        public virtual TemplatePage GetPage(string path)
+        public virtual TemplatePage TryGetPage(string path)
         {
             var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
@@ -68,14 +67,14 @@ namespace ServiceStack.Templates
                 : null;
         }
 
-        public virtual TemplatePage GetOrCreatePage(string path)
+        public virtual TemplatePage GetPage(string path)
         {
             if (string.IsNullOrEmpty(path))
                 return null;
             
             var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            var page = GetPage(santizePath);
+            var page = TryGetPage(santizePath);
             if (page != null)
                 return page;
 

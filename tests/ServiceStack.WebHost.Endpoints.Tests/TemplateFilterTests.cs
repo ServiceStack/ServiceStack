@@ -1,26 +1,36 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
-using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
+    public interface IDep
+    {
+        string Greeting { get; set; }
+
+        string SayHi(string name);
+    }
+
+    public class Dep : IDep
+    {
+        public string Greeting { get; set; } = "Hello ";
+
+        public string SayHi(string name) => Greeting + name;
+    }
+    
     public class FilterExamples : TemplateFilter
     {
-        public IAppSettings AppSettings { get; set; }
+        public IDep Dep { get; set; }
+        
+        public IAppSettings AppSettings { get; set; } 
 
-        public string appsetting(string name) => 
-            AppSettings.GetString(name);
+        public string greet(string name) => Dep.SayHi(name);
 
-        public string capitalise(string text) => 
-            text.ToPascalCase();
-
-        public int add(int target, int value) => 
+        public int addInt(int target, int value) => 
             target + value;
     }
 
@@ -41,18 +51,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 },
                 new TemplatePagesContext
                 {
-                    TemplateFilters = {new FilterExamples {AppSettings = new DictionarySettings()}}
+                    TemplateFilters = {new FilterExamples { Dep = new Dep()} }
                 },
             };
 
             foreach (var context in contexts)
             {
-                context.Container.AddSingleton<IAppSettings>(() => new DictionarySettings());
+                context.Container.AddSingleton<IDep>(() => new Dep());
 
                 context.Init();
-                Assert.That(context.TemplateFilters.Count, Is.EqualTo(1));
-                Assert.That(context.TemplateFilters[0].Pages, Is.EqualTo(context.Pages));
-                Assert.That(((FilterExamples) context.TemplateFilters[0]).AppSettings, Is.Not.Null);
+                Assert.That(context.TemplateFilters.Count, Is.EqualTo(2));
+                var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
+                Assert.That(filter.Pages, Is.EqualTo(context.Pages));
+                Assert.That(filter.Dep, Is.Not.Null);
             }
         }
 
@@ -68,9 +79,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var context = new TemplatePagesFeature().Init();
 
-                Assert.That(context.TemplateFilters.Count, Is.EqualTo(1));
-                Assert.That(context.TemplateFilters[0].Pages, Is.EqualTo(context.Pages));
-                Assert.That(((FilterExamples) context.TemplateFilters[0]).AppSettings, Is.Not.Null);
+                Assert.That(context.TemplateFilters.Count, Is.EqualTo(2));
+                var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
+                Assert.That(filter.Pages, Is.EqualTo(context.Pages));
+                Assert.That(filter.AppSettings, Is.Not.Null);
             }
         }
 
@@ -81,9 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
             };
 
-            context.Container.AddSingleton<IAppSettings>(() => new DictionarySettings(new Dictionary<string, string> {
-                { "foo", "bar" },
-            }));
+            context.Container.AddSingleton<IDep>(() => new Dep { Greeting = "hi " });
 
             return context;
         }
@@ -93,23 +103,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 'foo' | appsetting }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 'foo' | greet }}, {{ \"bar\" | greet }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+            var result = new PageResult(context.GetPage("page"));
 
             var html = await result.RenderToStringAsync();
             
-            Assert.That(html, Is.EqualTo("<h1>bar</h1>"));
+            Assert.That(html, Is.EqualTo("<h1>hi foo, hi bar</h1>"));
         }
             
         [Test]
-        public async Task Does_call_add_filter_with_args()
+        public async Task Does_call_addInt_filter_with_args()
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(2) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(2) }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+            var result = new PageResult(context.GetPage("page"));
 
             var html = await result.RenderToStringAsync();
             
@@ -117,13 +127,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
             
         [Test]
-        public async Task Does_call_multiple_add_filters_with_args()
+        public async Task Does_call_multiple_addInt_filters_with_args()
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(2) | add(3) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(2) | addInt(3) }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+            var result = new PageResult(context.GetPage("page"));
 
             var html = await result.RenderToStringAsync();
             
@@ -131,18 +141,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public async Task Can_use_add_filter_with_page_and_result_args()
+        public async Task Can_use_addInt_filter_with_page_and_result_args()
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.AppendFile("page.html", @"
+            context.VirtualFiles.WriteFile("page.html", @"
 <!--
 pageArg: 2
 -->
 
-<h1>{{ 1 | add(pageArg) | add(resultArg) }}</h1>");
+<h1>{{ 1 | addInt(pageArg) | addInt(resultArg) }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"))
+            var result = new PageResult(context.GetPage("page"))
             {
                 Args =
                 {
@@ -156,13 +166,13 @@ pageArg: 2
         }
 
         [Test]
-        public async Task Does_call_recursive_add_filter_with_args()
+        public async Task Does_call_recursive_addInt_filter_with_args()
         {
             var context = CreateContext().Init();
             
-            context.VirtualFiles.AppendFile("page.html", "<h1>{{ 1 | add(add(2,3)) }}</h1>");
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 1 | addInt(addInt(2,3)) }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"));
+            var result = new PageResult(context.GetPage("page"));
 
             var html = await result.RenderToStringAsync();
             
@@ -170,20 +180,20 @@ pageArg: 2
         }
 
         [Test]
-        public async Task Can_use_nested_add_filter_with_page_and_result_args()
+        public async Task Can_use_nested_addInt_filter_with_page_and_result_args()
         {
             var context = CreateContext().Init();
 
             context.Args["contextArg"] = 10;
             
-            context.VirtualFiles.AppendFile("page.html", @"
+            context.VirtualFiles.WriteFile("page.html", @"
 <!--
 pageArg: 2
 -->
 
-<h1>{{ 1 | add(pageArg) | add( add(add(2,resultArg),contextArg) ) }}</h1>");
+<h1>{{ 1 | addInt(pageArg) | addInt( addInt(addInt(2,resultArg),contextArg) ) }}</h1>");
             
-            var result = new PageResult(context.Pages.GetOrCreatePage("page"))
+            var result = new PageResult(context.GetPage("page"))
             {
                 Args =
                 {
