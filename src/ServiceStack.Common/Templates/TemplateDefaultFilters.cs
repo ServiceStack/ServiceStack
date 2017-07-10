@@ -10,14 +10,9 @@ namespace ServiceStack.Templates
     {
         public IRawString raw(object value) => value.ToString().ToRawString();
 
-        public IRawString json(object value)
-        {
-            var json = value.ToJson() ?? "null";
-            return json.ToRawString();
-        }
+        public IRawString json(object value) => (value.ToJson() ?? "null").ToRawString();
 
-        public string appSetting(string name) => 
-            Context.AppSettings.GetString(name);
+        public string appSetting(string name) =>  Context.AppSettings.GetString(name);
 
         public int toInt(int value) => value;
         public long toLong(long value) => value;
@@ -47,47 +42,41 @@ namespace ServiceStack.Templates
             return fmt;
         }
 
-        public string format(object obj, string format) => 
-            string.Format(format, obj);
+        public string format(object obj, string format) => string.Format(format, obj);
 
-        public object dateFormat(DateTime dateValue) => 
-            dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
-
-        public object dateFormat(DateTime dateValue, string format) => 
-            dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
-
-        public object dateTimeFormat(DateTime dateValue) => 
-            dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
+        public object dateFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
+        public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
+        public object dateTimeFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
 
         public string humanize(string varName) => varName.SplitCamelCase().Replace('_',' ').ToTitleCase();
-
         public string titleCase(string varName) => varName.ToTitleCase();
-
-        public string lower(string varName) => varName.ToLower();
-
-        public string upper(string varName) => varName.ToUpper();
-
         public string pascalCase(string varName) => varName.ToPascalCase();
-
         public string camelCase(string varName) => varName.ToCamelCase();
 
-        public string substring(string varName, int startIndex) => varName.SafeSubstring(startIndex);
+        public string lower(string varName) => varName.ToLower();
+        public string upper(string varName) => varName.ToUpper();
 
+        public string substring(string varName, int startIndex) => varName.SafeSubstring(startIndex);
         public string substring(string varName, int startIndex, int length) => varName.SafeSubstring(startIndex, length);
 
         public string trimStart(string text) => text?.TrimStart();
-
         public string trimEnd(string text) => text?.TrimEnd();
-
         public string trim(string text) => text?.Trim();
 
         public string padLeft(string text, int totalWidth) => text?.PadLeft(totalWidth);
-
         public string padLeft(string text, int totalWidth, char padChar) => text?.PadLeft(totalWidth, padChar);
-
         public string padRight(string text, int totalWidth) => text?.PadRight(totalWidth);
-
         public string padRight(string text, int totalWidth, char padChar) => text?.PadRight(totalWidth, padChar);
+
+        public string repeating(string text, int times)
+        {
+            var sb = StringBuilderCache.Allocate();
+            for (var i = 0; i < times; i++)
+            {
+                sb.Append(text);
+            }
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
     }
 
     public class HtmlFilters : TemplateFilter

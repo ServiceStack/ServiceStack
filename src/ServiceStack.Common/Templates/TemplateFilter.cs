@@ -18,11 +18,6 @@ namespace ServiceStack.Templates
         
         readonly ConcurrentDictionary<string, MethodInvoker> invokerCache = new ConcurrentDictionary<string, MethodInvoker>();
 
-        public virtual TemplateFilter Init()
-        {
-            return this;
-        }
-
         public MethodInvoker GetInvoker(StringSegment name, int argsCount)
         {
             var key = $"{name}`{argsCount}";

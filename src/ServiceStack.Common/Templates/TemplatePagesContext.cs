@@ -89,25 +89,33 @@ namespace ServiceStack.Templates
 
             foreach (var filter in TemplateFilters)
             {
-                if (filter.Context == null)
-                    filter.Context = this;
-                if (filter.Pages == null)
-                    filter.Pages = Pages;
-
-                filter.Init();
+                InitFilter(filter);
             }
 
             foreach (var page in CodePages)
             {
-                if (page.Context == null)
-                    page.Context = this;
-                if (page.Pages == null)
-                    page.Pages = Pages;
-
-                page.Init();
+                InitCodePage(page);
             }
 
             return this;
+        }
+
+        internal void InitCodePage(TemplateCode page)
+        {
+            if (page.Context == null)
+                page.Context = this;
+            if (page.Pages == null)
+                page.Pages = Pages;
+
+            page.Init();
+        }
+
+        internal void InitFilter(TemplateFilter filter)
+        {
+            if (filter.Context == null)
+                filter.Context = this;
+            if (filter.Pages == null)
+                filter.Pages = Pages;
         }
 
         public TemplatePagesContext ScanType(Type type)

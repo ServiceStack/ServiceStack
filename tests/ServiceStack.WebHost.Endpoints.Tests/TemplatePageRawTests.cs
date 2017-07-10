@@ -191,6 +191,39 @@ Brackets in Layout < & >
                 e.ToString().Print();
             }
         }
+
+        class MyFilter : TemplateFilter
+        {
+            public string echo(string text) => $"{text} {text}";
+            public string greetArg(string key) => $"Hello {Context.Args[key]}";
+        }
+
+        [Test]
+        public async Task Does_use_custom_filter()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["contextArg"] = "foo"
+                },                
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", "<h1>{{ 'hello' | echo }}</h1>");
+            var result = await new PageResult(context.GetPage("page"))
+            {
+                TemplateFilters = { new MyFilter() }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<h1>hello hello</h1>"));
+
+            context.VirtualFiles.WriteFile("page-greet.html", "<h1>{{ 'contextArg' | greetArg }}</h1>");
+            result = await new PageResult(context.GetPage("page-greet"))
+            {
+                TemplateFilters = { new MyFilter() }
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<h1>Hello foo</h1>"));
+        }
+
     }
     
     public static class TestUtils

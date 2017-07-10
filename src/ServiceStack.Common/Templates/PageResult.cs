@@ -106,6 +106,11 @@ namespace ServiceStack.Templates
                 }
             }
             Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
+
+            foreach (var filter in TemplateFilters)
+            {
+                Page.Context.InitFilter(filter);
+            }
             
             if (LayoutPage != null)
             {

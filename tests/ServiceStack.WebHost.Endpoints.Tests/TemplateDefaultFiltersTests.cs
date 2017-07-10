@@ -265,6 +265,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             context.VirtualFiles.WriteFile("page-padchar.html", "<h1>{{ '7' | padLeft(3,'0') }}</h1><h2>{{ 'tired' | padRight(10,'z') }}</h2>");
             result = await new PageResult(context.GetPage("page-padchar")).RenderToStringAsync();
             Assert.That(result, Is.EqualTo("<h1>007</h1><h2>tiredzzzzz</h2>"));
+
+            context.VirtualFiles.WriteFile("page-repeating.html", "<h1>long time ago{{ ' ...' | repeating(3) }}</h1>");
+            result = await new PageResult(context.GetPage("page-repeating")).RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<h1>long time ago ... ... ...</h1>"));
         }
     }
 }
