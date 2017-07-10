@@ -101,7 +101,7 @@
             if (url.length > 0) url += '/';
             url += p;
         }
-        return url;
+        return route[0] === '/' ? '/' + url : url;
     };
     $.ss.createUrl = function(route, args) {
         var url = $.ss.createPath(route, args);
