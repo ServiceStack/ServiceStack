@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 context.Container.AddSingleton<IDep>(() => new Dep());
 
                 context.Init();
-                Assert.That(context.TemplateFilters.Count, Is.EqualTo(2));
+                Assert.That(context.TemplateFilters.Count, Is.GreaterThanOrEqualTo(2));
                 var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
                 Assert.That(filter.Pages, Is.EqualTo(context.Pages));
                 Assert.That(filter.Dep, Is.Not.Null);
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var context = new TemplatePagesFeature().Init();
 
-                Assert.That(context.TemplateFilters.Count, Is.EqualTo(2));
+                Assert.That(context.TemplateFilters.Count, Is.GreaterThanOrEqualTo(2));
                 var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
                 Assert.That(filter.Pages, Is.EqualTo(context.Pages));
                 Assert.That(filter.AppSettings, Is.Not.Null);
