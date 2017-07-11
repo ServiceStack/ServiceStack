@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using ServiceStack.Text;
 
@@ -98,5 +100,73 @@ namespace ServiceStack.Templates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IRawString ToRawString(this StringSegment value) => 
             new RawString(value.HasValue ? value.Value : "");
+
+        public static Func<object, object> Compile(Type type, StringSegment expr)
+        {
+            var param = Expression.Parameter(typeof(object), "instance");
+            Expression body = Expression.Convert(param, type);
+
+            var currType = type;
+
+            var pos = 0;
+            var depth = 0;
+            while (expr.TryReadPart(".", out StringSegment member, ref pos))
+            {
+                try
+                {
+                    var indexerPos = member.IndexOf('[');
+                    if (indexerPos >= 0)
+                    {
+                        var prop = member.LeftPart('[');
+                        var indexer = member.RightPart('[');
+                        indexer.ParseNextToken(out StringSegment name, out object value, out Command cmd);
+                        
+                        if (name.HasValue || cmd != null)
+                            throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'", member.Value, expr.Value);
+    
+                        if (depth == 0)
+                        {
+                            var pi = AssertProperty(currType, "Item", expr);
+                            currType = pi.PropertyType;
+                            body = Expression.Property(body, "Item", Expression.Constant(value));
+                        }
+                        else
+                        {
+                            var pi = AssertProperty(currType, prop.Value, expr);
+                            currType = pi.PropertyType;
+                            body = Expression.PropertyOrField(body, prop.Value);
+                        
+                            var indexMethod = currType.GetMethod("get_Item", new[]{ value.GetType() });
+                            body = Expression.Call(body, indexMethod, Expression.Constant(value));
+                        }
+                    }
+                    else
+                    {
+                        if (depth >= 1)
+                            body = Expression.PropertyOrField(body, member.Value);
+                    }
+    
+                    depth++;
+                }
+                catch (BindingExpressionException) { throw; }
+                catch (Exception e)
+                {
+                    throw new BindingExpressionException($"Could not compile '{member}' from expression '{expr}'", member.Value, expr.Value, e);
+                }
+            }
+
+            body = Expression.Convert(body, typeof(object));
+
+            return Expression.Lambda<Func<object, object>>(body, param).Compile();
+        }
+
+        private static PropertyInfo AssertProperty(Type currType, string prop, StringSegment expr)
+        {
+            var pi = currType.GetProperty(prop);
+            if (pi == null)
+                throw new ArgumentException(
+                    $"Property '{prop}' does not exist on Type '{currType.Name}' from binding expression '{expr}'");
+            return pi;
+        }
     }
 }

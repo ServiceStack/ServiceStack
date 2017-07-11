@@ -1,5 +1,10 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Templates;
+using ServiceStack.Text;
+
+#if NETCORE
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -198,6 +203,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(varFragment4.FilterCommands[0].Args[0], Is.EqualTo("a"));
 
             Assert.That(strFragment5.Value, Is.EqualTo("</p>"));
+        }
+
+        [Test]
+        public void Can_parse_next_token()
+        {
+            StringSegment name;
+            object value;
+            Command cmd;
+
+            "a".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(name, Is.EqualTo("a"));
+            "'a'".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo("a"));
+            "\"a\"".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo("a"));
+            "1".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(1));
+            "100".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(100));
+            "100.0".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(100d));
+            "1.0E+2".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(100d));
+            "1e+2".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(100d));
+            "true".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.True);
+            "false".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.False);
+            "null".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EqualTo(NullValue.Instance));
         }
 
     }

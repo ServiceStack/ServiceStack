@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,8 +24,8 @@ namespace ServiceStack.Templates
 
         public TemplatePage LayoutPage { get; set; }
 
-        public object Model { get; set;  }
-        
+        public object Model { get; set; }
+
         /// <summary>
         /// Add additional Args available to all pages 
         /// </summary>
@@ -45,27 +46,27 @@ namespace ServiceStack.Templates
             get => Options.TryGetValue(HttpHeaders.ContentType, out string contentType) ? contentType : null;
             set => Options[HttpHeaders.ContentType] = value;
         }
-        
+
         /// <summary>
         /// Transform the Page output using a chain of filters
         /// </summary>
-        public List<Func<Stream,Task<Stream>>> PageFilters { get; set; }
+        public List<Func<Stream, Task<Stream>>> PageFilters { get; set; }
 
         /// <summary>
         /// Transform the entire output using a chain of filters
         /// </summary>
-        public List<Func<Stream,Task<Stream>>> OutputFilters { get; set; }
+        public List<Func<Stream, Task<Stream>>> OutputFilters { get; set; }
 
         public PageResult(TemplatePage page)
         {
             Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
             TemplateFilters = new List<TemplateFilter>();
-            PageFilters = new List<Func<Stream,Task<Stream>>>();
-            OutputFilters = new List<Func<Stream,Task<Stream>>>();
+            PageFilters = new List<Func<Stream, Task<Stream>>>();
+            OutputFilters = new List<Func<Stream, Task<Stream>>>();
             Options = new Dictionary<string, string>
             {
-                { HttpHeaders.ContentType, Page.Format.ContentType },
+                {HttpHeaders.ContentType, Page.Format.ContentType},
             };
         }
 
@@ -98,21 +99,8 @@ namespace ServiceStack.Templates
 
         internal async Task WriteToAsyncInternal(Stream responseStream, CancellationToken token)
         {
-            if (Model != null)
-            {
-                var explodeModel = Model.ToObjectDictionary();
-                foreach (var entry in explodeModel)
-                {
-                    Args[entry.Key] = entry.Value;
-                }
-            }
-            Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
+            Init();
 
-            foreach (var filter in TemplateFilters)
-            {
-                Page.Context.InitFilter(filter);
-            }
-            
             if (LayoutPage != null)
             {
                 await Task.WhenAll(LayoutPage.Init(), Page.Init());
@@ -162,7 +150,42 @@ namespace ServiceStack.Templates
             }
         }
 
-        public async Task WritePageAsync(TemplatePage page, Stream responseStream, CancellationToken token = default(CancellationToken))
+        private bool hasInit;
+        public async Task<PageResult> Init()
+        {
+            if (hasInit)
+                return this;
+
+            if (Model != null)
+            {
+                var explodeModel = Model.ToObjectDictionary();
+                foreach (var entry in explodeModel)
+                {
+                    Args[entry.Key] = entry.Value;
+                }
+            }
+            Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
+
+            foreach (var filter in TemplateFilters)
+            {
+                Page.Context.InitFilter(filter);
+            }
+
+            await Page.Init();
+
+            hasInit = true;
+
+            return this;
+        }
+
+        private void AssertInit()
+        {
+            if (!hasInit)
+                throw new NotSupportedException("PageResult.Init() required for this operation.");
+        }
+
+        public async Task WritePageAsync(TemplatePage page, Stream responseStream,
+            CancellationToken token = default(CancellationToken))
         {
             if (PageFilters.Count == 0)
             {
@@ -189,7 +212,8 @@ namespace ServiceStack.Templates
             }
         }
 
-        internal async Task WritePageAsyncInternal(TemplatePage page, Stream responseStream, CancellationToken token = default(CancellationToken))
+        internal async Task WritePageAsyncInternal(TemplatePage page, Stream responseStream,
+            CancellationToken token = default(CancellationToken))
         {
             foreach (var fragment in page.PageFragments)
             {
@@ -224,17 +248,22 @@ namespace ServiceStack.Templates
 
         private object GetValue(PageVariableFragment var)
         {
-            var value = var.Value ?? 
-                (var.Name.HasValue ? GetValue(var.NameString) :null);
-            
+            var value = var.Value ??
+                (var.Name.HasValue ? GetValue(var.NameString) : null);
+
             return value;
         }
-        
+
         private object Evaluate(PageVariableFragment var)
         {
-            var value = var.Value ?? 
-                (var.Name.HasValue ? GetValue(var.NameString) : 
-                 var.Command != null ? Evaluate(var, var.Command) : null);
+            var value = var.Value ??
+                        (var.Name.HasValue
+                            ? GetValue(var.NameString)
+                            : var.Command != null
+                                ? var.Command.IsBinding()
+                                    ? EvaluateBinding(var.Command.Name)
+                                    : Evaluate(var, var.Command)
+                                : null);
 
             if (value == null)
                 return null;
@@ -250,8 +279,8 @@ namespace ServiceStack.Templates
                 {
                     if (i == 0)
                         return null; // ignore on server if first filter is missing  
-                    
-                    throw new Exception($"Filter not found: {cmd} in '{Page.File.VirtualPath}'"); 
+
+                    throw new Exception($"Filter not found: {cmd} in '{Page.File.VirtualPath}'");
                 }
 
                 var args = new object[1 + cmd.Args.Count];
@@ -314,11 +343,11 @@ namespace ServiceStack.Templates
                 var varValue = Evaluate(var, arg);
                 args[i] = varValue;
             }
-            
+
             var value = InvokeFilter(invoker, filter, args, cmd);
             return value;
         }
-        
+
         private MethodInvoker GetFilterInvoker(StringSegment name, int argsCount, out TemplateFilter filter)
         {
             foreach (var tplFilter in TemplateFilters)
@@ -349,7 +378,7 @@ namespace ServiceStack.Templates
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
-            
+
             var value = Args.TryGetValue(name, out object obj)
                 ? obj
                 : Page.Args.TryGetValue(name, out obj)
@@ -360,6 +389,59 @@ namespace ServiceStack.Templates
                             ? obj
                             : null;
             return value;
+        }
+
+        private static readonly char[] VarDelimiters = { '.', '[', ' ' };
+
+        public object EvaluateBinding(string expr)
+        {
+            return EvaluateBinding(expr.ToStringSegment());
+        }
+
+        public object EvaluateBinding(StringSegment expr)
+        {
+            if (expr.IsNullOrWhiteSpace())
+                return null;
+            
+            AssertInit();
+            
+            expr = expr.Trim();
+            var pos = expr.IndexOfAny(VarDelimiters, 0);
+            if (pos == -1)
+                return GetValue(expr.Value);
+            
+            var target = expr.Substring(0, pos);
+
+            var targetValue = GetValue(target);
+            if (targetValue == null)
+                return null;
+
+            var fn = Page.File.Directory.VirtualPath != TemplateConstants.TempFilePath
+                ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
+                : TemplatePageUtils.Compile(targetValue.GetType(), expr);
+
+            try
+            {
+                var value = fn(targetValue);
+                return value;
+            }
+            catch (Exception e)
+            {
+                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr.Value, e);
+            }
+        }
+    }
+
+    public class BindingExpressionException : Exception
+    {
+        public string Expression { get; }
+        public string Member { get; }
+
+        public BindingExpressionException(string message, string member, string expression, Exception inner=null)
+            : base(message, inner)
+        {
+            Expression = expression;
+            Member = member;
         }
     }
 }

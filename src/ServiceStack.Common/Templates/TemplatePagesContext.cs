@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -133,6 +134,25 @@ namespace ServiceStack.Templates
                 CodePages.Add(codePage);
             }
             return this;
+        }
+
+        private readonly ConcurrentDictionary<string, Func<object, object>> binderCache = new ConcurrentDictionary<string, Func<object, object>>();
+
+        public Func<object, object> GetExpressionBinder(Type targetType, StringSegment expression)
+        {
+            if (targetType == null)
+                throw new ArgumentNullException(nameof(targetType));
+            if (expression.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(expression));
+
+            var key = $"{targetType.FullName}::{expression}";
+
+            if (binderCache.TryGetValue(key, out Func<object, object> fn))
+                return fn;
+
+            binderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);
+
+            return fn;
         }
 
         public void Dispose()

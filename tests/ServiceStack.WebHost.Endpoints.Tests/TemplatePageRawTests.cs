@@ -1,6 +1,5 @@
-using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Templates;
@@ -272,6 +271,222 @@ Brackets in Layout < & >
 </html>
 ".SanitizeNewLines()));
         }
+
+        public class ModelBinding
+        {
+            public int Int { get; set;  }
+            
+            public string Prop { get; set; }
+            
+            public NestedModelBinding Object { get; set; }
+            
+            public Dictionary<string, ModelBinding> Dictionary { get; set; }
+            
+            public List<ModelBinding> List { get; set; }
+            
+            public ModelBinding this[int i]
+            {
+                get => List[i];
+                set => List[i] = value;
+            }
+        }
+        
+        public class NestedModelBinding
+        {
+            public int Int { get; set;  }
+            
+            public string Prop { get; set; }
+            
+            public ModelBinding Object { get; set; }
+            
+            public AltNested AltNested { get; set; }
+            
+            public Dictionary<string, ModelBinding> Dictionary { get; set; }
+            
+            public List<ModelBinding> List { get; set; }
+        }
+        
+        public class AltNested
+        {
+            public string Field { get; set; }
+        }
+
+
+        private static ModelBinding CreateModelBinding()
+        {
+            var model = new ModelBinding
+            {
+                Int = 1,
+                Prop = "The Prop",
+                Object = new NestedModelBinding
+                {
+                    Int = 2,
+                    Prop = "Nested Prop",
+                    Object = new ModelBinding
+                    {
+                        Int = 21,
+                        Prop = "Nested Nested Prop",
+                    },
+                    AltNested = new AltNested
+                    {
+                        Field = "Object AltNested Field"
+                    }
+                },
+                Dictionary = new Dictionary<string, ModelBinding>
+                {
+                    {
+                        "map-key",
+                        new ModelBinding
+                        {
+                            Int = 3,
+                            Prop = "Dictionary Prop",
+                            Object = new NestedModelBinding
+                            {
+                                Int = 5,
+                                Prop = "Nested Dictionary Prop",
+                                AltNested = new AltNested
+                                {
+                                    Field = "Dictionary AltNested Field"
+                                }
+                            }
+                        }
+                    },
+                },
+                List = new List<ModelBinding>
+                {
+                    new ModelBinding
+                    {
+                        Int = 4,
+                        Prop = "List Prop",
+                        Object = new NestedModelBinding {Int = 5, Prop = "Nested List Prop"}
+                    }
+                }
+            };
+            return model;
+        }
+
+        [Test]
+        public async Task Does_evaluate_variable_binding_expressions()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["key"] = "the-key",
+                }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", @"Prop = {{ Prop }}");
+
+            var model = CreateModelBinding();
+
+            var pageResultArg = new NestedModelBinding
+            {
+                Int = 2,
+                Prop = "Nested Prop",
+                Object = new ModelBinding
+                {
+                    Int = 21,
+                    Prop = "Nested Nested Prop",
+                },
+                AltNested = new AltNested
+                {
+                    Field = "Object AltNested Field"
+                }
+            };
+            
+            var result = await new PageResult(context.GetPage("page"))
+            {
+                Model = model,
+                Args = { ["pageResultArg"] = pageResultArg }
+            }.Init();
+
+            object value;
+
+            value = result.EvaluateBinding("key");
+            Assert.That(value, Is.EqualTo("the-key"));
+            value = result.EvaluateBinding("Prop");
+            Assert.That(value, Is.EqualTo(model.Prop));
+
+            value = result.EvaluateBinding("model.Prop");
+            Assert.That(value, Is.EqualTo(model.Prop));
+            value = result.EvaluateBinding("model.Object.Prop");
+            Assert.That(value, Is.EqualTo(model.Object.Prop));
+            value = result.EvaluateBinding("model.Object.Object.Prop");
+            Assert.That(value, Is.EqualTo(model.Object.Object.Prop));
+            value = result.EvaluateBinding("model.Object.AltNested.Field");
+            Assert.That(value, Is.EqualTo(model.Object.AltNested.Field));
+            value = result.EvaluateBinding("model[0].Prop");
+            Assert.That(value, Is.EqualTo(model[0].Prop));
+            value = result.EvaluateBinding("model[0].Object.Prop");
+            Assert.That(value, Is.EqualTo(model[0].Object.Prop));
+            value = result.EvaluateBinding("model.List[0]");
+            Assert.That(value, Is.EqualTo(model.List[0]));
+            value = result.EvaluateBinding("model.List[0].Prop");
+            Assert.That(value, Is.EqualTo(model.List[0].Prop));
+            value = result.EvaluateBinding("model.List[0].Object.Prop");
+            Assert.That(value, Is.EqualTo(model.List[0].Object.Prop));
+            value = result.EvaluateBinding("model.Dictionary[\"map-key\"].Prop");
+            Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Prop));
+            value = result.EvaluateBinding("model.Dictionary['map-key'].Object.Prop");
+            Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Object.Prop));
+            value = result.EvaluateBinding("model.Dictionary['map-key'].Object.AltNested.Field");
+            Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Object.AltNested.Field));
+            value = result.EvaluateBinding("Object.AltNested.Field");
+            Assert.That(value, Is.EqualTo(model.Object.AltNested.Field));
+            
+            value = result.EvaluateBinding("pageResultArg.Object.Prop");
+            Assert.That(value, Is.EqualTo(pageResultArg.Object.Prop));
+            value = result.EvaluateBinding("pageResultArg.AltNested.Field");
+            Assert.That(value, Is.EqualTo(pageResultArg.AltNested.Field));
+        }
+
+        [Test]
+        public async Task Does_evaluate_variable_binding_expressions_in_template()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["key"] = "the-key",
+                }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+Object.Object.Prop = '{{ Object.Object.Prop }}'
+model.Object.Object.Prop = '{{ model.Object.Object.Prop }}'
+model.Dictionary['map-key'].Object.AltNested.Field = '{{ model.Dictionary['map-key'].Object.AltNested.Field }}'
+model.Dictionary['map-key'].Object.AltNested.Field | lower = '{{ model.Dictionary['map-key'].Object.AltNested.Field | lower }}'
+");
+
+            var model = CreateModelBinding();
+            
+            var result = await new PageResult(context.GetPage("page")) { Model = model }.RenderToStringAsync();
+            
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+Object.Object.Prop = 'Nested Nested Prop'
+model.Object.Object.Prop = 'Nested Nested Prop'
+model.Dictionary['map-key'].Object.AltNested.Field = 'Dictionary AltNested Field'
+model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnested field'
+".SanitizeNewLines()));
+        }
+
+
+//#if NET45
+//        [Test]
+//        public void DumpExpr()
+//        {
+//            Expression<Func<object, object>> fn = (o) => ((ModelBinding)o).Dictionary["map-key"].Prop;
+//            GetDebugView(fn).Print();
+//        }
+//        
+//        public static string GetDebugView(Expression exp)
+//        {
+//            var propertyInfo = typeof(Expression).GetProperty("DebugView", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+//            return propertyInfo.GetValue(exp) as string;
+//        }
+//#endif
+        
     }
     
     public static class TestUtils

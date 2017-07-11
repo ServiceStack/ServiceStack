@@ -234,7 +234,7 @@ namespace ServiceStack.VirtualPath
 
         public override string VirtualPath => DirPath;
 
-        public override string Name => DirPath?.LastRightPart(InMemoryVirtualPathProvider.DirSep);
+        public override string Name => DirPath?.LastRightPart(MemoryVirtualFiles.DirSep);
 
         public override IVirtualFile GetFile(string virtualPath)
         {
@@ -294,7 +294,7 @@ namespace ServiceStack.VirtualPath
 
         public string FilePath { get; set; }
 
-        public override string Name => FilePath.LastRightPart(InMemoryVirtualPathProvider.DirSep);
+        public override string Name => FilePath.LastRightPart(MemoryVirtualFiles.DirSep);
 
         public override string VirtualPath => FilePath;
 
