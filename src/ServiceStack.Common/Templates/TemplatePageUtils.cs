@@ -114,6 +114,9 @@ namespace ServiceStack.Templates
             {
                 try
                 {
+                    if (member.IndexOf('(') >= 0)
+                        throw new BindingExpressionException($"Calling methods in '{expr}' is not allowed in binding expressions, use a filter instead.", member.Value, expr.Value);
+                    
                     var indexerPos = member.IndexOf('[');
                     if (indexerPos >= 0)
                     {

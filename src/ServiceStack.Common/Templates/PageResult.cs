@@ -161,7 +161,7 @@ namespace ServiceStack.Templates
                 var explodeModel = Model.ToObjectDictionary();
                 foreach (var entry in explodeModel)
                 {
-                    Args[entry.Key] = entry.Value;
+                    Args[entry.Key] = entry.Value ?? NullValue.Instance;
                 }
             }
             Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
@@ -425,6 +425,9 @@ namespace ServiceStack.Templates
             if (targetValue == null)
                 return null;
 
+            if (targetValue == NullValue.Instance)
+                return NullValue.Instance;
+
             var fn = Page.File.Directory.VirtualPath != TemplateConstants.TempFilePath
                 ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
                 : TemplatePageUtils.Compile(targetValue.GetType(), expr);
@@ -433,6 +436,10 @@ namespace ServiceStack.Templates
             {
                 var value = fn(targetValue);
                 return value;
+            }
+            catch (NullReferenceException)
+            {
+                return NullValue.Instance; // evaluate Null References in Binding Expressions to null
             }
             catch (Exception e)
             {
@@ -445,12 +452,19 @@ namespace ServiceStack.Templates
         {
             get
             {
-                if (result != null)
+                try
+                {
+                    if (result != null)
+                        return result;
+    
+                    Init().Wait();
+                    result = this.RenderToStringAsync().Result;
                     return result;
-
-                Init().Wait();
-                result = this.RenderToStringAsync().Result;
-                return result;
+                }
+                catch (AggregateException e)
+                {
+                    throw e.UnwrapIfSingleException();
+                }
             }
         }
     }

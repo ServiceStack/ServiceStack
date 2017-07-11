@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System.Web.UI;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -529,6 +531,54 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 Model = CreateModelBinding()
             }.RenderToStringAsync();
             Assert.That(result, Is.EqualTo("<html><title>nested list prop</title><body><h1>the-key</h1></body></html>"));
+        }
+
+        public class ModelWithMethods
+        {
+            public string Name { get; set; }
+
+            public string GetName() => Name;
+            
+            public ModelWithMethods Nested { get; } = new ModelWithMethods { Name = "Nested" };
+        }
+
+        [Test]
+        public void Does_not_allow_invoking_method_on_binding_expression()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            try
+            {
+                var r = new PageResult(context.OneTimePage("{{ model.GetName() }}")).Result;
+                Assert.Fail("Should throw");
+            }
+            catch (BindingExpressionException e)
+            {
+                e.Message.Print();
+            }
+
+            try
+            {
+                var r = new PageResult(context.OneTimePage("{{ model.Nested.GetName() }}")).Result;
+                Assert.Fail("Should throw");
+            }
+            catch (BindingExpressionException e)
+            {
+                e.Message.Print();
+            }
+        }
+
+        [Test]
+        public void Binding_expressions_with_null_references_evaluate_to_null()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ model.Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ model.Object.Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ model[0].Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ model.List[0].Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ model.Dictionary['key'].Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
         }
 
     }
