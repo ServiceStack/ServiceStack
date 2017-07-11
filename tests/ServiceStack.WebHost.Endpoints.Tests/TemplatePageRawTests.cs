@@ -486,7 +486,51 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 //            return propertyInfo.GetValue(exp) as string;
 //        }
 //#endif
-        
+
+        [Test]
+        public void Can_render_onetime_page_and_layout()
+        {
+            var context = new TemplatePagesContext
+            {                
+                Args = { ["key"] = "the-key" }
+            }.Init();
+
+            var adhocPage = context.Pages.OneTimePage("<h1>{{ key }}</h1>", "html");
+            var result = new PageResult(adhocPage) { Model = CreateModelBinding() }.Result;
+            Assert.That(result, Is.EqualTo("<h1>the-key</h1>"));
+            
+            adhocPage = context.Pages.OneTimePage("<h1>{{ model.Dictionary['map-key'].Object.AltNested.Field | lower }}</h1>", "html");
+            result = new PageResult(adhocPage) { Model = CreateModelBinding() }.Result;
+            Assert.That(result, Is.EqualTo("<h1>dictionary altnested field</h1>"));
+            
+            adhocPage = context.Pages.OneTimePage("<h1>{{ key }}</h1>", "html");
+            result = new PageResult(adhocPage)
+            {
+                LayoutPage = context.Pages.OneTimePage("<html><title>{{ model.List[0].Object.Prop | lower }}</title><body>{{ page }}</body></html>", "html"),
+                Model = CreateModelBinding()
+            }.Result;
+            Assert.That(result, Is.EqualTo("<html><title>nested list prop</title><body><h1>the-key</h1></body></html>"));
+        }
+
+        [Test]
+        public async Task Can_render_onetime_page_with_real_layout()
+        {
+            var context = new TemplatePagesContext
+            {                
+                Args = { ["key"] = "the-key" }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", "<html><title>{{ model.List[0].Object.Prop | lower }}</title><body>{{ page }}</body></html>");
+
+            var adhocPage = context.Pages.OneTimePage(@"<h1>{{ key }}</h1>", "html");
+            var result = await new PageResult(adhocPage)
+            {
+                LayoutPage = context.GetPage("_layout"),
+                Model = CreateModelBinding()
+            }.RenderToStringAsync();
+            Assert.That(result, Is.EqualTo("<html><title>nested list prop</title><body><h1>the-key</h1></body></html>"));
+        }
+
     }
     
     public static class TestUtils

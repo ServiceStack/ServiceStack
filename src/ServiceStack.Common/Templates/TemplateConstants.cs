@@ -7,5 +7,6 @@ namespace ServiceStack.Templates
         public const string DefaultCulture = nameof(DefaultCulture);
         public const string Model = "model";
         public const string Page = "page";
+        public const string TempFilePath = "/dev/null";
     }
 }

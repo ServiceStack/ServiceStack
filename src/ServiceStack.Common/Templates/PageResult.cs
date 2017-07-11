@@ -430,6 +430,20 @@ namespace ServiceStack.Templates
                 throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr.Value, e);
             }
         }
+
+        private string result;
+        public string Result
+        {
+            get
+            {
+                if (result != null)
+                    return result;
+
+                Init().Wait();
+                result = this.RenderToStringAsync().Result;
+                return result;
+            }
+        }
     }
 
     public class BindingExpressionException : Exception

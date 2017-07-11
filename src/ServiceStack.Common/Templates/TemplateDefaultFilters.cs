@@ -53,8 +53,8 @@ namespace ServiceStack.Templates
         public string pascalCase(string varName) => varName.ToPascalCase();
         public string camelCase(string varName) => varName.ToCamelCase();
 
-        public string lower(string varName) => varName.ToLower();
-        public string upper(string varName) => varName.ToUpper();
+        public string lower(string varName) => varName?.ToLower();
+        public string upper(string varName) => varName?.ToUpper();
 
         public string substring(string varName, int startIndex) => varName.SafeSubstring(startIndex);
         public string substring(string varName, int startIndex, int length) => varName.SafeSubstring(startIndex, length);
