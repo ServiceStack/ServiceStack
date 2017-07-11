@@ -657,6 +657,32 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 Args = {["auth"] = true }
             }.Result, Is.Empty);
         }
+
+        [Test]
+        public void Can_use_else_and_otherwise_filter_to_show_alternative_content()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) | otherwise('Is Authenticated') }}"))
+            {
+                Args = {["auth"] = false }
+            }.Result, Is.EqualTo("Not Authenticated"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) | otherwise('Is Authenticated') }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.EqualTo("Is Authenticated"));
+            
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) | else('Not Authenticated') }}"))
+            {
+                Args = {["auth"] = false }
+            }.Result, Is.EqualTo("Not Authenticated"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | ifNot(auth) | else('Is Authenticated') }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.EqualTo("Is Authenticated"));
+        }
     }
     
     public static class TestUtils
