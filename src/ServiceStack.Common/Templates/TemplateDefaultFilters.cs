@@ -80,6 +80,24 @@ namespace ServiceStack.Templates
         
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
+
+        public object @if(object returnTarget, object ifCondition) => when(returnTarget, ifCondition);
+        public object when(object returnTarget, object ifCondition)
+        {
+            if (ifCondition is bool b && b)
+                return returnTarget;
+
+            return null;
+        }
+
+        public object ifNot(object returnTarget, object ifCondition) => unless(returnTarget, ifCondition);
+        public object unless(object returnTarget, object unlessCondition)
+        {
+            if (unlessCondition is bool b && b)
+                return null;
+
+            return returnTarget;
+        }
     }
 
     public class HtmlFilters : TemplateFilter

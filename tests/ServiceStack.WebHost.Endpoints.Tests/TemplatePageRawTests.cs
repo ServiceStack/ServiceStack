@@ -539,7 +539,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 
             public string GetName() => Name;
             
-            public ModelWithMethods Nested { get; } = new ModelWithMethods { Name = "Nested" };
+            public ModelWithMethods Nested { get; set; }
         }
 
         [Test]
@@ -547,9 +547,11 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         {
             var context = new TemplatePagesContext().Init();
 
+            var model = new ModelWithMethods { Nested = new ModelWithMethods { Name = "Nested" } };
+            
             try
             {
-                var r = new PageResult(context.OneTimePage("{{ model.GetName() }}")).Result;
+                var r = new PageResult(context.OneTimePage("{{ model.GetName() }}")){ Model = model }.Result;
                 Assert.Fail("Should throw");
             }
             catch (BindingExpressionException e)
@@ -559,7 +561,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 
             try
             {
-                var r = new PageResult(context.OneTimePage("{{ model.Nested.GetName() }}")).Result;
+                var r = new PageResult(context.OneTimePage("{{ model.Nested.GetName() }}")){ Model = model }.Result;
                 Assert.Fail("Should throw");
             }
             catch (BindingExpressionException e)
@@ -581,6 +583,80 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(new PageResult(context.OneTimePage("{{ model.Dictionary['key'].Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
         }
 
+        [Test]
+        public void when_only_shows_code_when_true()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.EqualTo("Is Authenticated"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
+            {
+                Args = {["auth"] = (bool?)true }
+            }.Result, Is.EqualTo("Is Authenticated"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
+            {
+                Args = {["auth"] = null}
+            }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
+            {
+                Args = {["auth"] = false}
+            }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
+            {
+                Args = {["auth"] = new AuthUserSession().IsAuthenticated}
+            }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}")).Result, Is.Empty);
+        }
+
+        [Test]
+        public void unless_shows_code_when_not_true()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.Empty);
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
+            {
+                Args = {["auth"] = (bool?)true }
+            }.Result, Is.Empty);
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
+            {
+                Args = {["auth"] = null}
+            }.Result, Is.EqualTo("Not Authenticated"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
+            {
+                Args = {["auth"] = false}
+            }.Result, Is.EqualTo("Not Authenticated"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
+            {
+                Args = {["auth"] = new AuthUserSession().IsAuthenticated}
+            }.Result, Is.EqualTo("Not Authenticated"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}")) {                
+            }.Result, Is.EqualTo("Not Authenticated"));
+        }
+
+        [Test]
+        public void can_use_if_and_ifNot_as_alias_to_when_and_unless()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.EqualTo("Is Authenticated"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | ifNot(auth) }}"))
+            {
+                Args = {["auth"] = true }
+            }.Result, Is.Empty);
+        }
     }
     
     public static class TestUtils

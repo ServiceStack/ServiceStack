@@ -257,13 +257,13 @@ namespace ServiceStack.Templates
         private object Evaluate(PageVariableFragment var)
         {
             var value = var.Value ??
-                        (var.Name.HasValue
-                            ? GetValue(var.NameString)
-                            : var.Command != null
-                                ? var.Command.IsBinding()
-                                    ? EvaluateBinding(var.Command.Name)
-                                    : Evaluate(var, var.Command)
-                                : null);
+                (var.Name.HasValue
+                    ? GetValue(var.NameString)
+                    : var.Command != null
+                        ? var.Command.IsBinding()
+                            ? EvaluateBinding(var.Command.Name)
+                            : Evaluate(var, var.Command)
+                        : null);
 
             if (value == null)
             {
