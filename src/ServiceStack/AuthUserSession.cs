@@ -7,11 +7,12 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     [DataContract]
-    public class AuthUserSession : IAuthSession
+    public class AuthUserSession : IAuthSession, IMeta
     {
         public AuthUserSession()
         {
             this.ProviderOAuthAccess = new List<IAuthTokens>();
+            this.Meta = new Dictionary<string, string>();
         }
 
         [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
@@ -57,6 +58,7 @@ namespace ServiceStack
         [DataMember(Order = 41)] public long Tag { get; set; }
         [DataMember(Order = 42)] public string AuthProvider { get; set; }
         [DataMember(Order = 43)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 44)] public Dictionary<string, string> Meta { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
