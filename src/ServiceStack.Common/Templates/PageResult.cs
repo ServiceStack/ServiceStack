@@ -266,7 +266,16 @@ namespace ServiceStack.Templates
                                 : null);
 
             if (value == null)
-                return null;
+            {
+                if (!var.Name.HasValue) 
+                    return null;
+                
+                var invoker = GetFilterInvoker(var.Name, 0, out TemplateFilter filter);
+                if (invoker != null)
+                    value = InvokeFilter(invoker, filter, new object[0], var.Command);
+                else
+                    return null;
+            }
 
             if (value == NullValue.Instance)
                 value = null;

@@ -270,5 +270,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             result = await new PageResult(context.GetPage("page-repeating")).RenderToStringAsync();
             Assert.That(result, Is.EqualTo("<h1>long time ago ... ... ...</h1>"));
         }
+
+        [Test]
+        public void Does_default_filter_with_no_args()
+        {
+            var context = CreateContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ now | dateFormat('yyyy-MM-dd') }}")).Result, Is.EqualTo(DateTime.Now.ToString("yyyy-MM-dd")));
+            Assert.That(new PageResult(context.OneTimePage("{{ utcNow | dateFormat('yyyy-MM-dd') }}")).Result, Is.EqualTo(DateTime.UtcNow.ToString("yyyy-MM-dd")));
+        }
+
     }
 }

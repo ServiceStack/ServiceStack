@@ -77,6 +77,9 @@ namespace ServiceStack.Templates
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
+        
+        public DateTime now() => DateTime.Now;
+        public DateTime utcNow() => DateTime.UtcNow;
     }
 
     public class HtmlFilters : TemplateFilter

@@ -59,6 +59,8 @@ namespace ServiceStack.Templates
             return page;
         }
 
+        public TemplatePage OneTimePage(string contents, string ext=null) => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
+
         public TemplatePagesContext()
         {
             Pages = new TemplatePages(this);
