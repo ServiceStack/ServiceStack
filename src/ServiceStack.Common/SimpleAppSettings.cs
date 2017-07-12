@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Configuration;
 
-namespace ServiceStack.Templates
+namespace ServiceStack
 {
     public class SimpleAppSettings : IAppSettings
     {
