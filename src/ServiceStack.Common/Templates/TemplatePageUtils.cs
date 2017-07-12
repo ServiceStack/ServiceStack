@@ -119,9 +119,9 @@ namespace ServiceStack.Templates
                     {
                         var prop = member.LeftPart('[');
                         var indexer = member.RightPart('[');
-                        indexer.ParseNextToken(out StringSegment name, out object value, out JsExpression cmd);
+                        indexer.ParseNextToken(out object value, out JsBinding binding);
                         
-                        if (name.HasValue || cmd != null)
+                        if (binding is JsExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'", member.Value, expr.Value);
     
                         if (depth == 0)

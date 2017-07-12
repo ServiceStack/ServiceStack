@@ -127,7 +127,7 @@ namespace ServiceStack.Templates
                     }
                     else if (fragment is PageVariableFragment var)
                     {
-                        if (var.Name.Equals(TemplateConstants.Page))
+                        if (var.Binding.Equals(TemplateConstants.Page))
                         {
                             await WritePageAsync(Page, responseStream, token);
                         }
@@ -249,7 +249,7 @@ namespace ServiceStack.Templates
         private object GetValue(PageVariableFragment var)
         {
             var value = var.Value ??
-                (var.Name.HasValue ? GetValue(var.NameString) : null);
+                (var.Binding.HasValue ? GetValue(var.NameString) : null);
 
             return value;
         }
@@ -257,7 +257,7 @@ namespace ServiceStack.Templates
         private object Evaluate(PageVariableFragment var)
         {
             var value = var.Value ??
-                (var.Name.HasValue
+                (var.Binding.HasValue
                     ? GetValue(var.NameString)
                     : var.Expression != null
                         ? var.Expression.IsBinding()
@@ -267,10 +267,10 @@ namespace ServiceStack.Templates
 
             if (value == null)
             {
-                if (!var.Name.HasValue) 
+                if (!var.Binding.HasValue) 
                     return null;
                 
-                var invoker = GetFilterInvoker(var.Name, 0, out TemplateFilter filter);
+                var invoker = GetFilterInvoker(var.Binding, 0, out TemplateFilter filter);
                 if (invoker != null)
                     value = InvokeFilter(invoker, filter, new object[0], var.Expression);
                 else
@@ -327,16 +327,16 @@ namespace ServiceStack.Templates
 
         private object Evaluate(PageVariableFragment var, StringSegment arg)
         {
-            var.ParseLiteral(arg, out StringSegment outName, out object outValue, out JsExpression cmd);
+            var.ParseLiteral(arg, out object outValue, out JsBinding binding);
 
-            if (!outName.IsNullOrEmpty())
+            if (binding is JsExpression expr)
             {
-                return GetValue(outName.Value);
-            }
-            if (cmd != null)
-            {
-                var value = Evaluate(var, cmd);
+                var value = Evaluate(var, expr);
                 return value;
+            }
+            if (binding != null)
+            {
+                return GetValue(binding.Binding.Value);
             }
             return outValue;
         }

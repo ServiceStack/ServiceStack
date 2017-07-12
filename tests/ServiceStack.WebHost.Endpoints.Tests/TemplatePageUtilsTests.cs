@@ -34,7 +34,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             varFragment2 = fragments[1] as PageVariableFragment;
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter() }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
@@ -78,7 +78,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var strFragment3 = fragments[2] as PageStringFragment;
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(0));
 
             fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title|filter}}</h1>");
@@ -90,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{title|filter}}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1) }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(1));
@@ -129,7 +129,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter(1,2.2,'a',\"b\",true) }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(5));
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(3));
 
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
@@ -189,7 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment1.Value, Is.EqualTo("<h1>"));
 
             Assert.That(varFragment2.OriginalText, Is.EqualTo("{{ title | filter1 }}"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
             Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
@@ -197,7 +197,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>\n<p>"));
 
             Assert.That(varFragment4.OriginalText, Is.EqualTo("{{ content | filter2(a) }}"));
-            Assert.That(varFragment4.Name, Is.EqualTo("content"));
+            Assert.That(varFragment4.Binding, Is.EqualTo("content"));
             Assert.That(varFragment4.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment4.FilterExpressions[0].Name, Is.EqualTo("filter2"));
             Assert.That(varFragment4.FilterExpressions[0].Args.Count, Is.EqualTo(1));
@@ -209,53 +209,62 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_parse_next_token()
         {
-            StringSegment name;
             object value;
-            JsExpression cmd;
+            JsBinding binding;
 
-            "a".ToStringSegment().ParseNextToken(out name, out value, out cmd);
-            Assert.That(name, Is.EqualTo("a"));
-            "'a'".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "a".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(binding.Binding, Is.EqualTo("a"));
+            "'a'".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo("a"));
-            "\"a\"".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "\"a\"".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo("a"));
-            "1".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "1".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(1));
-            "100".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "100".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(100));
-            "100.0".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "100.0".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(100d));
-            "1.0E+2".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "1.0E+2".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(100d));
-            "1e+2".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "1e+2".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(100d));
-            "true".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "true".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.True);
-            "false".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "false".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.False);
-            "null".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "null".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(JsNull.Instance));
-            "{foo:1}".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "{foo:1}".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ {"foo", 1 }}));
-            "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Instance} }));
-            "{ map : { bar: 'qux', b: true } }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "{ map : { bar: 'qux', b: true } }".ToStringSegment().ParseNextToken(out value, out binding);
             var map = (Dictionary<string, object>) value;
             Assert.That(map["map"], Is.EquivalentTo(new Dictionary<string,object>{{"bar", "qux"}, {"b", true}}));
-            "{varRef:foo}".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "{varRef:foo}".ToStringSegment().ParseNextToken(out value, out binding);
             map = (Dictionary<string, object>) value;
             Assert.That(map["varRef"], Is.EqualTo(new JsBinding("foo")));
-            "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Instance} }));
 
-            "[1,2,3]".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "[1,2,3]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new[]{ 1, 2, 3 }));
-            "['a',\"b\",'c']".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            "['a',\"b\",'c']".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
-            " [ 'a' , \"b\"  , 'c' ] ".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            " [ 'a' , \"b\"  , 'c' ] ".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
-//            "[ {a: 1}, {b: 2} ]".ToStringSegment().ParseNextToken(out name, out value, out cmd);
-//            Assert.That(value, Is.EquivalentTo(new []{ new Dictionary<string,object>{ {"a", 1} }, new Dictionary<string,object>{ {"b", 2} } }));
+            "[ {a: 1}, {b: 2} ]".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new []{ new Dictionary<string,object>{ {"a", 1} }, new Dictionary<string,object>{ {"b", 2} } }));
+            
+//            "[ {a: { 'aa': [1,2,3] } }, { b: [a,b,c] }, 3, true, null ]".ToStringSegment().ParseNextToken(out value, out binding);
+//            Assert.That(value, Is.EquivalentTo(new object[]
+//            {
+//                new Dictionary<string,object>{ {"a", new Dictionary<string,object>{ {"aa", new[]{ 1, 2, 3} } } } }, 
+//                new Dictionary<string,object>{ {"b", new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }} },
+//                3,
+//                true,
+//                JsNull.Instance
+//            }));
         }
 
     }

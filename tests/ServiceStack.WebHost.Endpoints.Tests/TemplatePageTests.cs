@@ -290,9 +290,9 @@ title: We encode < & >
             var strFragment5 = (PageStringFragment)page.PageFragments[4];
 
             Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
-            Assert.That(varFragment2.Name, Is.EqualTo("title"));
+            Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body id='layout'>"));
-            Assert.That(varFragment4.Name, Is.EqualTo("page"));
+            Assert.That(varFragment4.Binding, Is.EqualTo("page"));
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }
         

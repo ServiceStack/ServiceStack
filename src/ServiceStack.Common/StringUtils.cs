@@ -42,7 +42,18 @@ namespace ServiceStack
         }
 
         public override string ToDebugString() => base.ToDebugString() + Suffix;
-        public override string ToString() => base.ToString() + Suffix;
+
+        public override string ToString()
+        {
+            var sb = StringBuilderCacheAlt.Allocate();
+            foreach (var arg in Args)
+            {
+                if (sb.Length > 0)
+                    sb.Append(',');
+                sb.Append(arg);
+            }
+            return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)}){Suffix}";
+        }
     }
 
     public static class StringUtils

@@ -31,10 +31,10 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
         public static JsToken Create(StringSegment js)
         {
-            js.ParseNextToken(out StringSegment name, out object value, out JsExpression cmd);
+            js.ParseNextToken(out object value, out JsBinding binding);
             
-            if (name.HasValue)
-                return new JsBinding(name.Value);
+            if (binding != null)
+                return binding;
 
             if (value is string s)
                 return new JsString(s);
@@ -51,7 +51,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             if (value is null || value == JsNull.Instance)
                 return JsNull.Instance;
 
-            return cmd;
+            throw new NotSupportedException($"Unknown value JsToken '{value}'");
         }
     }
 
@@ -64,13 +64,15 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
     public class JsBinding : JsToken
     {
-        public string Binding { get; }
+        public virtual StringSegment Binding { get; }
 
-        public JsBinding(string binding) => Binding = binding;
-        public override string ToRawString() => ":";
+        public JsBinding(){}
+        public JsBinding(string binding) => Binding = binding.ToStringSegment();
+        public JsBinding(StringSegment binding) => Binding = binding;
+        public override string ToRawString() => ":" + Binding;
 
         protected bool Equals(JsBinding other) => string.Equals(Binding, other.Binding);
-        public override int GetHashCode() => (Binding != null ? Binding.GetHashCode() : 0);
+        public override int GetHashCode() => Binding.GetHashCode();
 
         public override bool Equals(object obj)
         {
@@ -81,7 +83,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         }
     }
 
-    public class JsArray : JsToken
+    public class JsArray : JsToken, IEnumerable<object>
     {
         public object[] Array { get; }
         public JsArray(IEnumerable array) => Array = array.Cast<object>().ToArray();
@@ -113,6 +115,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return true;
         }
 
+        public IEnumerator<object> GetEnumerator() => ((IEnumerable<object>)Array).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
@@ -124,7 +129,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public override int GetHashCode() => (Array != null ? Array.GetHashCode() : 0);
     }
 
-    public class JsObject : JsToken
+    public class JsObject : JsToken, IEnumerable<KeyValuePair<string, object>>
     {
         public Dictionary<string, object> Object { get; }
         public JsObject(Dictionary<string, object> obj) => Object = obj;
@@ -143,9 +148,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             sb.Append("}");
             return StringBuilderCache.ReturnAndFree(sb);
         }
+
+        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Object.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 
-    public class JsString : JsToken, IRawString
+    public class JsString : JsToken
     {
         public string Value { get; }
         public JsString(string value) => Value = value;
@@ -164,7 +172,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
     }
 
-    public class JsNumber : JsToken, IRawString
+    public class JsNumber : JsToken
     {
         public int IntValue =>
             intValue.GetValueOrDefault((int) longValue.GetValueOrDefault((long) doubleValue.GetValueOrDefault(0)));
@@ -279,12 +287,11 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
-        public static StringSegment ParseNextToken(this StringSegment literal, out StringSegment binding,
-            out object value, out JsExpression cmd)
+        public static StringSegment ParseNextToken(this StringSegment literal,
+            out object value, out JsBinding binding)
         {
-            binding = default(StringSegment);
+            binding = null;
             value = null;
-            cmd = null;
             var c = (char) 0;
 
             if (literal.IsNullOrEmpty())
@@ -346,25 +353,32 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 var map = new Dictionary<string, object>();
 
                 literal = literal.Advance(1);
-                while (!literal.IsNullOrEmpty() && literal.GetChar(0) != '}')
+                while (!literal.IsNullOrEmpty())
                 {
-                    literal = literal.ParseNextToken(out StringSegment mapKeyVar, out object mapKeyString, out _);
-                    var mapKey = mapKeyVar.HasValue
-                        ? mapKeyVar.Value
+                    literal = literal.ParseNextToken(out object mapKeyString, out JsBinding mapKeyVar);
+                        
+                    if (mapKeyVar is JsExpression)
+                        throw new NotSupportedException($"JsExpression '{mapKeyVar?.Binding}' is not a valid Object key.");
+
+                    var mapKey = mapKeyVar != null
+                        ? mapKeyVar.Binding.Value
                         : (string) mapKeyString;
 
                     if (mapKey != null)
                     {
                         literal = literal.AdvancePastChar(':');
-                        literal = literal.ParseNextToken(out StringSegment mapVarRef, out object mapValue, out _);
-
-                        if (mapVarRef.HasValue)
-                            map[mapKey] = new JsBinding(mapVarRef.Value);
-                        else
-                            map[mapKey] = mapValue;
+                        literal = literal.ParseNextToken(out object mapValue, out JsBinding mapValueBinding);
+                        map[mapKey] = mapValue ?? mapValueBinding;
                     }
 
-                    literal = literal.AdvancePastAnyChar(',', '}');
+                    literal = literal.AdvancePastWhitespace();
+                    if (literal.IsNullOrEmpty())
+                        break;
+                    
+                    if (literal.GetChar(0) == '}')
+                        break;
+
+                    literal = literal.AdvancePastChar(',');
                     literal = literal.AdvancePastWhitespace();
                 }
 
@@ -378,8 +392,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty() && literal.GetChar(0) != ']')
                 {
-                    literal = literal.ParseNextToken(out StringSegment mapVarRef, out object mapValue, out _);
-                    list.Add(mapVarRef.HasValue ? new JsBinding(mapVarRef.Value) : mapValue);
+                    literal = literal.ParseNextToken(out object mapValue, out JsBinding mapVarRef);
+                    list.Add(mapVarRef ?? mapValue);
                     literal = literal.AdvancePastAnyChar(',', ']');
                     literal = literal.AdvancePastWhitespace();
                 }
@@ -411,19 +425,19 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             {
                 if (isExpression)
                 {
-                    cmd = literal.ParseExpression<JsExpression>(out int pos).FirstOrDefault();
+                    binding = literal.ParseJsExpression(out int pos).FirstOrDefault();
                     return literal.Advance(pos);
                 }
 
                 i++;
             }
 
-            binding = literal.Subsegment(0, i);
+            binding = new JsBinding(literal.Subsegment(0, i));
             return literal.Advance(i);
         }
     }
 
-    public class JsExpression : JsToken
+    public class JsExpression : JsBinding
     {
         public JsExpression()
         {
@@ -458,18 +472,26 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             {
                 if (sb.Length > 0)
                     sb.Append(',');
-                sb.Append(arg);
+                sb.Append(JsonValue(arg));
             }
             return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
         }
 
         public StringSegment ToStringSegment() => ToString().ToStringSegment();
         
-        public override string ToRawString() => (":" + base.ToString()).EncodeJson();
+        public override string ToRawString() => (":" + ToString()).EncodeJson();
+
+        public override StringSegment Binding => Original;
     }
 
     public static class JsExpressionUtils
     {
+        public static List<JsExpression> ParseJsExpression(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
+            => commandsString.ParseExpression<JsExpression>(out int _, separator, atEndIndex);
+
+        public static List<JsExpression> ParseJsExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
+            => commandsString.ParseExpression<JsExpression>(out pos, separator, atEndIndex);
+
         public static List<T> ParseExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
             where T : JsExpression, new()
             => commandsString.ParseExpression<T>(out int _, separator, atEndIndex);

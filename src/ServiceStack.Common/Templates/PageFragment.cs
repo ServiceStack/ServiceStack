@@ -16,9 +16,10 @@ namespace ServiceStack.Templates
         private byte[] originalTextBytes;
         public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
         
-        public StringSegment Name { get; set; }
+        public StringSegment Binding { get; set; }
+
         private string nameString;
-        public string NameString => nameString ?? (nameString = Name.Value);
+        public string NameString => nameString ?? (nameString = Binding.Value);
         
         public object Value { get; set; }
         
@@ -31,18 +32,21 @@ namespace ServiceStack.Templates
             OriginalText = originalText;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
 
-            ParseLiteral(name, out StringSegment outName, out object value, out JsExpression expr);
+            ParseLiteral(name, out object value, out JsBinding binding);
 
-            Name = outName;
             Value = value;
-            Expression = expr;
+
+            if (binding is JsExpression expr)
+                Expression = expr;
+            else if (binding != null)
+                Binding = binding.Binding;
         }
 
-        public void ParseLiteral(StringSegment literal, out StringSegment name, out object value, out JsExpression cmd)
+        public void ParseLiteral(StringSegment literal, out object value, out JsBinding binding)
         {
             try
             {
-                literal.ParseNextToken(out name, out value, out cmd);
+                literal.ParseNextToken(out value, out binding);
             }
             catch (ArgumentException e)
             {
