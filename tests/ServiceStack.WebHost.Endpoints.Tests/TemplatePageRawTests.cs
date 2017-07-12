@@ -684,6 +684,47 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         }
 
         [Test]
+        public void Returns_original_string_with_unknown_variable()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["serverArg"] = "defined" 
+                }
+            }.Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined }}")).Result, Is.EqualTo("{{ undefined }}"));
+            Assert.That(new PageResult(context.OneTimePage("{{ serverArg }}")).Result, Is.EqualTo("defined"));
+            Assert.That(new PageResult(context.OneTimePage("{{ serverArg | unknownFilter }}")).Result, Is.EqualTo("{{ serverArg | unknownFilter }}"));
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | titleCase }}")).Result, Is.EqualTo("{{ undefined | titleCase }}"));
+        }
+
+        [Test]
+        public void Filters_with_HandleUnknownValueAttribute_handles_unkownn_values()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | else('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | otherwise('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
+        }
+
+        [Test]
+        public void Null_exceptions_render_empty_string()
+        {
+            var context = new TemplatePagesContext
+            {
+//                RenderExpressionExceptions = true,
+                Args =
+                {
+                    ["contextModel"] = new ModelBinding()
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop }}")).Result, Is.EqualTo(""));
+        }
+
+        [Test]
         public void Can_pass_variables_into_pages()
         {
             var context = new TemplatePagesContext
@@ -835,7 +876,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 </body>");
             
             context.VirtualFiles.WriteFile("bind-partial.html", @"
-<{{ tag }}>{{ title }}</{{ tag }}>
+<{{ tag }}>{{ title | upper }}</{{ tag }}>
 <p>{{ items | join(', ') }}</p>");
             
             context.VirtualFiles.WriteFile("bind-page.html", @"
@@ -860,10 +901,10 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
   <title>Page title</title>
 </head>
 <body>
-<h2>The title</h2>
+<h2>THE TITLE</h2>
 <p>foo, bar</p>
 <section>
-<h3>Page title</h3>
+<h3>PAGE TITLE</h3>
 <p>1, 2, 3</p>
 </section>
 

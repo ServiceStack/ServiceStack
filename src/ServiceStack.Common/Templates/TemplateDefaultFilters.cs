@@ -6,6 +6,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
     public class TemplateDefaultFilters : TemplateFilter
     {
         // can be used in bindings, e.g. {{ now | dateFormat }}
@@ -92,7 +93,11 @@ namespace ServiceStack.Templates
             return returnTarget;
         }
         public object ifNot(object returnTarget, object ifCondition) => unless(returnTarget, ifCondition); //alias
+
+        [HandleUnknownValue]
         public object @else(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+
+        [HandleUnknownValue]
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         public object echo(object value) => value;
