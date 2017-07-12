@@ -682,6 +682,48 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 Args = {["auth"] = true }
             }.Result, Is.EqualTo("Is Authenticated"));
         }
+
+        [Test]
+        public void Can_pass_variables_into_pages()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args = { ["defaultMessage"] = "this is the default message" }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+  <title>{{ title }}</title>
+</head>
+<body>
+{{ 'header' | page({ id: 'the-page', message: 'in your header' }) }}
+{{ page }}
+</body>");
+
+            context.VirtualFiles.WriteFile("header.html", @"
+<header id='{{ id | else('header') }}'>
+  {{ message | else(defaultMessage) }}
+</header>");
+
+            context.VirtualFiles.WriteFile("page.html", @"<h1>{{ title }}</h1>");
+
+            var result = new PageResult(context.GetPage("page")) {
+                Args = { ["title"] = "The title" }
+            }.Result;
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+<html>
+  <title>The title</title>
+</head>
+<body>
+<header id='the-page'>
+  in your header
+</header>
+<h1>The title</h1>
+</body>
+".SanitizeNewLines()));
+            
+        }
+
     }
     
     public static class TestUtils

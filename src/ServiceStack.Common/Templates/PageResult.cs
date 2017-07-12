@@ -99,7 +99,7 @@ namespace ServiceStack.Templates
 
         internal async Task WriteToAsyncInternal(Stream responseStream, CancellationToken token)
         {
-            Init();
+            await Init();
 
             if (LayoutPage != null)
             {
@@ -129,13 +129,13 @@ namespace ServiceStack.Templates
                     {
                         if (var.Binding.Equals(TemplateConstants.Page))
                         {
-                            await WritePageAsync(Page, responseStream, token);
+                            await WritePageAsync(Page, responseStream, null, token);
                         }
                         else if (var.FilterExpressions.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
                         {
                             var value = GetValue(var);
                             var page = await Page.Context.GetPage(value.ToString()).Init();
-                            await WritePageAsync(page, responseStream, token);
+                            await WritePageAsync(page, responseStream, GetPageParams(var), token);
                         }
                         else
                         {
@@ -146,7 +146,7 @@ namespace ServiceStack.Templates
             }
             else
             {
-                await WritePageAsync(Page, responseStream, token);
+                await WritePageAsync(Page, responseStream, null, token);
             }
         }
 
@@ -184,18 +184,18 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException("PageResult.Init() required for this operation.");
         }
 
-        public async Task WritePageAsync(TemplatePage page, Stream responseStream,
+        public async Task WritePageAsync(TemplatePage page, Stream responseStream, Dictionary<string, object> pageParams = null,
             CancellationToken token = default(CancellationToken))
         {
             if (PageFilters.Count == 0)
             {
-                await WritePageAsyncInternal(page, responseStream, token);
+                await WritePageAsyncInternal(page, responseStream, pageParams, token);
                 return;
             }
 
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                await WritePageAsyncInternal(page, ms, token);
+                await WritePageAsyncInternal(page, ms, pageParams, token);
                 Stream stream = ms;
 
                 foreach (var filter in PageFilters)
@@ -212,7 +212,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        internal async Task WritePageAsyncInternal(TemplatePage page, Stream responseStream,
+        internal async Task WritePageAsyncInternal(TemplatePage page, Stream responseStream, Dictionary<string, object> pageParams,
             CancellationToken token = default(CancellationToken))
         {
             foreach (var fragment in page.PageFragments)
@@ -227,19 +227,49 @@ namespace ServiceStack.Templates
                     {
                         var value = GetValue(var);
                         var subPage = await Page.Context.GetPage(value.ToString()).Init();
-                        await WritePageAsync(subPage, responseStream, token);
+                        await WritePageAsync(subPage, responseStream, CombineParams(pageParams, GetPageParams(var)), token);
                     }
                     else
                     {
-                        await responseStream.WriteAsync(EvaluateVarAsBytes(var), token);
+                        await responseStream.WriteAsync(EvaluateVarAsBytes(var, pageParams), token);
                     }
                 }
             }
         }
 
-        private byte[] EvaluateVarAsBytes(PageVariableFragment var)
+        private static Dictionary<string, object> CombineParams(Dictionary<string, object> parentParams, Dictionary<string, object> pageParams)
         {
-            var value = Evaluate(var);
+            if (parentParams == null)
+                return pageParams;
+            if (pageParams == null)
+                return parentParams;
+            
+            var to = new Dictionary<string, object>();
+            foreach (var entry in parentParams)
+            {
+                to[entry.Key] = entry.Value;
+            }
+            foreach (var entry in pageParams)
+            {
+                to[entry.Key] = entry.Value;
+            }
+            return to;
+        }
+
+        private static Dictionary<string, object> GetPageParams(PageVariableFragment var)
+        {
+            Dictionary<string, object> pageParams = null;
+            if (var.FilterExpressions[0].Args.Count > 0)
+            {
+                var.FilterExpressions[0].Args[0].ParseNextToken(out object argValue, out _);
+                pageParams = argValue as Dictionary<string, object>;
+            }
+            return pageParams;
+        }
+
+        private byte[] EvaluateVarAsBytes(PageVariableFragment var, Dictionary<string, object> pageParams = null)
+        {
+            var value = Evaluate(var, pageParams);
             var bytes = value != null
                 ? Page.Format.EncodeValue(value).ToUtf8Bytes()
                 : var.OriginalTextBytes;
@@ -254,11 +284,11 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object Evaluate(PageVariableFragment var)
+        private object Evaluate(PageVariableFragment var, Dictionary<string, object> pageParams = null)
         {
             var value = var.Value ??
                 (var.Binding.HasValue
-                    ? GetValue(var.NameString)
+                    ? GetValue(var.NameString, pageParams)
                     : var.Expression != null
                         ? var.Expression.IsBinding()
                             ? EvaluateBinding(var.Expression.Name)
@@ -270,11 +300,21 @@ namespace ServiceStack.Templates
                 if (!var.Binding.HasValue) 
                     return null;
                 
-                var invoker = GetFilterInvoker(var.Binding, 0, out TemplateFilter filter);
-                if (invoker != null)
-                    value = InvokeFilter(invoker, filter, new object[0], var.Expression);
+                var hasFilterAsBinding = GetFilterInvoker(var.Binding, 0, out TemplateFilter filter);
+                if (hasFilterAsBinding != null)
+                {
+                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression);
+                }
                 else
-                    return null;
+                {
+                    var invoker = var.FilterExpressions.Length > 0
+                        ? GetFilterInvoker(var.FilterExpressions[0].Name, 1 + var.FilterExpressions[0].Args.Count, out filter)
+                        : null;
+
+                    var firstFilterExists = invoker != null;
+                    if (!firstFilterExists)
+                        return null;
+                }
             }
 
             if (value == JsNull.Instance)
@@ -383,20 +423,22 @@ namespace ServiceStack.Templates
             return null;
         }
 
-        private object GetValue(string name)
+        private object GetValue(string name, Dictionary<string, object> pageParams = null)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            var value = Args.TryGetValue(name, out object obj)
+            var value = pageParams != null && pageParams.TryGetValue(name, out object obj)
                 ? obj
-                : Page.Args.TryGetValue(name, out obj)
+                : Args.TryGetValue(name, out obj)
                     ? obj
-                    : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj))
+                    : Page.Args.TryGetValue(name, out obj)
                         ? obj
-                        : Page.Context.Args.TryGetValue(name, out obj)
+                        : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj))
                             ? obj
-                            : null;
+                            : Page.Context.Args.TryGetValue(name, out obj)
+                                ? obj
+                                : null;
             return value;
         }
 
