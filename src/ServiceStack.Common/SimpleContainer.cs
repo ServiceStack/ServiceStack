@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Configuration;
 
-namespace ServiceStack.Templates
+namespace ServiceStack
 {
     public class SimpleContainer : IContainer, IResolver 
     {

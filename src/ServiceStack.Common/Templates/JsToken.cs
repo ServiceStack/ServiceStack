@@ -274,19 +274,6 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
-        public static StringSegment AdvancePastAnyChar(this StringSegment literal, char delim1, char delim2)
-        {
-            var i = 0;
-            var c = (char) 0;
-            while (i < literal.Length && (c = literal.GetChar(i)) != delim1 && c != delim2)
-                i++;
-
-            if (c == delim1 || c == delim2)
-                return literal.Subsegment(i + 1);
-
-            return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
-        }
-
         public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding)
         {
             binding = null;
