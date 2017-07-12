@@ -317,12 +317,16 @@ namespace ServiceStack.Templates
                 }
                 else
                 {
-                    var invoker = var.FilterExpressions.Length > 0
-                        ? GetFilterInvoker(var.FilterExpressions[0].Name, 1 + var.FilterExpressions[0].Args.Count, out filter)
-                        : null;
+                    var handlesUnknownValue = false;
+                    if (var.FilterExpressions.Length > 0)
+                    {
+                        var filterName = var.FilterExpressions[0].Name;
+                        var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
+                        handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
+                                              Page.Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+                    }
 
-                    var firstFilterExists = invoker != null;
-                    if (!firstFilterExists)
+                    if (!handlesUnknownValue)
                         return null;
                 }
             }
@@ -394,7 +398,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression expr)
+        private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression expr)
         {
             if (invoker == null)
                 throw new NotSupportedException($"Filter {expr.Binding} does not exist");
@@ -405,8 +409,11 @@ namespace ServiceStack.Templates
             }
             catch (Exception ex)
             {
-                var argStr = args.Map(x => x.ToString()).Join(",");
-                throw new TargetInvocationException($"Failed to invoke filter {expr.Name}({argStr})", ex);
+                var exResult = Page.Format.OnExpressionException(this, ex);
+                if (exResult != null)
+                    return exResult;
+                
+                throw new TargetInvocationException($"Failed to invoke filter {expr.Binding}", ex);
             }
         }
 
@@ -524,13 +531,13 @@ namespace ServiceStack.Templates
                 var value = fn(targetValue);
                 return value;
             }
-            catch (NullReferenceException)
+            catch (Exception ex)
             {
-                return JsNull.Instance; // evaluate Null References in Binding Expressions to null
-            }
-            catch (Exception e)
-            {
-                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr.Value, e);
+                var exResult = Page.Format.OnExpressionException(this, ex);
+                if (exResult != null)
+                    return exResult;
+                
+                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr.Value, ex);
             }
         }
 

@@ -49,6 +49,8 @@ namespace ServiceStack.Templates
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
+        
+        public bool RenderExpressionExceptions { get; set; }
 
         public TemplatePage GetPage(string virtualPath)
         {
@@ -160,85 +162,6 @@ namespace ServiceStack.Templates
         public void Dispose()
         {
             using (Container as IDisposable) {}
-        }
-    }
-
-    public class PageFormat
-    {
-        public string ArgsPrefix { get; set; } = "---";
-
-        public string ArgsSuffix { get; set; } = "---";
-        
-        public string Extension { get; set; }
-
-        public string ContentType { get; set; } = MimeTypes.PlainText;
-
-        public Func<object, string> EncodeValue { get; set; }
-
-        public Func<TemplatePage, TemplatePage> ResolveLayout { get; set; }
-
-        public PageFormat()
-        {
-            EncodeValue = DefaultEncodeValue;
-            ResolveLayout = DefaultResolveLayout;
-        }
-
-        public string DefaultEncodeValue(object value)
-        {
-            if (value is IRawString rawString)
-                return rawString.ToRawString();
-            
-            var str = value.ToString();
-            if (str == string.Empty)
-                return string.Empty;
-
-            return str;
-        }
-
-        public TemplatePage DefaultResolveLayout(TemplatePage page)
-        {
-            page.Args.TryGetValue(TemplatePages.Layout, out object layout);
-            return page.Context.Pages.ResolveLayoutPage(page, layout as string);
-        }
-    }
-
-    public class HtmlPageFormat : PageFormat
-    {
-        public HtmlPageFormat()
-        {
-            ArgsPrefix = "<!--";
-            ArgsSuffix = "-->";
-            Extension = "html";
-            ContentType = MimeTypes.Html;
-            EncodeValue = HtmlEncodeValue;
-            ResolveLayout = HtmlResolveLayout;
-        }
-        
-        public static string HtmlEncodeValue(object value)
-        {
-            if (value == null)
-                return string.Empty;
-            
-            if (value is IHtmlString htmlString)
-                return htmlString.ToHtmlString();
-
-            if (value is IRawString rawString)
-                return rawString.ToRawString();
-            
-            var str = value.ToString();
-            if (str == string.Empty)
-                return string.Empty;
-
-            return StringUtils.HtmlEncode(str);
-        }
-
-        public TemplatePage HtmlResolveLayout(TemplatePage page)
-        {
-            var isCompletePage = page.BodyContents.StartsWith("<!DOCTYPE HTML>") || page.BodyContents.StartsWithIgnoreCase("<html");
-            if (isCompletePage)
-                return null;
-
-            return base.DefaultResolveLayout(page);
         }
     }
 }
