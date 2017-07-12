@@ -96,6 +96,9 @@ namespace ServiceStack.Templates
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         public object echo(object value) => value;
+
+        public object join(IEnumerable<object> values) => join(values, ",");
+        public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
     }
 
     public class HtmlFilters : TemplateFilter

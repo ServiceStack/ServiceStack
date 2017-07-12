@@ -768,6 +768,109 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".SanitizeNewLines()));
         }
 
+        [Test]
+        public void Can_load_page_with_page_or_partial_with_scoped_variables_containing_bindings()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["myPartial"] = "my-partial",
+                    ["headingTag"] = "h2",
+                }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+  <title>{{ title }}</title>
+</head>
+<body>
+{{ 'my-partial' | partial({ title: title, tag: headingTag }) }}
+{{ myPartial | partial({ title: partialTitle, tag: headingTag }) }}
+</body>");
+            
+            context.VirtualFiles.WriteFile("my-partial.html", "<{{ tag }}>{{ title }}</{{ tag }}>");
+            
+            var result = new PageResult(context.GetPage("my-partial"))
+            {
+                Args =
+                {
+                    ["title"] = "The title",
+                    ["partialTitle"] = "Partial Title",
+                }
+            }.Result;
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+<html>
+  <title>The title</title>
+</head>
+<body>
+<h2>The title</h2>
+<h2>Partial Title</h2>
+</body>
+".SanitizeNewLines()));
+        }
+
+        [Test]
+        public void Does_replace_bindings()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["contextTitle"] = "The title",
+                    ["contextPartial"] = "bind-partial",
+                    ["contextTag"] = "h2",
+                    ["a"] = "foo",
+                    ["b"] = "bar",
+                }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+  <title>{{ title }}</title>
+</head>
+<body>
+{{ contextPartial | partial({ title: contextTitle, tag: contextTag, items: [a,b] }) }}
+{{ page }}
+</body>");
+            
+            context.VirtualFiles.WriteFile("bind-partial.html", @"
+<{{ tag }}>{{ title }}</{{ tag }}>
+<p>{{ items | join(', ') }}</p>");
+            
+            context.VirtualFiles.WriteFile("bind-page.html", @"
+<section>
+{{ pagePartial | partial({ tag: pageTag, items: items }) }}
+</section>
+");
+            
+            var result = new PageResult(context.GetPage("bind-page"))
+            {
+                Args =
+                {
+                    ["title"] = "Page title",
+                    ["pagePartial"] = "bind-partial",
+                    ["pageTag"] = "h3",
+                    ["items"] = new[] { 1, 2, 3 },
+                }
+            }.Result;
+
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+<html>
+  <title>Page title</title>
+</head>
+<body>
+<h2>The title</h2>
+<p>foo, bar</p>
+<section>
+<h3>Page title</h3>
+<p>1, 2, 3</p>
+</section>
+
+</body>
+".SanitizeNewLines()));
+
+        }
 
     }
     
