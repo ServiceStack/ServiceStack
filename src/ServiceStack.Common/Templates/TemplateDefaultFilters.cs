@@ -81,6 +81,8 @@ namespace ServiceStack.Templates
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
 
+        public object echo(object value) => value;
+
         public object when(object returnTarget, object ifCondition)
         {
             if (ifCondition is bool b && b)

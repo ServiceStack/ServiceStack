@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 
@@ -234,6 +235,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(value, Is.False);
             "null".ToStringSegment().ParseNextToken(out name, out value, out cmd);
             Assert.That(value, Is.EqualTo(NullValue.Instance));
+            "{foo:1}".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ {"foo", 1 }}));
+            "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", NullValue.Instance} }));
+            "{ map : { bar: 'qux', b: true } }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            var map = (Dictionary<string, object>) value;
+            Assert.That(map["map"], Is.EquivalentTo(new Dictionary<string,object>{{"bar", "qux"}, {"b", true}}));
+            "{varRef:foo}".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            map = (Dictionary<string, object>) value;
+            Assert.That(map["varRef"], Is.EqualTo(new VarRef("foo")));
+            "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out name, out value, out cmd);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", NullValue.Instance} }));
         }
 
     }

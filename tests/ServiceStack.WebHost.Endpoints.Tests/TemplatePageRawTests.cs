@@ -473,7 +473,6 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".SanitizeNewLines()));
         }
 
-
 //#if NET45
 //        [Test]
 //        public void DumpExpr()

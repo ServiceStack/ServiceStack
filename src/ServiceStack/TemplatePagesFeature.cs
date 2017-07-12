@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
@@ -15,14 +13,12 @@ namespace ServiceStack
 {
     public class TemplatePagesFeature : TemplatePagesContext, IPlugin
     {
+        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
         public string HtmlExtension
         {
             get => PageFormats.First(x => x is HtmlPageFormat).Extension;
             set => PageFormats.First(x => x is HtmlPageFormat).Extension = value;
         }
-        
-        public static int PreventDosMaxSize = 10000;
-        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
 
         public TemplatePagesFeature()
         {
@@ -43,25 +39,21 @@ namespace ServiceStack
 
         protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
         {
-            if (catchAllPathsNotFound.ContainsKey(pathInfo))
-                return null;
+            if (catchAllPathsNotFound.ContainsKey(pathInfo)) return null;
 
             var page = Pages.GetPage(pathInfo);
-
             if (page != null)
             {
                 if (page.File.Name.StartsWith("_"))
                     return new ForbiddenHttpHandler();
-                
                 return new TemplatePagesHandler(page);
             }
             
             if (!pathInfo.EndsWith("/") && VirtualFiles.DirectoryExists(pathInfo.TrimPrefixes("/")))
                 return new RedirectHttpHandler { RelativeUrl = pathInfo + "/", StatusCode = HttpStatusCode.MovedPermanently };
 
-            if (catchAllPathsNotFound.Count > PreventDosMaxSize)
+            if (catchAllPathsNotFound.Count > 10000) //prevent DOS
                 catchAllPathsNotFound.Clear();
-
             catchAllPathsNotFound[pathInfo] = 1;
             return null;
         }
@@ -71,7 +63,6 @@ namespace ServiceStack
     {
         private readonly TemplatePage page;
         private readonly TemplatePage layoutPage;
-
         public TemplatePagesHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
             this.page = page;
@@ -80,11 +71,7 @@ namespace ServiceStack
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            var result = new PageResult(page)
-            {
-                LayoutPage = layoutPage
-            };
-
+            var result = new PageResult(page) { LayoutPage = layoutPage };
             await result.WriteToAsync(httpRes.OutputStream);
         }
     }
@@ -98,14 +85,12 @@ namespace ServiceStack
         }
 
         private static readonly MarkdownSharp.Markdown markdown = new MarkdownSharp.Markdown();
-
         public static async Task<Stream> TransformToHtml(Stream markdownStream)
         {
             using (var reader = new StreamReader(markdownStream))
             {
                 var md = await reader.ReadToEndAsync();
                 var html = markdown.Transform(md);
-
                 return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
             }
         }

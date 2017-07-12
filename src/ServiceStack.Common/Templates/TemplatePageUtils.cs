@@ -24,6 +24,24 @@ namespace ServiceStack.Templates
         private NullValue() : base("null") {}
     }
 
+    public class VarRef : RawString
+    {
+        public string Binding { get; }
+
+        public VarRef(string binding) : base(binding) => Binding = binding;
+
+        protected bool Equals(VarRef other) => string.Equals(Binding, other.Binding);
+        public override int GetHashCode() => (Binding != null ? Binding.GetHashCode() : 0);
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((VarRef) obj);
+        }
+    }
+
     public static class TemplatePageUtils
     {
         static readonly char[] VarDelimiters = { '|', '}' };

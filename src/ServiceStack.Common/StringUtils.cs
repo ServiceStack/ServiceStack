@@ -64,10 +64,14 @@ namespace ServiceStack
             return ParseCommands(new StringSegment(commandsString), ',');
         }
 
-        public static List<Command> ParseCommands(this StringSegment commandsString, char separator = ',',
+        public static List<Command> ParseCommands(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) => 
+            commandsString.ParseCommands(out int _, separator, atEndIndex);
+
+        public static List<Command> ParseCommands(this StringSegment commandsString, out int pos, char separator = ',',
             Func<StringSegment, int, int?> atEndIndex = null)
         {
             var to = new List<Command>();
+            pos = 0;
 
             if (commandsString.IsNullOrEmpty())
                 return to;
@@ -76,7 +80,6 @@ namespace ServiceStack
             var inSingleQuotes = false;
             var inBrackets = false;
 
-            var pos = 0;
             var endBlockPos = commandsString.Length;
             var cmd = new Command();
 
