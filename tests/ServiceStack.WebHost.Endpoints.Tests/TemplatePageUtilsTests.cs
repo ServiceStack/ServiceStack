@@ -255,16 +255,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
             "[ {a: 1}, {b: 2} ]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ new Dictionary<string,object>{ {"a", 1} }, new Dictionary<string,object>{ {"b", 2} } }));
-            
-//            "[ {a: { 'aa': [1,2,3] } }, { b: [a,b,c] }, 3, true, null ]".ToStringSegment().ParseNextToken(out value, out binding);
-//            Assert.That(value, Is.EquivalentTo(new object[]
-//            {
-//                new Dictionary<string,object>{ {"a", new Dictionary<string,object>{ {"aa", new[]{ 1, 2, 3} } } } }, 
-//                new Dictionary<string,object>{ {"b", new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }} },
-//                3,
-//                true,
-//                JsNull.Instance
-//            }));
+            "[ {a: { 'aa': [1,2,3] } }, { b: [a,b,c] }, 3, true, null ]".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new object[]
+            {
+                new Dictionary<string,object>{ {"a", new Dictionary<string,object>{ {"aa", new[]{ 1, 2, 3} } } } }, 
+                new Dictionary<string,object>{ {"b", new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }} },
+                3,
+                true,
+                JsNull.Instance
+            }));
         }
 
     }

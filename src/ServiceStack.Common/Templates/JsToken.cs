@@ -287,8 +287,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
-        public static StringSegment ParseNextToken(this StringSegment literal,
-            out object value, out JsBinding binding)
+        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding)
         {
             binding = null;
             value = null;
@@ -359,7 +358,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         
                     if (mapKeyVar is JsExpression)
                         throw new NotSupportedException($"JsExpression '{mapKeyVar?.Binding}' is not a valid Object key.");
-
+                    
                     var mapKey = mapKeyVar != null
                         ? mapKeyVar.Binding.Value
                         : (string) mapKeyString;
@@ -374,9 +373,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     literal = literal.AdvancePastWhitespace();
                     if (literal.IsNullOrEmpty())
                         break;
-                    
+
                     if (literal.GetChar(0) == '}')
+                    {
+                        literal = literal.Advance(1);
                         break;
+                    }
 
                     literal = literal.AdvancePastChar(',');
                     literal = literal.AdvancePastWhitespace();
@@ -394,7 +396,18 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 {
                     literal = literal.ParseNextToken(out object mapValue, out JsBinding mapVarRef);
                     list.Add(mapVarRef ?? mapValue);
-                    literal = literal.AdvancePastAnyChar(',', ']');
+
+                    literal = literal.AdvancePastWhitespace();
+                    if (literal.IsNullOrEmpty())
+                        break;
+                    
+                    if (literal.GetChar(0) == ']')
+                    {
+                        literal = literal.Advance(1);
+                        break;
+                    }
+
+                    literal = literal.AdvancePastChar(',');
                     literal = literal.AdvancePastWhitespace();
                 }
 
