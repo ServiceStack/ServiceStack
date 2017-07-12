@@ -707,7 +707,8 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 
             context.VirtualFiles.WriteFile("page.html", @"<h1>{{ title }}</h1>");
 
-            var result = new PageResult(context.GetPage("page")) {
+            var result = new PageResult(context.GetPage("page")) 
+            {
                 Args = { ["title"] = "The title" }
             }.Result;
             Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
@@ -723,6 +724,50 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".SanitizeNewLines()));
             
         }
+
+        [Test]
+        public void Can_load_page_with_page_or_partial_with_scoped_variables()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["myPartial"] = "my-partial"
+                }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+  <title>{{ title }}</title>
+</head>
+<body>
+{{ 'my-partial' | page({ title: 'with-page', tag: 'h1' }) }}
+{{ 'my-partial' | partial({ title: 'with-partial', tag: 'h2' }) }}
+{{ myPartial | page({ title: 'with-page-binding', tag: 'h1' }) }}
+{{ myPartial | partial({ title: 'with-partial-binding', tag: 'h2' }) }}
+<footer>{{ title }}</footer>
+</body>");
+            
+            context.VirtualFiles.WriteFile("my-partial.html", "<{{ tag }}>{{ title }}</{{ tag }}>");
+            
+            var result = new PageResult(context.GetPage("my-partial"))
+            {
+                Args = { ["title"] = "The title" }
+            }.Result;
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+<html>
+  <title>The title</title>
+</head>
+<body>
+<h1>with-page</h1>
+<h2>with-partial</h2>
+<h1>with-page-binding</h1>
+<h2>with-partial-binding</h2>
+<footer>The title</footer>
+</body>
+".SanitizeNewLines()));
+        }
+
 
     }
     

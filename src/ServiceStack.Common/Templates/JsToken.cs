@@ -481,7 +481,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         
         public override string ToRawString() => (":" + ToString()).EncodeJson();
 
-        public override StringSegment Binding => Original;
+        public override StringSegment Binding => Original.HasValue ? Original : ToString().ToStringSegment();
     }
 
     public static class JsExpressionUtils

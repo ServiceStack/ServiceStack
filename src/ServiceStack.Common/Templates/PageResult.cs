@@ -131,7 +131,7 @@ namespace ServiceStack.Templates
                         {
                             await WritePageAsync(Page, responseStream, null, token);
                         }
-                        else if (var.FilterExpressions.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                        else if (IsPageOrPartial(var))
                         {
                             var value = GetValue(var);
                             var page = await Page.Context.GetPage(value.ToString()).Init();
@@ -223,7 +223,7 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    if (var.FilterExpressions.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                    if (IsPageOrPartial(var))
                     {
                         var value = GetValue(var);
                         var subPage = await Page.Context.GetPage(value.ToString()).Init();
@@ -235,6 +235,12 @@ namespace ServiceStack.Templates
                     }
                 }
             }
+        }
+
+        private static bool IsPageOrPartial(PageVariableFragment var)
+        {
+            var name = var.FilterExpressions.FirstOrDefault()?.Name ?? var.Expression?.Name;
+            return name.HasValue && (name.Value.Equals(TemplateConstants.Page) || name.Value.Equals(TemplateConstants.Partial));
         }
 
         private static Dictionary<string, object> CombineParams(Dictionary<string, object> parentParams, Dictionary<string, object> pageParams)
@@ -259,10 +265,13 @@ namespace ServiceStack.Templates
         private static Dictionary<string, object> GetPageParams(PageVariableFragment var)
         {
             Dictionary<string, object> pageParams = null;
-            if (var.FilterExpressions[0].Args.Count > 0)
+            if (var.FilterExpressions.Length > 0)
             {
-                var.FilterExpressions[0].Args[0].ParseNextToken(out object argValue, out _);
-                pageParams = argValue as Dictionary<string, object>;
+                if (var.FilterExpressions[0].Args.Count > 0)
+                {
+                    var.FilterExpressions[0].Args[0].ParseNextToken(out object argValue, out _);
+                    pageParams = argValue as Dictionary<string, object>;
+                }
             }
             return pageParams;
         }
@@ -280,7 +289,7 @@ namespace ServiceStack.Templates
         {
             var value = var.Value ??
                 (var.Binding.HasValue ? GetValue(var.NameString) : null);
-
+            
             return value;
         }
 
@@ -352,8 +361,11 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression cmd)
+        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression expr)
         {
+            if (invoker == null)
+                throw new NotSupportedException($"Filter {expr.Binding} does not exist");
+
             try
             {
                 return invoker(filter, args);
@@ -361,7 +373,7 @@ namespace ServiceStack.Templates
             catch (Exception ex)
             {
                 var argStr = args.Map(x => x.ToString()).Join(",");
-                throw new TargetInvocationException($"Failed to invoke filter {cmd.Name}({argStr})", ex);
+                throw new TargetInvocationException($"Failed to invoke filter {expr.Name}({argStr})", ex);
             }
         }
 
