@@ -672,12 +672,12 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             }.Result, Is.EqualTo("Is Authenticated"));
             
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) | else('Not Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) | otherwise('Not Authenticated') }}"))
             {
                 Args = {["auth"] = false }
             }.Result, Is.EqualTo("Not Authenticated"));
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | ifNot(auth) | else('Is Authenticated') }}"))
+            Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | ifNot(auth) | otherwise('Is Authenticated') }}"))
             {
                 Args = {["auth"] = true }
             }.Result, Is.EqualTo("Is Authenticated"));
@@ -708,11 +708,85 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         {
             var context = new TemplatePagesContext().Init();
 
-            Assert.That(new PageResult(context.OneTimePage("{{ undefined | else('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | otherwise('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
+        }
+
+        [Test]
+        public void Handles_truthy_and_falsy_conditions()
+        {
+            var context = new TemplatePagesContext().Init();
             
-            Assert.That(new PageResult(context.OneTimePage("{{ ''   | else('empty string') }}")).Result, Is.EqualTo("empty string"));
-            Assert.That(new PageResult(context.OneTimePage("{{ null | else('null string') }}")).Result, Is.EqualTo("null string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | falsy('undefined value') }}")).Result, Is.EqualTo("undefined value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ null      | falsy('null value') }}")).Result, Is.EqualTo("null value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ''        | falsy('empty string') }}")).Result, Is.EqualTo("empty string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ false     | falsy('false value') }}")).Result, Is.EqualTo("false value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0         | falsy('0') }}")).Result, Is.EqualTo("0"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ true      | falsy('true value') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ ' '       | falsy('0') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 1         | falsy('one value') }}")).Result, Is.EqualTo(""));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | truthy('undefined value') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ true      | truthy('true value') }}")).Result, Is.EqualTo("true value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ' '       | truthy('whitespace') }}")).Result, Is.EqualTo("whitespace"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 1         | truthy('one value') }}")).Result, Is.EqualTo("one value"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ null      | truthy('null value') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ ''        | truthy('empty string') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ false     | truthy('false value') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0         | truthy('0') }}")).Result, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Handles_ifTruthy_and_ifFalsy_conditions()
+        {
+            var context = new TemplatePagesContext().Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifFalsey(undefined) }}")).Result, Is.EqualTo("undefined value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifFalsey(null) }}")).Result, Is.EqualTo("null value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | ifFalsey('') }}")).Result, Is.EqualTo("empty string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | ifFalsey(false) }}")).Result, Is.EqualTo("false value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | ifFalsey(0) }}")).Result, Is.EqualTo("0"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | ifFalsey(true) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | ifFalsey(' ') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | ifFalsey(1) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifTruthy(undefined) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifTruthy(null) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | ifTruthy('') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | ifTruthy(false) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | ifTruthy(0) }}")).Result, Is.EqualTo(""));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | ifTruthy(true) }}")).Result, Is.EqualTo("true value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | ifTruthy(' ') }}")).Result, Is.EqualTo("whitespace"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | ifTruthy(1) }}")).Result, Is.EqualTo("one value"));
+        }
+
+        [Test]
+        public void Handles_strict_if_and_else_conditions()
+        {
+            var context = new TemplatePagesContext().Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifNot(undefined) }}")).Result, Is.EqualTo("undefined value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifNot(null) }}")).Result, Is.EqualTo("null value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | ifNot('') }}")).Result, Is.EqualTo("empty string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | ifNot(false) }}")).Result, Is.EqualTo("false value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | ifNot(0) }}")).Result, Is.EqualTo("0"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | ifNot(true) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | ifNot(' ') }}")).Result, Is.EqualTo("whitespace"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | ifNot(1) }}")).Result, Is.EqualTo("one value"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | if(undefined) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | if(null) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | if('') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | if(false) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | if(0) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | if(true) }}")).Result, Is.EqualTo("true value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | if(' ') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | if(1) }}")).Result, Is.EqualTo(""));
         }
 
         [Test]
@@ -728,7 +802,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             }.Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop }}")).Result, Is.EqualTo(""));
-            Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop | else('there is nothing') }}")).Result, Is.EqualTo("there is nothing"));
+            Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop | otherwise('there is nothing') }}")).Result, Is.EqualTo("there is nothing"));
         }
 
         [Test]
@@ -749,8 +823,8 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 </body>");
 
             context.VirtualFiles.WriteFile("header.html", @"
-<header id='{{ id | else('header') }}'>
-  {{ message | else(defaultMessage) }}
+<header id='{{ id | otherwise('header') }}'>
+  {{ message | otherwise(defaultMessage) }}
 </header>");
 
             context.VirtualFiles.WriteFile("page.html", @"<h1>{{ title }}</h1>");

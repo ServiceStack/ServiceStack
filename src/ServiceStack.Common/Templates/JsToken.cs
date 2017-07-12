@@ -18,7 +18,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
         public string JsonValue(object value)
         {
-            if (value == null || value == JsNull.Instance)
+            if (value == null || value == JsNull.Value)
                 return "null";
             if (value is JsToken jt)
                 return jt.ToRawString();
@@ -48,8 +48,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 return new JsArray(list);
             if (value is Dictionary<string,object> map)
                 return new JsObject(map);
-            if (value is null || value == JsNull.Instance)
-                return JsNull.Instance;
+            if (value is null || value == JsNull.Value)
+                return JsNull.Value;
 
             throw new NotSupportedException($"Unknown value JsToken '{value}'");
         }
@@ -57,9 +57,11 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
     public class JsNull : JsToken
     {
+        public const string String = "null";
+        
         private JsNull() {} //this is the only one
-        public static JsNull Instance = new JsNull();
-        public override string ToRawString() => "null";
+        public static JsNull Value = new JsNull();
+        public override string ToRawString() => String;
     }
 
     public class JsBinding : JsToken
@@ -413,7 +415,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             }
             if (literal.StartsWith("null") && (literal.Length == 4 || !IsValidVarNameChar(literal.GetChar(4))))
             {
-                value = JsNull.Instance;
+                value = JsNull.Value;
                 return literal.Advance(4);
             }
 

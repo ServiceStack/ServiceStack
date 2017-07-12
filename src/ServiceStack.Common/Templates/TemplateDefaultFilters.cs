@@ -13,7 +13,20 @@ namespace ServiceStack.Templates
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
 
-        public IRawString raw(object value) => value.ToString().ToRawString();
+        public IRawString raw(object value)
+        {
+            if (value == null || Equals(value, JsNull.Value))
+                return TemplateConstants.EmptyRawString;
+            if (value is string s)
+                return s == string.Empty ? TemplateConstants.EmptyRawString : s.ToRawString();
+            if (value is IRawString r)
+                return r;
+            if (value is bool b)
+                return b ? TemplateConstants.TrueRawString : TemplateConstants.FalseRawString;
+            
+            var rawStr = value.ToString().ToRawString();
+            return rawStr;
+        }
         public IRawString json(object value) => (value.ToJson() ?? "null").ToRawString();
 
         public string appSetting(string name) =>  Context.AppSettings.GetString(name);
@@ -76,35 +89,48 @@ namespace ServiceStack.Templates
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
+
+        public bool isTrue(object target) => target is bool b && b;
+
+        public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        public object when(object returnTarget, object test) => @if(returnTarget, test);   //alias
+
+        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object unless(object returnTarget, object test) => ifNot(returnTarget, test);
         
-        public object when(object returnTarget, object ifCondition)
-        {
-            if (ifCondition is bool b && b)
-                return returnTarget;
-
-            return null;
-        }
-        public object @if(object returnTarget, object ifCondition) => when(returnTarget, ifCondition); //alias
-        public object unless(object returnTarget, object unlessCondition)
-        {
-            if (unlessCondition is bool b && b)
-                return null;
-
-            return returnTarget;
-        }
-        public object ifNot(object returnTarget, object ifCondition) => unless(returnTarget, ifCondition); //alias
+        [HandleUnknownValue]
+        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         [HandleUnknownValue]
-        public object @else(object returnTaget, object elseReturn)
+        public object ifFalsey(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
+
+        [HandleUnknownValue]
+        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
+        
+        
+        [HandleUnknownValue]
+        public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
+
+        [HandleUnknownValue]
+        public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
+
+        public bool isFalsy(object target)
         {
-            if (returnTaget is string s)
-                return string.IsNullOrEmpty(s) ? elseReturn : returnTaget;
+            if (target == null || target == JsNull.Value)
+                return true;
+            if (target is string s)
+                return string.IsNullOrEmpty(s);
+            if (target is bool b)
+                return !b;
+            if (target is int i)
+                return i == 0;
+            if (target is long l)
+                return l == 0;
+            if (target is double d)
+                return d == 0 || double.IsNaN(d);
             
-            return returnTaget ?? elseReturn;
+            return false;
         }
-
-        [HandleUnknownValue]
-        public object otherwise(object returnTaget, object elseReturn) => @else(returnTaget, elseReturn);
 
         public object echo(object value) => value;
 

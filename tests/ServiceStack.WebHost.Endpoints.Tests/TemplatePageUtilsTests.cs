@@ -233,11 +233,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "false".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.False);
             "null".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(JsNull.Instance));
+            Assert.That(value, Is.EqualTo(JsNull.Value));
             "{foo:1}".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ {"foo", 1 }}));
             "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Instance} }));
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
             "{ map : { bar: 'qux', b: true } }".ToStringSegment().ParseNextToken(out value, out binding);
             var map = (Dictionary<string, object>) value;
             Assert.That(map["map"], Is.EquivalentTo(new Dictionary<string,object>{{"bar", "qux"}, {"b", true}}));
@@ -245,7 +245,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             map = (Dictionary<string, object>) value;
             Assert.That(map["varRef"], Is.EqualTo(new JsBinding("foo")));
             "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Instance} }));
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
 
             "[1,2,3]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new[]{ 1, 2, 3 }));
@@ -262,7 +262,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 new Dictionary<string,object>{ {"b", new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }} },
                 3,
                 true,
-                JsNull.Instance
+                JsNull.Value
             }));
         }
 

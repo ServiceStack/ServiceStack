@@ -161,10 +161,10 @@ namespace ServiceStack.Templates
                 var explodeModel = Model.ToObjectDictionary();
                 foreach (var entry in explodeModel)
                 {
-                    Args[entry.Key] = entry.Value ?? JsNull.Instance;
+                    Args[entry.Key] = entry.Value ?? JsNull.Value;
                 }
             }
-            Args[TemplateConstants.Model] = Model ?? JsNull.Instance;
+            Args[TemplateConstants.Model] = Model ?? JsNull.Value;
 
             foreach (var filter in TemplateFilters)
             {
@@ -331,7 +331,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (value == JsNull.Instance)
+            if (value == JsNull.Value)
                 value = null;
 
             scopedParams = ReplaceAnyBindings(value) as Dictionary<string, object>;
@@ -519,8 +519,8 @@ namespace ServiceStack.Templates
             if (targetValue == null)
                 return null;
 
-            if (targetValue == JsNull.Instance)
-                return JsNull.Instance;
+            if (targetValue == JsNull.Value)
+                return JsNull.Value;
 
             var fn = Page.File.Directory.VirtualPath != TemplateConstants.TempFilePath
                 ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
