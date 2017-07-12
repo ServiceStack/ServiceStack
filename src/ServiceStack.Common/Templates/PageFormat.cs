@@ -51,7 +51,7 @@ namespace ServiceStack.Templates
             
             // Evaluate Null References in Binding Expressions to null
             if (ex is NullReferenceException || ex is ArgumentNullException)
-                return "";
+                return JsNull.Instance;
 
             return null;
         }
@@ -104,7 +104,7 @@ namespace ServiceStack.Templates
             
             // Evaluate Null References in Binding Expressions to null
             if (ex is NullReferenceException || ex is ArgumentNullException)
-                return "";
+                return JsNull.Instance;
 
             return null;
         }

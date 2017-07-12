@@ -95,10 +95,16 @@ namespace ServiceStack.Templates
         public object ifNot(object returnTarget, object ifCondition) => unless(returnTarget, ifCondition); //alias
 
         [HandleUnknownValue]
-        public object @else(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        public object @else(object returnTaget, object elseReturn)
+        {
+            if (returnTaget is string s)
+                return string.IsNullOrEmpty(s) ? elseReturn : returnTaget;
+            
+            return returnTaget ?? elseReturn;
+        }
 
         [HandleUnknownValue]
-        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        public object otherwise(object returnTaget, object elseReturn) => @else(returnTaget, elseReturn);
 
         public object echo(object value) => value;
 

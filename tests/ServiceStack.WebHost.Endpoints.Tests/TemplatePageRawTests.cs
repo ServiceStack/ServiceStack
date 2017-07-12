@@ -698,6 +698,9 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(new PageResult(context.OneTimePage("{{ serverArg }}")).Result, Is.EqualTo("defined"));
             Assert.That(new PageResult(context.OneTimePage("{{ serverArg | unknownFilter }}")).Result, Is.EqualTo("{{ serverArg | unknownFilter }}"));
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | titleCase }}")).Result, Is.EqualTo("{{ undefined | titleCase }}"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ '' }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ null }}")).Result, Is.EqualTo(""));
         }
 
         [Test]
@@ -707,6 +710,9 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | else('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | otherwise('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ ''   | else('empty string') }}")).Result, Is.EqualTo("empty string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ null | else('null string') }}")).Result, Is.EqualTo("null string"));
         }
 
         [Test]
@@ -722,6 +728,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             }.Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop | else('there is nothing') }}")).Result, Is.EqualTo("there is nothing"));
         }
 
         [Test]
@@ -762,8 +769,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 </header>
 <h1>The title</h1>
 </body>
-".SanitizeNewLines()));
-            
+".SanitizeNewLines()));            
         }
 
         [Test]
