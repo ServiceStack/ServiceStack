@@ -8,20 +8,16 @@ namespace ServiceStack.Templates
 {
     public class TemplateDefaultFilters : TemplateFilter
     {
-        public IRawString raw(object value) => value.ToString().ToRawString();
+        // can be used in bindings, e.g. {{ now | dateFormat }}
+        public DateTime now() => DateTime.Now;
+        public DateTime utcNow() => DateTime.UtcNow;
 
+        public IRawString raw(object value) => value.ToString().ToRawString();
         public IRawString json(object value) => (value.ToJson() ?? "null").ToRawString();
 
         public string appSetting(string name) =>  Context.AppSettings.GetString(name);
 
-        public int toInt(int value) => value;
-        public long toLong(long value) => value;
-        public double toDouble(double value) => value;
-        public decimal toDecimal(decimal value) => value;
-        public string toString(object value) => value?.ToString();
-
         public static double applyToNumbers(double lhs, double rhs, Func<double, double, double> fn) => fn(lhs, rhs);
-
         public double add(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x + y);
         public double sub(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x - y);
         public double subtract(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x - y);
@@ -30,8 +26,10 @@ namespace ServiceStack.Templates
         public double div(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
         public double divide(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
 
-        public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
+        public long increment(long value) => value + 1; 
+        public long increment(long value, long by) => value + by; 
 
+        public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
         public string currency(decimal decimalValue, string culture)
         {
             var cultureInfo = culture != null
@@ -78,11 +76,6 @@ namespace ServiceStack.Templates
             return StringBuilderCache.ReturnAndFree(sb);
         }
         
-        public DateTime now() => DateTime.Now;
-        public DateTime utcNow() => DateTime.UtcNow;
-
-        public object echo(object value) => value;
-
         public object when(object returnTarget, object ifCondition)
         {
             if (ifCondition is bool b && b)
@@ -91,7 +84,6 @@ namespace ServiceStack.Templates
             return null;
         }
         public object @if(object returnTarget, object ifCondition) => when(returnTarget, ifCondition); //alias
-
         public object unless(object returnTarget, object unlessCondition)
         {
             if (unlessCondition is bool b && b)
@@ -100,9 +92,10 @@ namespace ServiceStack.Templates
             return returnTarget;
         }
         public object ifNot(object returnTarget, object ifCondition) => unless(returnTarget, ifCondition); //alias
-
         public object @else(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+
+        public object echo(object value) => value;
     }
 
     public class HtmlFilters : TemplateFilter

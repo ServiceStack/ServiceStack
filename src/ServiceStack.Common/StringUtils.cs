@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
+using ServiceStack.Templates;
 using ServiceStack.Text;
 
 #if NETSTANDARD1_3
@@ -14,271 +15,41 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack
 {
-    public class Command
+    public class Command : JsExpression
     {
-        public Command()
-        {
-            Args = new List<StringSegment>();
-        }
-
-        public StringSegment Name { get; set; }
-
-        public List<StringSegment> Args { get; set; }
-
         public StringSegment Suffix { get; set; }
 
-        public StringSegment Original { get; set; }
-
-        //Output different format for debugging to verify command was parsed correctly
-        public string ToDebugString()
+        public override int IndexOfMethodEnd(StringSegment commandsString, int pos)
         {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append('|');
-                sb.Append(arg);
-            }
-            return $"[{Name}:{StringBuilderCacheAlt.ReturnAndFree(sb)}]{Suffix}";
+            //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
+            var endPos = pos;
+            while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
+                endPos++;
+
+            if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos) == endPos)
+                endPos += "as ".Length;
+
+            while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
+                endPos++;
+
+            while (commandsString.Length > endPos &&
+                   char.IsLetterOrDigit(commandsString.GetChar(endPos)))
+                endPos++;
+
+            this.Suffix = commandsString.Subsegment(pos, endPos - pos).TrimEnd();
+
+            return endPos;
         }
 
-        public override string ToString()
-        {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append(',');
-                sb.Append(arg);
-            }
-            return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)}){Suffix}";
-        }
-
-        public StringSegment ToStringSegment() => ToString().ToStringSegment();
+        public override string ToDebugString() => base.ToDebugString() + Suffix;
+        public override string ToString() => base.ToString() + Suffix;
     }
 
     public static class StringUtils
     {
         public static List<Command> ParseCommands(this string commandsString)
         {
-            return ParseCommands(new StringSegment(commandsString), ',');
-        }
-
-        public static List<Command> ParseCommands(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) => 
-            commandsString.ParseCommands(out int _, separator, atEndIndex);
-
-        public static List<Command> ParseCommands(this StringSegment commandsString, out int pos, char separator = ',',
-            Func<StringSegment, int, int?> atEndIndex = null)
-        {
-            var to = new List<Command>();
-            pos = 0;
-
-            if (commandsString.IsNullOrEmpty())
-                return to;
-
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBrackets = false;
-
-            var endBlockPos = commandsString.Length;
-            var cmd = new Command();
-
-            try
-            {
-                for (var i = 0; i < commandsString.Length; i++)
-                {
-                    var c = commandsString.GetChar(i);
-                    if (char.IsWhiteSpace(c))
-                        continue;
-
-                    if (inDoubleQuotes)
-                    {
-                        if (c == '"')
-                            inDoubleQuotes = false;
-                        continue;
-                    }
-                    if (inSingleQuotes)
-                    {
-                        if (c == '\'')
-                            inSingleQuotes = false;
-                        continue;
-                    }
-                    if (c == '"')
-                    {
-                        inDoubleQuotes = true;
-                        continue;
-                    }
-                    if (c == '\'')
-                    {
-                        inSingleQuotes = true;
-                        continue;
-                    }
-
-                    if (c == '(')
-                    {
-                        inBrackets = true;
-                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
-                        pos = i + 1;
-
-                        cmd.Args = ParseArguments(commandsString.Subsegment(pos), out int endPos);
-                        i += endPos;
-                        pos = i + 1;
-                        continue;
-                    }
-                    if (c == ')')
-                    {
-                        inBrackets = false;
-                        pos = i + 1;
-
-                        //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
-                        var endPos = pos;
-                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
-                            endPos++;
-
-                        if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos) == endPos)
-                            endPos += "as ".Length;
-
-                        while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
-                            endPos++;
-
-                        while (commandsString.Length > endPos &&
-                               char.IsLetterOrDigit(commandsString.GetChar(endPos)))
-                            endPos++;
-
-                        cmd.Suffix = commandsString.Subsegment(pos, endPos - pos).TrimEnd();
-                        pos = endPos;
-
-                        continue;
-                    }
-
-                    if (inBrackets && c == ',')
-                    {
-                        var arg = commandsString.Subsegment(pos, i - pos).Trim();
-                        cmd.Args.Add(arg);
-                        pos = i + 1;
-                    }
-                    else if (c == separator)
-                    {
-                        if (!cmd.Name.HasValue)
-                            cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
-
-                        to.Add(cmd);
-                        cmd = new Command();
-                        pos = i + 1;
-                    }
-
-                    var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
-                    if (atEndIndexPos != null)
-                    {
-                        endBlockPos = atEndIndexPos.Value;
-                        break;
-                    }
-                }
-
-                var remaining = commandsString.Subsegment(pos, endBlockPos - pos);
-                if (!remaining.Trim().IsNullOrEmpty())
-                    cmd.Name = remaining.Trim();
-
-                if (!cmd.Name.IsNullOrEmpty())
-                    to.Add(cmd);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Illegal syntax near '{commandsString.Value.SafeSubstring(pos - 10, 50)}...'", e);
-            }
-
-            return to;
-        }
-
-        // ( {args} , {args} )
-        //   ^
-        public static List<StringSegment> ParseArguments(StringSegment argsString, out int endPos)
-        {
-            var to = new List<StringSegment>();
-
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBrackets = 0;
-            var inBraces = 0;
-            var lastPos = 0;
-
-            for (var i = 0; i < argsString.Length; i++)
-            {
-                var c = argsString.GetChar(i);
-                if (inDoubleQuotes)
-                {
-                    if (c == '"')
-                        inDoubleQuotes = false;
-                    continue;
-                }
-                if (inSingleQuotes)
-                {
-                    if (c == '\'')
-                        inSingleQuotes = false;
-                    continue;
-                }
-                if (inBraces > 0)
-                {
-                    if (c == '{')
-                        ++inBraces;
-                    if (c == '}')
-                        --inBraces;
-                    continue;
-                }
-                if (inBrackets > 0)
-                {
-                    if (c == '(')
-                        ++inBrackets;
-                    if (c == ')')
-                        --inBrackets;
-                    continue;
-                }
-
-                if (c == '"')
-                {
-                    inDoubleQuotes = true;
-                    continue;
-                }
-                if (c == '\'')
-                {
-                    inSingleQuotes = true;
-                    continue;
-                }
-                if (c == '{')
-                {
-                    inBraces++;
-                    continue;
-                }
-                if (c == '(')
-                {
-                    inBrackets++;
-                    continue;
-                }
-
-                if (c == ',')
-                {
-                    var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                    to.Add(arg);
-                    lastPos = i + 1;
-                    continue;
-                }
-
-                if (c == ')')
-                {
-                    var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                    if (!arg.IsNullOrEmpty())
-                    {
-                        to.Add(arg);
-                    }
-
-                    endPos = i;
-                    return to;
-                }
-            }
-
-            endPos = argsString.Length;
-
-            return to;
+            return commandsString.ToStringSegment().ParseExpression<Command>(',');
         }
 
         /// <summary>

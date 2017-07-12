@@ -131,7 +131,7 @@ namespace ServiceStack.Templates
                         {
                             await WritePageAsync(Page, responseStream, token);
                         }
-                        else if (var.FilterCommands.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                        else if (var.FilterExpressions.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
                         {
                             var value = GetValue(var);
                             var page = await Page.Context.GetPage(value.ToString()).Init();
@@ -161,10 +161,10 @@ namespace ServiceStack.Templates
                 var explodeModel = Model.ToObjectDictionary();
                 foreach (var entry in explodeModel)
                 {
-                    Args[entry.Key] = entry.Value ?? NullValue.Instance;
+                    Args[entry.Key] = entry.Value ?? JsNull.Instance;
                 }
             }
-            Args[TemplateConstants.Model] = Model ?? NullValue.Instance;
+            Args[TemplateConstants.Model] = Model ?? JsNull.Instance;
 
             foreach (var filter in TemplateFilters)
             {
@@ -223,7 +223,7 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    if (var.FilterCommands.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
+                    if (var.FilterExpressions.FirstOrDefault()?.Name.Equals(TemplateConstants.Page) == true)
                     {
                         var value = GetValue(var);
                         var subPage = await Page.Context.GetPage(value.ToString()).Init();
@@ -259,10 +259,10 @@ namespace ServiceStack.Templates
             var value = var.Value ??
                 (var.Name.HasValue
                     ? GetValue(var.NameString)
-                    : var.Command != null
-                        ? var.Command.IsBinding()
-                            ? EvaluateBinding(var.Command.Name)
-                            : Evaluate(var, var.Command)
+                    : var.Expression != null
+                        ? var.Expression.IsBinding()
+                            ? EvaluateBinding(var.Expression.Name)
+                            : Evaluate(var, var.Expression)
                         : null);
 
             if (value == null)
@@ -272,17 +272,17 @@ namespace ServiceStack.Templates
                 
                 var invoker = GetFilterInvoker(var.Name, 0, out TemplateFilter filter);
                 if (invoker != null)
-                    value = InvokeFilter(invoker, filter, new object[0], var.Command);
+                    value = InvokeFilter(invoker, filter, new object[0], var.Expression);
                 else
                     return null;
             }
 
-            if (value == NullValue.Instance)
+            if (value == JsNull.Instance)
                 value = null;
 
-            for (var i = 0; i < var.FilterCommands.Length; i++)
+            for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
-                var cmd = var.FilterCommands[i];
+                var cmd = var.FilterExpressions[i];
                 var invoker = GetFilterInvoker(cmd.Name, 1 + cmd.Args.Count, out TemplateFilter filter);
                 if (invoker == null)
                 {
@@ -312,7 +312,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, Command cmd)
+        private static object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression cmd)
         {
             try
             {
@@ -327,7 +327,7 @@ namespace ServiceStack.Templates
 
         private object Evaluate(PageVariableFragment var, StringSegment arg)
         {
-            var.ParseLiteral(arg, out StringSegment outName, out object outValue, out Command cmd);
+            var.ParseLiteral(arg, out StringSegment outName, out object outValue, out JsExpression cmd);
 
             if (!outName.IsNullOrEmpty())
             {
@@ -341,7 +341,7 @@ namespace ServiceStack.Templates
             return outValue;
         }
 
-        private object Evaluate(PageVariableFragment var, Command cmd)
+        private object Evaluate(PageVariableFragment var, JsExpression cmd)
         {
             var invoker = GetFilterInvoker(cmd.Name, cmd.Args.Count, out TemplateFilter filter);
 
@@ -425,8 +425,8 @@ namespace ServiceStack.Templates
             if (targetValue == null)
                 return null;
 
-            if (targetValue == NullValue.Instance)
-                return NullValue.Instance;
+            if (targetValue == JsNull.Instance)
+                return JsNull.Instance;
 
             var fn = Page.File.Directory.VirtualPath != TemplateConstants.TempFilePath
                 ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
@@ -439,7 +439,7 @@ namespace ServiceStack.Templates
             }
             catch (NullReferenceException)
             {
-                return NullValue.Instance; // evaluate Null References in Binding Expressions to null
+                return JsNull.Instance; // evaluate Null References in Binding Expressions to null
             }
             catch (Exception e)
             {

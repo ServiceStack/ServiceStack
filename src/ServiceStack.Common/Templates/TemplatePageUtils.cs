@@ -1,5 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -16,30 +19,6 @@ namespace ServiceStack.Templates
         private string value;
         public RawString(string value) => this.value = value;
         public string ToRawString() => value;
-    }
-
-    public class NullValue : RawString
-    {
-        public static NullValue Instance = new NullValue();
-        private NullValue() : base("null") {}
-    }
-
-    public class VarRef : RawString
-    {
-        public string Binding { get; }
-
-        public VarRef(string binding) : base(binding) => Binding = binding;
-
-        protected bool Equals(VarRef other) => string.Equals(Binding, other.Binding);
-        public override int GetHashCode() => (Binding != null ? Binding.GetHashCode() : 0);
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((VarRef) obj);
-        }
     }
 
     public static class TemplatePageUtils
@@ -71,12 +50,12 @@ namespace ServiceStack.Templates
                 if (varEndPos == -1)
                     throw new ArgumentException($"Invalid Server HTML Template at '{text.SafeSubsegment(50)}...'", nameof(text));
 
-                List<Command> filterCommands = null;
+                List<JsExpression> filterCommands = null;
                 
                 var isFilter = text.GetChar(varEndPos) == '|';
                 if (isFilter)
                 {
-                    filterCommands = text.Subsegment(varEndPos + 1).ParseCommands(
+                    filterCommands = text.Subsegment(varEndPos + 1).ParseExpression<JsExpression>(
                         separator: '|',
                         atEndIndex: (str, strPos) =>
                         {
@@ -140,7 +119,7 @@ namespace ServiceStack.Templates
                     {
                         var prop = member.LeftPart('[');
                         var indexer = member.RightPart('[');
-                        indexer.ParseNextToken(out StringSegment name, out object value, out Command cmd);
+                        indexer.ParseNextToken(out StringSegment name, out object value, out JsExpression cmd);
                         
                         if (name.HasValue || cmd != null)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'", member.Value, expr.Value);
