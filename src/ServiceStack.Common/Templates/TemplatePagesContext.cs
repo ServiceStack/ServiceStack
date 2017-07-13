@@ -26,8 +26,6 @@ namespace ServiceStack.Templates
         
         public string LayoutVarName { get; set; } = "layout";
 
-        public bool CheckModifiedPages { get; set; } = false;
-
         public ITemplatePages Pages { get; set; }
 
         public IVirtualPathProvider VirtualFiles { get; set; } = new MemoryVirtualFiles();
@@ -49,6 +47,8 @@ namespace ServiceStack.Templates
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
+
+        public bool CheckForModifiedPages { get; set; } = false;
         
         public bool RenderExpressionExceptions { get; set; }
 

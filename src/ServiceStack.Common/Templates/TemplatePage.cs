@@ -40,7 +40,7 @@ namespace ServiceStack.Templates
         {
             if (HasInit)
             {
-                if (!Context.DebugMode)
+                if (!Context.DebugMode && !Context.CheckForModifiedPages)
                     return this;
 
                 File.Refresh();
@@ -110,10 +110,10 @@ namespace ServiceStack.Templates
                 {
                     await LayoutPage.Load();
                 }
-                else if (Context.CheckModifiedPages || Context.DebugMode)
+                else if (Context.CheckForModifiedPages || Context.DebugMode)
                 {
                     LayoutPage.File.Refresh();
-                    if (LayoutPage.File.LastModified > LayoutPage.LastModified)
+                    if (LayoutPage.File.LastModified != LayoutPage.LastModified)
                         await LayoutPage.Load();
                 }
             }
