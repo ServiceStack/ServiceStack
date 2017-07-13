@@ -134,12 +134,6 @@ namespace ServiceStack.Templates
                         {
                             await WritePageAsync(Page, pageScopeContext, token);
                         }
-                        else if (IsPageOrPartial(var))
-                        {
-                            var value = GetValue(var, pageScopeContext);
-                            var page = await Page.Context.GetPage(value.ToString()).Init();
-                            await WritePageAsync(page, CreatePageContext(var, outputStream), token);
-                        }
                         else
                         {
                             await WriteVarAsync(pageScopeContext, var, token);
@@ -217,6 +211,9 @@ namespace ServiceStack.Templates
 
         internal async Task WritePageAsyncInternal(TemplatePage page, TemplateScopeContext scopeContext, CancellationToken token = default(CancellationToken))
         {
+            if (!page.HasInit)
+                await page.Init();
+            
             foreach (var fragment in page.PageFragments)
             {
                 if (fragment is PageStringFragment str)
@@ -225,16 +222,7 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    if (IsPageOrPartial(var))
-                    {
-                        var value = GetValue(var, scopeContext);
-                        var subPage = await Page.Context.GetPage(value.ToString()).Init();
-                        await WritePageAsync(subPage, CombineScopedParams(scopeContext, GetPageParams(var)), token);
-                    }
-                    else
-                    {
-                        await WriteVarAsync(scopeContext, var, token);
-                    }
+                    await WriteVarAsync(scopeContext, var, token);
                 }
             }
         }
@@ -269,13 +257,14 @@ namespace ServiceStack.Templates
             if (invokerRequiringContext != null)
             {
                 var args = new object[2 + expr.Args.Count];
-                args[0] = scopeContext; // scope
-                args[1] = var.Value;    // target
+                args[0] = scopeContext;                 // scope
+                args[1] = GetValue(var, scopeContext);  // filter target
 
                 for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                 {
                     var arg = expr.Args[cmdIndex];
                     var varValue = Evaluate(var, arg, scopeContext);
+                    varValue = EvaluateAnyBindings(varValue, scopeContext);
                     args[2 + cmdIndex] = varValue;
                 }
 
@@ -303,28 +292,8 @@ namespace ServiceStack.Templates
         private static bool IsPageOrPartial(PageVariableFragment var)
         {
             var name = var.FilterExpressions.FirstOrDefault()?.Name ?? var.Expression?.Name;
-            var isPartial = name.HasValue && (name.Value.Equals(TemplateConstants.Page) || name.Value.Equals(TemplateConstants.Partial));
+            var isPartial = name.HasValue && (name.Value.Equals(TemplateConstants.Page)/* || name.Value.Equals(TemplateConstants.Partial)*/);
             return isPartial;
-        }
-
-        private static TemplateScopeContext CombineScopedParams(TemplateScopeContext parentContext, Dictionary<string, object> scopedParams)
-        {
-            if (scopedParams == null)
-                return parentContext;
-
-            if (parentContext.ScopedParams == null)
-                return new TemplateScopeContext(parentContext.PageResult, parentContext.OutputStream, scopedParams);
-            
-            var to = new Dictionary<string, object>();
-            foreach (var entry in parentContext.ScopedParams)
-            {
-                to[entry.Key] = entry.Value;
-            }
-            foreach (var entry in scopedParams)
-            {
-                to[entry.Key] = entry.Value;
-            }
-            return new TemplateScopeContext(parentContext.PageResult, parentContext.OutputStream, to);
         }
 
         private static Dictionary<string, object> GetPageParams(PageVariableFragment var)
@@ -400,8 +369,7 @@ namespace ServiceStack.Templates
             if (value == JsNull.Value)
                 value = null;
 
-            scopeContext.ScopedParams = ReplaceAnyBindings(scopeContext.ScopedParams, default(TemplateScopeContext)) as Dictionary<string, object>;
-            value = ReplaceAnyBindings(value, scopeContext);
+            value = EvaluateAnyBindings(value, scopeContext);
 
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
@@ -437,7 +405,7 @@ namespace ServiceStack.Templates
         // Filters with no args can be used in-place of bindings
         private MethodInvoker GetFilterAsBinding(StringSegment name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
 
-        private object ReplaceAnyBindings(object value, TemplateScopeContext scopeContext)
+        private object EvaluateAnyBindings(object value, TemplateScopeContext scopeContext)
         {
             if (value is JsBinding valueBinding)
             {
@@ -448,20 +416,16 @@ namespace ServiceStack.Templates
                 var keys = map.Keys.ToArray();
                 foreach (var key in keys)
                 {
-                    if (map[key] is JsBinding binding)
-                    {
-                        map[key] = GetValue(binding.Binding.Value, scopeContext);
-                    }
+                    var entryValue = map[key];
+                    map[key] = EvaluateAnyBindings(entryValue, scopeContext);
                 }
             }
             if (value is List<object> list)
             {
                 for (var i = 0; i < list.Count; i++)
                 {
-                    if (list[i] is JsBinding binding)
-                    {
-                        list[i] = GetValue(binding.Binding.Value, scopeContext);
-                    }
+                    var item = list[i];
+                    list[i] = EvaluateAnyBindings(item, scopeContext);
                 }
             }
             return value;
@@ -564,6 +528,12 @@ namespace ServiceStack.Templates
                                 : (invoker = GetFilterAsBinding(name.ToStringSegment(), out TemplateFilter filter)) != null
                                     ? InvokeFilter(invoker, filter, new object[0], name.ToStringSegment())
                                     : null;
+
+            if (value is JsBinding binding)
+            {
+                return GetValue(binding.Binding.Value, scopedParams);
+            }
+            
             return value;
         }
 

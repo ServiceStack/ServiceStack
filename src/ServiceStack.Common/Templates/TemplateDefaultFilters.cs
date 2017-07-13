@@ -117,10 +117,10 @@ namespace ServiceStack.Templates
         }
 
         public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        public object when(object returnTarget, object test) => @if(returnTarget, test);   //alias
+        public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
         public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
-        public object unless(object returnTarget, object test) => ifNot(returnTarget, test);
+        public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
         
         [HandleUnknownValue]
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
@@ -184,29 +184,34 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"{target} is not IComparable");
         }
 
-        public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, "it");
+        public Task partial(TemplateScopeContext scope, object target) => partial(scope, target, null);
+        public async Task partial(TemplateScopeContext scope, object target, object scopedParams)
+        {
+            var pageName = target.ToString();
+            var pageParams = scopedParams as Dictionary<string, object>;
+            if (pageParams == null && scopedParams != null)
+                throw new ArgumentException($"partial in '{scope.Page.File.VirtualPath}' only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
 
+            var page = scope.Context.GetPage(pageName);
+            await scope.WritePageAsync(page, pageParams);
+        }
+
+        public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, "it");
         public async Task forEach(TemplateScopeContext scope, object target, object items, string scopeName)
         {
-            var enumItens = items as IEnumerable;
-
-            if (enumItens != null)
+            var objs = items as IEnumerable;
+            if (objs != null)
             {
-                var template = target.ToString();
-                var dynamicPage = scope.Context.OneTimePage(template);
-                scope.Page.Args.Each((x,y) => dynamicPage.Args[x] = y);
-                var pageResult = await new PageResult(dynamicPage) {
-                    Args = scope.PageResult.Args
-                }.Init();
-
-                var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, 
-                    scope.ScopedParams == null ? new Dictionary<string, object>() : new Dictionary<string, object>(scope.ScopedParams)); 
-
-                foreach (var item in enumItens)
+                var itemScope = scope.CreateScopedContext(target.ToString());
+                foreach (var item in objs)
                 {
                     itemScope.ScopedParams[scopeName] = item;
-                    await pageResult.WritePageAsync(pageResult.Page, itemScope);
+                    await itemScope.WritePageAsync();
                 }
+            }
+            else if (items != null)
+            {
+                throw new ArgumentException($"forEach in '{scope.Page.File.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
 

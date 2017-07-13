@@ -231,7 +231,7 @@ Brackets in Layout < & >
         }
 
         [Test]
-        public async Task Does_embed_pages()
+        public async Task Does_embed_partials()
         {
             var context = new TemplatePagesContext
             {
@@ -246,14 +246,14 @@ Brackets in Layout < & >
 <html>
 <head><title>{{ title }}</title></head>
 <body>
-{{ 'header' | page }}
+{{ 'header' | partial }}
 <div id='content'>{{ page }}</div>
-{{ footer | page }}
+{{ footer | partial }}
 </body>
 </html>
 ");
             context.VirtualFiles.WriteFile("header.html", "<header>{{ pageTitle | titleCase }}</header>");
-            context.VirtualFiles.WriteFile("page.html", "<h2>{{ contentTitle }}</h2><section>{{ 'page-content' | page }}</section>");
+            context.VirtualFiles.WriteFile("page.html", "<h2>{{ contentTitle }}</h2><section>{{ 'page-content' | partial }}</section>");
             context.VirtualFiles.WriteFile("page-content.html", "<p>{{ contentBody | padRight(20,'.') }}</p>");
             context.VirtualFiles.WriteFile("global-footer.html", "<footer>{{ copyright | raw }}</footer>");
             
@@ -811,7 +811,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         }
 
         [Test]
-        public void Can_pass_variables_into_pages()
+        public void Can_pass_variables_into_partials()
         {
             var context = new TemplatePagesContext
             {
@@ -823,7 +823,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
   <title>{{ title }}</title>
 </head>
 <body>
-{{ 'header' | page({ id: 'the-page', message: 'in your header' }) }}
+{{ 'header' | partial({ id: 'the-page', message: 'in your header' }) }}
 {{ page }}
 </body>");
 
@@ -852,7 +852,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         }
 
         [Test]
-        public void Can_load_page_with_page_or_partial_with_scoped_variables()
+        public void Can_load_page_with_partial_and_scoped_variables()
         {
             var context = new TemplatePagesContext
             {
@@ -867,9 +867,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
   <title>{{ title }}</title>
 </head>
 <body>
-{{ 'my-partial' | page({ title: 'with-page', tag: 'h1' }) }}
 {{ 'my-partial' | partial({ title: 'with-partial', tag: 'h2' }) }}
-{{ myPartial | page({ title: 'with-page-binding', tag: 'h1' }) }}
 {{ myPartial | partial({ title: 'with-partial-binding', tag: 'h2' }) }}
 <footer>{{ title }}</footer>
 </body>");
@@ -885,9 +883,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
   <title>The title</title>
 </head>
 <body>
-<h1>with-page</h1>
 <h2>with-partial</h2>
-<h1>with-page-binding</h1>
 <h2>with-partial-binding</h2>
 <footer>The title</footer>
 </body>
