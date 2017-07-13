@@ -309,11 +309,11 @@ namespace ServiceStack.Templates
             {
                 if (!var.Binding.HasValue) 
                     return null;
-                
-                var hasFilterAsBinding = GetFilterInvoker(var.Binding, 0, out TemplateFilter filter);
+
+                var hasFilterAsBinding = GetFilterAsBinding(var.Binding, out TemplateFilter filter);
                 if (hasFilterAsBinding != null)
                 {
-                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression);
+                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression?.Binding ?? var.Binding);
                 }
                 else
                 {
@@ -339,27 +339,27 @@ namespace ServiceStack.Templates
 
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
-                var cmd = var.FilterExpressions[i];
-                var invoker = GetFilterInvoker(cmd.Name, 1 + cmd.Args.Count, out TemplateFilter filter);
+                var expr = var.FilterExpressions[i];
+                var invoker = GetFilterInvoker(expr.Name, 1 + expr.Args.Count, out TemplateFilter filter);
                 if (invoker == null)
                 {
                     if (i == 0)
                         return null; // ignore on server if first filter is missing  
 
-                    throw new Exception($"Filter not found: {cmd} in '{Page.File.VirtualPath}'");
+                    throw new Exception($"Filter not found: {expr} in '{Page.File.VirtualPath}'");
                 }
 
-                var args = new object[1 + cmd.Args.Count];
+                var args = new object[1 + expr.Args.Count];
                 args[0] = value;
 
-                for (var cmdIndex = 0; cmdIndex < cmd.Args.Count; cmdIndex++)
+                for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                 {
-                    var arg = cmd.Args[cmdIndex];
+                    var arg = expr.Args[cmdIndex];
                     var varValue = Evaluate(var, arg, scopedParams);
                     args[1 + cmdIndex] = varValue;
                 }
 
-                value = InvokeFilter(invoker, filter, args, cmd);
+                value = InvokeFilter(invoker, filter, args, expr.Binding);
             }
 
             if (value == null)
@@ -367,6 +367,9 @@ namespace ServiceStack.Templates
 
             return value;
         }
+
+        // Filters with no args can be used in-place of bindings
+        private MethodInvoker GetFilterAsBinding(StringSegment name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
 
         private object ReplaceAnyBindings(object value, Dictionary<string, object> scopedParams = null)
         {
@@ -398,10 +401,10 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, JsExpression expr)
+        private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, StringSegment binding)
         {
             if (invoker == null)
-                throw new NotSupportedException($"Filter {expr.Binding} does not exist");
+                throw new NotSupportedException($"Filter {binding} does not exist");
 
             try
             {
@@ -413,7 +416,7 @@ namespace ServiceStack.Templates
                 if (exResult != null)
                     return exResult;
                 
-                throw new TargetInvocationException($"Failed to invoke filter {expr.Binding}", ex);
+                throw new TargetInvocationException($"Failed to invoke filter {binding}", ex);
             }
         }
 
@@ -445,7 +448,7 @@ namespace ServiceStack.Templates
                 args[i] = varValue;
             }
 
-            var value = InvokeFilter(invoker, filter, args, expr);
+            var value = InvokeFilter(invoker, filter, args, expr.Binding);
             return value;
         }
 
@@ -480,6 +483,8 @@ namespace ServiceStack.Templates
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
+            MethodInvoker invoker;
+
             var value = scopedParams != null && scopedParams.TryGetValue(name, out object obj)
                 ? obj
                 : Args.TryGetValue(name, out obj)
@@ -490,7 +495,9 @@ namespace ServiceStack.Templates
                             ? obj
                             : Page.Context.Args.TryGetValue(name, out obj)
                                 ? obj
-                                : null;
+                                : (invoker = GetFilterAsBinding(name.ToStringSegment(), out TemplateFilter filter)) != null
+                                    ? InvokeFilter(invoker, filter, new object[0], name.ToStringSegment())
+                                    : null;
             return value;
         }
 

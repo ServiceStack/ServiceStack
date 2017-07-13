@@ -116,6 +116,131 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_incrment_and_decrement()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["ten"] = 10
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 | incr }}")).Result, Is.EqualTo("2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten | incr }}")).Result, Is.EqualTo("11"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 | incrBy(2) }}")).Result, Is.EqualTo("3"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten | incrBy(2) }}")).Result, Is.EqualTo("12"));
+            Assert.That(new PageResult(context.OneTimePage("{{ incr(1) }}")).Result, Is.EqualTo("2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ incr(ten) }}")).Result, Is.EqualTo("11"));
+            Assert.That(new PageResult(context.OneTimePage("{{ incrBy(ten,2) }}")).Result, Is.EqualTo("12"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 1 | decr }}")).Result, Is.EqualTo("0"));
+            Assert.That(new PageResult(context.OneTimePage("{{ ten | decrBy(2) }}")).Result, Is.EqualTo("8"));
+        }
+
+        [Test]
+        public void Can_compare_numbers()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["two"] = 2
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 2 | greaterThan(1) }}")).Result, Is.EqualTo("True"));
+            Assert.That(new PageResult(context.OneTimePage("{{ two | greaterThan(1) }}")).Result, Is.EqualTo("True"));
+            Assert.That(new PageResult(context.OneTimePage("{{ greaterThan(two,1) }}")).Result, Is.EqualTo("True"));
+            Assert.That(new PageResult(context.OneTimePage("{{ greaterThan(2,2) }}")).Result, Is.EqualTo("False"));
+            Assert.That(new PageResult(context.OneTimePage("{{ greaterThan(two,2) }}")).Result, Is.EqualTo("False"));
+            Assert.That(new PageResult(context.OneTimePage("{{ greaterThan(two,two) }}")).Result, Is.EqualTo("False"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'two > 1'    | if(gt(two,1)) | raw }}")).Result, Is.EqualTo("two > 1"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'two > 2'    | if(greaterThan(two,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'two > 3'    | if(greaterThan(two,3)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'two > two'  | if(greaterThan(two,two)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'two >= two' | if(greaterThanEqual(two,two)) | raw }}")).Result, Is.EqualTo("two >= two"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ '1 >= 2' | if(greaterThanEqual(1,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 >= 2' | if(greaterThanEqual(2,2)) | raw }}")).Result, Is.EqualTo("2 >= 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '3 >= 2' | if(greaterThanEqual(3,2)) | raw }}")).Result, Is.EqualTo("3 >= 2"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ '1 > 2'  | if(greaterThan(1,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 > 2'  | if(greaterThan(2,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '3 > 2'  | if(greaterThan(3,2)) | raw }}")).Result, Is.EqualTo("3 > 2"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ '1 <= 2' | if(lessThanEqual(1,2)) | raw }}")).Result, Is.EqualTo("1 <= 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 <= 2' | if(lessThanEqual(2,2)) | raw }}")).Result, Is.EqualTo("2 <= 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '3 <= 2' | if(lessThanEqual(3,2)) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ '1 < 2'  | if(lessThan(1,2)) | raw }}")).Result, Is.EqualTo("1 < 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 < 2'  | if(lessThan(2,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '3 < 2'  | if(lessThan(3,2)) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 >  2' | if(gt(2,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 >= 2' | if(gte(2,2)) | raw }}")).Result, Is.EqualTo("2 >= 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 <= 2' | if(lte(2,2)) | raw }}")).Result, Is.EqualTo("2 <= 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 <  2' | if(lt(2,2)) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 == 2' | if(equals(2,2)) }}")).Result, Is.EqualTo("2 == 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 == 2' | if(eq(2,2)) }}")).Result, Is.EqualTo("2 == 2"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 != 2' | if(notEquals(2,2)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '2 != 2' | if(not(2,2)) }}")).Result, Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Can_compare_strings()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["foo"] = "foo",
+                    ["bar"] = "bar",
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'foo >  \"foo\"' | if(gt(foo,\"foo\")) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'foo >= \"foo\"' | if(gte(foo,\"foo\")) | raw }}")).Result, Is.EqualTo("foo >= \"foo\""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'foo <= \"foo\"' | if(lte(foo,\"foo\")) | raw }}")).Result, Is.EqualTo("foo <= \"foo\""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'foo <  \"foo\"' | if(lt(foo,\"foo\")) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'bar >  \"foo\"' | if(gt(bar,\"foo\")) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'bar >= \"foo\"' | if(gte(bar,\"foo\")) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'bar <= \"foo\"' | if(lte(bar,\"foo\")) | raw }}")).Result, Is.EqualTo("bar <= \"foo\""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'bar <  \"foo\"' | if(lt(bar,\"foo\")) | raw }}")).Result, Is.EqualTo("bar <  \"foo\""));
+        }
+
+        [Test]
+        public void Can_compare_DateTime()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["year2000"] = new DateTime(2000,1,1),
+                    ["year2100"] = new DateTime(2100,1,1),
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now >  year2000' | if(gt(now,year2000)) | raw }}")).Result, Is.EqualTo("now >  year2000"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now >= year2000' | if(gte(now,year2000)) | raw }}")).Result, Is.EqualTo("now >= year2000"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now <= year2000' | if(lte(now,year2000)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now <  year2000' | if(lt(now,year2000)) }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now >  year2100' | if(gt(now,year2100)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now >= year2100' | if(gte(now,year2100)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now <= year2100' | if(lte(now,year2100)) | raw }}")).Result, Is.EqualTo("now <= year2100"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'now <  year2100' | if(lt(now,year2100)) | raw }}")).Result, Is.EqualTo("now <  year2100"));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ '\"2001-01-01\" >  year2100' | if(gt(\"2001-01-01\",year2100)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '\"2001-01-01\" >= year2100' | if(gte(\"2001-01-01\",year2100)) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ '\"2001-01-01\" <= year2100' | if(lte(\"2001-01-01\",year2100)) | raw }}")).Result, Is.EqualTo("\"2001-01-01\" <= year2100"));
+            Assert.That(new PageResult(context.OneTimePage("{{ '\"2001-01-01\" <  year2100' | if(lt(\"2001-01-01\",year2100)) | raw }}")).Result, Is.EqualTo("\"2001-01-01\" <  year2100"));
+        }
+
+        [Test]
         public async Task Does_default_filter_arithmetic_chained_filters()
         {
             var context = CreateContext().Init();

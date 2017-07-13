@@ -40,8 +40,14 @@ namespace ServiceStack.Templates
         public double div(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
         public double divide(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
 
+        public long incr(long value) => value + 1; 
         public long increment(long value) => value + 1; 
-        public long increment(long value, long by) => value + by; 
+        public long incrBy(long value, long by) => value + by; 
+        public long incrementBy(long value, long by) => value + by; 
+        public long decr(long value) => value - 1; 
+        public long decrement(long value) => value - 1; 
+        public long decrBy(long value, long by) => value - by; 
+        public long decrementBy(long value, long by) => value - by; 
 
         public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
         public string currency(decimal decimalValue, string culture)
@@ -90,31 +96,8 @@ namespace ServiceStack.Templates
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public bool isTrue(object target) => target is bool b && b;
-
-        public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        public object when(object returnTarget, object test) => @if(returnTarget, test);   //alias
-
-        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
-        public object unless(object returnTarget, object test) => ifNot(returnTarget, test);
-        
-        [HandleUnknownValue]
-        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
-
-        [HandleUnknownValue]
-        public object ifFalsey(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
-
-        [HandleUnknownValue]
-        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
-        
-        
-        [HandleUnknownValue]
-        public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
-
-        [HandleUnknownValue]
-        public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
-
-        public bool isFalsy(object target)
+        public static bool isTrue(object target) => target is bool b && b;
+        public static bool isFalsey(object target)
         {
             if (target == null || target == JsNull.Value)
                 return true;
@@ -132,10 +115,71 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        public object when(object returnTarget, object test) => @if(returnTarget, test);   //alias
+
+        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object unless(object returnTarget, object test) => ifNot(returnTarget, test);
+        
+        [HandleUnknownValue]
+        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+
+        [HandleUnknownValue]
+        public object ifFalsey(object returnTarget, object test) => isFalsey(test) ? returnTarget : null;
+
+        [HandleUnknownValue]
+        public object ifTruthy(object returnTarget, object test) => !isFalsey(test) ? returnTarget : null;
+        
+        [HandleUnknownValue]
+        public object falsy(object test, object returnIfFalsy) => isFalsey(test) ? returnIfFalsy : null;
+
+        [HandleUnknownValue]
+        public object truthy(object test, object returnIfTruthy) => !isFalsey(test) ? returnIfTruthy : null;
+
         public object echo(object value) => value;
 
         public object join(IEnumerable<object> values) => join(values, ",");
         public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+
+        public bool equals(object target, object other) =>
+            target == null || other == null 
+                ? target == other 
+                : target.GetType() == other.GetType() 
+                    ? target.Equals(other)
+                    : target.Equals(other.ConvertTo(target.GetType()));
+
+        public bool notEquals(object target, object other) => !equals(target, other);
+
+        public bool greaterThan(object target, object other) => compareTo(target, other, i => i > 0);
+        public bool greaterThanEqual(object target, object other) => compareTo(target, other, i => i >= 0);
+        public bool lessThan(object target, object other) => compareTo(target, other, i => i < 0);
+        public bool lessThanEqual(object target, object other) => compareTo(target, other, i => i <= 0);
+
+        //aliases
+        public bool eq(object target, object other) => equals(target, other);
+        public bool not(object target, object other) => notEquals(target, other);
+        public bool gt(object target, object other) => greaterThan(target, other);
+        public bool gte(object target, object other) => greaterThanEqual(target, other);
+        public bool lt(object target, object other) => lessThan(target, other);
+        public bool lte(object target, object other) => lessThanEqual(target, other);
+
+        internal static bool compareTo(object target, object other, Func<int, bool> fn)
+        {
+            if (target == null)
+                throw new ArgumentNullException(nameof(target));
+            if (other == null)
+                throw new ArgumentNullException(nameof(other));
+            
+            if (target is IComparable c)
+            {
+                return target.GetType() == other?.GetType() 
+                    ? fn(c.CompareTo(other))
+                    : fn(c.CompareTo(other.ConvertTo(target.GetType())));
+            }
+            
+            throw new NotSupportedException($"{target} is not IComparable");
+        }
+       
     }
 
     public class HtmlFilters : TemplateFilter
