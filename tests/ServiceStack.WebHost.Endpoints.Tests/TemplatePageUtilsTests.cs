@@ -216,6 +216,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(binding.Binding, Is.EqualTo("a"));
             "a2".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(binding.Binding, Is.EqualTo("a2"));
+            " a2 ".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(binding.Binding, Is.EqualTo("a2"));
             "'a'".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo("a"));
             "\"a\"".ToStringSegment().ParseNextToken(out value, out binding);
@@ -266,6 +268,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 true,
                 JsNull.Value
             }));
+        }
+
+        [Test]
+        public void Can_parse_method_binding_expressions()
+        {
+            object value;
+            JsBinding binding;
+            JsExpression expr;
+
+            "if(or(gt(1,2),lt(3,4)))".ToStringSegment().ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+
+            Assert.That(expr.Args[0], Is.EqualTo("or(gt(1,2),lt(3,4))"));
+
+            expr.Args[0].ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+            
+            Assert.That(expr.Args[0], Is.EqualTo("gt(1,2)"));
+            Assert.That(expr.Args[1], Is.EqualTo("lt(3,4)"));
+
+            expr.Args[0].ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+            Assert.That(expr.Args[0], Is.EqualTo("1"));
+            Assert.That(expr.Args[1], Is.EqualTo("2"));
+            
+
+            @"
+if (
+    or (
+        gt ( 1 , 2 ) ,
+        lt ( 3 , 4 )
+    )
+)".ToStringSegment().ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+
+            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("or(gt(1,2),lt(3,4))"));
+
+            expr.Args[0].ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+            
+            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("gt(1,2)"));
+            Assert.That(expr.Args[1].RemoveAllWhitespace(), Is.EqualTo("lt(3,4)"));
+
+            expr.Args[0].ParseNextToken(out value, out binding);
+            expr = (JsExpression) binding;
+            Assert.That(expr.Args[0], Is.EqualTo("1"));
+            Assert.That(expr.Args[1], Is.EqualTo("2"));
         }
 
     }

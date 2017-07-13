@@ -241,6 +241,63 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_use_logical_boolean_operators()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["foo"] = "foo",
+                    ["bar"] = "bar",
+                    ["year2000"] = new DateTime(2000,1,1),
+                    ["year2100"] = new DateTime(2100,1,1),
+                    ["contextTrue"] = true,
+                    ["contextFalse"] = false,
+                }
+            }.Init();
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(true,true)' | if(or(true,true)) | raw }}")).Result, Is.EqualTo("or(true,true)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(true,false)' | if(or(true,false)) | raw }}")).Result, Is.EqualTo("or(true,false)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(false,false)' | if(or(false,false)) | raw }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'and(true,true)' | if(and(true,true)) | raw }}")).Result, Is.EqualTo("and(true,true)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'and(true,false)' | if(and(true,false)) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'and(false,false)' | if(and(false,false)) | raw }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextTrue,contextTrue)' | if(or(contextTrue,contextTrue)) | raw }}")).Result, Is.EqualTo("or(contextTrue,contextTrue)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextTrue,contextFalse)' | if(or(contextTrue,contextFalse)) | raw }}")).Result, Is.EqualTo("or(contextTrue,contextFalse)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextFalse,contextFalse)' | if(or(contextFalse,contextFalse)) | raw }}")).Result, Is.EqualTo(""));
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'or(gt(now,year2000),eq(\"foo\",bar))' | if(or(gt(now,year2000),eq(\"foo\",bar))) | raw }}")).Result, 
+                Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
+
+            Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(gt(now,year2000),eq(""foo"",bar))' | 
+if (
+    or (
+        gt ( now, year2000 ),
+        eq ( ""foo"",  bar )
+    )
+) | raw }}")).Result, 
+                Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
+
+            
+            Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))' | 
+if ( 
+    or (
+        and (
+            gt ( now, year2000 ),
+            eq ( ""foo"", bar  )
+        ),
+        and (
+            gt ( now, year2000 ),
+            eq ( ""foo"", foo  )
+        )
+    ) 
+) | raw }}")).Result, 
+                Is.EqualTo(@"or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))"));
+        }
+
+        [Test]
         public async Task Does_default_filter_arithmetic_chained_filters()
         {
             var context = CreateContext().Init();

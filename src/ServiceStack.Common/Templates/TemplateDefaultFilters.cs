@@ -9,7 +9,7 @@ namespace ServiceStack.Templates
     // ReSharper disable InconsistentNaming
     public class TemplateDefaultFilters : TemplateFilter
     {
-        // can be used in bindings, e.g. {{ now | dateFormat }}
+        // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
 
@@ -136,6 +136,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public object truthy(object test, object returnIfTruthy) => !isFalsey(test) ? returnIfTruthy : null;
 
+        public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
+        public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
+
         public object echo(object value) => value;
 
         public object join(IEnumerable<object> values) => join(values, ",");
@@ -179,7 +182,6 @@ namespace ServiceStack.Templates
             
             throw new NotSupportedException($"{target} is not IComparable");
         }
-       
     }
 
     public class HtmlFilters : TemplateFilter

@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
+
+#if NETCORE
+using Microsoft.Extensions.Primitives;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -998,5 +1003,10 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
     public static class TestUtils
     {
         public static string SanitizeNewLines(this string text) => text.Trim().Replace("\r", "");
+        
+        static Regex whitespace = new Regex(@"\s+", RegexOptions.Compiled);
+
+        public static string RemoveAllWhitespace(this StringSegment text) => whitespace.Replace(text.Value, "");
+        public static string RemoveAllWhitespace(this string text) => whitespace.Replace(text, "");
     }
 }

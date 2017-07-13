@@ -430,11 +430,14 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     binding = literal.ParseJsExpression(out int pos).FirstOrDefault();
                     return literal.Advance(pos);
                 }
-
+                
                 i++;
+
+                while (i < literal.Length && IsWhiteSpace(literal.GetChar(i))) // advance past whitespace
+                    i++;
             }
 
-            binding = new JsBinding(literal.Subsegment(0, i));
+            binding = new JsBinding(literal.Subsegment(0, i).TrimEnd());
             return literal.Advance(i);
         }
     }
