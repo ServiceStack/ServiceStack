@@ -272,28 +272,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
 
             Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(gt(now,year2000),eq(""foo"",bar))' | 
-if (
-    or (
-        gt ( now, year2000 ),
-        eq ( ""foo"",  bar )
-    )
-) | raw }}")).Result, 
+            if (
+                or (
+                    gt ( now, year2000 ),
+                    eq ( ""foo"",  bar )
+                )
+            ) | raw }}")).Result, 
                 Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
 
             
             Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))' | 
-if ( 
-    or (
-        and (
-            gt ( now, year2000 ),
-            eq ( ""foo"", bar  )
-        ),
-        and (
-            gt ( now, year2000 ),
-            eq ( ""foo"", foo  )
-        )
-    ) 
-) | raw }}")).Result, 
+            if ( 
+                or (
+                    and (
+                        gt ( now, year2000 ),
+                        eq ( ""foo"", bar  )
+                    ),
+                    and (
+                        gt ( now, year2000 ),
+                        eq ( ""foo"", foo  )
+                    )
+                ) 
+            ) | raw }}")).Result, 
                 Is.EqualTo(@"or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))"));
         }
 

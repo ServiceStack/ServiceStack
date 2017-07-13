@@ -240,7 +240,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             char c;
             var isBinding = false;
             while (i < cmd.Name.Length && 
-                   (IsValidVarNameChar(c = cmd.Name.GetChar(i)) || (isBinding = (c == '.' || c == '[' || IsWhiteSpace(c)))))
+                   (IsValidVarNameChar(c = cmd.Name.GetChar(i)) || (isBinding = (c == '.' || c == '[' || c.IsWhiteSpace()))))
             {
                 if (isBinding)
                     return true;
@@ -250,14 +250,10 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsWhiteSpace(char c) =>
-            c == ' ' || (c >= '\x0009' && c <= '\x000d') || c == '\x00a0' || c == '\x0085';
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringSegment AdvancePastWhitespace(this StringSegment literal)
         {
             var i = 0;
-            while (i < literal.Length && IsWhiteSpace(literal.GetChar(i)))
+            while (i < literal.Length && literal.GetChar(i).IsWhiteSpace())
                 i++;
 
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
@@ -433,7 +429,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 
                 i++;
 
-                while (i < literal.Length && IsWhiteSpace(literal.GetChar(i))) // advance past whitespace
+                while (i < literal.Length && literal.GetChar(i).IsWhiteSpace()) // advance past whitespace
                     i++;
             }
 
@@ -523,7 +519,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 for (var i = 0; i < commandsString.Length; i++)
                 {
                     var c = commandsString.GetChar(i);
-                    if (char.IsWhiteSpace(c))
+                    if (c.IsWhiteSpace())
                         continue;
 
                     if (inDoubleQuotes)

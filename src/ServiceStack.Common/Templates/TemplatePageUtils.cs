@@ -23,8 +23,6 @@ namespace ServiceStack.Templates
 
     public static class TemplatePageUtils
     {
-        static readonly char[] VarDelimiters = { '|', '}' };
-
         public static List<PageFragment> ParseTemplatePage(string text)
         {
             return ParseTemplatePage(new StringSegment(text));
@@ -45,7 +43,7 @@ namespace ServiceStack.Templates
                 to.Add(new PageStringFragment(block));
 
                 var varStartPos = pos + 2;
-                var varEndPos = text.IndexOfAny(VarDelimiters, varStartPos);
+                var varEndPos = text.IndexOfNextCharNotInQuotes(varStartPos, '|', '}');
                 var varName = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
                 if (varEndPos == -1)
                     throw new ArgumentException($"Invalid Server HTML Template at '{text.SafeSubsegment(50)}...'", nameof(text));
@@ -59,7 +57,7 @@ namespace ServiceStack.Templates
                         separator: '|',
                         atEndIndex: (str, strPos) =>
                         {
-                            while (str.Length > strPos && char.IsWhiteSpace(str.GetChar(strPos)))
+                            while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
                                 strPos++;
 
                             if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
@@ -88,6 +86,47 @@ namespace ServiceStack.Templates
             }
 
             return to;
+        }
+
+        internal static int IndexOfNextCharNotInQuotes(this StringSegment text, int varStartPos, char c1, char c2)
+        {
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+
+            for (var i = varStartPos; i < text.Length; i++)
+            {
+                var c = text.GetChar(i);
+                if (c.IsWhiteSpace())
+                    continue;
+                
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                        inDoubleQuotes = false;
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                        inSingleQuotes = false;
+                    continue;
+                }
+                if (c == '"')
+                {
+                    inDoubleQuotes = true;
+                    continue;
+                }
+                if (c == '\'')
+                {
+                    inSingleQuotes = true;
+                    continue;
+                }
+
+                if (c == c1 || c == c2)
+                    return i;
+            }
+
+            return text.Length;
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,5 +207,9 @@ namespace ServiceStack.Templates
                     $"Property '{prop}' does not exist on Type '{currType.Name}' from binding expression '{expr}'");
             return pi;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsWhiteSpace(this char c) =>
+            c == ' ' || (c >= '\x0009' && c <= '\x000d') || c == '\x00a0' || c == '\x0085';
     }
 }

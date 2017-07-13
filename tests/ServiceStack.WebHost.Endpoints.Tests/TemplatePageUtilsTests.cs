@@ -271,6 +271,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_parse_templates_within_literals()
+        {
+            object value;
+            JsBinding binding;
+
+            "'<li>{{it}}</li>''".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EqualTo("<li>{{it}}</li>"));
+
+            var fragments = TemplatePageUtils.ParseTemplatePage("<ul>{{ '<li>{{it}}</li>' }}</ul>");
+            Assert.That(fragments.Count, Is.EqualTo(3));
+        }
+
+        [Test]
         public void Can_parse_method_binding_expressions()
         {
             object value;
@@ -295,12 +308,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
 
             @"
-if (
-    or (
-        gt ( 1 , 2 ) ,
-        lt ( 3 , 4 )
-    )
-)".ToStringSegment().ParseNextToken(out value, out binding);
+            if (
+                or (
+                    gt ( 1 , 2 ) ,
+                    lt ( 3 , 4 )
+                )
+            )".ToStringSegment().ParseNextToken(out value, out binding);
             expr = (JsExpression) binding;
 
             Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("or(gt(1,2),lt(3,4))"));
