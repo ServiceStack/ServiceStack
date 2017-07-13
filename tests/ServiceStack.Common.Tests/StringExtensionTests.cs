@@ -230,6 +230,7 @@ namespace ServiceStack.Common.Tests
         public void Does_parse_binding_expressions()
         {
             Assert.That("var".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var:]" }));
+            Assert.That("var2".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var2:]" }));
             Assert.That("var.prop".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop:]" }));
             Assert.That("var.prop.p2.p3".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop.p2.p3:]" }));
             Assert.That("var.prop[key]".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop[key]:]" }));

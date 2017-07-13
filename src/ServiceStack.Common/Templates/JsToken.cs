@@ -220,9 +220,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             ValidNumericChars = n;
 
             var a = new byte['z' + 1];
-            for (var i = (int) 'A'; i < a.Length; i++)
+            for (var i = (int) '0'; i < a.Length; i++)
             {
-                if (i >= 'A' && i <= 'Z' || (i >= 'a' && i <= 'z') || i == '_')
+                if (i >= 'A' && i <= 'Z' || i >= 'a' && i <= 'z' || i >= '0' && i <= '9' || i == '_')
                     a[i] = True;
             }
             ValidVarNameChars = a;
@@ -292,7 +292,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             if (firstChar == '\'' || firstChar == '"')
             {
                 i = 1;
-                while (literal.GetChar(i) != firstChar || literal.GetChar(i - 1) == '\\')
+                while (i < literal.Length && (literal.GetChar(i) != firstChar || literal.GetChar(i - 1) == '\\'))
                     i++;
 
                 if (i >= literal.Length || literal.GetChar(i) != firstChar)

@@ -214,6 +214,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             "a".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(binding.Binding, Is.EqualTo("a"));
+            "a2".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(binding.Binding, Is.EqualTo("a2"));
             "'a'".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo("a"));
             "\"a\"".ToStringSegment().ParseNextToken(out value, out binding);
