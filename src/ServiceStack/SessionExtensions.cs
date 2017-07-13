@@ -191,20 +191,24 @@ namespace ServiceStack
             userAuth.Permissions?.ForEach(x => session.Permissions.AddIfNotExists(x));
         }
 
-        public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository userAuthRepo = null)
+        public static void UpdateFromUserAuthRepo(this IAuthSession session, IRequest req, IAuthRepository authRepo = null)
         {
             if (session == null)
                 return;
 
-            if (userAuthRepo == null)
-                userAuthRepo = HostContext.AppHost.GetAuthRepository(req);
+            var newAuthRepo = authRepo == null
+                ? HostContext.AppHost.GetAuthRepository(req)
+                : null;
+            
+            if (authRepo == null)
+                authRepo = newAuthRepo;
 
-            if (userAuthRepo == null)
+            if (authRepo == null)
                 return;
 
-            using (userAuthRepo as IDisposable)
+            using (newAuthRepo as IDisposable)
             {
-                var userAuth = userAuthRepo.GetUserAuth(session, null);
+                var userAuth = authRepo.GetUserAuth(session, null);
                 session.UpdateSession(userAuth);
             }
         }
