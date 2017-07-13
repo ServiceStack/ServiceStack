@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 
 namespace ServiceStack.Templates
@@ -182,55 +183,7 @@ namespace ServiceStack.Templates
             
             throw new NotSupportedException($"{target} is not IComparable");
         }
+
     }
 
-    public class HtmlFilters : TemplateFilter
-    {
-        public static Dictionary<string, string> AttributeAliases { get; } = new Dictionary<string, string>
-        {
-            {"htmlFor", "for"},
-            {"className", "class"},
-        };
-
-        public IRawString htmlencode(object obj) => StringUtils.HtmlDecode(obj?.ToString() ?? "").ToRawString();
-
-        public IRawString tag(object obj, string tagName, Dictionary<string, object> props)
-        {
-            var sb = StringBuilderCache.Allocate().Append($"<{tagName}");
-
-            if (!(obj is string) && obj is IEnumerable seq)
-            {
-                foreach (var item in seq)
-                {
-                    sb.Append(tag(item, tagName, props));
-                }
-            }
-            else
-            {
-                foreach (var entry in props)
-                {
-                    var name = AttributeAliases.TryGetValue(entry.Key, out string alias)
-                        ? alias
-                        : entry.Key;
-
-                    sb.Append($" {name}=\"{htmlencode(entry.Value)}\"");
-                }
-                sb.Append(obj);
-                sb.Append($"</{tagName}>");
-            }
-
-            var html = StringBuilderCache.ReturnAndFree(sb);
-            return html.ToRawString();
-        }
-
-        // 'a' | li({ id:'id-{name}', className:'cls'}) => <li id="the-id" class="cls">a</li>
-        // todo: items | li({ id: `id-${name}`, class: "cls" })
-        public IRawString div(object obj, Dictionary<string, object> props) => tag(obj, "div", props);
-        public IRawString span(object obj, Dictionary<string, object> props) => tag(obj, "span", props);
-        public IRawString p(object obj, Dictionary<string, object> props) => tag(obj, "p", props);
-        public IRawString a(object obj, Dictionary<string, object> props) => tag(obj, "a", props);
-        public IRawString li(object obj, Dictionary<string, object> props) => tag(obj, "li", props);
-        public IRawString ol(object obj, Dictionary<string, object> props) => tag(obj, "ol", props);
-        public IRawString img(object obj, Dictionary<string, object> props) => tag(obj, "img", props);
-    }
 }
