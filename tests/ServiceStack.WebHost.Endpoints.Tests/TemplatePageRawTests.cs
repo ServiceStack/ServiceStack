@@ -997,6 +997,114 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".SanitizeNewLines()));
 
         }
+
+        [Test]
+        public void Can_repeat_templates_using_forEach()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["letters"] = new[]{ "A", "B", "C" },
+                    ["numbers"] = new[]{ 1, 2, 3 },
+                }
+            };
+            
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(letters) }} </ul>")).Result,
+                Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
+
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(numbers) }} </ul>")).Result,
+                Is.EqualTo("<ul> <li> 1 </li><li> 2 </li><li> 3 </li> </ul>"));
+        }
+
+        [Test]
+        public void Can_repeat_templates_using_forEach_in_page_and_layouts()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["numbers"] = new[]{ 1, 2, 3 },
+                }
+            };
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+<body>
+<header>
+<ul> {{ '<li> {{it}} </li>' | forEach(numbers) }} </ul>
+</header>
+<section>
+{{ page }}
+</section>
+</body>
+</html>
+");
+            context.VirtualFiles.WriteFile("page.html", "<ul> {{ '<li> {{it}} </li>' | forEach(letters) }} </ul>");
+            
+            var result = new PageResult(context.GetPage("page"))
+            {
+                Args =
+                {
+                    ["letters"] = new[]{ "A", "B", "C" },
+                }
+            }.Result;
+            
+            Assert.That(result.SanitizeNewLines(),
+                Is.EqualTo(@"
+<html>
+<body>
+<header>
+<ul> <li> 1 </li><li> 2 </li><li> 3 </li> </ul>
+</header>
+<section>
+<ul> <li> A </li><li> B </li><li> C </li> </ul>
+</section>
+</body>
+</html>"
+.SanitizeNewLines()));
+        }
+
+        [Test]
+        public void Can_repeat_templates_with_bindings_using_forEach()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["items"] = new[]
+                    {
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "A" }}, 
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "B" }}, 
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "C" }}, 
+                    },
+                }
+            };
+            
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' | forEach(items) }} </ul>")).Result,
+                Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
+        }
+
+        [Test]
+        public void Can_repeat_templates_with_bindings_and_custom_scope_using_forEach()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["items"] = new[]
+                    {
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "A" }}, 
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "B" }}, 
+                        new ModelBinding { Object = new NestedModelBinding { Prop = "C" }}, 
+                    },
+                }
+            };
+            
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, 'item') }} </ul>")).Result,
+                Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
+        }
+
     }
     
     public static class TestUtils

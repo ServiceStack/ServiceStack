@@ -19,6 +19,8 @@ namespace ServiceStack.Templates
     public struct TemplateScopeContext
     {
         public PageResult PageResult { get; }
+        public TemplatePage Page => PageResult.Page;
+        public TemplatePagesContext Context => Page.Context;
         public Dictionary<string, object> ScopedParams { get; internal set; }
         public Stream OutputStream { get; }
 
@@ -92,8 +94,12 @@ namespace ServiceStack.Templates
         {
             var method = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .FirstOrDefault(x => name.EqualsIgnoreCase(x.Name) && 
-                     x.GetParameters().Length == argsCount + 1 && 
-                     x.GetParameters()[0].ParameterType == typeof(TemplateScopeContext) && x.ReturnType == typeof(Task<object>));
+                     x.GetParameters().Length == argsCount && 
+                     x.GetParameters()[0].ParameterType == typeof(TemplateScopeContext));
+            
+            if (method != null && method.ReturnType != typeof(Task))
+                throw new NotSupportedException($"Filter '{name}' with scope context does not have a Task return type");
+            
             return method;
         }
     }

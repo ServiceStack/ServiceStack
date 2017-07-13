@@ -78,6 +78,7 @@ namespace ServiceStack.Templates
                 return;
             }
 
+            //If PageResult has any OutputFilters Buffer and chain stream responses to each
             using (var ms = MemoryStreamFactory.GetStream())
             {
                 await WriteToAsyncInternal(ms, token);
@@ -141,7 +142,7 @@ namespace ServiceStack.Templates
                         }
                         else
                         {
-                            await outputStream.WriteAsync(EvaluateVarAsBytes(var, pageScopeContext), token);
+                            await WriteVarAsync(pageScopeContext, var, token);
                         }
                     }
                 }
@@ -194,6 +195,7 @@ namespace ServiceStack.Templates
                 return;
             }
 
+            //If PageResult has any PageFilters Buffer and chain stream responses to each
             using (var ms = MemoryStreamFactory.GetStream())
             {
                 await WritePageAsyncInternal(page, new TemplateScopeContext(this, ms, scopeContext.ScopedParams), token);
@@ -231,9 +233,70 @@ namespace ServiceStack.Templates
                     }
                     else
                     {
-                        await scopeContext.OutputStream.WriteAsync(EvaluateVarAsBytes(var, scopeContext), token);
+                        await WriteVarAsync(scopeContext, var, token);
                     }
                 }
+            }
+        }
+
+        private async Task WriteVarAsync(TemplateScopeContext scopeContext, PageVariableFragment var, CancellationToken token)
+        {
+            MethodInvoker invokerRequiringContext = null;
+            TemplateFilter filter = null;
+            var expr = var.FilterExpressions != null && var.FilterExpressions.Length > 0 ? var.FilterExpressions[0] : null;
+            if (expr != null)
+            {
+                foreach (var tplFilter in TemplateFilters)
+                {
+                    invokerRequiringContext = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
+                    if (invokerRequiringContext != null)
+                    {
+                        filter = tplFilter;
+                        break;
+                    }
+                }
+                foreach (var tplFilter in Page.Context.TemplateFilters)
+                {
+                    invokerRequiringContext = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
+                    if (invokerRequiringContext != null)
+                    {
+                        filter = tplFilter;
+                        break;
+                    }
+                }
+            }
+
+            if (invokerRequiringContext != null)
+            {
+                var args = new object[2 + expr.Args.Count];
+                args[0] = scopeContext; // scope
+                args[1] = var.Value;    // target
+
+                for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
+                {
+                    var arg = expr.Args[cmdIndex];
+                    var varValue = Evaluate(var, arg, scopeContext);
+                    args[2 + cmdIndex] = varValue;
+                }
+
+                try
+                {
+                    await (Task) invokerRequiringContext(filter, args);
+                }
+                catch (Exception ex)
+                {
+                    var exResult = Page.Format.OnExpressionException(this, ex);
+                    if (exResult != null)
+                    {
+                        await scopeContext.OutputStream.WriteAsync(Page.Format.EncodeValue(exResult).ToUtf8Bytes(), token);
+                    }
+
+                    throw new TargetInvocationException($"Failed to invoke filter {expr.Binding}", ex);
+                }
+            }
+            else
+            {
+                await scopeContext.OutputStream.WriteAsync(EvaluateVarAsBytes(var, scopeContext), token);
             }
         }
 
@@ -465,15 +528,6 @@ namespace ServiceStack.Templates
                     filter = tplFilter;
                     return invoker;
                 }
-//                var invokerRequiringContext = tplFilter.GetContextInvoker(name, argsCount);
-//                if (invokerRequiringContext != null)
-//                {
-//                    filter = tplFilter;
-//                    invoker = (instance, args) =>
-//                    {
-//                        return invokerRequiringContext(instance, args);
-//                    };
-//                }
             }
 
             foreach (var tplFilter in Page.Context.TemplateFilters)

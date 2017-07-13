@@ -184,6 +184,32 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"{target} is not IComparable");
         }
 
+        public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, "it");
+
+        public async Task forEach(TemplateScopeContext scope, object target, object items, string scopeName)
+        {
+            var enumItens = items as IEnumerable;
+
+            if (enumItens != null)
+            {
+                var template = target.ToString();
+                var dynamicPage = scope.Context.OneTimePage(template);
+                scope.Page.Args.Each((x,y) => dynamicPage.Args[x] = y);
+                var pageResult = await new PageResult(dynamicPage) {
+                    Args = scope.PageResult.Args
+                }.Init();
+
+                var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, 
+                    scope.ScopedParams == null ? new Dictionary<string, object>() : new Dictionary<string, object>(scope.ScopedParams)); 
+
+                foreach (var item in enumItens)
+                {
+                    itemScope.ScopedParams[scopeName] = item;
+                    await pageResult.WritePageAsync(pageResult.Page, itemScope);
+                }
+            }
+        }
+
     }
 
 }

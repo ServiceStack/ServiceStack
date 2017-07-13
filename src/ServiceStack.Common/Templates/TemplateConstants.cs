@@ -12,6 +12,6 @@ namespace ServiceStack.Templates
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");
-        public static IRawString FalseRawString { get; } = new RawString("true");
+        public static IRawString FalseRawString { get; } = new RawString("false");
     }
 }
