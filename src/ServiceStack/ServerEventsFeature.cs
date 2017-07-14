@@ -465,7 +465,7 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                Log.Error("Error publishing notification to: " + frame.SafeSubstring(0, 50), ex);
+                Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
                 OnError?.Invoke(this, ex);
 
                 // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
