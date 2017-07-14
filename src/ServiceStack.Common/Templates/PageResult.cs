@@ -55,6 +55,12 @@ namespace ServiceStack.Templates
         /// <summary>
         /// Transform the entire output using a chain of stream transformers
         /// </summary>
+        public List<Func<Stream, Task<Stream>>> OutputTransformers { get; set; }
+
+        /// <summary>
+        /// Available transformers that can transform context filter stream outputs
+        /// </summary>
+        public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; }
 
         public PageResult(TemplatePage page)
         {
@@ -63,6 +69,7 @@ namespace ServiceStack.Templates
             TemplateFilters = new List<TemplateFilter>();
             PageTransformers = new List<Func<Stream, Task<Stream>>>();
             OutputTransformers = new List<Func<Stream, Task<Stream>>>();
+            FilterTransformers = new Dictionary<string, Func<Stream, Task<Stream>>>();
             Options = new Dictionary<string, string>
             {
                 {HttpHeaders.ContentType, Page.Format.ContentType},
@@ -228,15 +235,15 @@ namespace ServiceStack.Templates
 
         private async Task WriteVarAsync(TemplateScopeContext scopeContext, PageVariableFragment var, CancellationToken token)
         {
-            MethodInvoker invokerRequiringContext = null;
+            MethodInvoker blockFilterInvoker = null;
             TemplateFilter filter = null;
             var expr = var.FilterExpressions != null && var.FilterExpressions.Length > 0 ? var.FilterExpressions[0] : null;
             if (expr != null)
             {
                 foreach (var tplFilter in TemplateFilters)
                 {
-                    invokerRequiringContext = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
-                    if (invokerRequiringContext != null)
+                    blockFilterInvoker = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
+                    if (blockFilterInvoker != null)
                     {
                         filter = tplFilter;
                         break;
@@ -244,8 +251,8 @@ namespace ServiceStack.Templates
                 }
                 foreach (var tplFilter in Page.Context.TemplateFilters)
                 {
-                    invokerRequiringContext = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
-                    if (invokerRequiringContext != null)
+                    blockFilterInvoker = tplFilter.GetContextInvoker(expr.Name, expr.Args.Count + 2);
+                    if (blockFilterInvoker != null)
                     {
                         filter = tplFilter;
                         break;
@@ -253,10 +260,16 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (invokerRequiringContext != null)
+            if (blockFilterInvoker != null)
             {
+                var hasFilterTransformers = var.FilterExpressions.Length > 1;
+                
                 var args = new object[2 + expr.Args.Count];
-                args[0] = scopeContext;                 // scope
+                var useScope = hasFilterTransformers 
+                    ? scopeContext.ScopeWithStream(MemoryStreamFactory.GetStream()) 
+                    : scopeContext;
+
+                args[0] = useScope;
                 args[1] = GetValue(var, scopeContext);  // filter target
 
                 for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
@@ -269,7 +282,28 @@ namespace ServiceStack.Templates
 
                 try
                 {
-                    await (Task) invokerRequiringContext(filter, args);
+                    await (Task) blockFilterInvoker(filter, args);
+
+                    if (hasFilterTransformers)
+                    {
+                        var stream = useScope.OutputStream;
+                        using (stream)
+                        {
+                            //If Context Filter has any Filter Transformers Buffer and chain stream responses to each
+                            for (var i = 1; i < var.FilterExpressions.Length; i++)
+                            {
+                                var transformer = GetFilterTransformer(var.FilterExpressions[i].Name.Value);
+                                if (transformer == null)
+                                    throw new NotSupportedException($"Could not find FilterTransformer '{expr.Name}'");
+                                
+                                stream.Position = 0;
+                                stream = await transformer(stream);
+                            }
+                            
+                            stream.Position = 0;
+                            await stream.CopyToAsync(scopeContext.OutputStream);
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -284,15 +318,22 @@ namespace ServiceStack.Templates
             }
             else
             {
-                await scopeContext.OutputStream.WriteAsync(EvaluateVarAsBytes(var, scopeContext), token);
+                var value = Evaluate(var, scopeContext);
+                var bytes = value != null
+                    ? Page.Format.EncodeValue(value).ToUtf8Bytes()
+                    : var.OriginalTextBytes;
+
+                await scopeContext.OutputStream.WriteAsync(bytes, token);
             }
         }
 
-        private static bool IsPageOrPartial(PageVariableFragment var)
+        public Func<Stream, Task<Stream>> GetFilterTransformer(string name)
         {
-            var name = var.FilterExpressions.FirstOrDefault()?.Name ?? var.Expression?.Name;
-            var isPartial = name.HasValue && (name.Value.Equals(TemplateConstants.Page)/* || name.Value.Equals(TemplateConstants.Partial)*/);
-            return isPartial;
+            return FilterTransformers.TryGetValue(name, out Func<Stream, Task<Stream>> fn)
+                ? fn
+                : Page.Context.FilterTransformers.TryGetValue(name, out fn)
+                    ? fn
+                    : null;
         }
 
         private static Dictionary<string, object> GetPageParams(PageVariableFragment var)
@@ -310,15 +351,6 @@ namespace ServiceStack.Templates
         }
 
         private TemplateScopeContext CreatePageContext(PageVariableFragment var, Stream outputStream) => new TemplateScopeContext(this, outputStream, GetPageParams(var));
-
-        private byte[] EvaluateVarAsBytes(PageVariableFragment var, TemplateScopeContext scopeContext)
-        {
-            var value = Evaluate(var, scopeContext);
-            var bytes = value != null
-                ? Page.Format.EncodeValue(value).ToUtf8Bytes()
-                : var.OriginalTextBytes;
-            return bytes;
-        }
 
         private object GetValue(PageVariableFragment var, TemplateScopeContext scopeContext)
         {

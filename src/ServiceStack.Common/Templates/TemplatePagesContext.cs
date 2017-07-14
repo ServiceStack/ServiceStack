@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
@@ -47,6 +48,11 @@ namespace ServiceStack.Templates
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
+
+        /// <summary>
+        /// Available transformers that can transform context filter stream outputs
+        /// </summary>
+        public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
 
         public bool CheckForModifiedPages { get; set; } = false;
         

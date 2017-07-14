@@ -41,5 +41,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
                 Is.EqualTo("file contents"));
         }
+
+        [Test]
+        public void Can_use_transformers_to_transform_block_outputs()
+        {
+            var context = new TemplatePagesContext
+            {
+                TemplateFilters = { new TemplateProtectedFilters() },
+                FilterTransformers =
+                {
+                    ["markdown"] = MarkdownPageFormat.TransformToHtml
+                }
+            }.Init();
+            context.VirtualFiles.WriteFile("index.md", "## Markdown Heading");
+            
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.md' | includeFile | markdown }}")).Result.Trim(), 
+                Is.EqualTo("<h2>Markdown Heading</h2>"));
+        }
     }
 }
