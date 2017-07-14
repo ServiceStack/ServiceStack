@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Funq;
 using NUnit.Framework;
@@ -18,6 +19,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
         public string Name { get; set; }
     }
+
+    [Route("/includeUrl-models")]
+    public class IncludeUrlModels : List<IncludeUrlModel> {}
     
     public class TemplatePageServices : Service
     {
@@ -25,6 +29,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             $"{Request.Verb} {Request.RawUrl}";
 
         public object Any(IncludeUrlModel request) => 
+            request;
+
+        public object Any(IncludeUrlModels request) => 
             request;
     }
     
@@ -118,6 +125,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
             
             urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | addQueryString({ id:1, name:'foo'}) | includeUrl({ dataType: 'json' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
                 "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/jsv' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
             
@@ -132,6 +143,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             urlContents = new PageResult(context.OneTimePage(
                 "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'jsv' }) }}")).Result;
             Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/json', accept: 'application/jsv' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("[{Id:1,Name:foo},{Id:2,Name:bar}]"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/jsv', accept: 'text/csv' }) }}")).Result.SanitizeNewLines();
+            Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.SanitizeNewLines();
+            Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
         }
     }
 }
