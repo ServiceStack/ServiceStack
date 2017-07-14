@@ -8,8 +8,50 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class TemplateDefaultProtectedFilterTests
+    [Route("/echo-url")]
+    public class IncludeUrlTest
     {
+        public int Id { get; set; }
+        public string Name { get; set; }
+    }
+    
+    public class TemplatePageServices : Service
+    {
+        public object Any(IncludeUrlTest request)
+        {
+            return $"{Request.Verb} (id:{request.Id},name:{request.Name}";
+        }
+    }
+    
+    public class TemplateProtectedFilterTests
+    {
+        class AppHost : AppSelfHostBase
+        {
+            public AppHost() : base(nameof(TemplateProtectedFilterTests), typeof(TemplatePageServices).GetAssembly()) {}
+
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new TemplatePagesFeature
+                {
+                    Args =
+                    {
+                        ["baseUrl"] = Tests.Config.ListeningOn
+                    }
+                });
+            }
+        }
+
+        private readonly ServiceStackHost appHost;
+        public TemplateProtectedFilterTests()
+        {
+            appHost = new AppHost()
+                .Init()
+                .Start(Config.ListeningOn);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => appHost.Dispose();
+
         [Test]
         public void Does_not_include_protected_filters_by_default()
         {
@@ -19,14 +61,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
                 Is.EqualTo("{{ 'index.txt' | includeFile }}"));
 
-            using (new BasicAppHost().Init())
-            {
-                var feature = new TemplatePagesFeature().Init();
-                feature.VirtualFiles.WriteFile("index.txt", "file contents");
+            var feature = new TemplatePagesFeature().Init();
+            feature.VirtualFiles.WriteFile("index.txt", "file contents");
 
-                Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
-                    Is.EqualTo("{{ 'index.txt' | includeFile }}"));
-            }
+            Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
+                Is.EqualTo("{{ 'index.txt' | includeFile }}"));
         }
 
         [Test]
@@ -43,7 +82,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_use_transformers_to_transform_block_outputs()
+        public void Can_use_transformers_on_block_filter_outputs()
         {
             var context = new TemplatePagesContext
             {

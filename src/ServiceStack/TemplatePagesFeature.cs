@@ -13,11 +13,15 @@ namespace ServiceStack
 {
     public class TemplatePagesFeature : TemplatePagesContext, IPlugin
     {
-        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
         public string HtmlExtension
         {
             get => PageFormats.First(x => x is HtmlPageFormat).Extension;
             set => PageFormats.First(x => x is HtmlPageFormat).Extension = value;
+        }
+
+        public bool ExcludeProtectedFilters
+        {
+            set { if (value) TemplateFilters.RemoveAll(x => x is TemplateProtectedFilters); }
         }
 
         public TemplatePagesFeature()
@@ -25,6 +29,8 @@ namespace ServiceStack
             var appHost = HostContext.AssertAppHost();
             ScanAssemblies.AddRange(appHost.ServiceAssemblies);
             Container = appHost.Container;
+            TemplateFilters.Add(new TemplateProtectedFilters());
+            FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
         }
 
         public void Register(IAppHost appHost)
@@ -35,8 +41,10 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
+            Init();
         }
 
+        private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound = new ConcurrentDictionary<string, byte>();
         protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
         {
             if (catchAllPathsNotFound.ContainsKey(pathInfo)) return null;
