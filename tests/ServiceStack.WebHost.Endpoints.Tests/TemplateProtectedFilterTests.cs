@@ -4,6 +4,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -17,10 +18,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class TemplatePageServices : Service
     {
-        public object Any(IncludeUrlTest request)
-        {
-            return $"{Request.Verb} (id:{request.Id},name:{request.Name}";
-        }
+        public object Any(IncludeUrlTest request) => 
+            $"{Request.Verb} {Request.RawUrl}";
     }
     
     public class TemplateProtectedFilterTests
@@ -96,6 +95,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.md' | includeFile | markdown }}")).Result.Trim(), 
                 Is.EqualTo("<h2>Markdown Heading</h2>"));
+        }
+
+        [Test]
+        public void Can_use_includeUrl()
+        {
+            var context = appHost.GetPlugin<TemplatePagesFeature>();
+
+            var urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('echo-url') | addQueryString({ id:1, name:'foo'}) | includeUrl | htmlencode }}")).Result;
+            
+            urlContents.Print();
+            Assert.That(urlContents, Is.EqualTo("GET /echo-url?id=1&amp;name=foo"));
         }
     }
 }

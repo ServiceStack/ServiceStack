@@ -74,6 +74,7 @@ namespace ServiceStack.Templates
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
+            FilterTransformers["htmlencode"] = HtmlPageFormat.HtmlEncodeTransformer;
 
             Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";

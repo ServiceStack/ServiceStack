@@ -1,4 +1,6 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 
 namespace ServiceStack.Templates
@@ -107,6 +109,16 @@ namespace ServiceStack.Templates
                 return JsNull.Value;
 
             return null;
+        }
+
+        public static async Task<Stream> HtmlEncodeTransformer(Stream stream)
+        {
+            using (var reader = new StreamReader(stream))
+            {
+                var contents = await reader.ReadToEndAsync();
+                var htmlEncoded = StringUtils.HtmlEncode(contents);
+                return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
+            }
         }
     }
 
