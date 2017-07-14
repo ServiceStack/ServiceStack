@@ -295,7 +295,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     throw new ArgumentException($"Unterminated string literal: {literal}");
 
                 value = literal.Substring(1, i - 1);
-                return literal.Advance(i);
+                return literal.Advance(i + 1);
             }
             if (firstChar >= '0' && firstChar <= '9' || firstChar == '-' || firstChar == '+')
             {

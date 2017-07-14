@@ -300,6 +300,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 true,
                 JsNull.Value
             }));
+            "{ k:'v', data: { id: 1, name: 'foo' }, k2: 'v2', k3: 'v3' }".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string, object>
+            {
+                { "k", "v" },
+                { "data", new Dictionary<string,object> { { "id", 1 }, {"name", "foo"} } },
+                { "k2", "v2" },
+                { "k3", "v3" },                
+            }));
         }
 
         [Test]

@@ -52,7 +52,7 @@ namespace ServiceStack.Templates
 
         public MethodInvoker GetContextInvoker(StringSegment name, int argsCount)
         {
-            var key = $"{name}`{argsCount}";
+            var key = $"context::{name}`{argsCount}";
             if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 

@@ -9,8 +9,11 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Route("/echo-url")]
-    public class IncludeUrlTest
+    [Route("/includeUrl-echo")]
+    public class IncludeUrlEcho {}
+
+    [Route("/includeUrl-model")]
+    public class IncludeUrlModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -18,8 +21,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
     public class TemplatePageServices : Service
     {
-        public object Any(IncludeUrlTest request) => 
+        public object Any(IncludeUrlEcho request) => 
             $"{Request.Verb} {Request.RawUrl}";
+
+        public object Any(IncludeUrlModel request) => 
+            request;
     }
     
     public class TemplateProtectedFilterTests
@@ -100,13 +106,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_use_includeUrl()
         {
+            string urlContents;
             var context = appHost.GetPlugin<TemplatePagesFeature>();
 
-            var urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('echo-url') | addQueryString({ id:1, name:'foo'}) | includeUrl | htmlencode }}")).Result;
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-echo') | addQueryString({ id:1, name:'foo'}) | includeUrl | htmlencode }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("GET /includeUrl-echo?id=1&amp;name=foo"));
             
-            urlContents.Print();
-            Assert.That(urlContents, Is.EqualTo("GET /echo-url?id=1&amp;name=foo"));
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | addQueryString({ id:1, name:'foo'}) | includeUrl({ accept: 'application/json' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/jsv' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, accept: 'application/json', contentType: 'application/json' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'json' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{\"Id\":1,\"Name\":\"foo\"}"));
+            
+            urlContents = new PageResult(context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-model') | includeUrl({ method:'POST', data: { id: 1, name: 'foo' }, dataType: 'jsv' }) }}")).Result;
+            Assert.That(urlContents, Is.EqualTo("{Id:1,Name:foo}"));
         }
     }
 }

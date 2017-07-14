@@ -25,14 +25,18 @@ namespace ServiceStack.Templates
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
 
             var webReq = (HttpWebRequest)WebRequest.Create(url);
-            if (scopedParams.TryRemove("method", out object method))
-                webReq.Method = (string)method;
-            if (scopedParams.TryRemove("contentType", out object contentType))
-                webReq.ContentType = (string)contentType;            
-            if (scopedParams.TryRemove("accept", out object accept))
-                webReq.Accept = (string)accept;            
-            if (scopedParams.TryRemove("userAgent", out object userAgent))
-                PclExport.Instance.SetUserAgent(webReq, (string)userAgent);
+            var dataType = scopedParams.TryGetValue("dataType", out object value)
+                ? ConvertDataTypeToContentType((string)value)
+                : null;
+
+            if (scopedParams.TryGetValue("method", out value))
+                webReq.Method = (string)value;
+            if (scopedParams.TryGetValue("contentType", out value) || dataType != null)
+                webReq.ContentType = (string)value ?? dataType;            
+            if (scopedParams.TryGetValue("accept", out value) || dataType != null) 
+                webReq.Accept = (string)value ?? dataType;            
+            if (scopedParams.TryGetValue("userAgent", out value))
+                PclExport.Instance.SetUserAgent(webReq, (string)value);
 
             if (scopedParams.TryRemove("data", out object data))
             {
@@ -56,12 +60,35 @@ namespace ServiceStack.Templates
             }
         }
 
+        private static string ConvertDataTypeToContentType(string dataType)
+        {
+            switch (dataType)
+            {
+                case "json":
+                    return MimeTypes.Json;
+                case "jsv":
+                    return MimeTypes.Jsv;
+                case "csv":
+                    return MimeTypes.Csv;
+                case "xml":
+                    return MimeTypes.Xml;
+                case "text":
+                    return MimeTypes.PlainText;
+                case "formUrlEncoded":
+                    return MimeTypes.FormUrlEncoded;
+            }
+            
+            throw new NotSupportedException($"Unknown dataType '{dataType}'");
+        }
+
         private static string ConvertDataToString(object data, string contentType)
         {
             if (data is string s)
                 return s;
             switch (contentType)
             {
+                case MimeTypes.PlainText:
+                    return data.ToString();
                 case MimeTypes.Json:
                     return data.ToJson();
                 case MimeTypes.Csv:
