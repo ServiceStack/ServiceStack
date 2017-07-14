@@ -80,8 +80,13 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
         }
 
+        private bool hasInit;
         public TemplatePagesContext Init()
         {
+            if (hasInit)
+                return this;
+            hasInit = true;
+            
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
 

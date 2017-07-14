@@ -286,9 +286,10 @@ namespace ServiceStack.Templates
 
                     if (hasFilterTransformers)
                     {
-                        var stream = useScope.OutputStream;
-                        using (stream)
+                        using (useScope.OutputStream)
                         {
+                            var stream = useScope.OutputStream;
+
                             //If Context Filter has any Filter Transformers Buffer and chain stream responses to each
                             for (var i = 1; i < var.FilterExpressions.Length; i++)
                             {
@@ -411,7 +412,7 @@ namespace ServiceStack.Templates
                     if (i == 0)
                         return null; // ignore on server if first filter is missing  
 
-                    throw new Exception($"Filter not found: {expr} in '{Page.File.VirtualPath}'");
+                    throw new Exception($"Filter not found: {expr} in '{Page.VirtualPath}'");
                 }
 
                 var args = new object[1 + expr.Args.Count];
@@ -596,7 +597,7 @@ namespace ServiceStack.Templates
             if (targetValue == JsNull.Value)
                 return JsNull.Value;
 
-            var fn = Page.File.Directory.VirtualPath != TemplateConstants.TempFilePath
+            var fn = !Page.IsTempFile
                 ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
                 : TemplatePageUtils.Compile(targetValue.GetType(), expr);
 

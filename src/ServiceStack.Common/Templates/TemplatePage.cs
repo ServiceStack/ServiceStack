@@ -26,6 +26,9 @@ namespace ServiceStack.Templates
         public PageFormat Format { get; }
         private readonly object semaphore = new object();
 
+        public bool IsTempFile => File.Directory.VirtualPath == TemplateConstants.TempFilePath;
+        public string VirtualPath => IsTempFile ? "{temp file}" : File.VirtualPath;
+
         public TemplatePage(TemplatePagesContext context, IVirtualFile file, PageFormat format=null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
