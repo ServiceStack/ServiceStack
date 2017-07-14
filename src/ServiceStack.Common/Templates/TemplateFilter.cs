@@ -151,4 +151,27 @@ namespace ServiceStack.Templates
             return method;
         }
     }
+
+    public static class TemplateFilterUtils
+    {
+        public static Dictionary<string, object> AssertOptions(this TemplateScopeContext scope, string filterName, object scopedParams)
+        {
+            var pageParams = scopedParams as Dictionary<string, object>;
+            if (pageParams == null && scopedParams != null)
+                throw new ArgumentException(
+                    $"{filterName} in '{scope.Page.File.VirtualPath}' only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
+
+            return pageParams ?? new Dictionary<string, object>();
+        }
+        
+        public static Dictionary<string, object> AssertOptions(this object scopedParams, string filterName)
+        {
+            var pageParams = scopedParams as Dictionary<string, object>;
+            if (pageParams == null && scopedParams != null)
+                throw new ArgumentException(
+                    $"{filterName} only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
+
+            return pageParams ?? new Dictionary<string, object>();
+        }
+    }
 }

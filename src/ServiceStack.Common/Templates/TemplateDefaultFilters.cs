@@ -188,9 +188,7 @@ namespace ServiceStack.Templates
         public async Task partial(TemplateScopeContext scope, object target, object scopedParams)
         {
             var pageName = target.ToString();
-            var pageParams = scopedParams as Dictionary<string, object>;
-            if (pageParams == null && scopedParams != null)
-                throw new ArgumentException($"partial in '{scope.Page.File.VirtualPath}' only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
+            var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
             var page = scope.Context.GetPage(pageName);
             await scope.WritePageAsync(page, pageParams);
@@ -215,6 +213,14 @@ namespace ServiceStack.Templates
             }
         }
 
+        public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
+        public string addPaths(string target, IEnumerable pathsToAppend) => target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
+
+        public string addQueryString(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
+        
+        public string addHashParams(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
     }
 
 }

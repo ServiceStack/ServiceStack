@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -10,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class TemplateDefaultFiltersTests
     {
-        public TemplatePagesContext CreateContext()
+        public TemplatePagesContext CreateContext(Dictionary<string, object> args = null)
         {
             var context = new TemplatePagesContext
             {
@@ -21,6 +22,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     ["doubleVal"] = 2.2
                 }
             };
+            
+            args.Each((key,val) => context.Args[key] = val);
+            
             return context;
         }
 
@@ -461,6 +465,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(new PageResult(context.OneTimePage("{{ now | dateFormat('yyyy-MM-dd') }}")).Result, Is.EqualTo(DateTime.Now.ToString("yyyy-MM-dd")));
             Assert.That(new PageResult(context.OneTimePage("{{ utcNow | dateFormat('yyyy-MM-dd') }}")).Result, Is.EqualTo(DateTime.UtcNow.ToString("yyyy-MM-dd")));
         }
+
+        [Test]
+        public void Can_build_urls_using_filters()
+        {
+            var context = CreateContext(new Dictionary<string, object>{ {"baseUrl", "http://example.org" }}).Init();
+
+            Assert.That(new PageResult(context.OneTimePage("{{ baseUrl | addQueryString({ id: 1, foo: 'bar' }) | raw }}")).Result, 
+                Is.EqualTo("http://example.org?id=1&foo=bar"));
+
+            Assert.That(new PageResult(context.OneTimePage("{{ baseUrl | addQueryString({ id: 1, foo: 'bar' }) | addHashParams({ hash: 'value' }) | raw }}")).Result, 
+                Is.EqualTo("http://example.org?id=1&foo=bar#hash=value"));
+        }
+
 
     }
 }

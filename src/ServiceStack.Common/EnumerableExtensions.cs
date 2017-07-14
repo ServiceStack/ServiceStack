@@ -45,6 +45,8 @@ namespace ServiceStack
 
         public static void Each<TKey, TValue>(this IDictionary<TKey, TValue> map, Action<TKey, TValue> action)
         {
+            if (map == null) return;
+
             var keys = map.Keys.ToList();
             foreach (var key in keys)
             {
