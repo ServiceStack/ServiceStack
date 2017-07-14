@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -207,6 +208,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_parse_template_with_only_variable()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage("{{ filter }}");
+            Assert.That(fragments.Count, Is.EqualTo(1));
+            Assert.That(((PageVariableFragment)fragments[0]).Binding, Is.EqualTo("filter"));
+        }
+
+        [Test]
+        public void Can_parse_template_with_arg_and_multiple_filters()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage("{{ ' - {{it}}' | forEach(items) | markdown }}");
+            var varFragment = fragments[0] as PageVariableFragment;
+            
+            Assert.That(varFragment.FilterExpressions.Length, Is.EqualTo(2));
+            Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("forEach"));
+            Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo("items"));
+            Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo("markdown"));
+        }
+
+        [Test]
+        public void Can_parse_filter_with_different_arg_types()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage("{{ array(['a',1,'c']) }}");
+            var varFragment = fragments[0] as PageVariableFragment;
+            
+            Assert.That(varFragment.Expression.Name, Is.EqualTo("array"));
+            Assert.That(varFragment.Expression.Args.Count, Is.EqualTo(1));
+        }
+
+        [Test]
         public void Can_parse_next_token()
         {
             object value;
@@ -330,5 +362,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(expr.Args[1], Is.EqualTo("2"));
         }
 
+        [Test]
+        public void Can_detect_invalid_syntax()
+        {
+            try
+            {
+                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter({ unterminated:1) }}");
+                Assert.Fail("should throw");
+            }
+            catch (ArgumentException e)
+            {
+                e.Message.Print();
+            }
+            
+        }
     }
 }

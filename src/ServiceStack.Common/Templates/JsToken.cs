@@ -613,6 +613,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
+            var inSquareBrackets = 0;
             var inBrackets = 0;
             var inBraces = 0;
             var lastPos = 0;
@@ -630,6 +631,14 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 {
                     if (c == '\'')
                         inSingleQuotes = false;
+                    continue;
+                }
+                if (inSquareBrackets > 0)
+                {
+                    if (c == '[')
+                        ++inSquareBrackets;
+                    if (c == ']')
+                        --inSquareBrackets;
                     continue;
                 }
                 if (inBraces > 0)
@@ -657,6 +666,11 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 if (c == '\'')
                 {
                     inSingleQuotes = true;
+                    continue;
+                }
+                if (c == '[')
+                {
+                    inSquareBrackets++;
                     continue;
                 }
                 if (c == '{')

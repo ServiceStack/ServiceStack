@@ -471,6 +471,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var context = CreateContext(new Dictionary<string, object>{ {"baseUrl", "http://example.org" }}).Init();
 
+            Assert.That(new PageResult(context.OneTimePage("{{ baseUrl | addPaths(['customers',1,'orders']) | raw }}")).Result, 
+                Is.EqualTo("http://example.org/customers/1/orders"));
+
             Assert.That(new PageResult(context.OneTimePage("{{ baseUrl | addQueryString({ id: 1, foo: 'bar' }) | raw }}")).Result, 
                 Is.EqualTo("http://example.org?id=1&foo=bar"));
 

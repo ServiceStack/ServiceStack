@@ -40,19 +40,22 @@ namespace ServiceStack.Templates
             while ((pos = text.IndexOf("{{", lastPos)) != -1)
             {
                 var block = text.Subsegment(lastPos, pos - lastPos);
-                to.Add(new PageStringFragment(block));
+                if (!block.IsNullOrEmpty())
+                    to.Add(new PageStringFragment(block));
 
                 var varStartPos = pos + 2;
                 var varEndPos = text.IndexOfNextCharNotInQuotes(varStartPos, '|', '}');
                 var varName = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
                 if (varEndPos == -1)
-                    throw new ArgumentException($"Invalid Server HTML Template at '{text.SafeSubsegment(50)}...'", nameof(text));
+                    throw new ArgumentException($"Invalid Server HTML Template at '{text.SubstringWithElipsis(0, 50)}'", nameof(text));
 
                 List<JsExpression> filterCommands = null;
-                
+
                 var isFilter = text.GetChar(varEndPos) == '|';
                 if (isFilter)
                 {
+                    bool foundVarEnd = false;
+                
                     filterCommands = text.Subsegment(varEndPos + 1).ParseExpression<JsExpression>(
                         separator: '|',
                         atEndIndex: (str, strPos) =>
@@ -62,11 +65,15 @@ namespace ServiceStack.Templates
 
                             if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
                             {
+                                foundVarEnd = true;
                                 varEndPos = varEndPos + 1 + strPos + 1;
                                 return strPos;
                             }
                             return null;
                         });
+                
+                    if (!foundVarEnd)
+                        throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
                 }
                 else
                 {
