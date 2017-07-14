@@ -79,6 +79,7 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
+            Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
         }
 
         private bool hasInit;

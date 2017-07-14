@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
@@ -106,6 +109,66 @@ namespace ServiceStack.Templates
             }
 
             throw new NotSupportedException($"Can not serialize to unknown Content-Type '{contentType}'");
+        }
+
+        protected ConcurrentDictionary<string, Tuple<DateTime, byte[]>> urlContentsCache = new ConcurrentDictionary<string, Tuple<DateTime, byte[]>>();
+
+        public static string CreateCacheKey(string url, Dictionary<string,object> options)
+        {
+            var sb = StringBuilderCache.Allocate()
+                .Append(url);
+            
+            if (options != null)
+            {
+                foreach (var entry in options)
+                {
+                    sb.Append(entry.Key)
+                      .Append('=')
+                      .Append(entry.Value);
+                }
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public Task includeUrlWithCache(TemplateScopeContext scope, string url) => includeUrlWithCache(scope, url, null);
+        public async Task includeUrlWithCache(TemplateScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
+            var cacheKey = CreateCacheKey(url, scopedParams);
+
+            var expireIn = scopedParams.TryGetValue("expireInSecs", out object value)
+                ? TimeSpan.FromSeconds(value.ConvertTo<int>())
+                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
+
+            if (urlContentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
+            {
+                if (cacheEntry.Item1 > DateTime.UtcNow)
+                {
+                    await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+                    return;
+                }
+            }
+
+            var dataType = scopedParams.TryGetValue("dataType", out value)
+                ? ConvertDataTypeToContentType((string)value)
+                : null;
+
+            if (scopedParams.TryGetValue("method", out value) && !((string)value).EqualsIgnoreCase("GET"))
+                throw new NotSupportedException($"Only GET requests can be used in {nameof(includeUrlWithCache)} filters");
+            if (scopedParams.TryGetValue("data", out value))
+                throw new NotSupportedException($"'data' is not supported in {nameof(includeUrlWithCache)} filters");
+
+            var ms = MemoryStreamFactory.GetStream();
+            using (ms)
+            {
+                var captureScope = scope.ScopeWithStream(ms);
+                await includeUrl(captureScope, url, options);
+
+                ms.Position = 0;
+                urlContentsCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn), ms.ToArray());
+                await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+            }
         }
     }
 }

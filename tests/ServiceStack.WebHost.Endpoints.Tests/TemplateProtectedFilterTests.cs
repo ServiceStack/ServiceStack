@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Templates;
@@ -11,7 +12,7 @@ using ServiceStack.VirtualPath;
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/includeUrl-echo")]
-    public class IncludeUrlEcho {}
+    public class IncludeUrlEcho : IReturn<string> {}
 
     [Route("/includeUrl-model")]
     public class IncludeUrlModel
@@ -19,10 +20,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
         public string Name { get; set; }
     }
-
+    
     [Route("/includeUrl-models")]
     public class IncludeUrlModels : List<IncludeUrlModel> {}
     
+    [Route("/includeUrl-time")]
+    public class GetCurrentTime : IReturn<string> {}
+
     public class TemplatePageServices : Service
     {
         public object Any(IncludeUrlEcho request) => 
@@ -33,6 +37,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(IncludeUrlModels request) => 
             request;
+
+        public object Any(GetCurrentTime request) =>
+            DateTime.Now.ToString("o");
     }
     
     public class TemplateProtectedFilterTests
@@ -155,6 +162,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             urlContents = new PageResult(context.OneTimePage(
                 "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.SanitizeNewLines();
             Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
+        }
+
+        [Test]
+        public void Can_cache_contents_with_includeUrlWithCache()
+        {
+            var context = appHost.GetPlugin<TemplatePagesFeature>();
+
+            var includeUrlPage = context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-time') | includeUrlWithCache }}");
+
+            var urlContents1 = new PageResult(includeUrlPage).Result;
+            var urlContents2 = new PageResult(includeUrlPage).Result;
+            Assert.That(urlContents1, Is.EqualTo(urlContents2));
+
+            includeUrlPage = context.OneTimePage(
+                "{{ baseUrl | addPath('includeUrl-time') | includeUrlWithCache({ expireInSecs: 1 }) }}");
+            
+            urlContents1 = new PageResult(includeUrlPage).Result;
+
+            Thread.Sleep(TimeSpan.FromMilliseconds(1001));
+            
+            urlContents2 = new PageResult(includeUrlPage).Result;
+            Assert.That(urlContents1, Is.Not.EqualTo(urlContents2));
         }
     }
 }
