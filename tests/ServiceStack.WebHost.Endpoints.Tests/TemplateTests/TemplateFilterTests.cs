@@ -6,7 +6,7 @@ using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.VirtualPath;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public interface IDep
     {

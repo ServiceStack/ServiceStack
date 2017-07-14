@@ -7,7 +7,7 @@ using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateDefaultFiltersTests
     {

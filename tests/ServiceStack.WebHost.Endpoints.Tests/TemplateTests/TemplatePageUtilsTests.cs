@@ -8,7 +8,7 @@ using ServiceStack.Text;
 using Microsoft.Extensions.Primitives;
 #endif
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplatePageUtilsTests
     {

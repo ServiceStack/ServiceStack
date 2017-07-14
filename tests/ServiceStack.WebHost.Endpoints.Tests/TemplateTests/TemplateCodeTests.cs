@@ -1,7 +1,7 @@
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     [Page("/code-layout")]
     [PageArg("title", "Code Layout Title")]

@@ -8,7 +8,7 @@ using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     [Route("/products/{Id}")]
     public class GetProduct
