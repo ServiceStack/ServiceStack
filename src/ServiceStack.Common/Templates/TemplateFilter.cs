@@ -38,11 +38,7 @@ namespace ServiceStack.Templates
         public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template)
         {
             var dynamicPage = scope.Context.OneTimePage(template);
-            scope.Page.Args.Each((x,y) => dynamicPage.Args[x] = y);
-            var pageResult = new PageResult(dynamicPage) {
-                Args = scope.PageResult.Args
-            }.Init().Result;
-
+            var pageResult = scope.PageResult.Clone(dynamicPage).Init().Result;
             var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, 
                 scope.ScopedParams == null ? new Dictionary<string, object>() : new Dictionary<string, object>(scope.ScopedParams));
 
@@ -96,7 +92,6 @@ namespace ServiceStack.Templates
         public MethodInvoker GetInvoker(StringSegment name, int argsCount)
         {
             var key = $"{name}`{argsCount}";
-
             if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
@@ -104,11 +99,7 @@ namespace ServiceStack.Templates
             if (method == null)
                 return null;
 
-            invoker = TypeExtensions.GetInvokerToCache(method);
-
-            invokerCache[key] = invoker;
-            
-            return invoker;
+            return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
         private MethodInfo GetInvokerMethod(StringSegment name, int argsCount)
@@ -123,7 +114,6 @@ namespace ServiceStack.Templates
         public MethodInvoker GetContextInvoker(StringSegment name, int argsCount)
         {
             var key = $"{name}`{argsCount}";
-
             if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
@@ -131,11 +121,7 @@ namespace ServiceStack.Templates
             if (method == null)
                 return null;
 
-            invoker = TypeExtensions.GetInvokerToCache(method);
-
-            invokerCache[key] = invoker;
-            
-            return invoker;
+            return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
         private MethodInfo GetContextInvokerMethod(StringSegment name, int argsCount)

@@ -79,7 +79,7 @@ Brackets in Layout < & >
                     {"title", "The Title"},
                 },
                 ContentType = MimeTypes.Html,
-                OutputFilters = { MarkdownPageFormat.TransformToHtml },
+                OutputTransformers = { MarkdownPageFormat.TransformToHtml },
             };
 
             var html = await result.RenderToStringAsync();
@@ -119,7 +119,7 @@ Brackets in Layout < & >
                     {"title", "The Title"},
                 },
                 ContentType = MimeTypes.Html,
-                PageFilters = { MarkdownPageFormat.TransformToHtml },
+                PageTransformers = { MarkdownPageFormat.TransformToHtml },
             };
 
             var html = await result.RenderToStringAsync();

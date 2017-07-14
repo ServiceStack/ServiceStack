@@ -48,22 +48,21 @@ namespace ServiceStack.Templates
         }
 
         /// <summary>
-        /// Transform the Page output using a chain of filters
+        /// Transform the Page output using a chain of stream transformers
         /// </summary>
-        public List<Func<Stream, Task<Stream>>> PageFilters { get; set; }
+        public List<Func<Stream, Task<Stream>>> PageTransformers { get; set; }
 
         /// <summary>
-        /// Transform the entire output using a chain of filters
+        /// Transform the entire output using a chain of stream transformers
         /// </summary>
-        public List<Func<Stream, Task<Stream>>> OutputFilters { get; set; }
 
         public PageResult(TemplatePage page)
         {
             Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
             TemplateFilters = new List<TemplateFilter>();
-            PageFilters = new List<Func<Stream, Task<Stream>>>();
-            OutputFilters = new List<Func<Stream, Task<Stream>>>();
+            PageTransformers = new List<Func<Stream, Task<Stream>>>();
+            OutputTransformers = new List<Func<Stream, Task<Stream>>>();
             Options = new Dictionary<string, string>
             {
                 {HttpHeaders.ContentType, Page.Format.ContentType},
@@ -72,7 +71,7 @@ namespace ServiceStack.Templates
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
         {
-            if (OutputFilters.Count == 0)
+            if (OutputTransformers.Count == 0)
             {
                 await WriteToAsyncInternal(responseStream, token);
                 return;
@@ -84,10 +83,10 @@ namespace ServiceStack.Templates
                 await WriteToAsyncInternal(ms, token);
                 Stream stream = ms;
 
-                foreach (var filter in OutputFilters)
+                foreach (var transformer in OutputTransformers)
                 {
                     stream.Position = 0;
-                    stream = await filter(stream);
+                    stream = await transformer(stream);
                 }
 
                 using (stream)
@@ -183,7 +182,7 @@ namespace ServiceStack.Templates
 
         public async Task WritePageAsync(TemplatePage page, TemplateScopeContext scopeContext, CancellationToken token = default(CancellationToken))
         {
-            if (PageFilters.Count == 0)
+            if (PageTransformers.Count == 0)
             {
                 await WritePageAsyncInternal(page, scopeContext, token);
                 return;
@@ -195,10 +194,10 @@ namespace ServiceStack.Templates
                 await WritePageAsyncInternal(page, new TemplateScopeContext(this, ms, scopeContext.ScopedParams), token);
                 Stream stream = ms;
 
-                foreach (var filter in PageFilters)
+                foreach (var transformer in PageTransformers)
                 {
                     stream.Position = 0;
-                    stream = await filter(stream);
+                    stream = await transformer(stream);
                 }
 
                 using (stream)
@@ -603,6 +602,16 @@ namespace ServiceStack.Templates
                     throw e.UnwrapIfSingleException();
                 }
             }
+        }
+
+        public PageResult Clone(TemplatePage page)
+        {
+            return new PageResult(page)
+            {
+                Args = Args,
+                TemplateFilters = TemplateFilters,
+                FilterTransformers = FilterTransformers,
+            };
         }
     }
 
