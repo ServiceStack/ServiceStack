@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
@@ -223,4 +226,40 @@ namespace ServiceStack.Templates
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
     }
 
+    public class TemplateProtectedFilters : TemplateFilter
+    {
+        public async Task includeFile(TemplateScopeContext scope, string virtualPath)
+        {
+            var file = scope.Context.VirtualFiles.GetFile(virtualPath);
+            if (file == null)
+                throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.File.VirtualPath}' was not found");
+
+            using (var reader = file.OpenRead())
+            {
+                await reader.CopyToAsync(scope.OutputStream);
+            }
+        }
+
+        public Task includeUrl(TemplateScopeContext scope, string url) => includeUrl(scope, url, null);
+        public async Task includeUrl(TemplateScopeContext scope, string url, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
+
+            var webReq = (HttpWebRequest)WebRequest.Create(url);
+            if (scopedParams.TryGetValue("method", out object method))
+                webReq.Method = (string)method;
+
+            if (scopedParams.TryGetValue("contentType", out object contentType))
+                webReq.ContentType = (string)contentType;            
+            
+            if (scopedParams.TryGetValue("accept", out object accept))
+                webReq.Accept = (string)accept;            
+
+            using (var webRes = await webReq.GetResponseAsync())
+            using (var stream = webRes.GetResponseStream())
+            {
+                await stream.CopyToAsync(scope.OutputStream);
+            }
+        }        
+    }
 }
