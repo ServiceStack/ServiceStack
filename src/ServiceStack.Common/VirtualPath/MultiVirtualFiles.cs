@@ -12,7 +12,7 @@ namespace ServiceStack.VirtualPath
     }
     
     [Obsolete("Renamed to MultiVirtualFiles")]
-    public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase
+    public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
     {
         protected IList<IVirtualPathProvider> ChildProviders;
 
@@ -81,6 +81,51 @@ namespace ServiceStack.VirtualPath
             ChildProviders.Each(x => sb.Add(x.ToString()));
 
             return string.Join(", ", sb.ToArray());
+        }
+
+        public IEnumerable<IVirtualPathProvider> ChildVirtualFiles
+        {
+            get { return ChildProviders.Where(x => x is IVirtualFiles); }
+        }
+
+        public void WriteFile(string filePath, string textContents)
+        {
+            ChildVirtualFiles.Each(x => x.WriteFile(filePath, textContents));
+        }
+
+        public void WriteFile(string filePath, Stream stream)
+        {
+            ChildVirtualFiles.Each(x => x.WriteFile(filePath, stream));
+        }
+
+        public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)
+        {
+            ChildVirtualFiles.Each(x => x.WriteFiles(files, toPath));
+        }
+
+        public void AppendFile(string filePath, string textContents)
+        {
+            ChildVirtualFiles.Each(x => x.AppendFile(filePath, textContents));
+        }
+
+        public void AppendFile(string filePath, Stream stream)
+        {
+            ChildVirtualFiles.Each(x => x.AppendFile(filePath, stream));
+        }
+
+        public void DeleteFile(string filePath)
+        {
+            ChildVirtualFiles.Each(x => x.DeleteFile(filePath));
+        }
+
+        public void DeleteFiles(IEnumerable<string> filePaths)
+        {
+            ChildVirtualFiles.Each(x => x.DeleteFiles(filePaths));
+        }
+
+        public void DeleteFolder(string dirPath)
+        {
+            ChildVirtualFiles.Each(x => x.DeleteFolder(dirPath));
         }
     }
 }

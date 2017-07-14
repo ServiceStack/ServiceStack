@@ -210,7 +210,7 @@ namespace ServiceStack.Templates
             }
             else if (items != null)
             {
-                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.File.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
 

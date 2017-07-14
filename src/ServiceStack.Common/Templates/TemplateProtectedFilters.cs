@@ -14,7 +14,7 @@ namespace ServiceStack.Templates
         {
             var file = scope.Context.VirtualFiles.GetFile(virtualPath);
             if (file == null)
-                throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.File.VirtualPath}' was not found");
+                throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
 
             using (var reader = file.OpenRead())
             {
@@ -111,9 +111,9 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"Can not serialize to unknown Content-Type '{contentType}'");
         }
 
-        protected ConcurrentDictionary<string, Tuple<DateTime, byte[]>> urlContentsCache = new ConcurrentDictionary<string, Tuple<DateTime, byte[]>>();
+        protected ConcurrentDictionary<string, Tuple<DateTime, byte[]>> contentsCache = new ConcurrentDictionary<string, Tuple<DateTime, byte[]>>();
 
-        public static string CreateCacheKey(string url, Dictionary<string,object> options)
+        public static string CreateCacheKey(string url, Dictionary<string,object> options=null)
         {
             var sb = StringBuilderCache.Allocate()
                 .Append(url);
@@ -130,18 +130,51 @@ namespace ServiceStack.Templates
 
             return StringBuilderCache.ReturnAndFree(sb);
         }
+        
+        public Task includeFileWithCache(TemplateScopeContext scope, string virtualPath) => includeFileWithCache(scope, virtualPath, null);
+        public async Task includeFileWithCache(TemplateScopeContext scope, string virtualPath, object options)
+        {
+            var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
+            var expireIn = scopedParams.TryGetValue("expireInSecs", out object value)
+                ? TimeSpan.FromSeconds(value.ConvertTo<int>())
+                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
+            
+            var cacheKey = CreateCacheKey("file:" + virtualPath, scopedParams);
+            if (contentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
+            {
+                if (cacheEntry.Item1 > DateTime.UtcNow)
+                {
+                    await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+                    return;
+                }
+            }
+            
+            var file = scope.Context.VirtualFiles.GetFile(virtualPath);
+            if (file == null)
+                throw new FileNotFoundException($"{nameof(includeFileWithCache)} with '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
+
+            var ms = MemoryStreamFactory.GetStream();
+            using (ms)
+            {
+                var captureScope = scope.ScopeWithStream(ms);
+                await includeFile(captureScope, virtualPath);
+
+                ms.Position = 0;
+                contentsCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn), ms.ToArray());
+                await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+            }
+        }
 
         public Task includeUrlWithCache(TemplateScopeContext scope, string url) => includeUrlWithCache(scope, url, null);
         public async Task includeUrlWithCache(TemplateScopeContext scope, string url, object options)
         {
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
-            var cacheKey = CreateCacheKey(url, scopedParams);
-
             var expireIn = scopedParams.TryGetValue("expireInSecs", out object value)
                 ? TimeSpan.FromSeconds(value.ConvertTo<int>())
                 : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
 
-            if (urlContentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
+            var cacheKey = CreateCacheKey("url:" + url, scopedParams);
+            if (contentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
             {
                 if (cacheEntry.Item1 > DateTime.UtcNow)
                 {
@@ -155,9 +188,9 @@ namespace ServiceStack.Templates
                 : null;
 
             if (scopedParams.TryGetValue("method", out value) && !((string)value).EqualsIgnoreCase("GET"))
-                throw new NotSupportedException($"Only GET requests can be used in {nameof(includeUrlWithCache)} filters");
+                throw new NotSupportedException($"Only GET requests can be used in {nameof(includeUrlWithCache)} filters in page '{scope.Page.VirtualPath}'");
             if (scopedParams.TryGetValue("data", out value))
-                throw new NotSupportedException($"'data' is not supported in {nameof(includeUrlWithCache)} filters");
+                throw new NotSupportedException($"'data' is not supported in {nameof(includeUrlWithCache)} filters in page '{scope.Page.VirtualPath}'");
 
             var ms = MemoryStreamFactory.GetStream();
             using (ms)
@@ -166,7 +199,8 @@ namespace ServiceStack.Templates
                 await includeUrl(captureScope, url, options);
 
                 ms.Position = 0;
-                urlContentsCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn), ms.ToArray());
+                var expireAt = DateTime.UtcNow.Add(expireIn);
+                contentsCache[cacheKey] = cacheEntry = Tuple.Create(expireAt, ms.ToArray());
                 await scope.OutputStream.WriteAsync(cacheEntry.Item2);
             }
         }
