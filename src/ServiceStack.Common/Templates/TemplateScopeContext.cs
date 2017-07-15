@@ -16,7 +16,7 @@ namespace ServiceStack.Templates
         public TemplateScopeContext(PageResult pageResult, Stream outputStream, Dictionary<string, object> scopedParams)
         {
             PageResult = pageResult;
-            ScopedParams = scopedParams;
+            ScopedParams = scopedParams ?? new Dictionary<string, object>();
             OutputStream = outputStream;
         }
     }
@@ -27,8 +27,7 @@ namespace ServiceStack.Templates
         {
             var dynamicPage = scope.Context.OneTimePage(template);
             var pageResult = scope.PageResult.Clone(dynamicPage).Init().Result;
-            var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, 
-                scope.ScopedParams == null ? new Dictionary<string, object>() : new Dictionary<string, object>(scope.ScopedParams));
+            var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, new Dictionary<string, object>(scope.ScopedParams));
 
             return itemScope;
         }
@@ -43,7 +42,7 @@ namespace ServiceStack.Templates
             if (scopedParams == null)
                 return parentContext;
 
-            if (parentContext.ScopedParams == null)
+            if (parentContext.ScopedParams.Count == 0)
                 return new TemplateScopeContext(parentContext.PageResult, parentContext.OutputStream, scopedParams);
             
             var to = new Dictionary<string, object>();

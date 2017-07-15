@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -9,6 +10,14 @@ using ServiceStack.Text;
 namespace ServiceStack.Templates
 {
     // ReSharper disable InconsistentNaming
+    
+    public interface IResultInstruction {}
+    public class IgnoreResult : IResultInstruction
+    {
+        internal static readonly IgnoreResult Value = new IgnoreResult();
+        private IgnoreResult(){}
+    }
+
     public class TemplateDefaultFilters : TemplateFilter
     {
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
@@ -29,7 +38,14 @@ namespace ServiceStack.Templates
             var rawStr = value.ToString().ToRawString();
             return rawStr;
         }
-        public IRawString json(object value) => (value.ToJson() ?? "null").ToRawString();
+
+        public IRawString json(object value)
+        {
+            if (value != null && TypeSerializer.HasCircularReferences(value))
+                throw new NotSupportedException($"Cannot serialize type '{value.GetType().Name}' with cyclical dependencies");
+            
+            return (value.ToJson() ?? "null").ToRawString();
+        }
 
         public string appSetting(string name) =>  Context.AppSettings.GetString(name);
 
@@ -185,6 +201,21 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"{target} is not IComparable");
         }
 
+        public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
+        {
+            scope.ScopedParams[argName] = value;
+            return TypeConstants.EmptyTask;
+        }
+
+        public Task assignTo(TemplateScopeContext scope, string argName) //from context filter
+        {
+            var ms = (MemoryStream) scope.OutputStream;
+            var value = ms.ReadFully().FromUtf8Bytes();
+            scope.ScopedParams[argName] = value;
+            ms.SetLength(0); //just capture output, don't write anything to the ResponseStream
+            return TypeConstants.EmptyTask;
+        }
+
         public Task partial(TemplateScopeContext scope, object target) => partial(scope, target, null);
         public async Task partial(TemplateScopeContext scope, object target, object scopedParams)
         {
@@ -215,6 +246,7 @@ namespace ServiceStack.Templates
         }
 
         public string append(string target, string suffix) => target + suffix;
+        public string appendLine(string target) => target + Environment.NewLine;
 
         public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
         public string addPaths(string target, IEnumerable pathsToAppend) => 
@@ -225,5 +257,6 @@ namespace ServiceStack.Templates
         
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
+        
     }
 }

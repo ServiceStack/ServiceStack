@@ -233,16 +233,10 @@ namespace ServiceStack.Templates
             }
         }
 
-        private class IgnoreResponse
-        {
-            internal static readonly IgnoreResponse Value = new IgnoreResponse();
-            private IgnoreResponse(){}
-        }
-
         private async Task WriteVarAsync(TemplateScopeContext scopeContext, PageVariableFragment var, CancellationToken token)
         {
             var value = await EvaluateAsync(var, scopeContext, token);
-            if (value != IgnoreResponse.Value)
+            if (value != IgnoreResult.Value)
             {
                 var bytes = value != null
                     ? Page.Format.EncodeValue(value).ToUtf8Bytes()
@@ -326,7 +320,7 @@ namespace ServiceStack.Templates
                 value = null;
 
             value = EvaluateAnyBindings(value, scopeContext);
-
+            
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
                 var expr = var.FilterExpressions[i];
@@ -389,16 +383,37 @@ namespace ServiceStack.Templates
                                 //If Context Filter has any Filter Transformers Buffer and chain stream responses to each
                                 for (var exprIndex = i+1; exprIndex < var.FilterExpressions.Length; exprIndex++)
                                 {
-                                    var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].Name.Value);
-                                    if (transformer == null)
-                                        throw new NotSupportedException($"Could not find FilterTransformer '{expr.Name}'");
-                                    
                                     stream.Position = 0;
-                                    stream = await transformer(stream);
+
+                                    contextInvoker = GetContextFilterInvoker(var.FilterExpressions[exprIndex].Name, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
+                                    if (contextInvoker != null)
+                                    {
+                                        args[0] = useScope;
+                                        for (var cmdIndex = 0; cmdIndex < var.FilterExpressions[exprIndex].Args.Count; cmdIndex++)
+                                        {
+                                            var arg = var.FilterExpressions[exprIndex].Args[cmdIndex];
+                                            var varValue = EvaluateAnyBindings(Evaluate(var, arg, scopeContext), scopeContext);
+                                            args[1 + cmdIndex] = varValue;
+                                        }
+
+                                        await (Task) contextInvoker(filter, args);
+                                    }
+                                    else
+                                    {
+                                        var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].Name.Value);
+                                        if (transformer == null)
+                                            throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].Name}' in page '{Page.VirtualPath}'");
+                                    
+                                        stream = await transformer(stream);
+                                        useScope = useScope.ScopeWithStream(stream);
+                                    }
                                 }
-                                
-                                stream.Position = 0;
-                                await stream.CopyToAsync(scopeContext.OutputStream);
+
+                                if (stream.CanRead)
+                                {
+                                    stream.Position = 0;
+                                    await stream.CopyToAsync(scopeContext.OutputStream);
+                                }
                             }
                         }
                     }
@@ -409,11 +424,15 @@ namespace ServiceStack.Templates
                         {
                             await scopeContext.OutputStream.WriteAsync(Page.Format.EncodeValue(exResult).ToUtf8Bytes(), token);
                         }
+                        else if (ex is NotSupportedException)
+                        {
+                            throw;
+                        }
     
                         throw new TargetInvocationException($"Failed to invoke filter {expr.Binding}", ex);
                     }
 
-                    return IgnoreResponse.Value;
+                    return IgnoreResult.Value;
                 }
             }
 

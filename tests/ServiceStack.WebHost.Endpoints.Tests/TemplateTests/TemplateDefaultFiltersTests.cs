@@ -481,6 +481,127 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("http://example.org?id=1&foo=bar#hash=value"));
         }
 
+        [Test]
+        public void Can_assign_result_to_variable()
+        {
+            string result;
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["num"] = 1,
+                    ["items"] = new[]{ "foo", "bar", "qux" },
+                },
+                FilterTransformers =
+                {
+                    ["markdown"] = MarkdownPageFormat.TransformToHtml,
+                }
+            };
+
+            result = new PageResult(context.OneTimePage(@"
+{{ num | incr | assignTo('result') }}
+result={{ result }}
+")).Result;
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo("result=2"));
+            
+            result = new PageResult(context.OneTimePage(@"
+{{ '<li> {{it}} </li>' | forEach(items) | assignTo('result') }}
+<ul>{{ result | raw }}</ul>
+")).Result;            
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
+            
+            result = new PageResult(context.OneTimePage(@"
+{{ ' - {{it}}' | appendLine | forEach(items) | markdown | assignTo('result') }}
+<div>{{ result | raw }}</div>
+")).Result;            
+            Assert.That(result.SanitizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
+        }
+
+        [Test]
+        public void Can_assign_to_variables_in_partials()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["num"] = 1,
+                },
+            };
+
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+<body>
+<header>
+layout num = {{ num }}
+pageMetaTitle = {{ pageMetaTitle }}
+inlinePageTitle = {{ inlinePageTitle }}
+pageResultTitle = {{ pageResultTitle }}
+</header>
+{{ 'add-partial' | partial({ num: 100 }) }} 
+{{ page }}
+{{ 'add-partial' | partial({ num: 400 }) }} 
+<footer>
+layout num = {{ num }}
+inlinePageTitle = {{ inlinePageTitle }}
+</footer>
+</body>
+</html>
+");
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+<!--
+pageMetaTitle: page meta title
+-->
+<section>
+{{ 'page inline title' | upper | assignTo('inlinePageTitle') }}
+{{ 'add-partial' | partial({ num: 200 }) }} 
+{{ num | add(1) | assignTo('num') }}
+<h2>page num = {{ num }}</h2>
+{{ 'add-partial' | partial({ num: 300 }) }} 
+</section>");
+            
+            context.VirtualFiles.WriteFile("add-partial.html", @"
+{{ num | add(10) | assignTo('num') }}
+<h3>partial num = {{ num }}</h3>");
+            
+            var result = new PageResult(context.GetPage("page"))
+            {
+                Args =
+                {
+                    ["pageResultTitle"] = "page result title"
+                }
+            }.Result;
+            
+            /* NOTES: 
+              1. Page Args and Page Result Args are *always* visible to Layout as they're known before page is executed
+              2. Args created during Page execution are *only* visible in Layout after page is rendered (i.e. executed)
+              3. Args assigned in partials are retained within their scope
+            */
+            
+            Assert.That(result.RemoveNewLines(), Is.EqualTo(@"
+<html>
+<body>
+<header>
+layout num = 1
+pageMetaTitle = page meta title
+inlinePageTitle = {{ inlinePageTitle }}
+pageResultTitle = page result title
+</header>
+<h3>partial num = 110</h3> 
+<section>
+<h3>partial num = 210</h3> 
+<h2>page num = 2</h2>
+<h3>partial num = 310</h3> 
+</section>
+<h3>partial num = 410</h3> 
+<footer>
+layout num = 2
+inlinePageTitle = PAGE INLINE TITLE
+</footer>
+</body>
+</html>
+".RemoveNewLines()));
+        }
 
     }
 }
