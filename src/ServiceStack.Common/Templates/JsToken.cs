@@ -68,6 +68,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
     {
         public virtual StringSegment Binding { get; }
 
+        private string bindingString;
+        public virtual string BindingString => bindingString ?? (bindingString = Binding.HasValue ? Binding.Value : null);
+
         public JsBinding(){}
         public JsBinding(string binding) => Binding = binding.ToStringSegment();
         public JsBinding(StringSegment binding) => Binding = binding;
@@ -447,9 +450,15 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
         public StringSegment Name { get; set; }
 
-        public List<StringSegment> Args { get; set; }
+        private string nameString;
+        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
+
+        public List<StringSegment> Args { get; internal set; }
 
         public StringSegment Original { get; set; }
+
+        private string originalString;
+        public string OriginalString => originalString ?? (originalString = Original.HasValue ? Original.Value : null);
 
         public virtual int IndexOfMethodEnd(StringSegment commandString, int pos) => pos;
         
@@ -482,7 +491,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         
         public override string ToRawString() => (":" + ToString()).EncodeJson();
 
-        public override StringSegment Binding => Original.HasValue ? Original : ToString().ToStringSegment();
+        public override string BindingString => OriginalString ?? ToString();
     }
 
     public static class JsExpressionUtils

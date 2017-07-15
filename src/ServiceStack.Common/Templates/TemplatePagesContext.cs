@@ -48,6 +48,8 @@ namespace ServiceStack.Templates
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
         public List<TemplateCode> CodePages { get; } = new List<TemplateCode>();
+        
+        public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
@@ -130,6 +132,7 @@ namespace ServiceStack.Templates
 
         internal void InitFilter(TemplateFilter filter)
         {
+            if (filter == null) return;
             if (filter.Context == null)
                 filter.Context = this;
             if (filter.Pages == null)

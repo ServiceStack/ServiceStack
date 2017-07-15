@@ -18,8 +18,8 @@ namespace ServiceStack.Templates
         
         public StringSegment Binding { get; set; }
 
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Binding.Value);
+        private string bindingString;
+        public string BindingString => bindingString ?? (bindingString = Binding.Value);
         
         public object Value { get; set; }
         

@@ -4,11 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using ServiceStack.Text;
-
-#if NETSTANDARD1_3
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.Templates
 {
@@ -20,7 +15,7 @@ namespace ServiceStack.Templates
         public TemplatePagesContext Context { get; set; }
         public ITemplatePages Pages { get; set; }
         
-        public virtual bool HandlesUnknownValue(StringSegment name, int argsCount)
+        public virtual bool HandlesUnknownValue(string name, int argsCount)
         {
             var method = GetInvokerMethod(name, argsCount);
             return method?.AllAttributes().Any(x => x is HandleUnknownValueAttribute) == true;
@@ -28,8 +23,14 @@ namespace ServiceStack.Templates
 
         readonly ConcurrentDictionary<string, MethodInvoker> invokerCache = new ConcurrentDictionary<string, MethodInvoker>();
 
-        public MethodInvoker GetInvoker(StringSegment name, int argsCount)
+        public MethodInvoker GetInvoker(string name, int argsCount)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            if (Context.ExcludeFiltersNamed.Contains(name))
+                return null;
+            
             var key = $"{name}`{argsCount}";
             if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
@@ -41,7 +42,7 @@ namespace ServiceStack.Templates
             return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
-        private MethodInfo GetInvokerMethod(StringSegment name, int argsCount)
+        private MethodInfo GetInvokerMethod(string name, int argsCount)
         {
             var method = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .FirstOrDefault(x => name.EqualsIgnoreCase(x.Name) && 
@@ -50,8 +51,14 @@ namespace ServiceStack.Templates
             return method;
         }
 
-        public MethodInvoker GetContextInvoker(StringSegment name, int argsCount)
+        public MethodInvoker GetContextInvoker(string name, int argsCount)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+            
+            if (Context.ExcludeFiltersNamed.Contains(name))
+                return null;
+            
             var key = $"context::{name}`{argsCount}";
             if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
@@ -63,7 +70,7 @@ namespace ServiceStack.Templates
             return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
-        private MethodInfo GetContextInvokerMethod(StringSegment name, int argsCount)
+        private MethodInfo GetContextInvokerMethod(string name, int argsCount)
         {
             var method = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
                 .FirstOrDefault(x => name.EqualsIgnoreCase(x.Name) && 

@@ -174,6 +174,11 @@ namespace ServiceStack.Templates
                 Page.Context.InitFilter(filter);
             }
 
+            foreach (var filter in Page.Context.TemplateFilters)
+            {
+                Page.Context.InitFilter(filter);
+            }
+
             await Page.Init();
 
             hasInit = true;
@@ -274,7 +279,7 @@ namespace ServiceStack.Templates
         private object GetValue(PageVariableFragment var, TemplateScopeContext scopeContext)
         {
             var value = var.Value ??
-                (var.Binding.HasValue ? GetValue(var.NameString, scopeContext) : null);
+                (var.Binding.HasValue ? GetValue(var.BindingString, scopeContext) : null);
             
             return value;
         }
@@ -283,10 +288,10 @@ namespace ServiceStack.Templates
         {
             var value = var.Value ??
                 (var.Binding.HasValue
-                    ? GetValue(var.NameString, scopeContext)
+                    ? GetValue(var.BindingString, scopeContext)
                     : var.Expression != null
                         ? var.Expression.IsBinding()
-                            ? EvaluateBinding(var.Expression.Name, scopeContext)
+                            ? EvaluateBinding(var.Expression.NameString, scopeContext)
                             : Evaluate(var, var.Expression, scopeContext)
                         : null);
 
@@ -295,17 +300,17 @@ namespace ServiceStack.Templates
                 if (!var.Binding.HasValue) 
                     return null;
 
-                var hasFilterAsBinding = GetFilterAsBinding(var.Binding, out TemplateFilter filter);
+                var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
                 if (hasFilterAsBinding != null)
                 {
-                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression?.Binding ?? var.Binding);
+                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression?.BindingString ?? var.BindingString);
                 }
                 else
                 {
                     var handlesUnknownValue = false;
                     if (var.FilterExpressions.Length > 0)
                     {
-                        var filterName = var.FilterExpressions[0].Name;
+                        var filterName = var.FilterExpressions[0].NameString;
                         var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
                         handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
                                               Page.Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
@@ -324,9 +329,10 @@ namespace ServiceStack.Templates
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
                 var expr = var.FilterExpressions[i];
-                var invoker = GetFilterInvoker(expr.Name, 1 + expr.Args.Count, out TemplateFilter filter);
+                var filterName = expr.NameString;
+                var invoker = GetFilterInvoker(filterName, 1 + expr.Args.Count, out TemplateFilter filter);
                 var contextInvoker = invoker == null
-                    ? GetContextFilterInvoker(expr.Name, 2 + expr.Args.Count, out filter)
+                    ? GetContextFilterInvoker(filterName, 2 + expr.Args.Count, out filter)
                     : null;
                 
                 if (invoker == null && contextInvoker == null)
@@ -349,7 +355,7 @@ namespace ServiceStack.Templates
                         args[1 + cmdIndex] = varValue;
                     }
 
-                    value = InvokeFilter(invoker, filter, args, expr.Binding);
+                    value = InvokeFilter(invoker, filter, args, expr.BindingString);
                 }
                 else 
                 {
@@ -385,7 +391,7 @@ namespace ServiceStack.Templates
                                 {
                                     stream.Position = 0;
 
-                                    contextInvoker = GetContextFilterInvoker(var.FilterExpressions[exprIndex].Name, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
+                                    contextInvoker = GetContextFilterInvoker(var.FilterExpressions[exprIndex].Name.Value, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
                                     if (contextInvoker != null)
                                     {
                                         args[0] = useScope;
@@ -443,7 +449,7 @@ namespace ServiceStack.Templates
         }
 
         // Filters with no args can be used in-place of bindings
-        private MethodInvoker GetFilterAsBinding(StringSegment name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
+        private MethodInvoker GetFilterAsBinding(string name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
 
         private object EvaluateAnyBindings(object value, TemplateScopeContext scopeContext)
         {
@@ -471,7 +477,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, StringSegment binding)
+        private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, string binding)
         {
             if (invoker == null)
                 throw new NotSupportedException($"Filter {binding} does not exist");
@@ -508,7 +514,7 @@ namespace ServiceStack.Templates
 
         private object Evaluate(PageVariableFragment var, JsExpression expr, TemplateScopeContext scopeContext)
         {
-            var invoker = GetFilterInvoker(expr.Name, expr.Args.Count, out TemplateFilter filter);
+            var invoker = GetFilterInvoker(expr.NameString, expr.Args.Count, out TemplateFilter filter);
 
             var args = new object[expr.Args.Count];
             for (var i = 0; i < expr.Args.Count; i++)
@@ -518,15 +524,15 @@ namespace ServiceStack.Templates
                 args[i] = varValue;
             }
 
-            var value = InvokeFilter(invoker, filter, args, expr.Binding);
+            var value = InvokeFilter(invoker, filter, args, expr.BindingString);
             return value;
         }
 
-        private MethodInvoker GetFilterInvoker(StringSegment name, int argsCount, out TemplateFilter filter)
+        private MethodInvoker GetFilterInvoker(string name, int argsCount, out TemplateFilter filter)
         {
             foreach (var tplFilter in TemplateFilters)
             {
-                var invoker = tplFilter.GetInvoker(name, argsCount);
+                var invoker = tplFilter?.GetInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -536,7 +542,7 @@ namespace ServiceStack.Templates
 
             foreach (var tplFilter in Page.Context.TemplateFilters)
             {
-                var invoker = tplFilter.GetInvoker(name, argsCount);
+                var invoker = tplFilter?.GetInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -548,11 +554,11 @@ namespace ServiceStack.Templates
             return null;
         }
 
-        private MethodInvoker GetContextFilterInvoker(StringSegment name, int argsCount, out TemplateFilter filter)
+        private MethodInvoker GetContextFilterInvoker(string name, int argsCount, out TemplateFilter filter)
         {
             foreach (var tplFilter in TemplateFilters)
             {
-                var invoker = tplFilter.GetContextInvoker(name, argsCount);
+                var invoker = tplFilter?.GetContextInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -562,7 +568,7 @@ namespace ServiceStack.Templates
 
             foreach (var tplFilter in Page.Context.TemplateFilters)
             {
-                var invoker = tplFilter.GetContextInvoker(name, argsCount);
+                var invoker = tplFilter?.GetContextInvoker(name, argsCount);
                 if (invoker != null)
                 {
                     filter = tplFilter;
@@ -591,8 +597,8 @@ namespace ServiceStack.Templates
                             ? obj
                             : Page.Context.Args.TryGetValue(name, out obj)
                                 ? obj
-                                : (invoker = GetFilterAsBinding(name.ToStringSegment(), out TemplateFilter filter)) != null
-                                    ? InvokeFilter(invoker, filter, new object[0], name.ToStringSegment())
+                                : (invoker = GetFilterAsBinding(name, out TemplateFilter filter)) != null
+                                    ? InvokeFilter(invoker, filter, new object[0], name)
                                     : null;
 
             if (value is JsBinding binding)
@@ -607,12 +613,7 @@ namespace ServiceStack.Templates
 
         public object EvaluateBinding(string expr, TemplateScopeContext scopeContext = default(TemplateScopeContext))
         {
-            return EvaluateBinding(expr.ToStringSegment(), scopeContext);
-        }
-
-        public object EvaluateBinding(StringSegment expr, TemplateScopeContext scopeContext)
-        {
-            if (expr.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(expr))
                 return null;
             
             AssertInit();
@@ -620,7 +621,7 @@ namespace ServiceStack.Templates
             expr = expr.Trim();
             var pos = expr.IndexOfAny(VarDelimiters, 0);
             if (pos == -1)
-                return GetValue(expr.Value, scopeContext);
+                return GetValue(expr, scopeContext);
             
             var target = expr.Substring(0, pos);
 
@@ -630,10 +631,10 @@ namespace ServiceStack.Templates
 
             if (targetValue == JsNull.Value)
                 return JsNull.Value;
-
+            
             var fn = !Page.IsTempFile
-                ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr)
-                : TemplatePageUtils.Compile(targetValue.GetType(), expr);
+                ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment())
+                : TemplatePageUtils.Compile(targetValue.GetType(), expr.ToStringSegment());
 
             try
             {
@@ -646,7 +647,7 @@ namespace ServiceStack.Templates
                 if (exResult != null)
                     return exResult;
                 
-                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr.Value, ex);
+                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr, ex);
             }
         }
 

@@ -212,5 +212,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(new PageResult(fileWithCachePage).Result, Is.EqualTo("Modified Content"));
         }
 
+        [Test]
+        public void Can_exclude_individual_filters()
+        {
+            var context = new TemplatePagesContext
+            {
+                ExcludeFiltersNamed = { "includeUrl" },
+                TemplateFilters = { new TemplateProtectedFilters() },
+            };
+            
+            context.VirtualFiles.WriteFile("file.txt", "File Contents");
+
+            context.VirtualFiles.WriteFile("page.html", @"
+includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
+includFile = {{ 'file.txt' | includeFile }}
+");
+            
+            Assert.That(new PageResult(context.GetPage("page")).Result.SanitizeNewLines(), Is.EqualTo(@"
+includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
+includFile = File Contents
+".SanitizeNewLines()));
+        }
     }
 }
