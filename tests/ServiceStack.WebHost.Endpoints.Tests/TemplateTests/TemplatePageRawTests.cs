@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public async Task Can_generate_html_template_with_layout_in_memory()
         {
-            var context = new TemplatePagesContext();
+            var context = new TemplatePagesContext().Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 {
                     new MarkdownPageFormat()
                 }
-            };
+            }.Init();;
             
             context.VirtualFiles.WriteFile("_layout.md", @"
 # {{ title }}
@@ -139,7 +139,7 @@ Brackets in Layout < & >
                 {
                     new MarkdownPageFormat()
                 }
-            };
+            }.Init();;
             
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -176,7 +176,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_into_scope()
         {
-            var context = new TemplatePagesContext();
+            var context = new TemplatePagesContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -191,7 +191,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_of_anon_object_into_scope()
         {
-            var context = new TemplatePagesContext();
+            var context = new TemplatePagesContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -209,7 +209,7 @@ Brackets in Layout < & >
             var context = new TemplatePagesContext
             {
                 DebugMode = true, //default
-            };
+            }.Init();
             
             context.VirtualFiles.WriteFile("page.html", "<h1>Original</h1>");
             Assert.That(await new PageResult(context.GetPage("page")).RenderToStringAsync(), Is.EqualTo("<h1>Original</h1>"));

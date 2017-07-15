@@ -159,6 +159,9 @@ namespace ServiceStack.Templates
             if (hasInit)
                 return this;
 
+            if (!Page.Context.HasInit)
+                throw new NotSupportedException($"{Page.Context.GetType().Name} has not been initialized. Call 'Init()' to initialize Template Context.");
+
             if (Model != null)
             {
                 var explodeModel = Model.ToObjectDictionary();
@@ -170,11 +173,6 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.Model] = Model ?? JsNull.Value;
 
             foreach (var filter in TemplateFilters)
-            {
-                Page.Context.InitFilter(filter);
-            }
-
-            foreach (var filter in Page.Context.TemplateFilters)
             {
                 Page.Context.InitFilter(filter);
             }

@@ -205,7 +205,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["letters"] = new[]{ "A", "B", "C" },
                     ["numbers"] = new[]{ 1, 2, 3 },
                 }
-            };
+            }.Init();
             
             Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(letters) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
@@ -223,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 {
                     ["numbers"] = new[]{ 1, 2, 3 },
                 }
-            };
+            }.Init();
             
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -276,7 +276,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                         new ModelBinding { Object = new NestedModelBinding { Prop = "C" }}, 
                     },
                 }
-            };
+            }.Init();
             
             Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ it.Object.Prop }} </li>' | forEach(items) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
@@ -296,7 +296,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                         new ModelBinding { Object = new NestedModelBinding { Prop = "C" }}, 
                     },
                 }
-            };
+            }.Init();
             
             Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, 'item') }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));

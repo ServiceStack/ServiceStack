@@ -219,7 +219,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 ExcludeFiltersNamed = { "includeUrl" },
                 TemplateFilters = { new TemplateProtectedFilters() },
-            };
+            }.Init();
             
             context.VirtualFiles.WriteFile("file.txt", "File Contents");
 

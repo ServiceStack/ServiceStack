@@ -84,12 +84,13 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
         }
 
-        private bool hasInit;
+        public bool HasInit { get; private set; }
+
         public TemplatePagesContext Init()
         {
-            if (hasInit)
+            if (HasInit)
                 return this;
-            hasInit = true;
+            HasInit = true;
             
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);

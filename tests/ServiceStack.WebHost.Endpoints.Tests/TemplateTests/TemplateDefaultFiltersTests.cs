@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["intVal"] = 1,
                     ["doubleVal"] = 2.2
                 }
-            };
+            }.Init();
             
             args.Each((key,val) => context.Args[key] = val);
             
@@ -119,6 +119,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 ".SanitizeNewLines()));
         }
 
+        [Test]
+        public void Can_use_default_filter_arithmetic_using_shorthand_notation()
+        {
+            var context = new TemplatePagesContext();
+            
+        }
+        
         [Test]
         public void Can_incrment_and_decrement()
         {
@@ -496,7 +503,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 {
                     ["markdown"] = MarkdownPageFormat.TransformToHtml,
                 }
-            };
+            }.Init();
 
             result = new PageResult(context.OneTimePage(@"
 {{ num | incr | assignTo('result') }}
@@ -526,7 +533,7 @@ result={{ result }}
                 {
                     ["num"] = 1,
                 },
-            };
+            }.Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
