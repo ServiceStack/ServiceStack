@@ -353,9 +353,20 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
                     if (mapKey != null)
                     {
-                        literal = literal.AdvancePastChar(':');
-                        literal = literal.ParseNextToken(out object mapValue, out JsBinding mapValueBinding);
-                        map[mapKey] = mapValue ?? mapValueBinding;
+                        literal = literal.AdvancePastWhitespace();
+                        if (literal.Length > 0 && literal.GetChar(0) == ':')
+                        {
+                            literal = literal.Advance(1);
+                            literal = literal.ParseNextToken(out object mapValue, out JsBinding mapValueBinding);
+                            map[mapKey] = mapValue ?? mapValueBinding;
+                        }
+                        else //shorthand notation
+                        {
+                            if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
+                                throw new ArgumentException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
+                            
+                            map[mapKey] = new JsBinding(mapKey);
+                        }
                     }
 
                     literal = literal.AdvancePastWhitespace();
@@ -380,7 +391,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 var list = new List<object>();
 
                 literal = literal.Advance(1);
-                while (!literal.IsNullOrEmpty() && literal.GetChar(0) != ']')
+                while (!literal.IsNullOrEmpty())
                 {
                     literal = literal.ParseNextToken(out object mapValue, out JsBinding mapVarRef);
                     list.Add(mapVarRef ?? mapValue);
@@ -395,9 +406,22 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         break;
                     }
 
-                    literal = literal.AdvancePastChar(',');
+                    literal = literal.AdvancePastWhitespace();
+                    c = literal.GetChar(0);
+                    if (c == ']')
+                    {
+                        literal = literal.Advance(1);
+                        break;
+                    }
+                    
+                    if (c != ',')
+                        throw new ArgumentException($"Unterminated array literal near: {literal.SubstringWithElipsis(0, 50)}");
+                    
+                    literal = literal.Advance(1);
                     literal = literal.AdvancePastWhitespace();
                 }
+
+                literal = literal.AdvancePastWhitespace();
 
                 value = list;
                 return literal;

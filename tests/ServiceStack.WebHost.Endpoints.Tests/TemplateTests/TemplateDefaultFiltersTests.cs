@@ -120,10 +120,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void Can_use_default_filter_arithmetic_using_shorthand_notation()
+        public void Can_use_default_filter_arithmetic_with_shorthand_notation()
         {
-            var context = new TemplatePagesContext();
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["num"] = 1
+                }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("page.html", @"
+{{ num | add(9) | assignTo('ten') }}
+square = {{ 'square-partial' | partial({ ten }) }}
+");
             
+            context.VirtualFiles.WriteFile("square-partial.html", "{{ ten }} x {{ ten }} = {{ ten | multiply(ten) }}");
+            
+            Assert.That(new PageResult(context.GetPage("page")).Result.SanitizeNewLines(), Is.EqualTo(@"
+square = 10 x 10 = 100".SanitizeNewLines()));
         }
         
         [Test]

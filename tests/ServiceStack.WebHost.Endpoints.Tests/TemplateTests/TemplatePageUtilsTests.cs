@@ -371,11 +371,62 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_support_shorthand_object_initializers()
+        {
+            object value;
+            JsBinding binding;
+
+            "{key}".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "key", new JsBinding("key") }}));
+            "{ key }".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "key", new JsBinding("key") }}));
+            "{ map : { key , foo: 'bar' , qux } }".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "map", 
+                new Dictionary<string, object>
+                {
+                    {"key", new JsBinding("key")},
+                    {"foo", "bar"},
+                    {"qux", new JsBinding("qux")},
+                } 
+            }}));
+        }
+
+        [Test]
         public void Can_detect_invalid_syntax()
         {
             try
             {
+                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter(' 1) }}");
+                Assert.Fail("should throw");
+            }
+            catch (ArgumentException e)
+            {
+                e.Message.Print();
+            }
+
+            try
+            {
+                var fragments = TemplatePageUtils.ParseTemplatePage("square = {{ 'square-partial | partial({ ten }) }}");
+                Assert.Fail("should throw");
+            }
+            catch (ArgumentException e)
+            {
+                e.Message.Print();
+            }
+
+            try
+            {
                 var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter({ unterminated:1) }}");
+                Assert.Fail("should throw");
+            }
+            catch (ArgumentException e)
+            {
+                e.Message.Print();
+            }
+
+            try
+            {
+                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter([ 1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)

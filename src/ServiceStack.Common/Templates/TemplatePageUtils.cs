@@ -46,11 +46,11 @@ namespace ServiceStack.Templates
                 var varStartPos = pos + 2;
                 var varEndPos = text.IndexOfNextCharNotInQuotes(varStartPos, '|', '}');
                 var varName = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
-                if (varEndPos == -1)
+                if (varEndPos == -1 || varEndPos >= text.Length)
                     throw new ArgumentException($"Invalid Server HTML Template at '{text.SubstringWithElipsis(0, 50)}'", nameof(text));
 
                 List<JsExpression> filterCommands = null;
-
+                
                 var isFilter = text.GetChar(varEndPos) == '|';
                 if (isFilter)
                 {
