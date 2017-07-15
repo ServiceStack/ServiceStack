@@ -391,7 +391,7 @@ namespace ServiceStack.Templates
                                 {
                                     stream.Position = 0;
 
-                                    contextInvoker = GetContextFilterInvoker(var.FilterExpressions[exprIndex].Name.Value, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
+                                    contextInvoker = GetContextFilterInvoker(var.FilterExpressions[exprIndex].NameString, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
                                     if (contextInvoker != null)
                                     {
                                         args[0] = useScope;
@@ -406,9 +406,9 @@ namespace ServiceStack.Templates
                                     }
                                     else
                                     {
-                                        var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].Name.Value);
+                                        var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].NameString);
                                         if (transformer == null)
-                                            throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].Name}' in page '{Page.VirtualPath}'");
+                                            throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].NameString}' in page '{Page.VirtualPath}'");
                                     
                                         stream = await transformer(stream);
                                         useScope = useScope.ScopeWithStream(stream);
@@ -455,7 +455,7 @@ namespace ServiceStack.Templates
         {
             if (value is JsBinding valueBinding)
             {
-                return GetValue(valueBinding.Binding.Value, scopeContext);
+                return GetValue(valueBinding.BindingString, scopeContext);
             }
             if (value is Dictionary<string, object> map)
             {
@@ -507,7 +507,7 @@ namespace ServiceStack.Templates
             }
             if (binding != null)
             {
-                return GetValue(binding.Binding.Value, scopeContext);
+                return GetValue(binding.BindingString, scopeContext);
             }
             return outValue;
         }
@@ -603,7 +603,7 @@ namespace ServiceStack.Templates
 
             if (value is JsBinding binding)
             {
-                return GetValue(binding.Binding.Value, scopedParams);
+                return GetValue(binding.BindingString, scopedParams);
             }
             
             return value;
