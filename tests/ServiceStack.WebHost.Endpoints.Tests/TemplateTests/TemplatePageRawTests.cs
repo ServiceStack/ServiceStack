@@ -809,6 +809,21 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop }}")).Result, Is.EqualTo(""));
             Assert.That(new PageResult(context.OneTimePage("{{ contextModel.Object.Prop | otherwise('there is nothing') }}")).Result, Is.EqualTo("there is nothing"));
         }
+
+        [Test]
+        public void Can_use_whitespace_for_last_string_arg()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["ten"] = 10
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate(@"{{ ten | multiply(ten) | assignTo: result }}
+                10 x 10 = {{ result }}").Trim(), Is.EqualTo("10 x 10 = 100"));
+        }
     }
 
     public static class TestUtils

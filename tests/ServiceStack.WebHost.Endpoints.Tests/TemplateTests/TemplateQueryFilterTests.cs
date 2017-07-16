@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void linq1()
+        public void linq1_original()
         {
             var context = CreateContext();
             
@@ -38,15 +38,34 @@ Numbers < 5:
         }
 
         [Test]
-        public void linq2()
+        public void linq1() // alternative with clean whitespace sensitive string argument syntax:
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Numbers < 5:
+{{ numbers | where('it < 5') | select: { it }\n }}").NormalizeNewLines(), 
+                
+                Is.EqualTo(@"
+Numbers < 5:
+4
+1
+3
+2
+0
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq2_original()
         {
             var context = CreateContext();
             
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
-    | where: it.UnitsInStock = 0 
-    | select: { it.productName | raw } is sold out!\n
+   | where('it.UnitsInStock = 0') 
+   | select('{{ it.productName | raw }} is sold out!\n')
 }}
 ").NormalizeNewLines(),
                 
@@ -61,16 +80,15 @@ Perth Pasties is sold out!
         }
 
         [Test]
-        public void linq2_original()
+        public void linq2() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
             
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
-    | where('it.UnitsInStock = 0') 
-    | select('{{ it.productName | raw }} is sold out!\n')
-}}
+    | where: it.UnitsInStock = 0 
+    | select: { it.productName | raw } is sold out!\n }}
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"

@@ -418,35 +418,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_cleaner_whitespace_sensitive_syntax_for_string_arguments()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage(
+            var fragments1 = TemplatePageUtils.ParseTemplatePage(
                 @"{{ 
 products 
   | where: it.UnitsInStock = 0 
   | select: { it.productName | raw } is sold out!\n 
 }}");
             
-            // i.e. is rewritten and is equivalent to:
             var fragments2 = TemplatePageUtils.ParseTemplatePage(
+            @"{{ products 
+                 | where: it.UnitsInStock = 0 
+                 | select: { it.productName | raw } is sold out!\n }}");
+            
+            // i.e. is rewritten and is equivalent to:
+            var fragments3 = TemplatePageUtils.ParseTemplatePage(
                 @"{{ products | where(""it.UnitsInStock = 0"") | select(""{{ it.productName | raw }} is sold out!\n"")}}");
-            Assert.That(fragments2.Count, Is.EqualTo(1));
+            Assert.That(fragments3.Count, Is.EqualTo(1));
             
-            
-            Assert.That(fragments.Count, Is.EqualTo(1));
-            var varFragment = fragments[0] as PageVariableFragment;
-            Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("where"));
-            Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo("\"it.UnitsInStock = 0\""));
-            Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo("select"));
-            Assert.That(varFragment.FilterExpressions[1].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment.FilterExpressions[1].Args[0], Is.EqualTo("\"{{ it.productName | raw }} is sold out!\\n\""));
-            
-            var varFragment2 = fragments2[0] as PageVariableFragment;
-            Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo(varFragment.FilterExpressions[0].Name));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(varFragment.FilterExpressions[0].Args.Count));
-            Assert.That(varFragment2.FilterExpressions[0].Args[0], Is.EqualTo(varFragment.FilterExpressions[0].Args[0]));
-            Assert.That(varFragment2.FilterExpressions[1].Name, Is.EqualTo(varFragment.FilterExpressions[1].Name));
-            Assert.That(varFragment2.FilterExpressions[1].Args.Count, Is.EqualTo(varFragment.FilterExpressions[1].Args.Count));
-            Assert.That(varFragment2.FilterExpressions[1].Args[0], Is.EqualTo(varFragment.FilterExpressions[1].Args[0]));
+            Assert.That(fragments1.Count, Is.EqualTo(1));
+            var varFragment1 = fragments1[0] as PageVariableFragment;
+            Assert.That(varFragment1.FilterExpressions[0].Name, Is.EqualTo("where"));
+            Assert.That(varFragment1.FilterExpressions[0].Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[0].Args[0], Is.EqualTo("\"it.UnitsInStock = 0\""));
+            Assert.That(varFragment1.FilterExpressions[1].Name, Is.EqualTo("select"));
+            Assert.That(varFragment1.FilterExpressions[1].Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[1].Args[0], Is.EqualTo("\"{{ it.productName | raw }} is sold out!\\n\""));
+
+            foreach (var fragments in new[]{ fragments2, fragments3 })
+            {
+                var varFragment = fragments[0] as PageVariableFragment;
+                Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo(varFragment1.FilterExpressions[0].Name));
+                Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[0].Args.Count));
+                Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo(varFragment1.FilterExpressions[0].Args[0]));
+                Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo(varFragment1.FilterExpressions[1].Name));
+                Assert.That(varFragment.FilterExpressions[1].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[1].Args.Count));
+                Assert.That(varFragment.FilterExpressions[1].Args[0], Is.EqualTo(varFragment1.FilterExpressions[1].Args[0]));
+            }
         }
 
         [Test]

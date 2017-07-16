@@ -846,15 +846,21 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     {
                         // replace everything after ':' up till new line and rewrite as single string to method
                         var endStringPos = commandsString.IndexOf("\n", i);
+                        var endStatementPos = commandsString.IndexOf("}}", i);
+                        if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
+                            endStringPos = endStatementPos;
+                        
                         if (endStringPos == -1)
-                            throw new NotSupportedException($"Whitespace sensitive syntax requires a \\n new line delimiter to mark end of statement, near '{commandsString.SubstringWithElipsis(i,50)}'");
+                        {
+                            if (endStringPos == -1)
+                                throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithElipsis(i,50)}'");
+                        }
 
                         cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                         
                         var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
                         var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
                         cmd.Args = ParseArguments(rewrittenArgs.ToStringSegment(), out int endPos);
-                        i += 1; // \n
                         i += originalArgs.Length - rewrittenArgs.Length;
                         i += endPos;
                         pos = i + 1;
