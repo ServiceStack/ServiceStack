@@ -27,6 +27,13 @@ namespace ServiceStack.Templates
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
+        
+        public string indent() => Context.Args[TemplateConstants.DefaultIndent] as string;
+        public string indents(int count) => repeat(Context.Args[TemplateConstants.DefaultIndent] as string, count);
+        public string space() => " ";
+        public string spaces(int count) => padLeft("", count, ' ');
+        public string newLine() => Context.Args[TemplateConstants.DefaultNewLine] as string;
+        public string newLines(int count) => repeat(newLine(), count);
 
         public IRawString raw(object value)
         {
@@ -108,7 +115,8 @@ namespace ServiceStack.Templates
         public string padRight(string text, int totalWidth) => text?.PadRight(totalWidth);
         public string padRight(string text, int totalWidth, char padChar) => text?.PadRight(totalWidth, padChar);
 
-        public string repeating(string text, int times)
+        public string repeating(int times, string text) => repeat(text, times);
+        public string repeat(string text, int times)
         {
             var sb = StringBuilderCache.Allocate();
             for (var i = 0; i < times; i++)
@@ -206,8 +214,8 @@ namespace ServiceStack.Templates
         public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
 
         public string append(string target, string suffix) => target + suffix;
-        public string appendLine(string target) => target + Environment.NewLine;
-        public string newLine(string target) => target + Environment.NewLine;
+        public string appendLine(string target) => target + newLine();
+        public string newLine(string target) => target + newLine();
 
         public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
         public string addPaths(string target, IEnumerable pathsToAppend) => 

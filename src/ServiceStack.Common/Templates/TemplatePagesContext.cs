@@ -82,6 +82,8 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
             Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
+            Args[TemplateConstants.DefaultIndent] = "\t";
+            Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
         }
 
         public bool HasInit { get; private set; }

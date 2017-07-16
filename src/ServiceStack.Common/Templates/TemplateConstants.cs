@@ -5,6 +5,8 @@ namespace ServiceStack.Templates
         public const string DefaultDateFormat = nameof(DefaultDateFormat);
         public const string DefaultDateTimeFormat = nameof(DefaultDateTimeFormat);
         public const string DefaultCulture = nameof(DefaultCulture);
+        public const string DefaultIndent = nameof(DefaultIndent);
+        public const string DefaultNewLine = nameof(DefaultNewLine);
         public const string Model = "model";
         public const string Page = "page";
         public const string Partial = "partial";

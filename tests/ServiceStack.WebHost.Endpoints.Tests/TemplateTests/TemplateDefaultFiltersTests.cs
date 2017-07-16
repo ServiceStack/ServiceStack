@@ -434,6 +434,38 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         }
 
         [Test]
+        public void Does_default_spaces_and_indents()
+        {
+            var context = new TemplatePagesContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ indent }}"), Is.EqualTo("\t"));
+            Assert.That(context.EvaluateTemplate("{{ 4 | indents }}"), Is.EqualTo("\t\t\t\t"));
+            
+            Assert.That(context.EvaluateTemplate("{{ space }}"), Is.EqualTo(" "));
+            Assert.That(context.EvaluateTemplate("{{ 4 | spaces }}"), Is.EqualTo("    "));
+
+            Assert.That(context.EvaluateTemplate("{{ 4 | repeating('  ') }}"), Is.EqualTo("        "));
+            Assert.That(context.EvaluateTemplate("{{ '  ' | repeat(4) }}"),    Is.EqualTo("        "));
+            Assert.That(context.EvaluateTemplate("{{ '.' | repeat(3) }}"), Is.EqualTo("..."));
+
+            var newLine = Environment.NewLine;
+            Assert.That(context.EvaluateTemplate("{{ newLine }}"), Is.EqualTo(newLine));
+            Assert.That(context.EvaluateTemplate("{{ 4 | newLines }}"), Is.EqualTo(newLine + newLine + newLine + newLine));
+            
+            context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    [TemplateConstants.DefaultIndent] = "  ",
+                    [TemplateConstants.DefaultNewLine] = "\n"
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ indent }}"), Is.EqualTo("  "));
+            Assert.That(context.EvaluateTemplate("{{ 4 | newLines }}"), Is.EqualTo("\n\n\n\n"));
+        }
+
+        [Test]
         public async Task Does_default_filter_string_filters()
         {
             var context = CreateContext().Init();
@@ -474,8 +506,8 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             result = await new PageResult(context.GetPage("page-padchar")).RenderToStringAsync();
             Assert.That(result, Is.EqualTo("<h1>007</h1><h2>tiredzzzzz</h2>"));
 
-            context.VirtualFiles.WriteFile("page-repeating.html", "<h1>long time ago{{ ' ...' | repeating(3) }}</h1>");
-            result = await new PageResult(context.GetPage("page-repeating")).RenderToStringAsync();
+            context.VirtualFiles.WriteFile("page-repeat.html", "<h1>long time ago{{ ' ...' | repeat(3) }}</h1>");
+            result = await new PageResult(context.GetPage("page-repeat")).RenderToStringAsync();
             Assert.That(result, Is.EqualTo("<h1>long time ago ... ... ...</h1>"));
         }
 
