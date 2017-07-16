@@ -110,7 +110,7 @@ namespace ServiceStack.Templates
         public JsToken Target { get; set; }
         public override string ToRawString() => Op.Token + JsonValue(Target);
         public UnaryExpression() {}
-        public UnaryExpression(JsOperator op, JsToken target)
+        public UnaryExpression(JsUnaryOperator op, JsToken target)
         {
             Op = op;
             Target = target;
