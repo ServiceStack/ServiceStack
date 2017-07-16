@@ -91,12 +91,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             var result = await new PageResult(context.GetPage("page")).RenderToStringAsync();
 
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 1 + 1 = 2
 2 x 2 = 4 or 4
 3 - 3 = 0 or 0
 4 / 4 = 1 or 1
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -111,12 +111,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             var html = await new PageResult(context.GetPage("page")).RenderToStringAsync();
 
-            Assert.That(html.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 1 + 1 = 2
 2 x 2 = 4 or 4
 3 - 3 = 0 or 0
 4 / 4 = 1 or 1
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -137,8 +137,8 @@ square = {{ 'square-partial' | partial({ ten }) }}
             
             context.VirtualFiles.WriteFile("square-partial.html", "{{ ten }} x {{ ten }} = {{ ten | multiply(ten) }}");
             
-            Assert.That(new PageResult(context.GetPage("page")).Result.SanitizeNewLines(), Is.EqualTo(@"
-square = 10 x 10 = 100".SanitizeNewLines()));
+            Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(), Is.EqualTo(@"
+square = 10 x 10 = 100".NormalizeNewLines()));
         }
         
         [Test]
@@ -331,12 +331,12 @@ square = 10 x 10 = 100".SanitizeNewLines()));
             context.VirtualFiles.WriteFile("page-chained.html",
                 @"(((1 + 2) * 3) / 4) - 5 = {{ 1 | add(2) | multiply(3) | divide(4) | subtract(5) }}");
             var result = await new PageResult(context.GetPage("page-chained")).RenderToStringAsync();
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"(((1 + 2) * 3) / 4) - 5 = -2.75".SanitizeNewLines()));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"(((1 + 2) * 3) / 4) - 5 = -2.75".NormalizeNewLines()));
 
             context.VirtualFiles.WriteFile("page-ordered.html",
                 @"1 + 2 * 3 / 4 - 5 = {{ 1 | add( divide(multiply(2,3), 4) ) | subtract(5) }}");
             result = await new PageResult(context.GetPage("page-ordered")).RenderToStringAsync();
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"1 + 2 * 3 / 4 - 5 = -2.5".SanitizeNewLines()));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"1 + 2 * 3 / 4 - 5 = -2.5".NormalizeNewLines()));
         }
 
         [Test]
@@ -524,19 +524,19 @@ square = 10 x 10 = 100".SanitizeNewLines()));
 {{ num | incr | assignTo('result') }}
 result={{ result }}
 ")).Result;
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo("result=2"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("result=2"));
             
             result = new PageResult(context.OneTimePage(@"
 {{ '<li> {{it}} </li>' | forEach(items) | assignTo('result') }}
 <ul>{{ result | raw }}</ul>
 ")).Result;            
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
             
             result = new PageResult(context.OneTimePage(@"
 {{ ' - {{it}}' | appendLine | forEach(items) | markdown | assignTo('result') }}
 <div>{{ result | raw }}</div>
 ")).Result;            
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
         }
 
         [Test]

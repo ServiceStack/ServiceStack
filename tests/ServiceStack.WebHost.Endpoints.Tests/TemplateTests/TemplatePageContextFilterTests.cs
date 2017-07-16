@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 #if NETCORE
@@ -39,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 Args = { ["title"] = "The title" }
             }.Result;
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -49,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </header>
 <h1>The title</h1>
 </body>
-".SanitizeNewLines()));            
+".NormalizeNewLines()));            
         }
 
         [Test]
@@ -79,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 Args = { ["title"] = "The title" }
             }.Result;
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -88,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <h2>with-partial-binding</h2>
 <footer>The title</footer>
 </body>
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -122,7 +123,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["partialTitle"] = "Partial Title",
                 }
             }.Result;
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -130,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <h2>The title</h2>
 <h2>Partial Title</h2>
 </body>
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -178,7 +179,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Result;
 
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>Page title</title>
 </head>
@@ -191,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </section>
 
 </body>
-".SanitizeNewLines()));
+".NormalizeNewLines()));
 
         }
 
@@ -212,6 +213,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{it}} </li>' | forEach(numbers) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> 1 </li><li> 2 </li><li> 3 </li> </ul>"));
+        }
+
+        [Test]
+        public void Can_use_escaped_chars_in_forEach()
+        {
+            var context = new TemplatePagesContext
+            {
+                Args =
+                {
+                    ["letters"] = new[]{ "A", "B", "C" },
+                }
+            }.Init();
+
+            var result = context.EvaluateTemplate("<ul>\n{{ '<li> {{it}} </li>\n' | forEach(letters) }}</ul>");
+            Assert.That(result.NormalizeNewLines(),
+                Is.EqualTo(@"<ul>
+<li> A </li>
+<li> B </li>
+<li> C </li>
+</ul>".NormalizeNewLines()));
         }
 
         [Test]
@@ -247,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Result;
             
-            Assert.That(result.SanitizeNewLines(),
+            Assert.That(result.NormalizeNewLines(),
                 Is.EqualTo(@"
 <html>
 <body>
@@ -259,7 +280,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </section>
 </body>
 </html>"
-                    .SanitizeNewLines()));
+                    .NormalizeNewLines()));
         }
 
         [Test]

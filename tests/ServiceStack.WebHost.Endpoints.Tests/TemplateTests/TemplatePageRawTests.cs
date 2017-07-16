@@ -124,9 +124,9 @@ Brackets in Layout < & >
 
             var html = await result.RenderToStringAsync();
             
-            Assert.That(html.SanitizeNewLines(), Is.EqualTo(@"<h1>The Title</h1>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<h1>The Title</h1>
 <p>Brackets in Layout &lt; &amp; &gt; </p>
-<h2>The Title</h2>".SanitizeNewLines()));
+<h2>The Title</h2>".NormalizeNewLines()));
             
         }
 
@@ -164,13 +164,13 @@ Brackets in Layout < & >
 
             var html = await result.RenderToStringAsync();
             
-            Assert.That(html.SanitizeNewLines(), Is.EqualTo(@"<html>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
   <title>The Title</title>
 </head>
 <body>
   <h3>The Title</h3>
 
-</body>".SanitizeNewLines()));
+</body>".NormalizeNewLines()));
         }
 
         [Test]
@@ -307,7 +307,7 @@ Brackets in Layout < & >
                 }
             }.RenderToStringAsync();
             
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <head><title>{{ title }}</title></head>
 <body>
@@ -316,7 +316,7 @@ Brackets in Layout < & >
 <footer>Copyright &copy; ServiceStack 2008-2017</footer>
 </body>
 </html>
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
         private static ModelBinding CreateModelBinding()
@@ -470,12 +470,12 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = '{{ model.Dictionar
             
             var result = await new PageResult(context.GetPage("page")) { Model = model }.RenderToStringAsync();
             
-            Assert.That(result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 Object.Object.Prop = 'Nested Nested Prop'
 model.Object.Object.Prop = 'Nested Nested Prop'
 model.Dictionary['map-key'].Object.AltNested.Field = 'Dictionary AltNested Field'
 model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnested field'
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
 
 //#if NET45
@@ -813,7 +813,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 
     public static class TestUtils
     {
-        public static string SanitizeNewLines(this string text) => text.Trim().Replace("\r", "");
+        public static string NormalizeNewLines(this string text) => text.Trim().Replace("\r", "");
         public static string RemoveNewLines(this string text) => text.Trim().Replace("\r", "").Replace("\n", "");
         
         static readonly Regex whitespace = new Regex(@"\s+", RegexOptions.Compiled);

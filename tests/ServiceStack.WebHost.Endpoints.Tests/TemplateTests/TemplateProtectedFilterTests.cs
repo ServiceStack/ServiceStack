@@ -161,11 +161,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(urlContents, Is.EqualTo("[{Id:1,Name:foo},{Id:2,Name:bar}]"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/jsv', accept: 'text/csv' }) }}")).Result.SanitizeNewLines();
+                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], contentType:'application/jsv', accept: 'text/csv' }) }}")).Result.NormalizeNewLines();
             Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
             
             urlContents = new PageResult(context.OneTimePage(
-                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.SanitizeNewLines();
+                "{{ baseUrl | addPath('includeUrl-models') | includeUrl({ method:'POST', data: [{ id: 1, name: 'foo' }, { id: 2, name: 'bar' }], dataType:'csv' }) }}")).Result.NormalizeNewLines();
             Assert.That(urlContents, Is.EqualTo("Id,Name\n1,foo\n2,bar"));
         }
 
@@ -228,10 +228,10 @@ includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
 includFile = {{ 'file.txt' | includeFile }}
 ");
             
-            Assert.That(new PageResult(context.GetPage("page")).Result.SanitizeNewLines(), Is.EqualTo(@"
+            Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(), Is.EqualTo(@"
 includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
 includFile = File Contents
-".SanitizeNewLines()));
+".NormalizeNewLines()));
         }
     }
 }
