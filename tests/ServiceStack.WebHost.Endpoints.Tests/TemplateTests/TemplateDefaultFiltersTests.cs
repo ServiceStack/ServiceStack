@@ -11,9 +11,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateDefaultFiltersTests
     {
-        public TemplatePagesContext CreateContext(Dictionary<string, object> args = null)
+        public TemplateContext CreateContext(Dictionary<string, object> args = null)
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_default_filter_arithmetic_with_shorthand_notation()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -144,7 +144,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Can_incrment_and_decrement()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -167,7 +167,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Can_compare_numbers()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -218,7 +218,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Can_compare_strings()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -241,7 +241,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Can_compare_DateTime()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -269,7 +269,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Can_use_logical_boolean_operators()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -436,7 +436,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         [Test]
         public void Does_default_spaces_and_indents()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             
             Assert.That(context.EvaluateTemplate("{{ indent }}"), Is.EqualTo("\t"));
             Assert.That(context.EvaluateTemplate("{{ 4 | indents }}"), Is.EqualTo("\t\t\t\t"));
@@ -452,7 +452,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             Assert.That(context.EvaluateTemplate("{{ newLine }}"), Is.EqualTo(newLine));
             Assert.That(context.EvaluateTemplate("{{ 4 | newLines }}"), Is.EqualTo(newLine + newLine + newLine + newLine));
             
-            context = new TemplatePagesContext
+            context = new TemplateContext
             {
                 Args =
                 {
@@ -539,7 +539,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         public void Can_assign_result_to_variable()
         {
             string result;
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -574,7 +574,7 @@ result={{ result }}
         [Test]
         public void Can_assign_to_variables_in_partials()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {

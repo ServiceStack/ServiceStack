@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public async Task Can_generate_html_template_with_layout_in_memory()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public async Task Can_generate_markdown_template_with_layout_in_memory()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 PageFormats =
                 {
@@ -134,7 +134,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Can_generate_markdown_template_with_html_layout_in_memory()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 PageFormats =
                 {
@@ -177,7 +177,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_into_scope()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -192,7 +192,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_of_anon_object_into_scope()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -207,7 +207,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_reload_modified_page_contents_in_DebugMode()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 DebugMode = true, //default
             }.Init();
@@ -224,7 +224,7 @@ Brackets in Layout < & >
         [Test]
         public void Context_Throws_FileNotFoundException_when_page_does_not_exist()
         {
-            var context = new TemplatePagesContext();
+            var context = new TemplateContext();
 
             Assert.That(context.Pages.GetPage("not-exists.html"), Is.Null);
 
@@ -248,7 +248,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_use_custom_filter()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -274,7 +274,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_embed_partials()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -376,7 +376,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_evaluate_variable_binding_expressions()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -452,7 +452,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_evaluate_variable_binding_expressions_in_template()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -497,23 +497,23 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_render_onetime_page_and_layout()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {                
                 Args = { ["key"] = "the-key" }
             }.Init();
 
-            var adhocPage = context.Pages.OneTimePage("<h1>{{ key }}</h1>", "html");
+            var adhocPage = context.OneTimePage("<h1>{{ key }}</h1>", "html");
             var result = new PageResult(adhocPage) { Model = CreateModelBinding() }.Result;
             Assert.That(result, Is.EqualTo("<h1>the-key</h1>"));
             
-            adhocPage = context.Pages.OneTimePage("<h1>{{ model.Dictionary['map-key'].Object.AltNested.Field | lower }}</h1>", "html");
+            adhocPage = context.OneTimePage("<h1>{{ model.Dictionary['map-key'].Object.AltNested.Field | lower }}</h1>", "html");
             result = new PageResult(adhocPage) { Model = CreateModelBinding() }.Result;
             Assert.That(result, Is.EqualTo("<h1>dictionary altnested field</h1>"));
             
-            adhocPage = context.Pages.OneTimePage("<h1>{{ key }}</h1>", "html");
+            adhocPage = context.OneTimePage("<h1>{{ key }}</h1>", "html");
             result = new PageResult(adhocPage)
             {
-                LayoutPage = context.Pages.OneTimePage("<html><title>{{ model.List[0].Object.Prop | lower }}</title><body>{{ page }}</body></html>", "html"),
+                LayoutPage = context.OneTimePage("<html><title>{{ model.List[0].Object.Prop | lower }}</title><body>{{ page }}</body></html>", "html"),
                 Model = CreateModelBinding()
             }.Result;
             Assert.That(result, Is.EqualTo("<html><title>nested list prop</title><body><h1>the-key</h1></body></html>"));
@@ -522,14 +522,14 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public async Task Can_render_onetime_page_with_real_layout()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {                
                 Args = { ["key"] = "the-key" }
             }.Init();
             
             context.VirtualFiles.WriteFile("_layout.html", "<html><title>{{ model.List[0].Object.Prop | lower }}</title><body>{{ page }}</body></html>");
 
-            var adhocPage = context.Pages.OneTimePage(@"<h1>{{ key }}</h1>", "html");
+            var adhocPage = context.OneTimePage(@"<h1>{{ key }}</h1>", "html");
             var result = await new PageResult(adhocPage)
             {
                 LayoutPage = context.GetPage("_layout"),
@@ -550,7 +550,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Does_not_allow_invoking_method_on_binding_expression()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             var model = new ModelWithMethods { Nested = new ModelWithMethods { Name = "Nested" } };
             
@@ -578,7 +578,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Binding_expressions_with_null_references_evaluate_to_null()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ model.Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
             Assert.That(new PageResult(context.OneTimePage("{{ Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
@@ -591,7 +591,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void when_only_shows_code_when_true()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
             {
@@ -620,7 +620,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void unless_shows_code_when_not_true()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
             {
@@ -650,7 +650,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void can_use_if_and_ifNot_as_alias_to_when_and_unless()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) }}"))
             {
@@ -666,7 +666,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_use_else_and_otherwise_filter_to_show_alternative_content()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) | otherwise('Is Authenticated') }}"))
             {
@@ -692,7 +692,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Returns_original_string_with_unknown_variable()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -712,7 +712,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Filters_with_HandleUnknownValueAttribute_handles_unkownn_values()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | otherwise('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
         }
@@ -720,7 +720,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_truthy_and_falsy_conditions()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | falsy('undefined value') }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ null      | falsy('null value') }}")).Result, Is.EqualTo("null value"));
@@ -746,7 +746,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_ifTruthy_and_ifFalsy_conditions()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifFalsey(undefined) }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifFalsey(null) }}")).Result, Is.EqualTo("null value"));
@@ -772,7 +772,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_strict_if_and_else_conditions()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifNot(undefined) }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifNot(null) }}")).Result, Is.EqualTo("null value"));
@@ -798,7 +798,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Null_exceptions_render_empty_string()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
 //                RenderExpressionExceptions = true,
                 Args =
@@ -814,7 +814,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_use_whitespace_for_last_string_arg()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {

@@ -9,7 +9,7 @@ namespace ServiceStack.Templates
     {
         public PageResult PageResult { get; }
         public TemplatePage Page => PageResult.Page;
-        public TemplatePagesContext Context => Page.Context;
+        public TemplateContext Context => Page.Context;
         public Dictionary<string, object> ScopedParams { get; internal set; }
         public Stream OutputStream { get; }
 
@@ -35,7 +35,7 @@ namespace ServiceStack.Templates
 
             if (dynamicPage == null)
             {
-                dynamicPage = scope.Context.OneTimePage(template);
+                dynamicPage = scope.Context.OneTimePage(template, cacheExpressions:cachePage);
 
                 if (cachePage)
                 {

@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_not_include_protected_filters_by_default()
         {
-            var context = new TemplatePagesContext().Init();
+            var context = new TemplateContext().Init();
             context.VirtualFiles.WriteFile("index.txt", "file contents");
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_protected_includeFiles_in_context_or_PageResult()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 TemplateFilters = { new TemplateProtectedFilters() }
             }.Init();
@@ -108,7 +108,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_transformers_on_block_filter_outputs()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 TemplateFilters = { new TemplateProtectedFilters() },
                 FilterTransformers =
@@ -215,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_exclude_individual_filters()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 ExcludeFiltersNamed = { "includeUrl" },
                 TemplateFilters = { new TemplateProtectedFilters() },

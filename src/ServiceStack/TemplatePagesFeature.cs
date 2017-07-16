@@ -11,7 +11,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class TemplatePagesFeature : TemplatePagesContext, IPlugin
+    public class TemplatePagesFeature : TemplateContext, IPlugin
     {
         public string HtmlExtension
         {

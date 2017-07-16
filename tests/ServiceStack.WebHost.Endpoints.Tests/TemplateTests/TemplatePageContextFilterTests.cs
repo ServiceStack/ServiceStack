@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_pass_variables_into_partials()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args = { ["defaultMessage"] = "this is the default message" }
             }.Init();
@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_load_page_with_partial_and_scoped_variables()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -96,7 +96,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_load_page_with_page_or_partial_with_scoped_variables_containing_bindings()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -138,7 +138,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_replace_bindings()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -203,7 +203,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_using_forEach()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -222,7 +222,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_escaped_chars_in_forEach()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -242,7 +242,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_using_forEach_in_page_and_layouts()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -290,7 +290,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_with_bindings_using_forEach()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {
@@ -310,7 +310,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_with_bindings_and_custom_scope_using_forEach()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {

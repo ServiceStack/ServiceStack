@@ -22,14 +22,15 @@ namespace ServiceStack.Templates
         public DateTime LastModified { get; set; }
         public bool HasInit { get; private set; }
 
-        public TemplatePagesContext Context { get; }
+        public TemplateContext Context { get; }
         public PageFormat Format { get; }
         private readonly object semaphore = new object();
 
         public bool IsTempFile => File.Directory.VirtualPath == TemplateConstants.TempFilePath;
         public string VirtualPath => IsTempFile ? "{temp file}" : File.VirtualPath;
+        public bool CacheExpressions { get; }
 
-        public TemplatePage(TemplatePagesContext context, IVirtualFile file, PageFormat format=null)
+        public TemplatePage(TemplateContext context, IVirtualFile file, PageFormat format=null, bool cacheExpressions=true)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             File = file ?? throw new ArgumentNullException(nameof(file));
@@ -37,6 +38,8 @@ namespace ServiceStack.Templates
             Format = format ?? Context.GetFormat(File.Extension);
             if (Format == null)
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
+
+            CacheExpressions = cacheExpressions;
         }
 
         public async Task<TemplatePage> Init()

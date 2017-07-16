@@ -8,7 +8,7 @@ namespace ServiceStack.Templates
         public string Layout { get; set; }
         public object Model { get; set; }
         public Dictionary<string, object> Args { get; } = new Dictionary<string, object>();
-        public TemplatePagesContext Context { get; set; }
+        public TemplateContext Context { get; set; }
         public ITemplatePages Pages { get; set; }
 
         protected TemplateCode(string virtualPath = null, string layout = null)

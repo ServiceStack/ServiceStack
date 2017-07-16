@@ -20,7 +20,7 @@ namespace ServiceStack.Templates
     
     public class TemplateFilter
     {
-        public TemplatePagesContext Context { get; set; }
+        public TemplateContext Context { get; set; }
         public ITemplatePages Pages { get; set; }
         
         public virtual bool HandlesUnknownValue(string name, int argsCount)

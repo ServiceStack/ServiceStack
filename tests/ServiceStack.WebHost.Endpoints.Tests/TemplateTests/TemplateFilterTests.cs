@@ -41,15 +41,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var contexts = new[]
             {
-                new TemplatePagesContext
+                new TemplateContext
                 {
                     ScanTypes = {typeof(FilterExamples)}
                 },
-                new TemplatePagesContext
+                new TemplateContext
                 {
                     ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
                 },
-                new TemplatePagesContext
+                new TemplateContext
                 {
                     TemplateFilters = {new FilterExamples { Dep = new Dep()} }
                 },
@@ -86,9 +86,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }
         }
 
-        public TemplatePagesContext CreateContext()
+        public TemplateContext CreateContext()
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
             };

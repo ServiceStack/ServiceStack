@@ -6,9 +6,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateQueryFilterTests
     {
-        private static TemplatePagesContext CreateContext(Dictionary<string, object> optionalArgs = null)
+        private static TemplateContext CreateContext(Dictionary<string, object> optionalArgs = null)
         {
-            var context = new TemplatePagesContext
+            var context = new TemplateContext
             {
                 Args =
                 {

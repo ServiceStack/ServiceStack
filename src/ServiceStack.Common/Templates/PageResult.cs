@@ -644,7 +644,7 @@ namespace ServiceStack.Templates
             if (targetValue == JsNull.Value)
                 return JsNull.Value;
             
-            var fn = !Page.IsTempFile
+            var fn = Page.CacheExpressions
                 ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment())
                 : TemplatePageUtils.Compile(targetValue.GetType(), expr.ToStringSegment());
 

@@ -17,7 +17,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
-    public class TemplatePagesContext : IDisposable
+    public class TemplateContext : IDisposable
     {
         public List<PageFormat> PageFormats { get; set; } = new List<PageFormat>();
         
@@ -73,9 +73,10 @@ namespace ServiceStack.Templates
             return page;
         }
 
-        public TemplatePage OneTimePage(string contents, string ext=null) => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
+        public TemplatePage OneTimePage(string contents, string ext=null, bool cacheExpressions=false) 
+            => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension, cacheExpressions);
 
-        public TemplatePagesContext()
+        public TemplateContext()
         {
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
@@ -92,7 +93,7 @@ namespace ServiceStack.Templates
 
         public bool HasInit { get; private set; }
 
-        public TemplatePagesContext Init()
+        public TemplateContext Init()
         {
             if (HasInit)
                 return this;
@@ -146,7 +147,7 @@ namespace ServiceStack.Templates
                 filter.Pages = Pages;
         }
 
-        public TemplatePagesContext ScanType(Type type)
+        public TemplateContext ScanType(Type type)
         {
             if (typeof(TemplateFilter).IsAssignableFromType(type))
             {
@@ -190,14 +191,14 @@ namespace ServiceStack.Templates
 
     public static class TemplatePagesContextExtensions
     {
-        public static string EvaluateTemplate(this TemplatePagesContext context, string template, Dictionary<string, object> args=null)
+        public static string EvaluateTemplate(this TemplateContext context, string template, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(template));
             args.Each((x,y) => pageResult.Args[x] = y);
             return pageResult.Result;
         }
         
-        public static Task<string> EvaluateTemplateAsync(this TemplatePagesContext context, string template, Dictionary<string, object> args=null)
+        public static Task<string> EvaluateTemplateAsync(this TemplateContext context, string template, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(template));
             args.Each((x,y) => pageResult.Args[x] = y);
