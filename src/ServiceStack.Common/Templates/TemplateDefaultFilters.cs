@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Text;
+using ServiceStack.Text.Common;
+using ServiceStack.Text.Json;
 
 namespace ServiceStack.Templates
 {
@@ -20,6 +22,8 @@ namespace ServiceStack.Templates
 
     public class TemplateDefaultFilters : TemplateFilter
     {
+        public static TemplateDefaultFilters Instance = new TemplateDefaultFilters();
+        
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
@@ -227,7 +231,7 @@ namespace ServiceStack.Templates
         }
 
         public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, "it");
-        public async Task forEach(TemplateScopeContext scope, object target, object items, string scopeName)
+        public async Task forEach(TemplateScopeContext scope, object target, object items, string scopeName) 
         {
             var objs = items as IEnumerable;
             if (objs != null)
@@ -247,6 +251,7 @@ namespace ServiceStack.Templates
 
         public string append(string target, string suffix) => target + suffix;
         public string appendLine(string target) => target + Environment.NewLine;
+        public string newLine(string target) => target + Environment.NewLine;
 
         public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
         public string addPaths(string target, IEnumerable pathsToAppend) => 
@@ -258,5 +263,47 @@ namespace ServiceStack.Templates
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
         
+        public object where(TemplateScopeContext scope, object target, object filter)
+        {
+            var items = target.AssertEnumerable(nameof(where));
+            var to = new List<object>();
+
+            if (filter is string s)
+            {
+                var literal = s.ToStringSegment();
+                literal = literal.ParseConditionExpression(out ConditionExpression expr);
+                foreach (var item in items)
+                {
+                    scope.ScopedParams["it"] = item;
+                    var result = expr.Evaluate(scope);
+                    if (result)
+                    {
+                        to.Add(item);
+                    }
+                }
+            }
+            
+            return to;
+        }
+        
+        public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, "it");
+        public async Task select(TemplateScopeContext scope, object items, object target, string scopeName) 
+        {
+            var objs = items as IEnumerable;
+            if (objs != null)
+            {
+                var template = JsonTypeSerializer.Unescape(target.ToString());
+                var itemScope = scope.CreateScopedContext(template);
+                foreach (var item in objs)
+                {
+                    itemScope.ScopedParams[scopeName] = item;
+                    await itemScope.WritePageAsync();
+                }
+            }
+            else if (items != null)
+            {
+                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+            }
+        }
     }
 }

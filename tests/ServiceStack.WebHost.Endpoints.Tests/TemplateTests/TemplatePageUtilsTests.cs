@@ -392,6 +392,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_preserve_new_lines()
+        {
+            object value;
+            JsBinding binding;
+
+            "'a\n'".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EqualTo("a\n"));
+        }
+
+        [Test]
+        public void Can_parse_boolean_logic_expressions()
+        {
+            object value;
+            JsBinding binding;
+
+            "it.Id = 0".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(((JsExpression)binding).Name, Is.EqualTo("it.Id"));
+        }
+
+        [Test]
         public void Can_detect_invalid_syntax()
         {
             try

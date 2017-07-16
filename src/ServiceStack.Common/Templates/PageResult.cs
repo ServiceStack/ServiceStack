@@ -470,10 +470,17 @@ namespace ServiceStack.Templates
 
         private object EvaluateAnyBindings(object value, TemplateScopeContext scopeContext)
         {
+            if (value is JsExpression expr)
+                return expr.IsBinding()
+                    ? EvaluateBinding(expr.NameString, scopeContext)
+                    : Evaluate(expr.Binding, scopeContext);
+            
             if (value is JsBinding valueBinding)
-            {
                 return GetValue(valueBinding.BindingString, scopeContext);
-            }
+            
+            if (value is JsConstant constant)
+                return constant.Value;
+
             if (value is Dictionary<string, object> map)
             {
                 var keys = map.Keys.ToArray();
@@ -483,7 +490,7 @@ namespace ServiceStack.Templates
                     map[key] = EvaluateAnyBindings(entryValue, scopeContext);
                 }
             }
-            if (value is List<object> list)
+            else if (value is List<object> list)
             {
                 for (var i = 0; i < list.Count; i++)
                 {
@@ -513,23 +520,28 @@ namespace ServiceStack.Templates
             }
         }
 
-        private object Evaluate(PageVariableFragment var, StringSegment arg, TemplateScopeContext scopeContext)
+        private object Evaluate(StringSegment arg, TemplateScopeContext scopeContext, PageVariableFragment var=null)
         {
-            var.ParseLiteral(arg, out object outValue, out JsBinding binding);
+            object outValue;
+            JsBinding binding;
+            
+            if (var == null)
+                arg.ParseNextToken(out outValue, out binding);
+            else
+                var.ParseNextToken(arg, out outValue, out binding);
 
             if (binding is JsExpression expr)
             {
-                var value = Evaluate(var, expr, scopeContext);
+                var value = Evaluate(expr, scopeContext, var);
                 return value;
             }
-            if (binding != null)
-            {
-                return GetValue(binding.BindingString, scopeContext);
-            }
-            return outValue;
+            
+            return binding != null 
+                ? GetValue(binding.BindingString, scopeContext) 
+                : outValue;
         }
 
-        private object Evaluate(PageVariableFragment var, JsExpression expr, TemplateScopeContext scopeContext)
+        private object Evaluate(JsExpression expr, TemplateScopeContext scopeContext, PageVariableFragment var=null)
         {
             var invoker = GetFilterInvoker(expr.NameString, expr.Args.Count, out TemplateFilter filter);
 
@@ -537,7 +549,7 @@ namespace ServiceStack.Templates
             for (var i = 0; i < expr.Args.Count; i++)
             {
                 var arg = expr.Args[i];
-                var varValue = Evaluate(var, arg, scopeContext);
+                var varValue = Evaluate(arg, scopeContext, var);
                 args[i] = varValue;
             }
 

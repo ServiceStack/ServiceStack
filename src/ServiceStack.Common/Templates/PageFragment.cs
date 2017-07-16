@@ -32,7 +32,7 @@ namespace ServiceStack.Templates
             OriginalText = originalText;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
 
-            ParseLiteral(name, out object value, out JsBinding binding);
+            ParseNextToken(name, out object value, out JsBinding binding);
 
             Value = value;
 
@@ -42,7 +42,7 @@ namespace ServiceStack.Templates
                 Binding = binding.Binding;
         }
 
-        public void ParseLiteral(StringSegment literal, out object value, out JsBinding binding)
+        public void ParseNextToken(StringSegment literal, out object value, out JsBinding binding)
         {
             try
             {

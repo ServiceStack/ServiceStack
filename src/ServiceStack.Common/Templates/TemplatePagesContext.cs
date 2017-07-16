@@ -181,4 +181,21 @@ namespace ServiceStack.Templates
             using (Container as IDisposable) {}
         }
     }
+
+    public static class TemplatePagesContextExtensions
+    {
+        public static string EvaluateTemplate(this TemplatePagesContext context, string template, Dictionary<string, object> args=null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(template));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            return pageResult.Result;
+        }
+        
+        public static Task<string> EvaluateTemplateAsync(this TemplatePagesContext context, string template, Dictionary<string, object> args=null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(template));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            return pageResult.RenderToStringAsync();
+        }
+    }
 }

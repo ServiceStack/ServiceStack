@@ -150,5 +150,15 @@ namespace ServiceStack.Templates
 
             return pageParams ?? new Dictionary<string, object>();
         }
+
+        public static IEnumerable AssertEnumerable(this object items, string filterName)
+        {
+            var enumItems = items as IEnumerable;
+            if (enumItems == null && items != null)
+                throw new ArgumentException(
+                    $"{filterName} expects an IEnumerable but received a '{items.GetType().Name}' instead");
+
+            return enumItems ?? TypeConstants.EmptyObjectArray;
+        }
     }
 }

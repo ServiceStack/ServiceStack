@@ -64,5 +64,10 @@ namespace ServiceStack.Templates
         {
             await scope.PageResult.WritePageAsync(page, scope.ScopeWithParams(pageParams), token);
         }
+
+        public static object EvaluateToken(this TemplateScopeContext scope, JsToken token)
+        {
+            return scope.PageResult.EvaluateToken(scope, token);
+        }
     }
 }
