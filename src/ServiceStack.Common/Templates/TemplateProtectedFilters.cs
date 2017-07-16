@@ -77,7 +77,7 @@ namespace ServiceStack.Templates
                     return MimeTypes.Xml;
                 case "text":
                     return MimeTypes.PlainText;
-                case "formUrlEncoded":
+                case "form":
                     return MimeTypes.FormUrlEncoded;
             }
             
@@ -111,8 +111,6 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"Can not serialize to unknown Content-Type '{contentType}'");
         }
 
-        protected ConcurrentDictionary<string, Tuple<DateTime, byte[]>> contentsCache = new ConcurrentDictionary<string, Tuple<DateTime, byte[]>>();
-
         public static string CreateCacheKey(string url, Dictionary<string,object> options=null)
         {
             var sb = StringBuilderCache.Allocate()
@@ -140,11 +138,11 @@ namespace ServiceStack.Templates
                 : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
             
             var cacheKey = CreateCacheKey("file:" + virtualPath, scopedParams);
-            if (contentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
+            if (Context.ExpiringCache.TryGetValue(cacheKey, out Tuple<DateTime, object> cacheEntry))
             {
-                if (cacheEntry.Item1 > DateTime.UtcNow)
+                if (cacheEntry.Item1 > DateTime.UtcNow && cacheEntry.Item2 is byte[] bytes)
                 {
-                    await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+                    await scope.OutputStream.WriteAsync(bytes);
                     return;
                 }
             }
@@ -160,8 +158,9 @@ namespace ServiceStack.Templates
                 await includeFile(captureScope, virtualPath);
 
                 ms.Position = 0;
-                contentsCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn), ms.ToArray());
-                await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+                var bytes = ms.ToArray();
+                Context.ExpiringCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn),(object)bytes);
+                await scope.OutputStream.WriteAsync(bytes);
             }
         }
 
@@ -174,11 +173,11 @@ namespace ServiceStack.Templates
                 : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
 
             var cacheKey = CreateCacheKey("url:" + url, scopedParams);
-            if (contentsCache.TryGetValue(cacheKey, out Tuple<DateTime, byte[]> cacheEntry))
+            if (Context.ExpiringCache.TryGetValue(cacheKey, out Tuple<DateTime, object> cacheEntry))
             {
-                if (cacheEntry.Item1 > DateTime.UtcNow)
+                if (cacheEntry.Item1 > DateTime.UtcNow && cacheEntry.Item2 is byte[] bytes)
                 {
-                    await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+                    await scope.OutputStream.WriteAsync(bytes);
                     return;
                 }
             }
@@ -200,8 +199,10 @@ namespace ServiceStack.Templates
 
                 ms.Position = 0;
                 var expireAt = DateTime.UtcNow.Add(expireIn);
-                contentsCache[cacheKey] = cacheEntry = Tuple.Create(expireAt, ms.ToArray());
-                await scope.OutputStream.WriteAsync(cacheEntry.Item2);
+
+                var bytes = ms.ToArray();
+                Context.ExpiringCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn),(object)bytes);
+                await scope.OutputStream.WriteAsync(bytes);
             }
         }
     }

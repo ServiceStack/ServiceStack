@@ -23,9 +23,26 @@ namespace ServiceStack.Templates
 
     public static class TemplateScopeContextUtils
     {
-        public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template)
+        public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template, bool cachePage=true)
         {
-            var dynamicPage = scope.Context.OneTimePage(template);
+            TemplatePage dynamicPage = null;
+
+            if (cachePage)
+            {
+                scope.Context.Cache.TryGetValue(template, out object value);
+                dynamicPage = value as TemplatePage;
+            }
+
+            if (dynamicPage == null)
+            {
+                dynamicPage = scope.Context.OneTimePage(template);
+
+                if (cachePage)
+                {
+                    scope.Context.Cache[template] = dynamicPage;
+                }
+            }
+
             var pageResult = scope.PageResult.Clone(dynamicPage).Init().Result;
             var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, new Dictionary<string, object>(scope.ScopedParams));
 

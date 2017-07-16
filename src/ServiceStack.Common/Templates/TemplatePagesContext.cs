@@ -51,6 +51,10 @@ namespace ServiceStack.Templates
         
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
+        public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
+
+        public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
+
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
