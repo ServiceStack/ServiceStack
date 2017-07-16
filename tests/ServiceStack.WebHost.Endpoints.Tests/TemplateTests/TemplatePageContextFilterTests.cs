@@ -45,6 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
   <title>The title</title>
 </head>
 <body>
+
 <header id='the-page'>
   in your header
 </header>
@@ -184,9 +185,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
   <title>Page title</title>
 </head>
 <body>
+
 <h2>THE TITLE</h2>
 <p>foo, bar</p>
+
 <section>
+
 <h3>PAGE TITLE</h3>
 <p>1, 2, 3</p>
 </section>

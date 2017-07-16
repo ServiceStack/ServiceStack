@@ -68,10 +68,8 @@ namespace ServiceStack.Templates
             var pageVars = new Dictionary<string, object>();
 
             var pos = 0;
-            while (char.IsWhiteSpace(fileContents.GetChar(pos)))
-                pos++;
-
-            fileContents.TryReadLine(out StringSegment line, ref pos);
+            var bodyContents = fileContents;
+            fileContents.AdvancePastWhitespace().TryReadLine(out StringSegment line, ref pos);
             if (line.StartsWith(Format.ArgsPrefix))
             {
                 while (fileContents.TryReadLine(out line, ref pos))
@@ -86,13 +84,11 @@ namespace ServiceStack.Templates
                     var kvp = line.SplitOnFirst(':');
                     pageVars[kvp[0].Trim().ToString()] = kvp.Length > 1 ? kvp[1].Trim().ToString() : "";
                 }
-            }
-            else
-            {
-                pos = 0;
+                
+                //When page has variables body starts from first non whitespace after variable's end  
+                bodyContents = fileContents.SafeSubsegment(pos).AdvancePastWhitespace();
             }
 
-            var bodyContents = fileContents.Subsegment(pos).TrimStart();
             var pageFragments = TemplatePageUtils.ParseTemplatePage(bodyContents);
 
             lock (semaphore)

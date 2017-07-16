@@ -1,13 +1,14 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
 using ServiceStack.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateQueryFilterTests
     {
-        private static TemplatePagesContext CreateContext()
+        private static TemplatePagesContext CreateContext(Dictionary<string, object> optionalArgs = null)
         {
-            return new TemplatePagesContext
+            var context = new TemplatePagesContext
             {
                 Args =
                 {
@@ -15,7 +16,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
                 }
-            }.Init();
+            };
+            optionalArgs.Each((key, val) => context.Args[key] = val);
+            return context.Init();
         }
 
         [Test]
@@ -119,6 +122,36 @@ In-stock products that cost more than 3.00:
 Chai is in stock and costs more than 3.00.
 Chang is in stock and costs more than 3.00.
 Aniseed Syrup is in stock and costs more than 3.00.
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq4()
+        {
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers 
+    | where: it.Region = 'WA' 
+    | assignTo: waCustomers }}
+Customers from Washington and their orders:
+{{ 'Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
+{{ it.Orders | select(""  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat | newLine }}"") }}' 
+    | forEach(waCustomers) }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Customers from Washington and their orders:
+Customer LAZYK Lazy K Kountry Store
+  Order 10482: 1997/03/21
+  Order 10545: 1997/05/22
+Customer TRAIH Trail's Head Gourmet Provisioners
+  Order 10574: 1997/06/19
+  Order 10577: 1997/06/23
+  Order 10822: 1998/01/08
 ".NormalizeNewLines()));
         }
 

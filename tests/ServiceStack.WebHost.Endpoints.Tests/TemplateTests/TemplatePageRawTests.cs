@@ -83,7 +83,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             var html = await result.RenderToStringAsync();
             
-            Assert.That(html, Is.EqualTo(@"<html>
+            Assert.That(html, Is.EqualTo(@"
+<html>
   <title>The Title</title>
 </head>
 <body>
