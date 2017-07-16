@@ -28,7 +28,7 @@ namespace ServiceStack
     {
         IQueryData Dto { get; }
         Dictionary<string, string> DynamicParams { get; }
-        List<ConditionExpression> Conditions { get; }
+        List<DataConditionExpression> Conditions { get; }
         OrderByExpression OrderBy { get; }
         HashSet<string> OnlyFields { get; }
         int? Offset { get; }
@@ -375,7 +375,7 @@ namespace ServiceStack
         }
     }
 
-    public class ConditionExpression
+    public class DataConditionExpression
     {
         public QueryTerm Term { get; set; }
         public QueryCondition QueryCondition { get; set; }
@@ -482,7 +482,7 @@ namespace ServiceStack
 
         public IQueryData Dto { get; private set; }
         public Dictionary<string, string> DynamicParams { get; private set; }
-        public List<ConditionExpression> Conditions { get; set; }
+        public List<DataConditionExpression> Conditions { get; set; }
         public OrderByExpression OrderBy { get; set; }
         public HashSet<string> OnlyFields { get; set; }
         public int? Offset { get; set; }
@@ -502,7 +502,7 @@ namespace ServiceStack
             this.context = context;
             this.Dto = context.Dto;
             this.DynamicParams = context.DynamicParams;
-            this.Conditions = new List<ConditionExpression>();
+            this.Conditions = new List<DataConditionExpression>();
         }
 
         public virtual bool HasConditions => Conditions.Count > 0;
@@ -587,7 +587,7 @@ namespace ServiceStack
 
         public virtual void AddCondition(QueryTerm term, PropertyInfo field, QueryCondition condition, object value)
         {
-            this.Conditions.Add(new ConditionExpression
+            this.Conditions.Add(new DataConditionExpression
             {
                 Term = term,
                 Field = field,
@@ -871,7 +871,7 @@ namespace ServiceStack
 
         public abstract IEnumerable<T> GetDataSource(IDataQuery q);
 
-        public virtual IEnumerable<T> ApplyConditions(IEnumerable<T> data, IEnumerable<ConditionExpression> conditions)
+        public virtual IEnumerable<T> ApplyConditions(IEnumerable<T> data, IEnumerable<DataConditionExpression> conditions)
         {
             var source = data;
             var i = 0;
