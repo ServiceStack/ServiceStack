@@ -161,11 +161,6 @@ namespace ServiceStack.Templates
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
-        public object echo(object value) => value;
-
-        public object join(IEnumerable<object> values) => join(values, ",");
-        public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
-
         public bool equals(object target, object other) =>
             target == null || other == null 
                 ? target == other 
@@ -204,6 +199,25 @@ namespace ServiceStack.Templates
             
             throw new NotSupportedException($"{target} is not IComparable");
         }
+
+        public object echo(object value) => value;
+
+        public object join(IEnumerable<object> values) => join(values, ",");
+        public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+
+        public string append(string target, string suffix) => target + suffix;
+        public string appendLine(string target) => target + Environment.NewLine;
+        public string newLine(string target) => target + Environment.NewLine;
+
+        public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
+        public string addPaths(string target, IEnumerable pathsToAppend) => 
+            target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
+
+        public string addQueryString(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
+        
+        public string addHashParams(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
 
         public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
         {
@@ -248,41 +262,27 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
-
-        public string append(string target, string suffix) => target + suffix;
-        public string appendLine(string target) => target + Environment.NewLine;
-        public string newLine(string target) => target + Environment.NewLine;
-
-        public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
-        public string addPaths(string target, IEnumerable pathsToAppend) => 
-            target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
-
-        public string addQueryString(string url, object urlParams) => 
-            urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
-        
-        public string addHashParams(string url, object urlParams) => 
-            urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
         
         public object where(TemplateScopeContext scope, object target, object filter)
         {
             var items = target.AssertEnumerable(nameof(where));
-            var to = new List<object>();
 
-            if (filter is string s)
+            if (!(filter is string s)) 
+                throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var to = new List<object>();
+            var literal = s.ToStringSegment();
+            literal = literal.ParseConditionExpression(out ConditionExpression expr);
+            foreach (var item in items)
             {
-                var literal = s.ToStringSegment();
-                literal = literal.ParseConditionExpression(out ConditionExpression expr);
-                foreach (var item in items)
+                scope.ScopedParams["it"] = item;
+                var result = expr.Evaluate(scope);
+                if (result)
                 {
-                    scope.ScopedParams["it"] = item;
-                    var result = expr.Evaluate(scope);
-                    if (result)
-                    {
-                        to.Add(item);
-                    }
+                    to.Add(item);
                 }
             }
-            
+
             return to;
         }
         
