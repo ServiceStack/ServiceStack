@@ -45,8 +45,31 @@ Numbers < 5:
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
-   | where('it.UnitsInStock = 0') 
-   | select('{{ it.productName | raw }} is sold out!\n')
+    | where: it.UnitsInStock = 0 
+    | select: { it.productName | raw } is sold out!\n
+}}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Sold out products:
+Chef Anton's Gumbo Mix is sold out!
+Alice Mutton is sold out!
+Thüringer Rostbratwurst is sold out!
+Gorgonzola Telino is sold out!
+Perth Pasties is sold out!
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void linq2_original()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Sold out products:
+{{ products 
+    | where('it.UnitsInStock = 0') 
+    | select('{{ it.productName | raw }} is sold out!\n')
 }}
 ").NormalizeNewLines(),
                 
@@ -68,8 +91,8 @@ Perth Pasties is sold out!
             Assert.That(context.EvaluateTemplate(@"
 In-stock products that cost more than 3.00:
 {{ products 
-   | where('it.UnitsInStock > 0 and it.UnitPrice > 3') 
-   | select('{{ it.productName | raw }} is in stock and costs more than 3.00.\n') 
+    | where: it.UnitsInStock > 0 and it.UnitPrice > 3 
+    | select: { it.productName | raw } is in stock and costs more than 3.00.\n 
 }}
 ").NormalizeNewLines(),
                 

@@ -780,12 +780,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public static List<JsExpression> ParseJsExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
             => commandsString.ParseExpression<JsExpression>(out pos, separator, atEndIndex);
 
-        public static List<T> ParseExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
+        public static List<T> ParseExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false) 
             where T : JsExpression, new()
-            => commandsString.ParseExpression<T>(out int _, separator, atEndIndex);
+            => commandsString.ParseExpression<T>(out int _, separator, atEndIndex, allowWhitespaceSensitiveSyntax);
 
         public static List<T> ParseExpression<T>(this StringSegment commandsString, out int pos, char separator = ',',
-            Func<StringSegment, int, int?> atEndIndex = null)
+            Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false)
             where T : JsExpression, new()
         {
             var to = new List<T>();
@@ -840,6 +840,25 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         if (cmd.Name.HasValue)
                             to.Add(cmd);
                         return to;
+                    }
+
+                    if (allowWhitespaceSensitiveSyntax && c == ':')
+                    {
+                        // replace everything after ':' up till new line and rewrite as single string to method
+                        var endStringPos = commandsString.IndexOf("\n", i);
+                        if (endStringPos == -1)
+                            throw new NotSupportedException($"Whitespace sensitive syntax requires a \\n new line delimiter to mark end of statement, near '{commandsString.SubstringWithElipsis(i,50)}'");
+
+                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
+                        
+                        var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
+                        var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
+                        cmd.Args = ParseArguments(rewrittenArgs.ToStringSegment(), out int endPos);
+                        i += 1; // \n
+                        i += originalArgs.Length - rewrittenArgs.Length;
+                        i += endPos;
+                        pos = i + 1;
+                        continue;
                     }
 
                     if (c == '(')

@@ -70,7 +70,8 @@ namespace ServiceStack.Templates
                                 return strPos;
                             }
                             return null;
-                        });
+                        },
+                        allowWhitespaceSensitiveSyntax: true);
                 
                     if (!foundVarEnd)
                         throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
