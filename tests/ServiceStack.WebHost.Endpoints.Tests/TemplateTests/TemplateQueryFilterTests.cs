@@ -16,6 +16,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["numbers"] = new[] { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 },
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
+                    ["digits"] = new[]{ "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
+                    ["strings"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
                 }
             };
             optionalArgs.Each((key, val) => context.Args[key] = val);
@@ -23,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void linq1() // alternative with clean whitespace sensitive string argument syntax:
+        public void Linq1() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
             
@@ -42,7 +44,7 @@ Numbers < 5:
         }
 
         [Test]
-        public void linq2() // alternative with clean whitespace sensitive string argument syntax:
+        public void Linq2() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
             
@@ -64,7 +66,7 @@ Perth Pasties is sold out!
         }
 
         [Test]
-        public void linq3()
+        public void Linq3()
         {
             var context = CreateContext();
             
@@ -85,7 +87,7 @@ Aniseed Syrup is in stock and costs more than 3.00.
         }
 
         [Test]
-        public void linq4()
+        public void Linq4()
         {
             var context = CreateContext(new Dictionary<string, object>
             {
@@ -118,6 +120,73 @@ Customer TRAIH Trail's Head Gourmet Provisioners
   Order 10574: 1997/06/19
   Order 10577: 1997/06/23
   Order 10822: 1998/01/08
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq5()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Short digits:
+{{ digits 
+   | where: it.Length < index
+   | select: The word {it} is shorter than its value.\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Short digits:
+The word five is shorter than its value.
+The word six is shorter than its value.
+The word seven is shorter than its value.
+The word eight is shorter than its value.
+The word nine is shorter than its value.
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq6()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Numbers + 1:
+{{ numbers | select: { it | incr }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Numbers + 1:
+6
+5
+2
+4
+10
+9
+7
+8
+3
+1
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq7()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Product Names:
+{{ products | select: { it.ProductName | raw }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Product Names:
+Chai
+Chang
+Aniseed Syrup
+Chef Anton's Cajun Seasoning
+Chef Anton's Gumbo Mix
 ".NormalizeNewLines()));
         }
 

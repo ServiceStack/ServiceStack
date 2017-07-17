@@ -287,9 +287,11 @@ namespace ServiceStack.Templates
 
             var to = new List<object>();
             literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
             foreach (var item in items)
             {
                 scope.ScopedParams[itemBinding] = item;
+                scope.ScopedParams[TemplateConstants.Index] = i++;
                 var result = expr.Evaluate(scope);
                 if (result)
                 {
@@ -310,9 +312,11 @@ namespace ServiceStack.Templates
                 var template = JsonTypeSerializer.Unescape(target.ToString());
                 var itemScope = scope.CreateScopedContext(template, scopedParams);
                 
+                var i = 0;
                 foreach (var item in objs)
                 {
                     itemScope.ScopedParams[itemBinding] = item;
+                    scope.ScopedParams[TemplateConstants.Index] = i++;
                     await itemScope.WritePageAsync();
                 }
             }
@@ -331,9 +335,11 @@ namespace ServiceStack.Templates
                 var page = await scope.Context.GetPage(pageName).Init();
                 var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
                 
+                var i = 0;
                 foreach (var item in objs)
                 {
                     pageParams[itemBinding] = item;
+                    scope.ScopedParams[TemplateConstants.Index] = i++;
                     await scope.WritePageAsync(page, pageParams);
                 }
             }
