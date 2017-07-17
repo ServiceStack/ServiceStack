@@ -55,7 +55,7 @@ namespace ServiceStack.Templates
             if (Context.ExcludeFiltersNamed.Contains(name))
                 return null;
             
-            var key = $"{name}`{argsCount}";
+            var key = name + "`" + argsCount;
             if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
@@ -84,7 +84,7 @@ namespace ServiceStack.Templates
             if (Context.ExcludeFiltersNamed.Contains(name))
                 return null;
             
-            var key = $"context-filter::{name}`{argsCount}";
+            var key = "context-filter::" + name + "`" + argsCount;
             if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
@@ -115,7 +115,7 @@ namespace ServiceStack.Templates
             if (Context.ExcludeFiltersNamed.Contains(name))
                 return null;
             
-            var key = $"context-block::{name}`{argsCount}";
+            var key = "context-block::" + name + "`" + argsCount;
             if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 

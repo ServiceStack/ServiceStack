@@ -55,6 +55,8 @@ namespace ServiceStack.Templates
 
         public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
 
+        public ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
+
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
@@ -164,8 +166,6 @@ namespace ServiceStack.Templates
             return this;
         }
 
-        private readonly ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> binderCache = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
-
         public Func<TemplateScopeContext, object, object> GetExpressionBinder(Type targetType, StringSegment expression)
         {
             if (targetType == null)
@@ -173,12 +173,12 @@ namespace ServiceStack.Templates
             if (expression.IsNullOrWhiteSpace())
                 throw new ArgumentNullException(nameof(expression));
 
-            var key = $"{targetType.FullName}::{expression}";
+            var key = targetType.FullName + "::" + expression;
 
-            if (binderCache.TryGetValue(key, out Func<TemplateScopeContext, object, object> fn))
+            if (BinderCache.TryGetValue(key, out Func<TemplateScopeContext, object, object> fn))
                 return fn;
 
-            binderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);
+            BinderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);
 
             return fn;
         }

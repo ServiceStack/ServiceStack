@@ -181,9 +181,16 @@ namespace ServiceStack.Templates
                         
                         if (type.IsArray)
                         {
-                            var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
-                                .MakeGenericMethod(typeof(int));
-                            body = Expression.ArrayIndex(body, Expression.Call(evalAsInt, scope, Expression.Constant(binding)));
+                            if (binding != null)
+                            {
+                                var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
+                                    .MakeGenericMethod(typeof(int));
+                                body = Expression.ArrayIndex(body, Expression.Call(evalAsInt, scope, Expression.Constant(binding)));
+                            }
+                            else
+                            {
+                                body = Expression.ArrayIndex(body, valueExpr);
+                            }
                         }
                         else if (depth == 0)
                         {

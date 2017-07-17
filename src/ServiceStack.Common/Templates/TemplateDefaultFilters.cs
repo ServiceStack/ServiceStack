@@ -77,7 +77,10 @@ namespace ServiceStack.Templates
         public long decr(long value) => value - 1; 
         public long decrement(long value) => value - 1; 
         public long decrBy(long value, long by) => value - by; 
-        public long decrementBy(long value, long by) => value - by; 
+        public long decrementBy(long value, long by) => value - by;
+
+        public bool isEven(int value) => value % 2 == 0;
+        public bool isOdd(int value) => !isEven(value);
 
         public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
         public string currency(decimal decimalValue, string culture)
@@ -126,7 +129,7 @@ namespace ServiceStack.Templates
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
-
+        
         public static bool isTrue(object target) => target is bool b && b;
         public static bool isFalsey(object target)
         {
@@ -228,6 +231,22 @@ namespace ServiceStack.Templates
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
 
+        public List<object[]> zip(IEnumerable original, IEnumerable current)
+        {
+            var to = new List<object[]>();
+
+            var currentArray = current.Cast<object>().ToArray();
+            foreach (var a in original)
+            {
+                foreach (var b in current)
+                {
+                    to.Add(new[]{ a, b });
+                }
+            }
+
+            return to;
+        }
+
         public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
         {
             scope.ScopedParams[argName] = value;
@@ -316,7 +335,7 @@ namespace ServiceStack.Templates
                 foreach (var item in objs)
                 {
                     itemScope.ScopedParams[itemBinding] = item;
-                    scope.ScopedParams[TemplateConstants.Index] = i++;
+                    itemScope.ScopedParams[TemplateConstants.Index] = i++;
                     await itemScope.WritePageAsync();
                 }
             }
@@ -339,7 +358,7 @@ namespace ServiceStack.Templates
                 foreach (var item in objs)
                 {
                     pageParams[itemBinding] = item;
-                    scope.ScopedParams[TemplateConstants.Index] = i++;
+                    pageParams[TemplateConstants.Index] = i++;
                     await scope.WritePageAsync(page, pageParams);
                 }
             }

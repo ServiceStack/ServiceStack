@@ -914,7 +914,10 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
                 var remaining = commandsString.Subsegment(pos, endBlockPos - pos);
                 if (!remaining.Trim().IsNullOrEmpty())
+                {
+                    pos += remaining.Length;
                     cmd.Name = remaining.Trim();
+                }
 
                 if (!cmd.Name.IsNullOrEmpty())
                     to.Add(cmd);

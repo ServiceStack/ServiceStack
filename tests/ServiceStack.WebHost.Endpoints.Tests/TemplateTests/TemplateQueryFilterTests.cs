@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void Linq1() // alternative with clean whitespace sensitive string argument syntax:
+        public void Linq01() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
             
@@ -44,7 +44,7 @@ Numbers < 5:
         }
 
         [Test]
-        public void Linq2() // alternative with clean whitespace sensitive string argument syntax:
+        public void Linq02() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
             
@@ -66,7 +66,7 @@ Perth Pasties is sold out!
         }
 
         [Test]
-        public void Linq3()
+        public void Linq03()
         {
             var context = CreateContext();
             
@@ -87,7 +87,7 @@ Aniseed Syrup is in stock and costs more than 3.00.
         }
 
         [Test]
-        public void Linq4()
+        public void Linq04()
         {
             var context = CreateContext(new Dictionary<string, object>
             {
@@ -124,7 +124,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         }
 
         [Test]
-        public void Linq5()
+        public void Linq05()
         {
             var context = CreateContext();
             
@@ -146,7 +146,7 @@ The word nine is shorter than its value.
         }
 
         [Test]
-        public void Linq6()
+        public void Linq06()
         {
             var context = CreateContext();
             
@@ -171,7 +171,7 @@ Numbers + 1:
         }
 
         [Test]
-        public void Linq7()
+        public void Linq07()
         {
             var context = CreateContext();
             
@@ -191,7 +191,7 @@ Chef Anton's Gumbo Mix
         }
 
         [Test]
-        public void Linq8()
+        public void Linq08()
         {
             var context = CreateContext();
             
@@ -215,5 +215,150 @@ zero
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Linq09()
+        {
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"words", new[]{ "aPPLE", "BlUeBeRrY", "cHeRry" }}
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ words | select: Uppercase: { it | upper }, Lowercase: { it | lower }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Uppercase: APPLE, Lowercase: apple
+Uppercase: BLUEBERRY, Lowercase: blueberry
+Uppercase: CHERRY, Lowercase: cherry
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq10()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+The digit five is odd.
+The digit four is even.
+The digit one is odd.
+The digit three is odd.
+The digit nine is odd.
+The digit eight is even.
+The digit six is even.
+The digit seven is odd.
+The digit two is even.
+The digit zero is even.
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq11()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Product Info:
+{{ products | select: { it.ProductName | raw } is in the category { it.Category } and costs { it.UnitPrice | currency } per unit.\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Product Info:
+Chai is in the category Beverages and costs $18.00 per unit.
+Chang is in the category Beverages and costs $19.00 per unit.
+Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq12()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Number: In-place?
+{{ numbers | select: { it }: { it | equals(index) | lower }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Number: In-place?
+5: false
+4: false
+1: false
+3: true
+9: false
+8: false
+6: true
+7: true
+2: false
+0: false
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq13()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Numbers < 5:
+{{ numbers
+   | where: it < 5 
+   | select: { digits[it] }\n 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Numbers < 5:
+four
+one
+three
+two
+zero
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq14()
+        {
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
+                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+Pairs where a < b:
+{{ numbersA | zip(numbersB)  
+   | where: it[0] < it[1] 
+   | select: { it[0] } is less than { it[1] }\n 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
     }
 }
