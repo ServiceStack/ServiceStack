@@ -361,5 +361,26 @@ Pairs where a < b:
 6 is less than 8
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Linq15()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers | zip: it.Orders
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: o.Total < 500
+   | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+(ALFKI, 10702, 330.0)
+(ALFKI, 10952, 471.2)
+(ANATR, 10308, 88.8)
+(ANATR, 10625, 479.75)
+".NormalizeNewLines()));
+            
+        }
     }
 }

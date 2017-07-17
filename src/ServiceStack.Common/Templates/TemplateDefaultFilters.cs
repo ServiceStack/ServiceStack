@@ -91,7 +91,9 @@ namespace ServiceStack.Templates
             return fmt;
         }
 
-        public string format(object obj, string format) => string.Format(format, obj);
+        public string format(object obj, string format) => obj is IFormattable formattable 
+            ? formattable.ToString(format, null) 
+            : string.Format(format, obj);
 
         public object dateFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
         public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
@@ -229,16 +231,45 @@ namespace ServiceStack.Templates
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
 
-        public List<object[]> zip(IEnumerable original, IEnumerable current)
+        public List<object[]> zip(TemplateScopeContext scope, IEnumerable original, object itemsOrBinding)
         {
             var to = new List<object[]>();
 
-            var currentArray = current.Cast<object>().ToArray();
-            foreach (var a in original)
+            if (itemsOrBinding is string literal)
             {
-                foreach (var b in current)
+                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+
+                var i = 0;
+                foreach (var a in original)
                 {
-                    to.Add(new[]{ a, b });
+                    scope.AddItemToScope("it", a, i++);
+
+                    var bindValue = binding != null
+                        ? scope.EvaluateToken(binding)
+                        : value;
+
+                    if (bindValue is IEnumerable current)
+                    {
+                        foreach (var b in current)
+                        {
+                            to.Add(new[] {a, b});
+                        }
+                    }
+                    else if (bindValue != null)
+                    {
+                        throw new ArgumentException($"{nameof(zip)} in '{scope.Page.VirtualPath}' requires '{literal}' to evaluate to an IEnumerable, but evaluated to a '{bindValue.GetType().Name}' instead");
+                    }
+                }
+            }
+            else if (itemsOrBinding is IEnumerable current)
+            {
+                var currentArray = current.Cast<object>().ToArray();
+                foreach (var a in original)
+                {
+                    foreach (var b in currentArray)
+                    {
+                        to.Add(new[]{ a, b });
+                    }
                 }
             }
 
