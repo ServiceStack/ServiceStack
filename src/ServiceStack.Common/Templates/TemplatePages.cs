@@ -10,7 +10,7 @@ namespace ServiceStack.Templates
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
-        TemplatePage OneTimePage(string contents, string ext, bool cacheExpressions);
+        TemplatePage OneTimePage(string contents, string ext);
     }
 
     public class TemplatePages : ITemplatePages
@@ -96,14 +96,14 @@ namespace ServiceStack.Templates
         private static readonly MemoryVirtualFiles TempFiles = new MemoryVirtualFiles();
         private static readonly InMemoryVirtualDirectory TempDir = new InMemoryVirtualDirectory(TempFiles, TemplateConstants.TempFilePath);
 
-        public virtual TemplatePage OneTimePage(string contents, string ext, bool cacheExpressions)
+        public virtual TemplatePage OneTimePage(string contents, string ext)
         {
             var memFile = new InMemoryVirtualFile(TempFiles, TempDir)
             {
                 FilePath = Guid.NewGuid().ToString("n") + $".{ext}", 
                 TextContents = contents,
             };
-            var page = new TemplatePage(Context, memFile, cacheExpressions:cacheExpressions);
+            var page = new TemplatePage(Context, memFile);
             page.Init().Wait(); // Safe as Memory Files are non-blocking
             return page;
         }

@@ -73,8 +73,8 @@ namespace ServiceStack.Templates
             return page;
         }
 
-        public TemplatePage OneTimePage(string contents, string ext=null, bool cacheExpressions=false) 
-            => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension, cacheExpressions);
+        public TemplatePage OneTimePage(string contents, string ext=null) 
+            => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
 
         public TemplateContext()
         {

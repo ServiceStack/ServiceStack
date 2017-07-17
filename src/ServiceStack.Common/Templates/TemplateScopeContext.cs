@@ -35,7 +35,7 @@ namespace ServiceStack.Templates
 
             if (dynamicPage == null)
             {
-                dynamicPage = scope.Context.OneTimePage(template, cacheExpressions:cachePage);
+                dynamicPage = scope.Context.OneTimePage(template);
 
                 if (cachePage)
                 {

@@ -28,9 +28,8 @@ namespace ServiceStack.Templates
 
         public bool IsTempFile => File.Directory.VirtualPath == TemplateConstants.TempFilePath;
         public string VirtualPath => IsTempFile ? "{temp file}" : File.VirtualPath;
-        public bool CacheExpressions { get; }
 
-        public TemplatePage(TemplateContext context, IVirtualFile file, PageFormat format=null, bool cacheExpressions=true)
+        public TemplatePage(TemplateContext context, IVirtualFile file, PageFormat format=null)
         {
             Context = context ?? throw new ArgumentNullException(nameof(context));
             File = file ?? throw new ArgumentNullException(nameof(file));
@@ -38,8 +37,6 @@ namespace ServiceStack.Templates
             Format = format ?? Context.GetFormat(File.Extension);
             if (Format == null)
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
-
-            CacheExpressions = cacheExpressions;
         }
 
         public async Task<TemplatePage> Init()
