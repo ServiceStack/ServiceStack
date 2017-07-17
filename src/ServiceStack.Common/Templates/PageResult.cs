@@ -60,6 +60,8 @@ namespace ServiceStack.Templates
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; }
+        
+        public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
         public PageResult(TemplatePage page)
         {
@@ -623,23 +625,26 @@ namespace ServiceStack.Templates
 
         private MethodInvoker GetInvoker(string name, int argsCount, InvokerType invokerType, out TemplateFilter filter)
         {
-            foreach (var tplFilter in TemplateFilters)
+            if (!Page.Context.ExcludeFiltersNamed.Contains(name) && !ExcludeFiltersNamed.Contains(name))
             {
-                var invoker = tplFilter?.GetInvoker(name, argsCount, invokerType);
-                if (invoker != null)
+                foreach (var tplFilter in TemplateFilters)
                 {
-                    filter = tplFilter;
-                    return invoker;
+                    var invoker = tplFilter?.GetInvoker(name, argsCount, invokerType);
+                    if (invoker != null)
+                    {
+                        filter = tplFilter;
+                        return invoker;
+                    }
                 }
-            }
 
-            foreach (var tplFilter in Page.Context.TemplateFilters)
-            {
-                var invoker = tplFilter?.GetInvoker(name, argsCount, invokerType);
-                if (invoker != null)
+                foreach (var tplFilter in Page.Context.TemplateFilters)
                 {
-                    filter = tplFilter;
-                    return invoker;
+                    var invoker = tplFilter?.GetInvoker(name, argsCount, invokerType);
+                    if (invoker != null)
+                    {
+                        filter = tplFilter;
+                        return invoker;
+                    }
                 }
             }
 

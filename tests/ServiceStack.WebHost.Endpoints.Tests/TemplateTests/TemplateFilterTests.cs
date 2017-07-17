@@ -207,6 +207,22 @@ pageArg: 2
         }
 
         [Test]
+        public void Can_disable_disable_filters()
+        {
+            var context = new TemplateContext
+            {
+                ExcludeFiltersNamed = { "repeat" }
+            }.Init();
+
+            var page = context.OneTimePage("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}");
+            
+            Assert.That(new PageResult(page).Result, Is.EqualTo("{{ '.' | repeat(3) }}---"));
+            
+            Assert.That(new PageResult(page){ ExcludeFiltersNamed = {"repeating"} }.Result, 
+                Is.EqualTo("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}"));
+        }
+
+        [Test]
         public void Caches_are_kept_isolated_in_each_Context_Filter_instance()
         {
             var context = new TemplateContext
