@@ -380,6 +380,111 @@ Pairs where a < b:
 (ANATR, 10308, 88.8)
 (ANATR, 10625, 479.75)
 ".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq16()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers | zip: it.Orders
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: o.OrderDate >= '1998-01-01' 
+   | select: ({ c.CustomerId }, { o.OrderId }, { o.OrderDate })\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+(ALFKI, 10835, 1/15/1998 12:00:00 AM)
+(ALFKI, 10952, 3/16/1998 12:00:00 AM)
+(ALFKI, 11011, 4/9/1998 12:00:00 AM)
+(ANATR, 10926, 3/4/1998 12:00:00 AM)
+(ANTON, 10856, 1/28/1998 12:00:00 AM)
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq17()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers | zip: it.Orders
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: o.Total >= 2000 
+   | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+(ANTON, 10573, 2082.0)
+(AROUT, 10558, 2142.9)
+(AROUT, 10953, 4441.25)
+(BERGS, 10384, 2222.4)
+(BERGS, 10524, 3192.65)
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq18()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ '1997-01-01' | assignTo: cutoffDate }}
+{{ customers 
+   | where: it.Region = 'WA'
+   | zip: it.Orders
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: o.OrderDate  >= cutoffDate 
+   | select: ({ c.CustomerId }, { o.OrderId })\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+(LAZYK, 10482)
+(LAZYK, 10545)
+(TRAIH, 10574)
+(TRAIH, 10577)
+(TRAIH, 10822)
+(WHITC, 10469)
+(WHITC, 10483)
+(WHITC, 10504)
+(WHITC, 10596)
+(WHITC, 10693)
+(WHITC, 10696)
+(WHITC, 10723)
+(WHITC, 10740)
+(WHITC, 10861)
+(WHITC, 10904)
+(WHITC, 11032)
+(WHITC, 11066)
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq19()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers 
+   | let({ cust: 'it', custIndex: 'index' })
+   | zip: cust.Orders
+   | let({ o: 'it[1]' })
+   | select: Customer #{ custIndex | incr } has an order with OrderID { o.OrderId }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Customer #1 has an order with OrderID 10643
+Customer #1 has an order with OrderID 10692
+Customer #1 has an order with OrderID 10702
+Customer #1 has an order with OrderID 10835
+Customer #1 has an order with OrderID 10952
+Customer #1 has an order with OrderID 11011
+Customer #2 has an order with OrderID 10308
+Customer #2 has an order with OrderID 10625
+Customer #2 has an order with OrderID 10759
+Customer #2 has an order with OrderID 10926
+".NormalizeNewLines()));
             
         }
     }

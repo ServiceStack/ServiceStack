@@ -365,7 +365,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         public async Task Does_default_filter_format()
         {
             var context = CreateContext().Init();
-            context.VirtualFiles.WriteFile("page.html", "{{ 3.14159 | format('{0:N2}') }}");
+            context.VirtualFiles.WriteFile("page.html", "{{ 3.14159 | format('N2') }}");
             
             var result = await new PageResult(context.GetPage("page")).RenderToStringAsync();
             Assert.That(result, Is.EqualTo("3.14"));

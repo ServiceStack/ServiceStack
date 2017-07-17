@@ -287,10 +287,24 @@ namespace ServiceStack.Templates
                 var i = 0;
                 foreach (var item in objs)
                 {
-                    scope.ScopedParams[itemBinding] = item;
-                    scope.ScopedParams[TemplateConstants.Index] = i++;
+                    scope.AddItemToScope(itemBinding, item, i++);
 
+                    // Copy over previous let bindings into new let bindings
                     var itemBindings = new Dictionary<string, object>();
+                    if (item is object[] tuple)
+                    {
+                        foreach (var a in tuple)
+                        {
+                            if (a is Dictionary<string, object> aArgs)
+                            {
+                                foreach (var entry in aArgs)
+                                {
+                                    itemBindings[entry.Key] = entry.Value;
+                                }
+                            }
+                        }
+                    }
+                    
                     foreach (var entry in scopedParams)
                     {
                         var bindTo = entry.Key;
