@@ -271,6 +271,29 @@ Pairs where a < b:
 6 is less than 8
 ".NormalizeNewLines()));
         }
-        
+                
+        [Test]
+        public void Linq18_whitespace_test()
+        {
+            var context = CreateContext();
+
+            var template = @"
+{{ '1997-01-01' | assignTo: cutoffDate }}
+{{ customers 
+   | where: it.Region = 'WA'
+   | zip: it.Orders
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: o.OrderDate  >= cutoffDate 
+   | select: ({ c.CustomerId }, { o.OrderId })\n }}
+".NormalizeNewLines();
+            Assert.That(context.EvaluateTemplate(template).NormalizeNewLines(),
+                
+                Does.StartWith(@"
+(LAZYK, 10482)
+(LAZYK, 10545)
+(TRAIH, 10574)
+".NormalizeNewLines()));
+        }
+
     }
 }

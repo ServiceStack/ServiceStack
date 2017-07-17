@@ -428,8 +428,8 @@ Pairs where a < b:
         public void Linq18()
         {
             var context = CreateContext();
-            
-            Assert.That(context.EvaluateTemplate(@"
+
+            var template = @"
 {{ '1997-01-01' | assignTo: cutoffDate }}
 {{ customers 
    | where: it.Region = 'WA'
@@ -437,7 +437,8 @@ Pairs where a < b:
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.OrderDate  >= cutoffDate 
    | select: ({ c.CustomerId }, { o.OrderId })\n }}
-").NormalizeNewLines(),
+";
+            Assert.That(context.EvaluateTemplate(template.NormalizeNewLines()).NormalizeNewLines(),
                 
                 Does.StartWith(@"
 (LAZYK, 10482)
@@ -485,7 +486,8 @@ Customer #2 has an order with OrderID 10625
 Customer #2 has an order with OrderID 10759
 Customer #2 has an order with OrderID 10926
 ".NormalizeNewLines()));
-            
         }
+        
+        
     }
 }
