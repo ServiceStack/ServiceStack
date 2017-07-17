@@ -194,6 +194,83 @@ Customer TRAIH Trail's Head Gourmet Provisioners
   Order 10822: 1998/01/08
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Linq14_original()
+        {
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
+                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+Pairs where a < b:
+{{ numbersA | zip(numbersB)
+   | where: it[0] < it[1] 
+   | select: { it[0] } is less than { it[1] }\n 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq14_bindings()
+        {
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
+                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+Pairs where a < b:
+{{ numbersA | zip(numbersB)
+   | let({ a: 'it[0]', b: 'it[1]' })  
+   | where: a < b 
+   | select: { a } is less than { b }\n 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Pairs where a < b:
+0 is less than 1
+0 is less than 3
+0 is less than 5
+0 is less than 7
+0 is less than 8
+2 is less than 3
+2 is less than 5
+2 is less than 7
+2 is less than 8
+4 is less than 5
+4 is less than 7
+4 is less than 8
+5 is less than 7
+5 is less than 8
+6 is less than 7
+6 is less than 8
+".NormalizeNewLines()));
+        }
         
     }
 }

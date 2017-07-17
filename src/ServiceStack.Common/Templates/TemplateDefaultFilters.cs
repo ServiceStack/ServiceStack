@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using ServiceStack.Text;
-using ServiceStack.Text.Common;
 using ServiceStack.Text.Json;
 
 namespace ServiceStack.Templates
@@ -247,6 +245,40 @@ namespace ServiceStack.Templates
             return to;
         }
 
+        public object let(TemplateScopeContext scope, object target, object scopeBindings) //from filter
+        {
+            var objs = target as IEnumerable;
+            if (objs != null)
+            {
+                var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeBindings, out string itemBinding);
+
+                var to = new List<Dictionary<string, object>>();
+                var i = 0;
+                foreach (var item in objs)
+                {
+                    scope.ScopedParams[itemBinding] = item;
+                    scope.ScopedParams[TemplateConstants.Index] = i++;
+
+                    var itemBindings = new Dictionary<string, object>();
+                    foreach (var entry in scopedParams)
+                    {
+                        var bindTo = entry.Key;
+                        var bindToLiteral = (string)entry.Value;
+                        bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+                        var bindValue = binding != null
+                            ? scope.EvaluateToken(binding)
+                            : value;
+                        itemBindings[bindTo] = bindValue;
+                    }
+                    to.Add(itemBindings);
+                }
+
+                return to;
+            }
+
+            return target;
+        }
+
         public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
         {
             scope.ScopedParams[argName] = value;
@@ -281,9 +313,10 @@ namespace ServiceStack.Templates
                 var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
                 
                 var itemScope = scope.CreateScopedContext(target.ToString(), scopedParams);
+                var i = 0;
                 foreach (var item in objs)
                 {
-                    itemScope.ScopedParams[itemBinding] = item;
+                    itemScope.AddItemToScope(itemBinding, item, i++);
                     await itemScope.WritePageAsync();
                 }
             }
@@ -309,8 +342,7 @@ namespace ServiceStack.Templates
             var i = 0;
             foreach (var item in items)
             {
-                scope.ScopedParams[itemBinding] = item;
-                scope.ScopedParams[TemplateConstants.Index] = i++;
+                scope.AddItemToScope(itemBinding, item, i++);
                 var result = expr.Evaluate(scope);
                 if (result)
                 {
@@ -334,8 +366,7 @@ namespace ServiceStack.Templates
                 var i = 0;
                 foreach (var item in objs)
                 {
-                    itemScope.ScopedParams[itemBinding] = item;
-                    itemScope.ScopedParams[TemplateConstants.Index] = i++;
+                    itemScope.AddItemToScope(itemBinding, item, i++);
                     await itemScope.WritePageAsync();
                 }
             }
@@ -357,8 +388,7 @@ namespace ServiceStack.Templates
                 var i = 0;
                 foreach (var item in objs)
                 {
-                    pageParams[itemBinding] = item;
-                    pageParams[TemplateConstants.Index] = i++;
+                    scope.AddItemToScope(itemBinding, item, i++);
                     await scope.WritePageAsync(page, pageParams);
                 }
             }

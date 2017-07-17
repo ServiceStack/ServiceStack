@@ -189,5 +189,20 @@ namespace ServiceStack.Templates
             
             return pageParams;
         }
+
+        public static void AddItemToScope(this TemplateScopeContext scope, string itemBinding, object item, int index)
+        {
+            scope.ScopedParams[TemplateConstants.Index] = index;
+            scope.ScopedParams[itemBinding] = item;
+
+            var explodeBindings = item as Dictionary<string, object>;
+            if (explodeBindings != null)
+            {
+                foreach (var entry in explodeBindings)
+                {
+                    scope.ScopedParams[entry.Key] = entry.Value;
+                }
+            }
+        }
     }
 }

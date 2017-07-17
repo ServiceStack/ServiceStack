@@ -334,9 +334,10 @@ zero
             
             Assert.That(context.EvaluateTemplate(@"
 Pairs where a < b:
-{{ numbersA | zip(numbersB)  
-   | where: it[0] < it[1] 
-   | select: { it[0] } is less than { it[1] }\n 
+{{ numbersA | zip(numbersB)
+   | let({ a: 'it[0]', b: 'it[1]' })  
+   | where: a < b 
+   | select: { a } is less than { b }\n 
 }}
 ").NormalizeNewLines(),
                 
