@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -341,7 +340,8 @@ namespace ServiceStack.Templates
                     if (i == 0)
                         return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
 
-                    throw new Exception($"Filter not found: {expr} in '{Page.VirtualPath}'");
+                    var errorMsg = CreateMissingFilterErrorMessage(filterName);
+                    throw new Exception(errorMsg);
                 }
 
                 if (invoker != null)
@@ -452,7 +452,7 @@ namespace ServiceStack.Templates
                             throw;
                         }
     
-                        throw new TargetInvocationException($"Failed to invoke filter {expr.Binding}", ex);
+                        throw new TargetInvocationException($"Failed to invoke filter '{expr.Binding}'", ex);
                     }
 
                     return IgnoreResult.Value;
@@ -463,6 +463,66 @@ namespace ServiceStack.Templates
                 return string.Empty; // treat as empty value if evaluated to null
 
             return value;
+        }
+
+        private string CreateMissingFilterErrorMessage(string filterName)
+        {
+            var registeredFilters = TemplateFilters.Union(Page.Context.TemplateFilters).ToList();
+            var similarNonMatchingFilters = registeredFilters
+                .SelectMany(x => x.QueryFilters(filterName))
+                .ToList();
+
+            var sb = StringBuilderCache.Allocate()
+                .AppendLine($"Filter in '{Page.VirtualPath}' named '{filterName}' was not found.");
+
+            if (similarNonMatchingFilters.Count > 0)
+            {
+                sb.Append("Check for correct usage in similar (but non-matching) filters:").AppendLine();
+                var normalFilters = similarNonMatchingFilters
+                    .OrderBy(x => x.GetParameters().Length + (x.ReturnType == typeof(Task) ? 10 : 1))
+                    .ToArray();
+
+                foreach (var mi in normalFilters)
+                {
+                    var argsTypesWithoutContext = mi.GetParameters()
+                        .Where(x => x.ParameterType != typeof(TemplateScopeContext))
+                        .ToList();
+
+                    sb.Append("{{ ");
+
+                    if (argsTypesWithoutContext.Count == 0)
+                    {
+                        sb.Append($"{mi.Name} => {mi.ReturnType.Name}");
+                    }
+                    else
+                    {
+                        sb.Append($"{argsTypesWithoutContext[0].ParameterType.Name} | {mi.Name}(");
+                        var piCount = 0;
+                        foreach (var pi in argsTypesWithoutContext.Skip(1))
+                        {
+                            if (piCount++ > 0)
+                                sb.Append(", ");
+
+                            sb.Append(pi.ParameterType.Name);
+                        }
+
+                        var returnType = mi.ReturnType == typeof(Task)
+                            ? "(Stream)"
+                            : mi.ReturnType.Name;
+
+                        sb.Append($") => {returnType}");
+                    }
+
+                    sb.AppendLine(" }}");
+                }
+            }
+            else
+            {
+                var registeredFilterNames = registeredFilters.Map(x => $"'{x.GetType().Name}'").Join(", ");
+                sb.Append($"No similar filters named '{filterName}' were found in registered filter(s): {registeredFilterNames}.");
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         // Filters with no args can be used in-place of bindings
@@ -504,7 +564,7 @@ namespace ServiceStack.Templates
         private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, string binding)
         {
             if (invoker == null)
-                throw new NotSupportedException($"Filter {binding} does not exist");
+                throw new NotSupportedException(CreateMissingFilterErrorMessage(binding.LeftPart('(')));
 
             try
             {
@@ -644,9 +704,7 @@ namespace ServiceStack.Templates
             if (targetValue == JsNull.Value)
                 return JsNull.Value;
             
-            var fn = Page.CacheExpressions
-                ? Page.Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment())
-                : TemplatePageUtils.Compile(targetValue.GetType(), expr.ToStringSegment());
+            var fn = Page.Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment());
 
             try
             {

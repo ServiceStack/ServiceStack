@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace ServiceStack.Templates
@@ -17,7 +18,7 @@ namespace ServiceStack.Templates
         ContextFilter,
         ContextBlock,
     }
-    
+
     public class TemplateFilter
     {
         public TemplateContext Context { get; set; }
@@ -29,16 +30,24 @@ namespace ServiceStack.Templates
             return method?.AllAttributes().Any(x => x is HandleUnknownValueAttribute) == true;
         }
 
-        readonly ConcurrentDictionary<string, MethodInvoker> invokerCache = new ConcurrentDictionary<string, MethodInvoker>();
+        public List<MethodInfo> QueryFilters(string filterName)
+        {
+            var filters = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                .Where(x => x.Name.IndexOf(filterName, StringComparison.OrdinalIgnoreCase) >= 0)
+                .ToList();
+            return filters;
+        }
+
+        public ConcurrentDictionary<string, MethodInvoker> InvokerCache { get; } = new ConcurrentDictionary<string, MethodInvoker>();
 
         public MethodInvoker GetInvoker(string name, int argsCount, InvokerType type) => type == InvokerType.Filter
             ? GetInvoker(name, argsCount)
             : type == InvokerType.ContextFilter
                 ? GetContextFilterInvoker(name, argsCount)
                 : GetContextBlockInvoker(name, argsCount);
-
+        
         // Normal Filters
-        public MethodInvoker GetInvoker(string name, int argsCount)
+        private MethodInvoker GetInvoker(string name, int argsCount)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -47,14 +56,14 @@ namespace ServiceStack.Templates
                 return null;
             
             var key = $"{name}`{argsCount}";
-            if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
+            if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
             var method = GetInvokerMethod(name, argsCount);
             if (method == null)
                 return null;
 
-            return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
+            return InvokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
         private MethodInfo GetInvokerMethod(string name, int argsCount)
@@ -67,7 +76,7 @@ namespace ServiceStack.Templates
         }
 
         // Filters which require access to the TemplateScopeContext but act like a normal filter
-        public MethodInvoker GetContextFilterInvoker(string name, int argsCount)
+        private MethodInvoker GetContextFilterInvoker(string name, int argsCount)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -76,14 +85,14 @@ namespace ServiceStack.Templates
                 return null;
             
             var key = $"context-filter::{name}`{argsCount}";
-            if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
+            if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
             var method = GetContextFilterInvokerMethod(name, argsCount);
             if (method == null)
                 return null;
 
-            return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
+            return InvokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
         private MethodInfo GetContextFilterInvokerMethod(string name, int argsCount)
@@ -98,7 +107,7 @@ namespace ServiceStack.Templates
         }
 
         // Filters which write directly to the OutputStream
-        public MethodInvoker GetContextBlockInvoker(string name, int argsCount)
+        private MethodInvoker GetContextBlockInvoker(string name, int argsCount)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -107,14 +116,14 @@ namespace ServiceStack.Templates
                 return null;
             
             var key = $"context-block::{name}`{argsCount}";
-            if (invokerCache.TryGetValue(key, out MethodInvoker invoker))
+            if (InvokerCache.TryGetValue(key, out MethodInvoker invoker))
                 return invoker;
 
             var method = GetContextBlockInvokerMethod(name, argsCount);
             if (method == null)
                 return null;
 
-            return invokerCache[key] = TypeExtensions.GetInvokerToCache(method);
+            return InvokerCache[key] = TypeExtensions.GetInvokerToCache(method);
         }
 
         private MethodInfo GetContextBlockInvokerMethod(string name, int argsCount)
