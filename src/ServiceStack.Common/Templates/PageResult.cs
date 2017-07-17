@@ -452,7 +452,7 @@ namespace ServiceStack.Templates
                             throw;
                         }
     
-                        throw new TargetInvocationException($"Failed to invoke filter '{expr.Binding}'", ex);
+                        throw new TargetInvocationException($"Failed to invoke filter '{expr.BindingString ?? expr.NameString}'", ex);
                     }
 
                     return IgnoreResult.Value;

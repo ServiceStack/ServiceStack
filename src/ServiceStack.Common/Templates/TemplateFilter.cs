@@ -169,5 +169,25 @@ namespace ServiceStack.Templates
 
             return enumItems ?? TypeConstants.EmptyObjectArray;
         }
+
+        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>
+            GetParamsWithItemBinding(scope, filterName, null, scopedParams, out itemBinding);
+
+        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopedParams, out string itemBinding)
+        {
+            var pageParams = scope.AssertOptions(filterName, scopedParams);
+            itemBinding = pageParams.TryGetValue("it", out object bindingName) && bindingName is string binding
+                ? binding
+                : "it";
+            
+            if (bindingName != null && !(bindingName is string))
+                throw new NotSupportedException($"'it' option in filter '{filterName}' should contain the name to bind to but contained a '{bindingName.GetType().Name}' instead");
+
+            // page vars take precedence
+            if (page != null && page.Args.TryGetValue("it", out object pageBinding))
+                itemBinding = (string)pageBinding;
+            
+            return pageParams;
+        }
     }
 }

@@ -323,7 +323,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, 'item') }} </ul>")).Result,
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, { it: 'item' } ) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
         }
 

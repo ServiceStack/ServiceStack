@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Templates;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -22,25 +23,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void linq1_original()
-        {
-            var context = CreateContext();
-            
-            Assert.That(context.EvaluateTemplate(@"
-Numbers < 5:
-{{ numbers | where('it < 5') | select('{{ it }}\n') }}").NormalizeNewLines(), 
-                
-                Is.EqualTo(@"
-Numbers < 5:
-4
-1
-3
-2
-0
-".NormalizeNewLines()));
-        }
-
-        [Test]
         public void linq1() // alternative with clean whitespace sensitive string argument syntax:
         {
             var context = CreateContext();
@@ -56,29 +38,6 @@ Numbers < 5:
 3
 2
 0
-".NormalizeNewLines()));
-        }
-
-        [Test]
-        public void linq2_original()
-        {
-            var context = CreateContext();
-            
-            Assert.That(context.EvaluateTemplate(@"
-Sold out products:
-{{ products 
-   | where('it.UnitsInStock = 0') 
-   | select('{{ it.productName | raw }} is sold out!\n')
-}}
-").NormalizeNewLines(),
-                
-                Is.EqualTo(@"
-Sold out products:
-Chef Anton's Gumbo Mix is sold out!
-Alice Mutton is sold out!
-Thüringer Rostbratwurst is sold out!
-Gorgonzola Telino is sold out!
-Perth Pasties is sold out!
 ".NormalizeNewLines()));
         }
 
@@ -133,21 +92,28 @@ Aniseed Syrup is in stock and costs more than 3.00.
                 {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
             
+            context.VirtualFiles.WriteFile("customer.html", @"
+Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
+{{ it.Orders | selectPartial: order }}");
+
+            context.VirtualFiles.WriteFile("order.html", "  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat }}\n");
+            
             Assert.That(context.EvaluateTemplate(@"
 {{ customers 
-    | where: it.Region = 'WA' 
-    | assignTo: waCustomers }}
+   | where: it.Region = 'WA' 
+   | assignTo: waCustomers 
+}}
 Customers from Washington and their orders:
-{{ 'Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
-{{ it.Orders | select(""  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat | newLine }}"") }}' 
-    | forEach(waCustomers) }}
+{{ waCustomers | selectPartial: customer }}
 ").NormalizeNewLines(),
                 
                 Does.StartWith(@"
 Customers from Washington and their orders:
+
 Customer LAZYK Lazy K Kountry Store
   Order 10482: 1997/03/21
   Order 10545: 1997/05/22
+
 Customer TRAIH Trail's Head Gourmet Provisioners
   Order 10574: 1997/06/19
   Order 10577: 1997/06/23

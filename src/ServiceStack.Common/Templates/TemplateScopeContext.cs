@@ -23,7 +23,7 @@ namespace ServiceStack.Templates
 
     public static class TemplateScopeContextUtils
     {
-        public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template, bool cachePage=true)
+        public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template, Dictionary<string, object> scopeParams = null, bool cachePage=true)
         {
             TemplatePage dynamicPage = null;
 
@@ -43,8 +43,11 @@ namespace ServiceStack.Templates
                 }
             }
 
+            var newScopeParams = new Dictionary<string, object>(scope.ScopedParams);
+            scopeParams.Each((key,val) => newScopeParams[key] = val);
+
             var pageResult = scope.PageResult.Clone(dynamicPage).Init().Result;
-            var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, new Dictionary<string, object>(scope.ScopedParams));
+            var itemScope = new TemplateScopeContext(pageResult, scope.OutputStream, newScopeParams);
 
             return itemScope;
         }

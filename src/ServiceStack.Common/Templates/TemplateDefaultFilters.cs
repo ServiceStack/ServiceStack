@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Common;
@@ -248,20 +249,22 @@ namespace ServiceStack.Templates
             var pageName = target.ToString();
             var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
-            var page = scope.Context.GetPage(pageName);
+            var page = await scope.Context.GetPage(pageName).Init();
             await scope.WritePageAsync(page, pageParams);
         }
 
-        public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, "it");
-        public async Task forEach(TemplateScopeContext scope, object target, object items, string scopeName) 
+        public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, null);
+        public async Task forEach(TemplateScopeContext scope, object target, object items, object scopeOptions) 
         {
             var objs = items as IEnumerable;
             if (objs != null)
             {
-                var itemScope = scope.CreateScopedContext(target.ToString());
+                var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
+                
+                var itemScope = scope.CreateScopedContext(target.ToString(), scopedParams);
                 foreach (var item in objs)
                 {
-                    itemScope.ScopedParams[scopeName] = item;
+                    itemScope.ScopedParams[itemBinding] = item;
                     await itemScope.WritePageAsync();
                 }
             }
@@ -270,20 +273,23 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
-        
-        public object where(TemplateScopeContext scope, object target, object filter)
+
+        public object where(TemplateScopeContext scope, object target, object filter) => where(scope, target, filter, null);
+        public object where(TemplateScopeContext scope, object target, object filter, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(where));
 
-            if (!(filter is string s)) 
+            if (!(filter is string literal)) 
                 throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
             
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
             var to = new List<object>();
-            var literal = s.ToStringSegment();
-            literal = literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseConditionExpression(out ConditionExpression expr);
             foreach (var item in items)
             {
-                scope.ScopedParams["it"] = item;
+                scope.ScopedParams[itemBinding] = item;
                 var result = expr.Evaluate(scope);
                 if (result)
                 {
@@ -294,23 +300,46 @@ namespace ServiceStack.Templates
             return to;
         }
         
-        public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, "it");
-        public async Task select(TemplateScopeContext scope, object items, object target, string scopeName) 
+        public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, null);
+        public async Task select(TemplateScopeContext scope, object items, object target, object scopeOptions) 
         {
             var objs = items as IEnumerable;
             if (objs != null)
             {
+                var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
                 var template = JsonTypeSerializer.Unescape(target.ToString());
-                var itemScope = scope.CreateScopedContext(template);
+                var itemScope = scope.CreateScopedContext(template, scopedParams);
+                
                 foreach (var item in objs)
                 {
-                    itemScope.ScopedParams[scopeName] = item;
+                    itemScope.ScopedParams[itemBinding] = item;
                     await itemScope.WritePageAsync();
                 }
             }
             else if (items != null)
             {
-                throw new ArgumentException($"{nameof(forEach)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                throw new ArgumentException($"{nameof(select)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+            }
+        }
+
+        public Task selectPartial(TemplateScopeContext scope, object items, string pageName) => selectPartial(scope, items, pageName, null); 
+        public async Task selectPartial(TemplateScopeContext scope, object items, string pageName, object scopedParams) 
+        {
+            var objs = items as IEnumerable;
+            if (objs != null)
+            {
+                var page = await scope.Context.GetPage(pageName).Init();
+                var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
+                
+                foreach (var item in objs)
+                {
+                    pageParams[itemBinding] = item;
+                    await scope.WritePageAsync(page, pageParams);
+                }
+            }
+            else if (items != null)
+            {
+                throw new ArgumentException($"{nameof(selectPartial)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
     }
