@@ -708,7 +708,7 @@ namespace ServiceStack.Templates
 
             try
             {
-                var value = fn(targetValue);
+                var value = fn(scopeContext, targetValue);
                 return value;
             }
             catch (Exception ex)

@@ -164,9 +164,9 @@ namespace ServiceStack.Templates
             return this;
         }
 
-        private readonly ConcurrentDictionary<string, Func<object, object>> binderCache = new ConcurrentDictionary<string, Func<object, object>>();
+        private readonly ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> binderCache = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
 
-        public Func<object, object> GetExpressionBinder(Type targetType, StringSegment expression)
+        public Func<TemplateScopeContext, object, object> GetExpressionBinder(Type targetType, StringSegment expression)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
@@ -175,7 +175,7 @@ namespace ServiceStack.Templates
 
             var key = $"{targetType.FullName}::{expression}";
 
-            if (binderCache.TryGetValue(key, out Func<object, object> fn))
+            if (binderCache.TryGetValue(key, out Func<TemplateScopeContext, object, object> fn))
                 return fn;
 
             binderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);

@@ -190,5 +190,30 @@ Chef Anton's Gumbo Mix
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Linq8()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Number strings:
+{{ numbers | select: { strings[it] }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Number strings:
+five
+four
+one
+three
+nine
+eight
+six
+seven
+two
+zero
+".NormalizeNewLines()));
+        }
+
     }
 }

@@ -145,8 +145,9 @@ namespace ServiceStack.Templates
         public static IRawString ToRawString(this StringSegment value) => 
             new RawString(value.HasValue ? value.Value : "");
 
-        public static Func<object, object> Compile(Type type, StringSegment expr)
+        public static Func<TemplateScopeContext, object, object> Compile(Type type, StringSegment expr)
         {
+            var scope = Expression.Parameter(typeof(TemplateScopeContext), "scope");
             var param = Expression.Parameter(typeof(object), "instance");
             Expression body = Expression.Convert(param, type);
 
@@ -170,12 +171,25 @@ namespace ServiceStack.Templates
                         
                         if (binding is JsExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'", member.Value, expr.Value);
-    
-                        if (depth == 0)
+
+                        var valueExpr = binding != null
+                            ? (Expression) Expression.Call(
+                                typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBinding)), 
+                                scope,
+                                Expression.Constant(binding))
+                            : Expression.Constant(value);
+                        
+                        if (type.IsArray)
+                        {
+                            var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
+                                .MakeGenericMethod(typeof(int));
+                            body = Expression.ArrayIndex(body, Expression.Call(evalAsInt, scope, Expression.Constant(binding)));
+                        }
+                        else if (depth == 0)
                         {
                             var pi = AssertProperty(currType, "Item", expr);
                             currType = pi.PropertyType;
-                            body = Expression.Property(body, "Item", Expression.Constant(value));
+                            body = Expression.Property(body, "Item", valueExpr);
                         }
                         else
                         {
@@ -184,7 +198,7 @@ namespace ServiceStack.Templates
                             body = Expression.PropertyOrField(body, prop.Value);
                         
                             var indexMethod = currType.GetMethod("get_Item", new[]{ value.GetType() });
-                            body = Expression.Call(body, indexMethod, Expression.Constant(value));
+                            body = Expression.Call(body, indexMethod, valueExpr);
                         }
                     }
                     else
@@ -204,7 +218,20 @@ namespace ServiceStack.Templates
 
             body = Expression.Convert(body, typeof(object));
 
-            return Expression.Lambda<Func<object, object>>(body, param).Compile();
+            return Expression.Lambda<Func<TemplateScopeContext, object, object>>(body, scope, param).Compile();
+        }
+
+        public static object EvaluateBinding(TemplateScopeContext scope, JsBinding binding)
+        {
+            var result = scope.EvaluateToken(binding);
+            return result;
+        }
+
+        public static T EvaluateBindingAs<T>(TemplateScopeContext scope, JsBinding binding)
+        {
+            var result = EvaluateBinding(scope, binding);
+            var converted = result.ConvertTo<T>();
+            return converted;
         }
 
         private static PropertyInfo AssertProperty(Type currType, string prop, StringSegment expr)
