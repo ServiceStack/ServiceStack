@@ -481,67 +481,105 @@ namespace ServiceStack.Templates
         }
 
         public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter) => orderBy(scope, target, filter, null);
-        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions)
-        {
-            var items = target.AssertEnumerable(nameof(orderBy));
-
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(orderBy), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
-
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            var i = 0;
-
-            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
-            {
-                var comparer = oComparer as IComparer;
-                if (comparer == null)
-                    throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
-
-                var itemsArray = items.ToArray();
-                Array.Sort(itemsArray, comparer);
-                return itemsArray;
-            }
-            
-            return items.OrderBy(item =>
-            {
-                scope.AddItemToScope(itemBinding, item, i++);
-                return scope.EvaluateToken(binding);
-            });
-        }
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) => 
+            orderByInternal(nameof(orderBy), scope, target, filter, scopeOptions);
 
         public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter) => orderByDescending(scope, target, filter, null);
-        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
+            orderByInternal(nameof(orderByDescending), scope, target, filter, scopeOptions);
+
+        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter) => thenBy(scope, target, filter, null);
+        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) => 
+            thenByInternal(nameof(thenBy), scope, target, filter, scopeOptions);
+
+        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object filter) => thenByDescending(scope, target, filter, null);
+        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
+            thenByInternal(nameof(thenByDescending), scope, target, filter, scopeOptions);
+
+        class ComparerWrapper : IComparer<object>
         {
-            var items = target.AssertEnumerable(nameof(orderByDescending));
+            private readonly IComparer comparer;
+            public ComparerWrapper(IComparer comparer) => this.comparer = comparer;
+            public int Compare(object x, object y)
+            {
+                return comparer.Compare(x, y);
+            }
+        }
+        
+        public static IEnumerable<object> orderByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(filterName);
 
             if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(orderByDescending)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+                throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
             
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(orderByDescending), scopeOptions, out string itemBinding);
+            var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
             scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
 
+            var comparer = (IComparer<object>)Comparer<object>.Default;
             if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
-                var comparer = oComparer as IComparer;
-                if (comparer == null)
-                    throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
-
-                var itemsArray = items.ToArray();
-                Array.Sort(itemsArray, (a,b) => comparer.Compare(b,a));
-                return itemsArray;
+                var nonGenericComparer = oComparer as IComparer;
+                if (nonGenericComparer == null)
+                    throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
+                comparer = new ComparerWrapper(nonGenericComparer);
             }
+            
+            var sorted = filterName == nameof(orderByDescending)
+                 ? items.OrderByDescending(item =>
+                    {
+                        scope.AddItemToScope(itemBinding, item, i++);
+                        return scope.EvaluateToken(binding);
+                    }, comparer)
+                : items.OrderBy(item =>
+                    {
+                        scope.AddItemToScope(itemBinding, item, i++);
+                        return scope.EvaluateToken(binding);
+                    }, comparer);
 
-            return items.OrderByDescending(item =>
+            return sorted;
+        }
+        
+        public static IEnumerable<object> thenByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target as IOrderedEnumerable<object>;
+            if (items == null)
+                throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires an IOrderedEnumerable but received a '{target?.GetType()?.Name}' instead");
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var i = 0;
+
+            var comparer = (IComparer<object>)Comparer<object>.Default;
+            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
-                scope.AddItemToScope(itemBinding, item, i++);
-                return scope.EvaluateToken(binding);
-            });
+                var nonGenericComparer = oComparer as IComparer;
+                if (nonGenericComparer == null)
+                    throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
+                comparer = new ComparerWrapper(nonGenericComparer);
+            }
+            
+            var sorted = filterName == nameof(thenByDescending)
+                ? items.ThenByDescending(item =>
+                {
+                    scope.AddItemToScope(itemBinding, item, i++);
+                    return scope.EvaluateToken(binding);
+                }, comparer)
+                : items.ThenBy(item =>
+                {
+                    scope.AddItemToScope(itemBinding, item, i++);
+                    return scope.EvaluateToken(binding);
+                }, comparer);
+
+            return sorted;
         }
         
         public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter) => map(scope, items, filter, null);

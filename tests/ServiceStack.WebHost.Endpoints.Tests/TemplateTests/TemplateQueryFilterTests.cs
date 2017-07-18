@@ -750,7 +750,7 @@ blueberry
             
             Assert.That(context.EvaluateTemplate(@"
 {{ words 
-   | orderBy('it.Length', { comparer }) 
+   | orderBy('it', { comparer }) 
    | select: { it }\n }}
 ").NormalizeNewLines(),
                 
@@ -828,6 +828,113 @@ bRaNcH
 BlUeBeRrY
 aPPLE
 AbAcUs
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq35()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+Sorted digits:
+{{ digits 
+   | orderBy: it.length
+   | thenBy: it
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Sorted digits:
+one
+six
+two
+five
+four
+nine
+zero
+eight
+seven
+three
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq36()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
+                { "comparer", new CaseInsensitiveComparer() }
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ words 
+   | orderBy: it.length
+   | thenBy('it', { comparer }) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+aPPLE
+AbAcUs
+bRaNcH
+cHeRry
+ClOvEr
+BlUeBeRrY
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq37()
+        { 
+            var context = CreateContext();
+
+            var normalizeNewLines = context.EvaluateTemplate(@"
+{{ products 
+   | orderBy: it.Category
+   | thenByDescending: it.UnitPrice
+   | select: { it | jsv }\n }}
+").NormalizeNewLines();
+            normalizeNewLines.Print();
+            Assert.That(normalizeNewLines,
+                
+                Does.StartWith(@"
+{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}
+{ProductId:43,ProductName:Ipoh Coffee,Category:Beverages,UnitPrice:46,UnitsInStock:17}
+{ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
+{ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39}
+{ProductId:35,ProductName:Steeleye Stout,Category:Beverages,UnitPrice:18,UnitsInStock:20}
+{ProductId:39,ProductName:Chartreuse verte,Category:Beverages,UnitPrice:18,UnitsInStock:69}
+{ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
+{ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
+{ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq38()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
+                { "comparer", new CaseInsensitiveComparer() }
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ words 
+   | orderBy: it.length
+   | thenByDescending('it', { comparer }) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+aPPLE
+ClOvEr
+cHeRry
+bRaNcH
+AbAcUs
+BlUeBeRrY
 ".NormalizeNewLines()));
         }
     }
