@@ -696,18 +696,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             {
                 if (isExpression)
                 {
-                    if (c == '(') // method
-                    {
-                        var jsExpressions = literal.ParseJsExpression(out int pos);
-                        if (jsExpressions.Count > 1)
-                            throw new ArgumentException("Expected 1 JS Expression, but received: " + jsExpressions.Count);
-                    
-                        binding = jsExpressions.FirstOrDefault();
-                        return literal.Advance(pos);
-                    }
-                    
-                    literal = literal.ParseNextBinding(out StringSegment bindingLiteral);
-                    binding = new JsExpression(bindingLiteral);
+                    literal = literal.ParseNextExpression(out JsExpression expr);
+                    binding = expr;
                     return literal;
                 }
                 
@@ -782,6 +772,34 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public override string ToRawString() => (":" + ToString()).EncodeJson();
 
         public override string BindingString => OriginalString ?? ToString();
+
+        protected bool Equals(JsExpression other)
+        {
+            return base.Equals(other) 
+               && Name.Equals(other.Name) 
+               && Args.EquivalentTo(other.Args) 
+               && Original.Equals(other.Original);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hashCode = base.GetHashCode();
+                hashCode = (hashCode * 397) ^ Name.GetHashCode();
+                hashCode = (hashCode * 397) ^ (Args != null ? Args.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Original.GetHashCode();
+                return hashCode;
+            }
+        }
     }
 
     public static class JsExpressionUtils
@@ -801,6 +819,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             where T : JsExpression, new()
         {
             var to = new List<T>();
+            List<StringSegment> args = null;
             pos = 0;
 
             if (commandsString.IsNullOrEmpty())
@@ -870,7 +889,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         
                         var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
                         var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
-                        cmd.Args = ParseArguments(rewrittenArgs.ToStringSegment(), out int endPos);
+                        ParseArguments(rewrittenArgs.ToStringSegment(), out args);
+                        cmd.Args = args;
                         
                         i = endStringPos == endStatementPos 
                             ? endStatementPos - 2  //move cursor back before var block terminator 
@@ -886,7 +906,11 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                         pos = i + 1;
 
-                        cmd.Args = ParseArguments(commandsString.Subsegment(pos), out int endPos);
+                        var literal = commandsString.Subsegment(pos);
+                        var literalRemaining = ParseArguments(literal, out args);
+                        cmd.Args = args;
+                        var endPos = literal.Length - literalRemaining.Length;
+                        
                         i += endPos;
                         pos = i + 1;
                         continue;
@@ -897,7 +921,6 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         pos = i + 1;
 
                         pos = cmd.IndexOfMethodEnd(commandsString, pos);
-
                         continue;
                     }
 
@@ -945,102 +968,10 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
         // ( {args} , {args} )
         //   ^
-        public static List<StringSegment> ParseArguments(StringSegment argsString, out int endPos)
+        public static StringSegment ParseArguments(StringSegment argsString, out List<StringSegment> args)
         {
             var to = new List<StringSegment>();
 
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inSquareBrackets = 0;
-            var inBrackets = 0;
-            var inBraces = 0;
-            var lastPos = 0;
-
-            for (var i = 0; i < argsString.Length; i++)
-            {
-                var c = argsString.GetChar(i);
-                if (inDoubleQuotes)
-                {
-                    if (c == '"')
-                        inDoubleQuotes = false;
-                    continue;
-                }
-                if (inSingleQuotes)
-                {
-                    if (c == '\'')
-                        inSingleQuotes = false;
-                    continue;
-                }
-                if (inSquareBrackets > 0)
-                {
-                    if (c == '[')
-                        ++inSquareBrackets;
-                    if (c == ']')
-                        --inSquareBrackets;
-                    continue;
-                }
-                if (inBraces > 0)
-                {
-                    if (c == '{')
-                        ++inBraces;
-                    if (c == '}')
-                        --inBraces;
-                    continue;
-                }
-                if (inBrackets > 0)
-                {
-                    if (c == '(')
-                        ++inBrackets;
-                    if (c == ')')
-                        --inBrackets;
-                    continue;
-                }
-
-                switch (c)
-                {
-                    case '"':
-                        inDoubleQuotes = true;
-                        continue;
-                    case '\'':
-                        inSingleQuotes = true;
-                        continue;
-                    case '[':
-                        inSquareBrackets++;
-                        continue;
-                    case '{':
-                        inBraces++;
-                        continue;
-                    case '(':
-                        inBrackets++;
-                        continue;
-                    case ',':
-                    {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                        to.Add(arg);
-                        lastPos = i + 1;
-                        continue;
-                    }
-                    case ')':
-                    {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                        if (!arg.IsNullOrEmpty())
-                        {
-                            to.Add(arg);
-                        }
-
-                        endPos = i;
-                        return to;
-                    }
-                }
-            }
-
-            endPos = argsString.Length;
-
-            return to;
-        }
-        
-        public static StringSegment ParseNextBinding(this StringSegment literal, out StringSegment binding)
-        {
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
             var inBrackets = 0;
@@ -1048,12 +979,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             var inBraces = 0;
             var lastPos = 0;
 
-            for (var i = 0; i < literal.Length; i++)
+            for (var i = 0; i < argsString.Length; i++)
             {
-                var c = literal.GetChar(i);
-                if (c.IsWhiteSpace())
-                    continue;
-                
+                var c = argsString.GetChar(i);
                 if (inDoubleQuotes)
                 {
                     if (c == '"')
@@ -1108,16 +1036,107 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     case '(':
                         inParens++;
                         continue;
+                    case ',':
+                    {
+                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                        to.Add(arg);
+                        lastPos = i + 1;
+                        continue;
+                    }
+                    case ')':
+                    {
+                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                        if (!arg.IsNullOrEmpty())
+                        {
+                            to.Add(arg);
+                        }
+
+                        args = to;
+                        return argsString.Advance(i);
+                    }
+                }
+            }
+            
+            args = to;
+            return TypeConstants.EmptyStringSegment;
+        }
+        
+        public static StringSegment ParseNextExpression(this StringSegment literal, out JsExpression binding)
+        {
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBrackets = 0;
+            var inBraces = 0;
+            var lastPos = 0;
+
+            for (var i = 0; i < literal.Length; i++)
+            {
+                var c = literal.GetChar(i);
+                if (c.IsWhiteSpace())
+                    continue;
+                
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                        inDoubleQuotes = false;
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                        inSingleQuotes = false;
+                    continue;
+                }
+                if (inBrackets > 0)
+                {
+                    if (c == '[')
+                        ++inBrackets;
+                    if (c == ']')
+                        --inBrackets;
+                    continue;
+                }
+                if (inBraces > 0)
+                {
+                    if (c == '{')
+                        ++inBraces;
+                    if (c == '}')
+                        --inBraces;
+                    continue;
+                }
+                
+                if (c == '(')
+                {
+                    var pos = i + 1;
+                    binding = new JsExpression(literal.Subsegment(0, i).Trim());
+                    literal = ParseArguments(literal.Subsegment(pos), out List<StringSegment> args);
+                    binding.Args = args;
+                    return literal.Advance(1);
+                }
+
+                switch (c)
+                {
+                    case '"':
+                        inDoubleQuotes = true;
+                        continue;
+                    case '\'':
+                        inSingleQuotes = true;
+                        continue;
+                    case '[':
+                        inBrackets++;
+                        continue;
+                    case '{':
+                        inBraces++;
+                        continue;
                 }
 
                 if (!(c.IsValidVarNameChar() || c.IsBindingExpressionChar()))
                 {
-                    binding = literal.Subsegment(lastPos, i - lastPos).Trim();
+                    binding = new JsExpression(literal.Subsegment(lastPos, i - lastPos).Trim());
                     return literal.Advance(i);
                 }
             }
 
-            binding = literal.Subsegment(0, literal.Length);
+            binding = new JsExpression(literal.Subsegment(0, literal.Length));
             return TypeConstants.EmptyStringSegment;
         }
         

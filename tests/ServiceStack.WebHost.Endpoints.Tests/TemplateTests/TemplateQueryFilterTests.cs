@@ -585,7 +585,70 @@ All but first 2 orders in WA:
 [WHITC,11066,1998-05-01]
 ".NormalizeNewLines()));
         }
-
+        
+        [Test]
+        public void Linq24()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+First numbers less than 6:
+{{ numbers 
+   | takeWhile: it < 6 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+First numbers less than 6:
+5
+4
+1
+3
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq25()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+First numbers not less than their position:
+{{ numbers 
+   | takeWhile: it >= index 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+First numbers not less than their position:
+5
+4
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq26()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+All elements starting from first element divisible by 3:
+{{ numbers 
+   | skipWhile: mod(it,3) != 0 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+All elements starting from first element divisible by 3:
+3
+9
+8
+6
+7
+2
+0
+".NormalizeNewLines()));
+        }
         
     }
 }

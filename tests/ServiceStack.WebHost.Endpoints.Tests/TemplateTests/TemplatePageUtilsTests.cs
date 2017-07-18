@@ -508,6 +508,21 @@ products
         }
 
         [Test]
+        public void Can_parse_expressions_with_methods()
+        {
+            object value;
+            JsBinding binding;
+
+            "mod(it,3) != 0".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(binding, Is.EqualTo(new JsExpression("mod") { 
+                Args = {
+                    "it".ToStringSegment(),
+                    "3".ToStringSegment(),
+                }
+            }));
+        }
+
+        [Test]
         public void Can_detect_invalid_syntax()
         {
             try

@@ -76,6 +76,8 @@ namespace ServiceStack.Templates
         public long decrement(long value) => value - 1; 
         public long decrBy(long value, long by) => value - by; 
         public long decrementBy(long value, long by) => value - by;
+        public long mod(long value, long divisor) => 
+            value % divisor; 
 
         public bool isEven(int value) => value % 2 == 0;
         public bool isOdd(int value) => !isEven(value);
@@ -390,15 +392,15 @@ namespace ServiceStack.Templates
             }
         }
 
-        public object where(TemplateScopeContext scope, object target, object filter) => where(scope, target, filter, null);
-        public object where(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter) => where(scope, target, filter, null);
+        public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(where));
 
             if (!(filter is string literal)) 
                 throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
             
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
             scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             var to = new List<object>();
@@ -412,6 +414,66 @@ namespace ServiceStack.Templates
                 {
                     to.Add(item);
                 }
+            }
+
+            return to;
+        }
+
+        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object filter) => takeWhile(scope, target, filter, null);
+        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(takeWhile));
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(takeWhile)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(takeWhile), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            var to = new List<object>();
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (result)
+                {
+                    to.Add(item);
+                }
+                else
+                {
+                    return to;
+                }
+            }
+
+            return to;
+        }
+
+        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object filter) => skipWhile(scope, target, filter, null);
+        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(skipWhile));
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(skipWhile)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(skipWhile), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            var to = new List<object>();
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
+            var keepSkipping = true;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (!result)
+                    keepSkipping = false;
+
+                if (!keepSkipping)
+                    to.Add(item);
             }
 
             return to;

@@ -649,7 +649,9 @@ namespace ServiceStack.Templates
 
         public object EvaluateToken(TemplateScopeContext scope, JsToken token)
         {
-            return EvaluateAnyBindings(token, scope);
+            return token is JsExpression expr && expr.Args.Count > 0
+                ? Evaluate(expr, scope)
+                : EvaluateAnyBindings(token, scope);
         }
 
         private object GetValue(string name, TemplateScopeContext scopedParams)
