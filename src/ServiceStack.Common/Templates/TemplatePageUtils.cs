@@ -42,10 +42,10 @@ namespace ServiceStack.Templates
                 var block = text.Subsegment(lastPos, pos - lastPos);
                 if (!block.IsNullOrEmpty())
                     to.Add(new PageStringFragment(block));
-
+                
                 var varStartPos = pos + 2;
                 var varEndPos = text.IndexOfNextCharNotInQuotes(varStartPos, '|', '}');
-                var varName = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
+                var initialExpr = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
                 if (varEndPos == -1 || varEndPos >= text.Length)
                     throw new ArgumentException($"Invalid Server HTML Template at '{text.SubstringWithElipsis(0, 50)}'", nameof(text));
 
@@ -84,7 +84,7 @@ namespace ServiceStack.Templates
                 lastPos = varEndPos + 1;
                 var originalText = text.Subsegment(pos, lastPos - pos);
 
-                to.Add(new PageVariableFragment(originalText, varName, filterCommands));
+                to.Add(new PageVariableFragment(originalText, initialExpr, filterCommands));
             }
 
             if (lastPos != text.Length)

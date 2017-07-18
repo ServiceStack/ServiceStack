@@ -27,12 +27,12 @@ namespace ServiceStack.Templates
         
         public JsExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, StringSegment name, List<JsExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, StringSegment initialExpression, List<JsExpression> filterCommands)
         {
             OriginalText = originalText;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
 
-            ParseNextToken(name, out object value, out JsBinding binding);
+            ParseNextToken(initialExpression, out object value, out JsBinding binding);
 
             Value = value;
 

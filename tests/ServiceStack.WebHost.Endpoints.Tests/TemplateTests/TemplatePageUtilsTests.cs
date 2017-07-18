@@ -285,6 +285,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             "[1,2,3]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new[]{ 1, 2, 3 }));
+            "[a,b,c]".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }));
+            "[a.Id,b.Name]".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new[]{ new JsExpression("a.Id"), new JsExpression("b.Name") }));
+            "{ x: a.Id, y: b.Name }".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string, object>
+            {
+                { "x", new JsExpression("a.Id") },
+                { "y", new JsExpression("b.Name") },
+            }));
+            
             "['a',\"b\",'c']".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
             " [ 'a' , \"b\"  , 'c' ] ".ToStringSegment().ParseNextToken(out value, out binding);
@@ -454,6 +465,46 @@ products
                 Assert.That(varFragment.FilterExpressions[1].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[1].Args.Count));
                 Assert.That(varFragment.FilterExpressions[1].Args[0], Is.EqualTo(varFragment1.FilterExpressions[1].Args[0]));
             }
+        }
+
+        [Test]
+        public void Can_parse_pages_starting_with_values()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage(
+                @"{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+
+            var varFragment = (PageVariableFragment) fragments[0];
+            Assert.That(varFragment.Value, Is.EqualTo(new[]
+            {
+                new JsExpression("c.CustomerId"),
+                new JsExpression("o.OrderId"),
+                new JsExpression("o.OrderDate"),
+            }));
+            
+            var newLine = (PageStringFragment) fragments[1];
+            Assert.That(newLine.Value, Is.EqualTo("\\n"));
+        }
+
+        [Test]
+        public void Can_parse_pages_starting_with_values_newLine()
+        {
+            var context = new TemplateContext().Init();
+            var page = context.OneTimePage("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+            var fragments = page.PageFragments;
+            
+//            var fragments = TemplatePageUtils.ParseTemplatePage(
+//                "{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
+
+            var varFragment = (PageVariableFragment) fragments[0];
+            Assert.That(varFragment.Value, Is.EqualTo(new[]
+            {
+                new JsExpression("c.CustomerId"),
+                new JsExpression("o.OrderId"),
+                new JsExpression("o.OrderDate"),
+            }));
+            
+            var newLine = (PageStringFragment) fragments[1];
+            Assert.That(newLine.Value, Is.EqualTo("\n"));
         }
 
         [Test]

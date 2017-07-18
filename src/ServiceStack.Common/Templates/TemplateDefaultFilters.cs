@@ -230,7 +230,26 @@ namespace ServiceStack.Templates
         
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
+        
+        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding)
+        {
+            var value = scope.GetValueOrEvaluateBinding<int>(countOrBinding);
+            return original.Take(value);
+        }
 
+        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding)
+        {
+            var value = scope.GetValueOrEvaluateBinding<int>(countOrBinding);
+            return original.Skip(value);
+        }
+
+        public IEnumerable<object> limit(TemplateScopeContext scope, IEnumerable<object> original, object skipOrBinding, object takeOrBinding)
+        {
+            var skip = scope.GetValueOrEvaluateBinding<int>(skipOrBinding);
+            var take = scope.GetValueOrEvaluateBinding<int>(takeOrBinding);
+            return original.Skip(skip).Take(take);
+        }
+        
         public List<object[]> zip(TemplateScopeContext scope, IEnumerable original, object itemsOrBinding)
         {
             var to = new List<object[]>();
@@ -252,7 +271,7 @@ namespace ServiceStack.Templates
                     {
                         foreach (var b in current)
                         {
-                            to.Add(new[] {a, b});
+                            to.Add(new[] { a, b });
                         }
                     }
                     else if (bindValue != null)
@@ -442,5 +461,27 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"{nameof(selectPartial)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
             }
         }
+        
+        private async Task serialize(TemplateScopeContext scope, object items, string jsconfig, Func<object, string> fn)
+        {
+            if (jsconfig != null)
+            {
+                using (JsConfig.CreateScope(jsconfig))
+                {
+                    await scope.OutputStream.WriteAsync(fn(items));
+                    return;
+                }
+            }
+            await scope.OutputStream.WriteAsync(items.ToJson());
+        }
+
+        public Task json(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToJson());
+        public Task json(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJson());
+
+        public Task jsv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToJsv());
+        public Task jsv(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJsv());
+
+        public Task csv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToCsv());
+        public Task xml(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToXml());
     }
 }

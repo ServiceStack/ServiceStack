@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 Args =
                 {
-                    ["numbers"] = new[] { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 },
+                    ["numbers"] = new[] {5, 4, 1, 3, 9, 8, 6, 7, 2, 0},
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
                 }
@@ -26,11 +26,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void linq1_original()
         {
             var context = CreateContext();
-            
+
             Assert.That(context.EvaluateTemplate(@"
 Numbers < 5:
-{{ numbers | where('it < 5') | select('{{ it }}\n') }}").NormalizeNewLines(), 
-                
+{{ numbers | where('it < 5') | select('{{ it }}\n') }}").NormalizeNewLines(),
+
                 Is.EqualTo(@"
 Numbers < 5:
 4
@@ -45,7 +45,7 @@ Numbers < 5:
         public void linq2_original()
         {
             var context = CreateContext();
-            
+
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
@@ -53,7 +53,7 @@ Sold out products:
    | select('{{ it.productName | raw }} is sold out!\n')
 }}
 ").NormalizeNewLines(),
-                
+
                 Is.EqualTo(@"
 Sold out products:
 Chef Anton's Gumbo Mix is sold out!
@@ -68,7 +68,7 @@ Perth Pasties is sold out!
         public void linq2_original_with_custom_item_binding()
         {
             var context = CreateContext();
-            
+
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
@@ -76,7 +76,7 @@ Sold out products:
    | select('{{ product.productName | raw }} is sold out!\n', { it: 'product' })
 }}
 ").NormalizeNewLines(),
-                
+
                 Is.EqualTo(@"
 Sold out products:
 Chef Anton's Gumbo Mix is sold out!
@@ -94,7 +94,7 @@ Perth Pasties is sold out!
             {
                 {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
- 
+
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
   | where: it.Region = 'WA' 
@@ -105,7 +105,7 @@ Customers from Washington and their orders:
 
             context.VirtualFiles.WriteFile("customer.html", @"Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
 {{ it.Orders | select(""  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat | newLine }}"") }}");
-            
+
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
                 Does.StartWith(@"
 Customers from Washington and their orders:
@@ -126,7 +126,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
             {
                 {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
- 
+
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
   | where: it.Region = 'WA' 
@@ -134,14 +134,14 @@ Customer TRAIH Trail's Head Gourmet Provisioners
 }}
 Customers from Washington and their orders:
 {{ waCustomers | selectPartial: customer }}");
-            
-            context.VirtualFiles.WriteFile("customer.html", 
+
+            context.VirtualFiles.WriteFile("customer.html",
                 @"Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
 {{ it.Orders | selectPartial: order }}");
-            
+
             context.VirtualFiles.WriteFile("order.html", @"  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat}}
 ");
-            
+
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
                 Does.StartWith(@"
 Customers from Washington and their orders:
@@ -162,7 +162,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
             {
                 {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
- 
+
             context.VirtualFiles.WriteFile("page.html", @"{{ 
   customers 
   | where: it.Region = 'WA' 
@@ -170,8 +170,8 @@ Customer TRAIH Trail's Head Gourmet Provisioners
 }}
 Customers from Washington and their orders:
 {{ waCustomers | selectPartial: customer }}");
-            
-            context.VirtualFiles.WriteFile("customer.html", 
+
+            context.VirtualFiles.WriteFile("customer.html",
                 @"
 <!--
 it: cust
@@ -179,9 +179,10 @@ it: cust
 
 Customer {{ cust.CustomerId }} {{ cust.CompanyName | raw }}
 {{ cust.Orders | selectPartial('order', { it: 'order' })  }}");
-            
-            context.VirtualFiles.WriteFile("order.html", "  Order {{ order.OrderId }}: {{ order.OrderDate | dateFormat}}\n");
-            
+
+            context.VirtualFiles.WriteFile("order.html",
+                "  Order {{ order.OrderId }}: {{ order.OrderDate | dateFormat}}\n");
+
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
                 Does.StartWith(@"
 Customers from Washington and their orders:
@@ -200,10 +201,10 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         {
             var context = CreateContext(new Dictionary<string, object>
             {
-                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
-                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
+                {"numbersA", new[] {0, 2, 4, 5, 6, 8, 9}},
+                {"numbersB", new[] {1, 3, 5, 7, 8}},
             });
-            
+
             Assert.That(context.EvaluateTemplate(@"
 Pairs where a < b:
 {{ numbersA | zip(numbersB)
@@ -211,7 +212,7 @@ Pairs where a < b:
    | select: { it[0] } is less than { it[1] }\n 
 }}
 ").NormalizeNewLines(),
-                
+
                 Does.StartWith(@"
 Pairs where a < b:
 0 is less than 1
@@ -238,10 +239,10 @@ Pairs where a < b:
         {
             var context = CreateContext(new Dictionary<string, object>
             {
-                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
-                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
+                {"numbersA", new[] {0, 2, 4, 5, 6, 8, 9}},
+                {"numbersB", new[] {1, 3, 5, 7, 8}},
             });
-            
+
             Assert.That(context.EvaluateTemplate(@"
 Pairs where a < b:
 {{ numbersA | zip(numbersB)
@@ -250,7 +251,7 @@ Pairs where a < b:
    | select: { a } is less than { b }\n 
 }}
 ").NormalizeNewLines(),
-                
+
                 Does.StartWith(@"
 Pairs where a < b:
 0 is less than 1
@@ -271,7 +272,7 @@ Pairs where a < b:
 6 is less than 8
 ".NormalizeNewLines()));
         }
-                
+
         [Test]
         public void Linq18_whitespace_test()
         {
@@ -287,7 +288,7 @@ Pairs where a < b:
    | select: ({ c.CustomerId }, { o.OrderId })\n }}
 ".NormalizeNewLines();
             Assert.That(context.EvaluateTemplate(template).NormalizeNewLines(),
-                
+
                 Does.StartWith(@"
 (LAZYK, 10482)
 (LAZYK, 10545)
@@ -295,5 +296,48 @@ Pairs where a < b:
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Linq21_jsv()
+        {
+            var context = CreateContext();
+
+            Assert.That(context.EvaluateTemplate(@"
+First 3 orders in WA:
+{{ customers | zip: it.Orders 
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: c.Region = 'WA'
+   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
+}}
+").NormalizeNewLines(),
+
+                Does.StartWith(@"
+First 3 orders in WA:
+[LAZYK,10482,1997-03-21]
+[LAZYK,10545,1997-05-22]
+[TRAIH,10574,1997-06-19]
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq21_json_with_config()
+        {
+            var context = CreateContext();
+
+            Assert.That(context.EvaluateTemplate(@"
+First 3 orders in WA:
+{{ customers | zip: it.Orders 
+   | let({ c: 'it[0]', o: 'it[1]' })
+   | where: c.Region = 'WA'
+   | select: { [c.CustomerId, o.OrderId, o.OrderDate] | json('DateHandler:ISO8601DateOnly') }\n 
+}}
+").NormalizeNewLines(),
+
+                Does.StartWith(@"
+First 3 orders in WA:
+[""LAZYK"",10482,""1997-03-21""]
+[""LAZYK"",10545,""1997-05-22""]
+[""TRAIH"",10574,""1997-06-19""]
+".NormalizeNewLines()));
+        }
     }
 }

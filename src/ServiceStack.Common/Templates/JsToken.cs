@@ -696,8 +696,19 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             {
                 if (isExpression)
                 {
-                    binding = literal.ParseJsExpression(out int pos).FirstOrDefault();
-                    return literal.Advance(pos);
+                    if (c == '(') // method
+                    {
+                        var jsExpressions = literal.ParseJsExpression(out int pos);
+                        if (jsExpressions.Count > 1)
+                            throw new ArgumentException("Expected 1 JS Expression, but received: " + jsExpressions.Count);
+                    
+                        binding = jsExpressions.FirstOrDefault();
+                        return literal.Advance(pos);
+                    }
+                    
+                    literal = literal.ParseNextBinding(out StringSegment bindingLiteral);
+                    binding = new JsExpression(bindingLiteral);
+                    return literal;
                 }
                 
                 i++;
@@ -725,6 +736,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         }
         
         public JsExpression(string name) : this() => Name = name.ToStringSegment();
+        public JsExpression(StringSegment name) : this() => Name = name;
 
         public StringSegment Name { get; set; }
 
@@ -904,7 +916,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         cmd = new T();
                         pos = i + 1;
                     }
-
+                    
                     var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
                     if (atEndIndexPos != null)
                     {
@@ -1026,5 +1038,88 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
             return to;
         }
+        
+        public static StringSegment ParseNextBinding(this StringSegment literal, out StringSegment binding)
+        {
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBrackets = 0;
+            var inParens = 0;
+            var inBraces = 0;
+            var lastPos = 0;
+
+            for (var i = 0; i < literal.Length; i++)
+            {
+                var c = literal.GetChar(i);
+                if (c.IsWhiteSpace())
+                    continue;
+                
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                        inDoubleQuotes = false;
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                        inSingleQuotes = false;
+                    continue;
+                }
+                if (inBrackets > 0)
+                {
+                    if (c == '[')
+                        ++inBrackets;
+                    if (c == ']')
+                        --inBrackets;
+                    continue;
+                }
+                if (inBraces > 0)
+                {
+                    if (c == '{')
+                        ++inBraces;
+                    if (c == '}')
+                        --inBraces;
+                    continue;
+                }
+                if (inParens > 0)
+                {
+                    if (c == '(')
+                        ++inParens;
+                    if (c == ')')
+                        --inParens;
+                    continue;
+                }
+
+                switch (c)
+                {
+                    case '"':
+                        inDoubleQuotes = true;
+                        continue;
+                    case '\'':
+                        inSingleQuotes = true;
+                        continue;
+                    case '[':
+                        inBrackets++;
+                        continue;
+                    case '{':
+                        inBraces++;
+                        continue;
+                    case '(':
+                        inParens++;
+                        continue;
+                }
+
+                if (!(c.IsValidVarNameChar() || c.IsBindingExpressionChar()))
+                {
+                    binding = literal.Subsegment(lastPos, i - lastPos).Trim();
+                    return literal.Advance(i);
+                }
+            }
+
+            binding = literal.Subsegment(0, literal.Length);
+            return TypeConstants.EmptyStringSegment;
+        }
+        
     }
 }

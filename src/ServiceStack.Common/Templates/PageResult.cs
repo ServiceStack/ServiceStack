@@ -275,14 +275,6 @@ namespace ServiceStack.Templates
 
         private TemplateScopeContext CreatePageContext(PageVariableFragment var, Stream outputStream) => new TemplateScopeContext(this, outputStream, GetPageParams(var));
 
-        private object GetValue(PageVariableFragment var, TemplateScopeContext scopeContext)
-        {
-            var value = var.Value ??
-                (var.Binding.HasValue ? GetValue(var.BindingString, scopeContext) : null);
-            
-            return value;
-        }
-
         private async Task<object> EvaluateAsync(PageVariableFragment var, TemplateScopeContext scopeContext, CancellationToken token=default(CancellationToken))
         {
             var value = var.Value ??
@@ -545,20 +537,23 @@ namespace ServiceStack.Templates
 
             if (value is Dictionary<string, object> map)
             {
+                var clone = new Dictionary<string, object>();
                 var keys = map.Keys.ToArray();
                 foreach (var key in keys)
                 {
                     var entryValue = map[key];
-                    map[key] = EvaluateAnyBindings(entryValue, scopeContext);
+                    clone[key] = EvaluateAnyBindings(entryValue, scopeContext);
                 }
+                return clone;
             }
-            else if (value is List<object> list)
+            if (value is List<object> list)
             {
-                for (var i = 0; i < list.Count; i++)
+                var clone = new List<object>();
+                foreach (var item in list)
                 {
-                    var item = list[i];
-                    list[i] = EvaluateAnyBindings(item, scopeContext);
+                    clone.Add(EvaluateAnyBindings(item, scopeContext));
                 }
+                return clone;
             }
             return value;
         }
