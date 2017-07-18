@@ -481,7 +481,7 @@ namespace ServiceStack
                     continue;
 
                 var value = queryProperty.Value.GetValue(request, true);
-                if (value == null)
+                if (value == null || (value is Array && value.ToJsv() == EmptyArray))
                     continue;
 
                 var qsName = Text.JsConfig.EmitLowercaseUnderscoreNames
