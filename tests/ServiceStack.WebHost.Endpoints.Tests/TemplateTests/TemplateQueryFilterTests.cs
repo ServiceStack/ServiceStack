@@ -937,5 +937,27 @@ AbAcUs
 BlUeBeRrY
 ".NormalizeNewLines()));
         }
+         
+        [Test]
+        public void Linq39()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+A backwards list of the digits with a second character of 'i':
+{{ digits 
+   | where: it[1] = 'i'
+   | reverse
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+A backwards list of the digits with a second character of 'i':
+nine
+eight
+six
+five
+".NormalizeNewLines()));
+        }
     }
 }

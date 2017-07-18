@@ -234,17 +234,13 @@ namespace ServiceStack.Templates
         public string addHashParams(string url, object urlParams) => 
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
         
-        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding)
-        {
-            var value = scope.GetValueOrEvaluateBinding<int>(countOrBinding);
-            return original.Take(value);
-        }
+        public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
-        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding)
-        {
-            var value = scope.GetValueOrEvaluateBinding<int>(countOrBinding);
-            return original.Skip(value);
-        }
+        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) => 
+            original.Take(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
+
+        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) => 
+            original.Skip(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
 
         public IEnumerable<object> limit(TemplateScopeContext scope, IEnumerable<object> original, object skipOrBinding, object takeOrBinding)
         {
@@ -252,7 +248,7 @@ namespace ServiceStack.Templates
             var take = scope.GetValueOrEvaluateBinding<int>(takeOrBinding);
             return original.Skip(skip).Take(take);
         }
-        
+
         public List<object[]> zip(TemplateScopeContext scope, IEnumerable original, object itemsOrBinding)
         {
             var to = new List<object[]>();

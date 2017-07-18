@@ -178,6 +178,12 @@ namespace ServiceStack.Templates
                                 scope,
                                 Expression.Constant(binding))
                             : Expression.Constant(value);
+
+                        if (type == typeof(string))
+                        {
+                            body = Expression.Call(body, typeof(string).GetMethod("ToCharArray", Type.EmptyTypes));
+                            type = typeof(char[]);
+                        }
                         
                         if (type.IsArray)
                         {
