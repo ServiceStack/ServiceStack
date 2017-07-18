@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Text;
+using ServiceStack.Text.Controller;
 using ServiceStack.Text.Json;
 
 namespace ServiceStack.Templates
@@ -478,6 +479,93 @@ namespace ServiceStack.Templates
 
             return to;
         }
+
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter) => orderBy(scope, target, filter, null);
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(orderBy));
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(orderBy), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var i = 0;
+
+            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
+            {
+                var comparer = oComparer as IComparer;
+                if (comparer == null)
+                    throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
+
+                var itemsArray = items.ToArray();
+                Array.Sort(itemsArray, comparer);
+                return itemsArray;
+            }
+            
+            return items.OrderBy(item =>
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                return scope.EvaluateToken(binding);
+            });
+        }
+
+        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter) => orderByDescending(scope, target, filter, null);
+        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(orderByDescending));
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(orderByDescending)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(orderByDescending), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var i = 0;
+
+            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
+            {
+                var comparer = oComparer as IComparer;
+                if (comparer == null)
+                    throw new NotSupportedException($"'{nameof(orderBy)}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
+
+                var itemsArray = items.ToArray();
+                Array.Sort(itemsArray, (a,b) => comparer.Compare(b,a));
+                return itemsArray;
+            }
+
+            return items.OrderByDescending(item =>
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                return scope.EvaluateToken(binding);
+            });
+        }
+        
+        public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter) => map(scope, items, filter, null);
+        public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter, object scopeOptions) 
+        {
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(map)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+
+            var i = 0;
+            var to = new List<object>();
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = scope.EvaluateToken(binding);
+                to.Add(result);
+            }
+            
+            return to;
+        }
         
         public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, null);
         public async Task select(TemplateScopeContext scope, object items, object target, object scopeOptions) 
@@ -536,7 +624,7 @@ namespace ServiceStack.Templates
             }
             await scope.OutputStream.WriteAsync(items.ToJson());
         }
-
+        
         public Task json(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToJson());
         public Task json(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJson());
 

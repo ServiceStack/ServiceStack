@@ -151,14 +151,26 @@ namespace ServiceStack.Templates
             return pageParams ?? new Dictionary<string, object>();
         }
 
-        public static IEnumerable AssertEnumerable(this object items, string filterName)
+        public static IEnumerable<object> AssertEnumerable(this object items, string filterName)
         {
-            var enumItems = items as IEnumerable;
-            if (enumItems == null && items != null)
+            var enumObjects = items as IEnumerable<object>;
+            if (enumObjects == null && items != null)
+            {
+                if (items is IEnumerable enumItems)
+                {
+                    var to = new List<object>();
+                    foreach (var item in enumItems)
+                    {
+                        to.Add(item);
+                    }
+                    return to;
+                }
+                
                 throw new ArgumentException(
                     $"{filterName} expects an IEnumerable but received a '{items.GetType().Name}' instead");
+            }
 
-            return enumItems ?? TypeConstants.EmptyObjectArray;
+            return enumObjects ?? TypeConstants.EmptyObjectArray;
         }
 
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>

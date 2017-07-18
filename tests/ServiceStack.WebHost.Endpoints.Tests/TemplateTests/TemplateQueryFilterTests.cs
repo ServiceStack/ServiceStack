@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Templates;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -18,6 +20,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["customers"] = TemplateQueryData.Customers,
                     ["digits"] = new[]{ "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
                     ["strings"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
+                    ["words"] = new[]{"cherry", "apple", "blueberry"},
+                    ["doubles"] = new[]{ 1.7, 2.3, 1.9, 4.1, 2.9 },
                 }
             };
             optionalArgs.Each((key, val) => context.Args[key] = val);
@@ -650,5 +654,181 @@ All elements starting from first element divisible by 3:
 ".NormalizeNewLines()));
         }
         
+        [Test]
+        public void Linq27()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+All elements starting from first element less than its position:
+{{ numbers 
+   | skipWhile: it >= index 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+All elements starting from first element less than its position:
+1
+3
+9
+8
+6
+7
+2
+0
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq28()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+The sorted list of words:
+{{ words 
+   | orderBy: it 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+The sorted list of words:
+apple
+blueberry
+cherry
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq29()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+The sorted list of words (by length):
+{{ words 
+   | orderBy: it.Length 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+The sorted list of words (by length):
+apple
+cherry
+blueberry
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq30()
+        { 
+            var context = CreateContext();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ products 
+   | orderBy: it.ProductName 
+   | select: { it | jsv }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+{ProductId:17,ProductName:Alice Mutton,Category:Meat/Poultry,UnitPrice:39,UnitsInStock:0}
+{ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}
+{ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
+{ProductId:60,ProductName:Camembert Pierrot,Category:Dairy Products,UnitPrice:34,UnitsInStock:19}
+{ProductId:18,ProductName:Carnarvon Tigers,Category:Seafood,UnitPrice:62.5,UnitsInStock:42}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq31()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
+                { "comparer", new CaseInsensitiveComparer() }
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ words 
+   | orderBy('it.Length', { comparer }) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+AbAcUs
+aPPLE
+BlUeBeRrY
+bRaNcH
+cHeRry
+ClOvEr
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq32()
+        { 
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate(@"
+The doubles from highest to lowest:
+{{ doubles 
+   | orderByDescending: it 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+The doubles from highest to lowest:
+4.1
+2.9
+2.3
+1.9
+1.7
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq33()
+        { 
+            var context = CreateContext();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ products 
+   | orderByDescending: it.UnitsInStock
+   | select: { it | jsv }\n }}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+{ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75,UnitsInStock:125}
+{ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
+{ProductId:6,ProductName:Grandma's Boysenberry Spread,Category:Condiments,UnitPrice:25,UnitsInStock:120}
+{ProductId:55,ProductName:Pâté chinois,Category:Meat/Poultry,UnitPrice:24,UnitsInStock:115}
+{ProductId:61,ProductName:Sirop d'érable,Category:Condiments,UnitPrice:28.5,UnitsInStock:113}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq34()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
+                { "comparer", new CaseInsensitiveComparer() }
+            });
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ words 
+   | orderByDescending('it', { comparer }) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+ClOvEr
+cHeRry
+bRaNcH
+BlUeBeRrY
+aPPLE
+AbAcUs
+".NormalizeNewLines()));
+        }
     }
 }
