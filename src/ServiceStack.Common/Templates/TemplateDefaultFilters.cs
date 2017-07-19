@@ -521,6 +521,11 @@ namespace ServiceStack.Templates
         public object max(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
             reduceInternal(nameof(max), scope, target, expression, scopeOptions, (a, b) => b > a ? b : a);
 
+        public double average(TemplateScopeContext scope, object target) => average(scope, target, null, null);
+        public double average(TemplateScopeContext scope, object target, object expression) => average(scope, target, expression, null);
+        public double average(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            reduceInternal(nameof(average), scope, target, expression, scopeOptions, (a, b) => a + b).ConvertTo<double>() / target.AssertEnumerable(nameof(average)).Count();
+
         private object reduceInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions, 
             Func<double, double, double> fn)
         {

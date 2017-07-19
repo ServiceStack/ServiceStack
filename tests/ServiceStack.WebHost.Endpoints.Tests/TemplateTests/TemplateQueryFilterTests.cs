@@ -1798,6 +1798,54 @@ Grains/Cereals
 [{ProductId:56,ProductName:Gnocchi di nonna Alice,Category:Grains/Cereals,UnitPrice:38,UnitsInStock:21}]
 ".NormalizeNewLines()));
         }
+       
+        [Test]
+        public void Linq89()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ numbers | average | select: The average number is {it}. }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+The average number is 4.5.".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void Linq90()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+{{ words
+   | average: it.Length 
+   | select: The average word length is {it} characters. }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+The average word length is 6.66666666666667 characters.".NormalizeNewLines()));
+        }
+      
+        [Test]
+        public void Linq91()
+        {
+            Assert.That(context.EvaluateTemplate(@"
+{{ products 
+   | groupBy: it.Category
+   | let({ category: 'it.Key', averagePrice: 'average(it, `it.UnitPrice`)' }) 
+   | select: Category: {category}, AveragePrice: {averagePrice}\n }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Category: Beverages, AveragePrice: 37.9791666666667
+Category: Condiments, AveragePrice: 23.0625
+Category: Produce, AveragePrice: 32.37
+Category: Meat/Poultry, AveragePrice: 54.0066666666667
+Category: Seafood, AveragePrice: 20.6825
+Category: Dairy Products, AveragePrice: 28.73
+Category: Confections, AveragePrice: 25.16
+Category: Grains/Cereals, AveragePrice: 20.25
+".NormalizeNewLines()));
+        }
 
     }
 }
