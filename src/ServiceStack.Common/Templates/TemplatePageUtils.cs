@@ -263,6 +263,7 @@ namespace ServiceStack.Templates
                             {
                                 var indexMethod = currType.GetMethod("get_Item", new[]{ value.GetType() });
                                 body = Expression.Call(body, indexMethod, valueExpr);
+                                currType = indexMethod.ReturnType;
                             }
                         }
                     }
