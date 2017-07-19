@@ -1048,5 +1048,218 @@ Condiments:
 ["" EARN "","" NEAR ""]
 ".NormalizeNewLines()));
         }
+        
+        [Test]
+        public void Linq46()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
+Prime factors of 300:
+{{ factorsOf300 | distinct | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Prime factors of 300:
+2
+3
+5
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq47()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+Category names:
+{{ products 
+   | map: it.Category 
+   | distinct
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Category names:
+Beverages
+Condiments
+Produce
+Meat/Poultry
+Seafood
+Dairy Products
+Confections
+Grains/Cereals
+".NormalizeNewLines()));
+        }
+         
+        [Test]
+        public void Linq48()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+Unique numbers from both arrays:
+{{ numbersA | union(numbersB) | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Unique numbers from both arrays:
+0
+2
+4
+5
+6
+8
+9
+1
+3
+7
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq49()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ products  
+   | map: it.ProductName[0] 
+   | assignTo: productFirstChars }}
+{{ customers 
+   | map: it.CompanyName[0] 
+   | assignTo: customerFirstChars }}
+Unique first letters from Product names and Customer names:
+{{ productFirstChars 
+   | union(customerFirstChars) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Unique first letters from Product names and Customer names:
+C
+A
+G
+U
+N
+M
+I
+Q
+K
+T
+P
+S
+R
+B
+J
+Z
+V
+F
+E
+W
+L
+O
+D
+H
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq50()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+Common numbers shared by both arrays:
+{{ numbersA | intersect(numbersB) | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Common numbers shared by both arrays:
+5
+8
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq51()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ products  
+   | map: it.ProductName[0] 
+   | assignTo: productFirstChars }}
+{{ customers 
+   | map: it.CompanyName[0] 
+   | assignTo: customerFirstChars }}
+Common first letters from Product names and Customer names:
+{{ productFirstChars 
+   | intersect(customerFirstChars) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Common first letters from Product names and Customer names:
+C
+A
+G
+N
+M
+I
+Q
+K
+T
+P
+S
+R
+B
+V
+F
+E
+W
+L
+O
+".NormalizeNewLines()));
+        }
+ 
+        [Test]
+        public void Linq52()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
+{{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
+Numbers in first array but not second array:
+{{ numbersA | except(numbersB) | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Numbers in first array but not second array:
+0
+2
+4
+6
+9
+".NormalizeNewLines()));
+        }
+         
+        [Test]
+        public void Linq53()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ products  
+   | map: it.ProductName[0] 
+   | assignTo: productFirstChars }}
+{{ customers 
+   | map: it.CompanyName[0] 
+   | assignTo: customerFirstChars }}
+First letters from Product names, but not from Customer names:
+{{ productFirstChars 
+   | except(customerFirstChars) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+First letters from Product names, but not from Customer names:
+U
+J
+Z
+".NormalizeNewLines()));
+        }
+     
     }
 }

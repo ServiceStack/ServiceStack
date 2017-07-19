@@ -597,15 +597,20 @@ namespace ServiceStack.Templates
                 var result = items.GroupBy(
                     item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), 
                     item => scope.AddItemToScope(itemBinding, item).Evaluate(mapValue, mapBinding),
-                    comparer).ToList();
+                    comparer);
                 return result;
             }
             else
             {
-                var result = items.GroupBy(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), comparer).ToList();
+                var result = items.GroupBy(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), comparer);
                 return result;
             }
         }
+
+        public IEnumerable<object> distinct(IEnumerable<object> items) => items.Distinct();
+        public IEnumerable<object> union(IEnumerable<object> target, IEnumerable<object> items) => target.Union(items);
+        public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
+        public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
         
         public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter) => map(scope, items, filter, null);
         public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter, object scopeOptions) 

@@ -189,13 +189,11 @@ namespace ServiceStack.Templates
                                 Expression.Constant(binding))
                             : Expression.Constant(value);
 
-                        if (type == typeof(string))
+                        if (currType == typeof(string))
                         {
-                            body = Expression.Call(body, typeof(string).GetMethod("ToCharArray", Type.EmptyTypes));
-                            type = typeof(char[]);
+                            body = CreateStringIndexExpression(body, binding, scope, valueExpr, ref currType);
                         }
-                        
-                        if (type.IsArray)
+                        else if (currType.IsArray)
                         {
                             if (binding != null)
                             {
@@ -219,9 +217,16 @@ namespace ServiceStack.Templates
                             var pi = AssertProperty(currType, prop.Value, expr);
                             currType = pi.PropertyType;
                             body = Expression.PropertyOrField(body, prop.Value);
-                        
-                            var indexMethod = currType.GetMethod("get_Item", new[]{ value.GetType() });
-                            body = Expression.Call(body, indexMethod, valueExpr);
+
+                            if (currType == typeof(string))
+                            {
+                                body = CreateStringIndexExpression(body, binding, scope, valueExpr, ref currType);
+                            }
+                            else
+                            {
+                                var indexMethod = currType.GetMethod("get_Item", new[]{ value.GetType() });
+                                body = Expression.Call(body, indexMethod, valueExpr);
+                            }
                         }
                     }
                     else
@@ -253,6 +258,25 @@ namespace ServiceStack.Templates
             body = Expression.Convert(body, typeof(object));
 
             return Expression.Lambda<Func<TemplateScopeContext, object, object>>(body, scope, param).Compile();
+        }
+
+        private static Expression CreateStringIndexExpression(Expression body, JsBinding binding, ParameterExpression scope,
+            Expression valueExpr, ref Type currType)
+        {
+            body = Expression.Call(body, typeof(string).GetMethod("ToCharArray", Type.EmptyTypes));
+            currType = typeof(char[]);
+
+            if (binding != null)
+            {
+                var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
+                    .MakeGenericMethod(typeof(int));
+                body = Expression.ArrayIndex(body, Expression.Call(evalAsInt, scope, Expression.Constant(binding)));
+            }
+            else
+            {
+                body = Expression.ArrayIndex(body, valueExpr);
+            }
+            return body;
         }
 
         public static object EvaluateBinding(TemplateScopeContext scope, JsBinding binding)
