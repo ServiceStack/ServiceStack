@@ -254,6 +254,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(value, Is.EqualTo("a"));
             "\"a\"".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo("a"));
+            "`a`".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EqualTo("a"));
             "1".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EqualTo(1));
             "100".ToStringSegment().ParseNextToken(out value, out binding);
@@ -282,6 +284,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(map["varRef"], Is.EqualTo(new JsBinding("foo")));
             "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
+            "{ `foo` : 1 , `bar`: 'qux', `d`: 1.1, `b`:false, `n`:null }".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
 
             "[1,2,3]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new[]{ 1, 2, 3 }));
@@ -296,7 +300,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 { "y", new JsExpression("b.Name") },
             }));
             
-            "['a',\"b\",'c']".ToStringSegment().ParseNextToken(out value, out binding);
+            "['a',\"b\",`c`]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
             " [ 'a' , \"b\"  , 'c' ] ".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));

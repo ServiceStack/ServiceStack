@@ -100,6 +100,7 @@ namespace ServiceStack.Templates
         {
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
+            var inBackTickQuotes = false;
 
             for (var i = varStartPos; i < text.Length; i++)
             {
@@ -119,15 +120,24 @@ namespace ServiceStack.Templates
                         inSingleQuotes = false;
                     continue;
                 }
-                if (c == '"')
+                if (inBackTickQuotes)
                 {
-                    inDoubleQuotes = true;
+                    if (c == '`')
+                        inBackTickQuotes = false;
                     continue;
                 }
-                if (c == '\'')
+                
+                switch (c)
                 {
-                    inSingleQuotes = true;
-                    continue;
+                    case '"':
+                        inDoubleQuotes = true;
+                        continue;
+                    case '\'':
+                        inSingleQuotes = true;
+                        continue;
+                    case '`':
+                        inBackTickQuotes = true;
+                        continue;
                 }
 
                 if (c == c1 || c == c2)
@@ -217,7 +227,18 @@ namespace ServiceStack.Templates
                     else
                     {
                         if (depth >= 1)
-                            body = Expression.PropertyOrField(body, member.Value);
+                        {
+                            if (type == typeof(Dictionary<string, object>))
+                            {
+                                var pi = AssertProperty(currType, "Item", expr);
+                                currType = pi.PropertyType;
+                                body = Expression.Property(body, "Item", Expression.Constant(member.Value));
+                            }
+                            else
+                            {
+                                body = Expression.PropertyOrField(body, member.Value);
+                            }
+                        }
                     }
     
                     depth++;

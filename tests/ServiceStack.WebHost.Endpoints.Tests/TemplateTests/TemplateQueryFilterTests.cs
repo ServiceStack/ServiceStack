@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -959,5 +960,152 @@ six
 five
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Linq40()
+        { 
+            var context = CreateContext();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ numbers 
+   | groupBy: mod(it,5)
+   | let({ remainder: 'it.Key', numbers: 'it' })
+   | select: Numbers with a remainder of { remainder } when divided by 5:\n{ numbers | select('{it}\n') } }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Numbers with a remainder of 0 when divided by 5:
+5
+0
+Numbers with a remainder of 4 when divided by 5:
+4
+9
+Numbers with a remainder of 1 when divided by 5:
+1
+6
+Numbers with a remainder of 3 when divided by 5:
+3
+8
+Numbers with a remainder of 2 when divided by 5:
+7
+2
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq41()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                { "words", new[]{ "blueberry", "chimpanzee", "abacus", "banana", "apple", "cheese" }}
+            });
+
+            var result = context.EvaluateTemplate(@"
+{{ words 
+   | groupBy: it[0]
+   | let({ firstLetter: 'it.Key', words: 'it' })
+   | select: Words that start with the letter '{firstLetter}':\n{ words | select('{it}\n') } }}
+").NormalizeNewLines();
+            result.Print();
+            Assert.That(result,
+                
+                Is.EqualTo(@"
+Words that start with the letter 'b':
+blueberry
+banana
+Words that start with the letter 'c':
+chimpanzee
+cheese
+Words that start with the letter 'a':
+abacus
+apple
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq42()
+        { 
+            var context = CreateContext();
+
+            var result = context.EvaluateTemplate(@"
+{{ products 
+   | groupBy: it.Category
+   | let({ category: 'it.Key', products: 'it' })
+   | select: {category}:\n{ products | select('{it | jsv}\n') } }}
+").NormalizeNewLines();
+            result.Print();
+            Assert.That(result,
+                
+                Does.StartWith(@"
+Beverages:
+{ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39}
+{ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
+{ProductId:24,ProductName:Guaraná Fantástica,Category:Beverages,UnitPrice:4.5,UnitsInStock:20}
+{ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
+{ProductId:35,ProductName:Steeleye Stout,Category:Beverages,UnitPrice:18,UnitsInStock:20}
+{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}
+{ProductId:39,ProductName:Chartreuse verte,Category:Beverages,UnitPrice:18,UnitsInStock:69}
+{ProductId:43,ProductName:Ipoh Coffee,Category:Beverages,UnitPrice:46,UnitsInStock:17}
+{ProductId:67,ProductName:Laughing Lumberjack Lager,Category:Beverages,UnitPrice:14,UnitsInStock:52}
+{ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
+{ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75,UnitsInStock:125}
+{ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
+Condiments:
+{ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}
+{ProductId:4,ProductName:Chef Anton's Cajun Seasoning,Category:Condiments,UnitPrice:22,UnitsInStock:53}
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq43()
+        { 
+            var context = CreateContext();
+
+            context.VirtualFiles.WriteFile("month-orders.html", @"
+{{ year }}
+{{ monthGroups | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers 
+   | let({ 
+        companyName: 'it.CompanyName', 
+        yearGroups: ""map (
+                        groupBy(it.Orders, 'it.OrderDate.Year'),
+                        '{ 
+                            year: it.Key, 
+                            monthGroups: map (
+                                groupBy(it, `it.OrderDate.Month`),
+                                `{ month: it.Key, orders: it }`
+                            ) 
+                        }'
+                    )"" 
+     })
+   | select: \n# { companyName | raw }{ yearGroups | selectPartial('month-orders') } 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+# Alfreds Futterkiste
+1997
+	8
+		[{OrderId:10643,OrderDate:1997-08-25,Total:814.5}]
+	10
+		[{OrderId:10692,OrderDate:1997-10-03,Total:878},{OrderId:10702,OrderDate:1997-10-13,Total:330}]
+
+1998
+	1
+		[{OrderId:10835,OrderDate:1998-01-15,Total:845.8}]
+	3
+		[{OrderId:10952,OrderDate:1998-03-16,Total:471.2}]
+	4
+		[{OrderId:11011,OrderDate:1998-04-09,Total:933.5}]
+
+# Ana Trujillo Emparedados y helados
+1996
+	9
+		[{OrderId:10308,OrderDate:1996-09-18,Total:88.8}]
+".NormalizeNewLines()));
+        }
+        
     }
 }
