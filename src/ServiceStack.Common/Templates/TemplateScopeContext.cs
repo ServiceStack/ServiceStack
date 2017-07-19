@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -87,7 +88,16 @@ namespace ServiceStack.Templates
 
         public static object EvaluateToken(this TemplateScopeContext scope, JsToken token)
         {
-            return scope.PageResult.EvaluateToken(scope, token);
+            var result = scope.PageResult.EvaluateToken(scope, token);
+            return result;
+        }
+
+        public static object Evaluate(this TemplateScopeContext scope, object value, JsToken token)
+        {
+            var result = token != null
+                ? scope.PageResult.EvaluateToken(scope, token)
+                : scope.PageResult.EvaluateAnyBindings(value, scope);
+            return result;
         }
     }
 }

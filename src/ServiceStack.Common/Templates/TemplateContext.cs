@@ -91,6 +91,7 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
             Args[TemplateConstants.DefaultIndent] = "\t";
             Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
+            Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
         }
 
         public bool HasInit { get; private set; }

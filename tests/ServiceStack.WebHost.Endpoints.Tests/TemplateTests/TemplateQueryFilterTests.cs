@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
@@ -23,6 +24,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["strings"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
                     ["words"] = new[]{"cherry", "apple", "blueberry"},
                     ["doubles"] = new[]{ 1.7, 2.3, 1.9, 4.1, 2.9 },
+                    ["anagrams"] = new[]{ "from   ", " salt", " earn ", "  last   ", " near ", " form  " },
                 }
             };
             optionalArgs.Each((key, val) => context.Args[key] = val);
@@ -891,14 +893,12 @@ BlUeBeRrY
         { 
             var context = CreateContext();
 
-            var normalizeNewLines = context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | orderBy: it.Category
    | thenByDescending: it.UnitPrice
    | select: { it | jsv }\n }}
-").NormalizeNewLines();
-            normalizeNewLines.Print();
-            Assert.That(normalizeNewLines,
+").NormalizeNewLines(),
                 
                 Does.StartWith(@"
 {ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}
@@ -1000,14 +1000,12 @@ Numbers with a remainder of 2 when divided by 5:
                 { "words", new[]{ "blueberry", "chimpanzee", "abacus", "banana", "apple", "cheese" }}
             });
 
-            var result = context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateTemplate(@"
 {{ words 
    | groupBy: it[0]
    | let({ firstLetter: 'it.Key', words: 'it' })
    | select: Words that start with the letter '{firstLetter}':\n{ words | select('{it}\n') } }}
-").NormalizeNewLines();
-            result.Print();
-            Assert.That(result,
+").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
 Words that start with the letter 'b':
@@ -1027,14 +1025,12 @@ apple
         { 
             var context = CreateContext();
 
-            var result = context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', products: 'it' })
    | select: {category}:\n{ products | select('{it | jsv}\n') } }}
-").NormalizeNewLines();
-            result.Print();
-            Assert.That(result,
+").NormalizeNewLines(),
                 
                 Does.StartWith(@"
 Beverages:
@@ -1106,6 +1102,61 @@ Condiments:
 		[{OrderId:10308,OrderDate:1996-09-18,Total:88.8}]
 ".NormalizeNewLines()));
         }
+ 
+        public class AnagramEqualityComparer : IEqualityComparer<string> 
+        {
+            public bool Equals(string x, string y) => GetCanonicalString(x) == GetCanonicalString(y);
+            public int GetHashCode(string obj) => GetCanonicalString(obj).GetHashCode();
+            private string GetCanonicalString(string word) 
+            {
+                var wordChars = word.ToCharArray();
+                Array.Sort(wordChars);
+                return new string(wordChars);
+            }
+        }
         
+        [Test]
+        public void Linq44()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"comparer", new AnagramEqualityComparer()}
+            });
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ anagrams 
+   | groupBy('trim(it)', { comparer })
+   | select: { it | json }\n 
+}}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+[""from   "","" form  ""]
+["" salt"",""  last   ""]
+["" earn "","" near ""]
+".NormalizeNewLines()));
+        }
+        
+        [Test]
+        public void Linq45()
+        { 
+            var context = CreateContext(new Dictionary<string, object>
+            {
+                {"comparer", new AnagramEqualityComparer()}
+            });
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ anagrams 
+   | groupBy('trim(it)', { map: 'upper(it)', comparer })
+   | select: { it | json }\n 
+}}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+[""FROM   "","" FORM  ""]
+["" SALT"",""  LAST   ""]
+["" EARN "","" NEAR ""]
+".NormalizeNewLines()));
+        }
     }
 }

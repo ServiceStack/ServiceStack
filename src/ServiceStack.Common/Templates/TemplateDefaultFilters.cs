@@ -50,14 +50,6 @@ namespace ServiceStack.Templates
             return rawStr;
         }
 
-        public IRawString json(object value)
-        {
-            if (value != null && TypeSerializer.HasCircularReferences(value))
-                throw new NotSupportedException($"Cannot serialize type '{value.GetType().Name}' with cyclical dependencies");
-            
-            return (value.ToJson() ?? "null").ToRawString();
-        }
-
         public string appSetting(string name) =>  Context.AppSettings.GetString(name);
 
         public static double applyToNumbers(double lhs, double rhs, Func<double, double, double> fn) => fn(lhs, rhs);
@@ -261,11 +253,7 @@ namespace ServiceStack.Templates
                 foreach (var a in original)
                 {
                     scope.AddItemToScope("it", a, i++);
-
-                    var bindValue = binding != null
-                        ? scope.EvaluateToken(binding)
-                        : value;
-
+                    var bindValue = scope.Evaluate(value, binding);
                     if (bindValue is IEnumerable current)
                     {
                         foreach (var b in current)
@@ -274,9 +262,7 @@ namespace ServiceStack.Templates
                         }
                     }
                     else if (bindValue != null)
-                    {
                         throw new ArgumentException($"{nameof(zip)} in '{scope.Page.VirtualPath}' requires '{literal}' to evaluate to an IEnumerable, but evaluated to a '{bindValue.GetType().Name}' instead");
-                    }
                 }
             }
             else if (itemsOrBinding is IEnumerable current)
@@ -328,9 +314,7 @@ namespace ServiceStack.Templates
                         var bindTo = entry.Key;
                         var bindToLiteral = (string)entry.Value;
                         bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-                        var bindValue = binding != null
-                            ? scope.EvaluateToken(binding)
-                            : value;
+                        var bindValue = scope.Evaluate(value, binding);
                         itemBindings[bindTo] = bindValue;
                     }
                     to.Add(itemBindings);
@@ -338,8 +322,10 @@ namespace ServiceStack.Templates
 
                 return to;
             }
+            if (target != null)
+                throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' requires an IEnumerable but received a '{target.GetType()?.Name}' instead");
 
-            return target;
+            return null;
         }
 
         public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
@@ -375,8 +361,8 @@ namespace ServiceStack.Templates
             {
                 var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
                 
-                var itemScope = scope.CreateScopedContext(target.ToString(), scopedParams);
                 var i = 0;
+                var itemScope = scope.CreateScopedContext(target.ToString(), scopedParams);
                 foreach (var item in objs)
                 {
                     itemScope.AddItemToScope(itemBinding, item, i++);
@@ -408,9 +394,7 @@ namespace ServiceStack.Templates
                 scope.AddItemToScope(itemBinding, item, i++);
                 var result = expr.Evaluate(scope);
                 if (result)
-                {
                     to.Add(item);
-                }
             }
 
             return to;
@@ -435,13 +419,9 @@ namespace ServiceStack.Templates
                 scope.AddItemToScope(itemBinding, item, i++);
                 var result = expr.Evaluate(scope);
                 if (result)
-                {
                     to.Add(item);
-                }
                 else
-                {
                     return to;
-                }
             }
 
             return to;
@@ -496,10 +476,35 @@ namespace ServiceStack.Templates
         {
             private readonly IComparer comparer;
             public ComparerWrapper(IComparer comparer) => this.comparer = comparer;
-            public int Compare(object x, object y)
+            public int Compare(object x, object y) => comparer.Compare(x, y);
+        }
+        class EqualityComparerWrapper : IEqualityComparer<object>
+        {
+            private readonly IEqualityComparer comparer;
+            public EqualityComparerWrapper(IEqualityComparer comparer) => this.comparer = comparer;
+            public bool Equals(object x, object y) => comparer.Equals(x, y);
+            public int GetHashCode(object obj) => comparer.GetHashCode(obj);
+        }
+        class EqualityComparerWrapper<T> : IEqualityComparer<object>
+        {
+            private readonly IEqualityComparer<T> comparer;
+            public EqualityComparerWrapper(IEqualityComparer<T> comparer) => this.comparer = comparer;
+            public bool Equals(object x, object y) => comparer.Equals((T)x, (T)y);
+            public int GetHashCode(object obj) => comparer.GetHashCode((T)obj);
+        }
+
+        private static IComparer<object> GetComparer(string filterName, TemplateScopeContext scope, Dictionary<string, object> scopedParams)
+        {
+            var comparer = (IComparer<object>) Comparer<object>.Default;
+            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
-                return comparer.Compare(x, y);
+                var nonGenericComparer = oComparer as IComparer;
+                if (nonGenericComparer == null)
+                    throw new NotSupportedException(
+                        $"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
+                comparer = new ComparerWrapper(nonGenericComparer);
             }
+            return comparer;
         }
         
         public static IEnumerable<object> orderByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
@@ -515,30 +520,15 @@ namespace ServiceStack.Templates
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
 
-            var comparer = (IComparer<object>)Comparer<object>.Default;
-            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
-            {
-                var nonGenericComparer = oComparer as IComparer;
-                if (nonGenericComparer == null)
-                    throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
-                comparer = new ComparerWrapper(nonGenericComparer);
-            }
-            
+            var comparer = GetComparer(filterName, scope, scopedParams);
+
             var sorted = filterName == nameof(orderByDescending)
-                 ? items.OrderByDescending(item =>
-                    {
-                        scope.AddItemToScope(itemBinding, item, i++);
-                        return scope.EvaluateToken(binding);
-                    }, comparer)
-                : items.OrderBy(item =>
-                    {
-                        scope.AddItemToScope(itemBinding, item, i++);
-                        return scope.EvaluateToken(binding);
-                    }, comparer);
+                ? items.OrderByDescending(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer)
+                : items.OrderBy(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
 
             return sorted;
         }
-        
+
         public static IEnumerable<object> thenByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
         {
             var items = target as IOrderedEnumerable<object>;
@@ -554,28 +544,64 @@ namespace ServiceStack.Templates
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
 
-            var comparer = (IComparer<object>)Comparer<object>.Default;
-            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
-            {
-                var nonGenericComparer = oComparer as IComparer;
-                if (nonGenericComparer == null)
-                    throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
-                comparer = new ComparerWrapper(nonGenericComparer);
-            }
+            var comparer = GetComparer(filterName, scope, scopedParams);
             
             var sorted = filterName == nameof(thenByDescending)
-                ? items.ThenByDescending(item =>
-                {
-                    scope.AddItemToScope(itemBinding, item, i++);
-                    return scope.EvaluateToken(binding);
-                }, comparer)
-                : items.ThenBy(item =>
-                {
-                    scope.AddItemToScope(itemBinding, item, i++);
-                    return scope.EvaluateToken(binding);
-                }, comparer);
+                ? items.ThenByDescending(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer)
+                : items.ThenBy(item =>scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
 
             return sorted;
+        }
+        
+        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object filter) => groupBy(scope, items, filter, null);
+        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object filter, object scopeOptions) 
+        {
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(groupBy)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(groupBy), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+
+            var comparer = (IEqualityComparer<object>) EqualityComparer<object>.Default;
+            if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
+            {
+                comparer = oComparer as IEqualityComparer<object>;
+                if (oComparer is IEqualityComparer<string> stringComparer)
+                    comparer = new EqualityComparerWrapper<string>(stringComparer);
+                else if (oComparer is IEqualityComparer<int> intComparer)
+                    comparer = new EqualityComparerWrapper<int>(intComparer);
+                else if (oComparer is IEqualityComparer<long> longComparer)
+                    comparer = new EqualityComparerWrapper<long>(longComparer);
+                else if (oComparer is IEqualityComparer<double> doubleComparer)
+                    comparer = new EqualityComparerWrapper<double>(doubleComparer);
+                
+                if (comparer == null)
+                {
+                    var nonGenericComparer = oComparer as IEqualityComparer;
+                    if (nonGenericComparer == null)
+                        throw new NotSupportedException(
+                            $"'{nameof(groupBy)}' in '{scope.Page.VirtualPath}' expects a IEqualityComparer but received a '{oComparer.GetType()?.Name}' instead");
+                    comparer = new EqualityComparerWrapper(nonGenericComparer);
+                }
+            }
+
+            if (scopedParams.TryGetValue(TemplateConstants.Map, out object map))
+            {
+                ((string)map).ToStringSegment().ParseNextToken(out object mapValue, out JsBinding mapBinding);
+                
+                var result = items.GroupBy(
+                    item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), 
+                    item => scope.AddItemToScope(itemBinding, item).Evaluate(mapValue, mapBinding),
+                    comparer).ToList();
+                return result;
+            }
+            else
+            {
+                var result = items.GroupBy(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), comparer).ToList();
+                return result;
+            }
         }
         
         public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter) => map(scope, items, filter, null);
@@ -590,15 +616,8 @@ namespace ServiceStack.Templates
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
             var i = 0;
-            var to = new List<object>();
-            foreach (var item in items)
-            {
-                scope.AddItemToScope(itemBinding, item, i++);
-                var result = scope.EvaluateToken(binding);
-                to.Add(result);
-            }
-            
-            return to;
+            var result = items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
+            return result;
         }
         
         public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, null);
@@ -648,6 +667,11 @@ namespace ServiceStack.Templates
         
         private async Task serialize(TemplateScopeContext scope, object items, string jsconfig, Func<object, string> fn)
         {
+            var defaultJsConfig = Context.Args[TemplateConstants.DefaultJsConfig] as string;
+            jsconfig  = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
+                ? defaultJsConfig + "," + jsconfig
+                : defaultJsConfig;
+            
             if (jsconfig != null)
             {
                 using (JsConfig.CreateScope(jsconfig))
@@ -659,10 +683,34 @@ namespace ServiceStack.Templates
             await scope.OutputStream.WriteAsync(items.ToJson());
         }
         
-        public Task json(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToJson());
+        private IRawString serialize(object target, string jsconfig, Func<object, string> fn)
+        {
+            var defaultJsConfig = Context.Args[TemplateConstants.DefaultJsConfig] as string;
+            jsconfig  = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
+                ? defaultJsConfig + "," + jsconfig
+                : defaultJsConfig;
+
+            if (jsconfig == null) 
+                return fn(target.AssertNoCircularDeps()).ToRawString();
+           
+            using (JsConfig.CreateScope(jsconfig))
+            {
+                return fn(target).ToRawString();
+            }
+        }
+        
+        //Filters
+        public IRawString json(object value) => serialize(value, null, x => x.ToJson() ?? "null");
+        public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJson() ?? "null");
+        public IRawString jsv(object value) => serialize(value, null, x => x.ToJsv() ?? "");
+        public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
+        public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();
+
+        //Blocks
+        public Task json(TemplateScopeContext scope, object items) => json(scope, items, null);
         public Task json(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJson());
 
-        public Task jsv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToJsv());
+        public Task jsv(TemplateScopeContext scope, object items) => jsv(scope, items, null);
         public Task jsv(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJsv());
 
         public Task csv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToCsv());

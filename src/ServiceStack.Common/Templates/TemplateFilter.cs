@@ -151,6 +151,13 @@ namespace ServiceStack.Templates
             return pageParams ?? new Dictionary<string, object>();
         }
 
+        public static object AssertNoCircularDeps(this object value)
+        {
+            if (value != null && TypeSerializer.HasCircularReferences(value))
+                throw new NotSupportedException($"Cannot serialize type '{value.GetType().Name}' with cyclical dependencies");
+            return value;
+        }
+
         public static IEnumerable<object> AssertEnumerable(this object items, string filterName)
         {
             var enumObjects = items as IEnumerable<object>;
@@ -193,9 +200,14 @@ namespace ServiceStack.Templates
             return pageParams;
         }
 
-        public static void AddItemToScope(this TemplateScopeContext scope, string itemBinding, object item, int index)
+        public static TemplateScopeContext AddItemToScope(this TemplateScopeContext scope, string itemBinding, object item, int index)
         {
             scope.ScopedParams[TemplateConstants.Index] = index;
+            return scope.AddItemToScope(itemBinding, item);
+        }
+
+        public static TemplateScopeContext AddItemToScope(this TemplateScopeContext scope, string itemBinding, object item)
+        {
             scope.ScopedParams[itemBinding] = item;
 
             var explodeBindings = item as Dictionary<string, object>;
@@ -206,6 +218,7 @@ namespace ServiceStack.Templates
                     scope.ScopedParams[entry.Key] = entry.Value;
                 }
             }
+            return scope;
         }
 
         public static T GetValueOrEvaluateBinding<T>(this TemplateScopeContext scope, object valueOrBinding) =>
