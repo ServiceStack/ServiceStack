@@ -44,7 +44,7 @@ namespace ServiceStack.Templates
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
-                var varEndPos = text.IndexOfNextCharNotInQuotes(varStartPos, '|', '}');
+                var varEndPos = text.IndexOfNextCharNotInObjects(varStartPos, '|', '}');
                 var initialExpr = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
                 if (varEndPos == -1 || varEndPos >= text.Length)
                     throw new ArgumentException($"Invalid Server HTML Template at '{text.SubstringWithElipsis(0, 50)}'", nameof(text));
@@ -96,12 +96,16 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        internal static int IndexOfNextCharNotInQuotes(this StringSegment text, int varStartPos, char c1, char c2)
+        internal static int IndexOfNextCharNotInObjects(this StringSegment text, int varStartPos, char c1, char c2)
         {
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
             var inBackTickQuotes = false;
 
+            var inBrackets = 0;
+            var inParens = 0;
+            var inBraces = 0;
+            
             for (var i = varStartPos; i < text.Length; i++)
             {
                 var c = text.GetChar(i);
@@ -126,6 +130,30 @@ namespace ServiceStack.Templates
                         inBackTickQuotes = false;
                     continue;
                 }
+                if (inBrackets > 0)
+                {
+                    if (c == '[')
+                        ++inBrackets;
+                    if (c == ']')
+                        --inBrackets;
+                    continue;
+                }
+                if (inBraces > 0)
+                {
+                    if (c == '{')
+                        ++inBraces;
+                    if (c == '}')
+                        --inBraces;
+                    continue;
+                }
+                if (inParens > 0)
+                {
+                    if (c == '(')
+                        ++inParens;
+                    if (c == ')')
+                        --inParens;
+                    continue;
+                }
                 
                 switch (c)
                 {
@@ -137,6 +165,15 @@ namespace ServiceStack.Templates
                         continue;
                     case '`':
                         inBackTickQuotes = true;
+                        continue;
+                    case '[':
+                        inBrackets++;
+                        continue;
+                    case '{':
+                        inBraces++;
+                        continue;
+                    case '(':
+                        inParens++;
                         continue;
                 }
 
@@ -233,7 +270,7 @@ namespace ServiceStack.Templates
                     {
                         if (depth >= 1)
                         {
-                            if (type == typeof(Dictionary<string, object>))
+                            if (typeof(IDictionary).IsAssignableFromType(currType))
                             {
                                 var pi = AssertProperty(currType, "Item", expr);
                                 currType = pi.PropertyType;

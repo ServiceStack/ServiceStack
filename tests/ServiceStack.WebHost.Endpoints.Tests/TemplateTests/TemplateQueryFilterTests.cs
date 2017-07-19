@@ -1260,6 +1260,65 @@ J
 Z
 ".NormalizeNewLines()));
         }
+ 
+        [Test]
+        public void Linq54()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 1.7, 2.3, 1.9, 4.1, 2.9 ] | assignTo: doubles }}
+Every other double from highest to lowest:
+{{ doubles 
+   | orderByDescending: it
+   | step({ by: 2 }) 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Every other double from highest to lowest:
+4.1
+2.3
+1.7
+".NormalizeNewLines()));
+        }
+ 
+        [Test]
+        public void Linq55()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
+The sorted word list:
+{{ words
+   | orderBy: it 
+   | toList 
+   | select: { it }\n }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+The sorted word list:
+apple
+blueberry
+cherry
+".NormalizeNewLines()));
+        }
+ 
+        [Test]
+        public void Linq56()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}] | assignTo: scoreRecords }}
+Bob's score: 
+{{ scoreRecords 
+   | toDictionary: it.name
+   | map: it['Bob']
+   | select: { it['name'] } = { it['score'] }
+}} 
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Bob's score: 
+Bob = 40
+".NormalizeNewLines()));
+        }
      
     }
 }

@@ -378,6 +378,49 @@ namespace ServiceStack.Templates
             }
         }
 
+        public List<object> toList(IEnumerable target) => target.Map(x => x);
+        public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
+
+        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object filter) => toDictionary(scope, target, filter, null);
+        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(toDictionary));
+
+            if (!(filter is string literal)) 
+                throw new NotSupportedException($"'{nameof(toDictionary)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+            
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            
+            return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
+        }
+
+        public List<object> step(IEnumerable target, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(step));
+            
+            var scopedParams = scopeOptions.AssertOptions(nameof(step));
+
+            var from = scopedParams.TryGetValue("from", out object oFrom)
+                ? (int)oFrom
+                : 0;
+            
+            var by = scopedParams.TryGetValue("by", out object oBy)
+                ? (int)oBy
+                : 1;
+
+            var to = new List<object>();
+            var itemsArray = items.ToArray();
+            for (var i = from; i < itemsArray.Length; i += by)
+            {
+                to.Add(itemsArray[i]);
+            }
+
+            return to;
+        }
+
         public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter) => where(scope, target, filter, null);
         public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter, object scopeOptions)
         {
@@ -612,8 +655,8 @@ namespace ServiceStack.Templates
         public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
         public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
         
-        public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter) => map(scope, items, filter, null);
-        public IEnumerable<object> map(TemplateScopeContext scope, IEnumerable<object> items, object filter, object scopeOptions) 
+        public object map(TemplateScopeContext scope, object items, object filter) => map(scope, items, filter, null);
+        public object map(TemplateScopeContext scope, object target, object filter, object scopeOptions) 
         {
             if (!(filter is string literal)) 
                 throw new NotSupportedException($"'{nameof(map)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
@@ -623,21 +666,24 @@ namespace ServiceStack.Templates
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
-            var i = 0;
-            var result = items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
-            return result;
+            if (target is IEnumerable items && !(items is IDictionary))
+            {
+                var i = 0;
+                return items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
+            }
+            
+            return scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
         }
         
-        public Task select(TemplateScopeContext scope, object items, object target) => select(scope, items, target, null);
-        public async Task select(TemplateScopeContext scope, object items, object target, object scopeOptions) 
+        public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
+        public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions) 
         {
-            var objs = items as IEnumerable;
-            if (objs != null)
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
+            var template = JsonTypeSerializer.Unescape(selectTemplate.ToString());
+            var itemScope = scope.CreateScopedContext(template, scopedParams);
+
+            if (target is IEnumerable objs && !(target is IDictionary))
             {
-                var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
-                var template = JsonTypeSerializer.Unescape(target.ToString());
-                var itemScope = scope.CreateScopedContext(template, scopedParams);
-                
                 var i = 0;
                 foreach (var item in objs)
                 {
@@ -645,20 +691,21 @@ namespace ServiceStack.Templates
                     await itemScope.WritePageAsync();
                 }
             }
-            else if (items != null)
+            else
             {
-                throw new ArgumentException($"{nameof(select)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                itemScope.AddItemToScope(itemBinding, target);
+                await itemScope.WritePageAsync();
             }
         }
 
-        public Task selectPartial(TemplateScopeContext scope, object items, string pageName) => selectPartial(scope, items, pageName, null); 
-        public async Task selectPartial(TemplateScopeContext scope, object items, string pageName, object scopedParams) 
+        public Task selectPartial(TemplateScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null); 
+        public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams) 
         {
-            var objs = items as IEnumerable;
-            if (objs != null)
+            var page = await scope.Context.GetPage(pageName).Init();
+            var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
+
+            if (target is IEnumerable objs && !(target is IDictionary))
             {
-                var page = await scope.Context.GetPage(pageName).Init();
-                var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
                 
                 var i = 0;
                 foreach (var item in objs)
@@ -667,9 +714,10 @@ namespace ServiceStack.Templates
                     await scope.WritePageAsync(page, pageParams);
                 }
             }
-            else if (items != null)
+            else if (target != null)
             {
-                throw new ArgumentException($"{nameof(selectPartial)} in '{scope.Page.VirtualPath}' requires an IEnumerable, but received a '{items.GetType().Name}' instead");
+                scope.AddItemToScope(itemBinding, target);
+                await scope.WritePageAsync(page, pageParams);
             }
         }
         

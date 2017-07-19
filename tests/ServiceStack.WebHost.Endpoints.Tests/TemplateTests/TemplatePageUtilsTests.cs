@@ -323,6 +323,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 { "k2", "v2" },
                 { "k3", "v3" },                
             }));
+            "[{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}]".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(value, Is.EquivalentTo(new[]
+            {
+                new Dictionary<string, object> { { "name", "Alice" }, { "score", 50 } },
+                new Dictionary<string, object> { { "name", "Bob" }, { "score", 40 } },
+                new Dictionary<string, object> { { "name", "Cathy" }, { "score", 45 } },
+            }));
+            
+            //{{  | assignTo: words }}
         }
 
         [Test]
