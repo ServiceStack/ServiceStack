@@ -124,6 +124,16 @@ namespace ServiceStack.Templates
             }
             return StringBuilderCache.ReturnAndFree(sb);
         }
+
+        public List<object> itemsOf(int count, object target)
+        {
+            var to = new List<object>();
+            for (var i = 0; i < count; i++)
+            {
+                to.Add(target);
+            }
+            return to;
+        }
         
         public static bool isTrue(object target) => target is bool b && b;
         public static bool isFalsey(object target)
@@ -318,6 +328,7 @@ namespace ServiceStack.Templates
                         var bindToLiteral = (string)entry.Value;
                         bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
                         var bindValue = scope.Evaluate(value, binding);
+                        scope.ScopedParams[bindTo] = bindValue;
                         itemBindings[bindTo] = bindValue;
                     }
                     to.Add(itemBindings);
@@ -378,9 +389,10 @@ namespace ServiceStack.Templates
             }
         }
 
+        public string toString(object target) => target?.ToString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
-
+        
         public List<object> step(IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(step));
@@ -419,16 +431,37 @@ namespace ServiceStack.Templates
             return null;
         }
 
+        public bool contains(object target, object needle)
+        {
+            if (needle == null)
+                return false;
+            
+            if (target is string s)
+            {
+                if (needle is char c)
+                    return s.IndexOf(c) >= 0;
+                return s.IndexOf(needle.ToString(), StringComparison.Ordinal) >= 0;
+            }
+            if (target is IEnumerable items)
+            {
+                foreach (var item in items)
+                {
+                    if (Equals(item, needle))
+                        return true;
+                }
+                return false;
+            }
+            throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
+        }
+
+        public object range(int start, int count) => Enumerable.Range(start, count);
+
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression) => toDictionary(scope, target, expression, null);
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(toDictionary));
-
-            if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(toDictionary)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(toDictionary), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
             
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             
@@ -438,9 +471,7 @@ namespace ServiceStack.Templates
         public IEnumerable of(TemplateScopeContext scope, IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(of));
-            
             var scopedParams = scope.GetParamsWithItemBinding(nameof(of), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             if (scopedParams.TryGetValue("type", out object oType))
             {
@@ -453,17 +484,98 @@ namespace ServiceStack.Templates
             return items;
         }
 
+        public int count(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(count)).Count();
+        public int count(TemplateScopeContext scope, object target, object expression) => count(scope, target, expression, null);
+        public int count(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(count));
+            var literal = scope.AssertExpression(nameof(count), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var total = 0;
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (result)
+                    total++;
+            }
+
+            return total;
+        }
+
+        public object sum(TemplateScopeContext scope, object target) => sum(scope, target, null, null);
+        public object sum(TemplateScopeContext scope, object target, object expression) => sum(scope, target, expression, null);
+        public object sum(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            reduceInternal(nameof(sum), scope, target, expression, scopeOptions, (a, b) => a + b);
+
+        public object min(TemplateScopeContext scope, object target) => min(scope, target, null, null);
+        public object min(TemplateScopeContext scope, object target, object expression) => min(scope, target, expression, null);
+        public object min(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            reduceInternal(nameof(min), scope, target, expression, scopeOptions, (a, b) => b < a ? b : a);
+
+        public object max(TemplateScopeContext scope, object target) => max(scope, target, null, null);
+        public object max(TemplateScopeContext scope, object target, object expression) => max(scope, target, expression, null);
+        public object max(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            reduceInternal(nameof(max), scope, target, expression, scopeOptions, (a, b) => b > a ? b : a);
+
+        private object reduceInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions, 
+            Func<double, double, double> fn)
+        {
+            var items = target.AssertEnumerable(filterName);
+            var total = filterName == nameof(min) 
+                ? double.MaxValue 
+                : 0;
+            Type itemType = null;
+            if (expression != null)
+            {
+                var literal = scope.AssertExpression(filterName, expression);
+                var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
+                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+                foreach (var item in items)
+                {
+                    if (item == null) continue;
+                    
+                    scope.AddItemToScope(itemBinding, item);
+                    var result = scope.Evaluate(value, binding);
+                    if (result == null) continue;
+                    if (itemType == null)
+                        itemType = result.GetType();
+                    
+                    total = fn(total, result.ConvertTo<double>());
+                }
+            }
+            else
+            {
+                foreach (var item in items)
+                {
+                    if (item == null) continue;
+                    if (itemType == null)
+                        itemType = item.GetType();
+                    total = fn(total, item.ConvertTo<double>());
+                }
+            }
+
+            if (filterName == nameof(min) && itemType == null)
+                return 0;
+                
+            if (expression == null && itemType == null)
+                itemType = target.GetType().FirstGenericType()?.GetGenericArguments().FirstOrDefault();
+
+            return itemType == null || itemType == typeof(double)
+                ? total
+                : total.ConvertTo(itemType);
+        }
+
         public object first(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(first)).FirstOrDefault();
         public object first(TemplateScopeContext scope, object target, object expression) => first(scope, target, expression, null);
         public object first(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(first));
-
-            if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(first)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
-            
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+            var literal = scope.AssertExpression(nameof(first), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
 
             literal.ParseConditionExpression(out ConditionExpression expr);
             var i = 0;
@@ -478,16 +590,53 @@ namespace ServiceStack.Templates
             return null;
         }
 
+        public object any(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(any)).Any();
+        public object any(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression, null);
+        public object any(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(any));
+            var literal = scope.AssertExpression(nameof(any), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(any), scopeOptions, out string itemBinding);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (result)
+                    return true;
+            }
+
+            return false;
+        }
+
+        public object all(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression, null);
+        public object all(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(all));
+            var literal = scope.AssertExpression(nameof(all), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (!result)
+                    return false;
+            }
+
+            return true;
+        }
+
         public IEnumerable<object> where(TemplateScopeContext scope, object target, object expression) => where(scope, target, expression, null);
         public IEnumerable<object> where(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(where));
-
-            if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(where), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             var to = new List<object>();
             literal.ParseConditionExpression(out ConditionExpression expr);
@@ -503,16 +652,12 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object filter) => takeWhile(scope, target, filter, null);
-        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object expression) => takeWhile(scope, target, expression, null);
+        public IEnumerable<object> takeWhile(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(takeWhile));
-
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(takeWhile)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(takeWhile), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(takeWhile), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             var to = new List<object>();
             literal.ParseConditionExpression(out ConditionExpression expr);
@@ -530,16 +675,12 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object filter) => skipWhile(scope, target, filter, null);
-        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object expression) => skipWhile(scope, target, expression, null);
+        public IEnumerable<object> skipWhile(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(skipWhile));
-
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(skipWhile)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(skipWhile), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(skipWhile), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             var to = new List<object>();
             literal.ParseConditionExpression(out ConditionExpression expr);
@@ -610,15 +751,11 @@ namespace ServiceStack.Templates
             return comparer;
         }
         
-        public static IEnumerable<object> orderByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public static IEnumerable<object> orderByInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(filterName);
-
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(filterName, expression);
             var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
@@ -632,17 +769,14 @@ namespace ServiceStack.Templates
             return sorted;
         }
 
-        public static IEnumerable<object> thenByInternal(string filterName, TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public static IEnumerable<object> thenByInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target as IOrderedEnumerable<object>;
             if (items == null)
                 throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires an IOrderedEnumerable but received a '{target?.GetType()?.Name}' instead");
 
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(filterName, expression);
             var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
@@ -656,14 +790,11 @@ namespace ServiceStack.Templates
             return sorted;
         }
         
-        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object filter) => groupBy(scope, items, filter, null);
-        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object filter, object scopeOptions) 
+        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object expression) => groupBy(scope, items, expression, null);
+        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object expression, object scopeOptions) 
         {
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(groupBy)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(groupBy), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(groupBy), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
@@ -712,14 +843,11 @@ namespace ServiceStack.Templates
         public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
         public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
         
-        public object map(TemplateScopeContext scope, object items, object filter) => map(scope, items, filter, null);
-        public object map(TemplateScopeContext scope, object target, object filter, object scopeOptions) 
+        public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
+        public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions) 
         {
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(map)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
+            var literal = scope.AssertExpression(nameof(groupBy), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
@@ -729,7 +857,8 @@ namespace ServiceStack.Templates
                 return items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
             }
             
-            return scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
+            var result = scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
+            return result;
         }
         
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
@@ -818,6 +947,7 @@ namespace ServiceStack.Templates
         public IRawString jsv(object value) => serialize(value, null, x => x.ToJsv() ?? "");
         public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
         public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();
+        public IRawString dump(object value) => serialize(value, null, x => x.Dump() ?? "");
 
         //Blocks
         public Task json(TemplateScopeContext scope, object items) => json(scope, items, null);
@@ -825,6 +955,9 @@ namespace ServiceStack.Templates
 
         public Task jsv(TemplateScopeContext scope, object items) => jsv(scope, items, null);
         public Task jsv(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.ToJsv());
+
+        public Task dump(TemplateScopeContext scope, object items) => jsv(scope, items, null);
+        public Task dump(TemplateScopeContext scope, object items, string jsConfig) => serialize(scope, items, jsConfig, x => x.Dump());
 
         public Task csv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToCsv());
         public Task xml(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToXml());

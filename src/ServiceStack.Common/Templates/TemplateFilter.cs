@@ -180,10 +180,24 @@ namespace ServiceStack.Templates
             return enumObjects ?? TypeConstants.EmptyObjectArray;
         }
 
+        public static string AssertExpression(this TemplateScopeContext scope, string filterName, object expression)
+        {
+            if (!(expression is string literal)) 
+                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.Page.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
+            return literal;
+        }
+
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>
             GetParamsWithItemBinding(scope, filterName, null, scopedParams, out itemBinding);
 
-        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopedParams, out string itemBinding)
+        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopeOptions, out string itemBinding)
+        {
+            var scopeParams = scope.GetParamsWithItemBindingOnly(filterName, page, scopeOptions, out itemBinding);
+            scopeParams.Each((key, val) => scope.ScopedParams[key] = val);
+            return scopeParams;
+        }
+
+        public static Dictionary<string, object> GetParamsWithItemBindingOnly(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopedParams, out string itemBinding)
         {
             var pageParams = scope.AssertOptions(filterName, scopedParams);
             itemBinding = pageParams.TryGetValue("it", out object bindingName) && bindingName is string binding
