@@ -1846,6 +1846,35 @@ Category: Confections, AveragePrice: 25.16
 Category: Grains/Cereals, AveragePrice: 20.25
 ".NormalizeNewLines()));
         }
+       
+        [Test]
+        public void Linq92()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
+{{ doubles 
+   | reduce: multiply(accumulator, it)
+   | select: Total product of all numbers: { it | format('#.####') }. }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Total product of all numbers: 88.3308".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void Linq93()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
+{{ attemptedWithdrawals 
+   | reduce('iif(lessThan(balance, nextWithdrawal), balance, subtract(balance, nextWithdrawal))', 
+            { initialValue: 100.0, it: 'nextWithdrawal', accumulator: 'balance' })
+   | select: Ending balance: { it }. }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Ending balance: 20".NormalizeNewLines()));
+        }
 
     }
 }

@@ -155,6 +155,7 @@ namespace ServiceStack.Templates
         }
 
         public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
         public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
         public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
@@ -509,26 +510,33 @@ namespace ServiceStack.Templates
         public object sum(TemplateScopeContext scope, object target) => sum(scope, target, null, null);
         public object sum(TemplateScopeContext scope, object target, object expression) => sum(scope, target, expression, null);
         public object sum(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
-            reduceInternal(nameof(sum), scope, target, expression, scopeOptions, (a, b) => a + b);
+            applyInternal(nameof(sum), scope, target, expression, scopeOptions, (a, b) => a + b);
 
         public object min(TemplateScopeContext scope, object target) => min(scope, target, null, null);
         public object min(TemplateScopeContext scope, object target, object expression) => min(scope, target, expression, null);
         public object min(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
-            reduceInternal(nameof(min), scope, target, expression, scopeOptions, (a, b) => b < a ? b : a);
+            applyInternal(nameof(min), scope, target, expression, scopeOptions, (a, b) => b < a ? b : a);
 
         public object max(TemplateScopeContext scope, object target) => max(scope, target, null, null);
         public object max(TemplateScopeContext scope, object target, object expression) => max(scope, target, expression, null);
         public object max(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
-            reduceInternal(nameof(max), scope, target, expression, scopeOptions, (a, b) => b > a ? b : a);
+            applyInternal(nameof(max), scope, target, expression, scopeOptions, (a, b) => b > a ? b : a);
 
         public double average(TemplateScopeContext scope, object target) => average(scope, target, null, null);
         public double average(TemplateScopeContext scope, object target, object expression) => average(scope, target, expression, null);
         public double average(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
-            reduceInternal(nameof(average), scope, target, expression, scopeOptions, (a, b) => a + b).ConvertTo<double>() / target.AssertEnumerable(nameof(average)).Count();
+            applyInternal(nameof(average), scope, target, expression, scopeOptions, (a, b) => a + b).ConvertTo<double>() / target.AssertEnumerable(nameof(average)).Count();
 
-        private object reduceInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions, 
+        private object applyInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions, 
             Func<double, double, double> fn)
         {
+            if (target is double d)
+                return fn(d, expression.ConvertTo<double>());
+            if (target is int i)
+                return (int) fn(i, expression.ConvertTo<double>());
+            if (target is long l)
+                return (long) fn(l, expression.ConvertTo<double>());
+            
             var items = target.AssertEnumerable(filterName);
             var total = filterName == nameof(min) 
                 ? double.MaxValue 
@@ -548,7 +556,7 @@ namespace ServiceStack.Templates
                     if (result == null) continue;
                     if (itemType == null)
                         itemType = result.GetType();
-                    
+
                     total = fn(total, result.ConvertTo<double>());
                 }
             }
@@ -572,6 +580,48 @@ namespace ServiceStack.Templates
             return itemType == null || itemType == typeof(double)
                 ? total
                 : total.ConvertTo(itemType);
+        }
+
+        public object reduce(TemplateScopeContext scope, object target, object expression) => reduce(scope, target, expression, null);
+        public object reduce(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(reduce));
+            Type itemType = null;
+            
+            var literal = scope.AssertExpression(nameof(reduce), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(reduce), scopeOptions, out string itemBinding);
+            var accumulator = scopedParams.TryGetValue("initialValue", out object initialValue)
+                ? initialValue.ConvertTo<double>()
+                : 1;
+
+            var bindAccumlator = scopedParams.TryGetValue("accumulator", out object accumulatorName)
+                ? (string) accumulatorName
+                : "accumulator";
+            
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var i = 0;
+            foreach (var item in items)
+            {
+                if (item == null) continue;
+                    
+                scope.AddItemToScope(bindAccumlator, accumulator);
+                scope.AddItemToScope("index", i++);
+                scope.AddItemToScope(itemBinding, item);
+
+                var result = scope.Evaluate(value, binding);
+                if (result == null) continue;
+                if (itemType == null)
+                    itemType = result.GetType();
+
+                accumulator = result.ConvertTo<double>();
+            }
+                
+            if (expression == null && itemType == null)
+                itemType = target.GetType().FirstGenericType()?.GetGenericArguments().FirstOrDefault();
+
+            return itemType == null || itemType == typeof(double)
+                ? accumulator
+                : accumulator.ConvertTo(itemType);
         }
 
         public object first(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(first)).FirstOrDefault();
