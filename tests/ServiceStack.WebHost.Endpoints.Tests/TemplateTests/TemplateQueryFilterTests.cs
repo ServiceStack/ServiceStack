@@ -1875,6 +1875,80 @@ Total product of all numbers: 88.3308".NormalizeNewLines()));
                 Does.StartWith(@"
 Ending balance: 20".NormalizeNewLines()));
         }
+       
+        [Test]
+        public void Linq94()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
+{{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
+All numbers from both arrays:
+{{ numbersA | concat(numbersB) | select: {it}\n }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+All numbers from both arrays:
+0
+2
+4
+5
+6
+8
+9
+1
+3
+5
+7
+8
+".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void Linq95()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ customers | map('it.CompanyName') | assignTo: customerNames }}
+{{ products | map('it.ProductName') | assignTo: productNames }}
+Customer and product names:
+{{ customerNames | concat(productNames) | select: { it | raw }\n }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+Customer and product names:
+Alfreds Futterkiste
+Ana Trujillo Emparedados y helados
+Antonio Moreno Taquería
+Around the Horn
+Berglunds snabbköp
+Blauer See Delikatessen
+".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void Linq96()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
+{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsB }}
+{{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+The sequences match: true".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void linq97()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
+{{ [ 'apple', 'blueberry', 'cherry' ] | assignTo: wordsB }}
+{{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+The sequences match: false".NormalizeNewLines()));
+        }
 
     }
 }

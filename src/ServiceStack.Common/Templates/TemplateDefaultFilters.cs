@@ -895,8 +895,10 @@ namespace ServiceStack.Templates
 
         public IEnumerable<object> distinct(IEnumerable<object> items) => items.Distinct();
         public IEnumerable<object> union(IEnumerable<object> target, IEnumerable<object> items) => target.Union(items);
+        public IEnumerable<object> concat(IEnumerable<object> target, IEnumerable<object> items) => target.Concat(items);
         public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
         public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
+        public bool equivalentTo(IEnumerable<object> target, IEnumerable<object> items) => target.EquivalentTo(items);
         
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
         public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions) 
