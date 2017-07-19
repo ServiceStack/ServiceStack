@@ -209,8 +209,11 @@ namespace ServiceStack.Templates
 
         public object echo(object value) => value;
 
-        public object join(IEnumerable<object> values) => join(values, ",");
-        public object join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+        public IEnumerable join(IEnumerable<object> values) => join(values, ",");
+        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+
+        public string[] split(string stringList) => split(stringList, ',');
+        public string[] split(string stringList, char delimiter) => stringList.Split(delimiter);
 
         public string append(string target, string suffix) => target + suffix;
         public string appendLine(string target) => target + newLine();

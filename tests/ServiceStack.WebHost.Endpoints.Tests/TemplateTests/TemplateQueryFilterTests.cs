@@ -17,6 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 Args =
                 {
+                    [TemplateConstants.DefaultDateFormat] = "yyyy/MM/dd",
                     ["numbers"] = new[] { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 },
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
@@ -25,17 +26,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["words"] = new[]{"cherry", "apple", "blueberry"},
                     ["doubles"] = new[]{ 1.7, 2.3, 1.9, 4.1, 2.9 },
                     ["anagrams"] = new[]{ "from   ", " salt", " earn ", "  last   ", " near ", " form  " },
+                    ["comparer"] = new CaseInsensitiveComparer(),
+                    ["anagramComparer"] = new AnagramEqualityComparer(),
                 }
             };
             optionalArgs.Each((key, val) => context.Args[key] = val);
             return context.Init();
         }
 
+        [SetUp]
+        public void Setup() => context = CreateContext();
+        private TemplateContext context;
+
         [Test]
         public void Linq01() // alternative with clean whitespace sensitive string argument syntax:
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Numbers < 5:
 {{ numbers | where('it < 5') | select: { it }\n }}").NormalizeNewLines(), 
@@ -53,8 +58,6 @@ Numbers < 5:
         [Test]
         public void Linq02() // alternative with clean whitespace sensitive string argument syntax:
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Sold out products:
 {{ products 
@@ -75,8 +78,6 @@ Perth Pasties is sold out!
         [Test]
         public void Linq03()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 In-stock products that cost more than 3.00:
 {{ products 
@@ -96,11 +97,6 @@ Aniseed Syrup is in stock and costs more than 3.00.
         [Test]
         public void Linq04()
         {
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
-            });
-            
             context.VirtualFiles.WriteFile("customer.html", @"
 Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
 {{ it.Orders | selectPartial: order }}");
@@ -133,8 +129,6 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         [Test]
         public void Linq05()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Short digits:
 {{ digits 
@@ -155,8 +149,6 @@ The word nine is shorter than its value.
         [Test]
         public void Linq06()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Numbers + 1:
 {{ numbers | select: { it | incr }\n }}
@@ -180,8 +172,6 @@ Numbers + 1:
         [Test]
         public void Linq07()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Product Names:
 {{ products | select: { it.ProductName | raw }\n }}
@@ -200,8 +190,6 @@ Chef Anton's Gumbo Mix
         [Test]
         public void Linq08()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Number strings:
 {{ numbers | select: { strings[it] }\n }}
@@ -225,12 +213,8 @@ zero
         [Test]
         public void Linq09()
         {
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                {"words", new[]{ "aPPLE", "BlUeBeRrY", "cHeRry" }}
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ ['aPPLE', 'BlUeBeRrY', 'cHeRry'] | assignTo: words }}
 {{ words | select: Uppercase: { it | upper }, Lowercase: { it | lower }\n }}
 ").NormalizeNewLines(),
                 
@@ -244,8 +228,6 @@ Uppercase: CHERRY, Lowercase: cherry
         [Test]
         public void Linq10()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 {{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
 ").NormalizeNewLines(),
@@ -267,8 +249,6 @@ The digit zero is even.
         [Test]
         public void Linq11()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Product Info:
 {{ products | select: { it.ProductName | raw } is in the category { it.Category } and costs { it.UnitPrice | currency } per unit.\n }}
@@ -285,8 +265,6 @@ Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
         [Test]
         public void Linq12()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Number: In-place?
 {{ numbers | select: { it }: { it | equals(index) | lower }\n }}
@@ -310,8 +288,6 @@ Number: In-place?
         [Test]
         public void Linq13()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Numbers < 5:
 {{ numbers
@@ -333,13 +309,9 @@ zero
         [Test]
         public void Linq14()
         {
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                {"numbersA", new[]{ 0, 2, 4, 5, 6, 8, 9 }},
-                {"numbersB", new[]{ 1, 3, 5, 7, 8 }},
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
+{{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
 Pairs where a < b:
 {{ numbersA | zip(numbersB)
    | let({ a: 'it[0]', b: 'it[1]' })  
@@ -372,8 +344,6 @@ Pairs where a < b:
         [Test]
         public void Linq15()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -392,8 +362,6 @@ Pairs where a < b:
         [Test]
         public void Linq16()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -413,8 +381,6 @@ Pairs where a < b:
         [Test]
         public void Linq17()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -434,8 +400,6 @@ Pairs where a < b:
         [Test]
         public void Linq18()
         {
-            var context = CreateContext();
-
             var template = @"
 {{ '1997-01-01' | assignTo: cutoffDate }}
 {{ customers 
@@ -471,8 +435,6 @@ Pairs where a < b:
         [Test]
         public void Linq19()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 {{ customers 
    | let({ cust: 'it', custIndex: 'index' })
@@ -498,8 +460,6 @@ Customer #2 has an order with OrderID 10926
         [Test]
         public void Linq20()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 First 3 numbers:
 {{ numbers | take(3) | select: { it }\n }}
@@ -516,8 +476,6 @@ First 3 numbers:
         [Test]
         public void Linq21()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 First 3 orders in WA:
 {{ customers | zip: it.Orders 
@@ -538,8 +496,6 @@ First 3 orders in WA:
         [Test]
         public void Linq22()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 All but first 4 numbers:
 {{ numbers | skip(4) | select: { it }\n }}
@@ -559,8 +515,6 @@ All but first 4 numbers:
         [Test]
         public void Linq23()
         {
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 All but first 2 orders in WA:
 {{ customers | zip: it.Orders
@@ -596,8 +550,6 @@ All but first 2 orders in WA:
         [Test]
         public void Linq24()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 First numbers less than 6:
 {{ numbers 
@@ -617,8 +569,6 @@ First numbers less than 6:
         [Test]
         public void Linq25()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 First numbers not less than their position:
 {{ numbers 
@@ -636,8 +586,6 @@ First numbers not less than their position:
         [Test]
         public void Linq26()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 All elements starting from first element divisible by 3:
 {{ numbers 
@@ -660,8 +608,6 @@ All elements starting from first element divisible by 3:
         [Test]
         public void Linq27()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 All elements starting from first element less than its position:
 {{ numbers 
@@ -685,8 +631,6 @@ All elements starting from first element less than its position:
         [Test]
         public void Linq28()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 The sorted list of words:
 {{ words 
@@ -705,8 +649,6 @@ cherry
         [Test]
         public void Linq29()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 The sorted list of words (by length):
 {{ words 
@@ -725,8 +667,6 @@ blueberry
         [Test]
         public void Linq30()
         { 
-            var context = CreateContext();
-
             Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | orderBy: it.ProductName 
@@ -745,13 +685,8 @@ blueberry
         [Test]
         public void Linq31()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
-                { "comparer", new CaseInsensitiveComparer() }
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy('it', { comparer }) 
    | select: { it }\n }}
@@ -770,8 +705,6 @@ ClOvEr
         [Test]
         public void Linq32()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 The doubles from highest to lowest:
 {{ doubles 
@@ -792,8 +725,6 @@ The doubles from highest to lowest:
         [Test]
         public void Linq33()
         { 
-            var context = CreateContext();
-
             Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | orderByDescending: it.UnitsInStock
@@ -812,13 +743,8 @@ The doubles from highest to lowest:
         [Test]
         public void Linq34()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
-                { "comparer", new CaseInsensitiveComparer() }
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderByDescending('it', { comparer }) 
    | select: { it }\n }}
@@ -837,8 +763,6 @@ AbAcUs
         [Test]
         public void Linq35()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 Sorted digits:
 {{ digits 
@@ -865,13 +789,8 @@ three
         [Test]
         public void Linq36()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
-                { "comparer", new CaseInsensitiveComparer() }
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
    | thenBy('it', { comparer }) 
@@ -891,8 +810,6 @@ BlUeBeRrY
         [Test]
         public void Linq37()
         { 
-            var context = CreateContext();
-
             Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | orderBy: it.Category
@@ -916,13 +833,8 @@ BlUeBeRrY
         [Test]
         public void Linq38()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                { "words", new[] { "aPPLE", "AbAcUs", "bRaNcH", "BlUeBeRrY", "ClOvEr", "cHeRry" } },
-                { "comparer", new CaseInsensitiveComparer() }
-            });
-            
             Assert.That(context.EvaluateTemplate(@"
+{{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
    | thenByDescending('it', { comparer }) 
@@ -942,8 +854,6 @@ BlUeBeRrY
         [Test]
         public void Linq39()
         { 
-            var context = CreateContext();
-            
             Assert.That(context.EvaluateTemplate(@"
 A backwards list of the digits with a second character of 'i':
 {{ digits 
@@ -964,8 +874,6 @@ five
         [Test]
         public void Linq40()
         { 
-            var context = CreateContext();
-
             Assert.That(context.EvaluateTemplate(@"
 {{ numbers 
    | groupBy: mod(it,5)
@@ -995,12 +903,8 @@ Numbers with a remainder of 2 when divided by 5:
         [Test]
         public void Linq41()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                { "words", new[]{ "blueberry", "chimpanzee", "abacus", "banana", "apple", "cheese" }}
-            });
-
             Assert.That(context.EvaluateTemplate(@"
+{{ ['blueberry', 'chimpanzee', 'abacus', 'banana', 'apple', 'cheese'] | assignTo: words }}
 {{ words 
    | groupBy: it[0]
    | let({ firstLetter: 'it.Key', words: 'it' })
@@ -1023,8 +927,6 @@ apple
         [Test]
         public void Linq42()
         { 
-            var context = CreateContext();
-
             Assert.That(context.EvaluateTemplate(@"
 {{ products 
    | groupBy: it.Category
@@ -1055,8 +957,6 @@ Condiments:
         [Test]
         public void Linq43()
         { 
-            var context = CreateContext();
-
             context.VirtualFiles.WriteFile("month-orders.html", @"
 {{ year }}
 {{ monthGroups | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
@@ -1118,14 +1018,9 @@ Condiments:
         [Test]
         public void Linq44()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                {"comparer", new AnagramEqualityComparer()}
-            });
-
             Assert.That(context.EvaluateTemplate(@"
 {{ anagrams 
-   | groupBy('trim(it)', { comparer })
+   | groupBy('trim(it)', { comparer: anagramComparer })
    | select: { it | json }\n 
 }}
 ").NormalizeNewLines(),
@@ -1140,14 +1035,9 @@ Condiments:
         [Test]
         public void Linq45()
         { 
-            var context = CreateContext(new Dictionary<string, object>
-            {
-                {"comparer", new AnagramEqualityComparer()}
-            });
-
             Assert.That(context.EvaluateTemplate(@"
 {{ anagrams 
-   | groupBy('trim(it)', { map: 'upper(it)', comparer })
+   | groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
    | select: { it | json }\n 
 }}
 ").NormalizeNewLines(),
