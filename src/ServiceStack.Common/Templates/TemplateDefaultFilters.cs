@@ -381,22 +381,6 @@ namespace ServiceStack.Templates
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
 
-        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object filter) => toDictionary(scope, target, filter, null);
-        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object filter, object scopeOptions)
-        {
-            var items = target.AssertEnumerable(nameof(toDictionary));
-
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(toDictionary)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
-            
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
-            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
-            
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            
-            return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
-        }
-
         public List<object> step(IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(step));
@@ -421,13 +405,86 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter) => where(scope, target, filter, null);
-        public IEnumerable<object> where(TemplateScopeContext scope, object target, object filter, object scopeOptions)
+        public object elementAt(IEnumerable target, int index)
+        {
+            var items = target.AssertEnumerable(nameof(elementAt));
+
+            var i = 0;
+            foreach (var item in items)
+            {
+                if (i++ == index)
+                    return item;
+            }
+
+            return null;
+        }
+
+        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression) => toDictionary(scope, target, expression, null);
+        public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(toDictionary));
+
+            if (!(expression is string literal)) 
+                throw new NotSupportedException($"'{nameof(toDictionary)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+            
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            
+            return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
+        }
+
+        public IEnumerable of(TemplateScopeContext scope, IEnumerable target, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(of));
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(of), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            if (scopedParams.TryGetValue("type", out object oType))
+            {
+                if (oType is string typeName)
+                    return items.Where(x => x?.GetType()?.Name == typeName);
+                if (oType is Type type)
+                    return items.Where(x => x?.GetType() == type);
+            }
+
+            return items;
+        }
+
+        public object first(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(first)).FirstOrDefault();
+        public object first(TemplateScopeContext scope, object target, object expression) => first(scope, target, expression, null);
+        public object first(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(first));
+
+            if (!(expression is string literal)) 
+                throw new NotSupportedException($"'{nameof(first)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
+            scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = expr.Evaluate(scope);
+                if (result)
+                    return item;
+            }
+
+            return null;
+        }
+
+        public IEnumerable<object> where(TemplateScopeContext scope, object target, object expression) => where(scope, target, expression, null);
+        public IEnumerable<object> where(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(where));
 
-            if (!(filter is string literal)) 
-                throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{filter?.GetType()?.Name}' instead");
+            if (!(expression is string literal)) 
+                throw new NotSupportedException($"'{nameof(where)}' in '{scope.Page.VirtualPath}' requires a string Query Expression but received a '{expression?.GetType()?.Name}' instead");
             
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
             scopedParams.Each((key, val) => scope.ScopedParams[key] = val);
@@ -666,7 +723,7 @@ namespace ServiceStack.Templates
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
-            if (target is IEnumerable items && !(items is IDictionary))
+            if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
                 return items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
@@ -682,7 +739,7 @@ namespace ServiceStack.Templates
             var template = JsonTypeSerializer.Unescape(selectTemplate.ToString());
             var itemScope = scope.CreateScopedContext(template, scopedParams);
 
-            if (target is IEnumerable objs && !(target is IDictionary))
+            if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
                 foreach (var item in objs)
@@ -704,7 +761,7 @@ namespace ServiceStack.Templates
             var page = await scope.Context.GetPage(pageName).Init();
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
 
-            if (target is IEnumerable objs && !(target is IDictionary))
+            if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
                 
                 var i = 0;

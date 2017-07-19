@@ -1319,6 +1319,96 @@ Bob's score:
 Bob = 40
 ".NormalizeNewLines()));
         }
-     
+ 
+        [Test]
+        public void Linq57()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [null, 1.0, 'two', 3, 'four', 5, 'six', 7.0] | assignTo: numbers }}
+Numbers stored as doubles:
+{{ numbers 
+   | of({ type: 'Double' })
+   | select: { it | format('#.0') }\n }} 
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Numbers stored as doubles:
+1.0
+7.0
+".NormalizeNewLines()));
+        }
+  
+        [Test]
+        public void Linq58()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ products
+   | where: it.ProductId = 12 
+   | first
+   | select: { it | jsv } }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+{ProductId:12,ProductName:Queso Manchego La Pastora,Category:Dairy Products,UnitPrice:38,UnitsInStock:86}
+".NormalizeNewLines()));
+        }
+  
+        [Test]
+        public void Linq59()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
+{{ strings
+   | first: it[0] = 'o'
+   | select: A string starting with 'o': { it } }}
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+A string starting with 'o': one
+".NormalizeNewLines()));
+        }
+    
+        [Test]
+        public void Linq61()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [] | assignTo: numbers }}
+{{ numbers | first | select: { it | otherwise('null') } }} 
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+null
+".NormalizeNewLines()));
+        }
+    
+        [Test]
+        public void Linq62()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ products 
+   | first: it.ProductId = 789 
+   | select: Product 789 exists: { it | otherwise('false') } }} 
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Product 789 exists: false
+".NormalizeNewLines()));
+        }
+    
+        [Test]
+        public void Linq64()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [ 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 ] | assignTo: numbers }} 
+{{ numbers
+   | where: it > 5
+   | elementAt(1) 
+   | select: Second number > 5: { it } }} 
+").NormalizeNewLines(),
+                
+                Is.EqualTo(@"
+Second number > 5: 8
+".NormalizeNewLines()));
+        }
     }
 }
