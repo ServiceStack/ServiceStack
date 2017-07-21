@@ -44,19 +44,17 @@ namespace ServiceStack.Templates
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
-                var varEndPos = text.IndexOfNextCharNotInObjects(varStartPos, '|', '}');
-                var initialExpr = text.Subsegment(varStartPos, varEndPos - varStartPos).Trim();
-                if (varEndPos == -1 || varEndPos >= text.Length)
-                    throw new ArgumentException($"Invalid Server HTML Template at '{text.SubstringWithElipsis(0, 50)}'", nameof(text));
+                var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding);
 
                 List<JsExpression> filterCommands = null;
-                
-                var isFilter = text.GetChar(varEndPos) == '|';
-                if (isFilter)
+
+                literal = literal.ParseNextToken(out _, out JsBinding filterOp);
+                if (filterOp == JsBitwiseOr.Operator)
                 {
+                    var varEndPos = 0;
                     bool foundVarEnd = false;
                 
-                    filterCommands = text.Subsegment(varEndPos + 1).ParseExpression<JsExpression>(
+                    filterCommands = literal.ParseExpression<JsExpression>(
                         separator: '|',
                         atEndIndex: (str, strPos) =>
                         {
@@ -75,16 +73,19 @@ namespace ServiceStack.Templates
                 
                     if (!foundVarEnd)
                         throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
+
+                    literal = literal.Advance(varEndPos);
                 }
                 else
                 {
-                    varEndPos += 1;
+                    literal = literal.Advance(1);
                 }
 
-                lastPos = varEndPos + 1;
-                var originalText = text.Subsegment(pos, lastPos - pos);
+                var length = text.Length - pos - literal.Length;
+                var originalText = text.Subsegment(pos, length);
+                lastPos = pos + length;
 
-                to.Add(new PageVariableFragment(originalText, initialExpr, filterCommands));
+                to.Add(new PageVariableFragment(originalText, initialValue, initialBinding, filterCommands));
             }
 
             if (lastPos != text.Length)
@@ -96,94 +97,6 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        internal static int IndexOfNextCharNotInObjects(this StringSegment text, int varStartPos, char c1, char c2)
-        {
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBackTickQuotes = false;
-
-            var inBrackets = 0;
-            var inParens = 0;
-            var inBraces = 0;
-            
-            for (var i = varStartPos; i < text.Length; i++)
-            {
-                var c = text.GetChar(i);
-                if (c.IsWhiteSpace())
-                    continue;
-                
-                if (inDoubleQuotes)
-                {
-                    if (c == '"')
-                        inDoubleQuotes = false;
-                    continue;
-                }
-                if (inSingleQuotes)
-                {
-                    if (c == '\'')
-                        inSingleQuotes = false;
-                    continue;
-                }
-                if (inBackTickQuotes)
-                {
-                    if (c == '`')
-                        inBackTickQuotes = false;
-                    continue;
-                }
-                if (inBrackets > 0)
-                {
-                    if (c == '[')
-                        ++inBrackets;
-                    if (c == ']')
-                        --inBrackets;
-                    continue;
-                }
-                if (inBraces > 0)
-                {
-                    if (c == '{')
-                        ++inBraces;
-                    if (c == '}')
-                        --inBraces;
-                    continue;
-                }
-                if (inParens > 0)
-                {
-                    if (c == '(')
-                        ++inParens;
-                    if (c == ')')
-                        --inParens;
-                    continue;
-                }
-                
-                switch (c)
-                {
-                    case '"':
-                        inDoubleQuotes = true;
-                        continue;
-                    case '\'':
-                        inSingleQuotes = true;
-                        continue;
-                    case '`':
-                        inBackTickQuotes = true;
-                        continue;
-                    case '[':
-                        inBrackets++;
-                        continue;
-                    case '{':
-                        inBraces++;
-                        continue;
-                    case '(':
-                        inParens++;
-                        continue;
-                }
-
-                if (c == c1 || c == c2)
-                    return i;
-            }
-
-            return text.Length;
-        }
-        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IRawString ToRawString(this string value) => 
             new RawString(value ?? "");

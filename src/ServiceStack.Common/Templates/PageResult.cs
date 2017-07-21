@@ -277,11 +277,11 @@ namespace ServiceStack.Templates
 
         private async Task<object> EvaluateAsync(PageVariableFragment var, TemplateScopeContext scope, CancellationToken token=default(CancellationToken))
         {
-            var value = var.Value ??
+            var value = var.InitialValue ??
                 (var.Binding.HasValue
                     ? GetValue(var.BindingString, scope)
-                    : var.Expression != null
-                        ? EvaluateExpression(var.Expression, scope, var)
+                    : var.InitialExpression != null
+                        ? EvaluateExpression(var.InitialExpression, scope, var)
                         : null);
 
             if (value == null)
@@ -292,7 +292,7 @@ namespace ServiceStack.Templates
                 var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
                 if (hasFilterAsBinding != null)
                 {
-                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Expression?.BindingString ?? var.BindingString);
+                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.BindingString);
                 }
                 else
                 {

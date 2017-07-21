@@ -221,6 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("{{ ' - {{it}}' | forEach(items) | markdown }}");
             var varFragment = fragments[0] as PageVariableFragment;
             
+            Assert.That(varFragment.OriginalText, Is.EqualTo("{{ ' - {{it}}' | forEach(items) | markdown }}"));
             Assert.That(varFragment.FilterExpressions.Length, Is.EqualTo(2));
             Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("forEach"));
             Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(1));
@@ -232,10 +233,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Can_parse_filter_with_different_arg_types()
         {
             var fragments = TemplatePageUtils.ParseTemplatePage("{{ array(['a',1,'c']) }}");
-            var varFragment = fragments[0] as PageVariableFragment;
+            var varFragment = (PageVariableFragment)fragments[0];
             
-            Assert.That(varFragment.Expression.Name, Is.EqualTo("array"));
-            Assert.That(varFragment.Expression.Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment.OriginalText, Is.EqualTo("{{ array(['a',1,'c']) }}"));
+            Assert.That(varFragment.InitialExpression.Name, Is.EqualTo("array"));
+            Assert.That(varFragment.InitialExpression.Args.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -487,12 +489,14 @@ products
                 @"{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
-            Assert.That(varFragment.Value, Is.EqualTo(new[]
+            Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
             {
                 new JsExpression("c.CustomerId"),
                 new JsExpression("o.OrderId"),
                 new JsExpression("o.OrderDate"),
             }));
+            
+            Assert.That(varFragment.OriginalText, Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}"));
             
             var newLine = (PageStringFragment) fragments[1];
             Assert.That(newLine.Value, Is.EqualTo("\\n"));
@@ -509,7 +513,7 @@ products
 //                "{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
-            Assert.That(varFragment.Value, Is.EqualTo(new[]
+            Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
             {
                 new JsExpression("c.CustomerId"),
                 new JsExpression("o.OrderId"),

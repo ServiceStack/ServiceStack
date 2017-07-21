@@ -17,29 +17,28 @@ namespace ServiceStack.Templates
         public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
         
         public StringSegment Binding { get; set; }
-
-        private string bindingString;
-        public string BindingString => bindingString ?? (bindingString = Binding.Value);
+        public string BindingString { get; }       
         
-        public object Value { get; set; }
-        
-        public JsExpression Expression { get; set; }
+        public object InitialValue { get; }
+        public JsExpression InitialExpression { get; }
         
         public JsExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, StringSegment initialExpression, List<JsExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, object initialValue, JsBinding initialBinding, List<JsExpression> filterCommands)
         {
             OriginalText = originalText;
+            InitialValue = initialValue;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
 
-            ParseNextToken(initialExpression, out object value, out JsBinding binding);
-
-            Value = value;
-
-            if (binding is JsExpression expr)
-                Expression = expr;
-            else if (binding != null)
-                Binding = binding.Binding;
+            if (initialBinding is JsExpression initialExpr)
+            {
+                InitialExpression = initialExpr;
+            }
+            else if (initialBinding != null)
+            {
+                Binding = initialBinding.Binding;
+                BindingString = Binding.Value;
+            }
         }
 
         public StringSegment ParseNextToken(StringSegment literal, out object value, out JsBinding binding)

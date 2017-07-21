@@ -505,6 +505,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
                 {
+                    if (literal.GetChar(0) == '}')
+                    {
+                        literal = literal.Advance(1);
+                        break;
+                    }
+
                     literal = literal.ParseNextToken(out object mapKeyString, out JsBinding mapKeyVar);
                         
                     if (mapKeyVar is JsExpression)
@@ -556,6 +562,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
                 {
+                    if (literal.GetChar(0) == ']')
+                    {
+                        literal = literal.Advance(1);
+                        break;
+                    }
+
                     literal = literal.ParseNextToken(out object mapValue, out JsBinding mapVarRef);
                     list.Add(mapVarRef ?? mapValue);
 

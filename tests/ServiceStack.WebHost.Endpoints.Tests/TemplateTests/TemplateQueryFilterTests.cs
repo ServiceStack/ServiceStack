@@ -2018,6 +2018,5 @@ Contents of numbers:
 0
 ".NormalizeNewLines()));
         }
-
     }
 }
