@@ -1950,5 +1950,74 @@ The sequences match: true".NormalizeNewLines()));
 The sequences match: false".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Linq99()
+        { 
+            Assert.That(context.EvaluateTemplate(@"
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ 0 | assignTo: i }}
+{{ numbers | let({ i: 'incr(i)' }) | select: v = {index | incr}, i = {i}\n }} 
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+v = 1, i = 1
+v = 2, i = 2
+v = 3, i = 3
+v = 4, i = 4
+v = 5, i = 5
+v = 6, i = 6
+v = 7, i = 7
+v = 8, i = 8
+v = 9, i = 9
+v = 10, i = 10
+".NormalizeNewLines()));
+        }
+       
+        [Test]
+        public void Linq100()
+        {
+            // lowNumbers is assigned the result not a reusable query
+            Assert.That(context.EvaluateTemplate(@"
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ numbers 
+   | where: it <= 3
+   | assignTo: lowNumbers }}
+First run numbers <= 3:
+{{ lowNumbers | select: {it}\n }}
+{{ 10 | times | do: assign('numbers[index]', -numbers[index]) }}
+Second run numbers <= 3:
+{{ lowNumbers | select: {it}\n }}
+Contents of numbers:
+{{ numbers | select: {it}\n }}
+").NormalizeNewLines(),
+
+                Does.StartWith(@"
+First run numbers <= 3:
+1
+3
+2
+0
+
+
+Second run numbers <= 3:
+1
+3
+2
+0
+
+Contents of numbers:
+-5
+-4
+-1
+-3
+-9
+-8
+-6
+-7
+-2
+0
+".NormalizeNewLines()));
+        }
+
     }
 }

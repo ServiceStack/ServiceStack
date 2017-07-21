@@ -57,6 +57,8 @@ namespace ServiceStack.Templates
 
         public ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
 
+        public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
+
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
@@ -174,12 +176,29 @@ namespace ServiceStack.Templates
             if (expression.IsNullOrWhiteSpace())
                 throw new ArgumentNullException(nameof(expression));
 
-            var key = targetType.FullName + "::" + expression;
+            var key = targetType.FullName + ':' + expression;
 
             if (BinderCache.TryGetValue(key, out Func<TemplateScopeContext, object, object> fn))
                 return fn;
 
             BinderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);
+
+            return fn;
+        }
+        
+        public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, StringSegment expression)
+        {
+            if (targetType == null)
+                throw new ArgumentNullException(nameof(targetType));
+            if (expression.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(expression));
+
+            var key = targetType.FullName + ':' + expression;
+
+            if (AssignExpressionCache.TryGetValue(key, out Action<TemplateScopeContext, object, object> fn))
+                return fn;
+
+            AssignExpressionCache[key] = fn = TemplatePageUtils.CompileAssign(targetType, expression);
 
             return fn;
         }

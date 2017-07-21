@@ -589,19 +589,34 @@ namespace ServiceStack.Templates
             JsBinding binding;
             
             if (var == null)
-                arg.ParseNextToken(out outValue, out binding);
+                arg = arg.ParseNextToken(out outValue, out binding);
             else
-                var.ParseNextToken(arg, out outValue, out binding);
+                arg = var.ParseNextToken(arg, out outValue, out binding);
 
-            if (binding is JsExpression expr)
+            var unaryOp = JsUnaryOperator.GetUnaryOperator(binding);
+            if (unaryOp != null)
             {
-                var value = EvaluateToken(scopeContext, expr);
-                return value;
+                arg = var == null 
+                    ? arg.ParseNextToken(out outValue, out binding) 
+                    : var.ParseNextToken(arg, out outValue, out binding);
             }
             
-            return binding != null 
-                ? GetValue(binding.BindingString, scopeContext) 
-                : outValue;
+            object value = null;
+            if (binding is JsExpression expr)
+            {
+                value = EvaluateToken(scopeContext, expr);
+            }
+            else
+            {
+                value = binding != null 
+                    ? GetValue(binding.BindingString, scopeContext) 
+                    : outValue;
+            }
+
+            if (unaryOp != null)
+                value = unaryOp.Evaluate(value);
+            
+            return value;
         }
 
         private object EvaluateMethod(JsExpression expr, TemplateScopeContext scopeContext, PageVariableFragment var=null)

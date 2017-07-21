@@ -190,9 +190,9 @@ namespace ServiceStack.Templates
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>
             GetParamsWithItemBinding(scope, filterName, null, scopedParams, out itemBinding);
 
-        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopeOptions, out string itemBinding)
+        public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, TemplatePage page, object scopedParams, out string itemBinding)
         {
-            var scopeParams = scope.GetParamsWithItemBindingOnly(filterName, page, scopeOptions, out itemBinding);
+            var scopeParams = scope.GetParamsWithItemBindingOnly(filterName, page, scopedParams, out itemBinding);
             scopeParams.Each((key, val) => scope.ScopedParams[key] = val);
             return scopeParams;
         }

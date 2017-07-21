@@ -118,7 +118,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
     public abstract class JsUnaryOperator : JsOperator
     {
-        public abstract bool Evaluate(object target);
+        public abstract object Evaluate(object target);
+        public static JsUnaryOperator GetUnaryOperator(JsBinding op) => 
+            op == JsSubtraction.Operator ? JsMinus.Operator : null;
     }
     public abstract class JsBooleanOperand : JsOperator
     {
@@ -205,7 +207,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public static JsNot Operator = new JsNot();
         private JsNot(){}
         public override string Token => "!";
-        public override bool Evaluate(object target) => !TemplateDefaultFilters.isTrue(target);
+        public override object Evaluate(object target) => !TemplateDefaultFilters.isTrue(target);
     }
     public class JsBitwiseOr : JsBinaryOperator
     {
@@ -242,6 +244,15 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
         public static JsDivision Operator = new JsDivision();
         private JsDivision(){}
         public override string Token => "\\";
+    }
+    public class JsMinus : JsUnaryOperator
+    {
+        public static JsMinus Operator = new JsMinus();
+        private JsMinus(){}
+        public override string Token => "-";
+        public override object Evaluate(object target) => target == null 
+            ? 0 
+            : (target.ConvertTo<double>() * -1).ConvertTo(target.GetType());
     }
 
     public class JsArray : JsToken, IEnumerable<object>

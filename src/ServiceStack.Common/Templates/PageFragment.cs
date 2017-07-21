@@ -42,11 +42,11 @@ namespace ServiceStack.Templates
                 Binding = binding.Binding;
         }
 
-        public void ParseNextToken(StringSegment literal, out object value, out JsBinding binding)
+        public StringSegment ParseNextToken(StringSegment literal, out object value, out JsBinding binding)
         {
             try
             {
-                literal.ParseNextToken(out value, out binding);
+                return literal.ParseNextToken(out value, out binding);
             }
             catch (ArgumentException e)
             {

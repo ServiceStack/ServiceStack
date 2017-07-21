@@ -299,13 +299,14 @@ namespace ServiceStack.Templates
             var objs = target as IEnumerable;
             if (objs != null)
             {
-                var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeBindings, out string itemBinding);
+                var scopedParams = scope.GetParamsWithItemBindingOnly(nameof(let), null, scopeBindings, out string itemBinding);
 
                 var to = new List<Dictionary<string, object>>();
                 var i = 0;
                 foreach (var item in objs)
                 {
-                    scope.AddItemToScope(itemBinding, item, i++);
+                    scope.ScopedParams[TemplateConstants.Index] = i++;
+                    scope.ScopedParams[itemBinding] = item;
 
                     // Copy over previous let bindings into new let bindings
                     var itemBindings = new Dictionary<string, object>();
@@ -341,6 +342,25 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' requires an IEnumerable but received a '{target.GetType()?.Name}' instead");
 
             return null;
+        }
+
+        public object assign(TemplateScopeContext scope, string argExpr, object value) //from filter
+        {
+            var targetEndPos = argExpr.IndexOfAny(new[] {'.', '['});
+            if (targetEndPos == -1)
+            {
+                scope.ScopedParams[argExpr] = value;
+            }
+            else
+            {
+                var targetName = argExpr.Substring(0, targetEndPos);
+                if (!scope.ScopedParams.TryGetValue(targetName, out object target))
+                    throw new NotSupportedException($"Cannot assign to non-existing '{targetName}' in {argExpr}");
+
+                scope.InvokeAssignExpression(argExpr, target, value);
+            }
+            
+            return value;
         }
 
         public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
@@ -455,6 +475,8 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
         }
 
+        public object times(int count) => count.Times().ToList();
+        public object range(int count) => Enumerable.Range(0, count);
         public object range(int start, int count) => Enumerable.Range(start, count);
 
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression) => toDictionary(scope, target, expression, null);
@@ -622,6 +644,24 @@ namespace ServiceStack.Templates
             return itemType == null || itemType == typeof(double)
                 ? accumulator
                 : accumulator.ConvertTo(itemType);
+        }
+
+        public Task @do(TemplateScopeContext scope, object target, object expression) => @do(scope, target, expression, null);
+        public Task @do(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(@do));
+            var literal = scope.AssertExpression(nameof(@do), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
+
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var i = 0;
+            foreach (var item in items)
+            {
+                scope.AddItemToScope(itemBinding, item, i++);
+                var result = scope.Evaluate(value, binding);
+            }
+
+            return TypeConstants.EmptyTask;
         }
 
         public object first(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(first)).FirstOrDefault();

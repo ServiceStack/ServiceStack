@@ -135,7 +135,7 @@ namespace ServiceStack.Templates
         {
             var result = scope.EvaluateToken(Target);
             var afterUnary = Op.Evaluate(result);
-            return afterUnary;
+            return (bool)afterUnary;
         }
     }
     public class BinaryExpression : ConditionExpression
