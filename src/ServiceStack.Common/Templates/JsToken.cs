@@ -438,7 +438,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
-        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding)
+        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding) => ParseNextToken(literal, out value, out binding, false);
+        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding, bool allowWhitespaceSyntax)
         {
             binding = null;
             value = null;
@@ -700,7 +701,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             i = 1;
             var isExpression = false;
             var hadWhitespace = false;
-            while (i < literal.Length && IsValidVarNameChar(c = literal.GetChar(i)) || (isExpression = c.IsBindingExpressionChar()))
+            while (i < literal.Length && IsValidVarNameChar(c = literal.GetChar(i)) || 
+                   (isExpression = c.IsBindingExpressionChar() || (allowWhitespaceSyntax && c == ':')))
             {
                 if (isExpression)
                 {
@@ -1154,6 +1156,27 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     if (c == '}')
                         --inBraces;
                     continue;
+                }
+                
+                if (c == ':') //whitespace sensitive syntax
+                {
+                    // replace everything after ':' up till new line and rewrite as single string to method
+                    var endStringPos = literal.IndexOf("\n", i);
+                    var endStatementPos = literal.IndexOf("}}", i);
+
+                    if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
+                        endStringPos = endStatementPos;
+                        
+                    if (endStringPos == -1)
+                        throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{literal.SubstringWithElipsis(i,50)}'");
+
+                    binding = new JsExpression(literal.Subsegment(0, i).Trim());
+
+                    var originalArgs = literal.Substring(i + 1, endStringPos - i - 1);
+                    var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
+                    ParseArguments(rewrittenArgs.ToStringSegment(), out List<StringSegment> args);
+                    binding.Args = args;
+                    return literal.Subsegment(endStringPos);
                 }
                 
                 if (c == '(')

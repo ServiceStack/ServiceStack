@@ -646,6 +646,15 @@ namespace ServiceStack.Templates
                 : accumulator.ConvertTo(itemType);
         }
 
+        public object @do(TemplateScopeContext scope, object expression)
+        {
+            var literal = scope.AssertExpression(nameof(@do), expression);
+            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            var result = scope.Evaluate(value, binding);
+
+            return IgnoreResult.Value;
+        }
+
         public Task @do(TemplateScopeContext scope, object target, object expression) => @do(scope, target, expression, null);
         public Task @do(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {

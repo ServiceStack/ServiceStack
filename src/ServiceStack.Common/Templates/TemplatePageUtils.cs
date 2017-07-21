@@ -44,7 +44,7 @@ namespace ServiceStack.Templates
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
-                var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding);
+                var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
 
                 List<JsExpression> filterCommands = null;
 
@@ -261,6 +261,15 @@ namespace ServiceStack.Templates
                 var mi = propItemExpr.Indexer.GetSetMethod();
                 var indexExpr = propItemExpr.Arguments[0];
                 body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
+            }
+            else if (body is System.Linq.Expressions.BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
+            {
+                var arrayInstance = binaryExpr.Left;
+                var indexExpr = binaryExpr.Right;
+                
+                body = Expression.Assign(
+                    Expression.ArrayAccess(arrayInstance, indexExpr), 
+                    valueToAssign);
             }
             else
             {
