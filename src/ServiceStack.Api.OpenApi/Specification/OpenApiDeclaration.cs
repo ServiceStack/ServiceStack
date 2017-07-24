@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack.Api.OpenApi.Support;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack.Api.OpenApi.Specification
 {
     [DataContract]
+    [Exclude(Feature.Soap)]
     public class OpenApiDeclaration
     {
         [DataMember(Name = "swagger")]
