@@ -224,7 +224,7 @@ namespace ServiceStack.NativeTypes.FSharp
                 {
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
-                        sb.AppendLine("interface {0}".Fmt(implStr));
+                        sb.AppendLine($"interface {implStr}");
                 }
 
                 if (!type.IsInterface())

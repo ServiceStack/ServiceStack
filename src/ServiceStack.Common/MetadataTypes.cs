@@ -72,6 +72,7 @@ namespace ServiceStack
         public bool SettersReturnThis { get; set; }
         public bool MakePropertiesOptional { get; set; }
         public bool ExportAsTypes { get; set; }
+        public bool ExcludeImplementedInterfaces { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public bool MakeDataContractsExtensible { get; set; }
         public bool InitializeCollections { get; set; }

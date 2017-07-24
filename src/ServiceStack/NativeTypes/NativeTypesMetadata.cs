@@ -48,6 +48,7 @@ namespace ServiceStack.NativeTypes
                 SettersReturnThis = req.SettersReturnThis ?? defaults.SettersReturnThis,
                 MakePropertiesOptional = req.MakePropertiesOptional ?? defaults.MakePropertiesOptional,
                 ExportAsTypes = req.ExportAsTypes ?? defaults.ExportAsTypes,
+                ExcludeImplementedInterfaces = defaults.ExcludeImplementedInterfaces,
                 AddDefaultXmlNamespace = req.AddDefaultXmlNamespace ?? defaults.AddDefaultXmlNamespace,
                 AddNamespaces = req.AddNamespaces ?? defaults.AddNamespaces,
                 DefaultNamespaces = req.DefaultNamespaces ?? defaults.DefaultNamespaces,
@@ -261,6 +262,17 @@ namespace ServiceStack.NativeTypes
                     }
                 }
 
+                if (!config.ExcludeImplementedInterfaces)
+                {
+                    foreach (var iface in type.GetTypeInterfaces())
+                    {
+                        if (!iface.IsGenericType() && !iface.IsSystemType() && !iface.IsServiceStackType())
+                        {
+                            registerTypeFn(iface);
+                        }
+                    }
+                }
+
                 if (!type.IsGenericType())
                     continue;
 
@@ -426,7 +438,10 @@ namespace ServiceStack.NativeTypes
 
         private MetadataTypeName[] ToInterfaces(Type type)
         {
-            return type.GetInterfaces().Where(x => config.ExportTypes.ContainsMatch(x)).Map(x =>
+            return type.GetInterfaces().Where(x => 
+            (!config.ExcludeImplementedInterfaces && !x.IsGenericType() && !x.IsSystemType() && !x.IsServiceStackType()) 
+            || config.ExportTypes.ContainsMatch(x))
+            .Map(x =>
                 new MetadataTypeName {
                     Name = x.Name,
                     Namespace = x.Namespace,
@@ -1260,6 +1275,11 @@ namespace ServiceStack.NativeTypes
             }
 
             return type;
+        }
+
+        public static bool IsServiceStackType(this Type type)
+        {
+            return type.Namespace.StartsWith("ServiceStack");
         }
     }
 }

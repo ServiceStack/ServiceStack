@@ -470,6 +470,16 @@ namespace Check.ServiceModel.Types
         //public IGenericInterface<string> GenericInterface { get; set; }
     }
 
+    public class HelloImplementsInterface : IReturn<HelloImplementsInterface>, ImplementsPoco
+    {
+        public string Name { get; set; }
+    }
+
+    public interface ImplementsPoco
+    {
+        string Name { get; set; }
+    }
+
     public interface IPoco
     {
         string Name { get; set; }

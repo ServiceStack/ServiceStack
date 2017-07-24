@@ -181,6 +181,8 @@ namespace Check.ServiceInterface
         {
             return request;
         }
+
+        public object Any(HelloImplementsInterface request) => request;
     
         public object Get(Request1 request)
         {

@@ -301,7 +301,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         ? "enum"
                         : "export enum";
 
-                    sb.AppendLine("{0} {1}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+                    sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}");
                     sb.AppendLine("{");
                     sb = sb.Indent();
 
@@ -310,11 +310,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                         for (var i = 0; i < type.EnumNames.Count; i++)
                         {
                             var name = type.EnumNames[i];
-                            var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                            var value = type.EnumValues?[i];
 
                             sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
-                                ? "{0},".Fmt(name)
-                                : "{0} = {1},".Fmt(name, value));
+                                ? $"{name},"
+                                : $"{name} = {value},");
                         }
                     }
 
@@ -329,7 +329,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         ? "type"
                         : "export type";
 
-                    sbType.Append("{0} {1} = ".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+                    sbType.Append($"{typeDeclaration} {Type(type.Name, type.GenericArgs)} = ");
 
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
@@ -384,6 +384,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                             responseTypeExpression = "createResponse() {}";
                         }
                     }
+
+                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();

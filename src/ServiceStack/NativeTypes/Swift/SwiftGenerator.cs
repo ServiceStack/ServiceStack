@@ -300,8 +300,7 @@ namespace ServiceStack.NativeTypes.Swift
                     //Converting them into protocols with typealiases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
 
-                    if (!type.Implements.IsEmpty())
-                        type.Implements.Each(x => extends.Add(Type(x)));
+                    type.Implements.Each(x => extends.Add(Type(x)));
                 }
 
                 if (type.IsInterface())

@@ -271,7 +271,6 @@ namespace ServiceStack.NativeTypes.VbNet
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine("Public Enum {0}".Fmt(Type(type.Name, type.GenericArgs)));
-                //sb.AppendLine("{");
                 sb = sb.Indent();
 
                 if (type.EnumNames != null)
@@ -279,10 +278,10 @@ namespace ServiceStack.NativeTypes.VbNet
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
                         var name = type.EnumNames[i];
-                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                        var value = type.EnumValues?[i];
                         sb.AppendLine(value == null
-                            ? "{0}".Fmt(name)
-                            : "{0} = {1}".Fmt(name, value));
+                            ? name
+                            : $"{name} = {value}");
                     }
                 }
 
@@ -307,8 +306,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         implements.Add(implStr);
-                    if (!type.Implements.IsEmpty())
-                        type.Implements.Each(x => implements.Add(Type(x)));
+
+                    type.Implements.Each(x => implements.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
@@ -323,7 +322,6 @@ namespace ServiceStack.NativeTypes.VbNet
                     }
                 }
 
-                //sb.AppendLine("{");
                 sb = sb.Indent();
 
                 AddConstuctor(sb, type, options);

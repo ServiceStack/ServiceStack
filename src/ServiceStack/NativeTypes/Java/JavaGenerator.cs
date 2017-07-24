@@ -365,13 +365,7 @@ namespace ServiceStack.NativeTypes.Java
                                 : "{0}.class".Fmt(returnType);
                         }
                     }
-                    if (!type.Implements.IsEmpty())
-                    {
-                        foreach (var interfaceRef in type.Implements)
-                        {
-                            interfaces.Add(Type(interfaceRef));
-                        }
-                    }
+                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
                 var extend = extends.Count > 0 
