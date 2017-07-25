@@ -214,8 +214,13 @@ namespace ServiceStack.RabbitMq
                 return null;
 
             var props = msgResult.BasicProperties;
-            var json = msgResult.Body.FromUtf8Bytes();
-            var body = json.FromJson<T>();
+            var deserializer = HostContext.ContentTypes.GetStreamDeserializer(props.ContentType ?? MimeTypes.Json);
+            if (deserializer == null)
+                throw new NotSupportedException("Unknown Content-Type: " + props.ContentType);
+            
+            var ms = MemoryStreamFactory.GetStream(msgResult.Body);
+            var body = (T)deserializer(typeof(T), ms);
+            ms.Dispose();
 
             var message = new Message<T>(body)
             {
