@@ -11,26 +11,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateQueryFilterTests
     {
-        private static TemplateContext CreateContext(Dictionary<string, object> optionalArgs = null)
+        private static TemplateContext CreateContext()
         {
             var context = new TemplateContext
             {
                 Args =
                 {
                     [TemplateConstants.DefaultDateFormat] = "yyyy/MM/dd",
-                    ["numbers"] = new[] { 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 },
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
-                    ["digits"] = new[]{ "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
-                    ["strings"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
-                    ["words"] = new[]{"cherry", "apple", "blueberry"},
-                    ["doubles"] = new[]{ 1.7, 2.3, 1.9, 4.1, 2.9 },
-                    ["anagrams"] = new[]{ "from   ", " salt", " earn ", "  last   ", " near ", " form  " },
                     ["comparer"] = new CaseInsensitiveComparer(),
                     ["anagramComparer"] = new AnagramEqualityComparer(),
                 }
             };
-            optionalArgs.Each((key, val) => context.Args[key] = val);
             return context.Init();
         }
 
@@ -43,7 +36,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             Assert.That(context.EvaluateTemplate(@"
 Numbers < 5:
-{{ numbers | where('it < 5') | select: { it }\n }}").NormalizeNewLines(), 
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ numbers 
+   | where: it < 5 
+   | select: { it }\n 
+}}").NormalizeNewLines(), 
                 
                 Is.EqualTo(@"
 Numbers < 5:
@@ -131,6 +128,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         {
             Assert.That(context.EvaluateTemplate(@"
 Short digits:
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | where: it.Length < index
    | select: The word {it} is shorter than its value.\n }}
@@ -151,6 +149,7 @@ The word nine is shorter than its value.
         {
             Assert.That(context.EvaluateTemplate(@"
 Numbers + 1:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it | incr }\n }}
 ").NormalizeNewLines(),
                 
@@ -192,6 +191,8 @@ Chef Anton's Gumbo Mix
         {
             Assert.That(context.EvaluateTemplate(@"
 Number strings:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ numbers | select: { strings[it] }\n }}
 ").NormalizeNewLines(),
                 
@@ -229,6 +230,8 @@ Uppercase: CHERRY, Lowercase: cherry
         public void Linq10()
         {
             Assert.That(context.EvaluateTemplate(@"
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
 ").NormalizeNewLines(),
                 
@@ -267,6 +270,7 @@ Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
         {
             Assert.That(context.EvaluateTemplate(@"
 Number: In-place?
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it }: { it | equals(index) | lower }\n }}
 ").NormalizeNewLines(),
                 
@@ -290,6 +294,8 @@ Number: In-place?
         {
             Assert.That(context.EvaluateTemplate(@"
 Numbers < 5:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ numbers
    | where: it < 5 
    | select: { digits[it] }\n 
@@ -462,6 +468,7 @@ Customer #2 has an order with OrderID 10926
         {
             Assert.That(context.EvaluateTemplate(@"
 First 3 numbers:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | take(3) | select: { it }\n }}
 ").NormalizeNewLines(),
                 
@@ -498,6 +505,7 @@ First 3 orders in WA:
         {
             Assert.That(context.EvaluateTemplate(@"
 All but first 4 numbers:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | skip(4) | select: { it }\n }}
 ").NormalizeNewLines(),
                 
@@ -552,6 +560,7 @@ All but first 2 orders in WA:
         { 
             Assert.That(context.EvaluateTemplate(@"
 First numbers less than 6:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | takeWhile: it < 6 
    | select: { it }\n }}
@@ -571,6 +580,7 @@ First numbers less than 6:
         { 
             Assert.That(context.EvaluateTemplate(@"
 First numbers not less than their position:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | takeWhile: it >= index 
    | select: { it }\n }}
@@ -588,6 +598,7 @@ First numbers not less than their position:
         { 
             Assert.That(context.EvaluateTemplate(@"
 All elements starting from first element divisible by 3:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | skipWhile: mod(it,3) != 0 
    | select: { it }\n }}
@@ -610,6 +621,7 @@ All elements starting from first element divisible by 3:
         { 
             Assert.That(context.EvaluateTemplate(@"
 All elements starting from first element less than its position:
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | skipWhile: it >= index 
    | select: { it }\n }}
@@ -633,6 +645,7 @@ All elements starting from first element less than its position:
         { 
             Assert.That(context.EvaluateTemplate(@"
 The sorted list of words:
+{{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
    | orderBy: it 
    | select: { it }\n }}
@@ -651,6 +664,7 @@ cherry
         { 
             Assert.That(context.EvaluateTemplate(@"
 The sorted list of words (by length):
+{{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
    | orderBy: it.Length 
    | select: { it }\n }}
@@ -707,6 +721,7 @@ ClOvEr
         { 
             Assert.That(context.EvaluateTemplate(@"
 The doubles from highest to lowest:
+{{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
    | orderByDescending: it 
    | select: { it }\n }}
@@ -765,6 +780,7 @@ AbAcUs
         { 
             Assert.That(context.EvaluateTemplate(@"
 Sorted digits:
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | orderBy: it.length
    | thenBy: it
@@ -856,6 +872,7 @@ BlUeBeRrY
         { 
             Assert.That(context.EvaluateTemplate(@"
 A backwards list of the digits with a second character of 'i':
+{{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | where: it[1] = 'i'
    | reverse
@@ -875,6 +892,7 @@ five
         public void Linq40()
         { 
             Assert.That(context.EvaluateTemplate(@"
+{{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | groupBy: mod(it,5)
    | let({ remainder: 'it.Key', numbers: 'it' })
@@ -1019,6 +1037,7 @@ Condiments:
         public void Linq44()
         { 
             Assert.That(context.EvaluateTemplate(@"
+{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { comparer: anagramComparer })
    | select: { it | json }\n 
@@ -1036,6 +1055,7 @@ Condiments:
         public void Linq45()
         { 
             Assert.That(context.EvaluateTemplate(@"
+{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
    | select: { it | json }\n 
@@ -1053,8 +1073,8 @@ Condiments:
         public void Linq46()
         { 
             Assert.That(context.EvaluateTemplate(@"
-{{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 Prime factors of 300:
+{{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 {{ factorsOf300 | distinct | select: { it }\n }}
 ").NormalizeNewLines(),
                 

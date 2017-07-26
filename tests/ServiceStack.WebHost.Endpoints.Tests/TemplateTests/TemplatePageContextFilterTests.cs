@@ -325,6 +325,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(new PageResult(context.OneTimePage("<ul> {{ '<li> {{ item.Object.Prop }} </li>' | forEach(items, { it: 'item' } ) }} </ul>")).Result,
                 Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
+            
+            // Equivalent with select:
+            Assert.That(new PageResult(context.OneTimePage("<ul> {{ items | select: <li> { it.Object.Prop } </li> }} </ul>")).Result,
+                Is.EqualTo("<ul> <li> A </li><li> B </li><li> C </li> </ul>"));
         }
 
         [Test]
