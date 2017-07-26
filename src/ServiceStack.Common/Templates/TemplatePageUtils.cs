@@ -41,7 +41,23 @@ namespace ServiceStack.Templates
             {
                 var block = text.Subsegment(lastPos, pos - lastPos);
                 if (!block.IsNullOrEmpty())
-                    to.Add(new PageStringFragment(block));
+                {
+                    var isNewLine = block.Equals("\n") || block.Equals("\r\n");
+                    if (!isNewLine || TemplateConfig.RemoveNewLineAfterFiltersNamed.Count == 0)
+                    {
+                        to.Add(new PageStringFragment(block));
+                    }
+                    else 
+                    {
+                        var var = to.LastOrDefault() as PageVariableFragment;
+                        var lastExpr = var?.FilterExpressions?.LastOrDefault();
+                        var filterName = lastExpr?.NameString ?? var?.InitialExpression?.NameString;
+                        if (filterName == null || !TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                        {
+                            to.Add(new PageStringFragment(block));
+                        }
+                    }
+                }
                 
                 var varStartPos = pos + 2;
                 var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);

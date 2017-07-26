@@ -583,5 +583,20 @@ products
             }
             
         }
+
+        [Test]
+        public void Does_remove_new_line_between_var_literals()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\n{{ bar }}");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+            fragments = TemplatePageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\r\n{{ bar }}");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+
+            fragments = TemplatePageUtils.ParseTemplatePage("{{ ['foo'] | do: assign('bar', it) }}\n{{ bar }}");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+            fragments = TemplatePageUtils.ParseTemplatePage("{{ do: assign('bar', 'foo') }}\n{{ bar }}");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+        }
+
     }
 }
