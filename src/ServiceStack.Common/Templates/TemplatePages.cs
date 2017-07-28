@@ -8,6 +8,7 @@ namespace ServiceStack.Templates
     public interface ITemplatePages
     {
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
+        TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
         TemplatePage OneTimePage(string contents, string ext);
@@ -34,6 +35,44 @@ namespace ServiceStack.Templates
             var layoutWithoutExt = (layout ?? Context.DefaultLayoutPage).LeftPart('.');
 
             var dir = page.File.Directory;
+            do
+            {
+                var layoutPath = (dir.VirtualPath ?? "").CombineWith(layoutWithoutExt);
+
+                if (pageMap.TryGetValue(layoutPath, out TemplatePage layoutPage))
+                    return layoutPage;
+
+                foreach (var format in Context.PageFormats)
+                {
+                    var layoutFile = dir.GetFile($"{layoutWithoutExt}.{format.Extension}");
+                    if (layoutFile != null)
+                        return AddPage(layoutPath, layoutFile);
+                }
+                
+                dir = dir.ParentDirectory;
+
+            } while (dir != null && !dir.IsRoot);
+            
+            return null;
+        }
+
+        public virtual TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout)
+        {
+            if (page == null)
+                throw new ArgumentNullException(nameof(page));
+            
+            if (!page.HasInit)
+                throw new ArgumentException($"Page {page.VirtualPath} has not been initialized");
+
+            var layoutWithoutExt = (layout ?? Context.DefaultLayoutPage).LeftPart('.');
+
+            var lastDirPos = page.VirtualPath.LastIndexOf('/');
+            var dirPath = lastDirPos >= 0
+                ? page.VirtualPath.Substring(0, lastDirPos)
+                : null;
+            var dir = !string.IsNullOrEmpty(dirPath) 
+                ? Context.VirtualFiles.GetDirectory(dirPath) 
+                : Context.VirtualFiles.RootDirectory;
             do
             {
                 var layoutPath = (dir.VirtualPath ?? "").CombineWith(layoutWithoutExt);
@@ -100,7 +139,7 @@ namespace ServiceStack.Templates
         {
             var memFile = new InMemoryVirtualFile(TempFiles, TempDir)
             {
-                FilePath = Guid.NewGuid().ToString("n") + $".{ext}", 
+                FilePath = Guid.NewGuid().ToString("n") + "." + ext, 
                 TextContents = contents,
             };
             var page = new TemplatePage(Context, memFile);

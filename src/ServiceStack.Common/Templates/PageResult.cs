@@ -17,9 +17,11 @@ namespace ServiceStack.Templates
     public interface IPageResult {}
 
     // Render a Template Page to the Response OutputStream
-    public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions
+    public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions, IDisposable
     {
         public TemplatePage Page { get; set; }
+        
+        public TemplateCodePage CodePage { get; set; }
 
         public TemplatePage LayoutPage { get; set; }
 
@@ -63,9 +65,8 @@ namespace ServiceStack.Templates
         
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
-        public PageResult(TemplatePage page)
+        private PageResult(PageFormat format)
         {
-            Page = page ?? throw new ArgumentNullException(nameof(page));
             Args = new Dictionary<string, object>();
             TemplateFilters = new List<TemplateFilter>();
             PageTransformers = new List<Func<Stream, Task<Stream>>>();
@@ -73,8 +74,18 @@ namespace ServiceStack.Templates
             FilterTransformers = new Dictionary<string, Func<Stream, Task<Stream>>>();
             Options = new Dictionary<string, string>
             {
-                {HttpHeaders.ContentType, Page.Format.ContentType},
+                {HttpHeaders.ContentType, format?.ContentType},
             };
+        }
+
+        public PageResult(TemplatePage page) : this(page?.Format)
+        {
+            Page = page ?? throw new ArgumentNullException(nameof(page));
+        }
+
+        public PageResult(TemplateCodePage page) : this(page?.Format)
+        {
+            CodePage = page ?? throw new ArgumentNullException(nameof(page));
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
@@ -111,21 +122,34 @@ namespace ServiceStack.Templates
 
             if (LayoutPage != null)
             {
-                await Task.WhenAll(LayoutPage.Init(), Page.Init());
+                CodePage?.Init();
+                await Task.WhenAll(LayoutPage.Init(), Page?.Init());
             }
             else
             {
-                await Page.Init();
-                if (Page.LayoutPage != null)
+                if (Page != null)
                 {
-                    LayoutPage = Page.LayoutPage;
-                    await LayoutPage.Init();
+                    await Page.Init();
+                    if (Page.LayoutPage != null)
+                    {
+                        LayoutPage = Page.LayoutPage;
+                        await LayoutPage.Init();
+                    }
+                }
+                else if (CodePage != null)
+                {
+                    CodePage.Init();
+                    if (CodePage.LayoutPage != null)
+                    {
+                        LayoutPage = CodePage.LayoutPage;
+                        await LayoutPage.Init();
+                    }
                 }
             }
 
             token.ThrowIfCancellationRequested();
 
-            var pageScopeContext = CreatePageContext(null, outputStream);
+            var pageScope = CreatePageContext(null, outputStream);
 
             if (LayoutPage != null)
             {
@@ -139,20 +163,24 @@ namespace ServiceStack.Templates
                     {
                         if (var.Binding.Equals(TemplateConstants.Page))
                         {
-                            await WritePageAsync(Page, pageScopeContext, token);
+                            await WritePageAsync(Page, CodePage, pageScope, token);
                         }
                         else
                         {
-                            await WriteVarAsync(pageScopeContext, var, token);
+                            await WriteVarAsync(pageScope, var, token);
                         }
                     }
                 }
             }
             else
             {
-                await WritePageAsync(Page, pageScopeContext, token);
+                await WritePageAsync(Page, CodePage, pageScope, token);
             }
         }
+
+        public TemplateContext Context => Page?.Context ?? CodePage.Context;
+        public PageFormat Format => Page?.Format ?? CodePage.Format;
+        public string VirtualPath => Page?.VirtualPath ?? CodePage.VirtualPath;
 
         private bool hasInit;
         public async Task<PageResult> Init()
@@ -160,8 +188,8 @@ namespace ServiceStack.Templates
             if (hasInit)
                 return this;
 
-            if (!Page.Context.HasInit)
-                throw new NotSupportedException($"{Page.Context.GetType().Name} has not been initialized. Call 'Init()' to initialize Template Context.");
+            if (!Context.HasInit)
+                throw new NotSupportedException($"{Context.GetType().Name} has not been initialized. Call 'Init()' to initialize Template Context.");
 
             if (Model != null)
             {
@@ -175,10 +203,13 @@ namespace ServiceStack.Templates
 
             foreach (var filter in TemplateFilters)
             {
-                Page.Context.InitFilter(filter);
+                Context.InitFilter(filter);
             }
 
-            await Page.Init();
+            if (Page != null)
+                await Page.Init();
+            else
+                CodePage.Init();
 
             hasInit = true;
 
@@ -191,18 +222,27 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException("PageResult.Init() required for this operation.");
         }
 
-        public async Task WritePageAsync(TemplatePage page, TemplateScopeContext scopeContext, CancellationToken token = default(CancellationToken))
+        public Task WritePageAsync(TemplatePage page, TemplateCodePage codePage,
+            TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
+        {
+            if (page != null)
+                return WritePageAsync(page, scope, token);
+
+            return WriteCodePageAsync(codePage, scope, token);
+        }
+
+        public async Task WritePageAsync(TemplatePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
         {
             if (PageTransformers.Count == 0)
             {
-                await WritePageAsyncInternal(page, scopeContext, token);
+                await WritePageAsyncInternal(page, scope, token);
                 return;
             }
 
             //If PageResult has any PageFilters Buffer and chain stream responses to each
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                await WritePageAsyncInternal(page, new TemplateScopeContext(this, ms, scopeContext.ScopedParams), token);
+                await WritePageAsyncInternal(page, new TemplateScopeContext(this, ms, scope.ScopedParams), token);
                 Stream stream = ms;
 
                 foreach (var transformer in PageTransformers)
@@ -214,12 +254,12 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(scopeContext.OutputStream);
+                    await stream.CopyToAsync(scope.OutputStream);
                 }
             }
         }
 
-        internal async Task WritePageAsyncInternal(TemplatePage page, TemplateScopeContext scopeContext, CancellationToken token = default(CancellationToken))
+        internal async Task WritePageAsyncInternal(TemplatePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
         {
             if (!page.HasInit)
                 await page.Init();
@@ -228,13 +268,51 @@ namespace ServiceStack.Templates
             {
                 if (fragment is PageStringFragment str)
                 {
-                    await scopeContext.OutputStream.WriteAsync(str.ValueBytes, token);
+                    await scope.OutputStream.WriteAsync(str.ValueBytes, token);
                 }
                 else if (fragment is PageVariableFragment var)
                 {
-                    await WriteVarAsync(scopeContext, var, token);
+                    await WriteVarAsync(scope, var, token);
                 }
             }
+        }
+
+        public async Task WriteCodePageAsync(TemplateCodePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
+        {
+            if (PageTransformers.Count == 0)
+            {
+                await WriteCodePageAsyncInternal(page, scope, token);
+                return;
+            }
+
+            //If PageResult has any PageFilters Buffer and chain stream responses to each
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                await WriteCodePageAsyncInternal(page, new TemplateScopeContext(this, ms, scope.ScopedParams), token);
+                Stream stream = ms;
+
+                foreach (var transformer in PageTransformers)
+                {
+                    stream.Position = 0;
+                    stream = await transformer(stream);
+                }
+
+                using (stream)
+                {
+                    stream.Position = 0;
+                    await stream.CopyToAsync(scope.OutputStream);
+                }
+            }
+        }
+
+        internal Task WriteCodePageAsyncInternal(TemplateCodePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
+        {
+            page.Scope = scope;
+
+            if (!page.HasInit)
+                page.Init();
+
+            return page.WriteAsync(scope);
         }
 
         private async Task WriteVarAsync(TemplateScopeContext scopeContext, PageVariableFragment var, CancellationToken token)
@@ -243,7 +321,7 @@ namespace ServiceStack.Templates
             if (value != IgnoreResult.Value)
             {
                 var bytes = value != null
-                    ? Page.Format.EncodeValue(value).ToUtf8Bytes()
+                    ? Format.EncodeValue(value).ToUtf8Bytes()
                     : var.OriginalTextBytes;
 
                 await scopeContext.OutputStream.WriteAsync(bytes, token);
@@ -254,7 +332,7 @@ namespace ServiceStack.Templates
         {
             return FilterTransformers.TryGetValue(name, out Func<Stream, Task<Stream>> fn)
                 ? fn
-                : Page.Context.FilterTransformers.TryGetValue(name, out fn)
+                : Context.FilterTransformers.TryGetValue(name, out fn)
                     ? fn
                     : null;
         }
@@ -302,7 +380,7 @@ namespace ServiceStack.Templates
                         var filterName = var.FilterExpressions[0].NameString;
                         var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
                         handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
-                                              Page.Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+                                              Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
                     }
 
                     if (!handlesUnknownValue)
@@ -434,10 +512,10 @@ namespace ServiceStack.Templates
                     }
                     catch (Exception ex)
                     {
-                        var exResult = Page.Format.OnExpressionException(this, ex);
+                        var exResult = Format.OnExpressionException(this, ex);
                         if (exResult != null)
                         {
-                            await scope.OutputStream.WriteAsync(Page.Format.EncodeValue(exResult).ToUtf8Bytes(), token);
+                            await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
                         }
                         else if (ex is NotSupportedException)
                         {
@@ -459,13 +537,13 @@ namespace ServiceStack.Templates
 
         private string CreateMissingFilterErrorMessage(string filterName)
         {
-            var registeredFilters = TemplateFilters.Union(Page.Context.TemplateFilters).ToList();
+            var registeredFilters = TemplateFilters.Union(Context.TemplateFilters).ToList();
             var similarNonMatchingFilters = registeredFilters
                 .SelectMany(x => x.QueryFilters(filterName))
                 .ToList();
 
             var sb = StringBuilderCache.Allocate()
-                .AppendLine($"Filter in '{Page.VirtualPath}' named '{filterName}' was not found.");
+                .AppendLine($"Filter in '{VirtualPath}' named '{filterName}' was not found.");
 
             if (similarNonMatchingFilters.Count > 0)
             {
@@ -565,7 +643,7 @@ namespace ServiceStack.Templates
             }
             catch (Exception ex)
             {
-                var exResult = Page.Format.OnExpressionException(this, ex);
+                var exResult = Format.OnExpressionException(this, ex);
                 if (exResult != null)
                     return exResult;
                 
@@ -664,7 +742,7 @@ namespace ServiceStack.Templates
 
         private MethodInvoker GetInvoker(string name, int argsCount, InvokerType invokerType, out TemplateFilter filter)
         {
-            if (!Page.Context.ExcludeFiltersNamed.Contains(name) && !ExcludeFiltersNamed.Contains(name))
+            if (!Context.ExcludeFiltersNamed.Contains(name) && !ExcludeFiltersNamed.Contains(name))
             {
                 foreach (var tplFilter in TemplateFilters)
                 {
@@ -676,7 +754,7 @@ namespace ServiceStack.Templates
                     }
                 }
 
-                foreach (var tplFilter in Page.Context.TemplateFilters)
+                foreach (var tplFilter in Context.TemplateFilters)
                 {
                     var invoker = tplFilter?.GetInvoker(name, argsCount, invokerType);
                     if (invoker != null)
@@ -698,7 +776,7 @@ namespace ServiceStack.Templates
                 : EvaluateAnyBindings(token, scope);
         }
 
-        private object GetValue(string name, TemplateScopeContext scopedParams)
+        internal object GetValue(string name, TemplateScopeContext scopedParams)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -709,15 +787,17 @@ namespace ServiceStack.Templates
                 ? obj
                 : Args.TryGetValue(name, out obj)
                     ? obj
-                    : Page.Args.TryGetValue(name, out obj)
+                    : Page != null && Page.Args.TryGetValue(name, out obj)
                         ? obj
-                        : (LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj))
+                        : CodePage != null && CodePage.Args.TryGetValue(name, out obj)
                             ? obj
-                            : Page.Context.Args.TryGetValue(name, out obj)
+                            : LayoutPage != null && LayoutPage.Args.TryGetValue(name, out obj)
                                 ? obj
-                                : (invoker = GetFilterAsBinding(name, out TemplateFilter filter)) != null
-                                    ? InvokeFilter(invoker, filter, new object[0], name)
-                                    : null;
+                                : Context.Args.TryGetValue(name, out obj)
+                                    ? obj
+                                    : (invoker = GetFilterAsBinding(name, out TemplateFilter filter)) != null
+                                        ? InvokeFilter(invoker, filter, new object[0], name)
+                                        : null;
 
             if (value is JsBinding binding)
             {
@@ -750,7 +830,7 @@ namespace ServiceStack.Templates
             if (targetValue == JsNull.Value)
                 return JsNull.Value;
             
-            var fn = Page.Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment());
+            var fn = Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment());
 
             try
             {
@@ -759,7 +839,7 @@ namespace ServiceStack.Templates
             }
             catch (Exception ex)
             {
-                var exResult = Page.Format.OnExpressionException(this, ex);
+                var exResult = Format.OnExpressionException(this, ex);
                 if (exResult != null)
                     return exResult;
                 
@@ -796,6 +876,11 @@ namespace ServiceStack.Templates
                 TemplateFilters = TemplateFilters,
                 FilterTransformers = FilterTransformers,
             };
+        }
+
+        public void Dispose()
+        {
+            CodePage?.Dispose();
         }
     }
 

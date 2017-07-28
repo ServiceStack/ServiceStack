@@ -50,6 +50,7 @@ namespace ServiceStack
             return pi.CanWrite
                    && !pi.PropertyType.IsValueType()
                    && pi.PropertyType != typeof(string)
+                   && pi.PropertyType != typeof(object)
                    && !IgnoreTypesNamed.Contains(pi.PropertyType.FullName);
         }
 
