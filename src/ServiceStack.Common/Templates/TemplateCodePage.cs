@@ -78,8 +78,11 @@ namespace ServiceStack.Templates
                 }
 
                 if (!Context.CodePageInvokers.TryGetValue(type, out Tuple<MethodInfo, MethodInvoker> tuple))
-                {
-                    var method = type.GetMethods().FirstOrDefault(x => x.Name.EndsWithIgnoreCase("render"));
+                {                    
+                    var method = type.GetInstanceMethods().FirstOrDefault(x => x.Name.EndsWithIgnoreCase("render"));
+                    if (method == null)
+                        throw new NotSupportedException($"Template Code Page '{GetType().Name}' does not have a 'render' method");
+                    
                     var invoker = TypeExtensions.GetInvokerToCache(method);
                     Context.CodePageInvokers[type] = tuple = Tuple.Create(method, invoker);
                 }

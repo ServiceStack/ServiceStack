@@ -8,10 +8,12 @@ namespace ServiceStack.Templates
     public interface ITemplatePages
     {
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
-        TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
         TemplatePage OneTimePage(string contents, string ext);
+        
+        TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
+        TemplateCodePage GetCodePage(string virtualPath);
     }
 
     public class TemplatePages : ITemplatePages
@@ -49,9 +51,12 @@ namespace ServiceStack.Templates
                         return AddPage(layoutPath, layoutFile);
                 }
                 
+                if (dir.IsRoot)
+                    break;
+                
                 dir = dir.ParentDirectory;
 
-            } while (dir != null && !dir.IsRoot);
+            } while (dir != null);
             
             return null;
         }
@@ -87,12 +92,17 @@ namespace ServiceStack.Templates
                         return AddPage(layoutPath, layoutFile);
                 }
                 
+                if (dir.IsRoot)
+                    break;
+                
                 dir = dir.ParentDirectory;
 
-            } while (dir != null && !dir.IsRoot);
+            } while (dir != null);
             
             return null;
         }
+
+        public TemplateCodePage GetCodePage(string virtualPath) => Context.GetCodePage(virtualPath);
 
         public virtual TemplatePage AddPage(string virtualPath, IVirtualFile file)
         {

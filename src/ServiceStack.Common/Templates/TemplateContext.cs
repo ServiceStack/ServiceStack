@@ -49,8 +49,6 @@ namespace ServiceStack.Templates
 
         public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
         
-        public Dictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new Dictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
-        
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
         public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
@@ -61,6 +59,8 @@ namespace ServiceStack.Templates
 
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 
+        public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
+        
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
@@ -86,7 +86,11 @@ namespace ServiceStack.Templates
         {
             var santizePath = virtualPath.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            if (!CodePages.TryGetValue(santizePath, out Type type)) 
+            var lookupPath = !santizePath.EndsWith("/")
+                ? santizePath
+                : santizePath + IndexPage;
+            
+            if (!CodePages.TryGetValue(lookupPath, out Type type)) 
                 return null;
             
             var instance = (TemplateCodePage) Container.Resolve(type);

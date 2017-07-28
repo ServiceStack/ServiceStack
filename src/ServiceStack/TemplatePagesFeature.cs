@@ -49,12 +49,16 @@ namespace ServiceStack
         {
             if (catchAllPathsNotFound.ContainsKey(pathInfo)) return null;
 
+            var codePage = Pages.GetCodePage(pathInfo);
+            if (codePage != null)
+                return new TemplateCodePageHandler(codePage);
+            
             var page = Pages.GetPage(pathInfo);
             if (page != null)
             {
                 if (page.File.Name.StartsWith("_"))
                     return new ForbiddenHttpHandler();
-                return new TemplatePagesHandler(page);
+                return new TemplatePageHandler(page);
             }
             
             if (!pathInfo.EndsWith("/") && VirtualFiles.DirectoryExists(pathInfo.TrimPrefixes("/")))
@@ -67,11 +71,11 @@ namespace ServiceStack
         }
     }
 
-    public class TemplatePagesHandler : HttpAsyncTaskHandler
+    public class TemplatePageHandler : HttpAsyncTaskHandler
     {
         private readonly TemplatePage page;
         private readonly TemplatePage layoutPage;
-        public TemplatePagesHandler(TemplatePage page, TemplatePage layoutPage = null)
+        public TemplatePageHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
             this.page = page;
             this.layoutPage = layoutPage;
@@ -79,6 +83,27 @@ namespace ServiceStack
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            var result = new PageResult(page) { LayoutPage = layoutPage };
+            await result.WriteToAsync(httpRes.OutputStream);
+        }
+    }
+
+    public class TemplateCodePageHandler : HttpAsyncTaskHandler
+    {
+        private readonly TemplateCodePage page;
+        private readonly TemplatePage layoutPage;
+        public TemplateCodePageHandler(TemplateCodePage page, TemplatePage layoutPage = null)
+        {
+            this.page = page;
+            this.layoutPage = layoutPage;
+        }
+
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        {
+            var requiresRequest = page as IRequiresRequest;
+            if (requiresRequest != null)
+                requiresRequest.Request = httpReq;
+            
             var result = new PageResult(page) { LayoutPage = layoutPage };
             await result.WriteToAsync(httpRes.OutputStream);
         }
