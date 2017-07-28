@@ -49,10 +49,26 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualDirectory GetDirectory(string dirPath)
         {
-            var dir = new InMemoryVirtualDirectory(this, dirPath);
+            var dir = new InMemoryVirtualDirectory(this, dirPath, GetParentDirectory(dirPath));
             return dir.Files.Any()
                 ? dir
                 : null;
+        }
+
+        public IVirtualDirectory GetParentDirectory(string dirPath)
+        {
+            if (string.IsNullOrEmpty(dirPath))
+                return null;
+
+            var lastDirPos = dirPath.LastIndexOf('/');
+            if (lastDirPos >= 0)
+            {
+                var parentDir = dirPath.Substring(0, lastDirPos);
+                if (!string.IsNullOrEmpty(parentDir))
+                    GetDirectory(parentDir);
+            }
+
+            return this.rootDirectory;
         }
 
         public override bool DirectoryExists(string virtualPath)
@@ -62,7 +78,7 @@ namespace ServiceStack.VirtualPath
 
         private IVirtualDirectory CreateDirectory(string dirPath)
         {
-            return new InMemoryVirtualDirectory(this, dirPath);
+            return new InMemoryVirtualDirectory(this, dirPath, GetParentDirectory(dirPath));
         }
 
         public void WriteFile(string filePath, string textContents)
@@ -158,7 +174,7 @@ namespace ServiceStack.VirtualPath
                 .Where(x => x != null)
                 .Distinct();
 
-            return dirPaths.Map(x => new InMemoryVirtualDirectory(this, x));
+            return dirPaths.Map(x => new InMemoryVirtualDirectory(this, x, GetParentDirectory(x)));
         }
 
         public IEnumerable<InMemoryVirtualFile> GetImmediateFiles(string fromDirPath)
@@ -216,8 +232,8 @@ namespace ServiceStack.VirtualPath
     {
         private readonly InMemoryVirtualPathProvider pathProvider;
 
-        public InMemoryVirtualDirectory(InMemoryVirtualPathProvider pathProvider, string dirPath) 
-            : base(pathProvider)
+        public InMemoryVirtualDirectory(InMemoryVirtualPathProvider pathProvider, string dirPath, IVirtualDirectory parentDir=null) 
+            : base(pathProvider, parentDir)
         {
             this.pathProvider = pathProvider;
             this.DirPath = dirPath;
@@ -268,7 +284,7 @@ namespace ServiceStack.VirtualPath
         protected override IVirtualDirectory GetDirectoryFromBackingDirectoryOrDefault(string directoryName)
         {
             var subDir = DirPath.CombineWith(directoryName);
-            return new InMemoryVirtualDirectory(pathProvider, subDir);
+            return new InMemoryVirtualDirectory(pathProvider, subDir, this);
         }
 
         public void AddFile(string filePath, string contents)
