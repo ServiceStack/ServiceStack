@@ -157,21 +157,25 @@ namespace ServiceStack.Templates
 
         public TemplateContext ScanType(Type type)
         {
-            if (typeof(TemplateFilter).IsAssignableFromType(type))
+            if (!type.IsAbstract())
             {
-                Container.AddSingleton(type);
-                var filter = (TemplateFilter)Container.Resolve(type);
-                TemplateFilters.Add(filter);
-            }
-            else if (typeof(TemplateCodePage).IsAssignableFromType(type))
-            {
-                Container.AddTransient(type);
-                var pageAttr = type.FirstAttribute<PageAttribute>();
-                if (pageAttr?.VirtualPath != null)
+                if (typeof(TemplateFilter).IsAssignableFromType(type))
                 {
-                    CodePages[pageAttr.VirtualPath] = type;
+                    Container.AddSingleton(type);
+                    var filter = (TemplateFilter)Container.Resolve(type);
+                    TemplateFilters.Add(filter);
+                }
+                else if (typeof(TemplateCodePage).IsAssignableFromType(type))
+                {
+                    Container.AddTransient(type);
+                    var pageAttr = type.FirstAttribute<PageAttribute>();
+                    if (pageAttr?.VirtualPath != null)
+                    {
+                        CodePages[pageAttr.VirtualPath] = type;
+                    }
                 }
             }
+            
             return this;
         }
 

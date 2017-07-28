@@ -3,15 +3,31 @@ using System.Collections.Generic;
 using System.Net;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Data;
 using ServiceStack.IO;
+using ServiceStack.OrmLite;
 using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
+    [Route("/rockstar-pages/{Id}")]
+    public class RockstarsPage
+    {
+        public int Id { get; set; }
+    } 
+    
     public class MyTemplateServices : Service
     {
-        
+        public ITemplatePages Pages { get; set; }
+
+        public object Any(RockstarsPage request) =>
+            new PageResult(Pages.GetCodePage("rockstar-view").With(Request)) {
+                Args =
+                {
+                    ["rockstar"] = Db.SingleById<Rockstar>(request.Id)
+                }
+            };
     }
 
     [Page("shadowed-page")]
@@ -25,6 +41,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         string render() => @"<h1>Shadowed Index Code Page</h1>";
     }
+
+    [Page("rockstar")]
+    public class RockstarPage : ServiceStackCodePage
+    {
+        string render(int id) => renderRockstar(Db.SingleById<Rockstar>(id));
+
+        string renderRockstar(Rockstar rockstar) => $@"
+<h1>{Request.RawUrl}</h1>
+<h2>{rockstar.FirstName} {rockstar.LastName}</h2>
+<b>{rockstar.Age}</b>
+";
+    }
+
+    [Page("rockstar-view")]
+    public class RockstarPageView : ServiceStackCodePage
+    {
+        string render(Rockstar rockstar) => $@"
+<h1>{Request.RawUrl}</h1>
+<h2>{rockstar.FirstName} {rockstar.LastName}</h2>
+<b>{rockstar.Age}</b>
+";
+    }
     
     public class TemplateIntegrationTests
     {
@@ -34,6 +72,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
+                container.Register<IDbConnectionFactory>(new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+
+                using (var db = container.Resolve<IDbConnectionFactory>().Open())
+                {
+                    db.DropAndCreateTable<Rockstar>();
+                    db.InsertAll(UnitTestExample.SeedData);
+                }
+                
                 Plugins.Add(new TemplatePagesFeature());
 
                 var files = TemplateFiles[0];
@@ -121,5 +167,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </html>
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Does_execute_ServiceStackCodePage_with_Db_and_Request()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar").AddQueryParam("id", "1").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=root>
+
+<h1>/rockstar?id=1</h1>
+<h2>Jimi Hendrix</h2>
+<b>27</b>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_execute_RockstarPageView()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-pages", "1").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=root>
+
+<h1>/rockstar-pages/1</h1>
+<h2>Jimi Hendrix</h2>
+<b>27</b>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
     }
 }

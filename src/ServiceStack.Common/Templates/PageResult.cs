@@ -122,8 +122,12 @@ namespace ServiceStack.Templates
 
             if (LayoutPage != null)
             {
+                await LayoutPage.Init();
+
                 CodePage?.Init();
-                await Task.WhenAll(LayoutPage.Init(), Page?.Init());
+
+                if (Page != null)
+                    await Page.Init();
             }
             else
             {
