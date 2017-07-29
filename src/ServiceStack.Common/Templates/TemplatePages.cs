@@ -129,9 +129,10 @@ namespace ServiceStack.Templates
             if (page != null)
                 return page;
 
+            var isIndexPage = santizePath == string.Empty || santizePath.EndsWith("/");
             foreach (var format in Context.PageFormats)
             {
-                var file = !santizePath.EndsWith("/")
+                var file = !isIndexPage
                     ? Context.VirtualFiles.GetFile($"{santizePath}.{format.Extension}")
                     : Context.VirtualFiles.GetFile($"{santizePath}{Context.IndexPage}.{format.Extension}");
 

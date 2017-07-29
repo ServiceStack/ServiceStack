@@ -106,6 +106,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </body>
 </html>
 ");
+                files.WriteFile("index.html", @"
+<h1>The Home Page</h1>
+");
 
                 files.WriteFile("direct-page.html", @"
 <h1>Direct Page</h1>
@@ -134,6 +137,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
+
+        [Test]
+        public void Can_process_home_page()
+        {
+            var html = Config.ListeningOn.GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=root>
+
+<h1>The Home Page</h1>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
 
         [Test]
         public void Does_direct_page_with_layout()

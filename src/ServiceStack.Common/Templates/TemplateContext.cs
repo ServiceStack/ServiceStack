@@ -86,7 +86,8 @@ namespace ServiceStack.Templates
         {
             var santizePath = virtualPath.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            var lookupPath = !santizePath.EndsWith("/")
+            var isIndexPage = santizePath == string.Empty || santizePath.EndsWith("/");
+            var lookupPath = !isIndexPage
                 ? santizePath
                 : santizePath + IndexPage;
             
