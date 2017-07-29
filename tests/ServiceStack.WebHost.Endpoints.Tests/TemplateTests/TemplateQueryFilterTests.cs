@@ -1407,11 +1407,11 @@ null
             Assert.That(context.EvaluateTemplate(@"
 Product 789 exists: {{ products 
    | first: it.ProductId = 789 
-   | otherwise('false') }} 
+   | isNotNull }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
-Product 789 exists: false
+Product 789 exists: False
 ".NormalizeNewLines()));
         }
     

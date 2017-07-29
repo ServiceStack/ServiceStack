@@ -179,6 +179,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public bool isNull(object test) => test == null;
 
+        [HandleUnknownValue]
+        public bool isNotNull(object test) => test != null;
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
