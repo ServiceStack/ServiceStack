@@ -177,7 +177,7 @@ namespace ServiceStack.Templates
         public object truthy(object test, object returnIfTruthy) => !isFalsey(test) ? returnIfTruthy : null;
 
         [HandleUnknownValue]
-        public bool exists(object test) => test != null;
+        public bool isNull(object test) => test == null;
 
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);

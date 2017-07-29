@@ -1393,7 +1393,7 @@ A string starting with 'o': one
         { 
             Assert.That(context.EvaluateTemplate(@"
 {{ [] | assignTo: numbers }}
-{{ numbers | first | select: { it | otherwise('null') } }} 
+{{ numbers | first | otherwise('null') }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
@@ -1405,9 +1405,9 @@ null
         public void Linq62()
         { 
             Assert.That(context.EvaluateTemplate(@"
-{{ products 
+Product 789 exists: {{ products 
    | first: it.ProductId = 789 
-   | select: Product 789 exists: { it | otherwise('false') } }} 
+   | otherwise('false') }} 
 ").NormalizeNewLines(),
                 
                 Is.EqualTo(@"
