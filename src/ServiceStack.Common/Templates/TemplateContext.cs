@@ -24,8 +24,6 @@ namespace ServiceStack.Templates
         public string IndexPage { get; set; } = "index";
 
         public string DefaultLayoutPage { get; set; } = "_layout";
-        
-        public string LayoutVarName { get; set; } = "layout";
 
         public ITemplatePages Pages { get; set; }
 

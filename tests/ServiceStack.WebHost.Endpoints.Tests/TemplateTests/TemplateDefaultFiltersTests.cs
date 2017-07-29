@@ -657,5 +657,15 @@ inlinePageTitle = PAGE INLINE TITLE
 ".RemoveNewLines()));
         }
 
+        [Test]
+        public void Does_not_select_template_with_null_target()
+        {
+            var context = new TemplateContext().Init();
+
+            var result = context.EvaluateTemplate("{{ null | select: was called }}");
+            
+            Assert.That(result, Is.EqualTo(string.Empty));
+        }
+
     }
 }

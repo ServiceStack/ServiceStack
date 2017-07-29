@@ -176,6 +176,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public object truthy(object test, object returnIfTruthy) => !isFalsey(test) ? returnIfTruthy : null;
 
+        [HandleUnknownValue]
+        public bool exists(object test) => test != null;
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
@@ -970,6 +973,9 @@ namespace ServiceStack.Templates
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
         public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions) 
         {
+            if (target == null)
+                return;
+            
             var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
             var template = JsonTypeSerializer.Unescape(selectTemplate.ToString());
             var itemScope = scope.CreateScopedContext(template, scopedParams);
@@ -993,6 +999,9 @@ namespace ServiceStack.Templates
         public Task selectPartial(TemplateScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null); 
         public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams) 
         {
+            if (target == null)
+                return;
+            
             var page = await scope.Context.GetPage(pageName).Init();
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
 
@@ -1006,7 +1015,7 @@ namespace ServiceStack.Templates
                     await scope.WritePageAsync(page, pageParams);
                 }
             }
-            else if (target != null)
+            else
             {
                 scope.AddItemToScope(itemBinding, target);
                 await scope.WritePageAsync(page, pageParams);
