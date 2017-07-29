@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
@@ -103,7 +104,7 @@ namespace ServiceStack
         {            
             var result = new PageResult(page)
             {
-                Args = httpReq.GetRequestParams().ToObjectDictionary(),
+                Args = httpReq.GetUsefulTemplateParams(),
                 LayoutPage = layoutPage
             };
             await result.WriteToAsync(httpRes.OutputStream);
@@ -129,7 +130,7 @@ namespace ServiceStack
 
             var result = new PageResult(page)
             {
-                Args = httpReq.GetRequestParams().ToObjectDictionary(),
+                Args = httpReq.GetUsefulTemplateParams(),
                 LayoutPage = layoutPage
             };
             await result.WriteToAsync(httpRes.OutputStream);
@@ -265,6 +266,16 @@ namespace ServiceStack
 
     public static class TemplatePagesFeatureExtensions
     {
+        internal static Dictionary<string, object> GetUsefulTemplateParams(this IRequest request)
+        {
+            var reqParams = request.GetRequestParams();
+            reqParams["RawUrl"] = request.RawUrl;
+            reqParams["PathInfo"] = request.PathInfo;
+            reqParams["AbsoluteUri"] = request.AbsoluteUri;
+            reqParams["Verb"] = request.Verb;
+            return reqParams.ToObjectDictionary();
+        }
+        
         public static TemplateCodePage GetCodePage(this IRequest request, string virtualPath)
         {
             return HostContext.GetPlugin<TemplatePagesFeature>().GetCodePage(virtualPath).With(request);
