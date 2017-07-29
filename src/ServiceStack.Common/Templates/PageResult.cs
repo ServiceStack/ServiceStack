@@ -24,6 +24,8 @@ namespace ServiceStack.Templates
         public TemplateCodePage CodePage { get; set; }
 
         public TemplatePage LayoutPage { get; set; }
+        
+        public string Layout { get; set; }
 
         public object Model { get; set; }
 
@@ -214,6 +216,13 @@ namespace ServiceStack.Templates
                 await Page.Init();
             else
                 CodePage.Init();
+
+            if (Layout != null)
+            {
+                LayoutPage = Page != null
+                    ? Context.Pages.ResolveLayoutPage(Page, Layout)
+                    : Context.Pages.ResolveLayoutPage(CodePage, Layout);
+            }
 
             hasInit = true;
 

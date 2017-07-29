@@ -15,14 +15,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     public class RockstarsPage
     {
         public int Id { get; set; }
+        public string Layout { get; set; }
     } 
     
     public class MyTemplateServices : Service
     {
-        public ITemplatePages Pages { get; set; }
-
         public object Any(RockstarsPage request) =>
-            new PageResult(Pages.GetCodePage("rockstar-view").With(Request)) {
+            new PageResult(Request.GetCodePage("rockstar-view")) 
+            {
+                Layout = request.Layout,
                 Args =
                 {
                     ["rockstar"] = Db.SingleById<Rockstar>(request.Id)
@@ -87,6 +88,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 files.WriteFile("_layout.html", @"
 <html>
 <body id=root>
+{{ page }}
+</body>
+</html>
+");
+                files.WriteFile("custom_layout.html", @"
+<html>
+<body id=custom>
 {{ page }}
 </body>
 </html>
@@ -194,6 +202,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <body id=root>
 
 <h1>/rockstar-pages/1</h1>
+<h2>Jimi Hendrix</h2>
+<b>27</b>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_execute_RockstarPageView_with_custom_layout()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-pages", "1").AddQueryParam("layout", "custom_layout").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=custom>
+
+<h1>/rockstar-pages/1?layout=custom_layout</h1>
 <h2>Jimi Hendrix</h2>
 <b>27</b>
 

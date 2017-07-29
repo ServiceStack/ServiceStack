@@ -262,4 +262,24 @@ namespace ServiceStack
             using (authRepository as IDisposable) {}
         }
     }
+
+    public static class TemplatePagesFeatureExtensions
+    {
+        public static TemplateCodePage GetCodePage(this IRequest request, string virtualPath)
+        {
+            return HostContext.GetPlugin<TemplatePagesFeature>().GetCodePage(virtualPath).With(request);
+        }
+        
+        public static TemplatePage GetPage(this IRequest request, string virtualPath)
+        {
+            return HostContext.GetPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+        }
+        
+        public static TemplateCodePage With(this TemplateCodePage page, IRequest request)
+        {
+            if (page is IRequiresRequest requiresRequest)
+                requiresRequest.Request = request;
+            return page;
+        }
+    }
 }
