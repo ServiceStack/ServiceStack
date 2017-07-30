@@ -56,21 +56,6 @@ namespace ServiceStack.Host
 
         public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
         {
-            var requestLogger = AppHost.TryResolve<IRequestLogger>();
-            if (requestLogger != null && !req.Items.ContainsKey(Keywords.HasLogged))
-            {
-                try
-                {
-                    req.Items[Keywords.HasLogged] = true;
-                    var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
-                    requestLogger.Log(req, request, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error while logging req: " + request.Dump(), ex);
-                }
-            }
-
             //only call OnAfterExecute if no exception occured
             return response.IsErrorResponse() ? response : OnAfterExecute(req, response);
         }
@@ -112,18 +97,6 @@ namespace ServiceStack.Host
                                                       StrictModeCodes.ReturnsValueType);
                 }
 
-                var error = response as IHttpError;
-                if (error != null)
-                {
-                    var ex = (Exception) error;
-                    var result = HandleException(req, requestDto, ex);
-
-                    if (result == null)
-                        throw ex;
-
-                    return result;
-                }
-
                 var taskResponse = response as Task;
                 if (taskResponse != null)
                 {
@@ -139,7 +112,6 @@ namespace ServiceStack.Host
 
                             //Async Exception Handling
                             var result = HandleException(req, requestDto, ex);
-
                             if (result == null)
                                 return ex;
 
@@ -147,6 +119,8 @@ namespace ServiceStack.Host
                         }
 
                         response = task.GetResult();
+                        LogRequest(req, response);
+
                         if (ResponseFilters != null)
                         {
                             //Async Exec ResponseFilters
@@ -165,6 +139,22 @@ namespace ServiceStack.Host
 
                         return response;
                     });
+                }
+                else
+                {
+                    LogRequest(req, response);
+                }
+
+                var error = response as IHttpError;
+                if (error != null)
+                {
+                    var ex = (Exception) error;
+                    var result = HandleException(req, requestDto, ex);
+
+                    if (result == null)
+                        throw ex;
+
+                    return result;
                 }
 
                 //Sync Exec ResponseFilters
@@ -192,6 +182,24 @@ namespace ServiceStack.Host
                 if (result == null) throw;
 
                 return result;
+            }
+        }
+
+        public virtual void LogRequest(IRequest req, object response)
+        {
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
+            if (requestLogger != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                try
+                {
+                    req.Items[Keywords.HasLogged] = true;
+                    var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
+                    requestLogger.Log(req, req, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error while logging req: " + req.Dump(), ex);
+                }
             }
         }
 
