@@ -348,5 +348,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     Is.EqualTo("<ul><li>foo</li><li>bar</li><li>qux</li></ul>".RemoveAllWhitespace()));
             }
         }
+
+        [Test]
+        public void Can_access_partial_arguments()
+        {
+            var context = new TemplateContext().Init();
+            
+            context.VirtualFiles.WriteFile("component.html", @"{{ files | toList | select: { it.Key }: { it.Value }\n }}");
+            
+            context.VirtualFiles.WriteFile("page.html", "{{ 'component' | partial({ files: { 'a': 'foo', 'b': 'bar' } }) }}");
+            
+            var output = new PageResult(context.GetPage("page")).Result;
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+a: foo
+b: bar
+".NormalizeNewLines()));
+        }
+
     }
 }
