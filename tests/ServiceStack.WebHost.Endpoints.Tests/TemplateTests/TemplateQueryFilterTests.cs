@@ -1329,7 +1329,7 @@ cherry
 Bob's score: 
 {{ scoreRecords 
    | toDictionary: it.name
-   | map: it['Bob']
+   | get: Bob
    | select: { it['name'] } = { it['score'] }
 }} 
 ").NormalizeNewLines(),

@@ -955,6 +955,44 @@ namespace ServiceStack.Templates
         public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
         public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
         public bool equivalentTo(IEnumerable<object> target, IEnumerable<object> items) => target.EquivalentTo(items);
+
+        public object get(object target, object key)
+        {
+            if (target == null)
+                return null;
+            
+            if (target is IDictionary d)
+            {
+                if (d.Contains(key))
+                    return d[key];
+            }
+            else if (target is object[] a)
+            {
+                var index = key.ConvertTo<int>();
+                return index < a.Length
+                    ? a[index]
+                    : null;
+            }
+            else if (target is IList l)
+            {
+                var index = key.ConvertTo<int>();
+                return index < l.Count
+                    ? l[index]
+                    : null;
+            }
+            else if (target is IEnumerable e)
+            {
+                var index = key.ConvertTo<int>();
+                var i = 0;
+                foreach (var value in e)
+                {
+                    if (i++ == index)
+                        return value;
+                }
+            }
+            
+            throw new NotSupportedException($"'{nameof(get)}' expects a collection but received a '{target.GetType().Name}'");
+        }
         
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
         public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions) 
