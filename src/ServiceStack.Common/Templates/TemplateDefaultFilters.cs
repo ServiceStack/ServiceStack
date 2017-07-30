@@ -308,7 +308,7 @@ namespace ServiceStack.Templates
             {
                 var scopedParams = scope.GetParamsWithItemBindingOnly(nameof(let), null, scopeBindings, out string itemBinding);
 
-                var to = new List<Dictionary<string, object>>();
+                var to = new List<ScopeVars>();
                 var i = 0;
                 foreach (var item in objs)
                 {
@@ -316,7 +316,7 @@ namespace ServiceStack.Templates
                     scope.ScopedParams[itemBinding] = item;
 
                     // Copy over previous let bindings into new let bindings
-                    var itemBindings = new Dictionary<string, object>();
+                    var itemBindings = new ScopeVars();
                     if (item is object[] tuple)
                     {
                         foreach (var a in tuple)
@@ -997,7 +997,7 @@ namespace ServiceStack.Templates
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
         public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions) 
         {
-            var literal = scope.AssertExpression(nameof(groupBy), expression);
+            var literal = scope.AssertExpression(nameof(map), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
@@ -1010,6 +1010,53 @@ namespace ServiceStack.Templates
             
             var result = scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
             return result;
+        }
+
+        public object scopeVars(object target)
+        {
+            if (target == null)
+                return null;
+            
+            if (target is IDictionary<string, object> g)
+                return new ScopeVars(g);
+            
+            if (target is IDictionary d)
+            {
+                var to = new ScopeVars();
+                foreach (var key in d.Keys)
+                {
+                    to[key.ToString()] = d[key];
+                }
+                return to;
+            }
+
+            if (target is IEnumerable<KeyValuePair<string, object>> kvps)
+            {
+                var to = new ScopeVars();
+                foreach (var item in kvps)
+                {
+                    to[item.Key] = item.Value;
+                }
+                return to;
+            }
+
+            if (target is IEnumerable e)
+            {
+                var to = new List<object>();
+
+                foreach (var item in e)
+                {
+                    var toItem = item is IDictionary
+                        ? scopeVars(item)
+                        : item;
+
+                    to.Add(toItem);
+                }
+
+                return to;
+            }
+
+            throw new NotSupportedException($"'{nameof(scopeVars)}' expects a Dictionary but received a '{target.GetType().Name}'");
         }
         
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);

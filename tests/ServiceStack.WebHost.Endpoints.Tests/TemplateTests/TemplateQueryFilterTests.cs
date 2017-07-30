@@ -977,7 +977,7 @@ Condiments:
         { 
             context.VirtualFiles.WriteFile("month-orders.html", @"
 {{ year }}
-{{ monthGroups | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
+{{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
             
             Assert.That(context.EvaluateTemplate(@"
 {{ customers 
@@ -994,7 +994,7 @@ Condiments:
                         }'
                     )"" 
      })
-   | select: \n# { companyName | raw }{ yearGroups | selectPartial('month-orders') } 
+   | select: \n# { companyName | raw }{ yearGroups | scopeVars | selectPartial('month-orders') } 
 }}
 ").NormalizeNewLines(),
                 

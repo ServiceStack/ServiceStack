@@ -224,7 +224,7 @@ namespace ServiceStack.Templates
         {
             scope.ScopedParams[itemBinding] = item;
 
-            var explodeBindings = item as Dictionary<string, object>;
+            var explodeBindings = item as ScopeVars;
             if (explodeBindings != null)
             {
                 foreach (var entry in explodeBindings)
