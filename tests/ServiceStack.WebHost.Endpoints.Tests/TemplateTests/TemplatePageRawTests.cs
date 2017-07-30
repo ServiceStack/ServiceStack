@@ -825,6 +825,15 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(context.EvaluateTemplate(@"{{ ten | multiply(ten) | assignTo: result }}
                 10 x 10 = {{ result }}").Trim(), Is.EqualTo("10 x 10 = 100"));
         }
+
+        [Test]
+        public void Can_emit_var_fragment_example()
+        {
+            var context = new TemplateContext().Init();
+
+            var output = context.EvaluateTemplate("The time is now:{{ pass: now | dateFormat('HH:mm:ss') }}");
+            Assert.That(output, Is.EqualTo("The time is now:{{ now | dateFormat('HH:mm:ss') }}"));
+        }
     }
 
     public static class TestUtils

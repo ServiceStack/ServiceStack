@@ -225,6 +225,7 @@ namespace ServiceStack.Templates
         }
 
         public object echo(object value) => value;
+        public IRawString pass(string target) => ("{{ " + target + " }}").ToRawString();
 
         public IEnumerable join(IEnumerable<object> values) => join(values, ",");
         public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
