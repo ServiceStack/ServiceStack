@@ -45,14 +45,13 @@ namespace ServiceStack.Templates
 
         public string appSetting(string name) =>  Context.AppSettings.GetString(name);
 
-        public static double applyToNumbers(double lhs, double rhs, Func<double, double, double> fn) => fn(lhs, rhs);
-        public double add(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x + y);
-        public double sub(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x - y);
-        public double subtract(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x - y);
-        public double mul(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x * y);
-        public double multiply(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x * y);
-        public double div(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
-        public double divide(double lhs, double rhs) => applyToNumbers(lhs, rhs, (x, y) => x / y);
+        public double add(double lhs, double rhs) => lhs + rhs;
+        public double sub(double lhs, double rhs) => lhs - rhs;
+        public double subtract(double lhs, double rhs) => lhs - rhs;
+        public double mul(double lhs, double rhs) => lhs * rhs;
+        public double multiply(double lhs, double rhs) => lhs * rhs;
+        public double div(double lhs, double rhs) => lhs / rhs;
+        public double divide(double lhs, double rhs) => lhs / rhs;
 
         public long incr(long value) => value + 1; 
         public long increment(long value) => value + 1; 
