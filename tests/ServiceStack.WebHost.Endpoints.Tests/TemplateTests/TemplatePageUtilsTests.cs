@@ -596,6 +596,12 @@ products
             Assert.That(fragments.Count, Is.EqualTo(2));
             fragments = TemplatePageUtils.ParseTemplatePage("{{ do: assign('bar', 'foo') }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
+            fragments = TemplatePageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\n{{ bar }}");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+            fragments = TemplatePageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\nbar");
+            Assert.That(fragments.Count, Is.EqualTo(2));
+            var stringFragment = (PageStringFragment) fragments[1];
+            Assert.That(stringFragment.Value, Is.EqualTo("bar"));
         }
 
     }

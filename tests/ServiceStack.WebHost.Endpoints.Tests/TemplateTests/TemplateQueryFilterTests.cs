@@ -2018,7 +2018,6 @@ First run numbers <= 3:
 2
 0
 
-
 Second run numbers <= 3:
 1
 3
