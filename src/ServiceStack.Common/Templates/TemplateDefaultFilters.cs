@@ -13,13 +13,6 @@ namespace ServiceStack.Templates
 {
     // ReSharper disable InconsistentNaming
     
-    public interface IResultInstruction {}
-    public class IgnoreResult : IResultInstruction
-    {
-        internal static readonly IgnoreResult Value = new IgnoreResult();
-        private IgnoreResult(){}
-    }
-
     public class TemplateDefaultFilters : TemplateFilter
     {
         public static TemplateDefaultFilters Instance = new TemplateDefaultFilters();

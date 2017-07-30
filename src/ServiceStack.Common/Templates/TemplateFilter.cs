@@ -19,6 +19,13 @@ namespace ServiceStack.Templates
         ContextBlock,
     }
 
+    public interface IResultInstruction {}
+    public class IgnoreResult : IResultInstruction
+    {
+        internal static readonly IgnoreResult Value = new IgnoreResult();
+        private IgnoreResult(){}
+    }
+
     public class TemplateFilter
     {
         public TemplateContext Context { get; set; }
