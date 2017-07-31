@@ -849,6 +849,16 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             var output = context.EvaluateTemplate("The time is now:{{ pass: now | dateFormat('HH:mm:ss') }}");
             Assert.That(output, Is.EqualTo("The time is now:{{ now | dateFormat('HH:mm:ss') }}"));
         }
+
+        [Test]
+        public void Does_escape_quotes_in_strings()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate("{{ \"string \\\"in\\\" quotes\" | raw }}"), Is.EqualTo("string \"in\" quotes"));
+            Assert.That(context.EvaluateTemplate("{{ 'string \\'in\\' quotes' | raw }}"), Is.EqualTo("string 'in' quotes"));
+            Assert.That(context.EvaluateTemplate("{{ `string \\`in\\` quotes` | raw }}"), Is.EqualTo("string `in` quotes"));
+        }
     }
 
     public static class TestUtils

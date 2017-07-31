@@ -455,13 +455,33 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             if (firstChar == '\'' || firstChar == '"' || firstChar == '`')
             {
                 i = 1;
-                while (i < literal.Length && (literal.GetChar(i) != firstChar || literal.GetChar(i - 1) == '\\'))
+                var hasEscapeChar = false;
+                while (i < literal.Length && ((c = literal.GetChar(i)) != firstChar || literal.GetChar(i - 1) == '\\'))
+                {
                     i++;
+                    if (!hasEscapeChar)
+                        hasEscapeChar = c == '\\';
+                }
 
                 if (i >= literal.Length || literal.GetChar(i) != firstChar)
                     throw new ArgumentException($"Unterminated string literal: {literal}");
 
-                value = literal.Substring(1, i - 1);
+                var str = literal.Substring(1, i - 1);
+                value = str;
+
+                if (hasEscapeChar)
+                {
+                    var sb = StringBuilderCache.Allocate();
+                    for (var j = 0; j < str.Length; j++)
+                    {
+                        // strip the back-slash used to escape quote char in strings
+                        var ch = str[j];
+                        if (ch != '\\' || (j + 1 >= str.Length || str[j + 1] != firstChar))
+                            sb.Append(ch);
+                    }
+                    value = StringBuilderCache.ReturnAndFree(sb);
+                }
+                
                 return literal.Advance(i + 1);
             }
             if (firstChar >= '0' && firstChar <= '9' || (literal.Length >= 2 && (firstChar == '-' || firstChar == '+') && literal.GetChar(1).IsNumericChar()))
