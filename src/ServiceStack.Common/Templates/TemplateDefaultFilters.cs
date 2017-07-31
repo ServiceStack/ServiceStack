@@ -99,6 +99,9 @@ namespace ServiceStack.Templates
         public string substring(string text, int startIndex) => text.SafeSubstring(startIndex);
         public string substring(string text, int startIndex, int length) => text.SafeSubstring(startIndex, length);
 
+        public string substringWithElipsis(string text, int length) => text.SubstringWithElipsis(0, length);
+        public string substringWithElipsis(string text, int startIndex, int length) => text.SubstringWithElipsis(startIndex, length);
+
         public string trimStart(string text) => text?.TrimStart();
         public string trimEnd(string text) => text?.TrimEnd();
         public string trim(string text) => text?.Trim();
