@@ -107,10 +107,10 @@ namespace ServiceStack.Templates
         public string lastLeftPart(string text, string needle) => text.LastLeftPart(needle);
         public string lastRightPart(string text, string needle) => text.LastRightPart(needle);
 
-        public int indexOf(string text, string needle) => text.IndexOf(text, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
-        public int indexOf(string text, string needle, int startIndex) => text.IndexOf(text, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
-        public int lastIndexOf(string text, string needle) => text.LastIndexOf(text, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
-        public int lastIndexOf(string text, string needle, int startIndex) => text.LastIndexOf(text, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int indexOf(string text, string needle) => text.IndexOf(needle, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int indexOf(string text, string needle, int startIndex) => text.IndexOf(needle, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int lastIndexOf(string text, string needle) => text.LastIndexOf(needle, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int lastIndexOf(string text, string needle, int startIndex) => text.LastIndexOf(needle, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
 
         public int compareTo(string text, string other) => string.Compare(text, other, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
 
