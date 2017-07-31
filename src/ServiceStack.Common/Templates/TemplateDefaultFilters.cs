@@ -86,16 +86,16 @@ namespace ServiceStack.Templates
         public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
         public object dateTimeFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
 
-        public string humanize(string varName) => varName.SplitCamelCase().Replace('_',' ').ToTitleCase();
-        public string titleCase(string varName) => varName.ToTitleCase();
-        public string pascalCase(string varName) => varName.ToPascalCase();
-        public string camelCase(string varName) => varName.ToCamelCase();
+        public string humanize(string text) => text.SplitCamelCase().Replace('_',' ').ToTitleCase();
+        public string titleCase(string text) => text.ToTitleCase();
+        public string pascalCase(string text) => text.ToPascalCase();
+        public string camelCase(string text) => text.ToCamelCase();
 
-        public string lower(string varName) => varName?.ToLower();
-        public string upper(string varName) => varName?.ToUpper();
+        public string lower(string text) => text?.ToLower();
+        public string upper(string text) => text?.ToUpper();
 
-        public string substring(string varName, int startIndex) => varName.SafeSubstring(startIndex);
-        public string substring(string varName, int startIndex, int length) => varName.SafeSubstring(startIndex, length);
+        public string substring(string text, int startIndex) => text.SafeSubstring(startIndex);
+        public string substring(string text, int startIndex, int length) => text.SafeSubstring(startIndex, length);
 
         public string trimStart(string text) => text?.TrimStart();
         public string trimEnd(string text) => text?.TrimEnd();

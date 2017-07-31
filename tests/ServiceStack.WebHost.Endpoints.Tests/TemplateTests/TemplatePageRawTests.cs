@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI;
 using NUnit.Framework;
+using ServiceStack.Caching;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
@@ -244,6 +245,9 @@ Brackets in Layout < & >
             public string echo(string text) => $"{text} {text}";
             public double squared(double value) => value * value;
             public string greetArg(string key) => $"Hello {Context.Args[key]}";
+            
+            public ICacheClient Cache { get; set; }
+            public string fromCache(string key) => Cache.Get<string>(key);
         }
 
         [Test]
@@ -254,26 +258,32 @@ Brackets in Layout < & >
                 Args =
                 {
                     ["contextArg"] = "foo"
-                },                
+                },
+                TemplateFilters = { new MyFilter() }
             }.Init();
             
-            var output = new PageResult(context.OneTimePage("<h1>{{ 'hello' | echo }}</h1>"))
+            var output = context.EvaluateTemplate("<p>{{ 'contextArg' | greetArg }}</p>"); 
+            Assert.That(output, Is.EqualTo("<p>Hello foo</p>"));
+
+            output = context.EvaluateTemplate("<p>{{ 10 | squared }}</p>");
+            Assert.That(output, Is.EqualTo("<p>100</p>"));
+            
+            output = new PageResult(context.OneTimePage("<p>{{ 'hello' | echo }}</p>"))
             {
                 TemplateFilters = { new MyFilter() }
             }.Result;
-            Assert.That(output, Is.EqualTo("<h1>hello hello</h1>"));
+            Assert.That(output, Is.EqualTo("<p>hello hello</p>"));
 
-            output = new PageResult(context.OneTimePage("<h1>{{ 10 | squared }}</h1>"))
+            context = new TemplateContext
             {
-                TemplateFilters = {new MyFilter()}
-            }.Result;
-            Assert.That(output, Is.EqualTo("<h1>100</h1>"));
-
-            output = new PageResult(context.OneTimePage("<h1>{{ 'contextArg' | greetArg }}</h1>"))
-            {
-                TemplateFilters = {new MyFilter()}
-            }.Result;
-            Assert.That(output, Is.EqualTo("<h1>Hello foo</h1>"));
+                ScanTypes = { typeof(MyFilter) },
+            };
+            context.Container.AddSingleton<ICacheClient>(() => new MemoryCacheClient());
+            context.Container.Resolve<ICacheClient>().Set("key", "foo");
+            context.Init();
+            
+            output = context.EvaluateTemplate("<p>{{ 'key' | fromCache }}</p>");
+            Assert.That(output, Is.EqualTo("<p>foo</p>"));
         }
 
         [Test]
