@@ -27,6 +27,7 @@ namespace ServiceStack.Templates
         public string spaces(int count) => padLeft("", count, ' ');
         public string newLine() => Context.Args[TemplateConstants.DefaultNewLine] as string;
         public string newLines(int count) => repeat(newLine(), count);
+        public string newLine(string target) => target + newLine();
 
         public IRawString raw(object value)
         {
@@ -63,9 +64,6 @@ namespace ServiceStack.Templates
         public long decrementBy(long value, long by) => value - by;
         public long mod(long value, long divisor) => 
             value % divisor; 
-
-        public bool isEven(int value) => value % 2 == 0;
-        public bool isOdd(int value) => !isEven(value);
 
         public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
         public string currency(decimal decimalValue, string culture)
@@ -119,9 +117,6 @@ namespace ServiceStack.Templates
 
         public string replace(string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
         
-        public string[] split(string text, string seperator) => text.Split(new[]{ seperator }, StringSplitOptions.RemoveEmptyEntries);
-        public string[] splitOnFirst(string text, string needle) => text.SplitOnFirst(needle);
-        public string[] splitOnLast(string text, string needle) => text.SplitOnLast(needle);
 
         public string trimStart(string text) => text?.TrimStart();
         public string trimEnd(string text) => text?.TrimEnd();
@@ -132,6 +127,24 @@ namespace ServiceStack.Templates
         public string padRight(string text, int totalWidth) => text?.PadRight(AssertWithinMaxQuota(totalWidth));
         public string padRight(string text, int totalWidth, char padChar) => text?.PadRight(AssertWithinMaxQuota(totalWidth), padChar);
 
+        public string[] splitOnFirst(string text, string needle) => text.SplitOnFirst(needle);
+        public string[] splitOnLast(string text, string needle) => text.SplitOnLast(needle);
+        public string[] split(string stringList) => split(stringList, ',');
+        public string[] split(string stringList, char delimiter) => stringList.Split(delimiter);
+
+        public string append(string target, string suffix) => target + suffix;
+        public string appendLine(string target) => target + newLine();
+
+        public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
+        public string addPaths(string target, IEnumerable pathsToAppend) => 
+            target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
+
+        public string addQueryString(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
+        
+        public string addHashParams(string url, object urlParams) => 
+            urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
+        
         public string repeating(int times, string text) => repeat(text, AssertWithinMaxQuota(times));
         public string repeat(string text, int times)
         {
@@ -154,6 +167,13 @@ namespace ServiceStack.Templates
             }
             return to;
         }
+
+        public object times(int count) => AssertWithinMaxQuota(count).Times().ToList();
+        public object range(int count) => Enumerable.Range(0, AssertWithinMaxQuota(count));
+        public object range(int start, int count) => Enumerable.Range(start, AssertWithinMaxQuota(count));
+
+        public bool isEven(int value) => value % 2 == 0;
+        public bool isOdd(int value) => !isEven(value);
         
         public static bool isTrue(object target) => target is bool b && b;
         public static bool isFalsey(object target)
@@ -250,23 +270,6 @@ namespace ServiceStack.Templates
         public IEnumerable join(IEnumerable<object> values) => join(values, ",");
         public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
 
-        public string[] split(string stringList) => split(stringList, ',');
-        public string[] split(string stringList, char delimiter) => stringList.Split(delimiter);
-
-        public string append(string target, string suffix) => target + suffix;
-        public string appendLine(string target) => target + newLine();
-        public string newLine(string target) => target + newLine();
-
-        public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
-        public string addPaths(string target, IEnumerable pathsToAppend) => 
-            target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
-
-        public string addQueryString(string url, object urlParams) => 
-            urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
-        
-        public string addHashParams(string url, object urlParams) => 
-            urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
-        
         public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
         public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) => 
@@ -510,10 +513,6 @@ namespace ServiceStack.Templates
 
             return value;
         }
-
-        public object times(int count) => AssertWithinMaxQuota(count).Times().ToList();
-        public object range(int count) => Enumerable.Range(0, AssertWithinMaxQuota(count));
-        public object range(int start, int count) => Enumerable.Range(start, AssertWithinMaxQuota(count));
 
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression) => toDictionary(scope, target, expression, null);
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
