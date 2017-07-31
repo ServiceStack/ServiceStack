@@ -113,6 +113,7 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultIndent] = "\t";
             Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
             Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
+            Args[TemplateConstants.DefaultStringComparison] = StringComparison.Ordinal;
         }
 
         public bool HasInit { get; private set; }

@@ -9,6 +9,7 @@ namespace ServiceStack.Templates
         public const string DefaultIndent = nameof(DefaultIndent);
         public const string DefaultNewLine = nameof(DefaultNewLine);
         public const string DefaultJsConfig = nameof(DefaultJsConfig);
+        public const string DefaultStringComparison = nameof(DefaultStringComparison);
         public const string MaxQuota = nameof(MaxQuota);
         public const string HtmlEncode = "htmlencode";
         public const string Model = "model";

@@ -102,6 +102,27 @@ namespace ServiceStack.Templates
         public string substringWithElipsis(string text, int length) => text.SubstringWithElipsis(0, length);
         public string substringWithElipsis(string text, int startIndex, int length) => text.SubstringWithElipsis(startIndex, length);
 
+        public string leftPart(string text, string needle) => text.LeftPart(needle);
+        public string rightPart(string text, string needle) => text.RightPart(needle);
+        public string lastLeftPart(string text, string needle) => text.LastLeftPart(needle);
+        public string lastRightPart(string text, string needle) => text.LastRightPart(needle);
+
+        public int indexOf(string text, string needle) => text.IndexOf(text, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int indexOf(string text, string needle, int startIndex) => text.IndexOf(text, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int lastIndexOf(string text, string needle) => text.LastIndexOf(text, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+        public int lastIndexOf(string text, string needle, int startIndex) => text.LastIndexOf(text, startIndex, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+
+        public int compareTo(string text, string other) => string.Compare(text, other, (StringComparison)Context.Args[TemplateConstants.DefaultStringComparison]);
+
+        public bool startsWith(string text, string needle) => text?.StartsWith(needle) == true;
+        public bool endsWith(string text, string needle) => text?.EndsWith(needle) == true;
+
+        public string replace(string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
+        
+        public string[] split(string text, string seperator) => text.Split(new[]{ seperator }, StringSplitOptions.RemoveEmptyEntries);
+        public string[] splitOnFirst(string text, string needle) => text.SplitOnFirst(needle);
+        public string[] splitOnLast(string text, string needle) => text.SplitOnLast(needle);
+
         public string trimStart(string text) => text?.TrimStart();
         public string trimEnd(string text) => text?.TrimEnd();
         public string trim(string text) => text?.Trim();
