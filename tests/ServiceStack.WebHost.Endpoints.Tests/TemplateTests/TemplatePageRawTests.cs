@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web.UI;
@@ -859,6 +860,26 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(context.EvaluateTemplate("{{ 'string \\'in\\' quotes' | raw }}"), Is.EqualTo("string 'in' quotes"));
             Assert.That(context.EvaluateTemplate("{{ `string \\`in\\` quotes` | raw }}"), Is.EqualTo("string `in` quotes"));
         }
+
+        [Test]
+        public void Does_not_exceed_MaxQuota()
+        {
+            //times / range / itemsOf / repeat / repeating / padLeft / padRight
+            
+            var context = new TemplateContext().Init();
+
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | times }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ range(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ range(1,10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | itemsOf(1) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | repeat(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | repeating('text') }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padLeft(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padLeft(10001,'.') }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padRight(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padRight(10001,'.') }}"));
+        }
+
     }
 
     public static class TestUtils

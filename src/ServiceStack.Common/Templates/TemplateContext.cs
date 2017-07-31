@@ -102,8 +102,9 @@ namespace ServiceStack.Templates
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
-            FilterTransformers["htmlencode"] = HtmlPageFormat.HtmlEncodeTransformer;
+            FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
 
+            Args[TemplateConstants.MaxQuota] = 10000;
             Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";

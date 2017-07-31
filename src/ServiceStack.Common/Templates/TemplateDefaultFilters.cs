@@ -101,14 +101,15 @@ namespace ServiceStack.Templates
         public string trimEnd(string text) => text?.TrimEnd();
         public string trim(string text) => text?.Trim();
 
-        public string padLeft(string text, int totalWidth) => text?.PadLeft(totalWidth);
-        public string padLeft(string text, int totalWidth, char padChar) => text?.PadLeft(totalWidth, padChar);
-        public string padRight(string text, int totalWidth) => text?.PadRight(totalWidth);
-        public string padRight(string text, int totalWidth, char padChar) => text?.PadRight(totalWidth, padChar);
+        public string padLeft(string text, int totalWidth) => text?.PadLeft(AssertWithinMaxQuota(totalWidth));
+        public string padLeft(string text, int totalWidth, char padChar) => text?.PadLeft(AssertWithinMaxQuota(totalWidth), padChar);
+        public string padRight(string text, int totalWidth) => text?.PadRight(AssertWithinMaxQuota(totalWidth));
+        public string padRight(string text, int totalWidth, char padChar) => text?.PadRight(AssertWithinMaxQuota(totalWidth), padChar);
 
-        public string repeating(int times, string text) => repeat(text, times);
+        public string repeating(int times, string text) => repeat(text, AssertWithinMaxQuota(times));
         public string repeat(string text, int times)
         {
+            AssertWithinMaxQuota(times);
             var sb = StringBuilderCache.Allocate();
             for (var i = 0; i < times; i++)
             {
@@ -119,6 +120,7 @@ namespace ServiceStack.Templates
 
         public List<object> itemsOf(int count, object target)
         {
+            AssertWithinMaxQuota(count);
             var to = new List<object>();
             for (var i = 0; i < count; i++)
             {
@@ -474,9 +476,18 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
         }
 
-        public object times(int count) => count.Times().ToList();
-        public object range(int count) => Enumerable.Range(0, count);
-        public object range(int start, int count) => Enumerable.Range(start, count);
+        public int AssertWithinMaxQuota(int value)
+        {
+            var maxQuota = (int) Context.Args[TemplateConstants.MaxQuota]; 
+            if (value > maxQuota)
+                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}");
+
+            return value;
+        }
+
+        public object times(int count) => AssertWithinMaxQuota(count).Times().ToList();
+        public object range(int count) => Enumerable.Range(0, AssertWithinMaxQuota(count));
+        public object range(int start, int count) => Enumerable.Range(start, AssertWithinMaxQuota(count));
 
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression) => toDictionary(scope, target, expression, null);
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
