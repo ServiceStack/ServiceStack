@@ -403,6 +403,32 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         }
 
         [Test]
+        public void Does_default_time_format()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["time"] = new TimeSpan(1,2,3,4,5),
+                    ["date"] = new DateTime(2001,2,3,4,5,6,7),
+                }
+            }.Init();
+
+            var result = context.EvaluateTemplate("Time: {{ time | timeFormat }}");
+            Assert.That(result, Is.EqualTo("Time: 2:03:04"));
+            
+            result = context.EvaluateTemplate("Time: {{ time | timeFormat('g') }}");
+            Assert.That(result, Is.EqualTo("Time: 1:2:03:04.005"));
+            
+            result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('g') }}");
+            Assert.That(result, Is.EqualTo("Time: 4:05:06.007"));
+
+            result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('h\\:mm\\:ss') }}");
+            Assert.That(result, Is.EqualTo("Time: 4:05:06"));
+        }
+
+
+        [Test]
         public async Task Does_default_filter_dateTimeFormat()
         {
             var context = CreateContext().Init();

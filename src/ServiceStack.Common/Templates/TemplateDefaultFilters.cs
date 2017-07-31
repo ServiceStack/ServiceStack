@@ -85,6 +85,8 @@ namespace ServiceStack.Templates
         public object dateFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
         public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
         public object dateTimeFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
+        public object timeFormat(TimeSpan timeValue) =>  timeValue.ToString((string)Context.Args[TemplateConstants.DefaultTimeFormat]);
+        public object timeFormat(TimeSpan timeValue, string format) =>  timeValue.ToString(format);
 
         public string humanize(string text) => text.SplitCamelCase().Replace('_',' ').ToTitleCase();
         public string titleCase(string text) => text.ToTitleCase();

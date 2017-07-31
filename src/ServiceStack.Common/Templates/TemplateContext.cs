@@ -108,6 +108,7 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
+            Args[TemplateConstants.DefaultTimeFormat] = "h\\:mm\\:ss";
             Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
             Args[TemplateConstants.DefaultIndent] = "\t";
             Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
