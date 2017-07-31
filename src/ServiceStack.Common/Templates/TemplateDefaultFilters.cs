@@ -490,6 +490,8 @@ namespace ServiceStack.Templates
             return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
         }
 
+        public IRawString typeName(object target) => (target?.GetType().Name ?? "null").ToRawString();
+
         public IEnumerable of(TemplateScopeContext scope, IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(of));
