@@ -880,6 +880,24 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padRight(10001,'.') }}"));
         }
 
+        [Test]
+        public void Can_exceute_filters_in_let_binding()
+        {
+            var context = new TemplateContext().Init();
+
+            var output = context.EvaluateTemplate(
+            @"{{ [{name:'Alice',score:50},{name:'Bob',score:40}] | assignTo:scoreRecords }}
+{{ scoreRecords 
+   | let({ name: `it['name']`, score: `it['score']`, i:`incr(index)` })
+   | select: {i}) {name} = {score}\n }}");
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+1) Alice = 50
+2) Bob = 40
+".NormalizeNewLines()));
+        }
+
+
     }
 
     public static class TestUtils

@@ -357,7 +357,9 @@ namespace ServiceStack.Templates
                     foreach (var entry in scopedParams)
                     {
                         var bindTo = entry.Key;
-                        var bindToLiteral = (string)entry.Value;
+                        if (!(entry.Value is string bindToLiteral))
+                            throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
+                        
                         bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
                         var bindValue = scope.Evaluate(value, binding);
                         scope.ScopedParams[bindTo] = bindValue;
