@@ -176,7 +176,7 @@ namespace ServiceStack.Templates
         public bool isOdd(int value) => !isEven(value);
         
         public static bool isTrue(object target) => target is bool b && b;
-        public static bool isFalsey(object target)
+        public static bool isFalsy(object target)
         {
             if (target == null || target == JsNull.Value)
                 return true;
@@ -205,16 +205,16 @@ namespace ServiceStack.Templates
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         [HandleUnknownValue]
-        public object ifFalsey(object returnTarget, object test) => isFalsey(test) ? returnTarget : null;
+        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
 
         [HandleUnknownValue]
-        public object ifTruthy(object returnTarget, object test) => !isFalsey(test) ? returnTarget : null;
+        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
         
         [HandleUnknownValue]
-        public object falsy(object test, object returnIfFalsy) => isFalsey(test) ? returnIfFalsy : null;
+        public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
 
         [HandleUnknownValue]
-        public object truthy(object test, object returnIfTruthy) => !isFalsey(test) ? returnIfTruthy : null;
+        public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
         [HandleUnknownValue]
         public bool isNull(object test) => test == null;
