@@ -764,15 +764,15 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         {
             var context = new TemplateContext().Init();
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifFalsey(undefined) }}")).Result, Is.EqualTo("undefined value"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifFalsey(null) }}")).Result, Is.EqualTo("null value"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | ifFalsey('') }}")).Result, Is.EqualTo("empty string"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | ifFalsey(false) }}")).Result, Is.EqualTo("false value"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | ifFalsey(0) }}")).Result, Is.EqualTo("0"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifFalsy(undefined) }}")).Result, Is.EqualTo("undefined value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifFalsy(null) }}")).Result, Is.EqualTo("null value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'empty string'    | ifFalsy('') }}")).Result, Is.EqualTo("empty string"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'false value'     | ifFalsy(false) }}")).Result, Is.EqualTo("false value"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 0                 | ifFalsy(0) }}")).Result, Is.EqualTo("0"));
 
-            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | ifFalsey(true) }}")).Result, Is.EqualTo(""));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | ifFalsey(' ') }}")).Result, Is.EqualTo(""));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | ifFalsey(1) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'true value'      | ifFalsy(true) }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'whitespace'      | ifFalsy(' ') }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'one value'       | ifFalsy(1) }}")).Result, Is.EqualTo(""));
             
             Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifTruthy(undefined) }}")).Result, Is.EqualTo(""));
             Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifTruthy(null) }}")).Result, Is.EqualTo(""));
