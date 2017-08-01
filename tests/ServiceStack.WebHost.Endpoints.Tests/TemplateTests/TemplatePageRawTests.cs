@@ -897,6 +897,25 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Can_use_map_to_transform_lists_into_dictionaries()
+        {
+            var context = new TemplateContext().Init();
+
+            var output = context.EvaluateTemplate(@"{{ [[1,-1],[2,-2],[3,-3]] | assignTo:coords }}
+{{ coords 
+   | map('{ x: it[0], y: it[1] }')
+   | scopeVars
+   | select: {index | incr}. ({x}, {y})\n
+}}");
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+1. (1, -1)
+2. (2, -2)
+3. (3, -3)
+".NormalizeNewLines()));
+        }
+
 
     }
 
