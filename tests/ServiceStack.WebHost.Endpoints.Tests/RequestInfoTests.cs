@@ -29,6 +29,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => appHost.Dispose();
+
         [Test]
         public void Does_return_expected_request_info()
         {
