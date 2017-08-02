@@ -124,6 +124,23 @@ namespace Mvc.Core.Tests
         }
     }
 
+    [Route("/req-info")]
+    public class GetRequestInfo { }
+
+    public class RequestInfoServices : Service
+    {
+        public object Any(GetRequestInfo request)
+        {
+            return new RequestInfoResponse
+            {
+                HttpMethod = Request.Verb,
+                RawUrl = Request.RawUrl,
+                AbsoluteUri = Request.AbsoluteUri,
+                PathInfo = Request.PathInfo,
+            };
+        }
+    }
+
     class AppHost : AppHostBase
     {
         public AppHost() : base("ServiceStack + MVC Integration", typeof(MyServices).GetAssembly()) {}
@@ -132,6 +149,7 @@ namespace Mvc.Core.Tests
         {
             SetConfig(new HostConfig
             {
+                DebugMode = true,
                 HandlerFactoryPath = "api"
             });
 

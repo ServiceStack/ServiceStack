@@ -208,7 +208,7 @@ namespace ServiceStack.Host.NetCore
 
         public MemoryStream BufferedStream { get; set; }
 
-        public string RawUrl => request.GetDisplayUrl();
+        public string RawUrl => request.Path.Value + request.QueryString;
 
         public string AbsoluteUri => request.GetDisplayUrl();
 
