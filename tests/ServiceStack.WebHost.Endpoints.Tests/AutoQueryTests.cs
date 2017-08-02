@@ -740,8 +740,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             get { return AutoQueryAppHost.SeedPagingTest.ToList(); }
         }
 
-        [NUnit.Framework.Ignore("Debug Run")]
-        [Test]
+//        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
 #if NET45

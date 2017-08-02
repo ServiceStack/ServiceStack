@@ -339,7 +339,7 @@ namespace ServiceStack.Server.Tests
             }
         }
 
-        [Ignore("Adhoc Integration Test"), Test]
+//        [Ignore("Adhoc Integration Test"), Test]
         public async Task Try_connect_to_ServerEvents_over_proxy()
         {
             ServerEventsClient client = null;
@@ -370,8 +370,7 @@ namespace ServiceStack.Server.Tests
             Thread.Sleep(TimeSpan.FromSeconds(120));
         }
 
-        [Explicit("Ephemeral external host + state dependency")]
-        [Test]
+//        [Ignore("Ephemeral external host + state dependency"), Test]
         public void Can_proxy_chunked_encoding_responses()
         {
             var html = ListeningOn.CombineWith("imgur-netcore").GetStringFromUrl(accept:MimeTypes.Html);
