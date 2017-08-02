@@ -106,6 +106,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </body>
 </html>
 ");
+                files.WriteFile("alt-layout.html", @"
+<html>
+<body id=alt-layout>
+{{ page }}
+</body>
+</html>
+");
+                files.WriteFile("dir/alt-layout.html", @"
+<html>
+<body id=dir-alt-layout>
+{{ page }}
+</body>
+</html>
+");
+                files.WriteFile("alt/alt-layout.html", @"
+<html>
+<body id=alt-alt-layout>
+{{ page }}
+</body>
+</html>
+");
+                files.WriteFile("dir/dir-page.html", @"
+<h1>Dir Page</h1>
+");
+
+                files.WriteFile("dir/alt-dir-page.html", @"<!--
+layout: alt-layout
+-->
+
+<h1>Alt Dir Page</h1>
+");
+                
+                files.WriteFile("dir/alt-layout-alt-dir-page.html", @"<!--
+layout: alt/alt-layout
+-->
+
+<h1>Alt Layout Alt Dir Page</h1>
+");
+
                 files.WriteFile("index.html", @"
 <h1>The Home Page</h1>
 ");
@@ -162,6 +201,49 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <body id=root>
 
 <h1>Direct Page</h1>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_return_dir_page_with_dir_layout_by_default()
+        {
+            var html = Config.ListeningOn.AppendPath("dir", "dir-page").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=dir>
+
+<h1>Dir Page</h1>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_return_alt_dir_page_with_closest_alt_layout()
+        {
+            var html = Config.ListeningOn.AppendPath("dir", "alt-dir-page").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=dir-alt-layout>
+<h1>Alt Dir Page</h1>
+
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_request_alt_layout_within_alt_subdir()
+        {
+            var html = Config.ListeningOn.AppendPath("dir", "alt-layout-alt-dir-page").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=alt-alt-layout>
+<h1>Alt Layout Alt Dir Page</h1>
 
 </body>
 </html>
