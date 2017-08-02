@@ -734,7 +734,15 @@ namespace ServiceStack
             {
                 EnsureSynchronizationContext();
                 try {
-                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
+                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl(requestFilter: req =>
+                    {
+                        var hold = httpReq;
+                        if (hold != null)
+                            req.CookieContainer = hold.CookieContainer;
+
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Unregistering...");
+                    });
                 } catch (Exception) {}
             }
 
