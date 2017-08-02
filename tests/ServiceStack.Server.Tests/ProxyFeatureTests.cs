@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -42,6 +43,11 @@ namespace ServiceStack.Server.Tests
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/imgur-netcore"),
                     resolveUrl: req => "http://imgur.netcore.io" + req.RawUrl.Replace("/imgur-netcore", "/"))
+                );
+
+                Plugins.Add(new ProxyFeature(
+                    matchingRequests: req => req.PathInfo.StartsWith("/chat"),
+                    resolveUrl: req => "http://chat.servicestack.net" + req.RawUrl.Replace("/chat", "/"))
                 );
 
                 //Allow this proxy server to issue ss-id/ss-pid Session Cookies
@@ -331,6 +337,38 @@ namespace ServiceStack.Server.Tests
                 Assert.That(status.ErrorCode, Is.EqualTo("Unauthorized"));
                 Assert.That(status.Message, Is.EqualTo("Invalid UserName or Password"));
             }
+        }
+
+        [Explicit]
+        [Test]
+        public async Task Try_connect_to_ServerEvents_over_proxy()
+        {
+            ServerEventsClient client = null;
+            var proxyBaseUrl = ListeningOn.CombineWith("chat");
+            client = new ServerEventsClient(proxyBaseUrl)
+            {
+                OnConnect = async c =>
+                {
+                    var proxyUrl = ListeningOn + c.HeartbeatUrl.Replace("http://chat.servicestack.net", "chat");
+                    client.ConnectionInfo.HeartbeatIntervalMs = 1000;
+                    client.ConnectionInfo.HeartbeatUrl = proxyUrl;
+                    var response = await proxyUrl.GetStringFromUrlAsync();
+                    Assert.That(response, Is.Empty);
+                },
+                OnHeartbeat = () =>
+                {
+                    "Received Heartbeat".Print();
+                },
+                OnException = ex =>
+                {
+                    ex.Message.Print();
+                }
+            };
+
+            client.Start();
+            await client.Connect();
+            
+            Thread.Sleep(TimeSpan.FromSeconds(120));
         }
 
         [Explicit("Ephemeral external host + state dependency")]
