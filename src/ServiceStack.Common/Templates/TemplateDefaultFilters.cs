@@ -395,10 +395,10 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        public Task assignTo(TemplateScopeContext scope, object value, string argName) //from filter
+        public object assignTo(TemplateScopeContext scope, object value, string argName) //from filter
         {
             scope.ScopedParams[argName] = value;
-            return TypeConstants.EmptyTask;
+            return IgnoreResult.Value;
         }
 
         public Task assignTo(TemplateScopeContext scope, string argName) //from context filter

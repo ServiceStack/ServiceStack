@@ -68,6 +68,8 @@ namespace ServiceStack.Templates
         
         public bool RenderExpressionExceptions { get; set; }
 
+        public Func<PageVariableFragment, byte[]> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
+
         public TemplatePage GetPage(string virtualPath)
         {
             var page = Pages.GetPage(virtualPath);
@@ -214,6 +216,8 @@ namespace ServiceStack.Templates
 
             return fn;
         }
+
+        protected static byte[] DefaultOnUnhandledExpression(PageVariableFragment var) => var.OriginalTextBytes;
 
         public void Dispose()
         {

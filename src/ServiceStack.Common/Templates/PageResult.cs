@@ -328,16 +328,22 @@ namespace ServiceStack.Templates
             return page.WriteAsync(scope);
         }
 
-        private async Task WriteVarAsync(TemplateScopeContext scopeContext, PageVariableFragment var, CancellationToken token)
+        private async Task WriteVarAsync(TemplateScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
-            var value = await EvaluateAsync(var, scopeContext, token);
+            var value = await EvaluateAsync(var, scope, token);
             if (value != IgnoreResult.Value)
             {
-                var bytes = value != null
-                    ? Format.EncodeValue(value).ToUtf8Bytes()
-                    : var.OriginalTextBytes;
-
-                await scopeContext.OutputStream.WriteAsync(bytes, token);
+                if (value != null)
+                {
+                    var bytes = Format.EncodeValue(value).ToUtf8Bytes();
+                    await scope.OutputStream.WriteAsync(bytes, token);
+                }
+                else
+                {
+                    var bytes = Context.OnUnhandledExpression(var);
+                    if (bytes != null && bytes.Length > 0)
+                        await scope.OutputStream.WriteAsync(bytes, token);
+                }
             }
         }
 
@@ -674,7 +680,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scopeContext, PageVariableFragment var=null)
+        private object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope, PageVariableFragment var=null)
         {
             object outValue;
             JsBinding binding;
@@ -695,12 +701,12 @@ namespace ServiceStack.Templates
             object value = null;
             if (binding is JsExpression expr)
             {
-                value = EvaluateToken(scopeContext, expr);
+                value = EvaluateToken(scope, expr);
             }
             else
             {
                 value = binding != null 
-                    ? GetValue(binding.BindingString, scopeContext) 
+                    ? GetValue(binding.BindingString, scope) 
                     : outValue;
             }
 
@@ -710,7 +716,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object EvaluateMethod(JsExpression expr, TemplateScopeContext scopeContext, PageVariableFragment var=null)
+        private object EvaluateMethod(JsExpression expr, TemplateScopeContext scope, PageVariableFragment var=null)
         {
             if (expr.Name.IsNullOrEmpty())
                 throw new ArgumentNullException("expr.Name");
@@ -722,7 +728,7 @@ namespace ServiceStack.Templates
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scopeContext, var);
+                    var varValue = EvaluateBindingExpression(arg, scope, var);
                     args[i] = varValue;
                 }
 
@@ -734,11 +740,11 @@ namespace ServiceStack.Templates
             if (invoker != null)
             {
                 var args = new object[expr.Args.Count + 1];
-                args[0] = scopeContext;
+                args[0] = scope;
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scopeContext, var);
+                    var varValue = EvaluateBindingExpression(arg, scope, var);
                     args[i + 1] = varValue;
                 }
 
@@ -822,7 +828,7 @@ namespace ServiceStack.Templates
 
         private static readonly char[] VarDelimiters = { '.', '[', ' ' };
 
-        public object EvaluateBinding(string expr, TemplateScopeContext scopeContext = default(TemplateScopeContext))
+        public object EvaluateBinding(string expr, TemplateScopeContext scope = default(TemplateScopeContext))
         {
             if (string.IsNullOrWhiteSpace(expr))
                 return null;
@@ -832,11 +838,11 @@ namespace ServiceStack.Templates
             expr = expr.Trim();
             var pos = expr.IndexOfAny(VarDelimiters, 0);
             if (pos == -1)
-                return GetValue(expr, scopeContext);
+                return GetValue(expr, scope);
             
             var target = expr.Substring(0, pos);
 
-            var targetValue = GetValue(target, scopeContext);
+            var targetValue = GetValue(target, scope);
             if (targetValue == null)
                 return null;
 
@@ -847,7 +853,7 @@ namespace ServiceStack.Templates
 
             try
             {
-                var value = fn(scopeContext, targetValue);
+                var value = fn(scope, targetValue);
                 return value;
             }
             catch (Exception ex)

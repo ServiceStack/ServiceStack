@@ -916,6 +916,16 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Can_control_whats_emitted_on_Unhandled_expression()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo("{{ unknownArg | lower }}"));
+
+            context.OnUnhandledExpression = var => null;
+            Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo(""));
+        }
 
     }
 
