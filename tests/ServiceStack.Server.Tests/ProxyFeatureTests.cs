@@ -339,8 +339,7 @@ namespace ServiceStack.Server.Tests
             }
         }
 
-        [Explicit]
-        [Test]
+        [Ignore("Adhoc Integration Test"), Test]
         public async Task Try_connect_to_ServerEvents_over_proxy()
         {
             ServerEventsClient client = null;
