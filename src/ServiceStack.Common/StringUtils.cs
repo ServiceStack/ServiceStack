@@ -82,12 +82,12 @@ namespace ServiceStack
         static readonly Regex SafeInputWhitelist = new Regex(@"[^\w\s\.,@-\\+\\/]");
 #endif
 
-        public static string HtmlEncode(string html)
+        public static string HtmlEncode(this string html)
         {
             return System.Net.WebUtility.HtmlEncode(html);
         }
 
-        public static string HtmlDecode(string html)
+        public static string HtmlDecode(this string html)
         {
             return System.Net.WebUtility.HtmlDecode(html);
         }
