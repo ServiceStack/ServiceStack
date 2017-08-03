@@ -107,7 +107,14 @@ namespace ServiceStack
                 Args = httpReq.GetUsefulTemplateParams(),
                 LayoutPage = layoutPage
             };
-            await result.WriteToAsync(httpRes.OutputStream);
+            try
+            {
+                await result.WriteToAsync(httpRes.OutputStream);
+            }
+            catch (Exception ex)
+            {
+                await page.Format.OnViewException(result, httpReq, ex);
+            }
         }
     }
 
@@ -133,7 +140,15 @@ namespace ServiceStack
                 Args = httpReq.GetUsefulTemplateParams(),
                 LayoutPage = layoutPage
             };
-            await result.WriteToAsync(httpRes.OutputStream);
+
+            try
+            {
+                await result.WriteToAsync(httpRes.OutputStream);
+            }
+            catch (Exception ex)
+            {
+                await page.Format.OnViewException(result, httpReq, ex);
+            }
         }
     }
 

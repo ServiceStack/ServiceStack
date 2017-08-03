@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Templates
 {
@@ -20,12 +21,15 @@ namespace ServiceStack.Templates
         public Func<TemplatePage, TemplatePage> ResolveLayout { get; set; }
         
         public Func<PageResult, Exception, object> OnExpressionException { get; set; }
+        
+        public Func<PageResult, IRequest, Exception, Task> OnViewException { get; set; }
 
         public PageFormat()
         {
             EncodeValue = DefaultEncodeValue;
             ResolveLayout = DefaultResolveLayout;
             OnExpressionException = DefaultExpressionException;
+            OnViewException = DefaultViewException;
         }
 
         public string DefaultEncodeValue(object value)
@@ -56,6 +60,34 @@ namespace ServiceStack.Templates
                 return JsNull.Value;
 
             return null;
+        }
+
+        public virtual async Task DefaultViewException(PageResult pageResult, IRequest req, Exception ex)
+        {
+            var sb = StringBuilderCache.Allocate();
+            if (ContentType == MimeTypes.Html)
+                sb.AppendLine("<pre class='error'>");
+            sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
+            if (pageResult.Context.DebugMode) 
+                sb.AppendLine(ex.StackTrace);
+
+            if (ex.InnerException != null)
+            {
+                sb.AppendLine();
+                sb.AppendLine("Inner Exceptions:");
+                var innerEx = ex.InnerException;
+                while (innerEx != null)
+                {
+                    sb.AppendLine($"{innerEx.GetType().Name}: {innerEx.Message}");
+                    if (pageResult.Context.DebugMode) 
+                        sb.AppendLine(innerEx.StackTrace);
+                    innerEx = innerEx.InnerException;;
+                }
+            }
+            if (ContentType == MimeTypes.Html)
+                sb.AppendLine("</pre>");
+            var html = StringBuilderCache.ReturnAndFree(sb);
+            await req.Response.OutputStream.WriteAsync(html);
         }
     }
     
@@ -101,7 +133,7 @@ namespace ServiceStack.Templates
         
         public virtual object HtmlExpressionException(PageResult result, Exception ex)
         {
-            if (result.Page.Context.RenderExpressionExceptions)
+            if (result.Context.RenderExpressionExceptions)
                 return ("<div style='color:red'><span>" + StringUtils.HtmlEncode(ex.GetType().Name + ": " + ex.Message) + "</span></div>").ToRawString();
             
             // Evaluate Null References in Binding Expressions to null
