@@ -63,6 +63,11 @@ namespace ServiceStack
         /// By default Auth and Registration requests are hidden.
         /// </summary>
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+        
+        /// <summary>
+        /// Limit logging to only Service Requests
+        /// </summary>
+        public bool LimitToServiceRequests { get; set; }
 
         public RequestLogsFeature(int? capacity = null)
         {
@@ -71,6 +76,7 @@ namespace ServiceStack
             this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
+            this.LimitToServiceRequests = true;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
             this.HideRequestBodyForRequestDtoTypes = new[] {
                 typeof(Authenticate), typeof(Register)
@@ -85,6 +91,7 @@ namespace ServiceStack
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
+            requestLogger.LimitToServiceRequests = LimitToServiceRequests;
             requestLogger.SkipLogging = SkipLogging;
             requestLogger.RequiredRoles = RequiredRoles;
             requestLogger.EnableErrorTracking = EnableErrorTracking;

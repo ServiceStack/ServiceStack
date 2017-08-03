@@ -24,6 +24,8 @@ namespace ServiceStack.Host
 
         public bool EnableErrorTracking { get; set; }
 
+        public bool LimitToServiceRequests { get; set; }
+
         public string[] RequiredRoles { get; set; }
 
         public Func<IRequest, bool> SkipLogging { get; set; }
@@ -42,6 +44,9 @@ namespace ServiceStack.Host
         public virtual bool ShouldSkip(IRequest req, object requestDto)
         {
             var dto = requestDto ?? req.Dto;
+            if (LimitToServiceRequests && dto == null)
+                return true;
+
             var requestType = dto?.GetType();
 
             return ExcludeRequestType(requestType) || SkipLogging?.Invoke(req) == true;
