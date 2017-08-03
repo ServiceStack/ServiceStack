@@ -288,7 +288,10 @@ namespace ServiceStack
             reqParams["PathInfo"] = request.PathInfo;
             reqParams["AbsoluteUri"] = request.AbsoluteUri;
             reqParams["Verb"] = request.Verb;
-            return reqParams.ToObjectDictionary();
+
+            var to = reqParams.ToObjectDictionary();
+            to["Request"] = request;
+            return to;
         }
         
         public static TemplateCodePage GetCodePage(this IRequest request, string virtualPath)
