@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net;
 using Funq;
@@ -7,6 +8,7 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.Templates;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -65,6 +67,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 ";
     }
     
+    [Page("products")]
+    [PageArg("title", "Products")]
+    public class ProductsPage : TemplateCodePage
+    {
+        string render(Product[] products) => $@"
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <td>Name</td>
+                    <td>Price</td>
+                </tr>
+            </thead>
+            {products.OrderBy(x => x.Category).Map(x => 
+            $"<tr><th>{x.Category}</th><td>{x.ProductName}</td><td>{x.UnitPrice:C}</td></tr>\n").Join("")}
+        </table>";
+    }
+    
     public class TemplateIntegrationTests
     {
         class AppHost : AppSelfHostBase
@@ -81,7 +101,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     db.InsertAll(UnitTestExample.SeedData);
                 }
                 
-                Plugins.Add(new TemplatePagesFeature());
+                Plugins.Add(new TemplatePagesFeature
+                {
+                    Args =
+                    {
+                        ["products"] = TemplateQueryData.Products
+                    }
+                });
 
                 var files = TemplateFiles[0];
                 
@@ -326,6 +352,27 @@ layout: alt/alt-layout
 </html>
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Does_execute_ProductsPage_with_default_layout()
+        {
+            var html = Config.ListeningOn.AppendPath("products").GetStringFromUrl();
+            
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
+<body id=root>
+
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <td>Name</td>
+                    <td>Price</td>
+                </tr>
+            </thead>
+            <tr><th>Beverages</th><td>Chai</td><td>$18.00</td></tr>
+<tr><th>Beverages</th><td>Chang</td><td>$19.00</td></tr>".NormalizeNewLines()));
+        }
+
 
     }
 }
