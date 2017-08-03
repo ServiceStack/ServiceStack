@@ -81,14 +81,6 @@ namespace ServiceStack.Templates
 
         public void TryGetPage(string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            var p = Pages.GetPage(virtualPath);
-            if (p != null)
-            {
-                page = p;
-                codePage = null;
-                return;
-            }
-            
             var cp = GetCodePage(virtualPath);
             if (cp != null)
             {
@@ -97,6 +89,14 @@ namespace ServiceStack.Templates
                 return;
             }
 
+            var p = Pages.GetPage(virtualPath);
+            if (p != null)
+            {
+                page = p;
+                codePage = null;
+                return;
+            }
+            
             throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");
         }
 
