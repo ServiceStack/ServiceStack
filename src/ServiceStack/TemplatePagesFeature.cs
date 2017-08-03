@@ -290,7 +290,7 @@ namespace ServiceStack
             reqParams["Verb"] = request.Verb;
 
             var to = reqParams.ToObjectDictionary();
-            to["Request"] = request;
+            to[TemplateConstants.Request] = request;
             return to;
         }
         

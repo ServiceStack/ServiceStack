@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Templates
 {
@@ -259,6 +260,20 @@ namespace ServiceStack.Templates
             }
             
             return valueOrBinding.ConvertTo(returnType);
+        }
+
+        public static void TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        {
+            scope.Context.TryGetPage(virtualPath, out page, out codePage);
+            codePage?.Init();
+                
+            var requiresRequest = codePage as IRequiresRequest;
+            if (requiresRequest != null)
+            {
+                var request = scope.GetValue(TemplateConstants.Request) as IRequest;
+                if (request != null)
+                    requiresRequest.Request = request;
+            }
         }
     }
 }

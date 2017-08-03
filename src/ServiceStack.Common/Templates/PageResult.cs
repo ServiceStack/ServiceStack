@@ -88,6 +88,10 @@ namespace ServiceStack.Templates
         public PageResult(TemplateCodePage page) : this(page?.Format)
         {
             CodePage = page ?? throw new ArgumentNullException(nameof(page));
+
+            var hasRequest = (CodePage as IRequiresRequest)?.Request;
+            if (hasRequest != null)
+                Args[TemplateConstants.Request] = hasRequest;
         }
 
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))

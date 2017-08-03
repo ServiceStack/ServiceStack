@@ -110,6 +110,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {links.Map(entry => $"<li><a href='{entry.Key}'>{entry.Value}</a></li>\n").Join("")}
 </ul>";
     }
+
+    [Page("requestInfo")]
+    public class RequestInfoPartial : ServiceStackCodePage
+    {
+        string render() => $@"PathInfo: {Request.PathInfo}";
+    }
     
     public class TemplateIntegrationTests
     {
@@ -218,6 +224,10 @@ layout: alt/alt-layout
 
                 files.WriteFile("shadowed/index.html", @"
 <h1>Shadowed Index Page</h1>
+");
+                files.WriteFile("requestinfo-page.html", @"
+<h1>The Request Info Page</h1>
+<p>{{ 'requestInfo' | partial }}</p>
 ");
                 
             }
@@ -432,6 +442,21 @@ layout: alt/alt-layout
 <tr><th>Beverages</th><td>Chang</td><td>$19.00</td></tr>".NormalizeNewLines()));
         }
 
+        [Test]
+        public void CodePage_partials_are_injected_with_current_Request()
+        {
+            var html = Config.ListeningOn.AppendPath("requestinfo-page").GetStringFromUrl();
+
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
+<html>
+<body id=root>
+
+<h1>The Request Info Page</h1>
+<p>PathInfo: /requestinfo-page</p>
+
+</body>
+</html>".NormalizeNewLines()));
+        }
 
     }
 }

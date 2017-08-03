@@ -416,11 +416,9 @@ namespace ServiceStack.Templates
             var pageName = target.ToString();
             var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
-            scope.Context.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
             if (page != null)
                 await page.Init();
-            else
-                codePage?.Init();
      
             await scope.WritePageAsync(page, codePage, pageParams);
         }
@@ -1128,11 +1126,9 @@ namespace ServiceStack.Templates
             if (target == null)
                 return;
             
-            scope.Context.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
             if (page != null)
                 await page.Init();
-            else
-                codePage?.Init();
             
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
 
