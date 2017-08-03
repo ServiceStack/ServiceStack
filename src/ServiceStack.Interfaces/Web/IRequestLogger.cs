@@ -29,6 +29,11 @@ namespace ServiceStack.Web
         bool EnableErrorTracking { get; set; }
 
         /// <summary>
+        /// Limit logging to only Service Requests
+        /// </summary>
+        bool LimitToServiceRequests { get; set; }
+
+        /// <summary>
         /// Limit access to /requestlogs service to role
         /// </summary>
         string[] RequiredRoles { get; set; }

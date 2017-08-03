@@ -44,6 +44,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{369EF365-4822-4823-A050-6F6950046E84}"
 	ProjectSection(SolutionItems) = preProject
 		..\build\build-sn.proj = ..\build\build-sn.proj
+		..\build\copy-interfaces.bat = ..\build\copy-interfaces.bat
 		..\build\copy-sn.bat = ..\build\copy-sn.bat
 	EndProjectSection
 EndProject

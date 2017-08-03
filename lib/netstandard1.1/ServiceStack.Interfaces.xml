@@ -1825,6 +1825,11 @@
             Turn On/Off Tracking of Exceptions
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IRequestLogger.LimitToServiceRequests">
+            <summary>
+            Limit logging to only Service Requests
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequestLogger.RequiredRoles">
             <summary>
             Limit access to /requestlogs service to role
