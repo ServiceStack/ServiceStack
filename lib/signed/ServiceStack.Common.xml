@@ -417,14 +417,24 @@
             Specify the Content-Type of the Response 
             </summary>
         </member>
-        <member name="P:ServiceStack.Templates.PageResult.PageFilters">
+        <member name="P:ServiceStack.Templates.PageResult.PageTransformers">
             <summary>
-            Transform the Page output using a chain of filters
+            Transform the Page output using a chain of stream transformers
             </summary>
         </member>
-        <member name="P:ServiceStack.Templates.PageResult.OutputFilters">
+        <member name="P:ServiceStack.Templates.PageResult.OutputTransformers">
             <summary>
-            Transform the entire output using a chain of filters
+            Transform the entire output using a chain of stream transformers
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.FilterTransformers">
+            <summary>
+            Available transformers that can transform context filter stream outputs
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplatePagesContext.FilterTransformers">
+            <summary>
+            Available transformers that can transform context filter stream outputs
             </summary>
         </member>
         <member name="T:ServiceStack.UrnId">
