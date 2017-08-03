@@ -416,8 +416,13 @@ namespace ServiceStack.Templates
             var pageName = target.ToString();
             var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
-            var page = await scope.Context.GetPage(pageName).Init();
-            await scope.WritePageAsync(page, pageParams);
+            scope.Context.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (page != null)
+                await page.Init();
+            else
+                codePage?.Init();
+     
+            await scope.WritePageAsync(page, codePage, pageParams);
         }
 
         public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, null);
@@ -1123,7 +1128,12 @@ namespace ServiceStack.Templates
             if (target == null)
                 return;
             
-            var page = await scope.Context.GetPage(pageName).Init();
+            scope.Context.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (page != null)
+                await page.Init();
+            else
+                codePage?.Init();
+            
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
@@ -1133,13 +1143,13 @@ namespace ServiceStack.Templates
                 foreach (var item in objs)
                 {
                     scope.AddItemToScope(itemBinding, item, i++);
-                    await scope.WritePageAsync(page, pageParams);
+                    await scope.WritePageAsync(page, codePage, pageParams);
                 }
             }
             else
             {
                 scope.AddItemToScope(itemBinding, target);
-                await scope.WritePageAsync(page, pageParams);
+                await scope.WritePageAsync(page, codePage, pageParams);
             }
         }
         

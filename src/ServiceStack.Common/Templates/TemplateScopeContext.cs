@@ -15,7 +15,8 @@ namespace ServiceStack.Templates
     {
         public PageResult PageResult { get; }
         public TemplatePage Page => PageResult.Page;
-        public TemplateContext Context => Page.Context;
+        public TemplateCodePage CodePage => PageResult.CodePage;
+        public TemplateContext Context => PageResult.Context;
         public Dictionary<string, object> ScopedParams { get; internal set; }
         public Stream OutputStream { get; }
 
@@ -101,9 +102,9 @@ namespace ServiceStack.Templates
         public static TemplateScopeContext ScopeWithStream(this TemplateScopeContext scope, Stream stream) =>
             new TemplateScopeContext(scope.PageResult, stream, scope.ScopedParams);
 
-        public static async Task WritePageAsync(this TemplateScopeContext scope, TemplatePage page, Dictionary<string, object> pageParams, CancellationToken token = default(CancellationToken))
+        public static async Task WritePageAsync(this TemplateScopeContext scope, TemplatePage page, TemplateCodePage codePage, Dictionary<string, object> pageParams, CancellationToken token = default(CancellationToken))
         {
-            await scope.PageResult.WritePageAsync(page, scope.ScopeWithParams(pageParams), token);
+            await scope.PageResult.WritePageAsync(page, codePage, scope.ScopeWithParams(pageParams), token);
         }
 
         public static object EvaluateToken(this TemplateScopeContext scope, JsToken token)

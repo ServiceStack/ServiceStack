@@ -85,6 +85,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         </table>";
     }
     
+    [Page("products-sidebar", "layout-with-sidebar")]
+    [PageArg("title", "Products with Sidebar")]
+    public class ProductsSidebarPage : TemplateCodePage
+    {
+        string render(Product[] products) => $@"
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <td>Name</td>
+                    <td>Price</td>
+                </tr>
+            </thead>
+            {products.OrderBy(x => x.Category).Map(x => 
+            $"<tr><th>{x.Category}</th><td>{x.ProductName}</td><td>{x.UnitPrice:C}</td></tr>\n").Join("")}
+        </table>";
+    }
+
+    [Page("sidebar")]
+    public class SidebarPage : TemplateCodePage
+    {
+        string render(Dictionary<string, object> links) => $@"<ul>
+    {links.Map(entry => $"<li><a href='{entry.Key}'>{entry.Value}</a></li>\n").Join("")}
+</ul>";
+    }
+    
     public class TemplateIntegrationTests
     {
         class AppHost : AppSelfHostBase
@@ -105,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 {
                     Args =
                     {
-                        ["products"] = TemplateQueryData.Products
+                        ["products"] = TemplateQueryData.Products,
                     }
                 });
 
@@ -121,6 +147,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 files.WriteFile("custom_layout.html", @"
 <html>
 <body id=custom>
+{{ page }}
+</body>
+</html>
+");
+                files.WriteFile("layout-with-sidebar.html", @"
+<html>
+<body id=sidebar>
+{{ 'sidebar' | partial({ links: { 'a.html': 'A Page', 'b.html': 'B Page' } }) }}
 {{ page }}
 </body>
 </html>
@@ -360,6 +394,31 @@ layout: alt/alt-layout
             
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
+
+        <table class='table'>
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <td>Name</td>
+                    <td>Price</td>
+                </tr>
+            </thead>
+            <tr><th>Beverages</th><td>Chai</td><td>$18.00</td></tr>
+<tr><th>Beverages</th><td>Chang</td><td>$19.00</td></tr>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_execute_ProductsPage_with_Sidebar_CodePage_layout()
+        {
+            var html = Config.ListeningOn.AppendPath("products-sidebar").GetStringFromUrl();
+
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
+<body id=sidebar>
+<ul>
+    <li><a href='a.html'>A Page</a></li>
+<li><a href='b.html'>B Page</a></li>
+
+</ul>
 
         <table class='table'>
             <thead>
