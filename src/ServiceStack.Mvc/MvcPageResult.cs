@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Templates;
 
 namespace ServiceStack.Mvc
@@ -6,11 +7,16 @@ namespace ServiceStack.Mvc
 #if !NETSTANDARD1_6
     public class MvcPageResult : System.Web.Mvc.ActionResult
     {
-        readonly PageResult pageResult;
+        private readonly PageResult pageResult;
+        private readonly Stream contents;
 
-        public MvcPageResult(PageResult pageResult) => this.pageResult = pageResult;
+        public MvcPageResult(PageResult pageResult, Stream contents)
+        {
+            this.pageResult = pageResult;
+            this.contents = contents;
+        }
 
-        public override async void ExecuteResult(System.Web.Mvc.ControllerContext context)
+        public override void ExecuteResult(System.Web.Mvc.ControllerContext context)
         {
             foreach (var entry in pageResult.Options)
             {
@@ -19,8 +25,8 @@ namespace ServiceStack.Mvc
                 else
                     context.HttpContext.Response.Headers[entry.Key] = entry.Value;
             }
-            
-            await pageResult.WriteToAsync(context.HttpContext.Response.OutputStream);
+
+            contents.WriteTo(context.HttpContext.Response.OutputStream);
         }
     }
 #else
@@ -47,6 +53,15 @@ namespace ServiceStack.Mvc
     
     public static class MvcPageResultExtensions
     {
+#if !NETSTANDARD1_6
+        public static async Task<MvcPageResult> ToMvcResultAsync(this PageResult pageResult)
+        {
+            var ms = new MemoryStream();            
+            await pageResult.WriteToAsync(ms);
+            return new MvcPageResult(pageResult, ms);
+        }
+#else
         public static MvcPageResult ToMvcResult(this PageResult pageResult) => new MvcPageResult(pageResult);        
+#endif    
     }
 }
