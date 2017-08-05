@@ -64,7 +64,7 @@ namespace ServiceStack.Templates
         /// </summary>
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
 
-        public bool CheckForModifiedPages { get; set; } = false;
+        public TimeSpan? CheckForModifiedPagesAfter { get; set; }
         
         public bool RenderExpressionExceptions { get; set; }
 

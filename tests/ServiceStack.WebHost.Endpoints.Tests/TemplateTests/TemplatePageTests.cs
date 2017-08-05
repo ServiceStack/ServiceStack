@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -295,6 +297,105 @@ title: We encode < & >
             Assert.That(varFragment4.Binding, Is.EqualTo("page"));
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }
-        
+
+        [Test]
+        public void Does_limit_file_changes_checks_to_specified_time()
+        {
+            var context = new TemplateContext
+            {
+                DebugMode = false,
+                CheckForModifiedPagesAfter = TimeSpan.FromMilliseconds(100)
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+<body id=original>
+{{ page }}
+</body>
+</html>
+");
+            context.VirtualFiles.WriteFile("page.html", "<h1>Original Contents</h1>");
+            
+            var output = new PageResult(context.GetPage("page")).Result;            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=original>
+<h1>Original Contents</h1>
+</body>
+</html>
+".NormalizeNewLines()));
+
+            context.VirtualFiles.WriteFile("_layout.html",
+                context.VirtualFiles.GetFile("_layout.html").ReadAllText().Replace("original", "updated"));
+            context.VirtualFiles.WriteFile("page.html",
+                context.VirtualFiles.GetFile("page.html").ReadAllText().Replace("Original", "Updated"));
+            
+            //Should return same contents when within CheckForModifiedPagesAfter
+            output = new PageResult(context.GetPage("page")).Result;            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=original>
+<h1>Original Contents</h1>
+</body>
+</html>
+".NormalizeNewLines()));
+            
+            Thread.Sleep(110);
+            
+            //Should render updated content
+            output = new PageResult(context.GetPage("page")).Result;            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=updated>
+<h1>Updated Contents</h1>
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Always_checks_for_changes_if_CheckForModifiedPagesAfter_is_null()
+        {
+            var context = new TemplateContext
+            {
+                DebugMode = false,
+                CheckForModifiedPagesAfter = null
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+<html>
+<body id=original>
+{{ page }}
+</body>
+</html>
+");
+            context.VirtualFiles.WriteFile("page.html", "<h1>Original Contents</h1>");
+            
+            var output = new PageResult(context.GetPage("page")).Result;            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=original>
+<h1>Original Contents</h1>
+</body>
+</html>
+".NormalizeNewLines()));
+
+            context.VirtualFiles.WriteFile("_layout.html",
+                context.VirtualFiles.GetFile("_layout.html").ReadAllText().Replace("original", "updated"));
+            context.VirtualFiles.WriteFile("page.html",
+                context.VirtualFiles.GetFile("page.html").ReadAllText().Replace("Original", "Updated"));
+            
+            Thread.Sleep(110);
+
+            output = new PageResult(context.GetPage("page")).Result;            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=original>
+<h1>Original Contents</h1>
+</body>
+</html>
+".NormalizeNewLines()));
+        }
+
     }
 }

@@ -20,6 +20,7 @@ namespace ServiceStack.Templates
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
+        public DateTime LastModifiedCheck { get; private set; }
         public bool HasInit { get; private set; }
 
         public TemplateContext Context { get; }
@@ -43,10 +44,12 @@ namespace ServiceStack.Templates
         {
             if (HasInit)
             {
-                if (!Context.DebugMode && !Context.CheckForModifiedPages)
+                if (!Context.DebugMode && (Context.CheckForModifiedPagesAfter == null 
+                                           || DateTime.UtcNow - LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value))
                     return this;
 
                 File.Refresh();
+                LastModifiedCheck = DateTime.UtcNow;
                 if (File.LastModified == LastModified)
                     return this;
             }
@@ -94,6 +97,7 @@ namespace ServiceStack.Templates
             lock (semaphore)
             {
                 LastModified = lastModified;
+                LastModifiedCheck = DateTime.UtcNow;                
                 FileContents = fileContents;
                 Args = pageVars;
                 BodyContents = bodyContents;
@@ -109,9 +113,11 @@ namespace ServiceStack.Templates
                 {
                     await LayoutPage.Load();
                 }
-                else if (Context.CheckForModifiedPages || Context.DebugMode)
+                else if (Context.DebugMode || (Context.CheckForModifiedPagesAfter == null 
+                                               || DateTime.UtcNow - LayoutPage.LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value))
                 {
                     LayoutPage.File.Refresh();
+                    LayoutPage.LastModifiedCheck = DateTime.UtcNow;
                     if (LayoutPage.File.LastModified != LayoutPage.LastModified)
                         await LayoutPage.Load();
                 }
