@@ -340,7 +340,7 @@ title: We encode < & >
 </html>
 ".NormalizeNewLines()));
             
-            Thread.Sleep(110);
+            Thread.Sleep(150);
             
             //Should render updated content
             output = new PageResult(context.GetPage("page")).Result;            
@@ -385,7 +385,7 @@ title: We encode < & >
             context.VirtualFiles.WriteFile("page.html",
                 context.VirtualFiles.GetFile("page.html").ReadAllText().Replace("Original", "Updated"));
             
-            Thread.Sleep(110);
+            Thread.Sleep(150);
 
             output = new PageResult(context.GetPage("page")).Result;            
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
