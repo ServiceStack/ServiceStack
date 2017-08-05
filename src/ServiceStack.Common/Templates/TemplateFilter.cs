@@ -264,7 +264,7 @@ namespace ServiceStack.Templates
 
         public static void TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            scope.Context.TryGetPage(virtualPath, out page, out codePage);
+            scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage);
             codePage?.Init();
                 
             var requiresRequest = codePage as IRequiresRequest;

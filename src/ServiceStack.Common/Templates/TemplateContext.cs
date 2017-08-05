@@ -79,7 +79,7 @@ namespace ServiceStack.Templates
             return page;
         }
 
-        public void TryGetPage(string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
             var cp = GetCodePage(virtualPath);
             if (cp != null)
@@ -95,6 +95,30 @@ namespace ServiceStack.Templates
                 page = p;
                 codePage = null;
                 return;
+            }
+            
+            var partentPath = fromVirtualPath;
+            while (!string.IsNullOrEmpty(partentPath = partentPath.LeftPart('/')))
+            {
+                var seekPath = partentPath.CombineWith(virtualPath);
+                cp = GetCodePage(seekPath);
+                if (cp != null)
+                {
+                    codePage = cp;
+                    page = null;
+                    return;
+                }
+                
+                p = Pages.GetPage(seekPath);
+                if (p != null)
+                {
+                    page = p;
+                    codePage = null;
+                    return;
+                }
+                
+                if (partentPath.IndexOf('/') == -1)
+                    break;
             }
             
             throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");

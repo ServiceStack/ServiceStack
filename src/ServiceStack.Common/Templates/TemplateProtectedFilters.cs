@@ -14,7 +14,22 @@ namespace ServiceStack.Templates
         {
             var file = scope.Context.VirtualFiles.GetFile(virtualPath);
             if (file == null)
-                throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
+            {
+                var partentPath = scope.PageResult.VirtualPath;
+                while (!string.IsNullOrEmpty(partentPath = partentPath.LeftPart('/')))
+                {
+                    var seekPath = partentPath.CombineWith(virtualPath);
+                    file = scope.Context.VirtualFiles.GetFile(seekPath);
+                    if (file != null)
+                        break;
+                
+                    if (partentPath.IndexOf('/') == -1)
+                        break;
+                }
+                
+                if (file == null)
+                    throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
+            }
 
             using (var reader = file.OpenRead())
             {

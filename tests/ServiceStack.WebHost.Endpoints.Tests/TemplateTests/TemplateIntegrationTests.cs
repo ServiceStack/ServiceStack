@@ -230,6 +230,21 @@ layout: alt/alt-layout
 <p>{{ 'requestInfo' | partial }}</p>
 ");
                 
+                files.WriteFile("dir/dir-partial.html", @"
+<h2>Dir Partial</h2>
+");
+                files.WriteFile("dir/dir-page-partial.html", @"
+<h1>Dir Page Partial</h1>
+{{ 'dir-partial' | partial }}
+");
+                
+                files.WriteFile("dir/dir-file.txt", @"
+<h2>Dir File</h2>
+");
+                files.WriteFile("dir/dir-page-file.html", @"
+<h1>Dir Page File</h1>
+{{ 'dir-file.txt' | includeFile }}
+");
             }
 
             public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
@@ -453,6 +468,42 @@ layout: alt/alt-layout
 
 <h1>The Request Info Page</h1>
 <p>PathInfo: /requestinfo-page</p>
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_resolve_closest_partial_starting_from_page_directory()
+        {
+            var html = Config.ListeningOn.AppendPath("dir","dir-page-partial").GetStringFromUrl();
+            
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=dir>
+
+<h1>Dir Page Partial</h1>
+
+<h2>Dir Partial</h2>
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_resolve_closest_file_starting_from_page_directory()
+        {
+            var html = Config.ListeningOn.AppendPath("dir","dir-page-file").GetStringFromUrl();
+            
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=dir>
+
+<h1>Dir Page File</h1>
+
+<h2>Dir File</h2>
+
 
 </body>
 </html>".NormalizeNewLines()));
