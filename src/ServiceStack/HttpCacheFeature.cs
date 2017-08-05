@@ -109,6 +109,14 @@ namespace ServiceStack
                 ? req.GetCompressionType()
                 : null;
 
+            if (response is HttpResult customResult)
+            {
+                if (customResult.View != null)
+                    req.Items["View"] = customResult.View;
+                if (customResult.Template != null)
+                    req.Items["Template"] = customResult.Template;
+            }
+
             var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
             if (responseBytes != null || req.ResponseContentType.IsBinary())
             {

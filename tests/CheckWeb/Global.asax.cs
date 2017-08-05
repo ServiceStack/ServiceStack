@@ -322,11 +322,22 @@ namespace CheckWeb
         public string Name { get; set; }
     }
 
+    [Route("/test/html2")]
+    public class TestHtml2
+    {
+        public string Name { get; set; }
+    }
+
     [HtmlOnly]
     [CacheResponse(Duration = 3600)]
     public class HtmlServices : Service
     {
         public object Any(TestHtml request) => request;
+
+        public object Any(TestHtml2 request) => new HttpResult(new TestHtml { Name = request.Name })
+        {
+            View = nameof(TestHtml)
+        };
     }
 
     [Route("/index")]
