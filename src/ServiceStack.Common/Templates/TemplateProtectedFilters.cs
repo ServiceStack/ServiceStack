@@ -16,7 +16,7 @@ namespace ServiceStack.Templates
             if (file == null)
             {
                 var partentPath = scope.PageResult.VirtualPath;
-                while (!string.IsNullOrEmpty(partentPath = partentPath.LeftPart('/')))
+                while (!string.IsNullOrEmpty(partentPath = partentPath.LastLeftPart('/')))
                 {
                     var seekPath = partentPath.CombineWith(virtualPath);
                     file = scope.Context.VirtualFiles.GetFile(seekPath);

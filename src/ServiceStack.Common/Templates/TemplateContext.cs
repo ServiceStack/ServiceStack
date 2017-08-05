@@ -98,7 +98,7 @@ namespace ServiceStack.Templates
             }
             
             var partentPath = fromVirtualPath;
-            while (!string.IsNullOrEmpty(partentPath = partentPath.LeftPart('/')))
+            while (!string.IsNullOrEmpty(partentPath = partentPath.LastLeftPart('/')))
             {
                 var seekPath = partentPath.CombineWith(virtualPath);
                 cp = GetCodePage(seekPath);
