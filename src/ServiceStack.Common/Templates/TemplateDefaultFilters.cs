@@ -20,6 +20,15 @@ namespace ServiceStack.Templates
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
+
+        public DateTime addTicks(DateTime target, int count) => target.AddTicks(count);
+        public DateTime addMilliseconds(DateTime target, int count) => target.AddMilliseconds(count);
+        public DateTime addSeconds(DateTime target, int count) => target.AddSeconds(count);
+        public DateTime addMinutes(DateTime target, int count) => target.AddMinutes(count);
+        public DateTime addHours(DateTime target, int count) => target.AddHours(count);
+        public DateTime addDays(DateTime target, int count) => target.AddDays(count);
+        public DateTime addMonths(DateTime target, int count) => target.AddMonths(count);
+        public DateTime addYears(DateTime target, int count) => target.AddYears(count);
         
         public string indent() => Context.Args[TemplateConstants.DefaultIndent] as string;
         public string indents(int count) => repeat(Context.Args[TemplateConstants.DefaultIndent] as string, count);
