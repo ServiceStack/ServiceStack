@@ -693,5 +693,44 @@ inlinePageTitle = PAGE INLINE TITLE
             Assert.That(result, Is.EqualTo(string.Empty));
         }
 
+        [Test]
+        public void Can_parseKeyValueText()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateProtectedFilters() }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("expenses.txt", @"
+Rent      1000
+TV        50
+Internet  50
+Mobile    50
+Food      400
+");
+
+            var output = context.EvaluateTemplate(@"
+{{ 'expenses.txt' | includeFile | assignTo: expensesText }}
+{{ expensesText | parseKeyValueText | assignTo: expenses }}
+Expenses:
+{{ expenses | toList | select: { it.Key | padRight(10) }{ it.Value}\n }}
+{{ '-' | repeat(15) }}
+Total    {{ expenses | values | sum }}
+");
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+Expenses:
+Rent      1000
+TV        50
+Internet  50
+Mobile    50
+Food      400
+
+---------------
+Total    1550
+".NormalizeNewLines()));
+
+        }
+
     }
 }

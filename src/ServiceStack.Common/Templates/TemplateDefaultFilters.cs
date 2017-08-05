@@ -132,6 +132,12 @@ namespace ServiceStack.Templates
         public string[] split(string stringList) => split(stringList, ',');
         public string[] split(string stringList, char delimiter) => stringList.Split(delimiter);
 
+        public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
+        public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
+
+        public ICollection keys(IDictionary target) => target.Keys;
+        public ICollection values(IDictionary target) => target.Values;
+
         public string append(string target, string suffix) => target + suffix;
         public string appendLine(string target) => target + newLine();
 
