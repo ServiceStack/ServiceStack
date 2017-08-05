@@ -354,7 +354,7 @@ title: We encode < & >
         }
 
         [Test]
-        public void Always_checks_for_changes_if_CheckForModifiedPagesAfter_is_null()
+        public void Never_checks_for_changes_if_CheckForModifiedPagesAfter_is_null()
         {
             var context = new TemplateContext
             {

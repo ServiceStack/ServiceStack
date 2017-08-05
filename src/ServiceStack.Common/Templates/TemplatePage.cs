@@ -113,13 +113,16 @@ namespace ServiceStack.Templates
                 {
                     await LayoutPage.Load();
                 }
-                else if (Context.DebugMode || (Context.CheckForModifiedPagesAfter == null 
-                                               || DateTime.UtcNow - LayoutPage.LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value))
+                else
                 {
-                    LayoutPage.File.Refresh();
-                    LayoutPage.LastModifiedCheck = DateTime.UtcNow;
-                    if (LayoutPage.File.LastModified != LayoutPage.LastModified)
-                        await LayoutPage.Load();
+                    if (Context.DebugMode || Context.CheckForModifiedPagesAfter != null &&
+                        DateTime.UtcNow - LayoutPage.LastModifiedCheck >= Context.CheckForModifiedPagesAfter.Value)
+                    {
+                        LayoutPage.File.Refresh();
+                        LayoutPage.LastModifiedCheck = DateTime.UtcNow;
+                        if (LayoutPage.File.LastModified != LayoutPage.LastModified)
+                            await LayoutPage.Load();
+                    }
                 }
             }
 
