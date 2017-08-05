@@ -340,7 +340,7 @@ title: We encode < & >
 </html>
 ".NormalizeNewLines()));
             
-            Thread.Sleep(150);
+            Thread.Sleep(300);
             
             //Should render updated content
             output = new PageResult(context.GetPage("page")).Result;            

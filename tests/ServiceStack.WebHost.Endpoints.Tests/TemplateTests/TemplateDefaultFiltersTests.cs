@@ -713,7 +713,7 @@ Food      400
 {{ 'expenses.txt' | includeFile | assignTo: expensesText }}
 {{ expensesText | parseKeyValueText | assignTo: expenses }}
 Expenses:
-{{ expenses | toList | select: { it.Key | padRight(10) }{ it.Value}\n }}
+{{ expenses | toList | select: { it.Key | padRight(10) }{ it.Value }\n }}
 {{ '-' | repeat(15) }}
 Total    {{ expenses | values | sum }}
 ");
