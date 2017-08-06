@@ -255,6 +255,7 @@ namespace ServiceStack.Templates
         public bool lessThanEqual(object target, object other) => compareTo(target, other, i => i <= 0);
 
         //aliases
+        public bool not(bool target) => !target;
         public bool eq(object target, object other) => equals(target, other);
         public bool not(object target, object other) => notEquals(target, other);
         public bool gt(object target, object other) => greaterThan(target, other);
