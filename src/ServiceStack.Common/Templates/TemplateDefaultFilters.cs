@@ -118,10 +118,30 @@ namespace ServiceStack.Templates
         public object timeFormat(TimeSpan timeValue) =>  timeValue.ToString((string)Context.Args[TemplateConstants.DefaultTimeFormat]);
         public object timeFormat(TimeSpan timeValue, string format) =>  timeValue.ToString(format);
 
-        public string humanize(string text) => text.SplitCamelCase().Replace('_',' ').ToTitleCase();
+        public string splitCase(string text) => text.SplitCamelCase().Replace('_',' ');
+        public string humanize(string text) => splitCase(text).ToTitleCase();
         public string titleCase(string text) => text.ToTitleCase();
         public string pascalCase(string text) => text.ToPascalCase();
         public string camelCase(string text) => text.ToCamelCase();
+
+        public string textStyle(string text, string headerStyle)
+        {
+            if (text == null) return null;
+            switch (headerStyle)
+            {
+                case "splitCase":
+                    return Instance.splitCase(text);
+                case "humanize":
+                    return Instance.humanize(text);
+                case "titleCase":
+                    return Instance.titleCase(text);
+                case "pascalCase":
+                    return Instance.pascalCase(text);
+                case "camelCase":
+                    return Instance.camelCase(text);
+            }
+            return text;
+        }
 
         public string lower(string text) => text?.ToLower();
         public string upper(string text) => text?.ToUpper();
@@ -1270,5 +1290,74 @@ namespace ServiceStack.Templates
 
         public Task csv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToCsv());
         public Task xml(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToXml());
+        
+        //html
+        public IRawString htmltable(TemplateScopeContext scope, object target) => htmltable(scope, target, null);
+        public IRawString htmltable(TemplateScopeContext scope, object target, object scopeOptions)
+        {
+            if (target is IDictionary<string, object> single)
+                target = new[] { single };
+            
+            var items = target.AssertEnumerable(nameof(htmltable));
+            var scopedParams = scope.AssertOptions(nameof(htmltable), scopeOptions);
+
+            scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
+            scopedParams.TryGetValue("headerTag", out object oHeaderTag);
+            var headerTag = oHeaderTag as string ?? "th";
+            var headerStyle = oHeaderStyle as string ?? "splitCase";
+
+            var sbHeader = StringBuilderCache.Allocate();
+            var sbRows = StringBuilderCacheAlt.Allocate();
+            List<string> keys = null;
+
+            foreach (var item in items)
+            {
+                if (item is IDictionary<string,object> d)
+                {
+                    if (keys == null)
+                    {
+                        keys = d.Keys.ToList();
+                        sbHeader.Append("<tr>");
+                        foreach (var key in keys)
+                        {
+                            sbHeader.Append('<').Append(headerTag).Append('>');
+                            sbHeader.Append(textStyle(key, headerStyle));
+                            sbHeader.Append("</").Append(headerTag).Append('>');
+                        }
+                        sbHeader.Append("</tr>");
+                    }
+
+                    sbRows.Append("<tr>");
+                    foreach (var key in keys)
+                    {
+                        var value = d[key];
+                        sbRows.Append("<td>").Append(value).Append("</td>");
+                    }
+                    sbRows.Append("</tr>");
+                }
+            }
+
+            var htmlHeaders = StringBuilderCache.ReturnAndFree(sbHeader);
+            var htmlRows = StringBuilderCacheAlt.ReturnAndFree(sbRows);
+
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<table");
+
+            if (scopedParams.TryGetValue("id", out object id))
+                sb.Append(" id=\"").Append(id).Append("\"");
+            if (scopedParams.TryGetValue("className", out object className))
+                sb.Append(" class=\"").Append(className).Append("\"");
+
+            sb.Append(">");
+            if (scopedParams.TryGetValue("caption", out object caption))
+                sb.Append("<caption>").Append(caption).Append("</caption>");
+            
+            sb.Append("<thead>").Append(htmlHeaders).Append("</thead>");
+            sb.Append("<tbody>").Append(htmlRows).Append("</tbody>");
+            sb.Append("</table>");
+
+            var html = StringBuilderCache.ReturnAndFree(sb);
+            return html.ToRawString();
+        }
     }
 }
