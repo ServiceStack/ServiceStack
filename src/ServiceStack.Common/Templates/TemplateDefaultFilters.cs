@@ -71,8 +71,31 @@ namespace ServiceStack.Templates
         public long decrement(long value) => value - 1; 
         public long decrBy(long value, long by) => value - by; 
         public long decrementBy(long value, long by) => value - by;
-        public long mod(long value, long divisor) => 
-            value % divisor; 
+        public long mod(long value, long divisor) => value % divisor;
+
+        public double pi(double value) => Math.PI;
+        public double e(double value) => Math.E;
+        public double floor(double value) => Math.Floor(value);
+        public double ceiling(double value) => Math.Ceiling(value);
+        public double abs(double value) => Math.Abs(value);
+        public double acos(double value) => Math.Acos(value);
+        public double atan(double value) => Math.Atan(value);
+        public double atan2(double y, double x) => Math.Atan2(y, x);
+        public double cos(double value) => Math.Cos(value);
+        public double exp(double value) => Math.Exp(value);
+        public double log(double value) => Math.Log(value);
+        public double log(double a, double newBase) => Math.Log(a, newBase);
+        public double log10(double value) => Math.Log10(value);
+        public double pow(double x, double y) => Math.Pow(x, y);
+        public double round(double value) => Math.Round(value);
+        public double round(double value, int decimals) => Math.Round(value, decimals);
+        public int sign(double value) => Math.Sign(value);
+        public double sin(double value) => Math.Sin(value);
+        public double sinh(double value) => Math.Sinh(value);
+        public double sqrt(double value) => Math.Sqrt(value);
+        public double tan(double value) => Math.Tan(value);
+        public double tanh(double value) => Math.Tanh(value);
+        public double truncate(double value) => Math.Truncate(value);
 
         public string currency(decimal decimalValue) => currency(decimalValue, null); //required to support 1/2 vars
         public string currency(decimal decimalValue, string culture)
