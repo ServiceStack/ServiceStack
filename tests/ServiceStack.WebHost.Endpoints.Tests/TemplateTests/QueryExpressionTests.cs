@@ -49,5 +49,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 )
             ));
         }
+
+        [Test]
+        public void Does_parse_not_unary_expression()
+        {
+            ConditionExpression expr;
+            var it = new JsBinding("it");
+
+            "!it".ParseConditionExpression(out expr);
+            Assert.That(expr,
+                Is.EqualTo(new BinaryExpression(
+                    new UnaryExpression(JsNot.Operator, it),
+                    JsEquals.Operand,
+                    JsConstant.True)));
+
+            "!contains(items, it)".ParseConditionExpression(out expr);
+            Assert.That(expr,
+                Is.EqualTo(new BinaryExpression(
+                    new UnaryExpression(JsNot.Operator, 
+                        new JsExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }}),
+                    JsEquals.Operand,
+                    JsConstant.True)));
+        }
+
     }
 }

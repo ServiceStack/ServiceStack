@@ -794,6 +794,11 @@ namespace ServiceStack.Templates
 
         public object EvaluateToken(TemplateScopeContext scope, JsToken token)
         {
+            if (token is UnaryExpression u)
+            {
+                token = new JsConstant(u.Evaluate(scope));
+            }
+            
             return token is JsExpression expr && expr.Args.Count > 0
                 ? EvaluateMethod(expr, scope)
                 : EvaluateAnyBindings(token, scope);
