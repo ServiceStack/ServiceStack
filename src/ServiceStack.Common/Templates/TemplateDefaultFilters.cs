@@ -73,8 +73,8 @@ namespace ServiceStack.Templates
         public long decrementBy(long value, long by) => value - by;
         public long mod(long value, long divisor) => value % divisor;
 
-        public double pi(double value) => Math.PI;
-        public double e(double value) => Math.E;
+        public double pi() => Math.PI;
+        public double e() => Math.E;
         public double floor(double value) => Math.Floor(value);
         public double ceiling(double value) => Math.Ceiling(value);
         public double abs(double value) => Math.Abs(value);
