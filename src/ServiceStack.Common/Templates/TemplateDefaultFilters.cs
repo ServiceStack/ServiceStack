@@ -730,6 +730,34 @@ namespace ServiceStack.Templates
 
             return TypeConstants.EmptyTask;
         }
+        
+        public object property(object target, string propertyName)
+        {
+            if (target == null)
+                return null;
+
+            var props = TypeProperties.Get(target.GetType());
+            var fn = props.GetPublicGetter(propertyName);
+            if (fn == null)
+                throw new NotSupportedException($"There is no public Property '{propertyName}' on Type '{target.GetType().Name}'");
+
+            var value = fn(target);
+            return value;
+        }
+
+        public object field(object target, string fieldName)
+        {
+            if (target == null)
+                return null;
+
+            var props = TypeFields.Get(target.GetType());
+            var fn = props.GetPublicGetter(fieldName);
+            if (fn == null)
+                throw new NotSupportedException($"There is no public Field '{fieldName}' on Type '{target.GetType().Name}'");
+
+            var value = fn(target);
+            return value;
+        }
 
         public object first(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(first)).FirstOrDefault();
         public object first(TemplateScopeContext scope, object target, object expression) => first(scope, target, expression, null);

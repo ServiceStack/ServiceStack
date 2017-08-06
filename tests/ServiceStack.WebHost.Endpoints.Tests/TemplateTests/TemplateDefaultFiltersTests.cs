@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -730,6 +731,57 @@ Food      400
 Total    1550
 ".NormalizeNewLines()));
 
+        }
+
+        public class ModelValues
+        {
+            public int Id { get; set; }
+            public TimeSpan TimeSpan { get; set; }
+            public DateTime DateTime { get; set; }
+        }
+
+        [Test]
+        public void Can_order_by_different_data_types()
+        {
+            var items = new[]
+            {
+                new ModelValues { Id = 1, DateTime = new DateTime(2001,01,01), TimeSpan = TimeSpan.FromSeconds(1) }, 
+                new ModelValues { Id = 2, DateTime = new DateTime(2001,01,02), TimeSpan = TimeSpan.FromSeconds(2) },
+            };
+
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["items"] = items
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate(@"{{ items 
+                | orderByDescending: it.DateTime 
+                | first | property: Id }}"), Is.EqualTo("2"));
+            
+            Assert.That(context.EvaluateTemplate(@"{{ items 
+                | orderByDescending: it.TimeSpan 
+                | first | property: Id }}"), Is.EqualTo("2"));
+        }
+
+        [Test]
+        public void Can_use_not_operator_in_boolean_expression()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ ['A','B','C'] | assignTo: items }}
+{{ 'Y' | if(contains(items, 'A')) | otherwise('N') }}").Trim(), Is.EqualTo("Y"));
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ ['A','B','C'] | assignTo: items }}
+{{ 'Y' | if(!contains(items, 'D')) | otherwise('N') }}").Trim(), Is.EqualTo("Y"));
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ ['A','B','C'] | assignTo: items }}
+{{ 'Y' | if(not(contains(items, 'D'))) | otherwise('N') }}").Trim(), Is.EqualTo("Y"));
         }
 
     }

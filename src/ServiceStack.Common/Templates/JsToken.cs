@@ -120,7 +120,11 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
     {
         public abstract object Evaluate(object target);
         public static JsUnaryOperator GetUnaryOperator(JsBinding op) => 
-            op == JsSubtraction.Operator ? JsMinus.Operator : null;
+            (JsUnaryOperator) (
+                op == JsSubtraction.Operator 
+                ? JsMinus.Operator 
+                : op == JsNot.Operator
+                ? op : null);
     }
     public abstract class JsBooleanOperand : JsOperator
     {
