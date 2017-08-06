@@ -773,7 +773,7 @@ Total    1550
             
             Assert.That(context.EvaluateTemplate(@"
 {{ ['A','B','C'] | assignTo: items }}
-{{ 'Y' | if(contains(items, 'A')) | otherwise('N') }}").Trim(), Is.EqualTo("Y"));
+{{ 'Y' | if(!contains(items, 'A')) | otherwise('N') }}").Trim(), Is.EqualTo("N"));
 
             Assert.That(context.EvaluateTemplate(@"
 {{ ['A','B','C'] | assignTo: items }}
