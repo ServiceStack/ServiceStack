@@ -44,7 +44,7 @@ namespace ServiceStack.Testing
             this.PathInfo = pathInfo;
             this.InputStream = inputStream;
             this.QueryString = queryString.InWrapper();
-            this.FormData = new NameValueCollectionWrapper(formData ?? new NameValueCollection());
+            this.FormData = formData.InWrapper();
         }
 
         public object OriginalRequest => null;

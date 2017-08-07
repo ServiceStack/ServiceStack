@@ -1,4 +1,5 @@
 ﻿#if !NETCORE_SUPPORT
+using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Auth;
@@ -13,6 +14,8 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         public class CredentialsTestAppHost : BasicAppHost
         {
+            public CredentialsTestAppHost() : base(typeof(CredentialsServiceTests).GetAssembly()) {}
+
             public override void Configure(Container container)
             {
                 Plugins.Add(new AuthFeature(() => new AuthUserSession(),

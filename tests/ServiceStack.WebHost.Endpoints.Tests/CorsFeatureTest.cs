@@ -92,8 +92,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response[HttpHeaders.AllowCredentials], Is.EqualTo("true"));
         }
 
-        [Test, TestCaseSource("RestClients")]
-        public void GlobalCorsHasAccessControlHeaders(IRestClient client)
+        [Test]
+        public void GlobalCorsHasAccessControlHeaders()
         {
             appHost.LoadPlugin(new CorsFeature { AutoHandleOptionsRequests = false });
 

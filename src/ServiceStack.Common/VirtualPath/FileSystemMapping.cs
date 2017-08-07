@@ -51,15 +51,18 @@ namespace ServiceStack.VirtualPath
         public override IVirtualFile GetFile(string virtualPath)
         {
             var nodePath = GetRealVirtualPath(virtualPath);
-            return nodePath != null 
+            return !string.IsNullOrEmpty(nodePath)
                 ? base.GetFile(nodePath)
                 : null;
         }
 
         public override IVirtualDirectory GetDirectory(string virtualPath)
         {
+            if (virtualPath == Alias)
+                return RootDir;
+
             var nodePath = GetRealVirtualPath(virtualPath);
-            return nodePath != null
+            return !string.IsNullOrEmpty(nodePath)
                 ? base.GetDirectory(nodePath)
                 : null;
         }
