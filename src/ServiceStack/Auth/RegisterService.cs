@@ -85,6 +85,14 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
+            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            {
+                if (request.UserName != null)
+                    request.UserName = request.UserName.ToLower();
+                if (request.Email != null)
+                    request.Email = request.Email.ToLower();
+            }
+            
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
             if (validateResponse != null)
                 return validateResponse;
@@ -156,7 +164,8 @@ namespace ServiceStack.Auth
                 response = new RegisterResponse
                 {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                    ReferrerUrl = request.Continue
+                    ReferrerUrl = request.Continue,
+                    UserName = session.UserName,
                 };
             }
 

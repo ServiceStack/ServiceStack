@@ -166,6 +166,8 @@ namespace ServiceStack.Auth
 
         public bool UseDistinctRoleTables { get; set; }
 
+        public bool ForceCaseInsensitiveUserNameSearch { get; set; } = true;
+
         public abstract void Exec(Action<IDbConnection> fn);
 
         public abstract T Exec<T>(Func<IDbConnection, T> fn);
@@ -305,13 +307,37 @@ namespace ServiceStack.Auth
             });
         }
 
-        private static TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
+        private TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
         {
             var isEmail = userNameOrEmail.Contains("@");
-            var userAuth = isEmail
-                ? db.Select<TUserAuth>(q => q.Email.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault()
-                : db.Select<TUserAuth>(q => q.UserName.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault();
+            var lowerUserName = userNameOrEmail.ToLower();
+            
+            TUserAuth userAuth = null;
 
+            // Usernames/Emails are saved in Lower Case so we can do an exact seeach using lowerUserName
+            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            {
+                return isEmail
+                    ? db.Select<TUserAuth>(q => q.Email == lowerUserName).FirstOrDefault()
+                    : db.Select<TUserAuth>(q => q.UserName == lowerUserName).FirstOrDefault();
+            }
+            
+            // Try an exact search using index first
+            userAuth = isEmail
+                ? db.Select<TUserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
+                : db.Select<TUserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
+
+            if (userAuth != null)
+                return userAuth;
+
+            // Fallback to a non-index search if no exact match is found
+            if (ForceCaseInsensitiveUserNameSearch)
+            {
+                userAuth = isEmail
+                    ? db.Select<TUserAuth>(q => q.Email.ToLower() == lowerUserName).FirstOrDefault()
+                    : db.Select<TUserAuth>(q => q.UserName.ToLower() == lowerUserName).FirstOrDefault();
+            }
+            
             return userAuth;
         }
         

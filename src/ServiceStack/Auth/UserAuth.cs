@@ -16,8 +16,11 @@ namespace ServiceStack.Auth
         [AutoIncrement]
         public virtual int Id { get; set; }
 
+        [Index]
         public virtual string UserName { get; set; }
+        [Index]
         public virtual string Email { get; set; }
+
         public virtual string PrimaryEmail { get; set; }
         public virtual string PhoneNumber { get; set; }
         public virtual string FirstName { get; set; }

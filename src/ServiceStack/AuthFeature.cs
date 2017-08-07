@@ -40,6 +40,11 @@ namespace ServiceStack
         public bool DeleteSessionCookiesOnLogout { get; set; }
 
         public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+        
+        /// <summary>
+        /// Should UserName or Emails be saved in AuthRepository in LowerCase
+        /// </summary>
+        public bool SaveUserNamesInLowerCase { get; set; }
 
         [Obsolete("Please update your App to not rely on this behavior as we plan on removing it eventually")]
         public bool SkipAuthenticationIfAlreadyAuthenticated { get; set; }
