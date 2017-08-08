@@ -1368,7 +1368,7 @@ namespace ServiceStack.Templates
 
             sb.Append(">");
             if (scopedParams.TryGetValue("caption", out object caption))
-                sb.Append("<caption>").Append(caption).Append("</caption>");
+                sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
             
             sb.Append("<thead>").Append(htmlHeaders).Append("</thead>");
             sb.Append("<tbody>").Append(htmlRows).Append("</tbody>");
