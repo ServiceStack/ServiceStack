@@ -278,8 +278,7 @@ namespace ServiceStack.Templates
 
         internal async Task WritePageAsyncInternal(TemplatePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
         {
-            if (!page.HasInit)
-                await page.Init();
+            await page.Init(); //reload modified changes if needed
             
             foreach (var fragment in page.PageFragments)
             {
@@ -552,7 +551,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (value == null)
+            if (value == null || value == JsNull.Value)
                 return string.Empty; // treat as empty value if evaluated to null
 
             return value;
@@ -864,6 +863,10 @@ namespace ServiceStack.Templates
             {
                 var value = fn(scope, targetValue);
                 return value;
+            }
+            catch (KeyNotFoundException)
+            {
+                return JsNull.Value;
             }
             catch (Exception ex)
             {

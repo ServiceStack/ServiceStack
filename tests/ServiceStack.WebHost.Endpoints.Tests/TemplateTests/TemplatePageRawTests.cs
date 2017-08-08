@@ -927,6 +927,24 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo(""));
         }
 
+        [Test]
+        public void null_binding_on_existing_object_renders_empty_string()
+        {
+            var c = new Dictionary<string, object> { {"name", "the name"} };
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["c"] = c,
+                    ["it"] = new Dictionary<string, object> { {"customer", c} }
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ c.name }}"), Is.EqualTo("the name"));
+            Assert.That(context.EvaluateTemplate("{{ c.missing }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ it.customer | assign: c }}{{ c.missing }}"), Is.EqualTo(""));
+        }
+
     }
 
     public static class TestUtils
