@@ -551,7 +551,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (value == null)
+            if (value == null || value == JsNull.Value)
                 return string.Empty; // treat as empty value if evaluated to null
 
             return value;
