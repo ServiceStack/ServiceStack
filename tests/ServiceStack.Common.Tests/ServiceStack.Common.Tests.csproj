@@ -24,7 +24,7 @@
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.6.1" />
-    <PackageReference Include="Moq" Version="4.7.8" />
+    <PackageReference Include="Moq" Version="4.7.99" />
     <PackageReference Include="Wire" Version="0.8.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.4.1" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.0.2" />
@@ -65,10 +65,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.1.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
 
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />

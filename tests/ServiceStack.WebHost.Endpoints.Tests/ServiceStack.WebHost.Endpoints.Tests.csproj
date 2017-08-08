@@ -59,10 +59,9 @@
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
-    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.1.0" />
-    <PackageReference Include="System.Threading" Version="4.0.11" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.0.2" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+    <PackageReference Include="System.Threading" Version="4.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.1.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
