@@ -1321,7 +1321,7 @@ namespace ServiceStack.Templates
                         foreach (var key in keys)
                         {
                             sbHeader.Append('<').Append(headerTag).Append('>');
-                            sbHeader.Append(textStyle(key, headerStyle));
+                            sbHeader.Append(textStyle(key, headerStyle)?.HtmlEncode());
                             sbHeader.Append("</").Append(headerTag).Append('>');
                         }
                         sbHeader.Append("</tr>");
@@ -1331,7 +1331,8 @@ namespace ServiceStack.Templates
                     foreach (var key in keys)
                     {
                         var value = d[key];
-                        sbRows.Append("<td>").Append(value).Append("</td>");
+                        var encodedValue = value?.ToString()?.HtmlEncode();
+                        sbRows.Append("<td>").Append(encodedValue).Append("</td>");
                     }
                     sbRows.Append("</tr>");
                 }
