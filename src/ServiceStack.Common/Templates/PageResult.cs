@@ -864,6 +864,10 @@ namespace ServiceStack.Templates
                 var value = fn(scope, targetValue);
                 return value;
             }
+            catch (KeyNotFoundException)
+            {
+                return JsNull.Value;
+            }
             catch (Exception ex)
             {
                 var exResult = Format.OnExpressionException(this, ex);
