@@ -81,27 +81,32 @@ namespace ServiceStack.Templates
 
         public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            var cp = GetCodePage(virtualPath);
-            if (cp != null)
+            var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if path is nested, look for an exact match first
+            if (tryExactMatch)
             {
-                codePage = cp;
-                page = null;
-                return;
-            }
+                var cp = GetCodePage(virtualPath);
+                if (cp != null)
+                {
+                    codePage = cp;
+                    page = null;
+                    return;
+                }
 
-            var p = Pages.GetPage(virtualPath);
-            if (p != null)
-            {
-                page = p;
-                codePage = null;
-                return;
+                var p = Pages.GetPage(virtualPath);
+                if (p != null)
+                {
+                    page = p;
+                    codePage = null;
+                    return;
+                }
             }
             
+            //otherwise find closest match from page.VirtualPath
             var partentPath = fromVirtualPath;
             while (!string.IsNullOrEmpty(partentPath = partentPath.LastLeftPart('/')))
             {
                 var seekPath = partentPath.CombineWith(virtualPath);
-                cp = GetCodePage(seekPath);
+                var cp = GetCodePage(seekPath);
                 if (cp != null)
                 {
                     codePage = cp;
@@ -109,7 +114,7 @@ namespace ServiceStack.Templates
                     return;
                 }
                 
-                p = Pages.GetPage(seekPath);
+                var p = Pages.GetPage(seekPath);
                 if (p != null)
                 {
                     page = p;
