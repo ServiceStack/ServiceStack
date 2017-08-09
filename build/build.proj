@@ -467,12 +467,12 @@
 
     <!-- Silverlight -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.SL5.csproj"
-             Targets="Build"
+             Targets="Restore;Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration);Optimize=True;DebugSymbols=True;DefineConstants=SL5;Platform=Any CPU;OutputPath=bin/SL5;DocumentationFile=bin/SL5/ServiceStack.Text.xml" />
 
     <!-- PCL -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.PCL.csproj"
-             Targets="Build"
+             Targets="Restore;Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <Copy SourceFiles="%(ClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
@@ -501,7 +501,7 @@
 
     <!-- PCL -->
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.PCL.csproj"
-            Targets="Build"
+            Targets="Restore;Build"
             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <Copy SourceFiles="%(HttpClientPclFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
