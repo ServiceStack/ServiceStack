@@ -16,7 +16,9 @@ namespace ServiceStack.Templates
 {
     public class RawString : IRawString
     {
-        private string value;
+        public static RawString Empty = new RawString("");
+        
+        private readonly string value;
         public RawString(string value) => this.value = value;
         public string ToRawString() => value;
     }

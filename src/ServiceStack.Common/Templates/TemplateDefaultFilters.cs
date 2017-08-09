@@ -1356,6 +1356,7 @@ namespace ServiceStack.Templates
 
             scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
             scopedParams.TryGetValue("headerTag", out object oHeaderTag);
+            scopedParams.TryGetValue("emptyCaption", out object emptyCaption);
             var headerTag = oHeaderTag as string ?? "th";
             var headerStyle = oHeaderStyle as string ?? "splitCase";
 
@@ -1391,6 +1392,10 @@ namespace ServiceStack.Templates
                 }
             }
 
+            var isEmpty = sbRows.Length == 0;
+            if (isEmpty && emptyCaption == null)
+                return RawString.Empty;
+
             var htmlHeaders = StringBuilderCache.ReturnAndFree(sbHeader);
             var htmlRows = StringBuilderCacheAlt.ReturnAndFree(sbRows);
 
@@ -1403,11 +1408,17 @@ namespace ServiceStack.Templates
                 sb.Append(" class=\"").Append(className).Append("\"");
 
             sb.Append(">");
-            if (scopedParams.TryGetValue("caption", out object caption))
+            if (!scopedParams.TryGetValue("caption", out object caption))
+                caption = emptyCaption;
+
+            if (caption != null)
                 sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
-            
-            sb.Append("<thead>").Append(htmlHeaders).Append("</thead>");
-            sb.Append("<tbody>").Append(htmlRows).Append("</tbody>");
+                
+            if (htmlHeaders.Length > 0)
+                sb.Append("<thead>").Append(htmlHeaders).Append("</thead>");
+            if (htmlRows.Length > 0)
+                sb.Append("<tbody>").Append(htmlRows).Append("</tbody>");
+
             sb.Append("</table>");
 
             var html = StringBuilderCache.ReturnAndFree(sb);

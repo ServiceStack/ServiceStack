@@ -879,7 +879,8 @@ Total    1550
                     ["arg"] = new List<Dictionary<string,object>>
                     {
                         new Dictionary<string, object>{ { "a", 1 } }
-                    } 
+                    },
+                    ["emptyArg"] = new List<Dictionary<string,object>>()
                 }
             }.Init();
 
@@ -894,6 +895,11 @@ Total    1550
             
             Assert.That(context.EvaluateTemplate("{{ arg | htmltable({ }) }}"),
                 Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+            
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmltable }}"), Is.EqualTo(""));
+            
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmltable({ emptyCaption: 'no rows' }) }}"), 
+                Is.EqualTo("<table><caption>no rows</caption></table>"));
         }
 
         [Test]
