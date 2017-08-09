@@ -901,5 +901,69 @@ Total    1550
             Assert.That(output, Is.EqualTo("<i>arg</i><b>value</b><i>enmptyArg</i><b></b><i>nullArg</i><b></b>"));
         }
 
+        [Test]
+        public void Does_resolve_partials_and_files_using_cascading_resolution()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateProtectedFilters() }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("root-partial.html", @"root-partial.html");
+            context.VirtualFiles.WriteFile("root-file.txt", @"root-file.txt");
+            context.VirtualFiles.WriteFile("partial.html", @"partial.html");
+            context.VirtualFiles.WriteFile("file.txt", @"file.txt");
+
+            context.VirtualFiles.WriteFile("dir/partial.html", @"dir/partial.html");
+            context.VirtualFiles.WriteFile("dir/file.txt", @"dir/file.txt");
+
+            context.VirtualFiles.WriteFile("dir/dir-partial.html", @"dir/dir-partial.html");
+            context.VirtualFiles.WriteFile("dir/dir-file.txt", @"dir/dir-file.txt");
+
+            context.VirtualFiles.WriteFile("dir/sub/partial.html", @"dir/sub/partial.html");
+            context.VirtualFiles.WriteFile("dir/sub/file.txt", @"dir/sub/file.txt");
+            
+            context.VirtualFiles.WriteFile("page.html", @"partial: {{ 'partial' | partial }}
+file: {{ 'file.txt' | includeFile }}
+root-partial: {{ 'root-partial' | partial }}
+root-file: {{ 'root-file.txt' | includeFile }}");
+
+            context.VirtualFiles.WriteFile("dir/page.html", @"partial: {{ 'partial' | partial }}
+file: {{ 'file.txt' | includeFile }}
+root-partial: {{ 'root-partial' | partial }}
+root-file: {{ 'root-file.txt' | includeFile }}");
+
+            context.VirtualFiles.WriteFile("dir/sub/page.html", @"partial: {{ 'partial' | partial }}
+file: {{ 'file.txt' | includeFile }}
+root-partial: {{ 'root-partial' | partial }}
+root-file: {{ 'root-file.txt' | includeFile }}
+dir-partial: {{ 'dir-partial' | partial }}
+dir-file: {{ 'dir-file.txt' | includeFile }}");
+            
+            Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
+partial: partial.html
+file: file.txt
+root-partial: root-partial.html
+root-file: root-file.txt".NormalizeNewLines()));
+            
+            Assert.That(new PageResult(context.GetPage("dir/page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
+partial: dir/partial.html
+file: dir/file.txt
+root-partial: root-partial.html
+root-file: root-file.txt".NormalizeNewLines()));
+            
+            Assert.That(new PageResult(context.GetPage("dir/sub/page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
+partial: dir/sub/partial.html
+file: dir/sub/file.txt
+root-partial: root-partial.html
+root-file: root-file.txt
+dir-partial: dir/dir-partial.html
+dir-file: dir/dir-file.txt
+".NormalizeNewLines()));
+        }
+
     }
 }

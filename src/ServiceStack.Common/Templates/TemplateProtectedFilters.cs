@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using ServiceStack.IO;
 using ServiceStack.Text;
 
 namespace ServiceStack.Templates
@@ -12,20 +13,33 @@ namespace ServiceStack.Templates
     {
         public async Task includeFile(TemplateScopeContext scope, string virtualPath)
         {
-            var file = scope.Context.VirtualFiles.GetFile(virtualPath);
+            IVirtualFile file = null;
+            var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if nested path specified, look for an exact match first
+            if (tryExactMatch)
+                file = scope.Context.VirtualFiles.GetFile(virtualPath);                
+
             if (file == null)
             {
-                var partentPath = scope.PageResult.VirtualPath;
-                while (!string.IsNullOrEmpty(partentPath = partentPath.LastLeftPart('/')))
+                var fromVirtualPath = scope.PageResult.VirtualPath;
+                var parentPath = fromVirtualPath.IndexOf('/') >= 0
+                    ? fromVirtualPath.LastLeftPart('/')
+                    : "";
+                
+                do
                 {
-                    var seekPath = partentPath.CombineWith(virtualPath);
+                    var seekPath = parentPath.CombineWith(virtualPath);
                     file = scope.Context.VirtualFiles.GetFile(seekPath);
                     if (file != null)
                         break;
-                
-                    if (partentPath.IndexOf('/') == -1)
+
+                    if (parentPath == "")
                         break;
-                }
+                    
+                    parentPath = parentPath.IndexOf('/') >= 0
+                        ? parentPath.LastLeftPart('/')
+                        : "";
+
+                } while (true);
                 
                 if (file == null)
                     throw new FileNotFoundException($"includeFile '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
