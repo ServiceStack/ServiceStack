@@ -61,7 +61,8 @@ namespace ServiceStack
 
         protected virtual IHttpHandler RequestHandler(string httpMethod, string pathInfo, string filePath)
         {
-            if (catchAllPathsNotFound.ContainsKey(pathInfo)) return null;
+            if (!DebugMode && catchAllPathsNotFound.ContainsKey(pathInfo))
+                return null;
 
             var codePage = Pages.GetCodePage(pathInfo);
             if (codePage != null)
@@ -82,9 +83,13 @@ namespace ServiceStack
                     StatusCode = HttpStatusCode.MovedPermanently
                 };
 
-            if (catchAllPathsNotFound.Count > 10000) //prevent DOS
-                catchAllPathsNotFound.Clear();
-            catchAllPathsNotFound[pathInfo] = 1;
+            if (!DebugMode)
+            {
+                if (catchAllPathsNotFound.Count > 10000) //prevent DOS
+                    catchAllPathsNotFound.Clear();
+                catchAllPathsNotFound[pathInfo] = 1;
+            }
+            
             return null;
         }
     }
