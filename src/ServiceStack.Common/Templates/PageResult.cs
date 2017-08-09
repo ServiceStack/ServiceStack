@@ -386,6 +386,22 @@ namespace ServiceStack.Templates
 
             if (value == null)
             {
+                if (var.InitialExpression != null && var.InitialExpression.IsBinding)
+                {
+                    var expr = var.InitialExpression.NameString;
+                    expr = expr.Trim();
+                    var pos = expr.IndexOfAny(VarDelimiters, 0);
+                    if (pos > 0)
+                    {
+                        var target = expr.Substring(0, pos);
+
+                        //allow nested null bindings from an existing target to evaluate to an empty string 
+                        var targetValue = GetValue(target, scope);
+                        if (targetValue != null)
+                            return string.Empty;
+                    }
+                }
+                
                 if (!var.Binding.HasValue) 
                     return null;
 
