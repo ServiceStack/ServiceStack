@@ -74,10 +74,7 @@ namespace ServiceStack.Templates
             return itemScope;
         }
 
-        public static async Task WritePageAsync(this TemplateScopeContext scope)
-        {
-            await scope.PageResult.WritePageAsync(scope.Page, scope);            
-        }
+        public static Task WritePageAsync(this TemplateScopeContext scope) => scope.PageResult.WritePageAsync(scope.Page, scope);
 
         public static TemplateScopeContext ScopeWithParams(this TemplateScopeContext parentContext, Dictionary<string, object> scopedParams)
         {

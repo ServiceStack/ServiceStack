@@ -881,5 +881,25 @@ Total    1550
                 Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
         }
 
+        [Test]
+        public void Does_not_emit_binding_on_empty_Key_Value()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["row"] = new List<KeyValuePair<string,object>>
+                    {
+                        new KeyValuePair<string, object>("arg", "value"),
+                        new KeyValuePair<string, object>("enmptyArg", ""),
+                        new KeyValuePair<string, object>("nullArg", null),
+                    } 
+                }
+            }.Init();
+
+            var output = context.EvaluateTemplate("{{ row | select: <i>{ it.Key }</i><b>{ it.Value }</b> }}");
+            Assert.That(output, Is.EqualTo("<i>arg</i><b>value</b><i>enmptyArg</i><b></b><i>nullArg</i><b></b>"));
+        }
+
     }
 }
