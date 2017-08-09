@@ -340,6 +340,23 @@ namespace CheckWeb
         };
     }
 
+    [Route("/views/request")]
+    public class ViewRequest
+    {
+        public string Name { get; set; }
+    }
+
+    public class ViewResponse
+    {
+        public string Result { get; set; }
+    }
+
+    public class ViewServices : Service
+    {
+        public object Get(ViewRequest request) => 
+            new ViewResponse { Result = request.Name };
+    }
+
     [Route("/index")]
     public class IndexPage
     {
