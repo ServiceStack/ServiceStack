@@ -306,6 +306,29 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
 
+        [HandleUnknownValue]
+        public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
+
+        [HandleUnknownValue]
+        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
+
+        [HandleUnknownValue]
+        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
+
+        public bool isEmpty(object target)
+        {
+            if (target == null)
+                return true;
+
+            if (target is string s)
+                return s == string.Empty;
+
+            if (target is IEnumerable e)
+                return !e.GetEnumerator().MoveNext();
+
+            return false;
+        }
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 

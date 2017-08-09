@@ -832,7 +832,11 @@ Total    1550
             {
                 Args =
                 {
-                    ["arg"] = "value" 
+                    ["arg"] = "value",
+                    ["list"] = new[]{ 1, 2, 3 },
+                    ["emptyList"] = new int[0],
+                    ["map"] = new Dictionary<string, object> { {"a", 1}, {"b", 2} },
+                    ["emptyMap"] = new Dictionary<string, object> { },
                 }
             }.Init();
             
@@ -852,6 +856,17 @@ Total    1550
 
             Assert.That(context.EvaluateTemplate("{{ arg | selectPartial: h1 }}"), Is.EqualTo("<h1>value</h1>"));
             Assert.That(context.EvaluateTemplate("{{ noArg | selectPartial: h1 }}"), Is.EqualTo(""));
+            
+            Assert.That(context.EvaluateTemplate("{{ list | ifNotEmpty | join }}"), Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateTemplate("{{ noList | ifNotEmpty }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNotEmpty(list) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNotEmpty(emptyList) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNotEmpty(noList) }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifEmpty(list) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifEmpty(emptyList) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifEmpty(noList) }}"), Is.EqualTo("1"));
         }
 
         [Test]
