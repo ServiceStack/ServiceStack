@@ -102,8 +102,10 @@ namespace ServiceStack.Templates
             }
             
             //otherwise find closest match from page.VirtualPath
-            var partentPath = fromVirtualPath;
-            while (!string.IsNullOrEmpty(partentPath = partentPath.LastLeftPart('/')))
+            var partentPath = fromVirtualPath.IndexOf('/') >= 0
+                ? fromVirtualPath.LastLeftPart('/')
+                : "";
+            do
             {
                 var seekPath = partentPath.CombineWith(virtualPath);
                 var cp = GetCodePage(seekPath);
@@ -113,7 +115,7 @@ namespace ServiceStack.Templates
                     page = null;
                     return;
                 }
-                
+
                 var p = Pages.GetPage(seekPath);
                 if (p != null)
                 {
@@ -121,10 +123,12 @@ namespace ServiceStack.Templates
                     codePage = null;
                     return;
                 }
-                
-                if (partentPath.IndexOf('/') == -1)
-                    break;
-            }
+
+                partentPath = fromVirtualPath.IndexOf('/') >= 0
+                    ? fromVirtualPath.LastLeftPart('/')
+                    : "";
+
+            } while (!string.IsNullOrEmpty(partentPath));
             
             throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");
         }
