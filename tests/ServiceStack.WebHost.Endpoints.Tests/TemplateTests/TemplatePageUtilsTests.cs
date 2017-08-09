@@ -604,5 +604,23 @@ products
             Assert.That(stringFragment.Value, Is.EqualTo("bar"));
         }
 
+        [Test]
+        public void Can_parse_empty_arguments()
+        {
+            object value;
+            JsBinding binding;
+            JsExpression fn;
+            
+            "fn()".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(((JsExpression)binding).Name, Is.EqualTo("fn"));
+            "fn({})".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
+            "fn({ })".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
+            "fn({  })".ToStringSegment().ParseNextToken(out value, out binding);
+            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
+        }
+
+
     }
 }

@@ -530,6 +530,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
                 {
+                    literal = literal.AdvancePastWhitespace();
                     if (literal.GetChar(0) == '}')
                     {
                         literal = literal.Advance(1);
@@ -587,6 +588,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
                 {
+                    literal = literal.AdvancePastWhitespace();
                     if (literal.GetChar(0) == ']')
                     {
                         literal = literal.Advance(1);

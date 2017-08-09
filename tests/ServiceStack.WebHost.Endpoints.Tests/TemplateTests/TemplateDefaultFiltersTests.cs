@@ -854,5 +854,32 @@ Total    1550
             Assert.That(context.EvaluateTemplate("{{ noArg | selectPartial: h1 }}"), Is.EqualTo(""));
         }
 
+        [Test]
+        public void Can_call_htmltable_with_empty_arg()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = new List<Dictionary<string,object>>
+                    {
+                        new Dictionary<string, object>{ { "a", 1 } }
+                    } 
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ arg | htmltable }}"),
+                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+
+            Assert.That(context.EvaluateTemplate("{{ arg | htmltable() }}"),
+                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+            
+            Assert.That(context.EvaluateTemplate("{{ arg | htmltable({}) }}"),
+                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+            
+            Assert.That(context.EvaluateTemplate("{{ arg | htmltable({ }) }}"),
+                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+        }
+
     }
 }
