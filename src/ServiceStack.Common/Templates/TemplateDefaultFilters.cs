@@ -298,10 +298,13 @@ namespace ServiceStack.Templates
         public bool isNotNull(object test) => test != null;
 
         [HandleUnknownValue]
-        public object ifNotNull(object target) => target;
-
-        [HandleUnknownValue]
         public object ifExists(object target) => target;
+        [HandleUnknownValue]
+        public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
+        [HandleUnknownValue]
+        public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
+        [HandleUnknownValue]
+        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
 
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);

@@ -839,11 +839,17 @@ Total    1550
             context.VirtualFiles.WriteFile("h1.html", "<h1>{{ it }}</h1>");
             
             
-            Assert.That(context.EvaluateTemplate("{{ arg | ifNotNull }}"), Is.EqualTo("value"));
             Assert.That(context.EvaluateTemplate("{{ arg | ifExists }}"), Is.EqualTo("value"));
-            Assert.That(context.EvaluateTemplate("{{ noArg | ifNotNull }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ noArg | ifExists }}"), Is.EqualTo(""));
-            
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifExists(arg) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifExists(noArg) }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNotExists(arg) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNotExists(noArg) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNo(arg) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifNo(noArg) }}"), Is.EqualTo("1"));
+
             Assert.That(context.EvaluateTemplate("{{ arg | selectPartial: h1 }}"), Is.EqualTo("<h1>value</h1>"));
             Assert.That(context.EvaluateTemplate("{{ noArg | selectPartial: h1 }}"), Is.EqualTo(""));
         }
