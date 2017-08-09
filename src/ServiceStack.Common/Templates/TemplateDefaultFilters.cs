@@ -1408,7 +1408,9 @@ namespace ServiceStack.Templates
                 sb.Append(" class=\"").Append(className).Append("\"");
 
             sb.Append(">");
-            if (!scopedParams.TryGetValue("caption", out object caption))
+
+            scopedParams.TryGetValue("caption", out object caption);
+            if (isEmpty)
                 caption = emptyCaption;
 
             if (caption != null)
