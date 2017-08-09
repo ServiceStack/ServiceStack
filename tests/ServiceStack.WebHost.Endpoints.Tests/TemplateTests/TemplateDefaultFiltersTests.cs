@@ -825,5 +825,28 @@ Total    1550
                 Is.EqualTo("I owe $123.45"));
         }
 
+        [Test]
+        public void Can_use_exist_tests_on_non_existing_arguments()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "value" 
+                }
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("h1.html", "<h1>{{ it }}</h1>");
+            
+            
+            Assert.That(context.EvaluateTemplate("{{ arg | ifNotNull }}"), Is.EqualTo("value"));
+            Assert.That(context.EvaluateTemplate("{{ arg | ifExists }}"), Is.EqualTo("value"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | ifNotNull }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ noArg | ifExists }}"), Is.EqualTo(""));
+            
+            Assert.That(context.EvaluateTemplate("{{ arg | selectPartial: h1 }}"), Is.EqualTo("<h1>value</h1>"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | selectPartial: h1 }}"), Is.EqualTo(""));
+        }
+
     }
 }

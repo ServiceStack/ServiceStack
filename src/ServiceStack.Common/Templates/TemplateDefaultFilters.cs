@@ -297,6 +297,12 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public bool isNotNull(object test) => test != null;
 
+        [HandleUnknownValue]
+        public object ifNotNull(object target) => target;
+
+        [HandleUnknownValue]
+        public object ifExists(object target) => target;
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
@@ -1198,7 +1204,9 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"'{nameof(scopeVars)}' expects a Dictionary but received a '{target.GetType().Name}'");
         }
         
+        [HandleUnknownValue]
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
+        [HandleUnknownValue]
         public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions) 
         {
             if (target == null)
@@ -1224,7 +1232,9 @@ namespace ServiceStack.Templates
             }
         }
 
+        [HandleUnknownValue]
         public Task selectPartial(TemplateScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null); 
+        [HandleUnknownValue]
         public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams) 
         {
             if (target == null)

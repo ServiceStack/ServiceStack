@@ -34,7 +34,9 @@ namespace ServiceStack.Templates
         
         public virtual bool HandlesUnknownValue(string name, int argsCount)
         {
-            var method = GetInvokerMethod(name, argsCount);
+            var method = GetInvokerMethod(name, argsCount)
+                         ?? GetContextFilterInvokerMethod(name, argsCount + 1)
+                         ?? GetContextBlockInvokerMethod(name, argsCount + 1);
             return method?.AllAttributes().Any(x => x is HandleUnknownValueAttribute) == true;
         }
 
