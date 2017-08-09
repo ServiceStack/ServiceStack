@@ -34,7 +34,7 @@
     <RegexTransform Items="@(RegexTransform)" />
 
     <ItemGroup>
-      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net45+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net40+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
     </ItemGroup>
 
     <!-- Signed .NET 4.5 -->
