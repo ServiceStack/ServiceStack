@@ -16,6 +16,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {{ numArray[1] }}
 ").Trim(), Is.EqualTo("4"));
         }
+
+        [Test]
+        public void Does_not_execute_do_on_null_or_none_existing_value()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1 | assignTo: arg }}
+{{ arg | do: assign('doArg', incr(it)) }}
+{{ doArg }}
+").Trim(), Is.EqualTo("2"));
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ null | assignTo: arg }}
+{{ arg | do: assign('doArg', 2) }}
+{{ doArg }}
+").Trim(), Is.EqualTo("{{ doArg }}"));
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ noArg | do: assign('doArg', 2) }}
+{{ doArg }}
+").Trim(), Is.EqualTo("{{ doArg }}"));
+        }
         
         [Test]
         public void Can_assign_array_numbers()

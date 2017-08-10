@@ -805,18 +805,32 @@ namespace ServiceStack.Templates
             return IgnoreResult.Value;
         }
 
+        [HandleUnknownValue]
         public Task @do(TemplateScopeContext scope, object target, object expression) => @do(scope, target, expression, null);
+        [HandleUnknownValue]
         public Task @do(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            var items = target.AssertEnumerable(nameof(@do));
+            if (target == null)
+                return TypeConstants.EmptyTask;
+            
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
             var literal = scope.AssertExpression(nameof(@do), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
-
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            var i = 0;
-            foreach (var item in items)
+
+            if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
-                scope.AddItemToScope(itemBinding, item, i++);
+                var items = target.AssertEnumerable(nameof(@do));
+
+                var i = 0;
+                foreach (var item in items)
+                {
+                    scope.AddItemToScope(itemBinding, item, i++);
+                    var result = scope.Evaluate(value, binding);
+                }
+            }
+            else
+            {
+                scope.AddItemToScope(itemBinding, target);
                 var result = scope.Evaluate(value, binding);
             }
 
