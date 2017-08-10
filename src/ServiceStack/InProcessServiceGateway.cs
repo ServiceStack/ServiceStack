@@ -139,6 +139,7 @@ namespace ServiceStack
         public TResponse Send<TResponse>(object requestDto)
         {
             var holdDto = req.Dto;
+            var holdOp = req.OperationName;
             var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
 
@@ -150,6 +151,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
+                req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
@@ -158,6 +160,7 @@ namespace ServiceStack
         public async Task<TResponse> SendAsync<TResponse>(object requestDto, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
+            var holdOp = req.OperationName;
             var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
 
@@ -171,6 +174,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
+                req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
@@ -233,6 +237,7 @@ namespace ServiceStack
         public void Publish(object requestDto)
         {
             var holdDto = req.Dto;
+            var holdOp = req.OperationName;
             var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
 
@@ -247,6 +252,7 @@ namespace ServiceStack
             finally
             {
                 req.Dto = holdDto;
+                req.OperationName = holdOp;
                 req.RequestAttributes = holdAttrs;
                 ResetVerb(holdVerb);
             }
@@ -255,6 +261,7 @@ namespace ServiceStack
         public Task PublishAsync(object requestDto, CancellationToken token = new CancellationToken())
         {
             var holdDto = req.Dto;
+            var holdOp = req.OperationName;
             var holdAttrs = req.RequestAttributes;
             var holdVerb = SetVerb(requestDto);
             
@@ -266,6 +273,7 @@ namespace ServiceStack
             return HostContext.Async.ContinueWith(req, responseTask, task => 
                 {
                     req.Dto = holdDto;
+                    req.OperationName = holdOp;
                     req.RequestAttributes = holdAttrs;
                     ResetVerb(holdVerb);
                 }, token);

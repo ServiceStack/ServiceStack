@@ -317,7 +317,7 @@ namespace CheckWeb
     }
 
     [Route("/test/html")]
-    public class TestHtml
+    public class TestHtml : IReturn<TestHtml>
     {
         public string Name { get; set; }
     }
@@ -353,8 +353,11 @@ namespace CheckWeb
 
     public class ViewServices : Service
     {
-        public object Get(ViewRequest request) => 
-            new ViewResponse { Result = request.Name };
+        public object Get(ViewRequest request)
+        {
+            var result = Gateway.Send(new TestHtml());
+            return new ViewResponse { Result = request.Name };
+        }
     }
 
     [Route("/index")]
