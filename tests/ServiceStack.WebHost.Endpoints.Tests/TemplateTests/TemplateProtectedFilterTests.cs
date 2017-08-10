@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -233,5 +234,22 @@ includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
 includFile = File Contents
 ".NormalizeNewLines()));
         }
+
+        #if NET45
+        [Test]
+        public void Does_use_dollar_as_currency_symbol_when_InvariantCulture()
+        {
+            var hold = Thread.CurrentThread.CurrentCulture; 
+            Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+            
+            var context = new TemplateContext().Init();
+
+            var output = context.EvaluateTemplate("{{ 12.345 | currency }}");
+            Assert.That(output, Is.EqualTo("$12.35"));
+
+            Thread.CurrentThread.CurrentCulture = hold;
+        }
+        #endif
+
     }
 }

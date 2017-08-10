@@ -164,8 +164,15 @@ namespace ServiceStack.Templates
             TemplateFilters.Add(new TemplateHtmlFilters());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
 
+            var culture = CultureInfo.CurrentCulture;
+            if (Equals(culture, CultureInfo.InvariantCulture))
+            {
+                culture = (CultureInfo) culture.Clone();
+                culture.NumberFormat.CurrencySymbol = "$";
+            }
+            
             Args[TemplateConstants.MaxQuota] = 10000;
-            Args[TemplateConstants.DefaultCulture] = CultureInfo.CurrentCulture;
+            Args[TemplateConstants.DefaultCulture] = culture;
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
             Args[TemplateConstants.DefaultTimeFormat] = "h\\:mm\\:ss";
