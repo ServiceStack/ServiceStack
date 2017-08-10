@@ -161,6 +161,7 @@ namespace ServiceStack.Templates
             Pages = new TemplatePages(this);
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
+            TemplateFilters.Add(new TemplateHtmlFilters());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
 
             Args[TemplateConstants.MaxQuota] = 10000;
