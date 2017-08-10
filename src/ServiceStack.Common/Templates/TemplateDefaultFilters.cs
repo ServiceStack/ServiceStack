@@ -298,6 +298,8 @@ namespace ServiceStack.Templates
 
         [HandleUnknownValue]
         public bool isNotNull(object test) => test != null;
+        [HandleUnknownValue]
+        public bool exists(object test) => test != null;
 
         [HandleUnknownValue]
         public object ifExists(object target) => target;
