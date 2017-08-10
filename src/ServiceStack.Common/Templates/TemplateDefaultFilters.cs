@@ -278,6 +278,8 @@ namespace ServiceStack.Templates
         
         [HandleUnknownValue]
         public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        [HandleUnknownValue]
+        public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         [HandleUnknownValue]
         public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
