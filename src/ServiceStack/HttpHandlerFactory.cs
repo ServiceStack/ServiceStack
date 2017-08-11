@@ -13,9 +13,9 @@ namespace ServiceStack
 {
     public class HttpHandlerFactory : IHttpHandlerFactory
     {
-        static readonly List<string> WebHostRootFileNames = new List<string>();
-        private static string WebHostPhysicalPath = null;
-        private static string DefaultRootFileName = null;
+        public static readonly List<string> WebHostRootFileNames = new List<string>();
+        public static string WebHostPhysicalPath = null;
+        public static string DefaultRootFileName = null;
         //internal static string ApplicationBaseUrl = null;
         private static IHttpHandler DefaultHttpHandler = null;
         private static RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
