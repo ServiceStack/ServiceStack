@@ -13,7 +13,7 @@ namespace ServiceStack
 {
     public class HttpHandlerFactory : IHttpHandlerFactory
     {
-        public static readonly List<string> WebHostRootFileNames = new List<string>();
+        public static HashSet<string> WebHostRootFileNames { get; private set; }
         public static string WebHostPhysicalPath = null;
         public static string DefaultRootFileName = null;
         //internal static string ApplicationBaseUrl = null;
@@ -43,6 +43,11 @@ namespace ServiceStack
                 var appHost = HostContext.AppHost;
                 var config = appHost.Config;
 
+                var isWin = !Env.IsUnix;
+                WebHostRootFileNames = isWin 
+                    ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>();
+
                 var isAspNetHost = HostContext.IsAspNetHost;
                 WebHostPhysicalPath = appHost.VirtualFileSources.RootDirectory.RealPath;
                 HostAutoRedirectsDirs = isAspNetHost && !Env.IsMono;
@@ -70,24 +75,24 @@ namespace ServiceStack
                                 DefaultHttpHandler = new StaticFileHandler(file);
                         }
                     }
-                    WebHostRootFileNames.Add(fileNameLower);
+                    WebHostRootFileNames.Add(file.Name);
                 }
 
                 foreach (var dir in appHost.VirtualFileSources.GetRootDirectories())
                 {
-                    WebHostRootFileNames.Add(dir.Name.ToLowerInvariant());
+                    WebHostRootFileNames.Add(dir.Name);
                 }
 
                 if (!string.IsNullOrEmpty(config.DefaultRedirectPath))
                 {
-                    DefaultHttpHandler = new RedirectHttpHandler {RelativeUrl = config.DefaultRedirectPath};
-                    NonRootModeDefaultHttpHandler = new RedirectHttpHandler {RelativeUrl = config.DefaultRedirectPath};
+                    DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.DefaultRedirectPath };
+                    NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.DefaultRedirectPath };
                 }
 
                 if (DefaultHttpHandler == null && !string.IsNullOrEmpty(config.MetadataRedirectPath))
                 {
-                    DefaultHttpHandler = new RedirectHttpHandler {RelativeUrl = config.MetadataRedirectPath};
-                    NonRootModeDefaultHttpHandler = new RedirectHttpHandler {RelativeUrl = config.MetadataRedirectPath};
+                    DefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
+                    NonRootModeDefaultHttpHandler = new RedirectHttpHandler { RelativeUrl = config.MetadataRedirectPath };
                 }
 
                 if (DefaultHttpHandler == null)
@@ -319,7 +324,7 @@ namespace ServiceStack
             if (restPath != null)
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
-            var existingFile = pathParts[0].ToLower();
+            var existingFile = pathParts[0];
             var matchesRootDirOrFile = appHost.Config.DebugMode
                 ? appHost.VirtualFileSources.FileExists(existingFile) ||
                   appHost.VirtualFileSources.DirectoryExists(existingFile)
