@@ -14,7 +14,7 @@ namespace ServiceStack.VirtualPath
     [Obsolete("Renamed to MultiVirtualFiles")]
     public class MultiVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
     {
-        protected IList<IVirtualPathProvider> ChildProviders;
+        public List<IVirtualPathProvider> ChildProviders { get; set; }
 
         public override IVirtualDirectory RootDirectory => ChildProviders.FirstOrDefault().RootDirectory;
 
