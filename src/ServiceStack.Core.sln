@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Hosts", "Hosts", "{43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}"
 EndProject
@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{FA46AB18
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{312EC6C7-3026-472C-85A1-8189207DA807}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Core.SelfHost", "ServiceStack.Core.SelfHost\ServiceStack.Core.SelfHost.csproj", "{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Core.SelfHostTests", "..\tests\ServiceStack.Core.SelfHostTests\ServiceStack.Core.SelfHostTests.csproj", "{97002C10-48C4-4711-961B-F3E3D4FC3E4E}"
 EndProject
@@ -64,10 +62,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -137,7 +131,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C59FEB65-D1FB-477F-B9F9-7CC2C7397D1A} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E} = {312EC6C7-3026-472C-85A1-8189207DA807}
 		{F62296EA-27ED-46F7-8782-E84555AB4438} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 		{0848319C-7A4C-4135-B14E-8376AD7AD7CE} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}

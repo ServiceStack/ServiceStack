@@ -1,25 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+
+using Funq;
 using ServiceStack;
 using ServiceStack.Logging;
-using Funq;
 using ServiceStack.Host;
 using ServiceStack.Text;
-
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.Extensions.Primitives;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
@@ -29,31 +22,24 @@ namespace ServiceStack.Core.SelfHost
     public class Startup
     {
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
+        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole();
-
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            app.UseDeveloperExceptionPage();
 
             app.UseServiceStack(new AppHost());
 
-            app.Run(async context =>
+            app.Run(async (context) =>
             {
-                context.Request.EnableRewind();
-                await context.Response.WriteAsync("Hello World!!!");
+                await context.Response.WriteAsync("Hello World!");
             });
         }
     }
-
 
     [Route("/hello")]
     [Route("/hello/{Name}")]
@@ -126,7 +112,7 @@ namespace ServiceStack.Core.SelfHost
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base(".NET Core Test", typeof(MyServices).GetTypeInfo().Assembly) { }
+            : base(".NET Core Test", typeof(MyServices).GetAssembly()) { }
 
         public override void Configure(Container container)
         {

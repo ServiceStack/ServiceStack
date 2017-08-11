@@ -1,38 +1,23 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>ServiceStack.Core.SelfHost</AssemblyName>
-    <OutputType>Exe</OutputType>
     <PackageId>ServiceStack.Core.SelfHost</PackageId>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-preview2-final" />
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />-->
-    
-    <PackageReference Include="ServiceStack.Text.Core" Version="1.*" />
-    <PackageReference Include="ServiceStack.Core" Version="1.*" />
-    <PackageReference Include="ServiceStack.Interfaces.Core" Version="1.*" />
-    <PackageReference Include="ServiceStack.Client.Core" Version="1.*" />
-    <PackageReference Include="ServiceStack.Common.Core" Version="1.*" />
-    <PackageReference Include="ServiceStack.Api.Swagger.Core" Version="1.*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="1.1.1" />
+    <ProjectReference Include="..\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
   </ItemGroup>
 
 </Project>
