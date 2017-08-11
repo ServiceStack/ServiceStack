@@ -176,7 +176,8 @@ namespace ServiceStack.Host.HttpListener
             //you can happily set the Content-Length header in Asp.Net
             //but HttpListener will complain if you do - you have to set ContentLength64 on the response.
             //workaround: HttpListener throws "The parameter is incorrect" exceptions when we try to set the Content-Length header
-            response.ContentLength64 = contentLength;
+            if (contentLength >= 0)
+                response.ContentLength64 = contentLength;
         }
 
         public bool KeepAlive

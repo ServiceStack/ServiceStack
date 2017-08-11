@@ -121,7 +121,8 @@ namespace ServiceStack.Host.NetCore
 
         public void SetContentLength(long contentLength)
         {
-            response.ContentLength = contentLength;
+            if (contentLength >= 0)
+                response.ContentLength = contentLength;
         }
 
         public object OriginalResponse => response;

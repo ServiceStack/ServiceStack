@@ -159,7 +159,8 @@ namespace ServiceStack.Host.AspNet
         {
             try
             {
-                response.Headers["Content-Length"] = contentLength.ToString(CultureInfo.InvariantCulture);
+                if (contentLength >= 0)
+                    response.Headers["Content-Length"] = contentLength.ToString(CultureInfo.InvariantCulture);
             }
             catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
         }
