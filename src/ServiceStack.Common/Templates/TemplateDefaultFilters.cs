@@ -564,6 +564,11 @@ namespace ServiceStack.Templates
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
         
+        public int toInt(object target) => target.ConvertTo<int>();
+        public long toLong(object target) => target.ConvertTo<long>();
+        public double toDouble(object target) => target.ConvertTo<double>();
+        public bool toBool(object target) => target.ConvertTo<bool>();
+        
         public List<object> step(IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(step));
