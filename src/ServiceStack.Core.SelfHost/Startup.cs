@@ -16,6 +16,10 @@ using ServiceStack.Text;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
+using ServiceStack.IO;
+using ServiceStack.Aws.S3;
+using Amazon;
+using Amazon.S3;
 
 namespace ServiceStack.Core.SelfHost
 {
@@ -30,13 +34,16 @@ namespace ServiceStack.Core.SelfHost
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
+            app.Use(async (context, next) => {
+                Console.WriteLine(context.Request.Path.Value);
+                await next();
+            });
 
             app.UseServiceStack(new AppHost());
 
             app.Run(async (context) =>
             {
-                await context.Response.WriteAsync("Hello World!");
+                await context.Response.WriteAsync("Unhandled Request!");
             });
         }
     }
@@ -116,8 +123,23 @@ namespace ServiceStack.Core.SelfHost
 
         public override void Configure(Container container)
         {
+            var s3Client = new AmazonS3Client(
+                Environment.GetEnvironmentVariable("S3_ACCESS_KEY"), 
+                Environment.GetEnvironmentVariable("S3_SECRET_KEY"), 
+                RegionEndpoint.USEast1);
+
+            VirtualFiles = new S3VirtualFiles(s3Client, "s3-postgresql");
+
+            Plugins.Add(new TemplatePagesFeature());
             Plugins.Add(new SwaggerFeature());
         }
+        public override List<IVirtualPathProvider> GetVirtualFileSources()
+        {
+            var fileSources = base.GetVirtualFileSources();
+            fileSources.Add(VirtualFiles);
+            return fileSources;
+        }
+
     }
 
 }
