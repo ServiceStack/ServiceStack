@@ -132,6 +132,9 @@ namespace ServiceStack.Templates
         public string appendFmt(string target, string format, object arg0, object arg1) => target + fmt(format, arg0, arg1);
         public string appendFmt(string target, string format, object arg0, object arg1, object arg2) => target + fmt(format, arg0, arg1, arg2);
 
+        [HandleUnknownValue]
+        public Task noshow(TemplateScopeContext scope, object value) => TypeConstants.EmptyTask;
+        
         public object dateFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
         public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
         public object dateTimeFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);

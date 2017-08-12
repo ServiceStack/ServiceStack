@@ -986,5 +986,17 @@ dir-file: dir/dir-file.txt
 ".NormalizeNewLines()));
         }
 
+        [Test]
+        public void Can_use_noshow_or_discard_to_discard_return_value()
+        {
+            var context = new TemplateContext().Init();
+            
+            context.VirtualFiles.WriteFile("partial.html", "partial");
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | noshow }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ add(1,1) | noshow }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 'partial' | partial | noshow }}"), Is.EqualTo(""));
+        }
+
     }
 }

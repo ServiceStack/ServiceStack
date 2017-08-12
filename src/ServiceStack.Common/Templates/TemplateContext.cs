@@ -163,6 +163,7 @@ namespace ServiceStack.Templates
             TemplateFilters.Add(new TemplateDefaultFilters());
             TemplateFilters.Add(new TemplateHtmlFilters());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
+            FilterTransformers["noshow"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 
             var culture = CultureInfo.CurrentCulture;
             if (Equals(culture, CultureInfo.InvariantCulture))
