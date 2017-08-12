@@ -129,17 +129,18 @@ namespace ServiceStack.Templates
             if (LayoutPage != null)
             {
                 await LayoutPage.Init();
-
-                CodePage?.Init();
+                
+                if (CodePage != null)
+                    InitIfNewPage(CodePage);
 
                 if (Page != null)
-                    await Page.Init();
+                    await InitIfNewPage(Page);
             }
             else
             {
                 if (Page != null)
                 {
-                    await Page.Init();
+                    await InitIfNewPage(Page);
                     if (Page.LayoutPage != null)
                     {
                         LayoutPage = Page.LayoutPage;
@@ -148,7 +149,7 @@ namespace ServiceStack.Templates
                 }
                 else if (CodePage != null)
                 {
-                    CodePage.Init();
+                    InitIfNewPage(CodePage);
                     if (CodePage.LayoutPage != null)
                     {
                         LayoutPage = CodePage.LayoutPage;
@@ -231,6 +232,16 @@ namespace ServiceStack.Templates
             hasInit = true;
 
             return this;
+        }
+
+        private Task InitIfNewPage(TemplatePage page) => page != Page 
+            ? (Task) page.Init() 
+            : TypeConstants.EmptyTask;
+
+        private void InitIfNewPage(TemplateCodePage page)
+        {
+            if (page != CodePage)
+                page.Init();
         }
 
         private void AssertInit()
