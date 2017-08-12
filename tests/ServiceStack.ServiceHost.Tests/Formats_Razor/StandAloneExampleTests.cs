@@ -1,8 +1,8 @@
 ﻿using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {

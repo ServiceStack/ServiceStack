@@ -10,7 +10,6 @@ using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {

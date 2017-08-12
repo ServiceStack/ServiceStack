@@ -16,8 +16,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.VirtualPath;
 using ServiceStack.Configuration;
+using ServiceStack.IO;
 
 namespace ServiceStack
 {

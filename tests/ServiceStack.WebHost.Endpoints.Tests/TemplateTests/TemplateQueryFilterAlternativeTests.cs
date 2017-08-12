@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Templates;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {

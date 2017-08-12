@@ -9,7 +9,7 @@ using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

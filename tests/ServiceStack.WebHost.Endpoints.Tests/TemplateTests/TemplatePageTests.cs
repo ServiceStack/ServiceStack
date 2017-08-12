@@ -8,7 +8,7 @@ using NUnit.Framework;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Templates;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {

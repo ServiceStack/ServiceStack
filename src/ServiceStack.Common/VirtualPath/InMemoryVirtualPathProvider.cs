@@ -9,8 +9,6 @@ namespace ServiceStack.VirtualPath
 {
     [Obsolete("Renamed to IVirtualFiles")]
     public interface IWriteableVirtualPathProvider : IVirtualFiles { }
-
-    public class MemoryVirtualFiles : InMemoryVirtualPathProvider {}
     
     /// <summary>
     /// In Memory Virtual Path Provider.

@@ -5,12 +5,6 @@ using ServiceStack.IO;
 
 namespace ServiceStack.VirtualPath
 {
-    public class FileSystemVirtualFiles : FileSystemVirtualPathProvider
-    {
-        public FileSystemVirtualFiles(string rootDirectoryPath) : base(rootDirectoryPath) {}
-        public FileSystemVirtualFiles(DirectoryInfo rootDirInfo) : base(rootDirInfo) {}
-    }
-
     [Obsolete("Renamed to FileSystemVirtualFiles")]
     public abstract class FileSystemVirtualPathProvider : AbstractVirtualPathProviderBase, IVirtualFiles
 #pragma warning disable 618

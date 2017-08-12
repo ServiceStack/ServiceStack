@@ -4,7 +4,7 @@ using System.IO;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
-namespace ServiceStack.VirtualPath
+namespace ServiceStack.IO
 {
     public static class VirtualFilesExtensions
     {

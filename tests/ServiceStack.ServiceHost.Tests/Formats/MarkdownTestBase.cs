@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 using ServiceStack.Formats;
+using ServiceStack.IO;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {

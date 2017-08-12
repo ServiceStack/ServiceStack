@@ -9,7 +9,7 @@ using NUnit.Framework;
 using ServiceStack.Caching;
 using ServiceStack.Templates;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 #if NETCORE
 using Microsoft.Extensions.Primitives;

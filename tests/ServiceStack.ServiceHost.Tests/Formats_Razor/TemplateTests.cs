@@ -5,11 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {

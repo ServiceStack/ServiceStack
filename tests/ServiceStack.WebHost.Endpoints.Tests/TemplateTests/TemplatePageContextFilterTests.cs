@@ -2,7 +2,7 @@ using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 #if NETCORE
 using Microsoft.Extensions.Primitives;

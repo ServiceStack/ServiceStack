@@ -7,7 +7,7 @@ using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -43,7 +43,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     [TestFixture]
     public class IntroductionLayoutTests : MarkdownTestBase
     {
-        private InMemoryVirtualPathProvider pathProvider;
+        private MemoryVirtualFiles pathProvider;
         private MarkdownFormat markdownFormat;
 
         private ServiceStackHost appHost;

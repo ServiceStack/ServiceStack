@@ -5,7 +5,7 @@ using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
