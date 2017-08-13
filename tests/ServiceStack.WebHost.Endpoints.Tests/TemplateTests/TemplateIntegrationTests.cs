@@ -245,6 +245,10 @@ layout: alt/alt-layout
 <h1>Dir Page File</h1>
 {{ 'dir-file.txt' | includeFile }}
 ");
+                files.WriteFile("dir/dir-page-file-cache.html", @"
+<h1>Dir Page File Cache</h1>
+{{ 'dir-file.txt' | includeFileWithCache }}
+");
             }
 
             public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
@@ -494,13 +498,31 @@ layout: alt/alt-layout
         [Test]
         public void Can_resolve_closest_file_starting_from_page_directory()
         {
-            var html = Config.ListeningOn.AppendPath("dir","dir-page-file").GetStringFromUrl();
-            
+            var html = Config.ListeningOn.AppendPath("dir", "dir-page-file").GetStringFromUrl();
+
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=dir>
 
 <h1>Dir Page File</h1>
+
+<h2>Dir File</h2>
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_resolve_closest_file_with_cache_starting_from_page_directory()
+        {
+            var html = Config.ListeningOn.AppendPath("dir", "dir-page-file-cache").GetStringFromUrl();
+
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=dir>
+
+<h1>Dir Page File Cache</h1>
 
 <h2>Dir File</h2>
 
