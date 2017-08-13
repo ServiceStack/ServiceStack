@@ -951,7 +951,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                         
                         var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
-                        var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
+                        var rewrittenArgs = "`" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("`", "\\`") + "`)";
                         ParseArguments(rewrittenArgs.ToStringSegment(), out args);
                         cmd.Args = args;
                         
@@ -1199,7 +1199,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     binding = new JsExpression(literal.Subsegment(0, i).Trim());
 
                     var originalArgs = literal.Substring(i + 1, endStringPos - i - 1);
-                    var rewrittenArgs = "\"" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("\"", "\\\"") + "\")";
+                    var rewrittenArgs = "`" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("`", "\\`") + "`)";
                     ParseArguments(rewrittenArgs.ToStringSegment(), out List<StringSegment> args);
                     binding.Args = args;
                     return literal.Subsegment(endStringPos);
