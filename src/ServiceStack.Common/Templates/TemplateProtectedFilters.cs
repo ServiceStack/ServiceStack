@@ -11,16 +11,24 @@ namespace ServiceStack.Templates
 {
     public class TemplateProtectedFilters : TemplateFilter
     {
-        private static IVirtualFile resolveFile(string filterName, TemplateScopeContext scope, string virtualPath)
+        public static IVirtualFile ResolveFile(string filterName, TemplateScopeContext scope, string virtualPath)
+        {
+            var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
+            if (file == null)
+                throw new FileNotFoundException($"{filterName} '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
+
+            return file;
+        }
+
+        public static IVirtualFile ResolveFile(IVirtualPathProvider virtualFiles, string fromVirtualPath, string virtualPath)
         {
             IVirtualFile file = null;
             var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if nested path specified, look for an exact match first
             if (tryExactMatch)
-                file = scope.Context.VirtualFiles.GetFile(virtualPath);
+                file = virtualFiles.GetFile(virtualPath);
 
             if (file == null)
             {
-                var fromVirtualPath = scope.PageResult.VirtualPath;
                 var parentPath = fromVirtualPath.IndexOf('/') >= 0
                     ? fromVirtualPath.LastLeftPart('/')
                     : "";
@@ -28,7 +36,7 @@ namespace ServiceStack.Templates
                 do
                 {
                     var seekPath = parentPath.CombineWith(virtualPath);
-                    file = scope.Context.VirtualFiles.GetFile(seekPath);
+                    file = virtualFiles.GetFile(seekPath);
                     if (file != null)
                         break;
 
@@ -39,17 +47,13 @@ namespace ServiceStack.Templates
                         ? parentPath.LastLeftPart('/')
                         : "";
                 } while (true);
-
-                if (file == null)
-                    throw new FileNotFoundException(
-                        $"{filterName} '{virtualPath}' in page '{scope.Page.VirtualPath}' was not found");
             }
             return file;
         }
 
         public async Task includeFile(TemplateScopeContext scope, string virtualPath)
         {
-            var file = resolveFile(nameof(includeFile), scope, virtualPath);
+            var file = ResolveFile(nameof(includeFile), scope, virtualPath);
             using (var reader = file.OpenRead())
             {
                 await reader.CopyToAsync(scope.OutputStream);
@@ -181,7 +185,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            var file = resolveFile(nameof(includeFileWithCache), scope, virtualPath);
+            var file = ResolveFile(nameof(includeFileWithCache), scope, virtualPath);
             var ms = MemoryStreamFactory.GetStream();
             using (ms)
             {

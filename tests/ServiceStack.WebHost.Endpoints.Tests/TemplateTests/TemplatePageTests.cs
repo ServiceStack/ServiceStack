@@ -9,6 +9,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.IO;
+using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -396,6 +397,36 @@ title: We encode < & >
 </html>
 ".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Does_find_last_modified_file_in_page()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateProtectedFilters() }
+            }.Init();
+
+            context.VirtualFiles.WriteFile("_layout.html", "layout {{ page }}");
+            context.VirtualFiles.WriteFile("page.html", "page: partial {{ 'root-partial' | partial }}, file {{ 'file.txt' | includeFile }}");
+            context.VirtualFiles.WriteFile("root-partial.html", "root-partial: partial {{ 'inner-partial' | partial }}, partial-file {{ 'partial-file.txt' | includeFile }}");
+            context.VirtualFiles.WriteFile("file.txt", "file.txt");
+            context.VirtualFiles.WriteFile("inner-partial.html", "inner-partial.html");
+            context.VirtualFiles.WriteFile("partial-file.txt", "partial-file.txt");
+
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("page.html")).FileLastModified = new DateTime(2001, 01, 01);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("_layout.html")).FileLastModified = new DateTime(2001, 01, 02);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("root-partial.html")).FileLastModified = new DateTime(2001, 01, 03);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("file.txt")).FileLastModified = new DateTime(2001, 01, 04);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("inner-partial.html")).FileLastModified = new DateTime(2001, 01, 05);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("partial-file.txt")).FileLastModified = new DateTime(2001, 01, 06);
+
+            var page = context.Pages.GetPage("page").Init().Result;
+            context.Pages.GetPage("root-partial").Init().Wait();
+
+            var lastModified = context.Pages.GetLastModified(page);
+            Assert.That(lastModified, Is.EqualTo(new DateTime(2001, 01, 06)));
+        }
+
 
     }
 }

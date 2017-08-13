@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Linq;
 using ServiceStack.IO;
 using ServiceStack.VirtualPath;
 
@@ -14,6 +15,8 @@ namespace ServiceStack.Templates
         
         TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
         TemplateCodePage GetCodePage(string virtualPath);
+
+        DateTime? GetLastModified(TemplatePage page);
     }
 
     public class TemplatePages : ITemplatePages
@@ -156,6 +159,65 @@ namespace ServiceStack.Templates
             var page = new TemplatePage(Context, memFile);
             page.Init().Wait(); // Safe as Memory Files are non-blocking
             return page;
+        }
+
+        public DateTime? GetLastModified(TemplatePage page)
+        {
+            if (page == null)
+                return null;
+
+            var maxLastModified = page.File.LastModified;
+            if (page.LayoutPage != null)
+            {
+                maxLastModified = GetMaxLastModified(page.LayoutPage.File, maxLastModified);
+            }
+            else
+            {
+                var layout = ResolveLayoutPage(page, null);
+                maxLastModified = GetMaxLastModified(layout?.File, maxLastModified);
+            }
+
+            var varFragments = page.PageFragments.OfType<PageVariableFragment>();
+            foreach (var fragment in varFragments)
+            {
+                var filter = fragment.FilterExpressions?.FirstOrDefault();
+                if (filter?.NameString == "partial")
+                {
+                    if (fragment.InitialValue is string partialPath)
+                    {
+                        Context.TryGetPage(page.VirtualPath, partialPath, out TemplatePage partialPage, out _);
+                        maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
+
+                        if (partialPage?.HasInit == true)
+                        {
+                            var partialLastModified = GetLastModified(partialPage);
+                            if (partialLastModified > maxLastModified)
+                                maxLastModified = partialLastModified.Value;
+                        }
+                    }
+                }
+                else if (filter?.NameString == "includeFile")
+                {
+                    if (fragment.InitialValue is string filePath)
+                    {
+                        var file = TemplateProtectedFilters.ResolveFile(Context.VirtualFiles, page.VirtualPath, filePath);
+                        maxLastModified = GetMaxLastModified(file, maxLastModified);
+                    }
+                }
+            }
+
+            return maxLastModified;
+        }
+
+        private DateTime GetMaxLastModified(IVirtualFile file, DateTime maxLastModified)
+        {
+            if (file == null)
+                return maxLastModified;
+
+            file.Refresh();
+            return file.LastModified > maxLastModified
+                ? file.LastModified
+                : maxLastModified;
         }
     }
 }
