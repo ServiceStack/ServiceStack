@@ -566,9 +566,12 @@ namespace ServiceStack.Templates
         
         public int toInt(object target) => target.ConvertTo<int>();
         public long toLong(object target) => target.ConvertTo<long>();
+        public float toFloat(object target) => target.ConvertTo<float>();
         public double toDouble(object target) => target.ConvertTo<double>();
+        public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
-        
+        public Dictionary<string, object> toObjectDictionary(object target) => target.ToObjectDictionary();
+
         public List<object> step(IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(step));
@@ -1369,5 +1372,13 @@ namespace ServiceStack.Templates
 
         public Task csv(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToCsv());
         public Task xml(TemplateScopeContext scope, object items) => scope.OutputStream.WriteAsync(items.ToXml());
+
+        public JsonObject jsonToObject(string json) => JsonObject.Parse(json);
+        public JsonArrayObjects jsonToArrayObjects(string json) => JsonArrayObjects.Parse(json);
+        public Dictionary<string, object> jsonToObjectDictionary(string json) => json.FromJson<Dictionary<string, object>>();
+        public Dictionary<string, string> jsonToStringDictionary(string json) => json.FromJson<Dictionary<string, string>>();
+
+        public Dictionary<string, object> jsvToObjectDictionary(string json) => json.FromJsv<Dictionary<string, object>>();
+        public Dictionary<string, string> jsvToStringDictionary(string json) => json.FromJsv<Dictionary<string, string>>();
     }
 }
