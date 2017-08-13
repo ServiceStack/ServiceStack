@@ -209,7 +209,7 @@ namespace ServiceStack.Templates
 
         public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
         public string urlEncode(string value) => value.UrlEncode();
-        public string urlDencode(string value) => value.UrlDecode();
+        public string urlDecode(string value) => value.UrlDecode();
 
         public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
         public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
