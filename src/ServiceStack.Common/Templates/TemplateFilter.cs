@@ -146,7 +146,7 @@ namespace ServiceStack.Templates
             var pageParams = scopedParams as Dictionary<string, object>;
             if (pageParams == null && scopedParams != null)
                 throw new ArgumentException(
-                    $"{filterName} in '{scope.Page.File.VirtualPath}' only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
+                    $"{filterName} in '{scope.PageResult.VirtualPath}' only accepts an Object dictionary as an argument but received a '{scopedParams.GetType().Name}' instead");
 
             return pageParams ?? new Dictionary<string, object>();
         }
@@ -193,7 +193,7 @@ namespace ServiceStack.Templates
         public static string AssertExpression(this TemplateScopeContext scope, string filterName, object expression)
         {
             if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.Page.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
+                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
             return literal;
         }
 
