@@ -998,5 +998,17 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 'partial' | partial | noshow }}"), Is.EqualTo(""));
         }
 
+        [Test]
+        public void Can_use_split_with_different_delimiters()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate("{{ 'a,b,c' | split | join('|') }}"), Is.EqualTo("a|b|c"));
+            Assert.That(context.EvaluateTemplate("{{ 'a:b:c' | split(':') | join('|') }}"), Is.EqualTo("a|b|c"));
+            Assert.That(context.EvaluateTemplate("{{ 'a::b::c' | split('::') | join('|') }}"), Is.EqualTo("a|b|c"));
+            Assert.That(context.EvaluateTemplate("{{ 'a:b/c' | split([':','/']) | join('|') }}"), Is.EqualTo("a|b|c"));
+            Assert.That(context.EvaluateTemplate("{{ 'a::b//c' | split(['::','//']) | join('|') }}"), Is.EqualTo("a|b|c"));
+        }
+
     }
 }

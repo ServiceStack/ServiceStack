@@ -204,8 +204,25 @@ namespace ServiceStack.Templates
 
         public string[] splitOnFirst(string text, string needle) => text.SplitOnFirst(needle);
         public string[] splitOnLast(string text, string needle) => text.SplitOnLast(needle);
-        public string[] split(string stringList) => split(stringList, ',');
-        public string[] split(string stringList, char delimiter) => stringList.Split(delimiter);
+        public string[] split(string stringList) => stringList.Split(',');
+        public string[] split(string stringList, object delimiter)
+        {
+            if (delimiter is IEnumerable<object> objDelims)
+                delimiter = objDelims.Select(x => x.ToString());
+
+            if (delimiter is char c)
+                return stringList.Split(c);
+            if (delimiter is string s)
+                return s.Length == 1 
+                    ? stringList.Split(s[0])
+                    : stringList.Split(new []{ s }, StringSplitOptions.RemoveEmptyEntries);
+            if (delimiter is IEnumerable<string> strDelims)
+                return strDelims.All(x => x.Length == 1)
+                    ? stringList.Split(strDelims.Select(x => x[0]).ToArray(), StringSplitOptions.RemoveEmptyEntries)
+                    : stringList.Split(strDelims.ToArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            throw new NotSupportedException($"{delimiter} is not a valid delimiter");
+        }
 
         public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
         public string urlEncode(string value) => value.UrlEncode();
