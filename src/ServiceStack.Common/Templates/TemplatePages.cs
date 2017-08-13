@@ -16,7 +16,7 @@ namespace ServiceStack.Templates
         TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
         TemplateCodePage GetCodePage(string virtualPath);
 
-        DateTime? GetLastModified(TemplatePage page);
+        DateTime GetLastModified(TemplatePage page);
     }
 
     public class TemplatePages : ITemplatePages
@@ -161,10 +161,10 @@ namespace ServiceStack.Templates
             return page;
         }
 
-        public DateTime? GetLastModified(TemplatePage page)
+        public DateTime GetLastModified(TemplatePage page)
         {
             if (page == null)
-                return null;
+                throw new ArgumentNullException(nameof(page));
 
             var maxLastModified = page.File.LastModified;
             if (page.LayoutPage != null)
@@ -192,7 +192,7 @@ namespace ServiceStack.Templates
                         {
                             var partialLastModified = GetLastModified(partialPage);
                             if (partialLastModified > maxLastModified)
-                                maxLastModified = partialLastModified.Value;
+                                maxLastModified = partialLastModified;
                         }
                     }
                 }
