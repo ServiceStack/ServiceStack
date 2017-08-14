@@ -70,6 +70,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Can_escape_strings()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["json"] = "{\"key\":\"single'back`tick\"}"
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("var s = '{{ json | escapeSingleQuotes | raw }}'"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
+            Assert.That(context.EvaluateTemplate("var s = `{{ json | escapeBackticks    | raw }}`"), Is.EqualTo("var s = `{\"key\":\"single'back\\`tick\"}`"));
+            Assert.That(context.EvaluateTemplate("var s = '{{ json | jsString }}'"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
+            Assert.That(context.EvaluateTemplate("var s = {{ json | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
+        }
+
+        [Test]
         public async Task Does_default_filter_appSetting()
         {
             var context = CreateContext().Init();
