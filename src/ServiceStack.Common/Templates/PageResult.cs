@@ -444,6 +444,9 @@ namespace ServiceStack.Templates
             
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
+                if (value == StopExecution.Value)
+                    break;
+
                 var expr = var.FilterExpressions[i];
                 var filterName = expr.NameString;
                 var invoker = GetFilterInvoker(filterName, 1 + expr.Args.Count, out TemplateFilter filter);
@@ -578,7 +581,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (value == null || value == JsNull.Value)
+            if (value == null || value == JsNull.Value || value == StopExecution.Value)
                 return string.Empty; // treat as empty value if evaluated to null
 
             return value;
