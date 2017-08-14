@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netcoreapp1.1</TargetFrameworks>
+    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Common.Tests</AssemblyName>
     <PackageId>ServiceStack.Common.Tests</PackageId>
-    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -60,11 +58,25 @@
     <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+    <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
+   https://github.com/nunit/dotnet-test-nunit/issues/91 
+   To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
+   -->
+  <PropertyGroup Condition=" '$(NUNITLITE)' != '' ">
+    <OutputType>Exe</OutputType>
+    <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
+    <PackageReference Include="NUnitLite" Version="3.6.1" />
+  </ItemGroup>
+
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp1.1' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
     <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
