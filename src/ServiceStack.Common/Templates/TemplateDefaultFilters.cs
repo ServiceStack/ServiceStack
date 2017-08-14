@@ -364,10 +364,22 @@ namespace ServiceStack.Templates
         public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
 
         [HandleUnknownValue]
+        public object endIfNotNull(object target) => !isNull(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIfExists(object target) => !isNull(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
         public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
 
         [HandleUnknownValue]
+        public object endIfNotEmpty(object target) => !isEmpty(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
         public object endIfFalsy(object target) => isFalsy(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIfTruthy(object target) => !isFalsy(target) ? StopExecution.Value : target;
 
         [HandleUnknownValue]
         public object endIf(object returnTarget, object test) => isTrue(test) ? StopExecution.Value : returnTarget;
@@ -395,6 +407,12 @@ namespace ServiceStack.Templates
                 ? StopExecution.Value
                 : target;
         }
+
+        public object use(object discardTarget, object useValue) => useValue;
+        public object useFmt(object discardTarget, string format, object arg) => fmt(format, arg);
+        public object useFmt(object discardTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
+        public object useFmt(object discardTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
+        public object useFormat(object discardTarget, object arg, string fmt) => format(arg, fmt);
 
         public bool isString(object target) => target is string;
         public bool isInt(object target) => target is int;

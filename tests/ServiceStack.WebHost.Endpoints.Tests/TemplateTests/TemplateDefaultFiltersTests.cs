@@ -1124,14 +1124,28 @@ dir-file: dir/dir-file.txt
         [Test]
         public void Can_stop_filter_execution_with_end()
         {
-            var context = new TemplateContext().Init();
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "foo",
+                    ["items"] = new[]{1,2,3}
+                }
+            }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ 1 | end }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIfNull }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ null | endIfNull | default('unreachable') }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ [] | endIfEmpty | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ null  | endIfNull     | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ arg   | endIfNull     | useFmt('{0} + {1} = {2}',1,2,3) }}"), Is.EqualTo("1 + 2 = 3"));
+            Assert.That(context.EvaluateTemplate("{{ arg   | endIfNotNull  | use('bar') | assignTo: arg }}{{ arg }}"), Is.EqualTo("foo"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | endIfExists   | use('bar') | assignTo: noArg }}{{ noArg }}"), Is.EqualTo("bar"));
+            Assert.That(context.EvaluateTemplate("{{ []    | endIfEmpty    | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ items | endIfNotEmpty | use([4,5,6]) | assignTo: items }}{{ items | join }}"), Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateTemplate("{{ nums  | endIfNotEmpty | use([4,5,6]) | assignTo: nums  }}{{ nums  | join }}"), Is.EqualTo("4,5,6"));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIfFalsy | default('unreachable') }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 0 | endIfFalsy | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ arg | endIfTruthy | use('bar') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ one | endIfTruthy | default(1) | assignTo: one }}{{ one }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIf(true) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIf(false) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAny: it = 4\n | join }}"), Is.EqualTo(""));
