@@ -86,7 +86,6 @@ namespace ServiceStack
             AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
             ServiceAssemblies = assembliesWithServices;
-            ServiceController = CreateServiceController(assembliesWithServices);
 
             ContentTypes = Host.ContentTypes.Instance;
             RestPaths = new List<RestPath>();
@@ -176,6 +175,9 @@ namespace ServiceStack
                 throw new InvalidDataException($"ServiceStackHost.Instance has already been set ({Instance.GetType().Name})");
 
             Service.GlobalResolver = Instance = this;
+
+            if (ServiceController == null)
+                ServiceController = CreateServiceController(ServiceAssemblies);
 
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
