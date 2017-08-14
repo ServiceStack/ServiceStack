@@ -331,6 +331,21 @@ namespace ServiceStack.Templates
         public bool exists(object test) => !isNull(test);
 
         [HandleUnknownValue]
+        public bool isZero(double value) => value.Equals(0d);
+
+        [HandleUnknownValue]
+        public bool isPositive(double value) => value > 0;
+
+        [HandleUnknownValue]
+        public bool isNegative(double value) => value < 0;
+
+        [HandleUnknownValue]
+        public bool isNaN(double value) => double.IsNaN(value);
+
+        [HandleUnknownValue]
+        public bool isInfinity(double value) => double.IsInfinity(value);
+
+        [HandleUnknownValue]
         public object ifExists(object target) => target;
         [HandleUnknownValue]
         public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
