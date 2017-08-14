@@ -113,8 +113,10 @@ namespace ServiceStack
 
     public static class ContainerExtensions
     {
-        public static T Resolve<T>(this IContainer container) => 
+        public static T Resolve<T>(this IContainer container) =>
             (T)container.Resolve(typeof(T));
+
+        public static bool Exists<T>(this IContainer container) => container.Exists(typeof(T));
 
         public static IContainer AddTransient<TService>(this IContainer container) => 
             container.AddTransient(typeof(TService), container.CreateFactory(typeof(TService)));

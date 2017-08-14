@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Configuration;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -20,6 +18,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         protected override IContainer CreateContainer()
         {
             return new Funq.Container();
+        }
+
+        [Test]
+        public void Does_use_native_Exists_method()
+        {
+            var container = new Funq.Container();
+
+            container.AddTransient<IFoo>(() => new Foo());
+
+            Assert.That(container.Exists(typeof(IFoo)));
+            Assert.That(container.Exists<IFoo>());
+
+            Assert.That(!container.Exists(typeof(Foo)));
+            Assert.That(!container.Exists<Foo>());
         }
     }
 
@@ -237,5 +249,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 e.ToString().Print();
             }
         }
+
+        [Test]
+        public void Can_use_exists()
+        {
+            var container = CreateContainer();
+
+            container.AddTransient<IFoo>(() => new Foo());
+
+            Assert.That(container.Exists(typeof(IFoo)));
+            Assert.That(container.Exists<IFoo>());
+
+            Assert.That(!container.Exists(typeof(Foo)));
+            Assert.That(!container.Exists<Foo>());
+        }
+
     }
 }
