@@ -1193,6 +1193,8 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ doIf(false) | use(1) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ true  | ifDo | use(1) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ false | ifDo | use(1) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifDo | select: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifDo | select: 1 }}"), Is.EqualTo(""));
 
             Assert.That(context.EvaluateTemplate("{{ true  | ifUse(1) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ false | ifUse(1) }}"), Is.EqualTo(""));

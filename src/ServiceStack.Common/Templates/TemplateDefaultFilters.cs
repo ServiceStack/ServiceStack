@@ -409,13 +409,13 @@ namespace ServiceStack.Templates
         public object endIfTruthy(object target) => !isFalsy(target) ? StopExecution.Value : target;
 
         [HandleUnknownValue]
-        public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : JsNull.Value;
+        public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
         [HandleUnknownValue]
-        public object ifEnd(object test) => isTrue(test) ? (object)StopExecution.Value : JsNull.Value;
+        public object ifEnd(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
         [HandleUnknownValue]
-        public object ifNotEnd(object test) => !isTrue(test) ? (object)StopExecution.Value : JsNull.Value;
+        public object ifNotEnd(object test) => !isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
         [HandleUnknownValue]
         public object endIf(object returnTarget, object test) => isTrue(test) ? StopExecution.Value : returnTarget;
@@ -445,9 +445,9 @@ namespace ServiceStack.Templates
         }
 
         [HandleUnknownValue]
-        public object ifDo(object test) => isTrue(test) ? (object)JsNull.Value : StopExecution.Value;
+        public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue]
-        public object doIf(object test) => isTrue(test) ? (object)JsNull.Value : StopExecution.Value;
+        public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
 
         [HandleUnknownValue]
         public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
