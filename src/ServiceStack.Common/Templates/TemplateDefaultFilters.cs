@@ -293,11 +293,16 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        [HandleUnknownValue]
         public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue]
         public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
+        [HandleUnknownValue]
         public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
+        [HandleUnknownValue]
         public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue]
         public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
         
         [HandleUnknownValue]
