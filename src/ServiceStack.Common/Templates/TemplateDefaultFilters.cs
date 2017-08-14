@@ -1599,7 +1599,7 @@ namespace ServiceStack.Templates
         public object eval(TemplateScopeContext scope, string js) => JS.eval(js, scope);
         public object parseJson(string json) => JSON.parse(json);
 
-        public string escapeSingleQuotes(string text) => text?.Replace("'", "\'");
+        public string escapeSingleQuotes(string text) => text?.Replace("'", "\\'");
         public string escapeDoubleQuotes(string text) => text?.Replace("\"", "\\\"");
         public string escapeBackticks(string text) => text?.Replace("`", "\\`");
         public string escapeNewLines(string text) => text?.Replace("\r", "\\\r").Replace("\n", "\\\n");
