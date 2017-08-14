@@ -1068,5 +1068,42 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 'a' | isType('string') | iif(1,0) }}:{{ string | isType('String') | iif(1,0) }}:{{ 1 | isString | iif(1,0) }}"), Is.EqualTo("1:1:0"));
         }
 
+        [Test]
+        public void Can_use_eval()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "value"
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ '1' | eval | typeName }}"), Is.EqualTo("Int32"));
+            Assert.That(context.EvaluateTemplate("{{ 'arg' | eval }}"), Is.EqualTo("value"));
+            Assert.That(context.EvaluateTemplate("{{ `'arg'` | eval }}"), Is.EqualTo("arg"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:1}' | eval | get: a }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:arg}' | eval | get: a }}"), Is.EqualTo("value"));
+            Assert.That(context.EvaluateTemplate("{{ '[1]' | eval | get(0) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '[{a:arg}]' | eval | get(0) | get:a }}"), Is.EqualTo("value"));
+
+            Assert.That(context.EvaluateTemplate("{{ 'incr(1)' | eval }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:incr(1)}' | eval | get: a }}"), Is.EqualTo("2"));
+        }
+
+        [Test]
+        public void Can_parse_JSON()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate("{{ '1' | parseJson | typeName }}"), Is.EqualTo("Int32"));
+            Assert.That(context.EvaluateTemplate("{{ 'arg' | parseJson }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ `'arg'` | parseJson }}"), Is.EqualTo("arg"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:1}' | parseJson | get: a }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:arg}' | parseJson | get: a }}"), Is.EqualTo(":arg"));
+            Assert.That(context.EvaluateTemplate("{{ '[1]' | parseJson | get(0) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '[{a:arg}]' | parseJson | get(0) | get:a }}"), Is.EqualTo(":arg"));
+        }
+
     }
 }

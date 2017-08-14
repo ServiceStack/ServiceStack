@@ -318,12 +318,12 @@ namespace ServiceStack.Templates
         public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
         [HandleUnknownValue]
-        public bool isNull(object test) => test == null;
+        public bool isNull(object test) => test == null || test == JsNull.Value;
 
         [HandleUnknownValue]
-        public bool isNotNull(object test) => test != null;
+        public bool isNotNull(object test) => !isNull(test);
         [HandleUnknownValue]
-        public bool exists(object test) => test != null;
+        public bool exists(object test) => !isNull(test);
 
         [HandleUnknownValue]
         public object ifExists(object target) => target;
@@ -1442,5 +1442,8 @@ namespace ServiceStack.Templates
 
         public Dictionary<string, object> jsvToObjectDictionary(string json) => json.FromJsv<Dictionary<string, object>>();
         public Dictionary<string, string> jsvToStringDictionary(string json) => json.FromJsv<Dictionary<string, string>>();
+
+        public object eval(TemplateScopeContext scope, string js) => JS.eval(js, scope);
+        public object parseJson(string json) => JSON.parse(json);
     }
 }
