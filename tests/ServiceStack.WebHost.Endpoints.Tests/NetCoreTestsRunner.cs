@@ -1,4 +1,4 @@
-#if false
+#if NUNITLITE
 using NUnitLite;
 using NUnit.Common;
 using System.Reflection;
