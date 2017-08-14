@@ -87,6 +87,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("var s = {{ json | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
 
             Assert.That(context.EvaluateTemplate("var s = '{{ hasNewLines | jsString }}'"), Is.EqualTo("var s = 'has\\\nnew\\\r\\\nlines'"));
+
+            Assert.That(context.EvaluateTemplate(@"{{ [{x:1,y:2},{x:3,y:4}] | json | assignTo:json }}var s = '{{ json | jsString }}';"), 
+                Is.EqualTo("var s = '[{\"x\":1,\"y\":2},{\"x\":3,\"y\":4}]';"));
         }
 
         [Test]
