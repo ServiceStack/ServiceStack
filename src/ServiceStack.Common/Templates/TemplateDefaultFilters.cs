@@ -382,7 +382,7 @@ namespace ServiceStack.Templates
         public object endIfTruthy(object target) => !isFalsy(target) ? StopExecution.Value : target;
 
         [HandleUnknownValue]
-        public object endIf(object test) => isTrue(test) ? StopExecution.Value : null;
+        public object endIf(object test) => isTrue(test) ? (object) StopExecution.Value : JsNull.Value;
 
         [HandleUnknownValue]
         public object endIf(object returnTarget, object test) => isTrue(test) ? StopExecution.Value : returnTarget;
@@ -413,6 +413,7 @@ namespace ServiceStack.Templates
 
         [HandleUnknownValue]
         public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue]
         public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
 
         public object use(object discardTarget, object useValue) => useValue;
