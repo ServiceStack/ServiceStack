@@ -27,6 +27,12 @@ namespace ServiceStack.Templates
         private IgnoreResult(){}
     }
 
+    public class StopExecution : IResultInstruction
+    {
+        public static StopExecution Value = new StopExecution();
+        private StopExecution() { }
+    }
+
     public class TemplateFilter
     {
         public TemplateContext Context { get; set; }

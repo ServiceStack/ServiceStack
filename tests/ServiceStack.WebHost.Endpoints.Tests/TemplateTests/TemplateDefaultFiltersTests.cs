@@ -1121,5 +1121,27 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ '[{a:arg}]' | parseJson | get(0) | get:a }}"), Is.EqualTo(":arg"));
         }
 
+        [Test]
+        public void Can_stop_filter_execution_with_end()
+        {
+            var context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | end }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIfNull }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ null | endIfNull | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ [] | endIfEmpty | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIfFalsy | default('unreachable') }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 0 | endIfFalsy | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIf(true) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIf(false) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAny: it = 4\n | join }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAny: it = 5\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAll: lt(it,4)\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAll: lt(it,5)\n | join }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ 1   | endWhere: isString(it) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | endWhere: isString(it) }}"), Is.EqualTo(""));
+        }
+
     }
 }

@@ -357,6 +357,45 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        [HandleUnknownValue]
+        public object end(object ignore) => StopExecution.Value;
+
+        [HandleUnknownValue]
+        public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIfFalsy(object target) => isFalsy(target) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIf(object returnTarget, object test) => isTrue(test) ? StopExecution.Value : returnTarget;
+
+        [HandleUnknownValue]
+        public object endIfAny(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endIfAll(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
+
+        [HandleUnknownValue]
+        public object endWhere(TemplateScopeContext scope, object target, object expression) => endWhere(scope, target, expression, null);
+
+        [HandleUnknownValue]
+        public object endWhere(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var literal = scope.AssertExpression(nameof(count), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            scope.AddItemToScope(itemBinding, target);
+            var result = expr.Evaluate(scope);
+
+            return result is bool b && b
+                ? StopExecution.Value
+                : target;
+        }
+
         public bool isString(object target) => target is string;
         public bool isInt(object target) => target is int;
         public bool isLong(object target) => target is long;
@@ -906,7 +945,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public Task @do(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            if (isNull(target))
+            if (isNull(target) || target is bool b && !b)
                 return TypeConstants.EmptyTask;
             
             var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
@@ -982,9 +1021,9 @@ namespace ServiceStack.Templates
             return null;
         }
 
-        public object any(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(any)).Any();
-        public object any(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression, null);
-        public object any(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        public bool any(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(any)).Any();
+        public bool any(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression, null);
+        public bool any(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(any));
             var literal = scope.AssertExpression(nameof(any), expression);
@@ -1003,8 +1042,8 @@ namespace ServiceStack.Templates
             return false;
         }
 
-        public object all(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression, null);
-        public object all(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        public bool all(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression, null);
+        public bool all(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(all));
             var literal = scope.AssertExpression(nameof(all), expression);
