@@ -76,7 +76,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 Args =
                 {
-                    ["json"] = "{\"key\":\"single'back`tick\"}"
+                    ["json"] = "{\"key\":\"single'back`tick\"}",
+                    ["hasNewLines"] = "has\nnew\r\nlines",
                 }
             }.Init();
 
@@ -84,6 +85,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("var s = `{{ json | escapeBackticks    | raw }}`"), Is.EqualTo("var s = `{\"key\":\"single'back\\`tick\"}`"));
             Assert.That(context.EvaluateTemplate("var s = '{{ json | jsString }}'"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
             Assert.That(context.EvaluateTemplate("var s = {{ json | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\'back`tick\"}'"));
+
+            Assert.That(context.EvaluateTemplate("var s = '{{ hasNewLines | jsString }}'"), Is.EqualTo("var s = 'has\\\nnew\\\r\\\nlines'"));
         }
 
         [Test]

@@ -1602,8 +1602,9 @@ namespace ServiceStack.Templates
         public string escapeSingleQuotes(string text) => text?.Replace("'", "\'");
         public string escapeDoubleQuotes(string text) => text?.Replace("\"", "\\\"");
         public string escapeBackticks(string text) => text?.Replace("`", "\\`");
+        public string escapeNewLines(string text) => text?.Replace("\r", "\\\r").Replace("\n", "\\\n");
 
-        public IRawString jsString(string text) => escapeSingleQuotes(text).ToRawString();
-        public IRawString jsQuotedString(string text) => ("'" + escapeSingleQuotes(text) + "'").ToRawString();
+        public IRawString jsString(string text) => escapeNewLines(escapeSingleQuotes(text)).ToRawString();
+        public IRawString jsQuotedString(string text) => ("'" + escapeNewLines(escapeSingleQuotes(text)) + "'").ToRawString();
     }
 }
