@@ -22,6 +22,8 @@ namespace ServiceStack
             return fn?.Invoke();
         }
 
+        public bool Exists(Type type) => Factory.ContainsKey(type);
+
         public object RequiredResolve(Type type, Type ownerType)
         {
             var instance = Resolve(type);

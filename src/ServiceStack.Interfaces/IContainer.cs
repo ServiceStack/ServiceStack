@@ -11,5 +11,7 @@ namespace ServiceStack
         IContainer AddTransient(Type type, Func<object> factory);
 
         object Resolve(Type type);
+
+        bool Exists(Type type);
     }
 }
