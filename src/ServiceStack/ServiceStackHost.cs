@@ -134,6 +134,7 @@ namespace ServiceStack
                 new MetadataFeature(),
                 new NativeTypesFeature(),
                 new HttpCacheFeature(),
+                new RequestInfoFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
@@ -186,10 +187,6 @@ namespace ServiceStack
             ResourceVirtualDirectory.EmbeddedResourceTreatAsFiles = Config.EmbeddedResourceTreatAsFiles;
 
             Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
-            if (Config.DebugMode)
-            {
-                Plugins.Add(new RequestInfoFeature());
-            }
 
             OnBeforeInit();
             ServiceController.Init();
@@ -197,6 +194,9 @@ namespace ServiceStack
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
+
+            if (!Config.DebugMode)
+                Plugins.RemoveAll(x => x is RequestInfoFeature);
 
             ConfigurePlugins();
 
