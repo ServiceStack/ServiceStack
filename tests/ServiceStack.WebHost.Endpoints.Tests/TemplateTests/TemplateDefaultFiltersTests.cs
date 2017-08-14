@@ -1025,6 +1025,12 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ items | length }}"), Is.EqualTo("3"));
             Assert.That(context.EvaluateTemplate("{{ items | hasMinCount(0) | iif(1,0) }}:{{ items | hasMinCount(3) | iif(1,0) }}:{{ items | hasMinCount(4) | iif(1,0) }}"), Is.EqualTo("1:1:0"));
             Assert.That(context.EvaluateTemplate("{{ items | hasMaxCount(0) | iif(1,0) }}:{{ items | hasMaxCount(3) | iif(1,0) }}:{{ items | hasMaxCount(4) | iif(1,0) }}"), Is.EqualTo("0:1:1"));
+
+            Assert.That(context.EvaluateTemplate("{{ null | hasMinCount(0) | iif(1,0) }}:{{ 1 | hasMinCount(1) | iif(1,0) }}:{{ 'a' | hasMinCount(0) | iif(1,0) }}"), Is.EqualTo("0:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ null | length }}:{{ 1 | length }}:{{ 'a' | length }}"), Is.EqualTo("0:0:1"));
+
+            Assert.That(context.EvaluateTemplate("{{ [1,2] | hasMinCount(0) | iif(1,0) }}:{{ 1 | hasMinCount(1) | iif(1,0) }}:{{ 'a' | hasMinCount(0) | iif(1,0) }}"), Is.EqualTo("1:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | hasMinCount(0) | iif(1,0) }}:{{ items | hasMinCount(1) | ifUse(length(items)) }}"), Is.EqualTo("0:3"));
         }
 
         [Test]

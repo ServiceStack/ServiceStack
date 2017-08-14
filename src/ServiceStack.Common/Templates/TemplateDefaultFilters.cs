@@ -343,6 +343,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
 
+        [HandleUnknownValue]
         public bool isEmpty(object target)
         {
             if (isNull(target))
@@ -422,40 +423,71 @@ namespace ServiceStack.Templates
         public object useFmt(object discardTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
         public object useFormat(object discardTarget, object arg, string fmt) => format(arg, fmt);
 
+        [HandleUnknownValue]
         public bool isString(object target) => target is string;
+        [HandleUnknownValue]
         public bool isInt(object target) => target is int;
+        [HandleUnknownValue]
         public bool isLong(object target) => target is long;
+        [HandleUnknownValue]
         public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
+        [HandleUnknownValue]
         public bool isDouble(object target) => target is double;
+        [HandleUnknownValue]
         public bool isFloat(object target) => target is float;
+        [HandleUnknownValue]
         public bool isDecimal(object target) => target is decimal;
+        [HandleUnknownValue]
         public bool isBool(object target) => target is bool;
+        [HandleUnknownValue]
         public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
+        [HandleUnknownValue]
         public bool isEnumerable(object target) => target is IEnumerable;
+        [HandleUnknownValue]
         public bool isDictionary(object target) => target is IDictionary;
+        [HandleUnknownValue]
         public bool isChar(object target) => target is char;
+        [HandleUnknownValue]
         public bool isChars(object target) => target is char[];
+        [HandleUnknownValue]
         public bool isByte(object target) => target is byte;
+        [HandleUnknownValue]
         public bool isBytes(object target) => target is byte[];
+        [HandleUnknownValue]
         public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
+        [HandleUnknownValue]
         public bool isStringDictionary(object target) => target is IDictionary<string, string>;
 
+        [HandleUnknownValue]
         public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
+        [HandleUnknownValue]
         public bool isNumber(object target) => target?.GetType()?.IsNumericType() == true;
+        [HandleUnknownValue]
         public bool isRealNumber(object target) => target?.GetType()?.IsRealNumberType() == true;
+        [HandleUnknownValue]
         public bool isEnum(object target) => target?.GetType()?.IsEnum() == true;
+        [HandleUnknownValue]
         public bool isArray(object target) => target?.GetType()?.IsArray() == true;
+        [HandleUnknownValue]
         public bool isAnonObject(object target) => target?.GetType()?.IsAnonymousType() == true;
+        [HandleUnknownValue]
         public bool isClass(object target) => target?.GetType()?.IsClass() == true;
+        [HandleUnknownValue]
         public bool isValueType(object target) => target?.GetType()?.IsValueType() == true;
+        [HandleUnknownValue]
         public bool isDto(object target) => target?.GetType()?.IsDto() == true;
+        [HandleUnknownValue]
         public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
+        [HandleUnknownValue]
         public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
 
-        public int length(object target) => target.AssertEnumerable(nameof(length)).Count();
+        [HandleUnknownValue]
+        public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
 
-        public bool hasMinCount(object target, int minCount) => target.AssertEnumerable(nameof(hasMinCount)).Count() >= minCount;
-        public bool hasMaxCount(object target, int maxCount) => target.AssertEnumerable(nameof(hasMaxCount)).Count() <= maxCount;
+        [HandleUnknownValue]
+        public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
+        [HandleUnknownValue]
+        public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
 
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
