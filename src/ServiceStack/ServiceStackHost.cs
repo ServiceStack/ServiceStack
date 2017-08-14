@@ -272,7 +272,7 @@ namespace ServiceStack
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
                 .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x) } ));
 
-            if (AddVirtualFileSources?.Count > 0)
+            if (AddVirtualFileSources.Count > 0)
                 pathProviders.AddRange(AddVirtualFileSources);
 
             return pathProviders;

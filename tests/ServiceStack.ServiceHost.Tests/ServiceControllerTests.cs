@@ -139,6 +139,7 @@ namespace ServiceStack.ServiceHost.Tests
         public void Service_with_generic_IGet_marker_interface_can_be_registered_without_DefaultRequestAttribute()
         {
             var appHost = new AppHost();
+            appHost.ServiceController = new ServiceController(appHost);
 
             Assert.That(appHost.RestPaths.Count, Is.EqualTo(0));
 
