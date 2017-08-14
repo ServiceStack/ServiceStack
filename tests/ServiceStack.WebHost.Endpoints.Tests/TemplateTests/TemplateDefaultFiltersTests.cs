@@ -1181,6 +1181,15 @@ dir-file: dir/dir-file.txt
 
             Assert.That(context.EvaluateTemplate("{{ endIf(true)  | use(1) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ endIf(false) | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifEnd | use(1) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ false | ifEnd | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifNotEnd | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifNotEnd | use(1) }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ doIf(true)  | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ doIf(false) | use(1) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifDo | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifDo | use(1) }}"), Is.EqualTo(""));
 
             Assert.That(context.EvaluateTemplate("{{ true  | ifUse(1) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ false | ifUse(1) }}"), Is.EqualTo(""));
