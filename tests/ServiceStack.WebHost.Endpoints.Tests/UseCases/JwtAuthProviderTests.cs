@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 using Funq;
@@ -69,13 +70,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
     public class JwtAuthProviderHS256Tests : JwtAuthProviderTests
     {
+        private static readonly byte[] AuthKey = AesUtils.CreateKey();
+
         protected override JwtAuthProvider CreateJwtAuthProvider()
         {
             return new JwtAuthProvider
             {
-                AuthKey = AesUtils.CreateKey(),
+                AuthKey = AuthKey,
                 RequireSecureConnection = false,
             };
+        }
+
+        [Test]
+        public void Can_manually_create_an_authenticated_UserSession_in_Token()
+        {
+            var jwtProvider = CreateJwtAuthProvider();
+
+            var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+            var body = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+                {
+                    UserAuthId = "1",
+                    DisplayName = "Test",
+                    Email = "as@if.com",
+                    IsAuthenticated = true,
+                },
+                issuer: jwtProvider.Issuer,
+                expireIn: jwtProvider.ExpireTokensIn,
+                audience: jwtProvider.Audience,
+                roles: new[] {"TheRole"},
+                permissions: new[] {"ThePermission"});
+
+            var jwtToken = JwtAuthProvider.CreateJwt(header, body, jwtProvider.GetHashAlgorithm());
+
+            var client = GetClient();
+
+            try
+            {
+                client.Send(new HelloJwt { Name = "no jwt" });
+                Assert.Fail("should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
+            }
+
+            client.SetTokenCookie(jwtToken);
+            var response = client.Send(new HelloJwt { Name = "from Custom JWT" });
+            Assert.That(response.Result, Is.EqualTo("Hello, from Custom JWT"));
         }
     }
 
