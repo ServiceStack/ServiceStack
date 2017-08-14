@@ -345,7 +345,7 @@ namespace ServiceStack.Templates
 
         public bool isEmpty(object target)
         {
-            if (target == null)
+            if (isNull(target))
                 return true;
 
             if (target is string s)
@@ -387,6 +387,11 @@ namespace ServiceStack.Templates
         public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
         public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
 
+        public int length(object target) => target.AssertEnumerable(nameof(length)).Count();
+
+        public bool hasMinCount(object target, int minCount) => target.AssertEnumerable(nameof(hasMinCount)).Count() >= minCount;
+        public bool hasMaxCount(object target, int maxCount) => target.AssertEnumerable(nameof(hasMaxCount)).Count() <= maxCount;
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
@@ -415,7 +420,7 @@ namespace ServiceStack.Templates
 
         internal static bool compareTo(object target, object other, Func<int, bool> fn)
         {
-            if (target == null)
+            if (target == null || target == JsNull.Value)
                 throw new ArgumentNullException(nameof(target));
             if (other == null)
                 throw new ArgumentNullException(nameof(other));
@@ -674,7 +679,7 @@ namespace ServiceStack.Templates
 
         public bool contains(object target, object needle)
         {
-            if (needle == null)
+            if (isNull(needle))
                 return false;
             
             if (target is string s)
@@ -887,7 +892,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public Task @do(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            if (target == null)
+            if (isNull(target))
                 return TypeConstants.EmptyTask;
             
             var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
@@ -916,7 +921,7 @@ namespace ServiceStack.Templates
         
         public object property(object target, string propertyName)
         {
-            if (target == null)
+            if (isNull(target))
                 return null;
 
             var props = TypeProperties.Get(target.GetType());
@@ -930,7 +935,7 @@ namespace ServiceStack.Templates
 
         public object field(object target, string fieldName)
         {
-            if (target == null)
+            if (isNull(target))
                 return null;
 
             var props = TypeFields.Get(target.GetType());
@@ -1220,7 +1225,7 @@ namespace ServiceStack.Templates
 
         public object get(object target, object key)
         {
-            if (target == null)
+            if (isNull(target))
                 return null;
             
             if (target is IDictionary d)
@@ -1276,7 +1281,7 @@ namespace ServiceStack.Templates
 
         public object scopeVars(object target)
         {
-            if (target == null)
+            if (isNull(target))
                 return null;
             
             if (target is IDictionary<string, object> g)
@@ -1326,7 +1331,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions) 
         {
-            if (target == null)
+            if (isNull(target))
                 return;
             
             var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
@@ -1354,7 +1359,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams) 
         {
-            if (target == null)
+            if (isNull(target))
                 return;
             
             scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);

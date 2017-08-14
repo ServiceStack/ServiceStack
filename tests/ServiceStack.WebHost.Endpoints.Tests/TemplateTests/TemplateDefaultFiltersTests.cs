@@ -1012,6 +1012,22 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_use_length_filters()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["items"] = new[]{1,2,3},
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ items | length }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateTemplate("{{ items | hasMinCount(0) | iif(1,0) }}:{{ items | hasMinCount(3) | iif(1,0) }}:{{ items | hasMinCount(4) | iif(1,0) }}"), Is.EqualTo("1:1:0"));
+            Assert.That(context.EvaluateTemplate("{{ items | hasMaxCount(0) | iif(1,0) }}:{{ items | hasMaxCount(3) | iif(1,0) }}:{{ items | hasMaxCount(4) | iif(1,0) }}"), Is.EqualTo("0:1:1"));
+        }
+
+        [Test]
         public void Can_use_test_isTest_filters()
         {
             var context = new TemplateContext
