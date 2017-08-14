@@ -357,6 +357,36 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        public bool isString(object target) => target is string;
+        public bool isInt(object target) => target is int;
+        public bool isLong(object target) => target is long;
+        public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
+        public bool isDouble(object target) => target is double;
+        public bool isFloat(object target) => target is float;
+        public bool isDecimal(object target) => target is decimal;
+        public bool isBool(object target) => target is bool;
+        public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
+        public bool isEnumerable(object target) => target is IEnumerable;
+        public bool isDictionary(object target) => target is IDictionary;
+        public bool isChar(object target) => target is char;
+        public bool isChars(object target) => target is char[];
+        public bool isByte(object target) => target is byte;
+        public bool isBytes(object target) => target is byte[];
+        public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
+        public bool isStringDictionary(object target) => target is IDictionary<string, string>;
+
+        public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
+        public bool isNumber(object target) => target?.GetType()?.IsNumericType() == true;
+        public bool isRealNumber(object target) => target?.GetType()?.IsRealNumberType() == true;
+        public bool isEnum(object target) => target?.GetType()?.IsEnum() == true;
+        public bool isArray(object target) => target?.GetType()?.IsArray() == true;
+        public bool isAnonObject(object target) => target?.GetType()?.IsAnonymousType() == true;
+        public bool isClass(object target) => target?.GetType()?.IsClass() == true;
+        public bool isValueType(object target) => target?.GetType()?.IsValueType() == true;
+        public bool isDto(object target) => target?.GetType()?.IsDto() == true;
+        public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
+        public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
+
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
@@ -585,6 +615,17 @@ namespace ServiceStack.Templates
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
         
+        public char toChar(object target) => target is string s && s.Length == 1 ? s[0] : target.ConvertTo<char>();
+        public char[] toChars(object target) => target is string s 
+            ? s.ToCharArray() 
+            : target is IEnumerable<object> objects
+                ? objects.Where(x => x != null).Select(x => x.ToString()[0]).ToArray()
+                : target.ConvertTo<char[]>();
+
+        public byte[] toUtf8Bytes(string target) => target.ToUtf8Bytes();
+        public string fromUtf8Bytes(byte[] target) => target.FromUtf8Bytes();
+
+        public byte toByte(object target) => target.ConvertTo<byte>();
         public int toInt(object target) => target.ConvertTo<int>();
         public long toLong(object target) => target.ConvertTo<long>();
         public float toFloat(object target) => target.ConvertTo<float>();

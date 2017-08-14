@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -1008,6 +1009,63 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 'a::b::c' | split('::') | join('|') }}"), Is.EqualTo("a|b|c"));
             Assert.That(context.EvaluateTemplate("{{ 'a:b/c' | split([':','/']) | join('|') }}"), Is.EqualTo("a|b|c"));
             Assert.That(context.EvaluateTemplate("{{ 'a::b//c' | split(['::','//']) | join('|') }}"), Is.EqualTo("a|b|c"));
+        }
+
+        [Test]
+        public void Can_use_test_isTest_filters()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["string"] = "foo",
+                    ["int"] = 1,
+                    ["long"] = (long)1,
+                    ["byte"] = (byte)1,
+                    ["double"] = (double)1.1,
+                    ["float"] = (float)1.1,
+                    ["decimal"] = (decimal)1.1,
+                    ["bool"] = true,
+                    ["char"] = 'c',
+                    ["chars"] = new[]{ 'a','b','c' },
+                    ["bytes"] = new byte[]{ 1, 2, 3 },
+                    ["intDictionary"] = new Dictionary<int, int>(),
+                    ["stringDictionary"] = new Dictionary<string, string>(),
+                    ["objectDictionary"] = new Dictionary<string, object>(),
+                    ["objectList"] = new List<object>(),
+                    ["objectArray"] = new object[]{ 1, "a" },
+                    ["anonObject"] = new { id = 1 },
+                    ["context"] = new TemplateContext(),
+                    ["tuple"] = Tuple.Create(1, "a"),
+                    ["keyValuePair"] = new KeyValuePair<int,string>(1,"a")
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isString | iif(1,0) }}:{{ 1 | isString | iif(1,0) }}"), Is.EqualTo("1:0"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isInt | iif(1,0) }}:{{ 1 | isInt | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isLong | iif(1,0) }}:{{ 1 | toLong | isLong | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isDouble | iif(1,0) }}:{{ 1.1 | isDouble | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isFloat | iif(1,0) }}:{{ 1.1 | toFloat | isFloat | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isDecimal | iif(1,0) }}:{{ 1.1 | toDecimal | isDecimal | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isBool | iif(1,0) }}:{{ false | isBool | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isChar | iif(1,0) }}:{{ 'a' | toChar | isChar | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isChars | iif(1,0) }}:{{ 'a' | toChars | isChars | iif(1,0) }}:{{ ['a','b'] | toChars | isChars | iif(1,0) }}"), Is.EqualTo("0:1:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isByte | iif(1,0) }}:{{ 1 | toByte | isByte | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ bytes | isBytes | iif(1,0) }}:{{ 'a' | isBytes | iif(1,0) }}:{{ 'a' | toUtf8Bytes | isBytes | iif(1,0) }}"), Is.EqualTo("1:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isList | iif(1,0) }}:{{ {a:1} | isList | iif(1,0) }}:{{ ['a'] | isList | iif(1,0) }}"), Is.EqualTo("0:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isEnumerable | iif(1,0) }}:{{ 1 | isEnumerable | iif(1,0) }}:{{ ['a'] | isEnumerable | iif(1,0) }}:{{ {a:1} | isEnumerable | iif(1,0) }}"), Is.EqualTo("1:0:1:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isDictionary | iif(1,0) }}:{{ {a:1} | isDictionary | iif(1,0) }}:{{ ['a'] | isDictionary | iif(1,0) }}"), Is.EqualTo("0:1:0"));
+            Assert.That(context.EvaluateTemplate("{{ {a:'a'} | isStringDictionary | iif(1,0) }}:{{ {a:1} | isStringDictionary | iif(1,0) }}:{{ stringDictionary | isStringDictionary | iif(1,0) }}"), Is.EqualTo("0:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ {a:'a'} | isObjectDictionary | iif(1,0) }}:{{ {a:1} | isObjectDictionary | iif(1,0) }}:{{ stringDictionary | isObjectDictionary | iif(1,0) }}"), Is.EqualTo("1:1:0"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isNumber | iif(1,0) }}:{{ 1 | isNumber | iif(1,0) }}:{{ 1.1 | isNumber | iif(1,0) }}"), Is.EqualTo("0:1:1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isRealNumber | iif(1,0) }}:{{ 1 | isRealNumber | iif(1,0) }}:{{ 1.1 | isRealNumber | iif(1,0) }}"), Is.EqualTo("0:0:1"));
+            Assert.That(context.EvaluateTemplate("{{ objectList | isArray | iif(1,0) }}:{{ objectArray | isArray | iif(1,0) }}:{{ [1,'a'] | isArray | iif(1,0) }}"), Is.EqualTo("0:1:0"));
+            Assert.That(context.EvaluateTemplate("{{ anonObject | isAnonObject | iif(1,0) }}:{{ context | isAnonObject | iif(1,0) }}:{{ {a:1} | isAnonObject | iif(1,0) }}"), Is.EqualTo("1:0:0"));
+            Assert.That(context.EvaluateTemplate("{{ context | isClass | iif(1,0) }}:{{ 1 | isClass | iif(1,0) }}"), Is.EqualTo("1:0"));
+            Assert.That(context.EvaluateTemplate("{{ context | isValueType | iif(1,0) }}:{{ 1 | isValueType | iif(1,0) }}"), Is.EqualTo("0:1"));
+            Assert.That(context.EvaluateTemplate("{{ {a:1} | isKeyValuePair | iif(1,0) }}:{{ keyValuePair | isKeyValuePair | iif(1,0) }}:{{ {a:1} | toList | get(0) | isKeyValuePair | iif(1,0) }}"), Is.EqualTo("0:1:1"));
+
+            Assert.That(context.EvaluateTemplate("{{ 'a' | isType('string') | iif(1,0) }}:{{ string | isType('String') | iif(1,0) }}:{{ 1 | isString | iif(1,0) }}"), Is.EqualTo("1:1:0"));
         }
 
     }
