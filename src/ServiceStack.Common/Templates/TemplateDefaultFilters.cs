@@ -637,7 +637,21 @@ namespace ServiceStack.Templates
         public double toDouble(object target) => target.ConvertTo<double>();
         public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
+
         public Dictionary<string, object> toObjectDictionary(object target) => target.ToObjectDictionary();
+        public Dictionary<string, string> toStringDictionary(IDictionary map)
+        {
+            if (isNull(map))
+                return null;
+
+            var to = new Dictionary<string,string>();
+            foreach (var key in map.Keys)
+            {
+                var value = map[key];
+                to[key.ToString()] = value?.ToString();
+            }
+            return to;
+        }
 
         public List<object> step(IEnumerable target, object scopeOptions)
         {
