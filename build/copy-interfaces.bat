@@ -1,7 +1,7 @@
 REM SET BUILD=Debug
 SET BUILD=Release
 
-COPY "..\src\ServiceStack.Interfaces\bin\%BUILD%\portable40-net45+sl5+win8+wp8+wpa81\ServiceStack.Interfaces.*" ..\lib\pcl
+COPY "..\src\ServiceStack.Interfaces\bin\%BUILD%\portable40-net40+sl5+win8+wp8+wpa81\ServiceStack.Interfaces.*" ..\lib\pcl
 COPY ..\src\ServiceStack.Interfaces\bin\%BUILD%\netstandard1.1\ServiceStack.Interfaces.* ..\lib\netstandard1.1
 COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.* ..\lib\net45
 COPY ..\src\ServiceStack.Common\bin\%BUILD%\netstandard1.3\ServiceStack.Common.* ..\lib\netstandard1.3
