@@ -79,6 +79,10 @@ namespace ServiceStack.Templates
             return page;
         }
 
+        public TemplateDefaultFilters DefaultFilters => TemplateFilters.FirstOrDefault(x => x is TemplateDefaultFilters) as TemplateDefaultFilters;
+        public TemplateProtectedFilters ProtectedFilters => TemplateFilters.FirstOrDefault(x => x is TemplateProtectedFilters) as TemplateProtectedFilters;
+        public TemplateHtmlFilters HtmlFilters => TemplateFilters.FirstOrDefault(x => x is TemplateHtmlFilters) as TemplateHtmlFilters;
+
         public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
             var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if nested path specified, look for an exact match first
@@ -163,7 +167,7 @@ namespace ServiceStack.Templates
             TemplateFilters.Add(new TemplateDefaultFilters());
             TemplateFilters.Add(new TemplateHtmlFilters());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
-            FilterTransformers["noshow"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
+            FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 
             var culture = CultureInfo.CurrentCulture;
             if (Equals(culture, CultureInfo.InvariantCulture))

@@ -913,39 +913,6 @@ Total    1550
         }
 
         [Test]
-        public void Can_call_htmltable_with_empty_arg()
-        {
-            var context = new TemplateContext
-            {
-                Args =
-                {
-                    ["arg"] = new List<Dictionary<string,object>>
-                    {
-                        new Dictionary<string, object>{ { "a", 1 } }
-                    },
-                    ["emptyArg"] = new List<Dictionary<string,object>>()
-                }
-            }.Init();
-
-            Assert.That(context.EvaluateTemplate("{{ arg | htmltable }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
-
-            Assert.That(context.EvaluateTemplate("{{ arg | htmltable() }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
-            
-            Assert.That(context.EvaluateTemplate("{{ arg | htmltable({}) }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
-            
-            Assert.That(context.EvaluateTemplate("{{ arg | htmltable({ }) }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
-            
-            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmltable }}"), Is.EqualTo(""));
-            
-            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmltable({ emptyCaption: 'no rows' }) }}"), 
-                Is.EqualTo("<table><caption>no rows</caption></table>"));
-        }
-
-        [Test]
         public void Does_not_emit_binding_on_empty_Key_Value()
         {
             var context = new TemplateContext
@@ -1030,15 +997,15 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
-        public void Can_use_noshow_or_discard_to_discard_return_value()
+        public void Can_use_end_to_discard_return_value()
         {
             var context = new TemplateContext().Init();
             
             context.VirtualFiles.WriteFile("partial.html", "partial");
 
-            Assert.That(context.EvaluateTemplate("{{ 1 | noshow }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ add(1,1) | noshow }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ 'partial' | partial | noshow }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | end }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ add(1,1) | end }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 'partial' | partial | end }}"), Is.EqualTo(""));
         }
 
         [Test]
@@ -1193,7 +1160,7 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 1 | endIfFalsy | default('unreachable') }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 0 | endIfFalsy | default('unreachable') }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ arg | endIfTruthy | use('bar') }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ one | endIfTruthy | default(1) | assignTo: one }}{{ one }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ one | endIfTruthy | use(1) | assignTo: one }}{{ one }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIf(true) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ 1 | endIf(false) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 5 | times | endIfAny: it = 4\n | join }}"), Is.EqualTo(""));
@@ -1222,6 +1189,36 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ false | ifUse(1) }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ 1 | useIf(true)  }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 1 | useIf(false) }}"), Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Can_chain_end_filters_together()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "foo",
+                    ["empty"] = "",
+                    ["nil"] = null,
+                    ["items"] = new[]{1,2,3},
+                    ["none"] = new int[]{},
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ arg   | endIfNull     | endIfNotNull(noArg) | select: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | endIfExists   | endIfExists(noArg2) | select: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty | endIfNull     | endIfNotNull(nil)   | select: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty | endIfNull     | endIfNull(nil) | select: 1 }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ items | endIfEmpty    | endIfNotEmpty(none) | select: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ items | endIfNotEmpty | select: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ none  | endIfEmpty    | select: 1 }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ endIf(isEmpty(items)) | endIf(!isEmpty(none)) | select: 1 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ noArg | endIfExists | endIfNull(none)   | use(1) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ arg   | endIfEmpty  | endIfEmpty(items) | join }}"), Is.EqualTo("1,2,3"));
         }
 
     }
