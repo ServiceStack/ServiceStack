@@ -198,18 +198,14 @@ namespace ServiceStack.Templates
                         }
                         else if (!isComplexType(first))
                         {
-                            sb.Append("<tr>");
-                            sb.Append("<td>");
-                            for (var i = 0; i < objs.Count; i++)
+                            foreach (var o in objs)
                             {
-                                var o = objs[i];
-                                if (i == 0)
-                                    sb.Append(", ");
-
+                                sb.Append("<tr>");
+                                sb.Append("<td>");
                                 sb.Append(GetScalarHtml(o));
+                                sb.Append("</td>");
+                                sb.Append("</tr>");
                             }
-                            sb.Append("</td>");
-                            sb.Append("</tr>");
                         }
                         else
                         {
