@@ -12,11 +12,11 @@ using ServiceStack.Text.Json;
 namespace ServiceStack.Templates
 {
     // ReSharper disable InconsistentNaming
-    
+
     public class TemplateDefaultFilters : TemplateFilter
     {
         public static TemplateDefaultFilters Instance = new TemplateDefaultFilters();
-        
+
         // methods without arguments can be used in bindings, e.g. {{ now | dateFormat }}
         public DateTime now() => DateTime.Now;
         public DateTime utcNow() => DateTime.UtcNow;
@@ -29,7 +29,7 @@ namespace ServiceStack.Templates
         public DateTime addDays(DateTime target, int count) => target.AddDays(count);
         public DateTime addMonths(DateTime target, int count) => target.AddMonths(count);
         public DateTime addYears(DateTime target, int count) => target.AddYears(count);
-        
+
         public string indent() => Context.Args[TemplateConstants.DefaultIndent] as string;
         public string indents(int count) => repeat(Context.Args[TemplateConstants.DefaultIndent] as string, count);
         public string space() => " ";
@@ -48,12 +48,12 @@ namespace ServiceStack.Templates
                 return r;
             if (value is bool b)
                 return b ? TemplateConstants.TrueRawString : TemplateConstants.FalseRawString;
-            
+
             var rawStr = value.ToString().ToRawString();
             return rawStr;
         }
 
-        public string appSetting(string name) =>  Context.AppSettings.GetString(name);
+        public string appSetting(string name) => Context.AppSettings.GetString(name);
 
         public double add(double lhs, double rhs) => lhs + rhs;
         public double sub(double lhs, double rhs) => lhs - rhs;
@@ -63,13 +63,13 @@ namespace ServiceStack.Templates
         public double div(double lhs, double rhs) => lhs / rhs;
         public double divide(double lhs, double rhs) => lhs / rhs;
 
-        public long incr(long value) => value + 1; 
-        public long increment(long value) => value + 1; 
-        public long incrBy(long value, long by) => value + by; 
-        public long incrementBy(long value, long by) => value + by; 
-        public long decr(long value) => value - 1; 
-        public long decrement(long value) => value - 1; 
-        public long decrBy(long value, long by) => value - by; 
+        public long incr(long value) => value + 1;
+        public long increment(long value) => value + 1;
+        public long incrBy(long value, long by) => value + by;
+        public long incrementBy(long value, long by) => value + by;
+        public long decr(long value) => value - 1;
+        public long decrement(long value) => value - 1;
+        public long decrBy(long value, long by) => value - by;
         public long decrementBy(long value, long by) => value - by;
         public long mod(long value, long divisor) => value % divisor;
 
@@ -102,21 +102,21 @@ namespace ServiceStack.Templates
         {
             var cultureInfo = culture != null
                 ? new CultureInfo(culture)
-                : (CultureInfo) Context.Args[TemplateConstants.DefaultCulture];
+                : (CultureInfo)Context.Args[TemplateConstants.DefaultCulture];
 
             var fmt = string.Format(cultureInfo, "{0:C}", decimalValue);
             return fmt;
         }
 
-        public string format(object obj, string format) => obj is IFormattable formattable 
-            ? formattable.ToString(format, null) 
+        public string format(object obj, string format) => obj is IFormattable formattable
+            ? formattable.ToString(format, null)
             : string.Format(format, obj);
 
         public string fmt(string format, object arg)
         {
             if (arg is object[] args)
                 return string.Format(format, args);
-            
+
             if (arg is List<object> argsList)
                 return string.Format(format, argsList.ToArray());
 
@@ -132,16 +132,13 @@ namespace ServiceStack.Templates
         public string appendFmt(string target, string format, object arg0, object arg1) => target + fmt(format, arg0, arg1);
         public string appendFmt(string target, string format, object arg0, object arg1, object arg2) => target + fmt(format, arg0, arg1, arg2);
 
-        [HandleUnknownValue]
-        public Task noshow(TemplateScopeContext scope, object value) => TypeConstants.EmptyTask;
-        
-        public object dateFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
-        public object dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
-        public object dateTimeFormat(DateTime dateValue) =>  dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
-        public object timeFormat(TimeSpan timeValue) =>  timeValue.ToString((string)Context.Args[TemplateConstants.DefaultTimeFormat]);
-        public object timeFormat(TimeSpan timeValue, string format) =>  timeValue.ToString(format);
+        public string dateFormat(DateTime dateValue) => dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateFormat]);
+        public string dateFormat(DateTime dateValue, string format) => dateValue.ToString(format ?? throw new ArgumentNullException(nameof(format)));
+        public string dateTimeFormat(DateTime dateValue) => dateValue.ToString((string)Context.Args[TemplateConstants.DefaultDateTimeFormat]);
+        public string timeFormat(TimeSpan timeValue) => timeValue.ToString((string)Context.Args[TemplateConstants.DefaultTimeFormat]);
+        public string timeFormat(TimeSpan timeValue, string format) => timeValue.ToString(format);
 
-        public string splitCase(string text) => text.SplitCamelCase().Replace('_',' ');
+        public string splitCase(string text) => text.SplitCamelCase().Replace('_', ' ');
         public string humanize(string text) => splitCase(text).ToTitleCase();
         public string titleCase(string text) => text.ToTitleCase();
         public string pascalCase(string text) => text.ToPascalCase();
@@ -153,15 +150,15 @@ namespace ServiceStack.Templates
             switch (headerStyle)
             {
                 case "splitCase":
-                    return Instance.splitCase(text);
+                    return splitCase(text);
                 case "humanize":
-                    return Instance.humanize(text);
+                    return humanize(text);
                 case "titleCase":
-                    return Instance.titleCase(text);
+                    return titleCase(text);
                 case "pascalCase":
-                    return Instance.pascalCase(text);
+                    return pascalCase(text);
                 case "camelCase":
-                    return Instance.camelCase(text);
+                    return camelCase(text);
             }
             return text;
         }
@@ -191,7 +188,7 @@ namespace ServiceStack.Templates
         public bool endsWith(string text, string needle) => text?.EndsWith(needle) == true;
 
         public string replace(string text, string oldValue, string newValue) => text.Replace(oldValue, newValue);
-        
+
 
         public string trimStart(string text) => text?.TrimStart();
         public string trimEnd(string text) => text?.TrimEnd();
@@ -213,9 +210,9 @@ namespace ServiceStack.Templates
             if (delimiter is char c)
                 return stringList.Split(c);
             if (delimiter is string s)
-                return s.Length == 1 
+                return s.Length == 1
                     ? stringList.Split(s[0])
-                    : stringList.Split(new []{ s }, StringSplitOptions.RemoveEmptyEntries);
+                    : stringList.Split(new[] { s }, StringSplitOptions.RemoveEmptyEntries);
             if (delimiter is IEnumerable<string> strDelims)
                 return strDelims.All(x => x.Length == 1)
                     ? stringList.Split(strDelims.Select(x => x[0]).ToArray(), StringSplitOptions.RemoveEmptyEntries)
@@ -235,15 +232,15 @@ namespace ServiceStack.Templates
         public ICollection values(IDictionary target) => target.Values;
 
         public string addPath(string target, string pathToAppend) => target.AppendPath(pathToAppend);
-        public string addPaths(string target, IEnumerable pathsToAppend) => 
+        public string addPaths(string target, IEnumerable pathsToAppend) =>
             target.AppendPath(pathsToAppend.Map(x => x.ToString()).ToArray());
 
-        public string addQueryString(string url, object urlParams) => 
+        public string addQueryString(string url, object urlParams) =>
             urlParams.AssertOptions(nameof(addQueryString)).Aggregate(url, (current, entry) => current.AddQueryParam(entry.Key, entry.Value));
-        
-        public string addHashParams(string url, object urlParams) => 
+
+        public string addHashParams(string url, object urlParams) =>
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
-        
+
         public string repeating(int times, string text) => repeat(text, AssertWithinMaxQuota(times));
         public string repeat(string text, int times)
         {
@@ -273,7 +270,7 @@ namespace ServiceStack.Templates
 
         public bool isEven(int value) => value % 2 == 0;
         public bool isOdd(int value) => !isEven(value);
-        
+
         public static bool isTrue(object target) => target is bool b && b;
         public static bool isFalsy(object target)
         {
@@ -289,85 +286,44 @@ namespace ServiceStack.Templates
                 return l == 0;
             if (target is double d)
                 return d == 0 || double.IsNaN(d);
-            
+
             return false;
         }
 
-        [HandleUnknownValue]
-        public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        [HandleUnknownValue]
-        public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
-        [HandleUnknownValue]
-        public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
+        [HandleUnknownValue] public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue] public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
+        [HandleUnknownValue] public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
-        [HandleUnknownValue]
-        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
-        [HandleUnknownValue]
-        public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
-        
-        [HandleUnknownValue]
-        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
-        [HandleUnknownValue]
-        public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        [HandleUnknownValue] public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue] public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
-        [HandleUnknownValue]
-        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
+        [HandleUnknownValue] public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
-        [HandleUnknownValue]
-        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
-        
-        [HandleUnknownValue]
-        public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
+        [HandleUnknownValue] public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
+        [HandleUnknownValue] public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
+        [HandleUnknownValue] public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
+        [HandleUnknownValue] public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
-        [HandleUnknownValue]
-        public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
+        [HandleUnknownValue] public bool isNull(object test) => test == null || test == JsNull.Value;
+        [HandleUnknownValue] public bool isNotNull(object test) => !isNull(test);
+        [HandleUnknownValue] public bool exists(object test) => !isNull(test);
 
-        [HandleUnknownValue]
-        public bool isNull(object test) => test == null || test == JsNull.Value;
+        [HandleUnknownValue] public bool isZero(double value) => value.Equals(0d);
+        [HandleUnknownValue] public bool isPositive(double value) => value > 0;
+        [HandleUnknownValue] public bool isNegative(double value) => value < 0;
+        [HandleUnknownValue] public bool isNaN(double value) => double.IsNaN(value);
+        [HandleUnknownValue] public bool isInfinity(double value) => double.IsInfinity(value);
 
-        [HandleUnknownValue]
-        public bool isNotNull(object test) => !isNull(test);
-        [HandleUnknownValue]
-        public bool exists(object test) => !isNull(test);
-
-        [HandleUnknownValue]
-        public bool isZero(double value) => value.Equals(0d);
-
-        [HandleUnknownValue]
-        public bool isPositive(double value) => value > 0;
-
-        [HandleUnknownValue]
-        public bool isNegative(double value) => value < 0;
-
-        [HandleUnknownValue]
-        public bool isNaN(double value) => double.IsNaN(value);
-
-        [HandleUnknownValue]
-        public bool isInfinity(double value) => double.IsInfinity(value);
-
-        [HandleUnknownValue]
-        public object ifExists(object target) => target;
-        [HandleUnknownValue]
-        public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
-        [HandleUnknownValue]
-        public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
-        [HandleUnknownValue]
-        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
-
-        [HandleUnknownValue]
-        public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
-
-        [HandleUnknownValue]
-        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
-
-        [HandleUnknownValue]
-        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
-
-        [HandleUnknownValue]
-        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-
-        [HandleUnknownValue]
-        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue] public object ifExists(object target) => target;
+        [HandleUnknownValue] public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
+        [HandleUnknownValue] public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
+        [HandleUnknownValue] public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
+        [HandleUnknownValue] public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
+        [HandleUnknownValue] public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
+        [HandleUnknownValue] public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
+        [HandleUnknownValue] public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        [HandleUnknownValue] public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
 
         [HandleUnknownValue]
         public bool isEmpty(object target)
@@ -384,50 +340,33 @@ namespace ServiceStack.Templates
             return false;
         }
 
-        [HandleUnknownValue]
-        public object end(object ignore) => StopExecution.Value;
+        [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
+        [HandleUnknownValue] public object end(object ignore) => StopExecution.Value;
 
-        [HandleUnknownValue]
-        public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfNotNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfNotNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfExists(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfExists(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfEmpty(object ignoreTarget, object target) => isEmpty(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfNotEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfNotEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfFalsy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfFalsy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfTruthy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfTruthy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
-        [HandleUnknownValue]
-        public object endIfNotNull(object target) => !isNull(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfExists(object target) => !isNull(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfNotEmpty(object target) => !isEmpty(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfFalsy(object target) => isFalsy(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfTruthy(object target) => !isFalsy(target) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
-
-        [HandleUnknownValue]
-        public object ifEnd(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
-
-        [HandleUnknownValue]
-        public object ifNotEnd(object test) => !isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
-
-        [HandleUnknownValue]
-        public object endIf(object returnTarget, object test) => isTrue(test) ? StopExecution.Value : returnTarget;
-
-        [HandleUnknownValue]
-        public object endIfAny(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endIfAll(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
-
-        [HandleUnknownValue]
-        public object endWhere(TemplateScopeContext scope, object target, object expression) => endWhere(scope, target, expression, null);
+        [HandleUnknownValue] public object ifEnd(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifEnd(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotEnd(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotEnd(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIf(object returnTarget, bool test) => test ? StopExecution.Value : returnTarget;
+        [HandleUnknownValue] public object endIfAny(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endIfAll(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object endWhere(TemplateScopeContext scope, object target, object expression) => endWhere(scope, target, expression, null);
 
         [HandleUnknownValue]
         public object endWhere(TemplateScopeContext scope, object target, object expression, object scopeOptions)
@@ -444,95 +383,62 @@ namespace ServiceStack.Templates
                 : target;
         }
 
-        [HandleUnknownValue]
-        public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue]
-        public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifDo(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object doIf(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
 
-        [HandleUnknownValue]
-        public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue]
-        public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
 
-        public object use(object discardTarget, object useValue) => useValue;
-        public object useFmt(object discardTarget, string format, object arg) => fmt(format, arg);
-        public object useFmt(object discardTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
-        public object useFmt(object discardTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
-        public object useFormat(object discardTarget, object arg, string fmt) => format(arg, fmt);
+        public object use(object ignoreTarget, object useValue) => useValue;
+        public object useFmt(object ignoreTarget, string format, object arg) => fmt(format, arg);
+        public object useFmt(object ignoreTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
+        public object useFmt(object ignoreTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
+        public object useFormat(object ignoreTarget, object arg, string fmt) => format(arg, fmt);
 
-        [HandleUnknownValue]
-        public bool isString(object target) => target is string;
-        [HandleUnknownValue]
-        public bool isInt(object target) => target is int;
-        [HandleUnknownValue]
-        public bool isLong(object target) => target is long;
-        [HandleUnknownValue]
-        public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
-        [HandleUnknownValue]
-        public bool isDouble(object target) => target is double;
-        [HandleUnknownValue]
-        public bool isFloat(object target) => target is float;
-        [HandleUnknownValue]
-        public bool isDecimal(object target) => target is decimal;
-        [HandleUnknownValue]
-        public bool isBool(object target) => target is bool;
-        [HandleUnknownValue]
-        public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
-        [HandleUnknownValue]
-        public bool isEnumerable(object target) => target is IEnumerable;
-        [HandleUnknownValue]
-        public bool isDictionary(object target) => target is IDictionary;
-        [HandleUnknownValue]
-        public bool isChar(object target) => target is char;
-        [HandleUnknownValue]
-        public bool isChars(object target) => target is char[];
-        [HandleUnknownValue]
-        public bool isByte(object target) => target is byte;
-        [HandleUnknownValue]
-        public bool isBytes(object target) => target is byte[];
-        [HandleUnknownValue]
-        public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
-        [HandleUnknownValue]
-        public bool isStringDictionary(object target) => target is IDictionary<string, string>;
+        [HandleUnknownValue] public bool isString(object target) => target is string;
+        [HandleUnknownValue] public bool isInt(object target) => target is int;
+        [HandleUnknownValue] public bool isLong(object target) => target is long;
+        [HandleUnknownValue] public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
+        [HandleUnknownValue] public bool isDouble(object target) => target is double;
+        [HandleUnknownValue] public bool isFloat(object target) => target is float;
+        [HandleUnknownValue] public bool isDecimal(object target) => target is decimal;
+        [HandleUnknownValue] public bool isBool(object target) => target is bool;
+        [HandleUnknownValue] public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
+        [HandleUnknownValue] public bool isEnumerable(object target) => target is IEnumerable;
+        [HandleUnknownValue] public bool isDictionary(object target) => target is IDictionary;
+        [HandleUnknownValue] public bool isChar(object target) => target is char;
+        [HandleUnknownValue] public bool isChars(object target) => target is char[];
+        [HandleUnknownValue] public bool isByte(object target) => target is byte;
+        [HandleUnknownValue] public bool isBytes(object target) => target is byte[];
+        [HandleUnknownValue] public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
+        [HandleUnknownValue] public bool isStringDictionary(object target) => target is IDictionary<string, string>;
 
-        [HandleUnknownValue]
-        public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
-        [HandleUnknownValue]
-        public bool isNumber(object target) => target?.GetType()?.IsNumericType() == true;
-        [HandleUnknownValue]
-        public bool isRealNumber(object target) => target?.GetType()?.IsRealNumberType() == true;
-        [HandleUnknownValue]
-        public bool isEnum(object target) => target?.GetType()?.IsEnum() == true;
-        [HandleUnknownValue]
-        public bool isArray(object target) => target?.GetType()?.IsArray() == true;
-        [HandleUnknownValue]
-        public bool isAnonObject(object target) => target?.GetType()?.IsAnonymousType() == true;
-        [HandleUnknownValue]
-        public bool isClass(object target) => target?.GetType()?.IsClass() == true;
-        [HandleUnknownValue]
-        public bool isValueType(object target) => target?.GetType()?.IsValueType() == true;
-        [HandleUnknownValue]
-        public bool isDto(object target) => target?.GetType()?.IsDto() == true;
-        [HandleUnknownValue]
-        public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
-        [HandleUnknownValue]
-        public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
+        [HandleUnknownValue] public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
+        [HandleUnknownValue] public bool isNumber(object target) => target?.GetType()?.IsNumericType() == true;
+        [HandleUnknownValue] public bool isRealNumber(object target) => target?.GetType()?.IsRealNumberType() == true;
+        [HandleUnknownValue] public bool isEnum(object target) => target?.GetType()?.IsEnum() == true;
+        [HandleUnknownValue] public bool isArray(object target) => target?.GetType()?.IsArray() == true;
+        [HandleUnknownValue] public bool isAnonObject(object target) => target?.GetType()?.IsAnonymousType() == true;
+        [HandleUnknownValue] public bool isClass(object target) => target?.GetType()?.IsClass() == true;
+        [HandleUnknownValue] public bool isValueType(object target) => target?.GetType()?.IsValueType() == true;
+        [HandleUnknownValue] public bool isDto(object target) => target?.GetType()?.IsDto() == true;
+        [HandleUnknownValue] public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
+        [HandleUnknownValue] public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
 
-        [HandleUnknownValue]
-        public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
+        [HandleUnknownValue] public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
 
-        [HandleUnknownValue]
-        public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
-        [HandleUnknownValue]
-        public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
+        [HandleUnknownValue] public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
+        [HandleUnknownValue] public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
 
         public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
         public bool equals(object target, object other) =>
-            target == null || other == null 
-                ? target == other 
-                : target.GetType() == other.GetType() 
+            target == null || other == null
+                ? target == other
+                : target.GetType() == other.GetType()
                     ? target.Equals(other)
                     : target.Equals(other.ConvertTo(target.GetType()));
 
@@ -558,14 +464,14 @@ namespace ServiceStack.Templates
                 throw new ArgumentNullException(nameof(target));
             if (other == null)
                 throw new ArgumentNullException(nameof(other));
-            
+
             if (target is IComparable c)
             {
-                return target.GetType() == other?.GetType() 
+                return target.GetType() == other?.GetType()
                     ? fn(c.CompareTo(other))
                     : fn(c.CompareTo(other.ConvertTo(target.GetType())));
             }
-            
+
             throw new NotSupportedException($"{target} is not IComparable");
         }
 
@@ -577,10 +483,10 @@ namespace ServiceStack.Templates
 
         public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
-        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) => 
+        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
             original.Take(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
 
-        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) => 
+        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
             original.Skip(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
 
         public IEnumerable<object> limit(TemplateScopeContext scope, IEnumerable<object> original, object skipOrBinding, object takeOrBinding)
@@ -621,7 +527,7 @@ namespace ServiceStack.Templates
                 {
                     foreach (var b in currentArray)
                     {
-                        to.Add(new[]{ a, b });
+                        to.Add(new[] { a, b });
                     }
                 }
             }
@@ -658,13 +564,13 @@ namespace ServiceStack.Templates
                             }
                         }
                     }
-                    
+
                     foreach (var entry in scopedParams)
                     {
                         var bindTo = entry.Key;
                         if (!(entry.Value is string bindToLiteral))
                             throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
-                        
+
                         bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
                         var bindValue = scope.Evaluate(value, binding);
                         scope.ScopedParams[bindTo] = bindValue;
@@ -683,7 +589,7 @@ namespace ServiceStack.Templates
 
         public object assign(TemplateScopeContext scope, string argExpr, object value) //from filter
         {
-            var targetEndPos = argExpr.IndexOfAny(new[] {'.', '['});
+            var targetEndPos = argExpr.IndexOfAny(new[] { '.', '[' });
             if (targetEndPos == -1)
             {
                 scope.ScopedParams[argExpr] = value;
@@ -696,7 +602,7 @@ namespace ServiceStack.Templates
 
                 scope.InvokeAssignExpression(argExpr, target, value);
             }
-            
+
             return value;
         }
 
@@ -708,7 +614,7 @@ namespace ServiceStack.Templates
 
         public Task assignTo(TemplateScopeContext scope, string argName) //from context filter
         {
-            var ms = (MemoryStream) scope.OutputStream;
+            var ms = (MemoryStream)scope.OutputStream;
             var value = ms.ReadFully().FromUtf8Bytes();
             scope.ScopedParams[argName] = value;
             ms.SetLength(0); //just capture output, don't write anything to the ResponseStream
@@ -724,18 +630,18 @@ namespace ServiceStack.Templates
             scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
             if (page != null)
                 await page.Init();
-     
+
             await scope.WritePageAsync(page, codePage, pageParams);
         }
 
         public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, null);
-        public async Task forEach(TemplateScopeContext scope, object target, object items, object scopeOptions) 
+        public async Task forEach(TemplateScopeContext scope, object target, object items, object scopeOptions)
         {
             var objs = items as IEnumerable;
             if (objs != null)
             {
                 var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
-                
+
                 var i = 0;
                 var itemScope = scope.CreateScopedContext(target.ToString(), scopedParams);
                 foreach (var item in objs)
@@ -753,10 +659,10 @@ namespace ServiceStack.Templates
         public string toString(object target) => target?.ToString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
-        
+
         public char toChar(object target) => target is string s && s.Length == 1 ? s[0] : target.ConvertTo<char>();
-        public char[] toChars(object target) => target is string s 
-            ? s.ToCharArray() 
+        public char[] toChars(object target) => target is string s
+            ? s.ToCharArray()
             : target is IEnumerable<object> objects
                 ? objects.Where(x => x != null).Select(x => x.ToString()[0]).ToArray()
                 : target.ConvertTo<char[]>();
@@ -778,7 +684,7 @@ namespace ServiceStack.Templates
             if (isNull(map))
                 return null;
 
-            var to = new Dictionary<string,string>();
+            var to = new Dictionary<string, string>();
             foreach (var key in map.Keys)
             {
                 var value = map[key];
@@ -790,13 +696,13 @@ namespace ServiceStack.Templates
         public List<object> step(IEnumerable target, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(step));
-            
+
             var scopedParams = scopeOptions.AssertOptions(nameof(step));
 
             var from = scopedParams.TryGetValue("from", out object oFrom)
                 ? (int)oFrom
                 : 0;
-            
+
             var by = scopedParams.TryGetValue("by", out object oBy)
                 ? (int)oBy
                 : 1;
@@ -829,7 +735,7 @@ namespace ServiceStack.Templates
         {
             if (isNull(needle))
                 return false;
-            
+
             if (target is string s)
             {
                 if (needle is char c)
@@ -850,7 +756,7 @@ namespace ServiceStack.Templates
 
         public int AssertWithinMaxQuota(int value)
         {
-            var maxQuota = (int) Context.Args[TemplateConstants.MaxQuota]; 
+            var maxQuota = (int)Context.Args[TemplateConstants.MaxQuota];
             if (value > maxQuota)
                 throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}");
 
@@ -863,9 +769,9 @@ namespace ServiceStack.Templates
             var items = target.AssertEnumerable(nameof(toDictionary));
             var literal = scope.AssertExpression(nameof(toDictionary), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
-            
+
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            
+
             return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
         }
 
@@ -929,19 +835,19 @@ namespace ServiceStack.Templates
         public double average(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
             applyInternal(nameof(average), scope, target, expression, scopeOptions, (a, b) => a + b).ConvertTo<double>() / target.AssertEnumerable(nameof(average)).Count();
 
-        private object applyInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions, 
+        private object applyInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions,
             Func<double, double, double> fn)
         {
             if (target is double d)
                 return fn(d, expression.ConvertTo<double>());
             if (target is int i)
-                return (int) fn(i, expression.ConvertTo<double>());
+                return (int)fn(i, expression.ConvertTo<double>());
             if (target is long l)
-                return (long) fn(l, expression.ConvertTo<double>());
-            
+                return (long)fn(l, expression.ConvertTo<double>());
+
             var items = target.AssertEnumerable(filterName);
-            var total = filterName == nameof(min) 
-                ? double.MaxValue 
+            var total = filterName == nameof(min)
+                ? double.MaxValue
                 : 0;
             Type itemType = null;
             if (expression != null)
@@ -952,7 +858,7 @@ namespace ServiceStack.Templates
                 foreach (var item in items)
                 {
                     if (item == null) continue;
-                    
+
                     scope.AddItemToScope(itemBinding, item);
                     var result = scope.Evaluate(value, binding);
                     if (result == null) continue;
@@ -975,7 +881,7 @@ namespace ServiceStack.Templates
 
             if (filterName == nameof(min) && itemType == null)
                 return 0;
-                
+
             if (expression == null && itemType == null)
                 itemType = target.GetType().FirstGenericType()?.GetGenericArguments().FirstOrDefault();
 
@@ -989,7 +895,7 @@ namespace ServiceStack.Templates
         {
             var items = target.AssertEnumerable(nameof(reduce));
             Type itemType = null;
-            
+
             var literal = scope.AssertExpression(nameof(reduce), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(reduce), scopeOptions, out string itemBinding);
             var accumulator = scopedParams.TryGetValue("initialValue", out object initialValue)
@@ -997,15 +903,15 @@ namespace ServiceStack.Templates
                 : 1;
 
             var bindAccumlator = scopedParams.TryGetValue("accumulator", out object accumulatorName)
-                ? (string) accumulatorName
+                ? (string)accumulatorName
                 : "accumulator";
-            
+
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
             var i = 0;
             foreach (var item in items)
             {
                 if (item == null) continue;
-                    
+
                 scope.AddItemToScope(bindAccumlator, accumulator);
                 scope.AddItemToScope("index", i++);
                 scope.AddItemToScope(itemBinding, item);
@@ -1017,7 +923,7 @@ namespace ServiceStack.Templates
 
                 accumulator = result.ConvertTo<double>();
             }
-                
+
             if (expression == null && itemType == null)
                 itemType = target.GetType().FirstGenericType()?.GetGenericArguments().FirstOrDefault();
 
@@ -1042,7 +948,7 @@ namespace ServiceStack.Templates
         {
             if (isNull(target) || target is bool b && !b)
                 return TypeConstants.EmptyTask;
-            
+
             var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
             var literal = scope.AssertExpression(nameof(@do), expression);
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
@@ -1066,7 +972,7 @@ namespace ServiceStack.Templates
 
             return TypeConstants.EmptyTask;
         }
-        
+
         public object property(object target, string propertyName)
         {
             if (isNull(target))
@@ -1227,7 +1133,7 @@ namespace ServiceStack.Templates
         }
 
         public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter) => orderBy(scope, target, filter, null);
-        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) => 
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
             orderByInternal(nameof(orderBy), scope, target, filter, scopeOptions);
 
         public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter) => orderByDescending(scope, target, filter, null);
@@ -1235,7 +1141,7 @@ namespace ServiceStack.Templates
             orderByInternal(nameof(orderByDescending), scope, target, filter, scopeOptions);
 
         public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter) => thenBy(scope, target, filter, null);
-        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) => 
+        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
             thenByInternal(nameof(thenBy), scope, target, filter, scopeOptions);
 
         public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object filter) => thenByDescending(scope, target, filter, null);
@@ -1265,7 +1171,7 @@ namespace ServiceStack.Templates
 
         private static IComparer<object> GetComparer(string filterName, TemplateScopeContext scope, Dictionary<string, object> scopedParams)
         {
-            var comparer = (IComparer<object>) Comparer<object>.Default;
+            var comparer = (IComparer<object>)Comparer<object>.Default;
             if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
                 var nonGenericComparer = oComparer as IComparer;
@@ -1276,7 +1182,7 @@ namespace ServiceStack.Templates
             }
             return comparer;
         }
-        
+
         public static IEnumerable<object> orderByInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(filterName);
@@ -1308,23 +1214,23 @@ namespace ServiceStack.Templates
             var i = 0;
 
             var comparer = GetComparer(filterName, scope, scopedParams);
-            
+
             var sorted = filterName == nameof(thenByDescending)
                 ? items.ThenByDescending(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer)
-                : items.ThenBy(item =>scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
+                : items.ThenBy(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
 
             return sorted;
         }
-        
+
         public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object expression) => groupBy(scope, items, expression, null);
-        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object expression, object scopeOptions) 
+        public IEnumerable<IGrouping<object, object>> groupBy(TemplateScopeContext scope, IEnumerable<object> items, object expression, object scopeOptions)
         {
             var literal = scope.AssertExpression(nameof(groupBy), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(groupBy), scopeOptions, out string itemBinding);
 
             literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
 
-            var comparer = (IEqualityComparer<object>) EqualityComparer<object>.Default;
+            var comparer = (IEqualityComparer<object>)EqualityComparer<object>.Default;
             if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
                 comparer = oComparer as IEqualityComparer<object>;
@@ -1336,7 +1242,7 @@ namespace ServiceStack.Templates
                     comparer = new EqualityComparerWrapper<long>(longComparer);
                 else if (oComparer is IEqualityComparer<double> doubleComparer)
                     comparer = new EqualityComparerWrapper<double>(doubleComparer);
-                
+
                 if (comparer == null)
                 {
                     var nonGenericComparer = oComparer as IEqualityComparer;
@@ -1350,9 +1256,9 @@ namespace ServiceStack.Templates
             if (scopedParams.TryGetValue(TemplateConstants.Map, out object map))
             {
                 ((string)map).ToStringSegment().ParseNextToken(out object mapValue, out JsBinding mapBinding);
-                
+
                 var result = items.GroupBy(
-                    item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), 
+                    item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding),
                     item => scope.AddItemToScope(itemBinding, item).Evaluate(mapValue, mapBinding),
                     comparer);
                 return result;
@@ -1375,7 +1281,7 @@ namespace ServiceStack.Templates
         {
             if (isNull(target))
                 return null;
-            
+
             if (target is IDictionary d)
             {
                 if (d.Contains(key))
@@ -1405,12 +1311,12 @@ namespace ServiceStack.Templates
                         return value;
                 }
             }
-            
+
             throw new NotSupportedException($"'{nameof(get)}' expects a collection but received a '{target.GetType().Name}'");
         }
-        
+
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
-        public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions) 
+        public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var literal = scope.AssertExpression(nameof(map), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
@@ -1422,7 +1328,7 @@ namespace ServiceStack.Templates
                 var i = 0;
                 return items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
             }
-            
+
             var result = scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
             return result;
         }
@@ -1431,10 +1337,10 @@ namespace ServiceStack.Templates
         {
             if (isNull(target))
                 return null;
-            
+
             if (target is IDictionary<string, object> g)
                 return new ScopeVars(g);
-            
+
             if (target is IDictionary d)
             {
                 var to = new ScopeVars();
@@ -1473,15 +1379,15 @@ namespace ServiceStack.Templates
 
             throw new NotSupportedException($"'{nameof(scopeVars)}' expects a Dictionary but received a '{target.GetType().Name}'");
         }
-        
+
         [HandleUnknownValue]
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
         [HandleUnknownValue]
-        public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions) 
+        public async Task select(TemplateScopeContext scope, object target, object selectTemplate, object scopeOptions)
         {
             if (isNull(target))
                 return;
-            
+
             var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
             var template = JsonTypeSerializer.Unescape(selectTemplate.ToString());
             var itemScope = scope.CreateScopedContext(template, scopedParams);
@@ -1503,22 +1409,22 @@ namespace ServiceStack.Templates
         }
 
         [HandleUnknownValue]
-        public Task selectPartial(TemplateScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null); 
+        public Task selectPartial(TemplateScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null);
         [HandleUnknownValue]
-        public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams) 
+        public async Task selectPartial(TemplateScopeContext scope, object target, string pageName, object scopedParams)
         {
             if (isNull(target))
                 return;
-            
+
             scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
             if (page != null)
                 await page.Init();
-            
+
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
-                
+
                 var i = 0;
                 foreach (var item in objs)
                 {
@@ -1532,14 +1438,14 @@ namespace ServiceStack.Templates
                 await scope.WritePageAsync(page, codePage, pageParams);
             }
         }
-        
+
         private async Task serialize(TemplateScopeContext scope, object items, string jsconfig, Func<object, string> fn)
         {
             var defaultJsConfig = Context.Args[TemplateConstants.DefaultJsConfig] as string;
-            jsconfig  = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
+            jsconfig = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
                 ? defaultJsConfig + "," + jsconfig
                 : defaultJsConfig;
-            
+
             if (jsconfig != null)
             {
                 using (JsConfig.CreateScope(jsconfig))
@@ -1550,23 +1456,23 @@ namespace ServiceStack.Templates
             }
             await scope.OutputStream.WriteAsync(items.ToJson());
         }
-        
+
         private IRawString serialize(object target, string jsconfig, Func<object, string> fn)
         {
             var defaultJsConfig = Context.Args[TemplateConstants.DefaultJsConfig] as string;
-            jsconfig  = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
+            jsconfig = jsconfig != null && !string.IsNullOrEmpty(defaultJsConfig)
                 ? defaultJsConfig + "," + jsconfig
                 : defaultJsConfig;
 
-            if (jsconfig == null) 
+            if (jsconfig == null)
                 return fn(target.AssertNoCircularDeps()).ToRawString();
-           
+
             using (JsConfig.CreateScope(jsconfig))
             {
                 return fn(target).ToRawString();
             }
         }
-        
+
         //Filters
         public IRawString json(object value) => serialize(value, null, x => x.ToJson() ?? "null");
         public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJson() ?? "null");
