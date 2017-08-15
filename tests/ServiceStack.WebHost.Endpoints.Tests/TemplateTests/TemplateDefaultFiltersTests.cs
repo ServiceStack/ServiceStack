@@ -86,21 +86,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("var s = '{{ json | jsString }}'"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
             Assert.That(context.EvaluateTemplate("var s = {{ json | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
 
-            Assert.That(context.EvaluateTemplate("var s = '{{ hasNewLines | jsString }}'"), Is.EqualTo("var s = 'has\\\nnew\\\r\\\nlines'"));
+            Assert.That(context.EvaluateTemplate("var s = '{{ hasNewLines | jsString }}'"), Is.EqualTo(@"var s = 'has\nnew\r\nlines'"));
 
             Assert.That(context.EvaluateTemplate(@"{{ [{x:1,y:2},{x:3,y:4}] | json | assignTo:json }}var s = '{{ json | jsString }}';"), 
                 Is.EqualTo("var s = '[{\"x\":1,\"y\":2},{\"x\":3,\"y\":4}]';"));
 
-            Assert.That(context.EvaluateTemplate(@"{{ [{""name"":""Mc Donald's""}] | json | assignTo:json }}
+            Assert.That(context.EvaluateTemplate(@"{{ `[
+  {""name"":""Mc Donald's""}
+]` | raw | assignTo:json }}
 var obj = {{ json }};
 var str = '{{ json | jsString }}';
 var str = {{ json | jsQuotedString }};
 var escapeSingle = '{{ ""single' quote's"" | escapeSingleQuotes | escapeNewLines | raw }}';
 var escapeDouble = ""{{ 'double"" quote""s' | escapeDoubleQuotes | escapeNewLines | raw }}"";
 ".NormalizeNewLines()), Is.EqualTo(@"
-var obj = [{""name"":""Mc Donald's""}];
-var str = '[{""name"":""Mc Donald\'s""}]';
-var str = '[{""name"":""Mc Donald\'s""}]';
+var obj = [
+  {""name"":""Mc Donald's""}
+];
+var str = '[\n  {""name"":""Mc Donald\'s""}\n]';
+var str = '[\n  {""name"":""Mc Donald\'s""}\n]';
 var escapeSingle = 'single\' quote\'s';
 var escapeDouble = ""double\"" quote\""s"";
 ".NormalizeNewLines()));
