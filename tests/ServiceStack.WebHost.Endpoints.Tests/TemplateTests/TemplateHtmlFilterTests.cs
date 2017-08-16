@@ -24,21 +24,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ arg | htmlList }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+                Is.EqualTo("<table class=\"table\"><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
 
             Assert.That(context.EvaluateTemplate("{{ arg | htmlList() }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+                Is.EqualTo("<table class=\"table\"><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
 
             Assert.That(context.EvaluateTemplate("{{ arg | htmlList({}) }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+                Is.EqualTo("<table class=\"table\"><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
 
             Assert.That(context.EvaluateTemplate("{{ arg | htmlList({ }) }}"),
-                Is.EqualTo("<table><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
+                Is.EqualTo("<table class=\"table\"><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr></tbody></table>"));
 
             Assert.That(context.EvaluateTemplate("{{ emptyArg | htmlList }}"), Is.EqualTo(""));
 
             Assert.That(context.EvaluateTemplate("{{ emptyArg | htmlList({ captionIfEmpty: 'no rows' }) }}"),
-                Is.EqualTo("<table><caption>no rows</caption></table>"));
+                Is.EqualTo("<table class=\"table\"><caption>no rows</caption></table>"));
         }
 
         [Test]
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo(@"<table class=""table table-striped""><caption>Rockstars</caption><thead><tr><th>First Name</th><th>Age</th></tr></thead><tbody><tr><td>Kurt</td><td>27</td></tr><tr><td>Jimi</td><td>27</td></tr></tbody></table>"));
 
             Assert.That(context.EvaluateTemplate(@"{{ [] | htmlDump({ captionIfEmpty: ""No Rocksars""}) }}"), 
-                Is.EqualTo("<table><caption>No Rocksars</caption></table>"));
+                Is.EqualTo("<table class=\"table\"><caption>No Rocksars</caption></table>"));
         }
 
         [Test]

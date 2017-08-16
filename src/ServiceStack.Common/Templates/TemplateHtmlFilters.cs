@@ -130,8 +130,10 @@ namespace ServiceStack.Templates
                     return GetScalarHtml(target).ToRawString();
 
                 scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
+                scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
                 scopedParams.TryGetValue("className", out object parentClass);
                 scopedParams.TryGetValue("childClass", out object childClass);
+                var headerStyle = oHeaderStyle as string ?? "splitCase";
                 var className = ((depth < childDepth ? parentClass : childClass ?? parentClass) 
                                  ?? Context.Args[TemplateConstants.DefaultTableClassName]).ToString();
 
@@ -177,7 +179,7 @@ namespace ServiceStack.Templates
                                 {
                                     sb.Append("<tr>");
                                     sb.Append("<th>");
-                                    sb.Append(kvp.Key.HtmlEncode());
+                                    sb.Append(Context.DefaultFilters?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
                                     sb.Append("</th>");
                                     sb.Append("<td>");
                                     if (!isComplexType(kvp.Value))
