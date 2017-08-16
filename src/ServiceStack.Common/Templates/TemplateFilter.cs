@@ -33,6 +33,19 @@ namespace ServiceStack.Templates
         private StopExecution() { }
     }
 
+    public class StopFilterExecutionException : StopExecutionException
+    {
+        public TemplateScopeContext Scope { get; }
+        public object Options { get; }
+
+        public StopFilterExecutionException(TemplateScopeContext scope, object options, Exception innerException) 
+            : base(nameof(StopFilterExecutionException), innerException)
+        {
+            Scope = scope;
+            Options = options;
+        }
+    }
+
     public class TemplateFilter
     {
         public TemplateContext Context { get; set; }
