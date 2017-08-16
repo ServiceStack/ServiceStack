@@ -13,8 +13,8 @@ var __lastEtag = "";
     function _replace(uri, key, value, strip) {
         var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i")
         return uri.match(re) ?
-            uri.replace(re, strip ? '' : ('$1' + key + "=" + value + '$2')) :
-            strip ? url : uri + (uri.indexOf('?') !== -1 ? "&" : "?") + key + "=" + value
+            uri.replace(re, strip ? '' : '$1' + key + "=" + value + '$2') :
+            strip ? uri : uri + (uri.indexOf('?') !== -1 ? "&" : "?") + key + "=" + value
     }
     fetch("/templates/hotreload/page.json?path=" + encodeURIComponent(location.pathname) + "&eTag=" + __lastEtag)
         .then(function(res){
