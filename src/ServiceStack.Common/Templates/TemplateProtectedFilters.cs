@@ -60,6 +60,66 @@ namespace ServiceStack.Templates
             }
         }
 
+        public IEnumerable<IVirtualFile> vfsAllFiles() => Context.VirtualFiles.GetAllFiles();
+        public IEnumerable<IVirtualFile> vfsAllRootFiles() => Context.VirtualFiles.GetRootFiles();
+        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => Context.VirtualFiles.GetRootDirectories();
+        public string vfsCombinePath(string basePath, string relativePath) => Context.VirtualFiles.CombineVirtualPath(basePath, relativePath);
+
+        public IVirtualDirectory dir(string virtualPath) => Context.VirtualFiles.GetDirectory(virtualPath);
+        public bool dirExists(string virtualPath) => Context.VirtualFiles.DirectoryExists(virtualPath);
+        public IVirtualFile dirFile(string dirPath, string fileName) => Context.VirtualFiles.GetDirectory(dirPath)?.GetFile(fileName);
+        public IEnumerable<IVirtualFile> dirFiles(string dirPath) => Context.VirtualFiles.GetDirectory(dirPath)?.GetFiles() ?? new List<IVirtualFile>();
+        public IVirtualDirectory dirDirectory(string dirPath, string dirName) => Context.VirtualFiles.GetDirectory(dirPath)?.GetDirectory(dirName);
+        public IEnumerable<IVirtualDirectory> dirDirectories(string dirPath) => Context.VirtualFiles.GetDirectory(dirPath)?.GetDirectories() ?? new List<IVirtualDirectory>();
+        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPatern) => Context.VirtualFiles.GetDirectory(dirPath)?.GetAllMatchingFiles(globPatern);
+
+        public IEnumerable<IVirtualFile> filesFind(string globPatern) => Context.VirtualFiles.GetAllMatchingFiles(globPatern);
+        public bool fileExists(string virtualPath) => Context.VirtualFiles.FileExists(virtualPath);
+        public IVirtualFile file(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath);
+        public string fileWrite(string virtualPath, object contents)
+        {
+            if (contents is string s)
+                Context.VirtualFiles.WriteFile(virtualPath, s);
+            else if (contents is byte[] bytes)
+                Context.VirtualFiles.WriteFile(virtualPath, bytes);
+            else if (contents is Stream stream)
+                Context.VirtualFiles.WriteFile(virtualPath, stream);
+            else
+                return null;
+
+            return virtualPath;
+        }
+
+        public string fileAppend(string virtualPath, object contents)
+        {
+            if (contents is string s)
+                Context.VirtualFiles.AppendFile(virtualPath, s);
+            else if (contents is byte[] bytes)
+                Context.VirtualFiles.AppendFile(virtualPath, bytes);
+            else if (contents is Stream stream)
+                Context.VirtualFiles.AppendFile(virtualPath, stream);
+            else
+                return null;
+
+            return virtualPath;
+        }
+
+        public string fileDelete(string virtualPath)
+        {
+            Context.VirtualFiles.DeleteFile(virtualPath);
+            return virtualPath;
+        }
+
+        public string dirDelete(string virtualPath)
+        {
+            Context.VirtualFiles.DeleteFolder(virtualPath);
+            return virtualPath;
+        }
+
+        public string fileReadAll(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath)?.ReadAllText();
+        public byte[] fileReadAllBytes(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath)?.ReadAllBytes();
+        public string fileHash(string virtualPath) => Context.VirtualFiles.GetFileHash(virtualPath);
+
         public Task includeUrl(TemplateScopeContext scope, string url) => includeUrl(scope, url, null);
         public async Task includeUrl(TemplateScopeContext scope, string url, object options)
         {
