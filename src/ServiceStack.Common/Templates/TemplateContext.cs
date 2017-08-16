@@ -66,7 +66,20 @@ namespace ServiceStack.Templates
 
         public TimeSpan? CheckForModifiedPagesAfter { get; set; }
         
+        /// <summary>
+        /// Render render filter exceptions in-line where filter is located
+        /// </summary>
         public bool RenderExpressionExceptions { get; set; }
+
+        /// <summary>
+        /// What argument to assign Fitler Exceptions to
+        /// </summary>
+        public string AssignExceptionsTo { get; set; }
+        
+        /// <summary>
+        /// Whether to 
+        /// </summary>
+        public bool SkipExecutingPageFiltersIfError { get; set; }
 
         public Func<PageVariableFragment, byte[]> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
 

@@ -260,7 +260,7 @@ namespace ServiceStack
                 }
             }
 
-            if (ex is HttpError) return ((HttpError)ex).Status;
+            if (ex is HttpError httpEx) return httpEx.Status;
             if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
             if (ex is FileNotFoundException) return (int)HttpStatusCode.NotFound;
             if (ex is ArgumentException || ex is SerializationException || ex is FormatException) return (int)HttpStatusCode.BadRequest;

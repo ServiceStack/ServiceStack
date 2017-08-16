@@ -119,7 +119,7 @@ namespace ServiceStack.Templates
             if (str == string.Empty)
                 return string.Empty;
 
-            return StringUtils.HtmlEncode(str);
+            return str.HtmlEncode();
         }
 
         public TemplatePage HtmlResolveLayout(TemplatePage page)
@@ -134,7 +134,7 @@ namespace ServiceStack.Templates
         public virtual object HtmlExpressionException(PageResult result, Exception ex)
         {
             if (result.Context.RenderExpressionExceptions)
-                return ("<div style='color:red'><span>" + StringUtils.HtmlEncode(ex.GetType().Name + ": " + ex.Message) + "</span></div>").ToRawString();
+                return ("<div class='error'><span>" + (ex.GetType().Name + ": " + ex.Message).HtmlEncode() + "</span></div>").ToRawString();
             
             // Evaluate Null References in Binding Expressions to null
             if (ex is NullReferenceException || ex is ArgumentNullException)
@@ -148,7 +148,7 @@ namespace ServiceStack.Templates
             using (var reader = new StreamReader(stream))
             {
                 var contents = await reader.ReadToEndAsync();
-                var htmlEncoded = StringUtils.HtmlEncode(contents);
+                var htmlEncoded = contents.HtmlEncode();
                 return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
             }
         }
