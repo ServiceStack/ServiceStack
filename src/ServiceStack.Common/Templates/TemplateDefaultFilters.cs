@@ -337,6 +337,7 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        [HandleUnknownValue] public object end() => StopExecution.Value;
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
         [HandleUnknownValue] public object end(object ignore) => StopExecution.Value;
 

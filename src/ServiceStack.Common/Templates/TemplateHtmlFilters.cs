@@ -298,8 +298,8 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public IRawString htmlError(Exception ex, object options) => 
             Context.DebugMode ? htmlErrorDebug(ex, options) : htmlErrorMessage(ex, options);
 
-        public IRawString htmlErrorMessage(TemplateScopeContext scope) => htmlErrorDebug(scope.PageResult.LastFilterError);
-        [HandleUnknownValue] public IRawString htmlErrorMessage(Exception ex) => htmlErrorDebug(ex, null);
+        public IRawString htmlErrorMessage(TemplateScopeContext scope) => htmlErrorMessage(scope.PageResult.LastFilterError);
+        [HandleUnknownValue] public IRawString htmlErrorMessage(Exception ex) => htmlErrorMessage(ex, null);
         [HandleUnknownValue] public IRawString htmlErrorMessage(Exception ex, object options)
         {
             if (ex == null)

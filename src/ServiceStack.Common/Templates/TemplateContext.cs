@@ -208,6 +208,8 @@ namespace ServiceStack.Templates
             if (HasInit)
                 return this;
             HasInit = true;
+
+            Args[TemplateConstants.Debug] = DebugMode;
             
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
