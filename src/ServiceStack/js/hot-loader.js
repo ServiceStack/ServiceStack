@@ -4,7 +4,7 @@ var __lastEtag = "";
     var params = {}, tokens, re = /[?&]?([^=]+)=([^&]*)/g
     while (tokens = re.exec(qs)) {
         if (tokens[1] === "scroll") {
-            setTimeout(function(){ window.scrollTo(0, tokens[2]); }, 1)
+            setTimeout(function(){ window.scrollTo(0, tokens[2]) }, 1)
             return
         }
     }
