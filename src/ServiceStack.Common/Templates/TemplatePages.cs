@@ -166,6 +166,7 @@ namespace ServiceStack.Templates
             if (page == null)
                 throw new ArgumentNullException(nameof(page));
 
+            page.File.Refresh();
             var maxLastModified = page.File.LastModified;
             if (page.LayoutPage != null)
             {
