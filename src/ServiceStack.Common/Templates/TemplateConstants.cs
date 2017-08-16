@@ -10,6 +10,8 @@ namespace ServiceStack.Templates
         public const string DefaultNewLine = nameof(DefaultNewLine);
         public const string DefaultJsConfig = nameof(DefaultJsConfig);
         public const string DefaultStringComparison = nameof(DefaultStringComparison);
+        public const string DefaultTableClassName = nameof(DefaultTableClassName);
+        public const string DefaultErrorClassName = nameof(DefaultErrorClassName);
         public const string MaxQuota = nameof(MaxQuota);
         public const string Debug = "debug";
         public const string AssignError = "assignError";

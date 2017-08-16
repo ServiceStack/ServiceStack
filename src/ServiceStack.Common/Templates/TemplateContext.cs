@@ -199,6 +199,8 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
             Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
             Args[TemplateConstants.DefaultStringComparison] = StringComparison.Ordinal;
+            Args[TemplateConstants.DefaultTableClassName] = "table";
+            Args[TemplateConstants.DefaultErrorClassName] = "alert alert-danger";
         }
 
         public bool HasInit { get; private set; }

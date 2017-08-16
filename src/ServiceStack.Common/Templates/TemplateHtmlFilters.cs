@@ -24,9 +24,8 @@ namespace ServiceStack.Templates
             {
                 scopedParams.TryGetValue("className", out object parentClass);
                 scopedParams.TryGetValue("childClass", out object childClass);
-                var className = depth < childDepth
-                    ? parentClass
-                    : childClass ?? parentClass;
+                var className = ((depth < childDepth ? parentClass : childClass ?? parentClass) 
+                                 ?? Context.Args[TemplateConstants.DefaultTableClassName]).ToString();
 
                 scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
                 scopedParams.TryGetValue("headerTag", out object oHeaderTag);
@@ -89,7 +88,7 @@ namespace ServiceStack.Templates
 
                 if (scopedParams.TryGetValue("id", out object id))
                     sb.Append(" id=\"").Append(id).Append("\"");
-                if (className != null)
+                if (!string.IsNullOrEmpty(className))
                     sb.Append(" class=\"").Append(className).Append("\"");
 
                 sb.Append(">");
@@ -133,9 +132,8 @@ namespace ServiceStack.Templates
                 scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
                 scopedParams.TryGetValue("className", out object parentClass);
                 scopedParams.TryGetValue("childClass", out object childClass);
-                var className = depth < childDepth
-                    ? parentClass
-                    : childClass ?? parentClass;
+                var className = ((depth < childDepth ? parentClass : childClass ?? parentClass) 
+                                 ?? Context.Args[TemplateConstants.DefaultTableClassName]).ToString();
 
                 if (target is IEnumerable e)
                 {
@@ -307,7 +305,7 @@ namespace ServiceStack.Templates
 
             var scopedParams = options as Dictionary<string, object> ?? TypeConstants.EmptyObjectDictionary;
             var className = (scopedParams.TryGetValue("className", out object oClassName) ? oClassName : null) 
-                            ?? "alert alert-danger";
+                            ?? Context.Args[TemplateConstants.DefaultErrorClassName];
            
             return $"<div class=\"{className}\">{ex.Message}</div>".ToRawString();
         }
@@ -321,7 +319,7 @@ namespace ServiceStack.Templates
 
             var scopedParams = options as Dictionary<string, object> ?? TypeConstants.EmptyObjectDictionary;
             var className = (scopedParams.TryGetValue("className", out object oClassName) ? oClassName : null) 
-                            ?? "alert alert-danger";
+                            ?? Context.Args[TemplateConstants.DefaultErrorClassName];
 
             var sb = StringBuilderCache.Allocate();
             sb.Append($"<pre class=\"{className}\">");
