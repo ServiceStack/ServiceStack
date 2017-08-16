@@ -1408,7 +1408,7 @@ namespace ServiceStack.Templates
                 return;
 
             var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
-            var template = JsonTypeSerializer.Unescape(selectTemplate.ToString());
+            var template = JsonTypeSerializer.Unescape(selectTemplate.ToString(), removeQuotes:false);
             var itemScope = scope.CreateScopedContext(template, scopedParams);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
@@ -1527,6 +1527,7 @@ namespace ServiceStack.Templates
         public string escapeSingleQuotes(string text) => text?.Replace("'", "\\'");
         public string escapeDoubleQuotes(string text) => text?.Replace("\"", "\\\"");
         public string escapeBackticks(string text) => text?.Replace("`", "\\`");
+        public string escapePrimeQuotes(string text) => text?.Replace("′", "\\′");
         public string escapeNewLines(string text) => text?.Replace("\r", "\\r").Replace("\n", "\\n");
 
         public IRawString jsString(string text) => escapeNewLines(escapeSingleQuotes(text)).ToRawString();

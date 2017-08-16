@@ -456,7 +456,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             literal = literal.AdvancePastWhitespace();
 
             var firstChar = literal.GetChar(0);
-            if (firstChar == '\'' || firstChar == '"' || firstChar == '`')
+            if (firstChar == '\'' || firstChar == '"' || firstChar == '`' || firstChar == '′')
             {
                 i = 1;
                 var hasEscapeChar = false;
@@ -951,7 +951,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
                         
                         var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
-                        var rewrittenArgs = "`" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("`", "\\`") + "`)";
+                        var rewrittenArgs = "′" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("′", "\\′") + "′)";
                         ParseArguments(rewrittenArgs.ToStringSegment(), out args);
                         cmd.Args = args;
                         
@@ -1038,6 +1038,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
             var inBackTickQuotes = false;
+            var inPrimeQuotes = false;
             var inBrackets = 0;
             var inParens = 0;
             var inBraces = 0;
@@ -1062,6 +1063,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 {
                     if (c == '`')
                         inBackTickQuotes = false;
+                    continue;
+                }
+                if (inPrimeQuotes)
+                {
+                    if (c == '′')
+                        inPrimeQuotes = false;
                     continue;
                 }
                 if (inBrackets > 0)
@@ -1099,6 +1106,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         continue;
                     case '`':
                         inBackTickQuotes = true;
+                        continue;
+                    case '′':
+                        inPrimeQuotes = true;
                         continue;
                     case '[':
                         inBrackets++;
@@ -1139,6 +1149,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
             var inBackTickQuotes = false;
+            var inPrimeQuotes = false;
             var inBrackets = 0;
             var inBraces = 0;
             var lastPos = 0;
@@ -1165,6 +1176,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                 {
                     if (c == '`')
                         inBackTickQuotes = false;
+                    continue;
+                }
+                if (inPrimeQuotes)
+                {
+                    if (c == '′')
+                        inPrimeQuotes = false;
                     continue;
                 }
                 if (inBrackets > 0)
@@ -1199,7 +1216,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                     binding = new JsExpression(literal.Subsegment(0, i).Trim());
 
                     var originalArgs = literal.Substring(i + 1, endStringPos - i - 1);
-                    var rewrittenArgs = "`" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("`", "\\`") + "`)";
+                    var rewrittenArgs = "′" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("′", "\\′") + "′)";
                     ParseArguments(rewrittenArgs.ToStringSegment(), out List<StringSegment> args);
                     binding.Args = args;
                     return literal.Subsegment(endStringPos);
@@ -1224,6 +1241,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                         continue;
                     case '`':
                         inBackTickQuotes = true;
+                        continue;
+                    case '′':
+                        inPrimeQuotes = true;
                         continue;
                     case '[':
                         inBrackets++;

@@ -70,6 +70,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Can_quote_strings()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'single quotes' }}
+{{ ""double quotes"" }}
+{{ `backticks` }}
+{{ ′prime quoutes′ }}
+".NormalizeNewLines()), Is.EqualTo(@"
+single quotes
+double quotes
+backticks
+prime quoutes
+".NormalizeNewLines()));
+        }
+
+        [Test]
         public void Can_escape_strings()
         {
             var context = new TemplateContext
@@ -77,14 +95,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Args =
                 {
                     ["json"] = "{\"key\":\"single'back`tick\"}",
+                    ["prime"] = "{\"key\":\"single'prime′quote\"}",
                     ["hasNewLines"] = "has\nnew\r\nlines",
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("var s = '{{ json | escapeSingleQuotes | raw }}'"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
-            Assert.That(context.EvaluateTemplate("var s = `{{ json | escapeBackticks    | raw }}`"), Is.EqualTo("var s = `{\"key\":\"single'back\\`tick\"}`"));
-            Assert.That(context.EvaluateTemplate("var s = '{{ json | jsString }}'"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
-            Assert.That(context.EvaluateTemplate("var s = {{ json | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
+            Assert.That(context.EvaluateTemplate("var s = '{{ json  | escapeSingleQuotes | raw }}'"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
+            Assert.That(context.EvaluateTemplate("var s = `{{ json  | escapeBackticks    | raw }}`"), Is.EqualTo("var s = `{\"key\":\"single'back\\`tick\"}`"));
+            Assert.That(context.EvaluateTemplate("var s = ′{{ prime | escapePrimeQuotes  | raw }}′"), Is.EqualTo("var s = ′{\"key\":\"single'prime\\′quote\"}′"));
+            Assert.That(context.EvaluateTemplate("var s = '{{ json  | jsString }}'"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
+            Assert.That(context.EvaluateTemplate("var s = {{ json   | jsQuotedString }}"), Is.EqualTo("var s = '{\"key\":\"single\\'back`tick\"}'"));
 
             Assert.That(context.EvaluateTemplate("var s = '{{ hasNewLines | jsString }}'"), Is.EqualTo(@"var s = 'has\nnew\r\nlines'"));
 
@@ -1219,6 +1239,23 @@ dir-file: dir/dir-file.txt
 
             Assert.That(context.EvaluateTemplate("{{ noArg | endIfExists | endIfNull(none)   | use(1) }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ arg   | endIfEmpty  | endIfEmpty(items) | join }}"), Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
+        public void Does_conditional_error_handling()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["invalid"] = true
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate(
+                    @"{{ invalid | ifDo | select: <div class=""alert alert-danger"">Argument is invalid.</div> }}"),
+                Is.EqualTo(@"<div class=""alert alert-danger"">Argument is invalid.</div>"));
+            
         }
 
     }
