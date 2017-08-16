@@ -43,7 +43,7 @@ namespace ServiceStack
                 var appHost = HostContext.AppHost;
                 var config = appHost.Config;
 
-                WebHostRootFileNames = Env.IsWin 
+                WebHostRootFileNames = Env.IsWindows
                     ? new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                     : new HashSet<string>();
 
