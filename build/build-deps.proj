@@ -39,7 +39,7 @@
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.PCL.csproj"
-             Targets="Build"
+             Targets="Restore;Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Common -->
