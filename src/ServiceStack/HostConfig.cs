@@ -243,7 +243,14 @@ namespace ServiceStack
         public bool AllowJsonpRequests { get; set; }
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
-        public bool? StrictMode { get; set; }
+
+        private bool? strictMode;
+        public bool? StrictMode
+        {
+            get => strictMode;
+            set => Env.StrictMode = (strictMode = value).GetValueOrDefault();
+        }
+        
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
