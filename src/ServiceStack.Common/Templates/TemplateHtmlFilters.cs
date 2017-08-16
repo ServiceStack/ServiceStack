@@ -30,7 +30,7 @@ namespace ServiceStack.Templates
 
                 scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
                 scopedParams.TryGetValue("headerTag", out object oHeaderTag);
-                scopedParams.TryGetValue("emptyCaption", out object emptyCaption);
+                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
                 var headerTag = oHeaderTag as string ?? "th";
                 var headerStyle = oHeaderStyle as string ?? "splitCase";
 
@@ -78,7 +78,7 @@ namespace ServiceStack.Templates
                 }
 
                 var isEmpty = sbRows.Length == 0;
-                if (isEmpty && emptyCaption == null)
+                if (isEmpty && captionIfEmpty == null)
                     return RawString.Empty;
 
                 var htmlHeaders = StringBuilderCache.ReturnAndFree(sbHeader);
@@ -96,7 +96,7 @@ namespace ServiceStack.Templates
 
                 scopedParams.TryGetValue("caption", out object caption);
                 if (isEmpty)
-                    caption = emptyCaption;
+                    caption = captionIfEmpty;
 
                 if (caption != null)
                     sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
@@ -130,7 +130,7 @@ namespace ServiceStack.Templates
                 if (!isComplexType(target))
                     return GetScalarHtml(target).ToRawString();
 
-                scopedParams.TryGetValue("emptyCaption", out object emptyCaption);
+                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
                 scopedParams.TryGetValue("className", out object parentClass);
                 scopedParams.TryGetValue("childClass", out object childClass);
                 var className = depth < childDepth
@@ -142,7 +142,7 @@ namespace ServiceStack.Templates
                     var objs = e.Map(x => x);
 
                     var isEmpty = objs.Count == 0;
-                    if (isEmpty && emptyCaption == null)
+                    if (isEmpty && captionIfEmpty == null)
                         return RawString.Empty;
 
                     var first = !isEmpty ? objs[0] : null;
@@ -162,7 +162,7 @@ namespace ServiceStack.Templates
 
                     scopedParams.TryGetValue("caption", out object caption);
                     if (isEmpty)
-                        caption = emptyCaption;
+                        caption = captionIfEmpty;
 
                     if (caption != null)
                         sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");

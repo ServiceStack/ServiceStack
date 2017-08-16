@@ -37,7 +37,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(context.EvaluateTemplate("{{ emptyArg | htmlList }}"), Is.EqualTo(""));
 
-            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmlList({ emptyCaption: 'no rows' }) }}"),
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | htmlList({ captionIfEmpty: 'no rows' }) }}"),
                 Is.EqualTo("<table><caption>no rows</caption></table>"));
         }
 
@@ -59,7 +59,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate(@"{{ rockstars | htmlDump({ className: ""table table-striped"", caption: ""Rockstars"" }) }}"), 
                 Is.EqualTo(@"<table class=""table table-striped""><caption>Rockstars</caption><thead><tr><th>First Name</th><th>Age</th></tr></thead><tbody><tr><td>Kurt</td><td>27</td></tr><tr><td>Jimi</td><td>27</td></tr></tbody></table>"));
 
-            Assert.That(context.EvaluateTemplate(@"{{ [] | htmlDump({ emptyCaption: ""No Rocksars""}) }}"), 
+            Assert.That(context.EvaluateTemplate(@"{{ [] | htmlDump({ captionIfEmpty: ""No Rocksars""}) }}"), 
                 Is.EqualTo("<table><caption>No Rocksars</caption></table>"));
         }
 
