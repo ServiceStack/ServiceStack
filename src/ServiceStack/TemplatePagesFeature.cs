@@ -46,6 +46,7 @@ namespace ServiceStack
             Container = appHost.Container;
             TemplateFilters.Add(new TemplateProtectedFilters());
             FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
+            SkipExecutingPageFiltersIfError = true;
         }
 
         public void Register(IAppHost appHost)

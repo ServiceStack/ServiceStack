@@ -7,7 +7,22 @@ namespace ServiceStack.Templates
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
             "assignTo",
-            "do"
+            "do",
+            "end",
+            "throw",
+            "endIfError",
+            "ifError",
+            "ifErrorFmt",
+            "ifErrorSkipExecutingPageFilters",
+        };
+        
+        public static HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution { get; set; } = new HashSet<string>
+        {
+            "ifError",
+            "lastError",
+            "htmlError",
+            "htmlErrorMessage",
+            "htmlErrorDebug",
         };
     }
 }

@@ -19,14 +19,23 @@ namespace ServiceStack.Templates
     // Render a Template Page to the Response OutputStream
     public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions, IDisposable
     {
-        public TemplatePage Page { get; set; }
+        public TemplatePage Page { get; }
         
-        public TemplateCodePage CodePage { get; set; }
+        public TemplateCodePage CodePage { get; }
 
+        /// <summary>
+        /// Use specified Layout 
+        /// </summary>
         public TemplatePage LayoutPage { get; set; }
         
+        /// <summary>
+        /// Use Layout with specified name
+        /// </summary>
         public string Layout { get; set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         public object Model { get; set; }
 
         /// <summary>
@@ -39,6 +48,9 @@ namespace ServiceStack.Templates
         /// </summary>
         public List<TemplateFilter> TemplateFilters { get; set; }
 
+        /// <summary>
+        /// Return additional HTTP Headers in HTTP Requests
+        /// </summary>
         public IDictionary<string, string> Options { get; set; }
 
         /// <summary>
@@ -65,7 +77,20 @@ namespace ServiceStack.Templates
         /// </summary>
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; }
         
+        /// <summary>
+        /// Don't allow access to specified filters
+        /// </summary>
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
+
+        /// <summary>
+        /// Whether to skip execution of all page filters and just write template string fragments
+        /// </summary>
+        public bool SkipFilterExecution { get; set; }
+
+        /// <summary>
+        /// The last error thrown by a filter
+        /// </summary>
+        public Exception LastFilterError { get; set; }
 
         private PageResult(PageFormat format)
         {
@@ -170,7 +195,7 @@ namespace ServiceStack.Templates
                     {
                         await outputStream.WriteAsync(str.ValueBytes, token);
                     }
-                    else if (fragment is PageVariableFragment var)
+                    else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
                     {
                         if (var.Binding.Equals(TemplateConstants.Page))
                         {
@@ -187,6 +212,12 @@ namespace ServiceStack.Templates
             {
                 await WritePageAsync(Page, CodePage, pageScope, token);
             }
+        }
+
+        public bool ShouldSkipFilterExecution(PageVariableFragment var)
+        {
+            return SkipFilterExecution && 
+                   !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString);
         }
 
         public TemplateContext Context => Page?.Context ?? CodePage.Context;
@@ -297,7 +328,7 @@ namespace ServiceStack.Templates
                 {
                     await scope.OutputStream.WriteAsync(str.ValueBytes, token);
                 }
-                else if (fragment is PageVariableFragment var)
+                else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
                 {
                     await WriteVarAsync(scope, var, token);
                 }
@@ -423,17 +454,25 @@ namespace ServiceStack.Templates
                 }
                 else
                 {
-                    var handlesUnknownValue = false;
-                    if (var.FilterExpressions.Length > 0)
+                    var hasContexFilterAsBinding = GetContextFilterAsBinding(var.BindingString, out filter);
+                    if (hasContexFilterAsBinding != null)
                     {
-                        var filterName = var.FilterExpressions[0].NameString;
-                        var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
-                        handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
-                                              Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+                        value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.BindingString);
                     }
+                    else
+                    {
+                        var handlesUnknownValue = false;
+                        if (var.FilterExpressions.Length > 0)
+                        {
+                            var filterName = var.FilterExpressions[0].NameString;
+                            var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
+                            handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
+                                                  Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+                        }
 
-                    if (!handlesUnknownValue)
-                        return null;
+                        if (!handlesUnknownValue)
+                            return null;
+                    }
                 }
             }
 
@@ -448,136 +487,184 @@ namespace ServiceStack.Templates
                     break;
 
                 var expr = var.FilterExpressions[i];
-                var filterName = expr.NameString;
-                var invoker = GetFilterInvoker(filterName, 1 + expr.Args.Count, out TemplateFilter filter);
-                var contextFilterInvoker = invoker == null
-                    ? GetContextFilterInvoker(filterName, 2 + expr.Args.Count, out filter)
-                    : null;
-                var contextBlockInvoker = invoker == null && contextFilterInvoker == null
-                    ? GetContextBlockInvoker(filterName, 2 + expr.Args.Count, out filter)
-                    : null;
-                
-                if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
+
+                try
                 {
-                    if (i == 0)
-                        return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
+                    var filterName = expr.NameString;
+                    var invoker = GetFilterInvoker(filterName, 1 + expr.Args.Count, out TemplateFilter filter);
+                    var contextFilterInvoker = invoker == null
+                        ? GetContextFilterInvoker(filterName, 2 + expr.Args.Count, out filter)
+                        : null;
+                    var contextBlockInvoker = invoker == null && contextFilterInvoker == null
+                        ? GetContextBlockInvoker(filterName, 2 + expr.Args.Count, out filter)
+                        : null;
 
-                    var errorMsg = CreateMissingFilterErrorMessage(filterName);
-                    throw new Exception(errorMsg);
-                }
-
-                if (invoker != null)
-                {
-                    var args = new object[1 + expr.Args.Count];
-                    args[0] = value;
-
-                    for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
+                    if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
                     {
-                        var arg = expr.Args[cmdIndex];
-                        var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
-                        args[1 + cmdIndex] = varValue;
+                        if (i == 0)
+                            return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
+
+                        var errorMsg = CreateMissingFilterErrorMessage(filterName);
+                        throw new Exception(errorMsg);
                     }
 
-                    value = InvokeFilter(invoker, filter, args, expr.BindingString);
-                }
-                else if (contextFilterInvoker != null)
-                {
-                    var args = new object[2 + expr.Args.Count];
-    
-                    args[0] = scope;
-                    args[1] = value;  // filter target
-    
-                    for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
+                    if (invoker != null)
                     {
-                        var arg = expr.Args[cmdIndex];
-                        var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
-                        args[2 + cmdIndex] = varValue;
-                    }
+                        var args = new object[1 + expr.Args.Count];
+                        args[0] = value;
 
-                    value = InvokeFilter(contextFilterInvoker, filter, args, expr.BindingString);
-                }
-                else 
-                {
-                    var hasFilterTransformers = var.FilterExpressions.Length + i > 1;
-                    
-                    var args = new object[2 + expr.Args.Count];
-                    var useScope = hasFilterTransformers 
-                        ? scope.ScopeWithStream(MemoryStreamFactory.GetStream()) 
-                        : scope;
-    
-                    args[0] = useScope;
-                    args[1] = value;  // filter target
-    
-                    for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
-                    {
-                        var arg = expr.Args[cmdIndex];
-                        var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
-                        args[2 + cmdIndex] = varValue;
-                    }
-    
-                    try
-                    {
-                        await (Task) contextBlockInvoker(filter, args);
-    
-                        if (hasFilterTransformers)
+                        for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
-                            using (useScope.OutputStream)
+                            var arg = expr.Args[cmdIndex];
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            args[1 + cmdIndex] = varValue;
+                        }
+
+                        value = InvokeFilter(invoker, filter, args, expr.BindingString);
+                    }
+                    else if (contextFilterInvoker != null)
+                    {
+                        var args = new object[2 + expr.Args.Count];
+
+                        args[0] = scope;
+                        args[1] = value;  // filter target
+
+                        for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
+                        {
+                            var arg = expr.Args[cmdIndex];
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            args[2 + cmdIndex] = varValue;
+                        }
+
+                        value = InvokeFilter(contextFilterInvoker, filter, args, expr.BindingString);
+                    }
+                    else
+                    {
+                        var hasFilterTransformers = var.FilterExpressions.Length + i > 1;
+
+                        var args = new object[2 + expr.Args.Count];
+                        var useScope = hasFilterTransformers
+                            ? scope.ScopeWithStream(MemoryStreamFactory.GetStream())
+                            : scope;
+
+                        args[0] = useScope;
+                        args[1] = value;  // filter target
+
+                        for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
+                        {
+                            var arg = expr.Args[cmdIndex];
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            args[2 + cmdIndex] = varValue;
+                        }
+
+                        try
+                        {
+                            await (Task)contextBlockInvoker(filter, args);
+
+                            if (hasFilterTransformers)
                             {
-                                var stream = useScope.OutputStream;
-    
-                                //If Context Filter has any Filter Transformers Buffer and chain stream responses to each
-                                for (var exprIndex = i+1; exprIndex < var.FilterExpressions.Length; exprIndex++)
+                                using (useScope.OutputStream)
                                 {
-                                    stream.Position = 0;
+                                    var stream = useScope.OutputStream;
 
-                                    contextBlockInvoker = GetContextBlockInvoker(var.FilterExpressions[exprIndex].NameString, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
-                                    if (contextBlockInvoker != null)
+                                    //If Context Filter has any Filter Transformers Buffer and chain stream responses to each
+                                    for (var exprIndex = i + 1; exprIndex < var.FilterExpressions.Length; exprIndex++)
                                     {
-                                        args[0] = useScope;
-                                        for (var cmdIndex = 0; cmdIndex < var.FilterExpressions[exprIndex].Args.Count; cmdIndex++)
+                                        stream.Position = 0;
+
+                                        contextBlockInvoker = GetContextBlockInvoker(var.FilterExpressions[exprIndex].NameString, 1 + var.FilterExpressions[exprIndex].Args.Count, out filter);
+                                        if (contextBlockInvoker != null)
                                         {
-                                            var arg = var.FilterExpressions[exprIndex].Args[cmdIndex];
-                                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
-                                            args[1 + cmdIndex] = varValue;
+                                            args[0] = useScope;
+                                            for (var cmdIndex = 0; cmdIndex < var.FilterExpressions[exprIndex].Args.Count; cmdIndex++)
+                                            {
+                                                var arg = var.FilterExpressions[exprIndex].Args[cmdIndex];
+                                                var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                                                args[1 + cmdIndex] = varValue;
+                                            }
+
+                                            await (Task)contextBlockInvoker(filter, args);
                                         }
+                                        else
+                                        {
+                                            var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].NameString);
+                                            if (transformer == null)
+                                                throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].NameString}' in page '{Page.VirtualPath}'");
 
-                                        await (Task) contextBlockInvoker(filter, args);
+                                            stream = await transformer(stream);
+                                            useScope = useScope.ScopeWithStream(stream);
+                                        }
                                     }
-                                    else
+
+                                    if (stream.CanRead)
                                     {
-                                        var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].NameString);
-                                        if (transformer == null)
-                                            throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].NameString}' in page '{Page.VirtualPath}'");
-                                    
-                                        stream = await transformer(stream);
-                                        useScope = useScope.ScopeWithStream(stream);
+                                        stream.Position = 0;
+                                        await stream.CopyToAsync(scope.OutputStream);
                                     }
-                                }
-
-                                if (stream.CanRead)
-                                {
-                                    stream.Position = 0;
-                                    await stream.CopyToAsync(scope.OutputStream);
                                 }
                             }
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        var exResult = Format.OnExpressionException(this, ex);
-                        if (exResult != null)
+                        catch (StopFilterExecutionException) { throw; }
+                        catch (Exception ex)
                         {
-                            await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
-                        }
-                        else if (ex is NotSupportedException)
-                        {
-                            throw;
-                        }
-    
-                        throw new TargetInvocationException($"Failed to invoke filter '{expr.BindingString ?? expr.NameString}'", ex);
-                    }
+                            var rethrow = ex is NotSupportedException ||
+                                          ex is TargetInvocationException ||
+                                          ex is NotImplementedException;
 
-                    return IgnoreResult.Value;
+                            var exResult = Format.OnExpressionException(this, ex);
+                            if (exResult != null)
+                                await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
+                            else if (rethrow)
+                                throw;
+
+                            throw new TargetInvocationException($"Failed to invoke filter '{expr.BindingString ?? expr.NameString}'", ex);
+                        }
+
+                        return IgnoreResult.Value;
+                    }
+                }
+                catch (StopFilterExecutionException ex)
+                {
+                    LastFilterError = ex.InnerException;
+
+                    if (Context.SkipExecutingPageFiltersIfError)
+                        this.SkipFilterExecution = true;
+
+                    var rethrow = ex.InnerException is NotSupportedException ||
+                                  ex.InnerException is TargetInvocationException ||
+                                  ex.InnerException is NotImplementedException;
+
+                    if (!rethrow)
+                    {
+                        string errorBinding = null;
+
+                        if (ex.Options is Dictionary<string, object> filterParams && filterParams.TryGetValue(TemplateConstants.AssignError, out object assignError))
+                            errorBinding = assignError as string;
+
+                        if (errorBinding == null)
+                            errorBinding = Context.AssignExceptionsTo;
+
+                        if (!string.IsNullOrEmpty(errorBinding))
+                        {
+                            scope.ScopedParams[errorBinding] = ex.InnerException;
+                            return string.Empty;
+                        }
+                    }
+                    
+                    if (Context.SkipExecutingPageFiltersIfError)
+                        return string.Empty;
+
+                    var exResult = Format.OnExpressionException(this, ex);
+                    if (exResult != null)
+                        await scope.OutputStream.WriteAsync(Format.EncodeValue(exResult).ToUtf8Bytes(), token);
+                    else if (rethrow)
+                        throw ex.InnerException;
+
+                    var filterName = expr.BindingString ?? expr.NameString;
+                    if (filterName.StartsWith("throw"))
+                        throw ex.InnerException;
+
+                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}'", ex.InnerException);
                 }
             }
 
@@ -649,6 +736,7 @@ namespace ServiceStack.Templates
 
         // Filters with no args can be used in-place of bindings
         private MethodInvoker GetFilterAsBinding(string name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
+        private MethodInvoker GetContextFilterAsBinding(string name, out TemplateFilter filter) => GetContextFilterInvoker(name, 1, out filter);
 
         public object EvaluateAnyBindings(object value, TemplateScopeContext scope)
         {
@@ -693,12 +781,16 @@ namespace ServiceStack.Templates
             {
                 return invoker(filter, args);
             }
+            catch (StopFilterExecutionException) { throw; }
             catch (Exception ex)
             {
                 var exResult = Format.OnExpressionException(this, ex);
                 if (exResult != null)
                     return exResult;
-                
+
+                if (binding.StartsWith("throw"))
+                    throw;
+
                 throw new TargetInvocationException($"Failed to invoke filter {binding}", ex);
             }
         }

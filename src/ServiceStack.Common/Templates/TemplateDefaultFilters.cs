@@ -6,14 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Text;
-using ServiceStack.Text.Controller;
 using ServiceStack.Text.Json;
 
 namespace ServiceStack.Templates
 {
     // ReSharper disable InconsistentNaming
-
-    public class TemplateDefaultFilters : TemplateFilter
+    
+    public class TemplateDefaultFilters : TemplateDefaultFiltersWithKeywords
     {
         public static TemplateDefaultFilters Instance = new TemplateDefaultFilters();
 
@@ -290,7 +289,6 @@ namespace ServiceStack.Templates
             return false;
         }
 
-        [HandleUnknownValue] public object @if(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
         [HandleUnknownValue] public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
         [HandleUnknownValue] public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
@@ -298,7 +296,6 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
         [HandleUnknownValue] public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
-        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         [HandleUnknownValue] public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
         [HandleUnknownValue] public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
@@ -342,6 +339,25 @@ namespace ServiceStack.Templates
 
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
         [HandleUnknownValue] public object end(object ignore) => StopExecution.Value;
+
+        public object ifErrorSkipExecutingPageFilters(TemplateScopeContext scope)
+        {
+            if (scope.PageResult.LastFilterError != null)
+                scope.PageResult.SkipFilterExecution = true;
+
+            return StopExecution.Value;
+        }
+        [HandleUnknownValue] public object endIfError(TemplateScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object endIfError(TemplateScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
+
+        [HandleUnknownValue] public object ifNoError(TemplateScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNoError(TemplateScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
+
+        [HandleUnknownValue] public object ifError(TemplateScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
+        
+        [HandleUnknownValue] public Exception lastError(TemplateScopeContext scope) => scope.PageResult.LastFilterError;
+        [HandleUnknownValue] public string lastErrorMessage(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.Message;
+        [HandleUnknownValue] public string lastErrorStackTrace(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.StackTrace;
 
         [HandleUnknownValue] public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
         [HandleUnknownValue] public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
@@ -392,6 +408,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
+        public object show(object ignoreTarget, object useValue) => useValue;
         public object useFmt(object ignoreTarget, string format, object arg) => fmt(format, arg);
         public object useFmt(object ignoreTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
         public object useFmt(object ignoreTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
@@ -1513,4 +1530,23 @@ namespace ServiceStack.Templates
         public IRawString jsString(string text) => escapeNewLines(escapeSingleQuotes(text)).ToRawString();
         public IRawString jsQuotedString(string text) => ("'" + escapeNewLines(escapeSingleQuotes(text)) + "'").ToRawString();
     }
+
+    public class TemplateDefaultFiltersWithKeywords : TemplateFilter //Methods named after common keywords breaks intelli-sense when trying to use them
+    {
+        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+
+        public object throwArgumentException(TemplateScopeContext scope, string message) => throw new ArgumentException(message).InStopFilter(scope, null);
+        public object throwArgumentException(TemplateScopeContext scope, string message, string paramName) => throw new ArgumentException(message, paramName).InStopFilter(scope, null);
+        public object throwArgumentNullException(TemplateScopeContext scope, string paramName) => throw new ArgumentNullException(paramName).InStopFilter(scope, null);
+        public object throwNotSupportedException(TemplateScopeContext scope, string message) => throw new NotSupportedException(message).InStopFilter(scope, null);
+        public object throwNotImplementedException(TemplateScopeContext scope, string message) => throw new NotImplementedException(message).InStopFilter(scope, null);
+        public object throwUnauthorizedAccessException(TemplateScopeContext scope, string message) => throw new UnauthorizedAccessException(message).InStopFilter(scope, null);
+        public object throwFileNotFoundException(TemplateScopeContext scope, string message) => throw new FileNotFoundException(message).InStopFilter(scope, null);
+        public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message) => throw new Data.OptimisticConcurrencyException(message).InStopFilter(scope, null);
+
+        public object @throw(TemplateScopeContext scope, string message) => throw new Exception(message).InStopFilter(scope, null);
+        public object @throw(TemplateScopeContext scope, string message, object options) => throw new Exception(message).InStopFilter(scope, options);
+    }
+
 }
