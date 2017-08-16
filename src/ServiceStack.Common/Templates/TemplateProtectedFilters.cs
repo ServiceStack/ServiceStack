@@ -233,7 +233,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
             var expireIn = scopedParams.TryGetValue("expireInSecs", out object value)
                 ? TimeSpan.FromSeconds(value.ConvertTo<int>())
-                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
+                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultFileCacheExpiry];
             
             var cacheKey = CreateCacheKey("file:" + virtualPath, scopedParams);
             if (Context.ExpiringCache.TryGetValue(cacheKey, out Tuple<DateTime, object> cacheEntry))
@@ -267,7 +267,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.AssertOptions(nameof(includeUrl), options);
             var expireIn = scopedParams.TryGetValue("expireInSecs", out object value)
                 ? TimeSpan.FromSeconds(value.ConvertTo<int>())
-                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultCacheExpiry];
+                : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultUrlCacheExpiry];
 
             var cacheKey = CreateCacheKey("url:" + url, scopedParams);
             if (Context.ExpiringCache.TryGetValue(cacheKey, out Tuple<DateTime, object> cacheEntry))

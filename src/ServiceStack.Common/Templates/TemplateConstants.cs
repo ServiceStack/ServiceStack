@@ -24,7 +24,8 @@ namespace ServiceStack.Templates
         public const string Comparer = "comparer";
         public const string Map = "map";
         public const string Request = "Request";
-        public const string DefaultCacheExpiry = nameof(DefaultCacheExpiry);
+        public const string DefaultFileCacheExpiry = nameof(DefaultFileCacheExpiry);
+        public const string DefaultUrlCacheExpiry = nameof(DefaultUrlCacheExpiry);
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");

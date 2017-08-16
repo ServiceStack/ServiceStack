@@ -194,7 +194,8 @@ namespace ServiceStack.Templates
             Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
             Args[TemplateConstants.DefaultDateTimeFormat] = "u";
             Args[TemplateConstants.DefaultTimeFormat] = "h\\:mm\\:ss";
-            Args[TemplateConstants.DefaultCacheExpiry] = TimeSpan.FromHours(1);
+            Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromMinutes(1);
+            Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromMinutes(1);
             Args[TemplateConstants.DefaultIndent] = "\t";
             Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
             Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
