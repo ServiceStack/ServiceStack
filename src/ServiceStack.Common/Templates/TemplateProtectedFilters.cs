@@ -302,5 +302,11 @@ namespace ServiceStack.Templates
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
+
+        public string envVariable(string variable) => Environment.GetEnvironmentVariable(variable);
+        public string envExpandVariables(string name) => Environment.ExpandEnvironmentVariables(name);
+        public string envStackTrace() => Environment.StackTrace;
+        public int envProcessorCount(string variable) => Environment.ProcessorCount;
+        public int envTickCount(string variable) => Environment.TickCount;
     }
 }
