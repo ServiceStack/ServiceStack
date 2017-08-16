@@ -25,6 +25,26 @@ namespace ServiceStack
     {
         public bool DisableHotReload { get; set; }
 
+        public bool EnableDebugTemplate { get; set; }
+
+        public string DebugDefaultTemplate { get; set; } = @"OS Environment Variable: {{ 'OS' | envVariable }}
+Current Directory: {{ envCurrentDirectory }}
+Expand Variables: {{ 'My system drive is %SystemDrive% and my system root is %SystemRoot%' | envExpandVariables }}
+Server UserAgent: {{ envServerUserAgent }}
+ServiceStack Version: {{ envServiceStackVersion }}
+Environment Variable Count: {{ envVariables | count }}
+Machine Name: {{ envMachineName }}
+UserName: {{ envUserName }}
+Version: {{ envVersion }}
+Request PathInfo: {{ Request.PathInfo }}
+Logical Drives: 
+{{ envLogicalDrives | select(' - {{ it }}\n') }}
+Ipv4 Addresses: 
+{{ networkIpv4Addresses | select(' - {{ it }}\n') }}
+Ipv6 Addresses: 
+{{ networkIpv6Addresses | select(' - {{ it }}\n') }}
+";
+
         public string HtmlExtension
         {
             get => PageFormats.First(x => x is HtmlPageFormat).Extension;
@@ -45,6 +65,7 @@ namespace ServiceStack
             ScanAssemblies.AddRange(appHost.ServiceAssemblies);
             Container = appHost.Container;
             TemplateFilters.Add(new TemplateProtectedFilters());
+            TemplateFilters.Add(new TemplateInfoFilters());
             FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
             SkipExecutingPageFiltersIfError = true;
         }
@@ -59,8 +80,12 @@ namespace ServiceStack
             appHost.CatchAllHandlers.Add(RequestHandler);
 
             if (!DisableHotReload)
-            {
                 appHost.RegisterService(typeof(TemplatePagesServices));
+
+            if (DebugMode || EnableDebugTemplate)
+            {
+                appHost.RegisterService(typeof(TemplatePagesDebugServices), "/templates/debug/eval");
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink("/templates/debug/eval", "Debug Templates");
             }
 
             Init();
@@ -144,6 +169,54 @@ namespace ServiceStack
 
             var shouldReload = lastModified.Ticks > long.Parse(request.ETag);
             return new HotReloadPageResponse { Reload = shouldReload, ETag = lastModified.Ticks.ToString() };
+        }
+    }
+
+    [Exclude(Feature.Soap | Feature.Metadata)]
+    public class DebugEvaluateTemplate : IReturn<string>
+    {
+        public string Template { get; set; }
+    }
+
+    [DefaultRequest(typeof(DebugEvaluateTemplate))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class TemplatePagesDebugServices : Service
+    {
+        public object Any(DebugEvaluateTemplate request)
+        {
+            if (string.IsNullOrEmpty(request.Template))
+                return null;
+            
+            if (!HostContext.DebugMode)
+                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateInfoFilters() },
+                Args =
+                {
+                    {TemplateConstants.Request, base.Request}
+                }
+            }.Init();
+
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+            feature.Args.Each(x => context.Args[x.Key] = x.Value);
+
+            var result = context.EvaluateTemplate(request.Template);
+            return new HttpResult(result) { ContentType = MimeTypes.PlainText }; 
+        }
+
+        public object GetHtml(DebugEvaluateTemplate request)
+        {
+            if (request.Template != null)
+                return Any(request);
+
+            var defaultTemplate = HostContext.GetPlugin<TemplatePagesFeature>().DebugDefaultTemplate ?? "";
+            
+            var html = HtmlTemplates.GetDebugEvaluateTemplate();
+            html = html.Replace("{0}", defaultTemplate);
+
+            return html;
         }
     }
 

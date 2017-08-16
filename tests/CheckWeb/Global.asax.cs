@@ -70,6 +70,8 @@ namespace CheckWeb
                     CaptureSynchronizationContext = true,
                 });
 
+            Plugins.Add(new TemplatePagesFeature());
+
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
                 matchingRequests: req => req.PathInfo.StartsWith("/proxy/test"),
