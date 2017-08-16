@@ -355,6 +355,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object ifNoError(TemplateScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
 
         [HandleUnknownValue] public object ifError(TemplateScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
+        [HandleUnknownValue] public object ifDebug(TemplateScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
         
         [HandleUnknownValue] public Exception lastError(TemplateScopeContext scope) => scope.PageResult.LastFilterError;
         [HandleUnknownValue] public string lastErrorMessage(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.Message;

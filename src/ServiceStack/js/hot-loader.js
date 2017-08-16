@@ -1,6 +1,6 @@
 var _lastEtag = "";
 (function shouldReload(){
-    fetch("/templates/hotreload/page.json?path" + encodeURIComponent(location.pathname) + "&eTag=" + _lastEtag)
+    fetch("/templates/hotreload/page.json?path=" + encodeURIComponent(location.pathname) + "&eTag=" + _lastEtag)
     .then(function(res){ 
         if (res.status !== 200) {
             console.log("/reload/page failed: " + res.status)
