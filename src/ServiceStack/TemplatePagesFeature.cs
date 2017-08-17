@@ -33,7 +33,6 @@ HandlerFactoryPath: {{ appConfig.HandlerFactoryPath }}
 VirtualFiles Path: {{ appVirtualFilesPath }}
 VirtualFileSources Path: {{ appVirtualFileSourcesPath }}
 OS Environment Variable: {{ 'OS' | envVariable }}
-Expand Variables: {{ 'My system drive is %SystemDrive% and my system root is %SystemRoot%' | envExpandVariables }}
 ServiceStack Version: {{ envServiceStackVersion }}
 
 Request: 
