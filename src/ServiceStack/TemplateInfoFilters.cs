@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using ServiceStack.Auth;
+using ServiceStack.Templates;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
-namespace ServiceStack.Templates
+namespace ServiceStack
 {
     public class TemplateInfoFilters : TemplateFilter
     {
@@ -49,8 +52,18 @@ namespace ServiceStack.Templates
         public System.Runtime.InteropServices.Architecture envOSArchitecture() => System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;
 #endif
 
-
         public List<IPAddress> networkIpv4Addresses() => IPAddressExtensions.GetAllNetworkInterfaceIpv4Addresses().Keys.ToList();
         public List<IPAddress> networkIpv6Addresses() => IPAddressExtensions.GetAllNetworkInterfaceIpv6Addresses();
+
+        private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+
+        public IAuthSession userSession(TemplateScopeContext scope) => req(scope).GetSession();
+        public string userSessionId(TemplateScopeContext scope) => req(scope).GetSessionId();
+        public string userPermanentSessionId(TemplateScopeContext scope) => req(scope).GetPermanentSessionId();
+        public HashSet<string> userSessionOptions(TemplateScopeContext scope) => req(scope).GetSessionOptions();
+        public bool userHasRole(TemplateScopeContext scope, string role) => 
+            userSession(scope)?.HasRole(role, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
+        public bool userHasPermission(TemplateScopeContext scope, string permission) => 
+            userSession(scope)?.HasPermission(permission, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
     }
 }

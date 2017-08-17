@@ -27,18 +27,32 @@ namespace ServiceStack
 
         public bool EnableDebugTemplate { get; set; }
 
-        public string DebugDefaultTemplate { get; set; } = @"OS Environment Variable: {{ 'OS' | envVariable }}
-Current Directory: {{ envCurrentDirectory }}
+        public string DebugDefaultTemplate { get; set; } = @"Service Name: {{ appHost.ServiceName }}
+HandlerFactoryPath: {{ appConfig.HandlerFactoryPath }}
+VirtualFiles Path: {{ appVirtualFilesPath }}
+VirtualFileSources Path: {{ appVirtualFileSourcesPath }}
+OS Environment Variable: {{ 'OS' | envVariable }}
 Expand Variables: {{ 'My system drive is %SystemDrive% and my system root is %SystemRoot%' | envExpandVariables }}
-Server UserAgent: {{ envServerUserAgent }}
 ServiceStack Version: {{ envServiceStackVersion }}
-Machine Name: {{ envMachineName }}
-UserName: {{ envUserName }}
-Logical Drives: 
-{{ envLogicalDrives | select(' - {{ it }}\n') }}
-Request 
- - PathInfo: {{ Request.PathInfo }}
-  - 
+
+Request: 
+  - RemoteIp: {{ request.RemoteIp }}
+  - UserHostAddress: {{ request.UserHostAddress }}
+  - PathInfo: {{ request.PathInfo }}
+  - UserAgent: {{ request.UserAgent }}
+
+Session:
+  - ss-id: {{ userSessionId }}
+  - ss-pid: {{ userPermanentSessionId }}
+  - ss-opt: {{ userSessionOptions | join }}
+
+User: 
+  - IsAuthenticated: {{ userSession | select: { it.IsAuthenticated } }}
+  - UserName: {{ userSession | select: { it.UserName } }}
+  - LastName: {{ userSession | select: { it.LastName } }}
+  - Is Admin: {{ userHasRole('Admin') }}
+  - Has Permission: {{ userHasPermission('ThePermission') }}
+
 Ipv4 Addresses: 
 {{ networkIpv4Addresses | select(' - {{ it }}\n') }}
 Ipv6 Addresses: 
@@ -210,7 +224,12 @@ Ipv6 Addresses:
                 TemplateFilters = { new TemplateInfoFilters() },
                 Args =
                 {
-                    {TemplateConstants.Request, base.Request}
+                    {TemplateConstants.Request, base.Request},
+                    {"request", base.Request},
+                    {"appHost", HostContext.AppHost},
+                    {"appConfig", HostContext.Config},
+                    {"appVirtualFilesPath", HostContext.VirtualFiles.RootDirectory.RealPath},
+                    {"appVirtualFileSourcesPath", HostContext.VirtualFileSources.RootDirectory.RealPath},
                 }
             }.Init();
 
