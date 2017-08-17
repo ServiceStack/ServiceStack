@@ -1587,13 +1587,19 @@ namespace ServiceStack.Templates
             : StopExecution.Value;
 
         public object throwArgumentException(TemplateScopeContext scope, string message) => throw new ArgumentException(message).InStopFilter(scope, null);
-        public object throwArgumentException(TemplateScopeContext scope, string message, string paramName) => throw new ArgumentException(message, paramName).InStopFilter(scope, null);
+        public object throwArgumentException(TemplateScopeContext scope, string message, string options) => ifThrowArgumentException(scope, true, message, options);
         public object throwArgumentNullException(TemplateScopeContext scope, string paramName) => throw new ArgumentNullException(paramName).InStopFilter(scope, null);
+        public object throwArgumentNullException(TemplateScopeContext scope, string paramName, object options) => throw new ArgumentNullException(paramName).InStopFilter(scope, options);
         public object throwNotSupportedException(TemplateScopeContext scope, string message) => throw new NotSupportedException(message).InStopFilter(scope, null);
+        public object throwNotSupportedException(TemplateScopeContext scope, string message, object options) => throw new NotSupportedException(message).InStopFilter(scope, options);
         public object throwNotImplementedException(TemplateScopeContext scope, string message) => throw new NotImplementedException(message).InStopFilter(scope, null);
+        public object throwNotImplementedException(TemplateScopeContext scope, string message, object options) => throw new NotImplementedException(message).InStopFilter(scope, options);
         public object throwUnauthorizedAccessException(TemplateScopeContext scope, string message) => throw new UnauthorizedAccessException(message).InStopFilter(scope, null);
+        public object throwUnauthorizedAccessException(TemplateScopeContext scope, string message, object options) => throw new UnauthorizedAccessException(message).InStopFilter(scope, options);
         public object throwFileNotFoundException(TemplateScopeContext scope, string message) => throw new FileNotFoundException(message).InStopFilter(scope, null);
+        public object throwFileNotFoundException(TemplateScopeContext scope, string message, object options) => throw new FileNotFoundException(message).InStopFilter(scope, options);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message) => throw new Data.OptimisticConcurrencyException(message).InStopFilter(scope, null);
+        public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message, object options) => throw new Data.OptimisticConcurrencyException(message).InStopFilter(scope, options);
 
         public object @throw(TemplateScopeContext scope, string message) => throw new Exception(message).InStopFilter(scope, null);
         public object @throw(TemplateScopeContext scope, string message, object options) => throw new Exception(message).InStopFilter(scope, options);

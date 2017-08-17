@@ -327,9 +327,12 @@ namespace ServiceStack.Templates
             sb.Append($"<pre class=\"{className}\">");
             sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
 
-            sb.AppendLine();
-            sb.AppendLine("StackTrace:");
-            sb.AppendLine(ex.StackTrace);
+            if (string.IsNullOrEmpty(ex.StackTrace))
+            {
+                sb.AppendLine();
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(ex.StackTrace);
+            }
 
             if (ex.InnerException != null)
             {

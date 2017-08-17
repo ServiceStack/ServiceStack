@@ -24,7 +24,7 @@ namespace ServiceStack
         public decimal envServiceStackVersion() => Env.ServiceStackVersion;
 
         public bool envIsMono() => Env.IsMono;
-        public bool envIsAndroid() => Env.envIsAndroid;
+        public bool envIsAndroid() => Env.IsAndroid;
         public bool envIsMonoTouch() => Env.IsMonoTouch;
 
 #if NET45
