@@ -126,6 +126,9 @@ namespace ServiceStack.Host
 
         public Operation GetOperation(Type operationType)
         {
+            if (operationType == null)
+                return null;
+            
             Operation op;
             OperationsMap.TryGetValue(operationType, out op);
             return op;

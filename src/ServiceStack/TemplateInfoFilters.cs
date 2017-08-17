@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -65,5 +66,12 @@ namespace ServiceStack
             userSession(scope)?.HasRole(role, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
         public bool userHasPermission(TemplateScopeContext scope, string permission) => 
             userSession(scope)?.HasPermission(permission, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
+
+        public List<OperationDto> metaAllDtos() => HostContext.Metadata.GetOperationDtos();
+        public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
+        public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;
+        public List<string> metaAllOperationNames() => HostContext.Metadata.GetAllOperationNames();
+        public List<Type> metaAllOperationTypes() => HostContext.Metadata.GetAllOperationTypes();
+        public Operation metaOperation(string name) => HostContext.Metadata.GetOperation(HostContext.Metadata.GetOperationType(name));
     }
 }

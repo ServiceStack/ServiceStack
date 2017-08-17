@@ -52,13 +52,12 @@ User:
   - LastName:        {{ userSession | select: { it.LastName } }}
   - Is Admin:        {{ userHasRole('Admin') }}
   - Has Permission:  {{ userHasPermission('ThePermission') }}
-</pre></td><td style='width:50%'><pre>
-Ipv4 Addresses: 
-{{ networkIpv4Addresses | select(' - {{ it }}\n') }}
-Ipv6 Addresses: 
-{{ networkIpv6Addresses | select(' - {{ it }}\n') }}
-</pre></td></tr></table>
-";
+</pre></td><td style='width:50%'> 
+{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
+<table><caption>Network Information</caption>
+<tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
+<td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
+</tr></table>";
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
@@ -237,6 +236,7 @@ Ipv6 Addresses:
                     {"appConfig", HostContext.Config},
                     {"appVirtualFilesPath", HostContext.VirtualFiles.RootDirectory.RealPath},
                     {"appVirtualFileSourcesPath", HostContext.VirtualFileSources.RootDirectory.RealPath},
+                    {"meta", HostContext.Metadata},
                 }
             }.Init();
 
