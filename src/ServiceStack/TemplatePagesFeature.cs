@@ -29,12 +29,12 @@ namespace ServiceStack
         public bool EnableDebugTemplateToAll { get; set; }
 
         public string DebugDefaultTemplate { get; set; } = @"<table><tr><td style='width:50%'><pre>
-Service Name: {{ appHost.ServiceName }}
-HandlerFactoryPath: {{ appConfig.HandlerFactoryPath }}
-VirtualFiles Path: {{ appVirtualFilesPath }}
+Service Name:            {{ appHost.ServiceName }}
+HandlerFactoryPath:      {{ appConfig.HandlerFactoryPath }}
+VirtualFiles Path:       {{ appVirtualFilesPath }}
 VirtualFileSources Path: {{ appVirtualFileSourcesPath }}
 OS Environment Variable: {{ 'OS' | envVariable }}
-ServiceStack Version: {{ envServiceStackVersion }}
+ServiceStack Version:    {{ envServiceStackVersion }}
 
 Request: 
   - RemoteIp:        {{ request.RemoteIp }}
