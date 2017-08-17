@@ -29,30 +29,30 @@ namespace ServiceStack
         public bool EnableDebugTemplateToAll { get; set; }
 
         public string DebugDefaultTemplate { get; set; } = @"<table><tr><td style='width:50%'><pre>
-Service Name:            {{ appHost.ServiceName }}
-HandlerFactoryPath:      {{ appConfig.HandlerFactoryPath }}
-VirtualFiles Path:       {{ appVirtualFilesPath }}
-VirtualFileSources Path: {{ appVirtualFileSourcesPath }}
-OS Environment Variable: {{ 'OS' | envVariable }}
-ServiceStack Version:    {{ envServiceStackVersion }}
+Service Name              {{ appHost.ServiceName }}
+Handler Path              {{ appConfig.HandlerFactoryPath }}
+VirtualFiles Path         {{ appVirtualFilesPath }}
+VirtualFileSources Path   {{ appVirtualFileSourcesPath }}
+OS Environment Variable   {{ 'OS' | envVariable }}
+ServiceStack Version      {{ envServiceStackVersion }}
 
 Request: 
-  - RemoteIp:        {{ request.RemoteIp }}
-  - UserHostAddress: {{ request.UserHostAddress }}
-  - PathInfo:        {{ request.PathInfo }}
-  - UserAgent:       {{ request.UserAgent }}
+  - RemoteIp              {{ request.RemoteIp }}
+  - UserHostAddress       {{ request.UserHostAddress }}
+  - PathInfo              {{ request.PathInfo }}
+  - UserAgent             {{ request.UserAgent }}
 
 Session:
-  - ss-id:  {{ userSessionId }}
-  - ss-pid: {{ userPermanentSessionId }}
-  - ss-opt: {{ userSessionOptions | join }}
+  - ss-id                 {{ userSessionId }}
+  - ss-pid                {{ userPermanentSessionId }}
+  - ss-opt                {{ userSessionOptions | join }}
 
 User: 
-  - IsAuthenticated: {{ userSession | select: { it.IsAuthenticated } }}
-  - UserName:        {{ userSession | select: { it.UserName } }}
-  - LastName:        {{ userSession | select: { it.LastName } }}
-  - Is Admin:        {{ userHasRole('Admin') }}
-  - Has Permission:  {{ userHasPermission('ThePermission') }}
+  - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
+  - UserName              {{ userSession | select: { it.UserName } }}
+  - LastName              {{ userSession | select: { it.LastName } }}
+  - Is Admin              {{ userHasRole('Admin') }}
+  - Has Permission        {{ userHasPermission('ThePermission') }}
 </pre></td><td style='width:50%'> 
 {{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
