@@ -23,6 +23,8 @@ namespace ServiceStack.Api.Swagger
 
         public string LogoUrl { get; set; }
 
+        public string LogoHref { get; set; }
+
         public Action<SwaggerResourcesResponse> ResourcesResponseFilter { get; set; }
 
         public Action<SwaggerApiDeclaration> ApiDeclarationFilter { get; set; }
@@ -39,7 +41,7 @@ namespace ServiceStack.Api.Swagger
 
         public SwaggerFeature()
         {
-            LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-24.png";
+            LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-64-swagger.png";
             RouteSummary = new Dictionary<string, string>();
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
@@ -105,9 +107,11 @@ namespace ServiceStack.Api.Swagger
                     {
                         res.ContentType = MimeTypes.Html;
                         var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
+                        var logoHref = LogoHref ?? "/";
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                             .Replace("ApiDocs", HostContext.ServiceName)
-                            .Replace("{LogoUrl}", LogoUrl);
+                            .Replace("{LogoUrl}", LogoUrl)
+                            .Replace("<a id=\"logo\" href=\"http://swagger.io\">swagger</a>", $"<a id=\"logo\" href=\"{logoHref}\">{HostContext.ServiceName}</a>");
 
                         if (injectJs != null)
                         {
