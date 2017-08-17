@@ -27,7 +27,8 @@ namespace ServiceStack
 
         public bool EnableDebugTemplate { get; set; }
 
-        public string DebugDefaultTemplate { get; set; } = @"Service Name: {{ appHost.ServiceName }}
+        public string DebugDefaultTemplate { get; set; } = @"<table><tr><td style='width:50%'><pre>
+Service Name: {{ appHost.ServiceName }}
 HandlerFactoryPath: {{ appConfig.HandlerFactoryPath }}
 VirtualFiles Path: {{ appVirtualFilesPath }}
 VirtualFileSources Path: {{ appVirtualFileSourcesPath }}
@@ -36,27 +37,28 @@ Expand Variables: {{ 'My system drive is %SystemDrive% and my system root is %Sy
 ServiceStack Version: {{ envServiceStackVersion }}
 
 Request: 
-  - RemoteIp: {{ request.RemoteIp }}
+  - RemoteIp:        {{ request.RemoteIp }}
   - UserHostAddress: {{ request.UserHostAddress }}
-  - PathInfo: {{ request.PathInfo }}
-  - UserAgent: {{ request.UserAgent }}
+  - PathInfo:        {{ request.PathInfo }}
+  - UserAgent:       {{ request.UserAgent }}
 
 Session:
-  - ss-id: {{ userSessionId }}
+  - ss-id:  {{ userSessionId }}
   - ss-pid: {{ userPermanentSessionId }}
   - ss-opt: {{ userSessionOptions | join }}
 
 User: 
   - IsAuthenticated: {{ userSession | select: { it.IsAuthenticated } }}
-  - UserName: {{ userSession | select: { it.UserName } }}
-  - LastName: {{ userSession | select: { it.LastName } }}
-  - Is Admin: {{ userHasRole('Admin') }}
-  - Has Permission: {{ userHasPermission('ThePermission') }}
-
+  - UserName:        {{ userSession | select: { it.UserName } }}
+  - LastName:        {{ userSession | select: { it.LastName } }}
+  - Is Admin:        {{ userHasRole('Admin') }}
+  - Has Permission:  {{ userHasPermission('ThePermission') }}
+</pre></td><td style='width:50%'><pre>
 Ipv4 Addresses: 
 {{ networkIpv4Addresses | select(' - {{ it }}\n') }}
 Ipv6 Addresses: 
 {{ networkIpv6Addresses | select(' - {{ it }}\n') }}
+</pre></td></tr></table>
 ";
 
         public List<string> IgnorePaths { get; set; } = new List<string>
