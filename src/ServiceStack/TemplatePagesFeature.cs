@@ -32,18 +32,24 @@ Current Directory: {{ envCurrentDirectory }}
 Expand Variables: {{ 'My system drive is %SystemDrive% and my system root is %SystemRoot%' | envExpandVariables }}
 Server UserAgent: {{ envServerUserAgent }}
 ServiceStack Version: {{ envServiceStackVersion }}
-Environment Variable Count: {{ envVariables | count }}
 Machine Name: {{ envMachineName }}
 UserName: {{ envUserName }}
-Version: {{ envVersion }}
-Request PathInfo: {{ Request.PathInfo }}
 Logical Drives: 
 {{ envLogicalDrives | select(' - {{ it }}\n') }}
+Request 
+ - PathInfo: {{ Request.PathInfo }}
+  - 
 Ipv4 Addresses: 
 {{ networkIpv4Addresses | select(' - {{ it }}\n') }}
 Ipv6 Addresses: 
 {{ networkIpv6Addresses | select(' - {{ it }}\n') }}
 ";
+
+        public List<string> IgnorePaths { get; set; } = new List<string>
+        {
+            "/ss_admin",
+            "/swagger-ui",
+        };
 
         public string HtmlExtension
         {
@@ -99,6 +105,15 @@ Ipv6 Addresses:
             if (!DebugMode && catchAllPathsNotFound.ContainsKey(pathInfo))
                 return null;
 
+            foreach (var ignorePath in IgnorePaths)
+            {
+                if (pathInfo.StartsWith(ignorePath))
+                {
+                    catchAllPathsNotFound[pathInfo] = 1;
+                    return null;
+                }
+            }
+
             var codePage = Pages.GetCodePage(pathInfo);
             if (codePage != null)
                 return new TemplateCodePageHandler(codePage);
@@ -129,7 +144,7 @@ Ipv6 Addresses:
         }
     }
 
-    [Exclude(Feature.Soap | Feature.Metadata)]
+    [ExcludeMetadata]
     [Route("/templates/hotreload/page")]
     public class HotReloadPage : IReturn<HotReloadPageResponse>
     {
@@ -172,7 +187,7 @@ Ipv6 Addresses:
         }
     }
 
-    [Exclude(Feature.Soap | Feature.Metadata)]
+    [ExcludeMetadata]
     public class DebugEvaluateTemplate : IReturn<string>
     {
         public string Template { get; set; }
