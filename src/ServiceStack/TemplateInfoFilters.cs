@@ -17,14 +17,15 @@ namespace ServiceStack
         public string envVariable(string variable) => Environment.GetEnvironmentVariable(variable);
         public string envExpandVariables(string name) => Environment.ExpandEnvironmentVariables(name);
         public string envStackTrace() => Environment.StackTrace;
-        public int envProcessorCount(string variable) => Environment.ProcessorCount;
-        public int envTickCount(string variable) => Environment.TickCount;
+        public int envProcessorCount() => Environment.ProcessorCount;
+        public int envTickCount() => Environment.TickCount;
 
-        public bool envIsAndroid() => Env.IsAndroid;
-        public bool envIsMonoTouch() => Env.IsMonoTouch;
-        public bool envIsMono() => Env.IsMono;
         public string envServerUserAgent() => Env.ServerUserAgent;
         public decimal envServiceStackVersion() => Env.ServiceStackVersion;
+
+        public bool envIsMono() => Env.IsMono;
+        public bool envIsAndroid() => Env.envIsAndroid;
+        public bool envIsMonoTouch() => Env.IsMonoTouch;
 
 #if NET45
         public bool envIsWindows() => Env.IsWindows;
