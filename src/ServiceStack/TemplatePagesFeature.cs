@@ -26,6 +26,7 @@ namespace ServiceStack
         public bool DisableHotReload { get; set; }
 
         public bool EnableDebugTemplate { get; set; }
+        public bool EnableDebugTemplateToAll { get; set; }
 
         public string DebugDefaultTemplate { get; set; } = @"<table><tr><td style='width:50%'><pre>
 Service Name: {{ appHost.ServiceName }}
@@ -102,7 +103,7 @@ User:
             if (!DisableHotReload)
                 appHost.RegisterService(typeof(TemplatePagesServices));
 
-            if (DebugMode || EnableDebugTemplate)
+            if (DebugMode || EnableDebugTemplate || EnableDebugTemplateToAll)
             {
                 appHost.RegisterService(typeof(TemplatePagesDebugServices), "/templates/debug/eval");
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink("/templates/debug/eval", "Debug Templates");
@@ -217,7 +218,8 @@ User:
             if (string.IsNullOrEmpty(request.Template))
                 return null;
 
-            if (!HostContext.DebugMode)
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
                 {
@@ -240,7 +242,6 @@ User:
                 }
             }.Init();
 
-            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
             feature.Args.Each(x => context.Args[x.Key] = x.Value);
 
             var result = context.EvaluateTemplate(request.Template);
@@ -249,13 +250,13 @@ User:
 
         public object GetHtml(DebugEvaluateTemplate request)
         {
-            if (!HostContext.DebugMode)
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
                 RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
             
             if (request.Template != null)
                 return Any(request);
 
-            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
             var defaultTemplate = feature.DebugDefaultTemplate ?? "";
             
             var html = HtmlTemplates.GetDebugEvaluateTemplate();

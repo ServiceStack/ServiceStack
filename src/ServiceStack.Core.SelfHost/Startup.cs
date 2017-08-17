@@ -138,7 +138,7 @@ namespace ServiceStack.Core.SelfHost
             });
 
             Plugins.Add(new TemplatePagesFeature { 
-                EnableDebugTemplate = true,
+                EnableDebugTemplateToAll = true,
             });
             Plugins.Add(new SwaggerFeature());
         }
