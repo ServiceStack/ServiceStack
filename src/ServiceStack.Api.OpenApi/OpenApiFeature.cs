@@ -104,7 +104,7 @@ namespace ServiceStack.Api.OpenApi
                             html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                                 .Replace("ApiDocs", HostContext.ServiceName)
                                 .Replace("<span class=\"logo__title\">swagger</span>", $"<span class=\"logo__title\">{HostContext.ServiceName}</span>")
-                                .Replace("http://swagger.io", LogoHref ?? "/");
+                                .Replace("http://swagger.io", LogoHref ?? "./");
 
                             if (LogoUrl != null)
                                 html = html.Replace("images/logo_small.png", LogoUrl);

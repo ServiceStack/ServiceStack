@@ -107,7 +107,7 @@ namespace ServiceStack.Api.Swagger
                     {
                         res.ContentType = MimeTypes.Html;
                         var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
-                        var logoHref = LogoHref ?? "/";
+                        var logoHref = LogoHref ?? "./";
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
                             .Replace("ApiDocs", HostContext.ServiceName)
                             .Replace("{LogoUrl}", LogoUrl)
