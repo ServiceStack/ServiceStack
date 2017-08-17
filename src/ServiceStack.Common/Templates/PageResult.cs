@@ -91,6 +91,11 @@ namespace ServiceStack.Templates
         /// The last error thrown by a filter
         /// </summary>
         public Exception LastFilterError { get; set; }
+        
+        /// <summary>
+        /// What argument errors should be binded to
+        /// </summary>
+        public string AssignExceptionsTo { get; set; }
 
         private PageResult(PageFormat format)
         {
@@ -637,7 +642,7 @@ namespace ServiceStack.Templates
                             errorBinding = assignError as string;
 
                         if (errorBinding == null)
-                            errorBinding = Context.AssignExceptionsTo;
+                            errorBinding = AssignExceptionsTo ?? Context.AssignExceptionsTo;
 
                         if (!string.IsNullOrEmpty(errorBinding))
                         {

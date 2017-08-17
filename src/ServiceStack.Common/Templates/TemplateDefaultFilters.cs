@@ -1539,6 +1539,12 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
         [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
+        public object assignError(TemplateScopeContext scope, string errorBinding)
+        {
+            scope.PageResult.AssignExceptionsTo = errorBinding;
+            return StopExecution.Value;
+        }
+        
         public object ifthrow(TemplateScopeContext scope, bool test, string message) => test 
             ? throw new Exception(message).InStopFilter(scope, null)
             : StopExecution.Value;
