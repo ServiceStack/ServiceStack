@@ -206,6 +206,7 @@ Ipv6 Addresses:
     public class DebugEvaluateTemplate : IReturn<string>
     {
         public string Template { get; set; }
+        public string AuthSecret { get; set; }
     }
 
     [DefaultRequest(typeof(DebugEvaluateTemplate))]
@@ -216,9 +217,14 @@ Ipv6 Addresses:
         {
             if (string.IsNullOrEmpty(request.Template))
                 return null;
-            
+
             if (!HostContext.DebugMode)
-                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            {
+                if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
+                {
+                    RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+                }
+            }
             
             var context = new TemplateContext
             {
@@ -243,14 +249,26 @@ Ipv6 Addresses:
 
         public object GetHtml(DebugEvaluateTemplate request)
         {
+            if (!HostContext.DebugMode)
+                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            
             if (request.Template != null)
                 return Any(request);
 
-            var defaultTemplate = HostContext.GetPlugin<TemplatePagesFeature>().DebugDefaultTemplate ?? "";
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+            var defaultTemplate = feature.DebugDefaultTemplate ?? "";
             
             var html = HtmlTemplates.GetDebugEvaluateTemplate();
             html = html.Replace("{0}", defaultTemplate);
 
+            var authsecret = Request.GetParam(Keywords.AuthSecret);
+            if (HostContext.Config.AdminAuthSecret != null &&
+                HostContext.Config.AdminAuthSecret == authsecret)
+            {
+                html = html.Replace("{ template: template }", 
+                    "{ template: template, authsecret:" + feature.DefaultFilters.jsQuotedString(authsecret).ToRawString() + " }");
+            }
+ 
             return html;
         }
     }

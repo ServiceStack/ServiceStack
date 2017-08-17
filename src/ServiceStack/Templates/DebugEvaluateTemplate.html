@@ -107,11 +107,11 @@
 <script src="/js/ss-utils.js"></script>
 <script>
 $(".live-template").each(function(){
-
     var el = $(this)
     el.find("textarea").on("input", function(){
 
-        var request = { template: el.find("textarea").val() }
+        var template = el.find("textarea").val();
+        var request = { template: template }
 
         $.ajax({
             type: "POST",

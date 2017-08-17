@@ -132,8 +132,14 @@ namespace ServiceStack.Core.SelfHost
 
             VirtualFiles = new S3VirtualFiles(s3Client, "s3-postgresql");
 #endif
+            SetConfig(new HostConfig {
+                DebugMode = false,
+                AdminAuthSecret = Environment.GetEnvironmentVariable("AUTH_SECRET"),
+            });
 
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new TemplatePagesFeature { 
+                EnableDebugTemplate = true,
+            });
             Plugins.Add(new SwaggerFeature());
         }
         public override List<IVirtualPathProvider> GetVirtualFileSources()
