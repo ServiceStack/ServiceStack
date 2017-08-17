@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ServiceStack.Templates
@@ -23,6 +24,16 @@ namespace ServiceStack.Templates
             "htmlError",
             "htmlErrorMessage",
             "htmlErrorDebug",
+        };
+        
+        /// <summary>
+        /// Rethrow fatal exceptions thrown on incorrect API usage    
+        /// </summary>
+        public static HashSet<Type> FatalExceptions { get; set; } = new HashSet<Type>
+        {
+            typeof(NotSupportedException),
+            typeof(System.Reflection.TargetInvocationException),
+            typeof(NotImplementedException),
         };
     }
 }

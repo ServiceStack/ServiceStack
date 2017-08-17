@@ -1539,6 +1539,53 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
         [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
+        public object ifthrow(TemplateScopeContext scope, bool test, string message) => test 
+            ? throw new Exception(message).InStopFilter(scope, null)
+            : StopExecution.Value;
+        public object ifthrow(TemplateScopeContext scope, bool test, string message, object options) => test 
+            ? throw new Exception(message).InStopFilter(scope, options)
+            : StopExecution.Value;
+
+        public object throwIf(TemplateScopeContext scope, string message, bool test) => test 
+            ? throw new Exception(message).InStopFilter(scope, null)
+            : StopExecution.Value;
+        public object throwIf(TemplateScopeContext scope, string message, bool test, object options) => test 
+            ? throw new Exception(message).InStopFilter(scope, options)
+            : StopExecution.Value;
+
+        public object ifThrowArgumentException(TemplateScopeContext scope, bool test, string message) => test 
+            ? throw new ArgumentException(message).InStopFilter(scope, null)
+            : StopExecution.Value;
+
+        public object ifThrowArgumentException(TemplateScopeContext scope, bool test, string message, object options)
+        {
+            if (!test) 
+                return StopExecution.Value;
+            
+            if (options is string paramName)
+                throw new ArgumentException(message, paramName).InStopFilter(scope, null);
+
+            throw new ArgumentException(message).InStopFilter(scope, options);
+        }
+
+        public object ifThrowArgumentException(TemplateScopeContext scope, bool test, string message, string paramName, object options) => test 
+            ? throw new ArgumentException(message, paramName).InStopFilter(scope, options)
+            : StopExecution.Value;
+
+        public object ifThrowArgumentNullException(TemplateScopeContext scope, bool test, string paramName) => test 
+            ? throw new ArgumentNullException(paramName).InStopFilter(scope, null)
+            : StopExecution.Value;
+        public object ifThrowArgumentNullException(TemplateScopeContext scope, bool test, string paramName, object options) => test 
+            ? throw new ArgumentNullException(paramName).InStopFilter(scope, options)
+            : StopExecution.Value;
+        
+        public object throwArgumentNullExceptionIf(TemplateScopeContext scope, string paramName, bool test) => test 
+            ? throw new ArgumentNullException(paramName).InStopFilter(scope, null)
+            : StopExecution.Value;
+        public object throwArgumentNullExceptionIf(TemplateScopeContext scope, string paramName, bool test, object options) => test 
+            ? throw new ArgumentNullException(paramName).InStopFilter(scope, options)
+            : StopExecution.Value;
+
         public object throwArgumentException(TemplateScopeContext scope, string message) => throw new ArgumentException(message).InStopFilter(scope, null);
         public object throwArgumentException(TemplateScopeContext scope, string message, string paramName) => throw new ArgumentException(message, paramName).InStopFilter(scope, null);
         public object throwArgumentNullException(TemplateScopeContext scope, string paramName) => throw new ArgumentNullException(paramName).InStopFilter(scope, null);

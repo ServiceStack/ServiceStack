@@ -607,9 +607,7 @@ namespace ServiceStack.Templates
                         catch (StopFilterExecutionException) { throw; }
                         catch (Exception ex)
                         {
-                            var rethrow = ex is NotSupportedException ||
-                                          ex is TargetInvocationException ||
-                                          ex is NotImplementedException;
+                            var rethrow = TemplateConfig.FatalExceptions.Contains(ex.GetType());
 
                             var exResult = Format.OnExpressionException(this, ex);
                             if (exResult != null)
@@ -630,10 +628,7 @@ namespace ServiceStack.Templates
                     if (Context.SkipExecutingPageFiltersIfError)
                         this.SkipFilterExecution = true;
 
-                    var rethrow = ex.InnerException is NotSupportedException ||
-                                  ex.InnerException is TargetInvocationException ||
-                                  ex.InnerException is NotImplementedException;
-
+                    var rethrow = TemplateConfig.FatalExceptions.Contains(ex.InnerException.GetType());
                     if (!rethrow)
                     {
                         string errorBinding = null;
