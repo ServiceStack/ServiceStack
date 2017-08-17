@@ -4,8 +4,18 @@ namespace ServiceStack.Templates
 {
     public static class TemplateExtensions
     {
-        public static StopFilterExecutionException InStopFilter(this Exception ex, TemplateScopeContext scope, object options) =>
-            new StopFilterExecutionException(scope, options, ex);
+        public static object InStopFilter(this Exception ex, TemplateScopeContext scope, object options)
+        {
+            try
+            {
+                throw ex; //capture StackTrace in Original Exception
+            }
+            catch (Exception e)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+            return null;
+        }
 
     }
 }

@@ -45,6 +45,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate(@"{{ 'in filter' | throw({ assignError: 'myError' }) }}
 <var>{{ myError.Message }}</var>"),
                 Is.EqualTo("<var>in filter</var>"));
+
+            Assert.That(context.EvaluateTemplate(@"{{ 'in filter' | throw({ assignError: 'myError' }) }}
+<var>{{ myError.Message }}</var><pre>{{ myError.StackTrace }}</pre>"),
+                Does.StartWith("<var>in filter</var><pre>   at "));
         }
 
         [Test]
