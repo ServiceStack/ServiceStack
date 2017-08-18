@@ -26,9 +26,9 @@ namespace ServiceStack.Templates
             return LoadTemplate("HtmlFormat.html");
         }
 
-        public static string GetDebugEvaluateTemplate()
+        public static string GetMetadataDebugTemplate()
         {
-            return LoadTemplate("DebugEvaluateTemplate.html");
+            return LoadTemplate("MetadataDebugTemplate.html");
         }
 
         private static string LoadTemplate(string templateName)

@@ -28,40 +28,11 @@ namespace ServiceStack
         public bool EnableDebugTemplate { get; set; }
         public bool EnableDebugTemplateToAll { get; set; }
 
-        public string DebugDefaultTemplate { get; set; } = @"<table><tr><td style='width:50%'><pre>
-Service Name              {{ appHost.ServiceName }}
-Handler Path              {{ appConfig.HandlerFactoryPath }}
-VirtualFiles Path         {{ appVirtualFilesPath }}
-VirtualFileSources Path   {{ appVirtualFileSourcesPath }}
-OS Environment Variable   {{ 'OS' | envVariable }}
-ServiceStack Version      {{ envServiceStackVersion }}
-
-Request: 
-  - RemoteIp              {{ request.RemoteIp }}
-  - UserHostAddress       {{ request.UserHostAddress }}
-  - PathInfo              {{ request.PathInfo }}
-  - UserAgent             {{ request.UserAgent }}
-
-Session:
-  - ss-id                 {{ userSessionId }}
-  - ss-pid                {{ userPermanentSessionId }}
-  - ss-opt                {{ userSessionOptions | join }}
-
-User: 
-  - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
-  - UserName              {{ userSession | select: { it.UserName } }}
-  - LastName              {{ userSession | select: { it.LastName } }}
-  - Is Admin              {{ userHasRole('Admin') }}
-  - Has Permission        {{ userHasPermission('ThePermission') }}
-</pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
-<table><caption>Network Information</caption>
-<tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
-<td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
-</tr></table>";
+        public string DebugDefaultTemplate { get; set; }
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
+            "/metadata",
             "/ss_admin",
             "/swagger-ui",
         };
@@ -87,6 +58,7 @@ User:
             Container = appHost.Container;
             TemplateFilters.Add(new TemplateProtectedFilters());
             TemplateFilters.Add(new TemplateInfoFilters());
+            TemplateFilters.Add(new TemplateServiceStackFilters());
             FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
             SkipExecutingPageFiltersIfError = true;
         }
@@ -105,8 +77,8 @@ User:
 
             if (DebugMode || EnableDebugTemplate || EnableDebugTemplateToAll)
             {
-                appHost.RegisterService(typeof(TemplatePagesDebugServices), "/templates/debug/eval");
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink("/templates/debug/eval", "Debug Templates");
+                appHost.RegisterService(typeof(MetadataTemplateServices), MetadataTemplateServices.Route);
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataTemplateServices.Route, "Debug Templates");
             }
 
             Init();
@@ -142,11 +114,7 @@ User:
             }
 
             if (!pathInfo.EndsWith("/") && VirtualFiles.DirectoryExists(pathInfo.TrimPrefixes("/")))
-                return new RedirectHttpHandler
-                {
-                    RelativeUrl = pathInfo + "/",
-                    StatusCode = HttpStatusCode.MovedPermanently
-                };
+                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/" };
 
             if (!DebugMode)
             {
@@ -203,17 +171,51 @@ User:
     }
 
     [ExcludeMetadata]
-    public class DebugEvaluateTemplate : IReturn<string>
+    public class MetadataDebugTemplate : IReturn<string>
     {
         public string Template { get; set; }
         public string AuthSecret { get; set; }
     }
 
-    [DefaultRequest(typeof(DebugEvaluateTemplate))]
+    [DefaultRequest(typeof(MetadataDebugTemplate))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplatePagesDebugServices : Service
+    public class MetadataTemplateServices : Service
     {
-        public object Any(DebugEvaluateTemplate request)
+        public static string Route = "/metadata/debug"; 
+        
+        public static string DefaultTemplate = @"<table><tr><td style='width:50%'><pre>
+Service Name              {{ appHost.ServiceName }}
+Handler Path              {{ appConfig.HandlerFactoryPath }}
+VirtualFiles Path         {{ appVirtualFilesPath }}
+VirtualFileSources Path   {{ appVirtualFileSourcesPath }}
+OS Environment Variable   {{ 'OS' | envVariable }}
+ServiceStack Version      {{ envServiceStackVersion }}
+
+Request: 
+  - RemoteIp              {{ request.RemoteIp }}
+  - UserHostAddress       {{ request.UserHostAddress }}
+  - PathInfo              {{ request.PathInfo }}
+  - UserAgent             {{ request.UserAgent }}
+
+Session:
+  - ss-id                 {{ userSessionId }}
+  - ss-pid                {{ userPermanentSessionId }}
+  - ss-opt                {{ userSessionOptions | join }}
+
+User: 
+  - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
+  - UserName              {{ userSession | select: { it.UserName } }}
+  - LastName              {{ userSession | select: { it.LastName } }}
+  - Is Admin              {{ userHasRole('Admin') }}
+  - Has Permission        {{ userHasPermission('ThePermission') }}
+</pre></td><td style='width:50%'> 
+{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
+<table><caption>Network Information</caption>
+<tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
+<td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
+</tr></table>";
+        
+        public object Any(MetadataDebugTemplate request)
         {
             if (string.IsNullOrEmpty(request.Template))
                 return null;
@@ -248,7 +250,7 @@ User:
             return new HttpResult(result) { ContentType = MimeTypes.PlainText }; 
         }
 
-        public object GetHtml(DebugEvaluateTemplate request)
+        public object GetHtml(MetadataDebugTemplate request)
         {
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
             if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
@@ -257,9 +259,9 @@ User:
             if (request.Template != null)
                 return Any(request);
 
-            var defaultTemplate = feature.DebugDefaultTemplate ?? "";
-            
-            var html = HtmlTemplates.GetDebugEvaluateTemplate();
+            var defaultTemplate = feature.DebugDefaultTemplate ?? DefaultTemplate;
+
+            var html = HtmlTemplates.GetMetadataDebugTemplate();
             html = html.Replace("{0}", defaultTemplate);
 
             var authsecret = Request.GetParam(Keywords.AuthSecret);
