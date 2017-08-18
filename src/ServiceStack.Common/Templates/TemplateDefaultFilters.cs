@@ -969,7 +969,7 @@ namespace ServiceStack.Templates
         public IRawString jsQuotedString(string text) => ("'" + escapeNewLines(escapeSingleQuotes(text)) + "'").ToRawString();
 
         public bool matchesPathInfo(TemplateScopeContext scope, string pathInfo) => 
-            scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo;
+            scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');
 
         public object ifMatchesPathInfo(TemplateScopeContext scope, object returnTarget, string pathInfo) =>
             matchesPathInfo(scope, pathInfo) ? returnTarget : null;

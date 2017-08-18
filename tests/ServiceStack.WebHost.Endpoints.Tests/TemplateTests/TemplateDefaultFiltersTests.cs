@@ -1258,5 +1258,21 @@ dir-file: dir/dir-file.txt
             
         }
 
+        [Test]
+        public void Does_match_pathInfo()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["PathInfo"] = "/dir/sub"
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ '/dir/sub' | matchesPathInfo }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifMatchesPathInfo('/dir/sub/') }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | ifMatchesPathInfo('/dir/su') | otherwise: 0 }}"), Is.EqualTo("0"));
+        }
+        
     }
 }
