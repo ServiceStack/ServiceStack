@@ -29,8 +29,6 @@ namespace ServiceStack.VirtualPath
 
         public InMemoryVirtualDirectory rootDirectory;
 
-        public const char DirSep = '/';
-
         public override IVirtualDirectory RootDirectory => rootDirectory;
 
         public override string VirtualPathSeparator => "/";
@@ -215,15 +213,6 @@ namespace ServiceStack.VirtualPath
                 ? subDirPath
                 : null;
         }
-
-        public string SanitizePath(string filePath)
-        {
-            var sanitizedPath = string.IsNullOrEmpty(filePath)
-                ? null
-                : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
-
-            return sanitizedPath?.Replace('\\', DirSep);
-        }
     }
 
     public class InMemoryVirtualDirectory : AbstractVirtualDirectoryBase
@@ -248,7 +237,7 @@ namespace ServiceStack.VirtualPath
 
         public override string VirtualPath => DirPath;
 
-        public override string Name => DirPath?.LastRightPart(MemoryVirtualFiles.DirSep);
+        public override string Name => DirPath?.LastRightPart(DirSep);
 
         public override IVirtualFile GetFile(string virtualPath)
         {
@@ -308,7 +297,7 @@ namespace ServiceStack.VirtualPath
 
         public string FilePath { get; set; }
 
-        public override string Name => FilePath.LastRightPart(MemoryVirtualFiles.DirSep);
+        public override string Name => FilePath.LastRightPart(DirSep);
 
         public override string VirtualPath => FilePath;
 

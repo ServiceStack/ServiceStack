@@ -316,12 +316,13 @@ namespace ServiceStack.Host.Handlers
 
         public static bool DirectoryExists(string dirPath, string appFilePath)
         {
-            if (dirPath == null) return false;
+            if (dirPath == null) 
+                return false;
 
             try
             {
                 if (!Env.IsMono)
-                    return Directory.Exists(dirPath);
+                    return HostContext.VirtualFileSources.DirectoryExists(dirPath);
             }
             catch
             {

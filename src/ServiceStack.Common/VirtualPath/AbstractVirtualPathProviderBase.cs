@@ -10,6 +10,8 @@ namespace ServiceStack.VirtualPath
         public abstract string VirtualPathSeparator { get; }
         public abstract string RealPathSeparator { get; }
 
+        protected char DirSep { get; set; } = '/'; 
+
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {
             return string.Concat(basePath, VirtualPathSeparator, relativePath);
@@ -17,17 +19,26 @@ namespace ServiceStack.VirtualPath
 
         public virtual bool FileExists(string virtualPath)
         {
-            return GetFile(virtualPath) != null;
+            return GetFile(SanitizePath(virtualPath)) != null;
+        }
+
+        public string SanitizePath(string filePath)
+        {
+            var sanitizedPath = string.IsNullOrEmpty(filePath)
+                ? null
+                : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
+
+            return sanitizedPath?.Replace('\\', DirSep);
         }
 
         public virtual bool DirectoryExists(string virtualPath)
         {
-            return GetDirectory(virtualPath) != null;
+            return GetDirectory(SanitizePath(virtualPath)) != null;
         }
 
         public virtual IVirtualFile GetFile(string virtualPath)
         {
-            var virtualFile = RootDirectory.GetFile(virtualPath);
+            var virtualFile = RootDirectory.GetFile(SanitizePath(virtualPath));
             virtualFile?.Refresh();
             return virtualFile;
         }
@@ -45,7 +56,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualDirectory GetDirectory(string virtualPath)
         {
-            return RootDirectory.GetDirectory(virtualPath);
+            return RootDirectory.GetDirectory(SanitizePath(virtualPath));
         }
 
         public virtual IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = Int32.MaxValue)

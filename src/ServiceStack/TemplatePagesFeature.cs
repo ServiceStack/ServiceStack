@@ -96,11 +96,13 @@ namespace ServiceStack
                 }
             }
 
-            var codePage = Pages.GetCodePage(pathInfo);
+            var tryDirMatch = pathInfo[pathInfo.Length - 1] != '/';
+
+            var codePage = Pages.GetCodePage(pathInfo) ?? (tryDirMatch ? Pages.GetCodePage(pathInfo + '/') : null);
             if (codePage != null)
                 return new TemplateCodePageHandler(codePage);
 
-            var page = Pages.GetPage(pathInfo);
+            var page = Pages.GetPage(pathInfo) ?? (tryDirMatch ? Pages.GetPage(pathInfo + '/') : null);
             if (page != null)
             {
                 if (page.File.Name.StartsWith("_"))
