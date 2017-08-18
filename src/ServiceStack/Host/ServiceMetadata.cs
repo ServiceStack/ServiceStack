@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
@@ -356,6 +357,74 @@ namespace ServiceStack.Host
                     ? RequestAttributes.LocalSubnet
                     : RequestAttributes.External);
         }
+
+        public HashSet<Type> GetAllDtos()
+        {
+            var to = new HashSet<Type>();
+            var ops = OperationsMap.Values;
+            foreach (var op in ops)
+            {
+                AddReferencedTypes(to, op.RequestType);
+                AddReferencedTypes(to, op.ResponseType);
+            }
+            return to;
+        }
+
+        private void AddReferencedTypes(HashSet<Type> to, Type type)
+        {
+            if (type == null || to.Contains(type) || !IsDtoType(type))
+                return;
+
+            to.Add(type);
+
+            var baseType = type.BaseType();
+            if (baseType != null && IsDtoType(baseType) && !to.Contains(baseType))
+            {
+                AddReferencedTypes(to, baseType);
+
+                var genericArgs = type.IsGenericType()
+                    ? type.GetGenericArguments()
+                    : Type.EmptyTypes;
+
+                foreach (var arg in genericArgs)
+                {
+                    AddReferencedTypes(to, arg);
+                }
+            }
+
+            foreach (var pi in type.GetSerializableProperties())
+            {
+                if (to.Contains(pi.PropertyType))
+                    continue;
+                
+                if (IsDtoType(pi.PropertyType))
+                    to.Add(pi.PropertyType);
+
+                var genericArgs = pi.PropertyType.IsGenericType()
+                    ? pi.PropertyType.GetGenericArguments()
+                    : Type.EmptyTypes;
+
+                if (genericArgs.Length > 0)
+                {
+                    foreach (var arg in genericArgs)
+                    {
+                        AddReferencedTypes(to, arg);
+                    }
+                }
+                else if (pi.PropertyType.IsArray())
+                {
+                    var elType = pi.PropertyType.HasElementType ? pi.PropertyType.GetElementType() : null;
+                    AddReferencedTypes(to, elType);
+                }
+            }
+        }
+
+        private bool IsDtoType(Type type) => type != null &&
+             type.Namespace?.StartsWith("System") == false &&
+             type.IsClass() && type != typeof(string) &&
+             !type.IsGenericType() &&
+             !type.IsArray &&
+             !type.HasInterface(typeof(IService));
 
         public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
         {

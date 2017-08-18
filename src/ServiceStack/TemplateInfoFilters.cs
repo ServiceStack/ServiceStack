@@ -11,6 +11,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    // ReSharper disable InconsistentNaming
+    
     public class TemplateInfoFilters : TemplateFilter
     {
 
@@ -68,7 +70,7 @@ namespace ServiceStack
         public bool userHasPermission(TemplateScopeContext scope, string permission) => 
             userSession(scope)?.HasPermission(permission, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
 
-        public List<OperationDto> metaAllDtos() => HostContext.Metadata.GetOperationDtos();
+        public HashSet<Type> metaAllDtos() => HostContext.Metadata.GetAllDtos();
         public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
         public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;
         public List<string> metaAllOperationNames() => HostContext.Metadata.GetAllOperationNames();
