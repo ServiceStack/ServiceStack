@@ -13,8 +13,6 @@ namespace ServiceStack.VirtualPath
 
         public IVirtualPathProvider VirtualPathProvider { get; set; }
 
-        protected char DirSep { get; set; } = '/'; 
-
         public string Extension => Name.LastRightPart('.');
 
         public IVirtualDirectory Directory { get; set; }

@@ -350,7 +350,7 @@ namespace ServiceStack
                     if (!requestPath.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
-                        var redirect = StaticFileHandler.DirectoryExists(filePath, appFilePath);
+                        var redirect = StaticFileHandler.DirectoryExists(requestPath, filePath, appFilePath);
                         if (redirect)
                         {
                             return new RedirectHttpHandler

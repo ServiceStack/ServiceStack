@@ -121,6 +121,12 @@ namespace ServiceStack.VirtualPath
 
         public IEnumerable<DirectoryInfo> EnumerateDirectories(string dirName)
         {
+            if (dirName[dirName.Length - 1] == ':')
+            {
+                var dir = new DirectoryInfo(dirName + Path.DirectorySeparatorChar);
+                var subDirs = dir.GetDirectories();
+            }
+
             return BackingDirInfo.GetDirectories(dirName, SearchOption.TopDirectoryOnly);
         }
     }

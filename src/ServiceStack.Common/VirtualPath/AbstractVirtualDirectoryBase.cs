@@ -11,8 +11,6 @@ namespace ServiceStack.VirtualPath
         public IVirtualDirectory ParentDirectory { get; set; }
         public IVirtualDirectory Directory => this;
 
-        protected char DirSep { get; set; } = '/'; 
-
         public abstract DateTime LastModified { get; }
         public virtual string VirtualPath => GetVirtualPathToRoot();
         public virtual string RealPath => GetRealPathToRoot();

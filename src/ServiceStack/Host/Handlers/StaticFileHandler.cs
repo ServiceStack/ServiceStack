@@ -314,7 +314,7 @@ namespace ServiceStack.Host.Handlers
 
         public override bool IsReusable => true;
 
-        public static bool DirectoryExists(string dirPath, string appFilePath)
+        public static bool DirectoryExists(string virtualPath, string dirPath, string appFilePath)
         {
             if (dirPath == null) 
                 return false;
@@ -322,10 +322,11 @@ namespace ServiceStack.Host.Handlers
             try
             {
                 if (!Env.IsMono)
-                    return HostContext.VirtualFileSources.DirectoryExists(dirPath);
+                    return HostContext.VirtualFileSources.DirectoryExists(virtualPath);
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Warn("Error checking if Directory Exists: " + dirPath, ex);
                 return false;
             }
 

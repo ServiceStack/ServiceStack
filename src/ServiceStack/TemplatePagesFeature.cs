@@ -277,6 +277,7 @@ User:
 
         public TemplatePageHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
+            this.RequestName = page.VirtualPath;
             this.page = page;
             this.layoutPage = layoutPage;
         }

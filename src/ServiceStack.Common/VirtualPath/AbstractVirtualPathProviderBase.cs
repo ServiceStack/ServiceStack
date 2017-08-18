@@ -10,8 +10,6 @@ namespace ServiceStack.VirtualPath
         public abstract string VirtualPathSeparator { get; }
         public abstract string RealPathSeparator { get; }
 
-        protected char DirSep { get; set; } = '/'; 
-
         public virtual string CombineVirtualPath(string basePath, string relativePath)
         {
             return string.Concat(basePath, VirtualPathSeparator, relativePath);
@@ -26,9 +24,9 @@ namespace ServiceStack.VirtualPath
         {
             var sanitizedPath = string.IsNullOrEmpty(filePath)
                 ? null
-                : (filePath[0] == DirSep ? filePath.Substring(1) : filePath);
+                : (filePath[0] == '/' ? filePath.Substring(1) : filePath);
 
-            return sanitizedPath?.Replace('\\', DirSep);
+            return sanitizedPath?.Replace('\\', '/');
         }
 
         public virtual bool DirectoryExists(string virtualPath)
