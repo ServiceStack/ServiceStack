@@ -335,7 +335,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
-            output.Print();
             
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <h1>Before Error</h1>
@@ -348,6 +347,43 @@ StackTrace:
 
 
 <b></b>
+
+<h1>After Error</h1>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_continue_executing_filters_with_continueExecutingFiltersOnError()
+        {
+            var context = new TemplateContext
+            {
+                SkipExecutingFiltersIfError = true,
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+{{ continueExecutingFiltersOnError }}
+<h1>Before Error</h1>
+{{ 'in filter' | throw }}
+{{ htmlErrorDebug }}
+
+<b>{{ 'is evaluated' }}</b>
+
+<h1>After Error</h1>
+");
+
+            var page = context.GetPage("page");
+            var output = new PageResult(page).Result;
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<h1>Before Error</h1>
+<pre class=""alert alert-danger"">Exception: in filter
+
+StackTrace:
+   at Expression (String): ""in filter""
+   at Page: page.html
+</pre>
+
+
+<b>is evaluated</b>
 
 <h1>After Error</h1>".NormalizeNewLines()));
         }
@@ -460,6 +496,5 @@ StackTrace:
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">empty required</div>"));            
         }
-       
     }
 }

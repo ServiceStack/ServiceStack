@@ -709,7 +709,7 @@ namespace ServiceStack.Templates
                         }
                     }
                     
-                    if (skipExecutingFilters)
+                    if (SkipExecutingFiltersIfError.HasValue || Context.SkipExecutingFiltersIfError)
                         return string.Empty;
                     
                     // rethrow exceptiosn which aren't handled
