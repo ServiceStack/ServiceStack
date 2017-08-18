@@ -55,6 +55,9 @@ namespace ServiceStack
 
             if (originalPathInfo.Length > 1)
                 httpReq.PathInfo = httpReq.PathInfo.TrimEnd('/'); //normalize with other hosts
+
+            if (HttpHandlerFactory.UseNormalizedPath)
+                originalPathInfo = HttpHandlerFactory.NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);
                 
             var handler = HttpHandlerFactory.GetPreRequestHandler(originalPathInfo) ?? HttpHandlerFactory.GetHandler(httpReq, originalPathInfo);
 

@@ -49,11 +49,10 @@ namespace ServiceStack
             }
         }
 
-        public virtual Task ProcessRequest(HttpContext context, Func<Task> next)
+        public virtual async Task ProcessRequest(HttpContext context, Func<Task> next)
         {
             //Keep in sync with AppHostBase.NetCore.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
-
             var pathInfo = context.Request.Path.HasValue
                 ? context.Request.Path.Value
                 : "/";
@@ -62,10 +61,15 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(mode))
             {
                 if (pathInfo.IndexOf(mode, StringComparison.Ordinal) != 1)
-                    return next();
+                    await next();
 
                 pathInfo = pathInfo.Substring(mode.Length + 1);
             }
+
+            if (HttpHandlerFactory.UseNormalizedPath)
+                pathInfo = HttpHandlerFactory.NormalizePathInfo(pathInfo, Config.HandlerFactoryPath);
+
+            RequestContext.Instance.StartRequestContext();
 
             var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
             httpReq.RequestAttributes = httpReq.GetAttributes();
@@ -77,7 +81,10 @@ namespace ServiceStack
             if (serviceStackHandler != null)
             {
                 if (serviceStackHandler is NotFoundHttpHandler)
-                    return next();
+                {
+                    await next();
+                    return;
+                }
 
                 if (!string.IsNullOrEmpty(serviceStackHandler.RequestName))
                     operationName = serviceStackHandler.RequestName;
@@ -88,14 +95,26 @@ namespace ServiceStack
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
 
-                var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                try
+                {
+                    await serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
+                }
+                catch (Exception ex)
+                {
+                    var logFactory = context.Features.Get<ILoggerFactory>();
+                    var log = logFactory.CreateLogger(GetType());
+                    log.LogError(default(EventId), ex, ex.Message);
+                }
+                finally
+                {
+                    httpRes.Close();
+                }
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
-                return task;
+                return;
             }
 
-            return next();
+            await next();
         }
 
         public override ServiceStackHost Init()

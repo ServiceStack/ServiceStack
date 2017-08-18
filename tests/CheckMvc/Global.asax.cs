@@ -5,6 +5,7 @@ using System.Web.Routing;
 using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Mvc;
@@ -30,6 +31,10 @@ namespace CheckMvc
             container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
 
             SetConfig(new HostConfig { DebugMode = true });
+            
+            Plugins.Add(new TemplatePagesFeature());
+            
+            Plugins.Add(new OpenApiFeature());
         }
     }
 

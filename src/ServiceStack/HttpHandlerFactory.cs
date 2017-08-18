@@ -17,6 +17,7 @@ namespace ServiceStack
         public static string WebHostPhysicalPath = null;
         public static string DefaultRootFileName = null;
         public static bool HostAutoRedirectsDirs = false;
+        public static bool UseNormalizedPath = true;
 
         //internal static string ApplicationBaseUrl = null;
         private static IHttpHandler DefaultHttpHandler = null;
@@ -141,17 +142,46 @@ namespace ServiceStack
             ? new RedirectHttpHandler { RelativeUrl = redirectPath }
             : null;
 
+        public static string NormalizePathInfo(string pathInfo, string mode)
+        {
+            if (mode?.Length > 0 && mode[0] == '/')
+                mode = mode.Substring(1);
+
+            if (string.IsNullOrEmpty(mode))
+                return pathInfo;
+
+            var pathNoPrefix = pathInfo[0] == '/'
+                ? pathInfo.Substring(1)
+                : pathInfo;
+
+            var normalizedPathInfo = pathNoPrefix.StartsWith(mode)
+                ? pathNoPrefix.Substring(mode.Length)
+                : pathInfo;
+
+            return normalizedPathInfo.Length > 0 && normalizedPathInfo[0] != '/'
+                ? '/' + normalizedPathInfo
+                : normalizedPathInfo;
+        }
+
 #if !NETSTANDARD1_6
         // Entry point for ASP.NET
         public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
         {
-            var originalPathInfo = !string.IsNullOrEmpty(ctx.Request.PathInfo) ? ctx.Request.PathInfo : ctx.Request.Path;
+            var appHost = HostContext.AppHost;
+            var mode = appHost.Config.HandlerFactoryPath;
+            var context = ctx.Request.RequestContext.HttpContext;
+
+            var originalPathInfo = !string.IsNullOrEmpty(ctx.Request.PathInfo) 
+                ? ctx.Request.PathInfo 
+                : ctx.Request.Path;
+
+            originalPathInfo = UseNormalizedPath
+                ? NormalizePathInfo(originalPathInfo, mode)
+                : context.Request.FilePath;
+            
             var handler = GetPreRequestHandler(originalPathInfo);
             if (handler != null)
                 return handler;
-
-            var context = ctx.Request.RequestContext.HttpContext;
-            var appHost = HostContext.AppHost;
 
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
             //var httpReq = new AspNetRequest(context, url);
@@ -159,10 +189,10 @@ namespace ServiceStack
             foreach (var rawHttpHandler in appHost.RawHttpHandlers)
             {
                 var reqInfo = rawHttpHandler(httpReq);
-                if (reqInfo != null) return reqInfo;
+                if (reqInfo != null) 
+                    return reqInfo;
             }
 
-            var mode = appHost.Config.HandlerFactoryPath;
             var pathInfo = httpReq.PathInfo;
 
             //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
@@ -204,7 +234,7 @@ namespace ServiceStack
             }
 
             return GetHandlerForPathInfo(
-                httpReq.HttpMethod, pathInfo, context.Request.FilePath, pathTranslated)
+                httpReq.HttpMethod, pathInfo, originalPathInfo, pathTranslated)
                    ?? NotFoundHttpHandler;
         }
 #endif
@@ -221,7 +251,8 @@ namespace ServiceStack
             foreach (var rawHttpHandler in appHost.RawHttpHandlers)
             {
                 var reqInfo = rawHttpHandler(httpReq);
-                if (reqInfo != null) return reqInfo;
+                if (reqInfo != null) 
+                    return reqInfo;
             }
 
             var mode = appHost.Config.HandlerFactoryPath;
@@ -260,6 +291,9 @@ namespace ServiceStack
             {
                 return ReturnDefaultHandler(httpReq);
             }
+
+            if (UseNormalizedPath)
+                originalPathInfo = NormalizePathInfo(originalPathInfo, mode); 
 
             return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, originalPathInfo, httpReq.GetPhysicalPath())
                    ?? NotFoundHttpHandler;

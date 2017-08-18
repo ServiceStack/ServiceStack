@@ -102,6 +102,9 @@ namespace ServiceStack
                 pathInfo = pathInfo.Substring(mode.Length + 1);
             }
 
+            if (HttpHandlerFactory.UseNormalizedPath)
+                pathInfo = HttpHandlerFactory.NormalizePathInfo(pathInfo, Config.HandlerFactoryPath);
+
             RequestContext.Instance.StartRequestContext();
 
             var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);

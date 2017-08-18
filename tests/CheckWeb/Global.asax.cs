@@ -54,6 +54,7 @@ namespace CheckWeb
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
                 UseCamelCase = true,
+                //HandlerFactoryPath = "CheckWeb", //when hosted on IIS
                 //AllowJsConfig = false,
 
                 // Set to return JSON if no request content type is defined
@@ -106,6 +107,8 @@ namespace CheckWeb
 
             container.Register<IDbConnectionFactory>(
                 new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
+            //container.Register<IDbConnectionFactory>(
+            //    new OrmLiteConnectionFactory("Server=localhost;Database=test;User Id=test;Password=test;", SqlServerDialect.Provider));
 
             using (var db = container.Resolve<IDbConnectionFactory>().Open())
             {
