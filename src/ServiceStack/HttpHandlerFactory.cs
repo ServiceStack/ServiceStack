@@ -136,10 +136,20 @@ namespace ServiceStack
             }
         }
 
+        public static IHttpHandler GetPreRequestHandler(string pathInfo) => 
+            HostContext.AppHost.Config.RedirectPaths.TryGetValue(pathInfo, out string redirectPath)
+            ? new RedirectHttpHandler { RelativeUrl = redirectPath }
+            : null;
+
 #if !NETSTANDARD1_6
         // Entry point for ASP.NET
         public IHttpHandler GetHandler(HttpContext ctx, string requestType, string url, string pathTranslated)
         {
+            var originalPathInfo = !string.IsNullOrEmpty(ctx.Request.PathInfo) ? ctx.Request.PathInfo : ctx.Request.Path;
+            var handler = GetPreRequestHandler(originalPathInfo);
+            if (handler != null)
+                return handler;
+
             var context = ctx.Request.RequestContext.HttpContext;
             var appHost = HostContext.AppHost;
 
@@ -153,7 +163,7 @@ namespace ServiceStack
             }
 
             var mode = appHost.Config.HandlerFactoryPath;
-            var pathInfo = context.Request.GetPathInfo();
+            var pathInfo = httpReq.PathInfo;
 
             //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
             if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))

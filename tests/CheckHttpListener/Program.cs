@@ -6,6 +6,7 @@ using Check.ServiceModel;
 using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
@@ -39,6 +40,10 @@ namespace CheckHttpListener
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(SeedRockstars);
             }
+            
+            Plugins.Add(new TemplatePagesFeature());
+            
+            Plugins.Add(new OpenApiFeature());
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
             Plugins.Add(new AdminFeature());

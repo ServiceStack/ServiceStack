@@ -125,6 +125,11 @@ namespace ServiceStack
                     "wwwroot/", //Need to allow VirtualFiles access from ContentRoot Folder
 #endif
                 },
+                RedirectPaths = new Dictionary<string, string>
+                {
+                    { "/metadata/", "/metadata" },
+                    { "/swagger-ui", "/swagger-ui/" },
+                },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
                     Keywords.IgnorePlaceHolder, Keywords.Version, Keywords.VersionAbbr, Keywords.Version.ToPascalCase(),
@@ -216,6 +221,7 @@ namespace ServiceStack
             this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
             this.SkipFormDataInCreatingRequest = instance.SkipFormDataInCreatingRequest;
             this.ScanSkipPaths = instance.ScanSkipPaths;
+            this.RedirectPaths = instance.RedirectPaths;
             this.AdminAuthSecret = instance.AdminAuthSecret;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
@@ -314,6 +320,8 @@ namespace ServiceStack
 
         //Skip scanning common VS.NET extensions
         public List<string> ScanSkipPaths { get; private set; }
+
+        public Dictionary<string,string> RedirectPaths { get; private set; }
 
         public bool UseHttpsLinks { get; set; }
 

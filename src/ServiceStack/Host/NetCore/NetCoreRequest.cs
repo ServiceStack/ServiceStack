@@ -41,6 +41,8 @@ namespace ServiceStack.Host.NetCore
             this.Items = new Dictionary<string, object>();
             this.RequestAttributes = attrs;
             this.PathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ");  //Kestrel does not decode '+' into space
+            if (this.PathInfo.Length > 1 && this.PathInfo[this.PathInfo.Length - 1] == '/') // normalize with ASP.NET
+                this.PathInfo = this.PathInfo.TrimEnd('/');
         }
 
         public T TryResolve<T>()

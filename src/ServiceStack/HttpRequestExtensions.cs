@@ -463,12 +463,13 @@ namespace ServiceStack
 
         public static string GetPathInfo(this HttpRequestBase request)
         {
-            if (!IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
+            if (!IsNullOrEmpty(request.PathInfo)) 
+                return request.PathInfo.TrimEnd('/');
 
             var mode = HostContext.Config.HandlerFactoryPath;
             var appPath = IsNullOrEmpty(request.ApplicationPath)
-                          ? WebHostDirectoryName
-                          : request.ApplicationPath.TrimStart('/');
+                  ? WebHostDirectoryName
+                  : request.ApplicationPath.TrimStart('/');
 
             //mod_mono: /CustomPath35/api//default.htm
             var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
@@ -479,11 +480,13 @@ namespace ServiceStack
         public static string GetPathInfo(string fullPath, string mode, string appPath)
         {
             var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) 
+                return pathInfo;
 
             //Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) 
+                return pathInfo;
 
             return fullPath;
         }
