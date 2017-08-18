@@ -332,12 +332,18 @@ namespace ServiceStack.Templates
             sb.Append($"<pre class=\"{className}\">");
             sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
 
-            var stackTrace = ex.StackTrace ?? scope.Context.DefaultFilters.lastErrorStackTrace(scope);
+            var stackTrace = scope.Context.DefaultFilters.lastErrorStackTrace(scope);
             if (!string.IsNullOrEmpty(stackTrace))
             {
                 sb.AppendLine();
                 sb.AppendLine("StackTrace:");
                 sb.AppendLine(stackTrace);
+            }
+            else if (!string.IsNullOrEmpty(ex.StackTrace))
+            {
+                sb.AppendLine();
+                sb.AppendLine("StackTrace:");
+                sb.AppendLine(ex.StackTrace);
             }
 
             if (ex.InnerException != null)

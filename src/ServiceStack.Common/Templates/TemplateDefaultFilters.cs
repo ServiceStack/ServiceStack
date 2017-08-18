@@ -1555,15 +1555,17 @@ namespace ServiceStack.Templates
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAllArgsNotNull)}' expects a non empty Object Dictionary");
                     
-                    foreach (var entry in argsMap)
+                    var keys = argsMap.Keys.OrderBy(x => x);
+                    foreach (var key in keys)
                     {
-                        if (!isNull(entry.Value)) 
+                        var value = argsMap[key];
+                        if (!isNull(value)) 
                             continue;
                         
                         if (message != null)
-                            throw new ArgumentException(string.Format(message, entry.Key));
+                            throw new ArgumentException(string.Format(message, key));
                         
-                        throw new ArgumentNullException(entry.Key);
+                        throw new ArgumentNullException(key);
                     }
                     return args;
                 }
@@ -1588,13 +1590,15 @@ namespace ServiceStack.Templates
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAnyArgsNotNull)}' expects a non empty Object Dictionary");
                     
-                    foreach (var entry in argsMap)
+                    var keys = argsMap.Keys.OrderBy(x => x);
+                    foreach (var key in keys)
                     {
-                        if (!isNull(entry.Value))
+                        var value = argsMap[key];
+                        if (!isNull(value))
                             return args;
                     }
 
-                    var firstKey = argsMap.Keys.First();
+                    var firstKey = argsMap.Keys.OrderBy(x => x).First();
                     if (message != null)
                         throw new ArgumentException(string.Format(message, firstKey));
                         
@@ -1621,15 +1625,17 @@ namespace ServiceStack.Templates
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAllArgsNotEmpty)}' expects a non empty Object Dictionary");
                     
-                    foreach (var entry in argsMap)
+                    var keys = argsMap.Keys.OrderBy(x => x);
+                    foreach (var key in keys)
                     {
-                        if (!isEmpty(entry.Value)) 
+                        var value = argsMap[key];
+                        if (!isEmpty(value)) 
                             continue;
                         
                         if (message != null)
-                            throw new ArgumentException(string.Format(message, entry.Key));
+                            throw new ArgumentException(string.Format(message, key));
                         
-                        throw new ArgumentNullException(entry.Key);
+                        throw new ArgumentNullException(key);
                     }
                     return args;
                 }
@@ -1653,14 +1659,16 @@ namespace ServiceStack.Templates
                 {
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAnyArgsNotEmpty)}' expects a non empty Object Dictionary");
-                    
-                    foreach (var entry in argsMap)
+
+                    var keys = argsMap.Keys.OrderBy(x => x);
+                    foreach (var key in keys)
                     {
-                        if (!isEmpty(entry.Value)) 
+                        var value = argsMap[key];
+                        if (!isEmpty(value)) 
                             return args;
                     }
 
-                    var firstKey = argsMap.Keys.First();
+                    var firstKey = argsMap.Keys.OrderBy(x => x).First();
                     if (message != null)
                         throw new ArgumentException(string.Format(message, firstKey));
                         

@@ -596,31 +596,29 @@ Kurt Cobain (27)
         public void Does_handle_error_calling_sendToGateway()
         {
             var html = Config.ListeningOn.AppendPath("rockstar-gateway").GetStringFromUrl();
-            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+            html.Print();
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
 
 
 <pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
-Parameter name: id
-</pre>
+Parameter name: firstName
 
-
-</body>
-</html>".NormalizeNewLines()));
+StackTrace:
+   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
             
             html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
-            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+            html.Print();
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
 
 
 <pre class=""alert alert-danger"">FormatException: Input string was not in a correct format.
-</pre>
 
-
-</body>
-</html>".NormalizeNewLines()));
+StackTrace:
+   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
         }
 
         [Test]
@@ -647,7 +645,7 @@ Amy Winehouse (27)
         }
 
         [Test]
-        public void Does_handle_error_calling_ublishToGateway()
+        public void Does_handle_error_calling_publishToGateway()
         {
             var html = Config.ListeningOn.AppendPath("rockstar-gateway-publish")
                 .AddQueryParam("id","8")
@@ -655,16 +653,15 @@ Amy Winehouse (27)
                 .AddQueryParam("age","27")
                 .GetStringFromUrl();
 
-            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
 
 <pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
 Parameter name: lastName
-</pre>
 
-</body>
-</html>".NormalizeNewLines()));
+StackTrace:
+   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
         }
 
     }

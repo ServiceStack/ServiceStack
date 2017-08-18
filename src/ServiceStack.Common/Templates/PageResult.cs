@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -403,6 +404,20 @@ namespace ServiceStack.Templates
             return page.WriteAsync(scope);
         }
 
+        private string toDebugString(object instance)
+        {
+            using (JsConfig.With(excludeTypeInfo:true, includeTypeInfo:false))
+            {
+                if (instance is Dictionary<string, object> d)
+                    return d.ToJsv();
+                if (instance is List<object> l)
+                    return l.ToJsv();
+                if (instance is string s)
+                    return '"' + s.Replace("\"", "\\\"") + '"';
+                return instance.ToJsv();
+            }
+        }
+
         private async Task WriteVarAsync(TemplateScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
             if (var.BindingString != null)
@@ -410,7 +425,7 @@ namespace ServiceStack.Templates
             else if (var.InitialExpression?.NameString != null)
                 stackTrace.Push("Expression (filter): " + var.InitialExpression.NameString);
             else if (var.InitialValue != null)
-                stackTrace.Push("Expression (value): " + var.InitialValue.GetType().Name + " = " + var.InitialValue.ToString().SubstringWithElipsis(0, 100));
+                stackTrace.Push($"Expression ({var.InitialValue.GetType().Name}): " + toDebugString(var.InitialValue).SubstringWithElipsis(0, 200));
             else 
                 stackTrace.Push("Expression");
             

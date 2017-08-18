@@ -343,7 +343,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <pre class=""alert alert-danger"">Exception: in filter
 
 StackTrace:
-   at Expression (value): String = in filter
+   at Expression (String): ""in filter""
    at Page: page.html
 </pre>
 
@@ -459,7 +459,7 @@ StackTrace:
             Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
             Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
-                Is.EqualTo("<div class=\"alert alert-danger\">noArg required</div>"));            
+                Is.EqualTo("<div class=\"alert alert-danger\">empty required</div>"));            
         }
        
     }
