@@ -166,10 +166,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </html>");
             
             context.VirtualFiles.WriteFile("page.html", @"
+{{ skipExecutingFiltersOnError }}
 <h1>Before Error</h1>
 {{ 'in filter' | throw }}
 {{ ifError | select: <h1>FAIL! { it.Message }</h1> }}
-{{ ifErrorSkipExecutingPageFilters }}
 
 <b>{{ 'never executed' }}</b>
 
@@ -185,7 +185,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <h1>Before Error</h1>
 <h1>FAIL! in filter</h1>
 
-
 <b></b>
 
 <h1>After Error</h1>
@@ -199,7 +198,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
             }.Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
@@ -241,7 +240,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = true,
             }.Init();
 
@@ -278,7 +277,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = false,
             }.Init();
 
@@ -321,7 +320,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
             }.Init();
             
             context.VirtualFiles.WriteFile("page.html", @"
@@ -358,7 +357,7 @@ StackTrace:
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = false,
                 Args =
                 {
@@ -385,7 +384,7 @@ StackTrace:
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = false,
                 Args =
                 {
@@ -413,7 +412,7 @@ StackTrace:
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = false,
                 Args =
                 {
@@ -440,7 +439,7 @@ StackTrace:
         {
             var context = new TemplateContext
             {
-                SkipExecutingPageFiltersIfError = true,
+                SkipExecutingFiltersIfError = true,
                 DebugMode = false,
                 Args =
                 {

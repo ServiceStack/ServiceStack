@@ -84,11 +84,6 @@ namespace ServiceStack.Templates
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
         /// <summary>
-        /// Whether to skip execution of all page filters and just write template string fragments
-        /// </summary>
-        public bool SkipFilterExecution { get; set; }
-
-        /// <summary>
         /// The last error thrown by a filter
         /// </summary>
         public Exception LastFilterError { get; set; }
@@ -102,8 +97,18 @@ namespace ServiceStack.Templates
         /// What argument errors should be binded to
         /// </summary>
         public string AssignExceptionsTo { get; set; }
+
+        /// <summary>
+        /// Whether to skip execution of all page filters and just write template string fragments
+        /// </summary>
+        public bool SkipFilterExecution { get; set; }
+
+        /// <summary>
+        /// Overrides Context to specify whether to Ignore or Continue executing filters on error 
+        /// </summary>
+        public bool? SkipExecutingFiltersIfError { get; set; }
         
-        private Stack<string> stackTrace = new Stack<string>();
+        private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)
         {
@@ -682,7 +687,8 @@ namespace ServiceStack.Templates
                     LastFilterError = ex.InnerException;
                     LastFilterStackTrace = stackTrace.ToArray();
 
-                    if (Context.SkipExecutingPageFiltersIfError)
+                    var skipExecutingFilters = SkipExecutingFiltersIfError.GetValueOrDefault(Context.SkipExecutingFiltersIfError);
+                    if (skipExecutingFilters)
                         this.SkipFilterExecution = true;
 
                     var rethrow = TemplateConfig.FatalExceptions.Contains(ex.InnerException.GetType());
@@ -703,8 +709,10 @@ namespace ServiceStack.Templates
                         }
                     }
                     
-                    if (Context.SkipExecutingPageFiltersIfError)
+                    if (skipExecutingFilters)
                         return string.Empty;
+                    
+                    // rethrow exceptiosn which aren't handled
 
                     var exResult = Format.OnExpressionException(this, ex);
                     if (exResult != null)

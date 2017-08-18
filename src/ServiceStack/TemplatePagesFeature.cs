@@ -55,7 +55,7 @@ namespace ServiceStack
             TemplateFilters.Add(new TemplateInfoFilters());
             TemplateFilters.Add(new TemplateServiceStackFilters());
             FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
-            SkipExecutingPageFiltersIfError = true;
+            SkipExecutingFiltersIfError = true;
         }
 
         public void Register(IAppHost appHost)

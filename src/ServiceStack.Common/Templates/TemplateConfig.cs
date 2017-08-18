@@ -28,7 +28,8 @@ namespace ServiceStack.Templates
             "throwNotSupportedException",
             "ifError",
             "ifErrorFmt",
-            "ifErrorSkipExecutingPageFilters",
+            "skipExecutingFiltersOnError",
+            "continueExecutingFiltersOnError",
             "publishToGateway",
         };
         

@@ -98,7 +98,7 @@ namespace ServiceStack.Templates
                 if (newLineLen > 0)
                 {
                     var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
-                    var filterName = lastExpr?.NameString ?? varFragment?.InitialExpression?.NameString;
+                    var filterName = lastExpr?.NameString ?? varFragment?.InitialExpression?.NameString ?? varFragment.BindingString;
                     if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
                     {
                         lastPos += newLineLen;

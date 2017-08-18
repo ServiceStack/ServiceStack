@@ -79,7 +79,7 @@ namespace ServiceStack.Templates
         /// <summary>
         /// Whether to 
         /// </summary>
-        public bool SkipExecutingPageFiltersIfError { get; set; }
+        public bool SkipExecutingFiltersIfError { get; set; }
 
         public Func<PageVariableFragment, byte[]> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
 
