@@ -359,7 +359,9 @@ namespace ServiceStack.Templates
         
         [HandleUnknownValue] public Exception lastError(TemplateScopeContext scope) => scope.PageResult.LastFilterError;
         [HandleUnknownValue] public string lastErrorMessage(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.Message;
-        [HandleUnknownValue] public string lastErrorStackTrace(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.StackTrace;
+        [HandleUnknownValue] public string lastErrorStackTrace(TemplateScopeContext scope) => scope.PageResult.LastFilterStackTrace?.Length > 0
+            ? scope.PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join("\n")
+            : null;
 
         [HandleUnknownValue] public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
         [HandleUnknownValue] public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;

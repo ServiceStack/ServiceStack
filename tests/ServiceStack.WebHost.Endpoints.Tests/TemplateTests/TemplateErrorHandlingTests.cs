@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("<var>in filter</var>"));
 
             Assert.That(context.EvaluateTemplate(@"{{ 'in filter' | throw({ assignError: 'myError' }) }}
-<var>{{ myError.Message }}</var><pre>{{ myError.StackTrace }}</pre>"),
+<var>{{ myError.Message }}</var><pre>{{ lastErrorStackTrace }}</pre>"),
                 Does.StartWith("<var>in filter</var><pre>   at "));
         }
 
@@ -237,7 +237,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
-        public void Does_render_htmlErrorMessage_in_DebugMode()
+        public void Does_render_htmlErrorDebug_in_DebugMode()
         {
             var context = new TemplateContext
             {
@@ -314,6 +314,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
 </body>
 </html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_render_htmlErrorDebug_with_StackTraces()
+        {
+            var context = new TemplateContext
+            {
+                SkipExecutingPageFiltersIfError = true,
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+<h1>Before Error</h1>
+{{ 'in filter' | throw }}
+{{ htmlErrorDebug }}
+
+<b>{{ 'never executed' }}</b>
+
+<h1>After Error</h1>
+");
+
+            var page = context.GetPage("page");
+            var output = new PageResult(page).Result;
+            output.Print();
+            
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
+<h1>Before Error</h1>
+<pre class=""alert alert-danger"">Exception: in filter
+
+StackTrace:
+   at Expression (value): String = in filter
+   at Page: page.html
+</pre>
+
+
+<b></b>
+
+<h1>After Error</h1>".NormalizeNewLines()));
         }
 
         [Test]

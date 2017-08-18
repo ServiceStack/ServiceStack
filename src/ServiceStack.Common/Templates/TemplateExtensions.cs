@@ -6,15 +6,7 @@ namespace ServiceStack.Templates
     {
         public static object InStopFilter(this Exception ex, TemplateScopeContext scope, object options)
         {
-            try
-            {
-                throw ex; //capture StackTrace in Original Exception
-            }
-            catch (Exception e)
-            {
-                throw new StopFilterExecutionException(scope, options, ex);
-            }
-            return null;
+            throw new StopFilterExecutionException(scope, options, ex);
         }
 
     }
