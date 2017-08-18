@@ -146,6 +146,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
+                SetConfig(new HostConfig { DebugMode = true });
+                
                 container.Register<IDbConnectionFactory>(new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
                 using (var db = container.Resolve<IDbConnectionFactory>().Open())
@@ -596,7 +598,6 @@ Kurt Cobain (27)
         public void Does_handle_error_calling_sendToGateway()
         {
             var html = Config.ListeningOn.AppendPath("rockstar-gateway").GetStringFromUrl();
-            html.Print();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
@@ -609,7 +610,6 @@ StackTrace:
    at Expression (Dictionary`2): {id:".NormalizeNewLines()));
             
             html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
-            html.Print();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
