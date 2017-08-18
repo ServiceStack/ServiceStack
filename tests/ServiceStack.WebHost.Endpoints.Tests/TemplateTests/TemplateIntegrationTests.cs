@@ -18,7 +18,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         public int Id { get; set; }
         public string Layout { get; set; }
-    } 
+    }
+
+    public class GetRockstarTemplate : IReturn<Rockstar>
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+    }
+
+    public class AddRockstarTemplate : IReturnVoid
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public int Age { get; set; }
+    }
     
     public class MyTemplateServices : Service
     {
@@ -31,6 +45,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["rockstar"] = Db.SingleById<Rockstar>(request.Id)
                 }
             };
+
+        public object Any(GetRockstarTemplate request) => !string.IsNullOrEmpty(request.FirstName) 
+            ? Db.Single<Rockstar>(x => x.FirstName == request.FirstName)
+            : Db.SingleById<Rockstar>(request.Id);
+
+        public void Any(AddRockstarTemplate request) =>
+            Db.Save(request.ConvertTo<Rockstar>());
     }
 
     [Page("shadowed-page")]
@@ -249,6 +270,20 @@ layout: alt/alt-layout
 <h1>Dir Page File Cache</h1>
 {{ 'dir-file.txt' | includeFileWithCache }}
 ");
+                
+                files.WriteFile("rockstar-details.html", @"{{ it.FirstName }} {{ it.LastName }} ({{ it.Age }})");
+
+                files.WriteFile("rockstar-gateway.html", @"
+{{ { id, firstName }      | ensureAnyArgsNotNull | sendToGateway('GetRockstarTemplate') | assignTo: rockstar }}
+{{ rockstar | ifExists    | selectPartial: rockstar-details }}
+{{ rockstar | endIfExists | select: No rockstar with id: { id } }}
+{{ htmlError }}
+");
+
+                files.WriteFile("rockstar-gateway-publish.html", @"
+{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
+{{ 'rockstar-gateway' | partial({ firstName }) }}
+{{ htmlError }}");
             }
 
             public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
@@ -526,6 +561,107 @@ layout: alt/alt-layout
 
 <h2>Dir File</h2>
 
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_sendToGateway()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","1").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+Jimi Hendrix (27)
+
+
+
+</body>
+</html>".NormalizeNewLines()));
+            
+            html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("firstName","Kurt").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+Kurt Cobain (27)
+
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_handle_error_calling_sendToGateway()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-gateway").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+
+
+<pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
+Parameter name: id
+</pre>
+
+
+</body>
+</html>".NormalizeNewLines()));
+            
+            html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+
+
+<pre class=""alert alert-danger"">FormatException: Input string was not in a correct format.
+</pre>
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_publishToGateway()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-gateway-publish")
+                .AddQueryParam("id","8")
+                .AddQueryParam("firstName","Amy")
+                .AddQueryParam("lastName","Winehouse")
+                .AddQueryParam("age","27")
+                .GetStringFromUrl();
+            
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+
+Amy Winehouse (27)
+
+
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_handle_error_calling_ublishToGateway()
+        {
+            var html = Config.ListeningOn.AppendPath("rockstar-gateway-publish")
+                .AddQueryParam("id","8")
+                .AddQueryParam("firstName","Amy")
+                .AddQueryParam("age","27")
+                .GetStringFromUrl();
+
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+
+<pre class=""alert alert-danger"">ArgumentNullException: Value cannot be null.
+Parameter name: lastName
+</pre>
 
 </body>
 </html>".NormalizeNewLines()));
