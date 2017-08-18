@@ -221,7 +221,7 @@ title: We encode < & >
                     requestFilter: req => req.AllowAutoRedirect = false,
                     responseFilter: res =>
                     {
-                        Assert.That(res.StatusCode, Is.EqualTo(HttpStatusCode.MovedPermanently));
+                        Assert.That(res.StatusCode, Is.EqualTo(HttpStatusCode.Redirect));
                         Assert.That(res.Headers[HttpHeaders.Location], Is.EqualTo(Config.ListeningOn.CombineWith("dir/")));
                     });
         }

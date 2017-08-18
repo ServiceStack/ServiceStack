@@ -1532,17 +1532,144 @@ namespace ServiceStack.Templates
 
         public IRawString jsString(string text) => escapeNewLines(escapeSingleQuotes(text)).ToRawString();
         public IRawString jsQuotedString(string text) => ("'" + escapeNewLines(escapeSingleQuotes(text)) + "'").ToRawString();
-    }
-
-    public class TemplateDefaultFiltersWithKeywords : TemplateFilter //Methods named after common keywords breaks intelli-sense when trying to use them
-    {
-        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
-        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        
 
         public object assignError(TemplateScopeContext scope, string errorBinding)
         {
             scope.PageResult.AssignExceptionsTo = errorBinding;
             return StopExecution.Value;
+        }
+
+        public object ensureAllArgsNotNull(TemplateScopeContext scope, object args) => ensureAllArgsNotNull(scope, args, null);
+        public object ensureAllArgsNotNull(TemplateScopeContext scope, object args, object options)
+        {
+            try
+            {
+                var filterArgs = options.AssertOptions(nameof(ensureAllArgsNotNull));
+                var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
+                
+                if (args is Dictionary<string, object> argsMap)
+                {
+                    if (argsMap.Count == 0)
+                        throw new NotSupportedException($"'{nameof(ensureAllArgsNotNull)}' expects a non empty Object Dictionary");
+                    
+                    foreach (var entry in argsMap)
+                    {
+                        if (!isNull(entry.Value)) 
+                            continue;
+                        
+                        if (message != null)
+                            throw new ArgumentException(string.Format(message, entry.Key));
+                        
+                        throw new ArgumentNullException(entry.Key);
+                    }
+                    return args;
+                }
+                throw new NotSupportedException($"'{nameof(ensureAllArgsNotNull)}' expects an Object Dictionary but received a '{args.GetType().Name}'");
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        public object ensureAnyArgsNotNull(TemplateScopeContext scope, object args) => ensureAnyArgsNotNull(scope, args, null);
+        public object ensureAnyArgsNotNull(TemplateScopeContext scope, object args, object options)
+        {
+            try
+            {
+                var filterArgs = options.AssertOptions(nameof(ensureAnyArgsNotNull));
+                var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
+                
+                if (args is Dictionary<string, object> argsMap)
+                {
+                    if (argsMap.Count == 0)
+                        throw new NotSupportedException($"'{nameof(ensureAnyArgsNotNull)}' expects a non empty Object Dictionary");
+                    
+                    foreach (var entry in argsMap)
+                    {
+                        if (!isNull(entry.Value))
+                            return args;
+                    }
+
+                    var firstKey = argsMap.Keys.First();
+                    if (message != null)
+                        throw new ArgumentException(string.Format(message, firstKey));
+                        
+                    throw new ArgumentNullException(firstKey);
+                }
+                throw new NotSupportedException($"'{nameof(ensureAnyArgsNotNull)}' expects an Object Dictionary but received a '{args.GetType().Name}'");
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        public object ensureAllArgsNotEmpty(TemplateScopeContext scope, object args) => ensureAllArgsNotEmpty(scope, args, null);
+        public object ensureAllArgsNotEmpty(TemplateScopeContext scope, object args, object options)
+        {
+            try
+            {
+                var filterArgs = options.AssertOptions(nameof(ensureAllArgsNotEmpty));
+                var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
+                
+                if (args is Dictionary<string, object> argsMap)
+                {
+                    if (argsMap.Count == 0)
+                        throw new NotSupportedException($"'{nameof(ensureAllArgsNotEmpty)}' expects a non empty Object Dictionary");
+                    
+                    foreach (var entry in argsMap)
+                    {
+                        if (!isEmpty(entry.Value)) 
+                            continue;
+                        
+                        if (message != null)
+                            throw new ArgumentException(string.Format(message, entry.Key));
+                        
+                        throw new ArgumentNullException(entry.Key);
+                    }
+                    return args;
+                }
+                throw new NotSupportedException($"'{nameof(ensureAllArgsNotEmpty)}' expects an Object Dictionary but received a '{args.GetType().Name}'");
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        public object ensureAnyArgsNotEmpty(TemplateScopeContext scope, object args) => ensureAnyArgsNotEmpty(scope, args, null);
+        public object ensureAnyArgsNotEmpty(TemplateScopeContext scope, object args, object options)
+        {
+            try
+            {
+                var filterArgs = options.AssertOptions(nameof(ensureAnyArgsNotEmpty));
+                var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
+                
+                if (args is Dictionary<string, object> argsMap)
+                {
+                    if (argsMap.Count == 0)
+                        throw new NotSupportedException($"'{nameof(ensureAnyArgsNotEmpty)}' expects a non empty Object Dictionary");
+                    
+                    foreach (var entry in argsMap)
+                    {
+                        if (!isEmpty(entry.Value)) 
+                            return args;
+                    }
+
+                    var firstKey = argsMap.Keys.First();
+                    if (message != null)
+                        throw new ArgumentException(string.Format(message, firstKey));
+                        
+                    throw new ArgumentNullException(firstKey);
+                }
+                throw new NotSupportedException($"'{nameof(ensureAnyArgsNotEmpty)}' expects an Object Dictionary but received a '{args.GetType().Name}'");
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
         }
         
         public object ifthrow(TemplateScopeContext scope, bool test, string message) => test 
@@ -1606,6 +1733,12 @@ namespace ServiceStack.Templates
         public object throwFileNotFoundException(TemplateScopeContext scope, string message, object options) => new FileNotFoundException(message).InStopFilter(scope, options);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, null);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message, object options) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, options);
+    }
+
+    public class TemplateDefaultFiltersWithKeywords : TemplateFilter //Methods named after common keywords breaks intelli-sense when trying to use them
+    {
+        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
         public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);

@@ -6,6 +6,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public class TemplateHtmlFilters : TemplateFilter
     {
         public IRawString htmlList(TemplateScopeContext scope, object target) => htmlList(scope, target, null);

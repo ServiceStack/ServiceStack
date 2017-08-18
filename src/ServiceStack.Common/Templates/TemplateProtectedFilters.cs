@@ -10,6 +10,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public class TemplateProtectedFilters : TemplateFilter
     {
         public static IVirtualFile ResolveFile(string filterName, TemplateScopeContext scope, string virtualPath)
