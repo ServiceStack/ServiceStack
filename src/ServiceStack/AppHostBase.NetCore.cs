@@ -108,7 +108,7 @@ namespace ServiceStack
             httpReq.RequestAttributes = httpReq.GetAttributes();
 
             var httpRes = httpReq.Response;
-            var handler = HttpHandlerFactory.GetPreRequestHandler(pathInfo) ?? HttpHandlerFactory.GetHandler(httpReq);
+            var handler = HttpHandlerFactory.GetPreRequestHandler(pathInfo) ?? HttpHandlerFactory.GetHandler(httpReq, pathInfo);
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)

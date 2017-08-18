@@ -146,6 +146,7 @@ namespace ServiceStack.Host.HttpListener
                 }
                 return this.pathInfo;
             }
+            set => this.pathInfo = value;
         }
 
         private Dictionary<string, Cookie> cookies;

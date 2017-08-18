@@ -49,9 +49,14 @@ namespace ServiceStack
 
             var operationName = context.Request.GetOperationName().UrlDecode();
 
-            var httpReq = context.ToRequest(operationName);
+            var httpReq = (ListenerRequest)context.ToRequest(operationName);
             var httpRes = httpReq.Response;
-            var handler = HttpHandlerFactory.GetPreRequestHandler(httpReq.PathInfo) ?? HttpHandlerFactory.GetHandler(httpReq);
+            var originalPathInfo = httpReq.PathInfo;
+
+            if (originalPathInfo.Length > 1)
+                httpReq.PathInfo = httpReq.PathInfo.TrimEnd('/'); //normalize with other hosts
+                
+            var handler = HttpHandlerFactory.GetPreRequestHandler(originalPathInfo) ?? HttpHandlerFactory.GetHandler(httpReq, originalPathInfo);
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)

@@ -59,16 +59,16 @@ namespace CheckHttpListener
             SetConfig(new HostConfig
             {
                 CompressFilesWithExtensions = { "html", "js" },
-                DebugMode = false
+                DebugMode = true
             });
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
-        {
-            var routes = base.GetRouteAttributes(requestType);
-            routes.Each(x => x.Path = "/api" + x.Path);
-            return routes;
-        }
+//        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+//        {
+//            var routes = base.GetRouteAttributes(requestType);
+//            routes.Each(x => x.Path = "/api" + x.Path);
+//            return routes;
+//        }
     }
 
     [Route("/query/rockstars")]

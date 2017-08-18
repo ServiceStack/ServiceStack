@@ -30,12 +30,7 @@ namespace ServiceStack
 
         public string DebugDefaultTemplate { get; set; }
 
-        public List<string> IgnorePaths { get; set; } = new List<string>
-        {
-            "/metadata",
-            "/ss_admin",
-            "/swagger-ui",
-        };
+        public List<string> IgnorePaths { get; set; } = new List<string>();
 
         public string HtmlExtension
         {
@@ -112,9 +107,6 @@ namespace ServiceStack
                     return new ForbiddenHttpHandler();
                 return new TemplatePageHandler(page);
             }
-
-            if (!pathInfo.EndsWith("/") && VirtualFiles.DirectoryExists(pathInfo.TrimPrefixes("/")))
-                return new RedirectHttpHandler { RelativeUrl = pathInfo + "/" };
 
             if (!DebugMode)
             {

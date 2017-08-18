@@ -40,10 +40,7 @@ namespace ServiceStack.Host.HttpListener
         public Action<HttpListenerContext> BeforeRequest { get; set; }
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices)
-        {
-            RawHttpHandlers.Add(RedirectDirectory);
-        }
+            : base(serviceName, assembliesWithServices) {}
 
         public override void OnAfterInit()
         {

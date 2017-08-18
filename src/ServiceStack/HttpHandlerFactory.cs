@@ -16,6 +16,8 @@ namespace ServiceStack
         public static HashSet<string> WebHostRootFileNames { get; private set; }
         public static string WebHostPhysicalPath = null;
         public static string DefaultRootFileName = null;
+        public static bool HostAutoRedirectsDirs = false;
+
         //internal static string ApplicationBaseUrl = null;
         private static IHttpHandler DefaultHttpHandler = null;
         private static RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
@@ -23,7 +25,6 @@ namespace ServiceStack
         private static IHttpHandler NotFoundHttpHandler = null;
         private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
         private static bool IsIntegratedPipeline = false;
-        private static bool HostAutoRedirectsDirs = false;
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
@@ -49,7 +50,6 @@ namespace ServiceStack
 
                 var isAspNetHost = HostContext.IsAspNetHost;
                 WebHostPhysicalPath = appHost.VirtualFileSources.RootDirectory.RealPath;
-                HostAutoRedirectsDirs = isAspNetHost && !Env.IsMono;
 
                 //Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
                 var hostedAtRootPath = config.HandlerFactoryPath == null;
@@ -213,8 +213,8 @@ namespace ServiceStack
             return HostContext.Config.WebHostUrl;
         }
 
-        // Entry point for HttpListener
-        public static IHttpHandler GetHandler(IHttpRequest httpReq)
+        // Entry point for HttpListener and .NET Core
+        public static IHttpHandler GetHandler(IHttpRequest httpReq, string originalPathInfo)
         {
             var appHost = HostContext.AppHost;
 
@@ -261,7 +261,7 @@ namespace ServiceStack
                 return ReturnDefaultHandler(httpReq);
             }
 
-            return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, pathInfo, httpReq.GetPhysicalPath())
+            return GetHandlerForPathInfo(httpReq.HttpMethod, pathInfo, originalPathInfo, httpReq.GetPhysicalPath())
                    ?? NotFoundHttpHandler;
         }
 
@@ -347,7 +347,7 @@ namespace ServiceStack
                 if (!isFileRequest && !HostAutoRedirectsDirs)
                 {
                     //If pathInfo is for Directory try again with redirect including '/' suffix
-                    if (!pathInfo.EndsWith("/"))
+                    if (!requestPath.EndsWith("/"))
                     {
                         var appFilePath = filePath.Substring(0, filePath.Length - requestPath.Length);
                         var redirect = StaticFileHandler.DirectoryExists(filePath, appFilePath);
@@ -363,7 +363,8 @@ namespace ServiceStack
 
                 //e.g. CatchAllHandler to Process Markdown files
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
-                if (catchAllHandler != null) return catchAllHandler;
+                if (catchAllHandler != null) 
+                    return catchAllHandler;
 
                 if (!isFileRequest)
                 {
