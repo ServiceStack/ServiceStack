@@ -1,14 +1,14 @@
 SET BUILD=Signed
 
-COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\lib\signed
-COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.Redis\lib\signed
-COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.OrmLite\lib\signed
-COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.Aws\lib\signed
-
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\%BUILD%\net45\ServiceStack.Text.dll ..\lib\signed
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\%BUILD%\net45\ServiceStack.Text.dll ..\..\ServiceStack.Redis\lib\signed
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\%BUILD%\net45\ServiceStack.Text.dll ..\..\ServiceStack.OrmLite\lib\signed
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\%BUILD%\net45\ServiceStack.Text.dll ..\..\ServiceStack.Aws\lib\signed
+
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\lib\signed
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.Redis\lib\signed
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.OrmLite\lib\signed
+COPY ..\src\ServiceStack.Common\bin\%BUILD%\net45\ServiceStack.Common.dll ..\..\ServiceStack.Aws\lib\signed
 
 COPY ..\src\ServiceStack.Client\bin\%BUILD%\net45\ServiceStack.Client.dll ..\lib\signed
 
