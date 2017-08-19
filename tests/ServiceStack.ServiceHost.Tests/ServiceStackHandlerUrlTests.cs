@@ -83,6 +83,7 @@ namespace ServiceStack.ServiceHost.Tests
             public bool IsSecureConnection { get; private set; }
             public string[] AcceptTypes { get; private set; }
             public string PathInfo { get; private set; }
+            public string OriginalPathInfo => PathInfo;
             public Stream InputStream { get; private set; }
             public long ContentLength { get; private set; }
             public IHttpFile[] Files { get; private set; }

@@ -1,51 +1,17 @@
 ﻿using System.Net;
-using System.Reflection;
-using Funq;
 using NUnit.Framework;
-using ServiceStack.Api.OpenApi;
+using ServiceStack;
 using ServiceStack.Host.Handlers;
-using ServiceStack.Text;
 
-namespace ServiceStack.WebHost.Endpoints.Tests
+namespace CheckHttpListener
 {
-    public class RequestInfoServices : Service {}
-    
+    public class RequestInfoServices : Service
+    {
+    }
+
     public partial class RequestInfoTests
     {
-        public string BaseUrl = Config.ListeningOn;
-        
-        class AppHost : AppSelfHostBase
-        {
-            public AppHost() : base(nameof(RequestInfoTests), typeof(RequestInfoServices).GetAssembly()) {}
-
-            public override void Configure(Container container)
-            {
-                Env.HasMultiplePlatformTargets = true;
-                var useProjectPath = MapProjectPath("~/");
-                var parentDir = useProjectPath.Replace("\\", "/").TrimEnd('/').LastRightPart('/');
-                Assert.That(parentDir, Is.EqualTo("ServiceStack.WebHost.Endpoints.Tests"));
-                
-                SetConfig(new HostConfig
-                {
-                    DebugMode = true,
-                    WebHostPhysicalPath = useProjectPath
-                });
-                
-                Plugins.Add(new OpenApiFeature());
-            }
-        }
-
-        private readonly ServiceStackHost appHost;
-
-        public RequestInfoTests()
-        {
-            appHost = new AppHost()
-                .Init()
-                .Start(Config.ListeningOn);
-        }
-
-        [OneTimeTearDown]
-        public void OneTimeTearDown() => appHost.Dispose();
+        public string BaseUrl = "http://127.0.0.1:2222/";
 
         private RequestInfoResponse GetRequestInfoForPath(string path)
         {
@@ -83,23 +49,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(GetRequestInfoForPath("dir/sub/").PathInfo, Is.EqualTo("/dir/sub/"));
             Assert.That(GetRequestInfoForPath("swagger-ui/").PathInfo, Is.EqualTo("/swagger-ui/"));
         }
-        
-        [Test]
-        public void Does_return_expected_request_info()
-        {
-            var info = GetRequestInfoForPath("metadata");
-
-            info.PrintDump();
-
-            Assert.That(info.ServiceName, Is.EqualTo(nameof(RequestInfoTests)));
-            Assert.That(info.HttpMethod, Is.EqualTo("GET"));
-            Assert.That(info.PathInfo, Is.EqualTo("/metadata"));
-            Assert.That(info.RawUrl, Is.EqualTo("/metadata?debug=requestinfo"));
-            Assert.That(info.AbsoluteUri, Is.EqualTo("http://localhost:20000/metadata?debug=requestinfo"));
-        }
     }
 
-#if NET45
     public partial class RequestInfoTests
     {
         private void DoesRedirectToRemoveTrailingSlash(string dirWIthoutSlash)
@@ -110,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     responseFilter: res =>
                     {
                         Assert.That(res.StatusCode, Is.EqualTo(HttpStatusCode.Redirect));
-                        Assert.That(res.Headers[HttpHeaders.Location], 
+                        Assert.That(res.Headers[HttpHeaders.Location],
                             Is.EqualTo(BaseUrl.CombineWith(dirWIthoutSlash + "/")));
                     });
         }
@@ -123,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     responseFilter: res =>
                     {
                         Assert.That(res.StatusCode, Is.EqualTo(HttpStatusCode.Redirect));
-                        Assert.That(res.Headers[HttpHeaders.Location], 
+                        Assert.That(res.Headers[HttpHeaders.Location],
                             Is.EqualTo(BaseUrl.CombineWith(dirWithoutSlash.TrimEnd('/'))));
                     });
         }
@@ -141,8 +92,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             DoesRedirectToAddTrailingSlash("metadata/");
         }
-   }
-#endif
-    
-    
+    }
 }

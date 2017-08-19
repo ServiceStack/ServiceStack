@@ -114,9 +114,10 @@ namespace ServiceStack
             OnEndRequestCallbacks = new List<Action<IRequest>>();
             AddVirtualFileSources = new List<IVirtualPathProvider>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
-                 HttpHandlerFactory.ReturnRequestInfo,
+                ReturnRedirectHandler,
+                ReturnRequestInfoHandler,
 #if !NETSTANDARD1_6
-                 ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
+                ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
 #endif
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
@@ -1008,6 +1009,69 @@ namespace ServiceStack
         public virtual string MapProjectPath(string relativePath)
         {
             return relativePath.MapProjectPath();
+        }
+
+        public virtual string ResolvePathInfo(IRequest request, string originalPathInfo)
+        {
+            var pathInfo = NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);
+            var isDirectory = string.IsNullOrEmpty(Config.HandlerFactoryPath)
+                ? request.IsDirectory() //allow caching
+                : VirtualFileSources.DirectoryExists(pathInfo);
+            
+            if (!isDirectory && pathInfo.Length > 1 && pathInfo[pathInfo.Length - 1] == '/')
+                pathInfo = pathInfo.TrimEnd('/');
+            
+            return pathInfo;
+        }
+
+        public static string NormalizePathInfo(string pathInfo, string mode)
+        {
+            if (mode?.Length > 0 && mode[0] == '/')
+                mode = mode.Substring(1);
+
+            if (string.IsNullOrEmpty(mode))
+                return pathInfo;
+
+            var pathNoPrefix = pathInfo[0] == '/'
+                ? pathInfo.Substring(1)
+                : pathInfo;
+
+            var normalizedPathInfo = pathNoPrefix.StartsWith(mode)
+                ? pathNoPrefix.Substring(mode.Length)
+                : pathInfo;
+
+            return normalizedPathInfo.Length > 0 && normalizedPathInfo[0] != '/'
+                ? '/' + normalizedPathInfo
+                : normalizedPathInfo;
+        }
+
+        public virtual IHttpHandler ReturnRedirectHandler(IHttpRequest httpReq)
+        {
+            var pathInfo = NormalizePathInfo(httpReq.OriginalPathInfo, Config.HandlerFactoryPath);
+            return Config.RedirectPaths.TryGetValue(pathInfo, out string redirectPath)
+                ? new RedirectHttpHandler { RelativeUrl = redirectPath }
+                : null;
+        }
+        
+        public virtual IHttpHandler ReturnRequestInfoHandler(IHttpRequest httpReq)
+        {
+            if ((Config.DebugMode
+                 || Config.AdminAuthSecret != null)
+                && httpReq.QueryString[Keywords.Debug] == Keywords.RequestInfo)
+            {
+                if (Config.DebugMode || HasValidAuthSecret(httpReq))
+                {
+                    var reqInfo = RequestInfoHandler.GetRequestInfo(httpReq);
+
+                    reqInfo.Host = Config.DebugHttpListenerHostEnvironment + "_v" + Env.ServiceStackVersion + "_" + ServiceName;
+                    reqInfo.PathInfo = httpReq.PathInfo;
+                    reqInfo.GetPathUrl = httpReq.GetPathUrl();
+
+                    return new RequestInfoHandler { RequestInfo = reqInfo };
+                }
+            }
+
+            return null;
         }
 
         protected virtual void Dispose(bool disposing)

@@ -20,6 +20,10 @@
     <PackageReference Include="Wire" Version="0.8.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.10.6" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.4.4" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
+      <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
+      <Name>ServiceStack.Api.OpenApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
@@ -53,8 +57,7 @@
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
-
-    <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
+  <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
    https://github.com/nunit/dotnet-test-nunit/issues/91 
    To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
    -->
@@ -62,12 +65,9 @@
     <OutputType>Exe</OutputType>
     <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
     <PackageReference Include="NUnitLite" Version="3.7.1" />
   </ItemGroup>
-
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
@@ -87,8 +87,6 @@
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
   </ItemGroup>
-
-
   <ItemGroup>
     <None Update="TestExistingDir\default.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

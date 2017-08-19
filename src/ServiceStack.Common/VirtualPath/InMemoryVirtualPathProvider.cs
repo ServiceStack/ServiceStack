@@ -45,8 +45,12 @@ namespace ServiceStack.VirtualPath
             return files.FirstOrDefault(x => x.FilePath == filePath);
         }
 
-        public override IVirtualDirectory GetDirectory(string dirPath)
+        public override IVirtualDirectory GetDirectory(string virtualPath)
         {
+            var dirPath = SanitizePath(virtualPath);
+            if (string.IsNullOrEmpty(dirPath))
+                return rootDirectory;
+            
             var dir = new InMemoryVirtualDirectory(this, dirPath, GetParentDirectory(dirPath));
             return dir.Files.Any()
                 ? dir

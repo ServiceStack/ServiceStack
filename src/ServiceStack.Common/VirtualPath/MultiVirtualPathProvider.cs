@@ -32,6 +32,18 @@ namespace ServiceStack.VirtualPath
             return basePath.CombineWith(relativePath);
         }
 
+        public override bool DirectoryExists(string virtualPath)
+        {
+            var hasDirectory = ChildProviders.Any(childProvider => childProvider.DirectoryExists(virtualPath));
+            return hasDirectory;
+        }
+
+        public override bool FileExists(string virtualPath)
+        {
+            var hasFile = ChildProviders.Any(childProvider => childProvider.FileExists(virtualPath));
+            return hasFile;
+        }
+
         public override IVirtualFile GetFile(string virtualPath)
         {
             return ChildProviders.Select(childProvider => childProvider.GetFile(virtualPath))

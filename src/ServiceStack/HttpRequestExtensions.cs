@@ -342,7 +342,7 @@ namespace ServiceStack
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
 
-        private static readonly string WebHostDirectoryName = "";
+        internal static readonly string WebHostDirectoryName = "";
 
         static HttpRequestExtensions()
         {
@@ -460,21 +460,6 @@ namespace ServiceStack
         {
             return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
-
-        public static string GetPathInfo(this HttpRequestBase request)
-        {
-            if (!IsNullOrEmpty(request.PathInfo)) 
-                return request.PathInfo.TrimEnd('/');
-
-            var mode = HostContext.Config.HandlerFactoryPath;
-            var appPath = IsNullOrEmpty(request.ApplicationPath)
-                  ? WebHostDirectoryName
-                  : request.ApplicationPath.TrimStart('/');
-
-            //mod_mono: /CustomPath35/api//default.htm
-            var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
-            return GetPathInfo(path, mode, appPath);
-        }
 #endif
 
         public static string GetPathInfo(string fullPath, string mode, string appPath)
@@ -523,7 +508,7 @@ namespace ServiceStack
             if (!pathRootFound) return null;
 
             var path = StringBuilderCache.ReturnAndFree(sbPathInfo);
-            return path.Length > 1 ? path.TrimEnd('/') : "/";
+            return path.Length > 1 ? path : "/";
         }
 
         public static bool IsContentType(this IRequest request, string contentType)

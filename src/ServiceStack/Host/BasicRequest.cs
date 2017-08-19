@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest, IHasResolver
+    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
@@ -101,6 +102,8 @@ namespace ServiceStack.Host
 
         public string PathInfo { get; set; }
 
+        public string OriginalPathInfo => PathInfo;
+
         public IHttpFile[] Files { get; set; }
         
         public Uri UrlReferrer { get; set; }
@@ -145,5 +148,15 @@ namespace ServiceStack.Host
             this.AcceptTypes = request.AcceptTypes;
             return this;
         }
+
+        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+
+        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+
+        private bool? isDirectory;
+        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFileSources.DirectoryExists(PathInfo));
+
+        private bool? isFile;
+        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFileSources.FileExists(PathInfo));
     }
 }

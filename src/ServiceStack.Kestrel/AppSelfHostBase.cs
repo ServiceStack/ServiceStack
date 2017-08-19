@@ -66,16 +66,13 @@ namespace ServiceStack
                 pathInfo = pathInfo.Substring(mode.Length + 1);
             }
 
-            if (HttpHandlerFactory.UseNormalizedPath)
-                pathInfo = HttpHandlerFactory.NormalizePathInfo(pathInfo, Config.HandlerFactoryPath);
-
             RequestContext.Instance.StartRequestContext();
 
             var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
             httpReq.RequestAttributes = httpReq.GetAttributes();
 
             var httpRes = httpReq.Response;
-            var handler = HttpHandlerFactory.GetPreRequestHandler(pathInfo) ?? HttpHandlerFactory.GetHandler(httpReq, pathInfo);
+            var handler = HttpHandlerFactory.GetHandler(httpReq);
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)

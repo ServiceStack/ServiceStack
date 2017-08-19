@@ -10,7 +10,6 @@ namespace ServiceStack.Host.Handlers
 
         public bool? IsIntegratedPipeline { get; set; }
         public string WebHostPhysicalPath { get; set; }
-        public HashSet<string> WebHostRootFileNames { get; set; }
         public string WebHostUrl { get; set; }
         public string DefaultRootFileName { get; set; }
         public string DefaultHandler { get; set; }

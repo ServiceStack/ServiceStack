@@ -112,6 +112,8 @@ namespace ServiceStack.Web
 
         string PathInfo { get; }
 
+        string OriginalPathInfo { get; }
+
         Stream InputStream { get; }
 
         long ContentLength { get; }

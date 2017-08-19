@@ -55,6 +55,9 @@
       <HintPath>..\..\src\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="nunit.framework, Version=3.7.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb">
+      <HintPath>..\..\src\packages\NUnit.3.7.1\lib\net45\nunit.framework.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
@@ -152,6 +155,7 @@
     <Compile Include="CheckWeb.dtos.cs" />
     <Compile Include="CheckWebGlobalNamespace.dtos.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="RequestInfoTests.cs" />
     <Compile Include="TestGlobalNamespace.dtos.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -229,6 +233,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MRootPage.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

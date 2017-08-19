@@ -10,24 +10,26 @@ using System.Net;
 using System.Web;
 using Funq;
 using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
-        : IHttpRequest, IHasResolver
+        : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
         [Obsolete("Use Resolver")]
-        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+        public Container Container => throw new NotSupportedException("Use Resolver");
 
         private IResolver resolver;
         public IResolver Resolver
         {
-            get { return resolver ?? Service.GlobalResolver; }
-            set { resolver = value; }
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
         }
 
         private readonly HttpRequestBase request;
@@ -64,6 +66,9 @@ namespace ServiceStack.Host.AspNet
                     Items[strKey] = httpContext.Items[key];
                 }
             }
+
+            this.PathInfo = this.OriginalPathInfo = GetPathInfo();
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo);
         }
 
         public HttpRequestBase HttpRequest => request;
@@ -267,19 +272,33 @@ namespace ServiceStack.Host.AspNet
 
         public string[] AcceptTypes => request.AcceptTypes;
 
-        public string PathInfo => request.GetPathInfo();
+        public string PathInfo { get; }
 
+        public string OriginalPathInfo { get; } 
+
+        public string GetPathInfo()
+        {
+            if (!string.IsNullOrEmpty(request.PathInfo)) 
+                return request.PathInfo;
+
+            var mode = HostContext.Config.HandlerFactoryPath;
+            var appPath = string.IsNullOrEmpty(request.ApplicationPath)
+                ? HttpRequestExtensions.WebHostDirectoryName
+                : request.ApplicationPath.TrimStart('/');
+
+            //mod_mono: /CustomPath35/api//default.htm
+            var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
+            return HttpRequestExtensions.GetPathInfo(path, mode, appPath);
+        }
+        
         public string UrlHostName => request.GetUrlHostName();
 
         public bool UseBufferedStream
         {
-            get { return BufferedStream != null; }
-            set
-            {
-                BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
-                    : null;
-            }
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                : null;
         }
 
         public MemoryStream BufferedStream { get; set; }
@@ -313,6 +332,17 @@ namespace ServiceStack.Host.AspNet
         }
 
         public Uri UrlReferrer => request.UrlReferrer;
+        
+        
+        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+
+        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+
+        private bool? isDirectory;
+        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFileSources.DirectoryExists(PathInfo));
+
+        private bool? isFile;
+        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFileSources.FileExists(PathInfo));
     }
 
 }

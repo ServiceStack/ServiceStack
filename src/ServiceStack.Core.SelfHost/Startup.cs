@@ -133,7 +133,7 @@ namespace ServiceStack.Core.SelfHost
             VirtualFiles = new S3VirtualFiles(s3Client, "s3-postgresql");
 #endif
             SetConfig(new HostConfig {
-                DebugMode = false,
+                DebugMode = true,
                 AdminAuthSecret = Environment.GetEnvironmentVariable("AUTH_SECRET"),
             });
 

@@ -44,15 +44,9 @@ namespace ServiceStack.Common.Tests
 
         protected abstract void Configure(Funq.Container container);
 
-        protected Funq.Container Container
-        {
-            get { return HostContext.Container; }
-        }
+        protected Funq.Container Container => HostContext.Container;
 
-        protected IServiceRoutes Routes
-        {
-            get { return HostContext.AppHost.Routes; }
-        }
+        protected IServiceRoutes Routes => HostContext.AppHost.Routes;
 
         //All integration tests call the Webservices hosted at the following location:
         protected string ServiceClientBaseUri { get; set; }
@@ -580,7 +574,7 @@ namespace ServiceStack.Common.Tests
             public UrlParts(string pathInfo)
             {
                 this.PathInfo = pathInfo.UrlDecode();
-                var qsIndex = pathInfo.IndexOf("?");
+                var qsIndex = pathInfo.IndexOf("?", StringComparison.Ordinal);
                 if (qsIndex != -1)
                 {
                     var qs = pathInfo.Substring(qsIndex + 1);
@@ -636,19 +630,22 @@ namespace ServiceStack.Common.Tests
             Dictionary<string, string> formData,
             string requestBody)
         {
-            var httpHandler = GetHandler(httpMethod, pathInfo);
-
             var contentType = (formData != null && formData.Count > 0)
                 ? MimeTypes.FormUrlEncoded
                 : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
-                    httpHandler.RequestName, httpMethod, contentType,
+                    nameof(MockHttpRequest), 
+                    httpMethod, 
+                    contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
                     requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
                     formData.ToNameValueCollection()
                 );
+
+            var httpHandler = GetHandler(httpReq);
+            httpReq.OperationName = httpHandler.RequestName;
 
             var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
             object response;
@@ -715,29 +712,32 @@ namespace ServiceStack.Common.Tests
                 Dictionary<string, string> formData,
                 string requestBody)
         {
-            var httpHandler = GetHandler(httpMethod, pathInfo);
-
             var contentType = (formData != null && formData.Count > 0)
                 ? MimeTypes.FormUrlEncoded
                 : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
-                    httpHandler.RequestName, httpMethod, contentType,
+                    nameof(MockHttpRequest), 
+                    httpMethod, 
+                    contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
                     requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
                     formData.ToNameValueCollection()
                 );
 
+            var httpHandler = GetHandler(httpReq);
+            httpReq.OperationName = httpHandler.RequestName;
+
             var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
             return request;
         }
 
-        private static ServiceStackHandlerBase GetHandler(string httpMethod, string pathInfo)
+        private static ServiceStackHandlerBase GetHandler(IHttpRequest httpReq)
         {
-            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as ServiceStackHandlerBase;
+            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpReq, null) as ServiceStackHandlerBase;
             if (httpHandler == null)
-                throw new NotSupportedException(pathInfo);
+                throw new NotSupportedException(httpReq.PathInfo);
             return httpHandler;
         }
     }

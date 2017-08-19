@@ -6,20 +6,21 @@ using System.Net;
 using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
-    public class MockHttpRequest : IHttpRequest, IHasResolver
+    public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
         [Obsolete("Use Resolver")]
-        public Container Container { get { throw new NotSupportedException("Use Resolver"); } }
+        public Container Container => throw new NotSupportedException("Use Resolver");
 
         private IResolver resolver;
         public IResolver Resolver
         {
-            get { return resolver ?? Service.GlobalResolver; }
-            set { resolver = value; }
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
         }
 
         public MockHttpRequest()
@@ -132,6 +133,7 @@ namespace ServiceStack.Testing
         public bool IsSecureConnection { get; set; }
         public string[] AcceptTypes { get; set; }
         public string PathInfo { get; set; }
+        public string OriginalPathInfo { get; }
         public Stream InputStream { get; set; }
 
         public long ContentLength
@@ -156,5 +158,15 @@ namespace ServiceStack.Testing
         }
 
         public Uri UrlReferrer => null;
+        
+        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+
+        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+
+        private bool? isDirectory;
+        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFiles.DirectoryExists(PathInfo));
+
+        private bool? isFile;
+        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFiles.FileExists(PathInfo));
     }
 }

@@ -50,7 +50,7 @@ namespace ServiceStack.Host.Handlers
         public string PathInfo { get; set; }
 
         [DataMember]
-        public string ResolvedPathInfo { get; set; }
+        public string OriginalPathInfo { get; set; }
 
         [DataMember]
         public bool StripApplicationVirtualPath { get; set; }
@@ -310,7 +310,8 @@ namespace ServiceStack.Host.Handlers
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
                 CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
-                ResolvedPathInfo = httpReq.PathInfo,
+                PathInfo = httpReq.PathInfo,
+                OriginalPathInfo = httpReq.OriginalPathInfo,
                 ContentType = httpReq.ContentType,
                 Headers = ToDictionary(httpReq.Headers),
                 QueryString = ToDictionary(httpReq.QueryString),

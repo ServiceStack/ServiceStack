@@ -113,6 +113,7 @@ namespace ServiceStack
                 AllowAclUrlReservation = true,
                 AddRedirectParamsToQueryString = false,
                 RedirectToDefaultDocuments = false,
+                RedirectDirectoriesToTrailingSlashes = true,
                 StripApplicationVirtualPath = false,
                 ScanSkipPaths = new List<string> {
                     "obj/",
@@ -128,7 +129,6 @@ namespace ServiceStack
                 RedirectPaths = new Dictionary<string, string>
                 {
                     { "/metadata/", "/metadata" },
-                    { "/swagger-ui", "/swagger-ui/" },
                 },
                 IgnoreWarningsOnPropertyNames = new List<string> {
                     Keywords.Format, Keywords.Callback, Keywords.Debug, Keywords.AuthSecret, Keywords.JsConfig,
@@ -218,6 +218,7 @@ namespace ServiceStack
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
             this.AddRedirectParamsToQueryString = instance.AddRedirectParamsToQueryString;
             this.RedirectToDefaultDocuments = instance.RedirectToDefaultDocuments;
+            this.RedirectDirectoriesToTrailingSlashes = instance.RedirectDirectoriesToTrailingSlashes;
             this.StripApplicationVirtualPath = instance.StripApplicationVirtualPath;
             this.SkipFormDataInCreatingRequest = instance.SkipFormDataInCreatingRequest;
             this.ScanSkipPaths = instance.ScanSkipPaths;
@@ -317,6 +318,7 @@ namespace ServiceStack
         public bool RedirectToDefaultDocuments { get; set; }
         public bool StripApplicationVirtualPath { get; set; }
         public bool SkipFormDataInCreatingRequest { get; set; }
+        public bool RedirectDirectoriesToTrailingSlashes { get; set; }
 
         //Skip scanning common VS.NET extensions
         public List<string> ScanSkipPaths { get; private set; }

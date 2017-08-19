@@ -259,6 +259,7 @@
     <Compile Include="Tests\MovieServiceTests.cs" />
     <Compile Include="Tests\RequestAndPathResolutionTests.cs" />
     <Compile Include="Tests\RequestFilterTests.cs" />
+    <Compile Include="Tests\RequestInfoTests.cs" />
     <Compile Include="Tests\RestPathResolutionUnitTests.cs" />
     <Compile Include="Tests\RestsTestBase.cs" />
     <Compile Include="Tests\RestWebServiceTests.cs" />

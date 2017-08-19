@@ -36,6 +36,17 @@ namespace ServiceStack.VirtualPath
             RootDir = new FileSystemVirtualDirectory(this, null, RootDirInfo);
         }
 
+        public override bool DirectoryExists(string virtualPath)
+        {
+            var isDirectory = Directory.Exists(RootDirectory.RealPath.CombineWith(SanitizePath(virtualPath)));
+            return isDirectory;
+        }
+
+        public override bool FileExists(string virtualPath)
+        {
+            var isFile = File.Exists(RootDirectory.RealPath.CombineWith(SanitizePath(virtualPath)));
+            return isFile;
+        }
 
         public string EnsureDirectory(string dirPath)
         {

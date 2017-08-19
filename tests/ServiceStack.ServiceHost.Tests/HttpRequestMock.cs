@@ -155,6 +155,8 @@ namespace ServiceStack.ServiceHost.Tests
             get { return "index.html"; }
         }
 
+        public string OriginalPathInfo => PathInfo;
+
         public System.IO.Stream InputStream
         {
             get { throw new NotImplementedException(); }

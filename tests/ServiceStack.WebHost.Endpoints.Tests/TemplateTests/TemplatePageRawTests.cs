@@ -495,21 +495,6 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
 ".NormalizeNewLines()));
         }
 
-//#if NET45
-//        [Test]
-//        public void DumpExpr()
-//        {
-//            Expression<Func<object, object>> fn = (o) => ((ModelBinding)o).Dictionary["map-key"].Prop;
-//            GetDebugView(fn).Print();
-//        }
-//        
-//        public static string GetDebugView(Expression exp)
-//        {
-//            var propertyInfo = typeof(Expression).GetProperty("DebugView", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
-//            return propertyInfo.GetValue(exp) as string;
-//        }
-//#endif
-
         [Test]
         public void Can_render_onetime_page_and_layout()
         {

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
@@ -47,6 +48,7 @@ namespace ServiceStack
         public Version envVersion() => Environment.Version;
         public string[] envLogicalDrives() => Environment.GetLogicalDrives();
 #elif NETSTANDARD1_3
+        public string envCurrentDirectory() => Directory.GetCurrentDirectory();
         public bool envIsWindows() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
         public bool envIsLinux() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
         public bool envIsOSX() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX);

@@ -11,12 +11,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class FileSystemVirtualPathProviderTests : VirtualPathProviderTests
     {
-        private static string RootDir = "~/App_Data".MapProjectPath();
+        private static string RootDir = "~/App_Data/files".MapProjectPath();
 
         public FileSystemVirtualPathProviderTests()
         {
-            if (!Directory.Exists(RootDir))
-                Directory.CreateDirectory(RootDir);
+            if (Directory.Exists(RootDir))
+                Directory.Delete(RootDir, recursive:true);
+
+            Directory.CreateDirectory(RootDir);
         }
 
         public override IVirtualPathProvider GetPathProvider()
@@ -123,7 +125,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(file.Extension, Is.EqualTo("txt"));
 
             Assert.That(file.Directory.VirtualPath, Is.Null);
-            Assert.That(file.Directory.Name, Is.Null.Or.EqualTo("App_Data"));
+            Assert.That(file.Directory.Name, Is.Null.Or.EqualTo("files"));
 
             pathProvider.DeleteFiles(new[] { "file.txt" });
         }
@@ -176,8 +178,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var pathProvider = GetPathProvider();
 
-            pathProvider.DeleteFiles(pathProvider.GetAllFiles());
-
             var allFilePaths = new[] {
                 "testfile.txt",
                 "a/testfile-a1.txt",
@@ -201,15 +201,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(!pathProvider.IsDirectory("a/f"));
             Assert.That(!pathProvider.IsDirectory("testfile.txt"));
             Assert.That(!pathProvider.IsDirectory("a/testfile-a1.txt"));
-
-            Assert.That(pathProvider.DirectoryExists("a"));
-            Assert.That(pathProvider.GetDirectory("a"), Is.Not.Null);
-            Assert.That(pathProvider.DirectoryExists("a/b"));
-            Assert.That(pathProvider.GetDirectory("a/b"), Is.Not.Null);
-            Assert.That(!pathProvider.DirectoryExists("b"));
-            Assert.That(pathProvider.GetDirectory("b"), Is.Null);
-            Assert.That(!pathProvider.DirectoryExists("a/c"));
-            Assert.That(pathProvider.GetDirectory("a/c"), Is.Null);
 
             AssertContents(pathProvider.RootDirectory, new[] {
                     "testfile.txt",
@@ -270,6 +261,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             allFiles = pathProvider.GetAllFiles().Map(x => x.VirtualPath);
             Assert.That(allFiles, Is.EquivalentTo(allFilePaths));
 
+            Assert.That(pathProvider.DirectoryExists("a"));
+            Assert.That(!pathProvider.DirectoryExists("f"));
+            Assert.That(!pathProvider.GetDirectory("a/b/c").IsRoot);
+            Assert.That(!pathProvider.GetDirectory("a/b").IsRoot);
+            Assert.That(!pathProvider.GetDirectory("a").IsRoot);
+            Assert.That(pathProvider.GetDirectory("").IsRoot);
+
             pathProvider.DeleteFile("testfile.txt");
             pathProvider.DeleteFolder("a");
             pathProvider.DeleteFolder("e");
@@ -289,6 +287,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var contents = pathProvider.GetFile("original.txt").ReadAllText();
             Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
+            
+            pathProvider.DeleteFile("original.txt");
         }
 
         [Test]
@@ -303,6 +303,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
             Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
+            
+            pathProvider.DeleteFile("original.bin");
         }
 
         public void AssertContents(IVirtualDirectory dir,
