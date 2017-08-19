@@ -432,19 +432,29 @@
             Don't allow access to specified filters
             </summary>
         </member>
-        <member name="P:ServiceStack.Templates.PageResult.SkipFilterExecution">
-            <summary>
-            Whether to skip execution of all page filters and just write template string fragments
-            </summary>
-        </member>
         <member name="P:ServiceStack.Templates.PageResult.LastFilterError">
             <summary>
             The last error thrown by a filter
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.LastFilterStackTrace">
+            <summary>
+            The StackTrace where the Last Error Occured 
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.PageResult.AssignExceptionsTo">
             <summary>
             What argument errors should be binded to
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.SkipFilterExecution">
+            <summary>
+            Whether to skip execution of all page filters and just write template string fragments
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.SkipExecutingFiltersIfError">
+            <summary>
+            Overrides Context to specify whether to Ignore or Continue executing filters on error 
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.TemplateConfig.FatalExceptions">
@@ -467,7 +477,7 @@
             What argument to assign Fitler Exceptions to
             </summary>
         </member>
-        <member name="P:ServiceStack.Templates.TemplateContext.SkipExecutingPageFiltersIfError">
+        <member name="P:ServiceStack.Templates.TemplateContext.SkipExecutingFiltersIfError">
             <summary>
             Whether to 
             </summary>
