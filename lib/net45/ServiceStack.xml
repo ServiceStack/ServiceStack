@@ -69,6 +69,11 @@
             Enable the authentication feature and configure the AuthService.
             </summary>
         </member>
+        <member name="P:ServiceStack.AuthFeature.SaveUserNamesInLowerCase">
+            <summary>
+            Should UserName or Emails be saved in AuthRepository in LowerCase
+            </summary>
+        </member>
         <member name="T:ServiceStack.Auth.IManageApiKeys">
             <summary>
             The Interface Auth Repositories need to implement to support API Keys
@@ -6972,6 +6977,11 @@
             <summary>
             Don't log request bodys for services with sensitive information.
             By default Auth and Registration requests are hidden.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.RequestLogsFeature.LimitToServiceRequests">
+            <summary>
+            Limit logging to only Service Requests
             </summary>
         </member>
         <member name="T:ServiceStack.RequiredPermissionAttribute">

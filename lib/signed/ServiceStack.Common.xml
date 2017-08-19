@@ -402,6 +402,21 @@
             to provide a detailed analysis of your logs.
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.LayoutPage">
+            <summary>
+            Use specified Layout 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.Layout">
+            <summary>
+            Use Layout with specified name
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.Model">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.PageResult.Args">
             <summary>
             Add additional Args available to all pages 
@@ -410,6 +425,11 @@
         <member name="P:ServiceStack.Templates.PageResult.TemplateFilters">
             <summary>
             Add additional template filters available to all pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.Options">
+            <summary>
+            Return additional HTTP Headers in HTTP Requests
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.PageResult.ContentType">
@@ -432,9 +452,59 @@
             Available transformers that can transform context filter stream outputs
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.ExcludeFiltersNamed">
+            <summary>
+            Don't allow access to specified filters
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.LastFilterError">
+            <summary>
+            The last error thrown by a filter
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.LastFilterStackTrace">
+            <summary>
+            The StackTrace where the Last Error Occured 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.AssignExceptionsTo">
+            <summary>
+            What argument errors should be binded to
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.SkipFilterExecution">
+            <summary>
+            Whether to skip execution of all page filters and just write template string fragments
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.SkipExecutingFiltersIfError">
+            <summary>
+            Overrides Context to specify whether to Ignore or Continue executing filters on error 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateConfig.FatalExceptions">
+            <summary>
+            Rethrow fatal exceptions thrown on incorrect API usage    
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.TemplateContext.FilterTransformers">
             <summary>
             Available transformers that can transform context filter stream outputs
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.RenderExpressionExceptions">
+            <summary>
+            Render render filter exceptions in-line where filter is located
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.AssignExceptionsTo">
+            <summary>
+            What argument to assign Fitler Exceptions to
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.SkipExecutingFiltersIfError">
+            <summary>
+            Whether to 
             </summary>
         </member>
         <member name="T:ServiceStack.UrnId">
