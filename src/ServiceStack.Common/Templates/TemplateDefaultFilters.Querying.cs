@@ -8,6 +8,80 @@ namespace ServiceStack.Templates
 {
     public partial class TemplateDefaultFilters
     {
+        public List<object> step(IEnumerable target, object scopeOptions)
+        {
+            var items = target.AssertEnumerable(nameof(step));
+
+            var scopedParams = scopeOptions.AssertOptions(nameof(step));
+
+            var from = scopedParams.TryGetValue("from", out object oFrom)
+                ? (int)oFrom
+                : 0;
+
+            var by = scopedParams.TryGetValue("by", out object oBy)
+                ? (int)oBy
+                : 1;
+
+            var to = new List<object>();
+            var itemsArray = items.ToArray();
+            for (var i = from; i < itemsArray.Length; i += by)
+            {
+                to.Add(itemsArray[i]);
+            }
+
+            return to;
+        }
+
+        public object elementAt(IEnumerable target, int index)
+        {
+            var items = target.AssertEnumerable(nameof(elementAt));
+
+            var i = 0;
+            foreach (var item in items)
+            {
+                if (i++ == index)
+                    return item;
+            }
+
+            return null;
+        }
+
+        public bool contains(object target, object needle)
+        {
+            if (isNull(needle))
+                return false;
+
+            if (target is string s)
+            {
+                if (needle is char c)
+                    return s.IndexOf(c) >= 0;
+                return s.IndexOf(needle.ToString(), StringComparison.Ordinal) >= 0;
+            }
+            if (target is IEnumerable items)
+            {
+                foreach (var item in items)
+                {
+                    if (Equals(item, needle))
+                        return true;
+                }
+                return false;
+            }
+            throw new NotSupportedException($"'{nameof(contains)}' requires a string or IEnumerable but received a '{target.GetType()?.Name}' instead");
+        }
+
+        public IEnumerable<object> take(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
+            original.Take(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
+
+        public IEnumerable<object> skip(TemplateScopeContext scope, IEnumerable<object> original, object countOrBinding) =>
+            original.Skip(scope.GetValueOrEvaluateBinding<int>(countOrBinding));
+
+        public IEnumerable<object> limit(TemplateScopeContext scope, IEnumerable<object> original, object skipOrBinding, object takeOrBinding)
+        {
+            var skip = scope.GetValueOrEvaluateBinding<int>(skipOrBinding);
+            var take = scope.GetValueOrEvaluateBinding<int>(takeOrBinding);
+            return original.Skip(skip).Take(take);
+        }
+
         public int count(TemplateScopeContext scope, object target) => target.AssertEnumerable(nameof(count)).Count();
         public int count(TemplateScopeContext scope, object target, object expression) => count(scope, target, expression, null);
         public int count(TemplateScopeContext scope, object target, object expression, object scopeOptions)
