@@ -137,7 +137,7 @@ namespace ServiceStack.Templates
                 return ("<div class='error'><span>" + (ex.GetType().Name + ": " + ex.Message).HtmlEncode() + "</span></div>").ToRawString();
             
             // Evaluate Null References in Binding Expressions to null
-            if (ex is NullReferenceException || ex is ArgumentNullException)
+            if (TemplateConfig.CaptureAndEvalueExceptionsToNull.Contains(ex.GetType()))
                 return JsNull.Value;
 
             return null;
