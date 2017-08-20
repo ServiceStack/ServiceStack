@@ -20,7 +20,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                Env.HasMultiplePlatformTargets = true;
                 var useProjectPath = MapProjectPath("~/");
                 var parentDir = useProjectPath.Replace("\\", "/").TrimEnd('/').LastRightPart('/');
                 Assert.That(parentDir, Is.EqualTo("ServiceStack.WebHost.Endpoints.Tests"));
