@@ -54,7 +54,7 @@ namespace ServiceStack.VirtualPath
 
         public virtual IVirtualDirectory GetDirectory(string virtualPath)
         {
-            if (string.IsNullOrEmpty(virtualPath))
+            if (string.IsNullOrEmpty(virtualPath) || virtualPath == "/")
                 return RootDirectory;
             
             return RootDirectory.GetDirectory(SanitizePath(virtualPath));
