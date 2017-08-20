@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                var useProjectPath = MapProjectPath("~/");
+                var useProjectPath = MapProjectPath("~/../");
                 var parentDir = useProjectPath.Replace("\\", "/").TrimEnd('/').LastRightPart('/');
                 Assert.That(parentDir, Is.EqualTo("ServiceStack.WebHost.Endpoints.Tests"));
                 
