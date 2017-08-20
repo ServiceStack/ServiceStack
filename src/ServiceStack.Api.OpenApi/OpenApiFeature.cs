@@ -43,7 +43,6 @@ namespace ServiceStack.Api.OpenApi
 
         public OpenApiFeature()
         {
-            LogoUrl = "//raw.githubusercontent.com/ServiceStack/Assets/master/img/artwork/logo-64-swagger.png";
             Tags = new List<OpenApiTag>();
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
         }
