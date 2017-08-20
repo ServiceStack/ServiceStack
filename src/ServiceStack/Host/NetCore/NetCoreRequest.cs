@@ -46,7 +46,7 @@ namespace ServiceStack.Host.NetCore
             this.PathInfo = this.OriginalPathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ");  
             this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, PathInfo, out bool isDirectory);
             this.IsDirectory = isDirectory;
-            this.IsFile = !isDirectory && HostContext.VirtualFiles.FileExists(PathInfo);
+            this.IsFile = !isDirectory && HostContext.VirtualFileSources.FileExists(PathInfo);
         }
 
         public T TryResolve<T>()

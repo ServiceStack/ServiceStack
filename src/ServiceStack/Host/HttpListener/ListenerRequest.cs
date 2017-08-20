@@ -42,7 +42,7 @@ namespace ServiceStack.Host.HttpListener
             this.PathInfo = this.OriginalPathInfo = GetPathInfo();
             this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo, out bool isDirectory);
             this.IsDirectory = isDirectory;
-            this.IsFile = !isDirectory && HostContext.VirtualFiles.FileExists(PathInfo);
+            this.IsFile = !isDirectory && HostContext.VirtualFileSources.FileExists(PathInfo);
         }
 
         private string GetPathInfo()
