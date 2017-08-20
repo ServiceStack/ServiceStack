@@ -125,19 +125,29 @@ namespace ServiceStack.Templates
         {
             if (string.IsNullOrEmpty(path))
                 return null;
-            
-            var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            var page = TryGetPage(santizePath);
+            var santizePath = path.Replace('\\','/').TrimPrefixes("/");
+
+            var fileNameParts = santizePath.LastRightPart('/').SplitOnLast('.');
+            var ext = fileNameParts.Length > 1 ? fileNameParts[1] : null;
+            if (ext != null)
+            {
+                var registeredPageExt = Context.PageFormats.Any(x => x.Extension == ext);
+                if (!registeredPageExt)
+                    return null;
+            }
+
+            var isDirectory = santizePath.Length == 0 || santizePath[santizePath.Length - 1] == '/';
+            var filePath = santizePath.LastLeftPart('.');
+            var page = !isDirectory ? TryGetPage(filePath) : null;
             if (page != null)
                 return page;
 
-            var isIndexPage = santizePath == string.Empty || santizePath.EndsWith("/");
             foreach (var format in Context.PageFormats)
             {
-                var file = !isIndexPage
-                    ? Context.VirtualFiles.GetFile($"{santizePath}.{format.Extension}")
-                    : Context.VirtualFiles.GetFile($"{santizePath}{Context.IndexPage}.{format.Extension}");
+                var file = !isDirectory
+                    ? Context.VirtualFiles.GetFile($"{filePath}.{format.Extension}")
+                    : Context.VirtualFiles.GetFile($"{filePath}{Context.IndexPage}.{format.Extension}");
 
                 if (file != null)
                     return AddPage(file.VirtualPath.WithoutExtension(), file);
