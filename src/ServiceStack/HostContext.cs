@@ -191,21 +191,6 @@ namespace ServiceStack
             return AssertAppHost().ResolvePhysicalPath(virtualPath, httpReq);
         }
 
-        public static IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualFile(virtualPath, httpReq);
-        }
-
-        public static IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualDirectory(virtualPath, httpReq);
-        }
-
-        public static IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualNode(virtualPath, httpReq);
-        }
-
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {

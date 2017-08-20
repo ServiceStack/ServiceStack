@@ -849,24 +849,6 @@ namespace ServiceStack
             return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
         }
 
-        public virtual IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
-        {
-            return VirtualFileSources.GetFile(virtualPath);
-        }
-
-        public virtual IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
-        {
-            return virtualPath == VirtualFileSources.VirtualPathSeparator
-                ? VirtualFileSources.RootDirectory
-                : VirtualFileSources.GetDirectory(virtualPath);
-        }
-
-        public virtual IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
-        {
-            return (IVirtualNode)ResolveVirtualFile(virtualPath, httpReq)
-                ?? ResolveVirtualDirectory(virtualPath, httpReq);
-        }
-
         private bool delayLoadPlugin;
         public virtual void LoadPlugin(params IPlugin[] plugins)
         {

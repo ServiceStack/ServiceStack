@@ -136,11 +136,14 @@ namespace ServiceStack
 
         public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
-        public static IVirtualFile GetVirtualFile(this IRequest httpReq) => HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
-
-        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq) => HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
-
-        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
+        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => httpReq is IHasVirtualFiles vfsReq ?
+            (vfsReq.IsFile 
+                ? (IVirtualNode) vfsReq.GetFile()
+                : vfsReq.IsDirectory
+                    ? vfsReq.GetDirectory()
+                : null)
+            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests 
+              HostContext.VirtualFileSources.GetDirectory(httpReq.PathInfo);
 
         public static string GetDirectoryPath(this IRequest request)
         {
