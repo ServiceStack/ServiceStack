@@ -292,12 +292,14 @@ layout: alt/alt-layout
             public override List<IVirtualPathProvider> GetVirtualFileSources() => TemplateFiles;
         }
 
+        public static string BaseUrl = Config.ListeningOn;
+        
         private readonly ServiceStackHost appHost;
         public TemplateIntegrationTests()
         {
             appHost = new AppHost()
                 .Init()
-                .Start(Config.ListeningOn);
+                .Start(BaseUrl);
         }
 
         [OneTimeTearDown]
@@ -306,7 +308,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_process_home_page()
         {
-            var html = Config.ListeningOn.GetStringFromUrl();
+            var html = BaseUrl.GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -321,7 +323,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_direct_page_with_layout()
         {
-            var html = Config.ListeningOn.AppendPath("direct-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("direct-page").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -336,7 +338,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_return_dir_page_with_dir_layout_by_default()
         {
-            var html = Config.ListeningOn.AppendPath("dir", "dir-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir", "dir-page").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=dir>
@@ -351,7 +353,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_return_alt_dir_page_with_closest_alt_layout()
         {
-            var html = Config.ListeningOn.AppendPath("dir", "alt-dir-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir", "alt-dir-page").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=dir-alt-layout>
@@ -365,7 +367,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_request_alt_layout_within_alt_subdir()
         {
-            var html = Config.ListeningOn.AppendPath("dir", "alt-layout-alt-dir-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir", "alt-layout-alt-dir-page").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=alt-alt-layout>
@@ -379,7 +381,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_return_shadowed_code_page_with_layout()
         {
-            var html = Config.ListeningOn.AppendPath("shadowed-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("shadowed-page").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -392,7 +394,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_return_shadowed_index_code_page_with_layout()
         {
-            var html = Config.ListeningOn.AppendPath("shadowed").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("shadowed").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -405,7 +407,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_execute_ServiceStackCodePage_with_Db_and_Request()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar").AddQueryParam("id", "1").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("rockstar").AddQueryParam("id", "1").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -422,7 +424,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_execute_RockstarPageView()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-pages", "1").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("rockstar-pages", "1").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -439,7 +441,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_execute_RockstarPageView_with_custom_layout()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-pages", "1").AddQueryParam("layout", "custom_layout").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("rockstar-pages", "1").AddQueryParam("layout", "custom_layout").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=custom>
@@ -456,7 +458,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_execute_ProductsPage_with_default_layout()
         {
-            var html = Config.ListeningOn.AppendPath("products").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("products").GetStringFromUrl();
             
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
@@ -476,7 +478,7 @@ layout: alt/alt-layout
         [Test]
         public void Does_execute_ProductsPage_with_Sidebar_CodePage_layout()
         {
-            var html = Config.ListeningOn.AppendPath("products-sidebar").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("products-sidebar").GetStringFromUrl();
 
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=sidebar>
@@ -501,7 +503,7 @@ layout: alt/alt-layout
         [Test]
         public void CodePage_partials_are_injected_with_current_Request()
         {
-            var html = Config.ListeningOn.AppendPath("requestinfo-page").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("requestinfo-page").GetStringFromUrl();
 
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
@@ -517,7 +519,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_resolve_closest_partial_starting_from_page_directory()
         {
-            var html = Config.ListeningOn.AppendPath("dir","dir-page-partial").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir","dir-page-partial").GetStringFromUrl();
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
@@ -535,7 +537,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_resolve_closest_file_starting_from_page_directory()
         {
-            var html = Config.ListeningOn.AppendPath("dir", "dir-page-file").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir", "dir-page-file").GetStringFromUrl();
 
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
@@ -553,7 +555,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_resolve_closest_file_with_cache_starting_from_page_directory()
         {
-            var html = Config.ListeningOn.AppendPath("dir", "dir-page-file-cache").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("dir", "dir-page-file-cache").GetStringFromUrl();
 
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
@@ -571,7 +573,7 @@ layout: alt/alt-layout
         [Test]
         public void Can_call_sendToGateway()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","1").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("rockstar-gateway").AddQueryParam("id","1").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
 
@@ -582,7 +584,7 @@ Jimi Hendrix (27)
 </body>
 </html>".NormalizeNewLines()));
             
-            html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("firstName","Kurt").GetStringFromUrl();
+            html = BaseUrl.AppendPath("rockstar-gateway").AddQueryParam("firstName","Kurt").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
 
@@ -597,7 +599,7 @@ Kurt Cobain (27)
         [Test]
         public void Does_handle_error_calling_sendToGateway()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-gateway").GetStringFromUrl();
+            var html = BaseUrl.AppendPath("rockstar-gateway").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
@@ -609,7 +611,7 @@ Parameter name: firstName
 StackTrace:
    at Expression (Dictionary`2): {id:".NormalizeNewLines()));
             
-            html = Config.ListeningOn.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
+            html = BaseUrl.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
 <body id=root>
 
@@ -624,7 +626,7 @@ StackTrace:
         [Test]
         public void Can_call_publishToGateway()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-gateway-publish")
+            var html = BaseUrl.AppendPath("rockstar-gateway-publish")
                 .AddQueryParam("id","8")
                 .AddQueryParam("firstName","Amy")
                 .AddQueryParam("lastName","Winehouse")
@@ -647,7 +649,7 @@ Amy Winehouse (27)
         [Test]
         public void Does_handle_error_calling_publishToGateway()
         {
-            var html = Config.ListeningOn.AppendPath("rockstar-gateway-publish")
+            var html = BaseUrl.AppendPath("rockstar-gateway-publish")
                 .AddQueryParam("id","8")
                 .AddQueryParam("firstName","Amy")
                 .AddQueryParam("age","27")

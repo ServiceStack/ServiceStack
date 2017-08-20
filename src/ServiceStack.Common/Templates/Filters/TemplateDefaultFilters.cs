@@ -602,5 +602,63 @@ namespace ServiceStack.Templates
 
         public object ifMatchesPathInfo(TemplateScopeContext scope, object returnTarget, string pathInfo) =>
             matchesPathInfo(scope, pathInfo) ? returnTarget : null;
+        
+        public object withoutNullValues(object target)
+        {
+            if (target is Dictionary<string, object> objDictionary)
+            {
+                var keys = objDictionary.Keys.ToList();
+                var to = new Dictionary<string, object>();
+                foreach (var key in keys)
+                {
+                    var value = objDictionary[key];
+                    if (!isNull(value))
+                    {
+                        to[key] = value;
+                    }
+                }
+                return to;
+            }
+            if (target is IEnumerable list)
+            {
+                var to = new List<object>();
+                foreach (var item in list)
+                {
+                    if (!isNull(item))
+                        to.Add(item);
+                }
+                return to;
+            }
+            return target;
+        }
+        
+        public object withoutEmptyValues(object target)
+        {
+            if (target is Dictionary<string, object> objDictionary)
+            {
+                var keys = objDictionary.Keys.ToList();
+                var to = new Dictionary<string, object>();
+                foreach (var key in keys)
+                {
+                    var value = objDictionary[key];
+                    if (!isEmpty(value))
+                    {
+                        to[key] = value;
+                    }
+                }
+                return to;
+            }
+            if (target is IEnumerable list)
+            {
+                var to = new List<object>();
+                foreach (var item in list)
+                {
+                    if (!isEmpty(item))
+                        to.Add(item);
+                }
+                return to;
+            }
+            return target;
+        }
    }
 }
