@@ -281,9 +281,9 @@ namespace ServiceStack
 
             var pathInfo = httpReq.PathInfo;
             var isFile = httpReq.IsFile();
-            var isDirectory = !isFile && httpReq.IsDirectory();
+            var isDirectory = httpReq.IsDirectory();
 
-            if (!isDirectory && Env.IsMono)
+            if (!isFile && !isDirectory && Env.IsMono)
                 isDirectory = StaticFileHandler.MonoDirectoryExists(filePath, filePath.Substring(0, filePath.Length - pathInfo.Length));
 
             var httpMethod = httpReq.Verb;

@@ -40,7 +40,9 @@ namespace ServiceStack.Host.HttpListener
 
             this.RequestPreferences = new RequestPreferences(this);
             this.PathInfo = this.OriginalPathInfo = GetPathInfo();
-            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo);
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo, out bool isDirectory);
+            this.IsDirectory = isDirectory;
+            this.IsFile = !isDirectory && HostContext.VirtualFiles.FileExists(PathInfo);
         }
 
         private string GetPathInfo()
@@ -312,11 +314,9 @@ namespace ServiceStack.Host.HttpListener
 
         public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
 
-        private bool? isDirectory;
-        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFileSources.DirectoryExists(PathInfo));
+        public bool IsDirectory { get; }
 
-        private bool? isFile;
-        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFileSources.FileExists(PathInfo));
+        public bool IsFile { get; }
     }
 
 }

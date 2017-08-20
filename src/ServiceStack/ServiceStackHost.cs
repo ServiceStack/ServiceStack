@@ -1011,12 +1011,10 @@ namespace ServiceStack
             return relativePath.MapProjectPath();
         }
 
-        public virtual string ResolvePathInfo(IRequest request, string originalPathInfo)
+        public virtual string ResolvePathInfo(IRequest request, string originalPathInfo, out bool isDirectory)
         {
             var pathInfo = NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);
-            var isDirectory = string.IsNullOrEmpty(Config.HandlerFactoryPath)
-                ? request.IsDirectory() //allow caching
-                : VirtualFileSources.DirectoryExists(pathInfo);
+            isDirectory = VirtualFileSources.DirectoryExists(pathInfo);
             
             if (!isDirectory && pathInfo.Length > 1 && pathInfo[pathInfo.Length - 1] == '/')
                 pathInfo = pathInfo.TrimEnd('/');

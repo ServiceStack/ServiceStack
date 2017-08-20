@@ -44,7 +44,9 @@ namespace ServiceStack.Host.NetCore
 
             //Kestrel does not decode '+' into space
             this.PathInfo = this.OriginalPathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ");  
-            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, PathInfo);
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, PathInfo, out bool isDirectory);
+            this.IsDirectory = isDirectory;
+            this.IsFile = !isDirectory && HostContext.VirtualFiles.FileExists(PathInfo);
         }
 
         public T TryResolve<T>()
@@ -300,11 +302,9 @@ namespace ServiceStack.Host.NetCore
 
         public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
 
-        private bool? isDirectory;
-        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFileSources.DirectoryExists(PathInfo));
+        public bool IsDirectory{ get; }
 
-        private bool? isFile;
-        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFileSources.FileExists(PathInfo));
+        public bool IsFile { get; }
     }
 }
 

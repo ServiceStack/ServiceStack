@@ -20,8 +20,8 @@ namespace ServiceStack.Host
         private IResolver resolver;
         public IResolver Resolver
         {
-            get { return resolver ?? Service.GlobalResolver; }
-            set { resolver = value; }
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
         }
 
         public BasicRequest(object requestDto, 
@@ -57,8 +57,8 @@ namespace ServiceStack.Host
         private string operationName;
         public string OperationName
         {
-            get { return operationName ?? (operationName = Message.Body?.GetType().GetOperationName()); }
-            set { operationName = value; }
+            get => operationName ?? (operationName = Message.Body?.GetType().GetOperationName());
+            set => operationName = value;
         }
 
         public T TryResolve<T>()
@@ -152,11 +152,9 @@ namespace ServiceStack.Host
         public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
 
         public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
-
-        private bool? isDirectory;
-        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFileSources.DirectoryExists(PathInfo));
-
-        private bool? isFile;
-        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFileSources.FileExists(PathInfo));
-    }
+        
+        public bool IsFile { get; set; }
+        
+        public bool IsDirectory { get; set; }
+   }
 }
