@@ -35,6 +35,8 @@ namespace ServiceStack
             "/swagger-ui" //Swagger's handler needs to process index.html 
         };
 
+        public TemplateServiceStackFilters ServiceStackFilters => TemplateFilters.FirstOrDefault(x => x is TemplateServiceStackFilters) as TemplateServiceStackFilters;
+
         public string HtmlExtension
         {
             get => PageFormats.First(x => x is HtmlPageFormat).Extension;
@@ -495,5 +497,10 @@ User:
                 requiresRequest.Request = request;
             return page;
         }
+    }
+
+    public interface IAutoQueryDbFilters
+    {
+        object sendToAutoQuery(TemplateScopeContext scope, object dto, string requestName, object options);
     }
 }

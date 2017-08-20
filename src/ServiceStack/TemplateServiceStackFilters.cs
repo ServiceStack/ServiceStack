@@ -90,6 +90,15 @@ namespace ServiceStack
                 if (requestType == null)
                     throw new ArgumentException("Request DTO not found: " + requestName);
 
+                if (requestType.HasInterface(typeof(IQueryDb)))
+                {
+                    var ssFillter = Context.TemplateFilters.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
+                    if (ssFillter == null)
+                        throw new NotImplementedException("sendToAutoQuery RDBMS requires TemplateAutoQueryFilters");
+
+                    return ssFillter.sendToAutoQuery(scope, dto, requestName, options);
+                }
+                
                 var autoQuery = appHost.TryResolve<IAutoQueryData>();
                 if (autoQuery == null)
                     throw new NotSupportedException("The AutoQueryDataFeature plugin is not registered.");

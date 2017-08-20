@@ -376,6 +376,10 @@ namespace ServiceStack
         SqlExpression<From> CreateQuery<From, Into>(IQueryDb<From, Into> dto, Dictionary<string, string> dynamicParams, IRequest req = null);
 
         QueryResponse<Into> Execute<From, Into>(IQueryDb<From, Into> model, SqlExpression<From> query);
+        
+        ISqlExpression CreateQuery(IQueryDb dto, Dictionary<string, string> dynamicParams, IRequest req = null);
+
+        IQueryResponse Execute(IQueryDb request, ISqlExpression q);
     }
 
     public abstract class AutoQueryServiceBase : Service
@@ -447,6 +451,26 @@ namespace ServiceStack
 
         private static Dictionary<Type, ITypedQuery> TypedQueries = new Dictionary<Type, ITypedQuery>();
 
+        public Type GetFromType(Type requestDtoType)
+        {
+            Type fromType;
+            var intoTypeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+            if (intoTypeDef != null)
+            {
+                var args = intoTypeDef.GetGenericArguments();
+                return args[1];
+            }
+            
+            var typeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
+            if (typeDef != null)
+            {
+                var args = typeDef.GetGenericArguments();
+                return args[0];
+            }
+
+            throw new NotSupportedException("Request DTO is not an AutoQuery DTO: " + requestDtoType.Name);
+        }
+
         public ITypedQuery GetTypedQuery(Type dtoType, Type fromType)
         {
             ITypedQuery defaultValue;
@@ -487,6 +511,26 @@ namespace ServiceStack
             filterFn?.Invoke(q, dto, req);
 
             return (SqlExpression<From>)q;
+        }
+
+        public ISqlExpression Filter(ISqlExpression q, IQueryDb dto, IRequest req)
+        {
+            if (QueryFilters == null)
+                return q;
+
+            QueryFilterDelegate filterFn = null;
+            if (!QueryFilters.TryGetValue(dto.GetType(), out filterFn))
+            {
+                foreach (var type in dto.GetType().GetInterfaces())
+                {
+                    if (QueryFilters.TryGetValue(type, out filterFn))
+                        break;
+                }
+            }
+
+            filterFn?.Invoke(q, dto, req);
+
+            return q;
         }
 
         public QueryResponse<Into> ResponseFilter<From, Into>(QueryResponse<Into> response, SqlExpression<From> expr, IQueryDb dto)
@@ -548,13 +592,14 @@ namespace ServiceStack
             return response;
         }
 
-        public IDbConnection GetDb<From>(IRequest req = null)
+        public IDbConnection GetDb<From>(IRequest req = null) => GetDb(typeof(From), req);
+        public IDbConnection GetDb(Type type, IRequest req = null)
         {
             if (Db != null)
                 return Db;
 
             var namedConnection = UseNamedConnection;
-            var attr = typeof(From).FirstAttribute<NamedConnectionAttribute>();
+            var attr = type.FirstAttribute<NamedConnectionAttribute>();
             if (attr != null)
                 namedConnection = attr.Name;
 
@@ -589,6 +634,75 @@ namespace ServiceStack
         {
             var typedQuery = GetTypedQuery(model.GetType(), typeof(From));
             return ResponseFilter(typedQuery.Execute<Into>(GetDb<From>(), query), query, model);
+        }
+
+        public ISqlExpression CreateQuery(IQueryDb requestDto, Dictionary<string, string> dynamicParams, IRequest req = null)
+        {
+            var requestDtoType = requestDto.GetType();
+            var fromType = GetFromType(requestDtoType);
+            var typedQuery = GetTypedQuery(requestDtoType, fromType);
+            var q = typedQuery.CreateQuery(GetDb(fromType));
+            return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this), requestDto, req);
+        }
+        
+        private Dictionary<Type, GenericAutoQueryDb> genericAutoQueryCache = new Dictionary<Type, GenericAutoQueryDb>();
+
+        public IQueryResponse Execute(IQueryDb request, ISqlExpression q)
+        {
+            var requestDtoType = request.GetType();
+            ITypedQueryData typedQuery;
+            
+            Type fromType;
+            Type intoType;
+            var intoTypeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
+            if (intoTypeDef != null)
+            {
+                var args = intoTypeDef.GetGenericArguments();
+                fromType = args[0];
+                intoType = args[1];
+            }
+            else
+            {
+                var typeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<>));
+                var args = typeDef.GetGenericArguments();
+                fromType = args[0];
+                intoType = args[0];
+            }
+
+            if (genericAutoQueryCache.TryGetValue(fromType, out GenericAutoQueryDb typedApi))
+                return typedApi.ExecuteObject(this, request, q);
+
+            var genericType = typeof(GenericAutoQueryDb<,>).MakeGenericType(fromType, intoType);
+            var instance = genericType.CreateInstance<GenericAutoQueryDb>();
+            
+            Dictionary<Type, GenericAutoQueryDb> snapshot, newCache;
+            do
+            {
+                snapshot = genericAutoQueryCache;
+                newCache = new Dictionary<Type, GenericAutoQueryDb>(genericAutoQueryCache)
+                {
+                    [requestDtoType] = instance
+                };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref genericAutoQueryCache, newCache, snapshot), snapshot));
+
+            return instance.ExecuteObject(this, request, q);
+        }
+    }
+
+    internal abstract class GenericAutoQueryDb
+    {
+        public abstract IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query);
+    }
+    
+    internal class GenericAutoQueryDb<From, Into> : GenericAutoQueryDb
+    {
+        public override IQueryResponse ExecuteObject(AutoQuery autoQuery, IQueryDb request, ISqlExpression query)
+        {
+            var typedQuery = autoQuery.GetTypedQuery(request.GetType(), typeof(From));
+            var q = (SqlExpression<From>)query;
+            return autoQuery.ResponseFilter(typedQuery.Execute<Into>(autoQuery.Db, q), q, request);
         }
     }
 

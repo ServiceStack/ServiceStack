@@ -52,7 +52,7 @@ namespace ServiceStack.Templates
             typeof(NotImplementedException),
         };
         
-        public static HashSet<Type> CaptureAndEvalueExceptionsToNull { get; set; } = new HashSet<Type>
+        public static HashSet<Type> CaptureAndEvaluateExceptionsToNull { get; set; } = new HashSet<Type>
         {
             typeof(NullReferenceException),
             typeof(ArgumentNullException),

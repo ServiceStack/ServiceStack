@@ -25,6 +25,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         };
     }
     
+    public class QueryTemplateRockstars : QueryDb<Rockstar> {}
+    
     public class TemplateServiceStackFiltersTests
     {
         class AppHost : AppSelfHostBase
@@ -55,12 +57,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     Args =
                     {
                         ["products"] = TemplateQueryData.Products,
-                    }
+                    },
+                    TemplateFilters = { new TemplateAutoQueryFilters() },
                 });
                 
                 Plugins.Add(new AutoQueryDataFeature { MaxLimit = 100 }
                     .AddDataSource(ctx => ctx.ServiceSource<Product>(ctx.ConvertTo<GetAllProducts>()))
                 );
+                
+                Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
 
                 var files = TemplateFiles[0];
                 
@@ -72,9 +77,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </body>
 </html>
 ");
-                files.WriteFile("aqdata-products.html", @"
+                files.WriteFile("autoquery-data-products.html", @"
 {{ { category, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryProducts') 
    | toResults | select: { it.ProductName }\n }}");
+
+                files.WriteFile("autoquery-rockstars.html", @"
+{{ { age, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryTemplateRockstars') 
+   | toResults | select: { it.FirstName } { it.LastName }\n }}");
             }
         }
 
@@ -94,7 +103,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_call_AutoQuery_Data_services()
         {
-            var html = BaseUrl.CombineWith("aqdata-products").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -107,7 +116,7 @@ Aniseed Syrup".NormalizeNewLines()));
         [Test]
         public void Can_call_AutoQuery_Data_services_with_limit()
         {
-            var html = BaseUrl.CombineWith("aqdata-products?orderBy=ProductName&take=3").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -124,7 +133,7 @@ Boston Crab Meat
         [Test]
         public void Can_call_AutoQuery_Data_services_with_category()
         {
-            var html = BaseUrl.CombineWith("aqdata-products?category=Beverages").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -141,6 +150,61 @@ Laughing Lumberjack Lager
 Outback Lager
 Rh&#246;nbr&#228;u Klosterbier
 Lakkalik&#246;&#246;ri
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_AutoQuery_Db_services()
+        {
+            var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
+<html>
+<body id=root>
+
+Jimi Hendrix
+Jim Morrison
+Kurt Cobain
+Elvis Presley
+David Grohl
+Eddie Vedder
+Michael Jackson
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_AutoQuery_Db_services_with_limit()
+        {
+            var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
+<html>
+<body id=root>
+
+David Grohl
+Eddie Vedder
+Elvis Presley
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_AutoQuery_Db_services_by_age()
+        {
+            var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=root>
+
+Kurt Cobain
+Jimi Hendrix
+Jim Morrison
 
 
 </body>

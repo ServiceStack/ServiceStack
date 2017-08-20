@@ -610,7 +610,7 @@ namespace ServiceStack
 
     public interface IAutoQueryData
     {
-        ITypedQueryData GetTypedQuery(Type dtoType, Type fromType);
+        ITypedQueryData GetTypedQuery(Type requestDtoType, Type fromType);
 
         DataQuery<From> CreateQuery<From>(IQueryData<From> dto, Dictionary<string, string> dynamicParams, IRequest req = null, IQueryDataSource db = null);
 
@@ -689,42 +689,39 @@ namespace ServiceStack
 
         private static Dictionary<Type, ITypedQueryData> TypedQueries = new Dictionary<Type, ITypedQueryData>();
 
-        public ITypedQueryData GetTypedQuery(Type requestDtoType)
+        public Type GetFromType(Type requestDtoType)
         {
             Type fromType;
             var intoTypeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<,>));
             if (intoTypeDef != null)
             {
                 var args = intoTypeDef.GetGenericArguments();
-                fromType = args[1];
-            }
-            else
-            {
-                var typeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<>));
-                if (typeDef != null)
-                {
-                    var args = typeDef.GetGenericArguments();
-                    fromType = args[0];
-                }
-                else throw new NotSupportedException("Request DTO is not an AutoQuery Data DTO: " + requestDtoType.Name);
+                return args[1];
             }
             
-            return GetTypedQuery(requestDtoType, fromType);
+            var typeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<>));
+            if (typeDef != null)
+            {
+                var args = typeDef.GetGenericArguments();
+                return args[0];
+            }
+
+            throw new NotSupportedException("Request DTO is not an AutoQuery Data DTO: " + requestDtoType.Name);
         }
 
-        public ITypedQueryData GetTypedQuery(Type dtoType, Type fromType)
+        public ITypedQueryData GetTypedQuery(Type requestDtoType, Type fromType)
         {
             ITypedQueryData defaultValue;
-            if (TypedQueries.TryGetValue(dtoType, out defaultValue)) return defaultValue;
+            if (TypedQueries.TryGetValue(requestDtoType, out defaultValue)) return defaultValue;
 
-            var genericType = typeof(TypedQueryData<,>).MakeGenericType(dtoType, fromType);
+            var genericType = typeof(TypedQueryData<,>).MakeGenericType(requestDtoType, fromType);
             defaultValue = genericType.CreateInstance<ITypedQueryData>();
 
             Dictionary<Type, ITypedQueryData> snapshot, newCache;
             do
             {
                 snapshot = TypedQueries;
-                newCache = new Dictionary<Type, ITypedQueryData>(TypedQueries) { [dtoType] = defaultValue };
+                newCache = new Dictionary<Type, ITypedQueryData>(TypedQueries) { [requestDtoType] = defaultValue };
 
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref TypedQueries, newCache, snapshot), snapshot));
@@ -885,8 +882,9 @@ namespace ServiceStack
 
             var ctx = new QueryDataContext { Dto = requestDto, DynamicParams = dynamicParams, Request = req };
             var requestDtoType = requestDto.GetType();
-            var typedQuery = GetTypedQuery(requestDtoType);
-            var q = typedQuery.CreateQuery(GetDb(ctx, typedQuery.FromType));
+            var fromType = GetFromType(requestDtoType);
+            var typedQuery = GetTypedQuery(requestDtoType, fromType);
+            var q = typedQuery.CreateQuery(GetDb(ctx, fromType));
             return Filter(typedQuery.AddToQuery(q, requestDto, dynamicParams, this), requestDto, req);
         }
 
@@ -1150,9 +1148,6 @@ namespace ServiceStack
 
     public interface ITypedQueryData
     {
-        Type QueryType { get; } //Request DTO
-        Type FromType { get; }
-        
         IDataQuery CreateQuery(IQueryDataSource db);
 
         IDataQuery AddToQuery(
