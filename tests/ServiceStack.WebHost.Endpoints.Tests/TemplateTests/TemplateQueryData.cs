@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     
     public class TemplateQueryData
     {
-        public static Product[] Products = new[]
+        public static Product[] Products = 
         {
             new Product(1, "Chai", "Beverages", 18.000, 39),
             new Product(2, "Chang", "Beverages", 19.000, 17),

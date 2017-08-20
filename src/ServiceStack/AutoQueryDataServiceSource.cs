@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -61,6 +63,31 @@ namespace ServiceStack
                 if (typeof(IEnumerable<T>).IsAssignableFromType(pi.PropertyType))
                 {
                     return (IEnumerable<T>)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray);
+                }
+            }
+
+            return null;
+        }
+
+        public static List<object> GetResults(object response)
+        {
+            var task = response as Task;
+            if (task != null)
+                response = task.GetResult();
+
+            var httpResult = response as IHttpResult;
+            if (httpResult != null)
+                response = httpResult.Response;
+
+            var result = response as IEnumerable;
+            if (result != null)
+                return result.Map(x => x);
+
+            foreach (var pi in response.GetType().GetPublicProperties())
+            {
+                if (typeof(IEnumerable).IsAssignableFromType(pi.PropertyType))
+                {
+                    return ((IEnumerable)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray)).Map(x => x);
                 }
             }
 
