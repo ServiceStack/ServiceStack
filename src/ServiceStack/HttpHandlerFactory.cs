@@ -13,17 +13,16 @@ namespace ServiceStack
 {
     public class HttpHandlerFactory : IHttpHandlerFactory
     {
-        public static string WebHostPhysicalPath = null;
-        public static string DefaultRootFileName = null;
-        public static bool HostAutoRedirectsDirs = false;
+        public static string WebHostPhysicalPath;
+        public static string DefaultRootFileName;
 
         //internal static string ApplicationBaseUrl = null;
-        private static IHttpHandler DefaultHttpHandler = null;
-        private static RedirectHttpHandler NonRootModeDefaultHttpHandler = null;
-        private static IHttpHandler ForbiddenHttpHandler = null;
-        private static IHttpHandler NotFoundHttpHandler = null;
+        private static IHttpHandler DefaultHttpHandler;
+        private static RedirectHttpHandler NonRootModeDefaultHttpHandler;
+        private static IHttpHandler ForbiddenHttpHandler;
+        private static IHttpHandler NotFoundHttpHandler;
         private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
-        private static bool IsIntegratedPipeline = false;
+        private static bool IsIntegratedPipeline;
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
@@ -299,14 +298,14 @@ namespace ServiceStack
             if (isFile || isDirectory)
             {
                 //If pathInfo is for Directory try again with redirect including '/' suffix
-                if (appHost.Config.RedirectDirectoriesToTrailingSlashes && isDirectory && !HostAutoRedirectsDirs && !httpReq.OriginalPathInfo.EndsWith("/"))
+                if (appHost.Config.RedirectDirectoriesToTrailingSlashes && isDirectory && !httpReq.OriginalPathInfo.EndsWith("/"))
                     return new RedirectHttpHandler { RelativeUrl = pathInfo + "/" };
 
                 var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
                 if (catchAllHandler != null) 
                     return catchAllHandler;
 
-                if (isFile)
+                if (isDirectory)
                     return StaticFilesHandler;
 
                 return ShouldAllow(pathInfo)

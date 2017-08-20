@@ -38,7 +38,7 @@ namespace ServiceStack.Testing
 
         public Func<BasicAppHost, ServiceController> UseServiceController
         {
-            set { ServiceController = value(this); }
+            set => ServiceController = value(this);
         }
 
         public override void OnConfigLoad()

@@ -30,7 +30,10 @@ namespace ServiceStack
 
         public string DebugDefaultTemplate { get; set; }
 
-        public List<string> IgnorePaths { get; set; } = new List<string>();
+        public List<string> IgnorePaths { get; set; } = new List<string>
+        {
+            "/swagger-ui" //Swagger's handler needs to process index.html 
+        };
 
         public string HtmlExtension
         {

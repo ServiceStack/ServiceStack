@@ -15,10 +15,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public FileSystemVirtualPathProviderTests()
         {
-            if (Directory.Exists(RootDir))
-                Directory.Delete(RootDir, recursive:true);
-
-            Directory.CreateDirectory(RootDir);
+            if (!Directory.Exists(RootDir))
+                Directory.CreateDirectory(RootDir);
         }
 
         public override IVirtualPathProvider GetPathProvider()
