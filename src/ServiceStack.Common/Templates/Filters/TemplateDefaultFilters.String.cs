@@ -201,9 +201,8 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public IRawString jsString(string text) => string.IsNullOrEmpty(text) 
             ? RawString.Empty 
             : escapeNewLines(escapeSingleQuotes(text)).ToRawString();
-        [HandleUnknownValue] public IRawString jsQuotedString(string text) => string.IsNullOrEmpty(text) 
-            ? RawString.Empty 
-            : ("'" + escapeNewLines(escapeSingleQuotes(text)) + "'").ToRawString();
+        [HandleUnknownValue] public IRawString jsQuotedString(string text) => 
+            ("'" + escapeNewLines(escapeSingleQuotes(text ?? "")) + "'").ToRawString();
 
         private async Task serialize(TemplateScopeContext scope, object items, string jsconfig, Func<object, string> fn)
         {
