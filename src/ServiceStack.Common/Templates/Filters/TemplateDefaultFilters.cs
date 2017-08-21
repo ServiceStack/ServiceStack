@@ -321,6 +321,9 @@ namespace ServiceStack.Templates
 
         public object addToStart(TemplateScopeContext scope, object value, string argName)
         {
+            if (value == null)
+                return null;
+            
             if (scope.ScopedParams.TryGetValue(argName, out object collection))
             {
                 if (collection is IList l)
@@ -351,6 +354,9 @@ namespace ServiceStack.Templates
 
         public object addTo(TemplateScopeContext scope, object value, string argName) 
         {
+            if (value == null)
+                return null;
+            
             if (scope.ScopedParams.TryGetValue(argName, out object collection))
             {
                 if (collection is IList l)
