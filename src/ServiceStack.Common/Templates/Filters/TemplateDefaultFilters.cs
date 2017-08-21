@@ -356,7 +356,7 @@ namespace ServiceStack.Templates
             if (target == null)
                 return null;
             
-            if (target is Dictionary<string, object> objDictionary)
+            if (target is IDictionary<string, object> objDictionary)
                 return objDictionary.Keys.ToList();
             if (target is IDictionary dictionary)
                 return dictionary.Keys.Map(x => x.ToString());
@@ -387,7 +387,7 @@ namespace ServiceStack.Templates
             if (target == null)
                 return null;
             
-            if (target is Dictionary<string, object> objDictionary)
+            if (target is IDictionary<string, object> objDictionary)
                 return objDictionary.Values.ToList();
             if (target is IDictionary dictionary)
                 return dictionary.Values.Map(x => x);
@@ -805,7 +805,7 @@ namespace ServiceStack.Templates
         
         public object withoutNullValues(object target)
         {
-            if (target is Dictionary<string, object> objDictionary)
+            if (target is IDictionary<string, object> objDictionary)
             {
                 var keys = objDictionary.Keys.ToList();
                 var to = new Dictionary<string, object>();
@@ -834,7 +834,7 @@ namespace ServiceStack.Templates
         
         public object withoutEmptyValues(object target)
         {
-            if (target is Dictionary<string, object> objDictionary)
+            if (target is IDictionary<string, object> objDictionary)
             {
                 var keys = objDictionary.Keys.ToList();
                 var to = new Dictionary<string, object>();

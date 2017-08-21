@@ -48,7 +48,7 @@ namespace ServiceStack.Templates
                 var filterArgs = options.AssertOptions(nameof(ensureAllArgsNotNull));
                 var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
                 
-                if (args is Dictionary<string, object> argsMap)
+                if (args is IDictionary<string, object> argsMap)
                 {
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAllArgsNotNull)}' expects a non empty Object Dictionary");
@@ -83,7 +83,7 @@ namespace ServiceStack.Templates
                 var filterArgs = options.AssertOptions(nameof(ensureAnyArgsNotNull));
                 var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
                 
-                if (args is Dictionary<string, object> argsMap)
+                if (args is IDictionary<string, object> argsMap)
                 {
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAnyArgsNotNull)}' expects a non empty Object Dictionary");
@@ -118,7 +118,7 @@ namespace ServiceStack.Templates
                 var filterArgs = options.AssertOptions(nameof(ensureAllArgsNotEmpty));
                 var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
                 
-                if (args is Dictionary<string, object> argsMap)
+                if (args is IDictionary<string, object> argsMap)
                 {
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAllArgsNotEmpty)}' expects a non empty Object Dictionary");
@@ -153,7 +153,7 @@ namespace ServiceStack.Templates
                 var filterArgs = options.AssertOptions(nameof(ensureAnyArgsNotEmpty));
                 var message = filterArgs.TryGetValue("message", out object oMessage) ? oMessage as string : null;
                 
-                if (args is Dictionary<string, object> argsMap)
+                if (args is IDictionary<string, object> argsMap)
                 {
                     if (argsMap.Count == 0)
                         throw new NotSupportedException($"'{nameof(ensureAnyArgsNotEmpty)}' expects a non empty Object Dictionary");

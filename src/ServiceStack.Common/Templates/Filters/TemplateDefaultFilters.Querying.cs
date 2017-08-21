@@ -280,7 +280,7 @@ namespace ServiceStack.Templates
                     {
                         foreach (var a in tuple)
                         {
-                            if (a is Dictionary<string, object> aArgs)
+                            if (a is IDictionary<string, object> aArgs)
                             {
                                 foreach (var entry in aArgs)
                                 {
