@@ -206,8 +206,11 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object doIf(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
 
+        [HandleUnknownValue] public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
         [HandleUnknownValue] public object ifShow(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
         [HandleUnknownValue] public object ifShowRaw(object test, object useValue) => isTrue(test) ? (object) raw(useValue) : StopExecution.Value;
+
+        [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
         [HandleUnknownValue] public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
