@@ -549,7 +549,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [Route("/query/all-fields")]
     public class QueryAllFields : QueryDb<AllFields>
     {
-        public virtual Guid Guid { get; set; }
+        public virtual Guid? Guid { get; set; }
     }
 
     public class AllFields
@@ -576,7 +576,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public HttpStatusCode Enum { get; set; }
         public HttpStatusCode? NullableEnum { get; set; }
     }
-    
     [DataContract]
     public class Adhoc
     {
@@ -1877,16 +1876,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response.PrintDump();
         }
 
-        //[Test]
-        //public void Can_use_implicit_query_on_enums()
-        //{
-        //    var response = Config.ListeningOn.CombineWith("query", "all-fields")
-        //        .AddQueryParam("EnumContains", "Not")
-        //        .GetJsonFromUrl()
-        //        .FromJson<QueryResponse<AllFields>>();
 
-        //    Assert.That(response.Results[0].Enum, Is.EqualTo(HttpStatusCode.MethodNotAllowed));
-        //}
 
     }
 
