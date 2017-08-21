@@ -27,6 +27,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     
     public class QueryTemplateRockstars : QueryDb<Rockstar> {}
     
+    public class QueryCustomers : QueryDb<Customer> 
+    {
+        public string CustomerId { get; set; }
+        public string CompanyNameContains { get; set; }
+        public string[] CountryIn { get; set; }
+    }
+    
     public class TemplateServiceStackFiltersTests
     {
         class AppHost : AppSelfHostBase
@@ -50,6 +57,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 {
                     db.DropAndCreateTable<Rockstar>();
                     db.InsertAll(UnitTestExample.SeedData);
+                    
+                    db.DropAndCreateTable<Customer>();
+                    db.InsertAll(TemplateQueryData.Customers);
                 }
 
                 Plugins.Add(new TemplatePagesFeature
@@ -84,6 +94,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 files.WriteFile("autoquery-rockstars.html", @"
 {{ { age, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryTemplateRockstars') 
    | toResults | select: { it.FirstName } { it.LastName }\n }}");
+
+                files.WriteFile("autoquery-customer.html", @"
+{{ { customerId } | sendToAutoQuery('QueryCustomers') 
+     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.City }\n }}");
+
+                files.WriteFile("autoquery-customers.html", @"
+{{ { countryIn, orderBy } | sendToAutoQuery('QueryCustomers') 
+     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
+
+                files.WriteFile("autoquery-top5-de-uk.html", @"
+{{ { countryIn:['UK','Germany'], orderBy:'customerId', take:5 } | sendToAutoQuery('QueryCustomers') 
+     | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
             }
         }
 
@@ -205,6 +227,60 @@ Elvis Presley
 Kurt Cobain
 Jimi Hendrix
 Jim Morrison
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_AutoQuery_QueryCustomer_service_by_CityIn()
+        {
+            var html = BaseUrl.CombineWith("autoquery-customers")
+                .AddQueryParam("countryIn","UK,Germany")
+                .AddQueryParam("orderBy","customerId")
+                .GetStringFromUrl();
+            html.Print();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+ALFKI: Alfreds Futterkiste, Germany
+AROUT: Around the Horn, UK
+BLAUS: Blauer See Delikatessen, Germany
+BSBEV: B&#39;s Beverages, UK
+CONSH: Consolidated Holdings, UK
+DRACD: Drachenblut Delikatessen, Germany
+EASTC: Eastern Connection, UK
+FRANK: Frankenversand, Germany
+ISLAT: Island Trading, UK
+KOENE: K&#246;niglich Essen, Germany
+LEHMS: Lehmanns Marktstand, Germany
+MORGK: Morgenstern Gesundkost, Germany
+NORTS: North/South, UK
+OTTIK: Ottilies K&#228;seladen, Germany
+QUICK: QUICK-Stop, Germany
+SEVES: Seven Seas Imports, UK
+TOMSP: Toms Spezialit&#228;ten, Germany
+WANDK: Die Wandernde Kuh, Germany
+
+
+</body>
+</html>".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Can_call_AutoQuery_QueryCustomer_top5_UK_Germany()
+        {
+            var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl();
+            html.Print();
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
+<body id=root>
+
+ALFKI: Alfreds Futterkiste, Germany
+AROUT: Around the Horn, UK
+BLAUS: Blauer See Delikatessen, Germany
+BSBEV: B&#39;s Beverages, UK
+CONSH: Consolidated Holdings, UK
 
 
 </body>

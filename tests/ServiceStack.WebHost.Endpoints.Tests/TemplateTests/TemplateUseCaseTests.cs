@@ -39,10 +39,6 @@ Monthly Expenses:
 Total            <b>{{ totalExpenses | currency }}</b>
 
 Monthly Savings: <b>{{ totalSavings | currency }}</b>
-
-Projected Cash Position:
-{{ projectedMonths | times | map: incr(index)
- | select: { now | addMonths(it) | dateFormat }       <b>{ totalSavings | multiply(it) | add(balance) | currency }</b>\n }}
 {{ htmlErrorDebug }}";
 
             var output = context.EvaluateTemplate(template);
@@ -65,12 +61,7 @@ Misc             $200.00
 
 Total            <b>$1,700.00</b>
 
-Monthly Savings: <b>$2,500.00</b>
-
-Projected Cash Position:
-2017-09-20       <b>$13,700.00</b>
-2017-10-20       <b>$16,200.00</b>
-2017-11-20       <b>$18,700.00</b>".NormalizeNewLines()));
+Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
         }
 
     }
