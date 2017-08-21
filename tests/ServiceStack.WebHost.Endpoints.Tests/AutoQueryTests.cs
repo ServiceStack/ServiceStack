@@ -131,6 +131,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     FirstName = x.FirstName,
                     LastName = x.LastName
                 }));
+                
+                db.CreateTable<TypeWithEnum>();
+
+                db.Insert(new TypeWithEnum { Id = 1, Name = "Value1", SomeEnum = SomeEnum.Value1, NSomeEnum = SomeEnum.Value1, SomeEnumAsInt = SomeEnumAsInt.Value1, NSomeEnumAsInt = SomeEnumAsInt.Value1 });
+                db.Insert(new TypeWithEnum { Id = 2, Name = "Value2", SomeEnum = SomeEnum.Value2, NSomeEnum = SomeEnum.Value2, SomeEnumAsInt = SomeEnumAsInt.Value2, NSomeEnumAsInt = SomeEnumAsInt.Value2 });
+                db.Insert(new TypeWithEnum { Id = 3, Name = "Value3", SomeEnum = SomeEnum.Value3, NSomeEnum = SomeEnum.Value3, SomeEnumAsInt = SomeEnumAsInt.Value3, NSomeEnumAsInt = SomeEnumAsInt.Value3 });
             }
 
             var autoQuery = new AutoQueryFeature
@@ -576,6 +582,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public HttpStatusCode Enum { get; set; }
         public HttpStatusCode? NullableEnum { get; set; }
     }
+
+    [EnumAsInt]
+    public enum SomeEnumAsInt
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 3,
+    }
+
+    public enum SomeEnum
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 3
+    }
+
+    public class TypeWithEnum
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public SomeEnum SomeEnum { get; set; }
+        public SomeEnumAsInt SomeEnumAsInt { get; set; }
+        public SomeEnum? NSomeEnum { get; set; }
+        public SomeEnumAsInt? NSomeEnumAsInt { get; set; }
+    }
+
+    [Route("/query-enums")]
+    public class QueryTypeWithEnums : QueryDb<TypeWithEnum> {}
+
     [DataContract]
     public class Adhoc
     {
@@ -1876,8 +1911,52 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response.PrintDump();
         }
 
+        [Test]
+        public void Can_use_implicit_query_on_enums_on_all_fields()
+        {
+            var allFieldsResponse = Config.ListeningOn.CombineWith("query", "all-fields")
+                .AddQueryParam("EnumContains", "MethodNotAllowed")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<AllFields>>();
 
+            Assert.That(allFieldsResponse.Results[0].Enum, Is.EqualTo(HttpStatusCode.MethodNotAllowed));
+        }
 
+        [Test]
+        public void Can_use_implicit_query_to_query_equals_on_int_enums()
+        {
+            var response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("NSomeEnumAsInt", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].NSomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
+            
+            response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("NSomeEnumAsInt", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].NSomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
+        }
+
+        [Test]
+        public void Can_use_implicit_query_to_query_contains_on_string_enums()
+        {
+            var response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("SomeEnumContains", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].SomeEnum, Is.EqualTo(SomeEnum.Value2));
+            
+            response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("NSomeEnumContains", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].NSomeEnum, Is.EqualTo(SomeEnum.Value2));
+        }
     }
 
     public static class AutoQueryExtensions
