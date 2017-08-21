@@ -1247,6 +1247,107 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_continue_filter_execution_with_only()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "foo",
+                    ["items"] = new[]{1,2,3}
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIfNotNull }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ null  | onlyIfNotNull  | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ arg   | onlyIfNotNull  | useFmt('{0} + {1} = {2}',1,2,3) }}"), Is.EqualTo("1 + 2 = 3"));
+            Assert.That(context.EvaluateTemplate("{{ arg   | onlyIfNull     | use('bar') | assignTo: arg }}{{ arg }}"), Is.EqualTo("foo"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | onlyIfNull     | use('bar') | assignTo: noArg }}{{ noArg }}"), Is.EqualTo("bar"));
+            Assert.That(context.EvaluateTemplate("{{ []    | onlyIfNotEmpty | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ items | onlyIfEmpty    | use([4,5,6]) | assignTo: items }}{{ items | join }}"), Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateTemplate("{{ nums  | onlyIfEmpty    | use([4,5,6]) | assignTo: nums  }}{{ nums  | join }}"), Is.EqualTo("4,5,6"));
+            Assert.That(context.EvaluateTemplate("{{ 1     | onlyIfTruthy   | default('unreachable') }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 0     | onlyIfTruthy   | default('unreachable') }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ arg   | onlyIfFalsy    | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ one   | onlyIfFalsy    | use(1) | assignTo: one }}{{ one }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIf(false) }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIf(true) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | onlyIfAll: lt(it,4)\n | join }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | onlyIfAll: lt(it,5)\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | onlyIfAny: it = 4\n | join }}"), Is.EqualTo("0,1,2,3,4"));
+            Assert.That(context.EvaluateTemplate("{{ 5 | times | onlyIfAny: it = 5\n | join }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ 1   | onlyWhere: !isString(it) }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 'a' | onlyWhere: !isString(it) }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ onlyIf(false)     | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ onlyIf(true)      | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifOnly    | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifOnly    | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifNotOnly | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ false | ifNotOnly | show: 1 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ doIf(true)   | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ doIf(false)  | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ true  | ifDo | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifDo | show: 1 }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ true  | ifShow: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false | ifShow: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showIf(true)  }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showIf(false) }}"), Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Can_chain_only_filters_together()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["arg"] = "foo",
+                    ["empty"] = "",
+                    ["nil"] = null,
+                    ["items"] = new[]{1,2,3},
+                    ["none"] = new int[]{},
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ arg   | onlyIfNotNull   | onlyIfNull(noArg)   | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ noArg | onlyIfNull      | onlyIfNull(noArg2)  | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty | onlyIfNotNull   | onlyIfNull(nil)     | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty | onlyIfNotNull   | onlyIfNotNull(nil)  | show: 1 }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ items | onlyIfNotEmpty  | onlyIfEmpty(none) | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ items | onlyIfEmpty     | show: 1 }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ none  | onlyIfNotEmpty  | show: 1 }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateTemplate("{{ onlyIf(!isEmpty(items)) | onlyIf(isEmpty(none)) | show: 1 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ noArg | onlyIfNull      | onlyIfNotNull(none)   | show: 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ arg   | onlyIfNotEmpty  | onlyIfNotEmpty(items) | join }}"), Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
+        public void Does_show()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | show: 2 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | use('({0})') | fmt: 2 }}"), Is.EqualTo("(2)"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showFmt('({0})',2) }}"), Is.EqualTo("(2)"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | use(2) | format('0.00') }}"), Is.EqualTo("2.00"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showFormat(2,'0.00') }}"), Is.EqualTo("2.00"));
+
+            Assert.That(context.EvaluateTemplate("{{ 1 | show:    <h1>title</h1> }}"), Is.EqualTo("&lt;h1&gt;title&lt;/h1&gt;"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showRaw: <h1>title</h1> }}"), Is.EqualTo("<h1>title</h1>"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | showFmtRaw('<h1>{0}</h1>',2) }}"), Is.EqualTo("<h1>2</h1>"));
+
+            Assert.That(context.EvaluateTemplate("{{ 2 | formatRaw: <h1>{0}</h1> }}"), Is.EqualTo("<h1>2</h1>"));
+        }
+
+        [Test]
         public void Does_conditional_error_handling()
         {
             var context = new TemplateContext

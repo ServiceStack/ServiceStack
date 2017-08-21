@@ -46,6 +46,8 @@ namespace ServiceStack.Templates
             return fmt;
         }
 
+        public IRawString formatRaw(object obj, string fmt) => raw(string.Format(fmt.Replace("{{","{").Replace("}}","}"), obj));
+        
         public string format(object obj, string format) => obj is IFormattable formattable
             ? formattable.ToString(format, null)
             : string.Format(format, obj);

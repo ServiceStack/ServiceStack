@@ -134,10 +134,6 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object endIfTruthy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
         [HandleUnknownValue] public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
-        [HandleUnknownValue] public object ifEnd(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifEnd(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotEnd(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotEnd(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
         [HandleUnknownValue] public object endIf(object returnTarget, bool test) => test ? StopExecution.Value : returnTarget;
         [HandleUnknownValue] public object endIfAny(TemplateScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
         [HandleUnknownValue] public object endIfAll(TemplateScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
@@ -157,21 +153,80 @@ namespace ServiceStack.Templates
                 ? StopExecution.Value
                 : target;
         }
+        
+        [HandleUnknownValue] public object ifEnd(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifEnd(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotEnd(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotEnd(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        
+        [HandleUnknownValue] public object onlyIfNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfNotNull(object target) => isNull(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfNotNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfExists(object target) => isNull(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfExists(object ignoreTarget, object target) => isNull(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfNotEmpty(object target) => isEmpty(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfNotEmpty(object ignoreTarget, object target) => isEmpty(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfFalsy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfFalsy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object onlyIfTruthy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfTruthy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIf(object test) => !isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
+
+        [HandleUnknownValue] public object onlyIf(object returnTarget, bool test) => !test ? StopExecution.Value : returnTarget;
+        [HandleUnknownValue] public object onlyIfAny(TemplateScopeContext scope, object target, object expression) => !any(scope, target, expression) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyIfAll(TemplateScopeContext scope, object target, object expression) => !all(scope, target, expression) ? StopExecution.Value : target;
+        [HandleUnknownValue] public object onlyWhere(TemplateScopeContext scope, object target, object expression) => onlyWhere(scope, target, expression, null);
+
+        [HandleUnknownValue]
+        public object onlyWhere(TemplateScopeContext scope, object target, object expression, object scopeOptions)
+        {
+            var literal = scope.AssertExpression(nameof(count), expression);
+            var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
+
+            literal.ParseConditionExpression(out ConditionExpression expr);
+            scope.AddItemToScope(itemBinding, target);
+            var result = expr.Evaluate(scope);
+
+            return result
+                ? target
+                : StopExecution.Value;
+        }
+        
+        [HandleUnknownValue] public object ifOnly(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifOnly(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotOnly(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        [HandleUnknownValue] public object ifNotOnly(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+
 
         [HandleUnknownValue] public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object ifDo(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object doIf(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
 
-        [HandleUnknownValue] public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object ifShow(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object ifShowRaw(object test, object useValue) => isTrue(test) ? (object) raw(useValue) : StopExecution.Value;
+        [HandleUnknownValue] public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
         public object show(object ignoreTarget, object useValue) => useValue;
+        public IRawString showRaw(object ignoreTarget, string content) => content.ToRawString();
+
         public object useFmt(object ignoreTarget, string format, object arg) => fmt(format, arg);
         public object useFmt(object ignoreTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
         public object useFmt(object ignoreTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
         public object useFormat(object ignoreTarget, object arg, string fmt) => format(arg, fmt);
+
+        public object showFmt(object ignoreTarget, string format, object arg) => fmt(format, arg);
+        public object showFmt(object ignoreTarget, string format, object arg1, object arg2) => fmt(format, arg1, arg2);
+        public object showFmt(object ignoreTarget, string format, object arg1, object arg2, object arg3) => fmt(format, arg1, arg2, arg3);
+        public object showFormat(object ignoreTarget, object arg, string fmt) => format(arg, fmt);
+
+        public IRawString showFmtRaw(object ignoreTarget, string format, object arg) => raw(fmt(format, arg));
+        public IRawString showFmtRaw(object ignoreTarget, string format, object arg1, object arg2) => raw(fmt(format, arg1, arg2));
+        public IRawString showFmtRaw(object ignoreTarget, string format, object arg1, object arg2, object arg3) => raw(fmt(format, arg1, arg2, arg3));
 
         [HandleUnknownValue] public bool isString(object target) => target is string;
         [HandleUnknownValue] public bool isInt(object target) => target is int;
