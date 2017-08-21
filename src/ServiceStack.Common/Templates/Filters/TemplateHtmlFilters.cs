@@ -99,8 +99,11 @@ namespace ServiceStack.Templates
                 if (isEmpty)
                     caption = captionIfEmpty;
 
-                if (caption != null)
+                if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                {
                     sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
+                    scopedParams["hasCaption"] = true;
+                }
 
                 if (htmlHeaders.Length > 0)
                     sb.Append("<thead>").Append(htmlHeaders).Append("</thead>");
@@ -157,8 +160,8 @@ namespace ServiceStack.Templates
 
                     if (scopedParams.TryGetValue("id", out object id))
                         sb.Append(" id=\"").Append(id).Append("\"");
-                    if (className != null)
-                        sb.Append(" class=\"").Append(className).Append("\"");
+                    
+                    sb.Append(" class=\"").Append(className).Append("\"");
 
                     sb.Append(">");
 
@@ -166,8 +169,11 @@ namespace ServiceStack.Templates
                     if (isEmpty)
                         caption = captionIfEmpty;
 
-                    if (caption != null)
+                    if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                    {
                         sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
+                        scopedParams["hasCaption"] = true;
+                    }
 
                     if (!isEmpty)
                     {
