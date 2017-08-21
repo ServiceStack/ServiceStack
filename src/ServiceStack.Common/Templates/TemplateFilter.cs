@@ -23,7 +23,7 @@ namespace ServiceStack.Templates
     public interface IResultInstruction {}
     public class IgnoreResult : IResultInstruction
     {
-        internal static readonly IgnoreResult Value = new IgnoreResult();
+        public static readonly IgnoreResult Value = new IgnoreResult();
         private IgnoreResult(){}
     }
 

@@ -781,12 +781,7 @@ namespace ServiceStack.Templates
                 await scope.WritePageAsync(page, codePage, pageParams);
             }
         }
-        public bool matchesPathInfo(TemplateScopeContext scope, string pathInfo) => 
-            scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');
-
-        public object ifMatchesPathInfo(TemplateScopeContext scope, object returnTarget, string pathInfo) =>
-            matchesPathInfo(scope, pathInfo) ? returnTarget : null;
-
+        
         public object removeKeyFromDictionary(IDictionary dictionary, object keyToRemove)
         {
             var removeKeys = keyToRemove is IEnumerable e
