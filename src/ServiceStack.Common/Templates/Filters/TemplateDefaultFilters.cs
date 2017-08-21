@@ -601,6 +601,70 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"'{nameof(scopeVars)}' expects a Dictionary but received a '{target.GetType().Name}'");
         }
 
+        public object selectFields(object target, object names)
+        {
+            if (target == null || names == null)
+                return null;
+            
+            if (target is string || target.GetType().IsValueType())
+                throw new NotSupportedException(nameof(selectFields) + " requires an IEnumerable, IDictionary or POCO Target, received instead: " + target.GetType().Name);
+
+            var namesList = names is IEnumerable eKeys
+                ? eKeys.Map(x => x)
+                : null;
+
+            var stringKey = names as string;
+            var stringKeys = namesList?.OfType<string>().ToList();
+            if (stringKeys.IsEmpty())
+                stringKeys = null;
+
+            if (stringKey == null && stringKeys == null)
+                throw new NotSupportedException(nameof(selectFields) + " requires a string or [string] or property names, received instead: " + names.GetType().Name);
+
+            if (stringKey?.IndexOf(',') >= 0)
+            {
+                stringKeys = stringKey.Split(',').Map(x => x.Trim());
+                stringKey = null;
+            }
+            
+            var stringsSet = stringKeys != null
+                ? new HashSet<string>(stringKeys, StringComparer.OrdinalIgnoreCase)
+                : new HashSet<string> { stringKey };
+
+            var singleItem = target is IDictionary || !(target is IEnumerable);
+            if (singleItem)
+            {
+                var objDictionary = target.ToObjectDictionary();
+
+                var to = new Dictionary<string, object>();
+                foreach (var key in objDictionary.Keys)
+                {
+                    if (stringsSet.Contains(key))
+                        to[key] = objDictionary[key];
+                }
+
+                return to;
+            }
+            else 
+            {
+                var to = new List<Dictionary<string,object>>();
+                var e = (IEnumerable) target;
+                foreach (var item in e)
+                {
+                    var objDictionary = item.ToObjectDictionary();
+
+                    var row = new Dictionary<string, object>();
+                    foreach (var key in objDictionary.Keys)
+                    {
+                        if (stringsSet.Contains(key))
+                            row[key] = objDictionary[key];
+                    }
+                    to.Add(row);
+                }
+                return to;
+            }
+        }
+
         [HandleUnknownValue]
         public Task select(TemplateScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
         [HandleUnknownValue]
@@ -664,6 +728,80 @@ namespace ServiceStack.Templates
 
         public object ifMatchesPathInfo(TemplateScopeContext scope, object returnTarget, string pathInfo) =>
             matchesPathInfo(scope, pathInfo) ? returnTarget : null;
+
+        public object removeKeyFromDictionary(IDictionary dictionary, object keyToRemove)
+        {
+            var removeKeys = keyToRemove is IEnumerable e
+                ? e.Map(x => x)
+                : null;
+            
+            foreach (var key in dictionary.Keys)
+            {
+                if (removeKeys != null)
+                {
+                    foreach (var removeKey in removeKeys)
+                    {
+                        if (Equals(key, removeKey))
+                            dictionary.Remove(key);
+                    }
+                }
+                else if (Equals(key, keyToRemove))
+                {
+                    dictionary.Remove(key);
+                }
+            }
+            return dictionary;
+        }
+        
+        public object remove(object target, object keysToRemove)
+        {
+            var removeKeys = keysToRemove is IEnumerable eKeys
+                ? eKeys.Map(x => x)
+                : null;
+
+            var stringKey = keysToRemove as string;
+            var stringKeys = removeKeys?.OfType<string>().ToArray();
+            if (stringKeys.IsEmpty())
+                stringKeys = null;
+
+            if (target is IDictionary d)
+                return removeKeyFromDictionary(d, removeKeys);
+            
+            if (target is IEnumerable e)
+            {
+                object first = null;
+                foreach (var item in e)
+                {
+                    if (item == null) 
+                        continue;
+                    
+                    first = item;
+                    break;
+                }
+                if (first == null)
+                    return target;
+
+                var itemType = first.GetType();
+                var props = TypeProperties.Get(itemType);
+                
+                if (!(first is IDictionary))
+                    throw new NotSupportedException(nameof(remove) + " removes keys from a IDictionary or [IDictionary]");
+                
+                foreach (var item in e)
+                {
+                    if (item == null)
+                        continue;
+
+                    if (item is IDictionary ed)
+                    {
+                        removeKeyFromDictionary(ed, removeKeys);
+                    }
+                }
+            }
+            else throw new NotSupportedException(nameof(remove) + " removes keys from a IDictionary or [IDictionary]");
+            
+            return target;
+        }
         
         public object withoutNullValues(object target)
         {
