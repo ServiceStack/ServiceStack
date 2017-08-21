@@ -1379,6 +1379,38 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 1 | ifMatchesPathInfo('/dir/sub/') }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ 1 | ifMatchesPathInfo('/dir/su') | otherwise: 0 }}"), Is.EqualTo("0"));
         }
-        
+
+        [Test]
+        public void Can_addTo_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addTo: nums }}
+{{ 2  | addTo: nums }}
+{{ 3  | addTo: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1]  | addTo: nums }}
+{{ [2]  | addTo: nums }}
+{{ [3]  | addTo: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
+        public void Can_addToStart_of_an_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addToStart: nums }}
+{{ 2  | addToStart: nums }}
+{{ 3  | addToStart: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("3,2,1"));
+        }
     }
 }

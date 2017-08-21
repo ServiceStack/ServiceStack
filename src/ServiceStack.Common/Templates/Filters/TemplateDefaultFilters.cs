@@ -317,6 +317,111 @@ namespace ServiceStack.Templates
 
         public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
+        public KeyValuePair<string, object> keyValuePair(string key, object value) => new KeyValuePair<string, object>(key, value);
+
+        public object addToStart(TemplateScopeContext scope, object value, string argName)
+        {
+            if (scope.ScopedParams.TryGetValue(argName, out object collection))
+            {
+                if (collection is IList l)
+                {
+                    l.Insert(0, value);
+                }                
+                else if (collection is IEnumerable e && !(collection is string))
+                {
+                    var to = new List<object> { value };
+                    foreach (var item in e)
+                    {
+                        to.Add(item);
+                    }
+                    scope.ScopedParams[argName] = to;
+                }
+                else throw new NotSupportedException(nameof(addToStart) + " can only add to an IEnumerable not a " + collection.GetType().Name);
+            }
+            else
+            {
+                if (value is IEnumerable && !(value is string))
+                    scope.ScopedParams[argName] = value;
+                else
+                    scope.ScopedParams[argName] = new List<object> { value };
+            }
+            
+            return IgnoreResult.Value;
+        }
+
+        public object addTo(TemplateScopeContext scope, object value, string argName) 
+        {
+            if (scope.ScopedParams.TryGetValue(argName, out object collection))
+            {
+                if (collection is IList l)
+                {
+                    if (value is IEnumerable e && !(value is string))
+                    {
+                        foreach (var item in e)
+                        {
+                            l.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        l.Add(value);
+                    }
+                }                
+                else if (collection is IDictionary d)
+                {
+                    if (value is KeyValuePair<string, object> kvp)
+                    {
+                        d[kvp.Key] = kvp.Value;
+                    }
+                    else if (value is IEnumerable<KeyValuePair<string, object>> kvps)
+                    {
+                        foreach (var entry in kvps)
+                        {
+                            d[entry.Key] = entry.Value;
+                        }
+                    }
+                    else if (value is IDictionary dValue)
+                    {
+                        var keys = dValue.Keys;
+                        foreach (var key in keys)
+                        {
+                            d[key] = dValue[key];
+                        }
+                    }
+                }
+                else if (collection is IEnumerable e && !(collection is string))
+                {
+                    var to = new List<object>();
+                    foreach (var item in e)
+                    {
+                        to.Add(item);
+                    }
+                    if (value is IEnumerable eValues && !(value is string))
+                    {
+                        foreach (var item in eValues)
+                        {
+                            to.Add(item);
+                        }
+                    }
+                    else
+                    {
+                        to.Add(value);
+                    }
+                    scope.ScopedParams[argName] = to;
+                }
+                else throw new NotSupportedException(nameof(addTo) + " can only add to an IEnumerable not a " + collection.GetType().Name);
+            }
+            else
+            {
+                if (value is IEnumerable && !(value is string))
+                    scope.ScopedParams[argName] = value;
+                else
+                    scope.ScopedParams[argName] = new List<object> { value };
+            }
+            
+            return IgnoreResult.Value;
+        }
+        
         public object assign(TemplateScopeContext scope, string argExpr, object value) //from filter
         {
             var targetEndPos = argExpr.IndexOfAny(new[] { '.', '[' });
@@ -336,7 +441,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        public object assignTo(TemplateScopeContext scope, object value, string argName) //from filter
+        public object assignTo(TemplateScopeContext scope, object value, string argName)
         {
             scope.ScopedParams[argName] = value;
             return IgnoreResult.Value;

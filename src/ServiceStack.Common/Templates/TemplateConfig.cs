@@ -9,6 +9,8 @@ namespace ServiceStack.Templates
         {
             "assignTo",
             "assignError",
+            "addTo",
+            "addToStart",
             "do",
             "end",
             "throw",
