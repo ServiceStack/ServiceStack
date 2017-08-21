@@ -351,6 +351,68 @@ namespace ServiceStack.Templates
         public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
 
+        public List<string> toKeys(object target)
+        {
+            if (target == null)
+                return null;
+            
+            if (target is Dictionary<string, object> objDictionary)
+                return objDictionary.Keys.ToList();
+            if (target is IDictionary dictionary)
+                return dictionary.Keys.Map(x => x.ToString());
+
+            if (target is IEnumerable<KeyValuePair<string, object>> kvps)
+            {
+                var to = new List<string>();
+                foreach (var kvp in kvps)
+                {
+                    to.Add(kvp.Key);
+                }
+                return to;
+            }
+            if (target is IEnumerable<KeyValuePair<string, string>> stringKvps)
+            {
+                var to = new List<string>();
+                foreach (var kvp in stringKvps)
+                {
+                    to.Add(kvp.Key);
+                }
+                return to;
+            }
+            throw new NotSupportedException(nameof(toKeys) + " expects an IDictionary or List of KeyValuePairs but received: " + target.GetType().Name);
+        }
+
+        public List<object> toValues(object target)
+        {
+            if (target == null)
+                return null;
+            
+            if (target is Dictionary<string, object> objDictionary)
+                return objDictionary.Values.ToList();
+            if (target is IDictionary dictionary)
+                return dictionary.Values.Map(x => x);
+
+            if (target is IEnumerable<KeyValuePair<string, object>> kvps)
+            {
+                var to = new List<object>();
+                foreach (var kvp in kvps)
+                {
+                    to.Add(kvp.Value);
+                }
+                return to;
+            }
+            if (target is IEnumerable<KeyValuePair<string, string>> stringKvps)
+            {
+                var to = new List<object>();
+                foreach (var kvp in stringKvps)
+                {
+                    to.Add(kvp.Value);
+                }
+                return to;
+            }
+            throw new NotSupportedException(nameof(toValues) + " expects an IDictionary or List of KeyValuePairs but received: " + target.GetType().Name);
+        }
+
         public Dictionary<string, object> toObjectDictionary(object target) => target.ToObjectDictionary();
         public Dictionary<string, string> toStringDictionary(IDictionary map)
         {
