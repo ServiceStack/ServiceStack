@@ -8,6 +8,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public partial class TemplateDefaultFilters
     {
         public IRawString raw(object value)

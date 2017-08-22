@@ -12,7 +12,7 @@ namespace ServiceStack.Templates
 {
     // ReSharper disable InconsistentNaming
     
-    public partial class TemplateDefaultFilters : TemplateDefaultFiltersWithKeywords
+    public partial class TemplateDefaultFilters : TemplateFilter
     {
         public static TemplateDefaultFilters Instance = new TemplateDefaultFilters();
 
@@ -1025,4 +1025,13 @@ namespace ServiceStack.Templates
             return target;
         }
    }
+
+    public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        
+    {
+        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+
+        public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
+        public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
+    }
 }

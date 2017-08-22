@@ -3,6 +3,8 @@ using System.Runtime.CompilerServices;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public partial class TemplateDefaultFilters
     {
         public object add(object lhs, object rhs) => DynamicNumber.Add(lhs, rhs);

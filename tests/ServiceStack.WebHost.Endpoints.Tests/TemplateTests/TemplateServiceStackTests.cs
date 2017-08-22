@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -34,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public string[] CountryIn { get; set; }
     }
     
-    public class TemplateServiceStackFiltersTests
+    public class TemplateServiceStackTests
     {
         class AppHost : AppSelfHostBase
         {
@@ -68,7 +69,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     {
                         ["products"] = TemplateQueryData.Products,
                     },
-                    TemplateFilters = { new TemplateAutoQueryFilters() },
+                    TemplateFilters =
+                    {
+                        new TemplateAutoQueryFilters(),
+                    },
                 });
                 
                 Plugins.Add(new AutoQueryDataFeature { MaxLimit = 100 }
@@ -106,13 +110,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 files.WriteFile("autoquery-top5-de-uk.html", @"
 {{ { countryIn:['UK','Germany'], orderBy:'customerId', take:5 } | sendToAutoQuery('QueryCustomers') 
      | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
+                
+                files.WriteFile("api/customers.html", @"
+{{ limit | default(100) | assignTo: limit }}
+
+{{ 'select CustomerId, CompanyName, City, Country from Customer' | assignTo: sql }}
+
+{{ city    | onlyIfExists | use('City = @city')       | addTo: filters }}
+{{ country | onlyIfExists | use('Country = @country') | addTo: filters }}
+{{ filters | onlyIfExists | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
+
+{{ sql | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
+       | dbSelect({ country, city }) | return }}
+");
             }
         }
 
         public static string BaseUrl = Config.ListeningOn;
         
         private readonly ServiceStackHost appHost;
-        public TemplateServiceStackFiltersTests()
+        public TemplateServiceStackTests()
         {
             appHost = new AppHost()
                 .Init()
@@ -286,6 +303,5 @@ CONSH: Consolidated Holdings, UK
 </body>
 </html>".NormalizeNewLines()));
         }
-
     }
 }

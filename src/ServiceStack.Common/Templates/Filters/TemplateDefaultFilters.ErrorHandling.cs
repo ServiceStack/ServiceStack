@@ -5,6 +5,8 @@ using System.Linq;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public partial class TemplateDefaultFilters
     {
         public object assignError(TemplateScopeContext scope, string errorBinding)
@@ -242,14 +244,4 @@ namespace ServiceStack.Templates
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, null);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message, object options) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, options);
      }
-
-    public class TemplateDefaultFiltersWithKeywords : TemplateFilter //Methods named after common keywords breaks intelli-sense when trying to use them
-    {
-        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
-        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
-
-        public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
-        public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
-    }
-
 }

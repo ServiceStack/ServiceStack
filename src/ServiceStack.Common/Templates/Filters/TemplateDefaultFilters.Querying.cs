@@ -6,6 +6,8 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public partial class TemplateDefaultFilters
     {
         public List<object> step(IEnumerable target, object scopeOptions)

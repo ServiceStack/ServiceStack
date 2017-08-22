@@ -2,6 +2,8 @@
 
 namespace ServiceStack.Templates
 {
+    // ReSharper disable InconsistentNaming
+    
     public partial class TemplateDefaultFilters
     {
         private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;

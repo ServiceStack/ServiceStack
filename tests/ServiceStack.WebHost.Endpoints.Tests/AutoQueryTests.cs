@@ -1926,11 +1926,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_use_implicit_query_to_query_equals_on_int_enums()
         {
             var response = Config.ListeningOn.CombineWith("query-enums")
-                .AddQueryParam("NSomeEnumAsInt", "Value2")
+                .AddQueryParam("SomeEnumAsInt", "Value2")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<TypeWithEnum>>();
 
-            Assert.That(response.Results[0].NSomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
+            Assert.That(response.Results[0].SomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
             
             response = Config.ListeningOn.CombineWith("query-enums")
                 .AddQueryParam("NSomeEnumAsInt", "Value2")
