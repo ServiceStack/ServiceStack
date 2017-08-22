@@ -407,11 +407,12 @@ title: We encode < & >
             }.Init();
 
             context.VirtualFiles.WriteFile("_layout.html", "layout {{ page }}");
-            context.VirtualFiles.WriteFile("page.html", "page: partial {{ 'root-partial' | partial }}, file {{ 'file.txt' | includeFile }}");
+            context.VirtualFiles.WriteFile("page.html", "page: partial {{ 'root-partial' | partial }}, file {{ 'file.txt' | includeFile }}, selectParital: {{ true | selectPartial: select-partial }}");
             context.VirtualFiles.WriteFile("root-partial.html", "root-partial: partial {{ 'inner-partial' | partial }}, partial-file {{ 'partial-file.txt' | includeFile }}");
             context.VirtualFiles.WriteFile("file.txt", "file.txt");
             context.VirtualFiles.WriteFile("inner-partial.html", "inner-partial.html");
             context.VirtualFiles.WriteFile("partial-file.txt", "partial-file.txt");
+            context.VirtualFiles.WriteFile("select-partial.html", "select-partial.html");
 
             ((InMemoryVirtualFile)context.VirtualFiles.GetFile("page.html")).FileLastModified = new DateTime(2001, 01, 01);
             ((InMemoryVirtualFile)context.VirtualFiles.GetFile("_layout.html")).FileLastModified = new DateTime(2001, 01, 02);
@@ -419,12 +420,13 @@ title: We encode < & >
             ((InMemoryVirtualFile)context.VirtualFiles.GetFile("file.txt")).FileLastModified = new DateTime(2001, 01, 04);
             ((InMemoryVirtualFile)context.VirtualFiles.GetFile("inner-partial.html")).FileLastModified = new DateTime(2001, 01, 05);
             ((InMemoryVirtualFile)context.VirtualFiles.GetFile("partial-file.txt")).FileLastModified = new DateTime(2001, 01, 06);
+            ((InMemoryVirtualFile)context.VirtualFiles.GetFile("select-partial.html")).FileLastModified = new DateTime(2001, 01, 07);
 
             var page = context.Pages.GetPage("page").Init().Result;
             context.Pages.GetPage("root-partial").Init().Wait();
 
             var lastModified = context.Pages.GetLastModified(page);
-            Assert.That(lastModified, Is.EqualTo(new DateTime(2001, 01, 06)));
+            Assert.That(lastModified, Is.EqualTo(new DateTime(2001, 01, 07)));
         }
 
 

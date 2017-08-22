@@ -215,6 +215,16 @@ namespace ServiceStack.Templates
                         maxLastModified = GetMaxLastModified(file, maxLastModified);
                     }
                 }
+                var lastFilter = fragment.FilterExpressions?.LastOrDefault();
+                if (lastFilter?.NameString == "selectPartial")
+                {
+                    var partialArg = lastFilter.Args.FirstOrDefault().StripQuotes();
+                    if (!string.IsNullOrEmpty(partialArg))
+                    {
+                        Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                        maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
+                    }
+                }
             }
 
             return maxLastModified;

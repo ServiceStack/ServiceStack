@@ -433,6 +433,24 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
+        internal static string StripQuotes(this StringSegment arg) => arg.HasValue ? StripQuotes(arg.Value) : string.Empty;
+        internal static string StripQuotes(this string arg)
+        {
+            if (arg == null || arg.Length < 2)
+                return arg;
+
+            switch (arg[0])
+            {
+                case '"':
+                case '`':
+                case '\'':
+                case '′':
+                    return arg.Substring(1, arg.Length - 2);
+            }
+
+            return arg;
+        }
+
         public static StringSegment AdvancePastChar(this StringSegment literal, char delim)
         {
             var i = 0;
