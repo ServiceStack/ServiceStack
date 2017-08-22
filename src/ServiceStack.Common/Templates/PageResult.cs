@@ -108,6 +108,11 @@ namespace ServiceStack.Templates
         /// </summary>
         public bool? SkipExecutingFiltersIfError { get; set; }
         
+        /// <summary>
+        /// Whether to always rethrow Exceptions
+        /// </summary>
+        public bool RethrowExceptions { get; set; }
+        
         private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)
@@ -687,6 +692,9 @@ namespace ServiceStack.Templates
                     LastFilterError = ex.InnerException;
                     LastFilterStackTrace = stackTrace.ToArray();
 
+                    if (RethrowExceptions)
+                        throw ex.InnerException;
+                    
                     var skipExecutingFilters = SkipExecutingFiltersIfError.GetValueOrDefault(Context.SkipExecutingFiltersIfError);
                     if (skipExecutingFilters)
                         this.SkipFilterExecution = true;

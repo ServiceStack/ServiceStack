@@ -65,12 +65,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
                 Plugins.Add(new TemplatePagesFeature
                 {
+                    ApiPath = "/api",
                     Args =
                     {
                         ["products"] = TemplateQueryData.Products,
                     },
                     TemplateFilters =
                     {
+                        new TemplateDbFilters(),
                         new TemplateAutoQueryFilters(),
                     },
                 });
@@ -303,5 +305,33 @@ CONSH: Consolidated Holdings, UK
 </body>
 </html>".NormalizeNewLines()));
         }
+
+        [Test]
+        public void Can_call_customers_api_page_without_arguments()
+        {
+            var url = BaseUrl.CombineWith("api", "customers");
+
+            var json = url.GetJsonFromUrl();
+            var customers = json.FromJson<List<Customer>>();
+            Assert.That(customers.Count, Is.EqualTo(TemplateQueryData.Customers.Count));
+        }
+
+        [Test]
+        public void Can_call_customers_api_page_with_all_arguments()
+        {
+            var url = BaseUrl.CombineWith("api", "customers")
+                .AddQueryParam("country", "UK")
+                .AddQueryParam("city", "London")
+                .AddQueryParam("limit", 10);
+
+            var json = url.GetJsonFromUrl();
+            var customers = json.FromJson<List<Customer>>();
+            customers.PrintDump();
+
+            Assert.That(customers.Map(x => x.CustomerId), Is.EquivalentTo("AROUT,BSBEV,CONSH,EASTC,NORTS,SEVES".Split(',')));
+            Assert.That(customers.All(x => x.Country == "UK"));
+            Assert.That(customers.All(x => x.City == "London"));
+        }
+
     }
 }
