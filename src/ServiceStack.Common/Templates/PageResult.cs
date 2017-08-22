@@ -676,7 +676,7 @@ namespace ServiceStack.Templates
                             else if (rethrow)
                                 throw;
 
-                            throw new TargetInvocationException($"Failed to invoke filter '{expr.BindingString ?? expr.NameString}'", ex);
+                            throw new TargetInvocationException($"Failed to invoke filter: {expr.GetDisplayName()}", ex);
                         }
 
                         return IgnoreResult.Value;
@@ -720,11 +720,11 @@ namespace ServiceStack.Templates
                     else if (rethrow)
                         throw ex.InnerException;
 
-                    var filterName = expr.BindingString ?? expr.NameString;
+                    var filterName = expr.GetDisplayName();
                     if (filterName.StartsWith("throw"))
                         throw ex.InnerException;
 
-                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}'", ex.InnerException);
+                    throw new TargetInvocationException($"Failed to invoke filter: {filterName}", ex.InnerException);
                 }
             }
 

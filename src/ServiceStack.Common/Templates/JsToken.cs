@@ -831,6 +831,8 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
 
         public override string BindingString => OriginalString ?? ToString();
 
+        public string GetDisplayName() => (BindingString ?? NameString ?? "").Replace('′', '"');
+
         protected bool Equals(JsExpression other)
         {
             return base.Equals(other) 
@@ -886,6 +888,7 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
             var inBackTickQuotes = false;
+            var inPrimeQuotes = false;
             var inBrackets = false;
 
             var endBlockPos = commandsString.Length;
@@ -917,6 +920,12 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                             inBackTickQuotes = false;
                         continue;
                     }
+                    if (inPrimeQuotes)
+                    {
+                        if (c == '′')
+                            inPrimeQuotes = false;
+                        continue;
+                    }
                     switch (c)
                     {
                         case '"':
@@ -927,6 +936,9 @@ namespace ServiceStack.Templates //TODO move to ServiceStack.Text when baked
                             continue;
                         case '`':
                             inBackTickQuotes = true;
+                            continue;
+                        case '′':
+                            inPrimeQuotes = true;
                             continue;
                     }
 
