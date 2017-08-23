@@ -44,8 +44,12 @@ namespace ServiceStack.Templates
         {
             if (HasInit)
             {
-                if (!Context.DebugMode && (Context.CheckForModifiedPagesAfter == null 
-                                           || DateTime.UtcNow - LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value))
+                var skipCheck = !Context.DebugMode &&
+                    (Context.CheckForModifiedPagesAfter != null
+                        ? DateTime.UtcNow - LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value
+                        : !Context.CheckForModifiedPages);
+                
+                if (skipCheck)
                     return this;
 
                 File.Refresh();

@@ -126,13 +126,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {{ PathArgs | endIfEmpty | useFmt('{0} where CustomerId = @id', sql) | dbSingle({ id: PathArgs[0] }) 
             | return }}
 
-{{ id       | endIfEmpty | use('CustomerId = @id')           | addTo: filters }}
+{{ id       | endIfEmpty | use('CustomerId = @id')   | addTo: filters }}
 {{ city     | endIfEmpty | use('City = @city')       | addTo: filters }}
 {{ country  | endIfEmpty | use('Country = @country') | addTo: filters }}
-{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and '))      | assignTo: sql }}
+{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
 
 {{ sql      | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
-            | dbSelect({ country, city }) 
+            | dbSelect({ country, city, id }) 
             | return }}
 ");
             }
