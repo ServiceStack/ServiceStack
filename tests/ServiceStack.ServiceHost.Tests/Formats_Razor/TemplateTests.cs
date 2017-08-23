@@ -180,7 +180,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var page = RazorFormat.CreatePage(pageSource);
             var output = RazorFormat.RenderToHtml(page, model: templateArgs);
-            output.Print();
 
             Assert.That(output, Is.EqualTo(@"<input id=""FirstName"" name=""FirstName"" type=""text"" value=""Demis"" />"));
         }
@@ -195,7 +194,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var page = RazorFormat.CreatePage(pageSource);
             var output = RazorFormat.RenderToHtml(page, model: templateArgs).Trim();
-            output.Print();
 
             Assert.That(output, Is.EqualTo(val));
         }
@@ -209,7 +207,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             var page = RazorFormat.CreatePage(pageSource);
             RazorFormat.AddFileAndPage(staticTemplatePath, @"<title>@ViewBag.X</title><body>@RenderBody()</body>");
             var output = RazorFormat.RenderToHtml(page, model: templateArgs).Trim();
-            output.Print();
 
             Assert.That(output, Is.EqualTo(@"<title>Hello</title><body>Hello</body>"));
         }
@@ -226,7 +223,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var templateOutput = RazorFormat.RenderToHtml(page, model: templateArgs);
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -244,7 +240,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs);
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -267,7 +262,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs);
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -303,7 +297,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs);
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -363,7 +356,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs);
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -449,7 +441,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -474,7 +465,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -506,7 +496,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -536,7 +525,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -601,7 +589,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -639,7 +626,6 @@ Plain text in a comment
 
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -738,11 +724,10 @@ Plain text in a comment
             IRazorView razorView;
             var templateOutput = RazorFormat.RenderToHtml(dynamicPage, out razorView, model: templateArgs).NormalizeNewLines();
 
-            templateOutput.Print();
-            Assert.That(templateOutput, Is.EqualTo(expectedHtml));
+            Assert.That(templateOutput.NormalizeNewLines(), Is.EqualTo(expectedHtml));
 
             var sectionHtml = razorView.RenderSectionToHtml("Salutations");
-            Assert.That(sectionHtml.NormalizeNewLines(), Is.EqualTo("\n<p>Hello BELLOT, Demis</p>\n"));
+            Assert.That(sectionHtml.NormalizeNewLines(), Is.EqualTo("<p>Hello BELLOT, Demis</p>"));
         }
 
 
@@ -861,7 +846,6 @@ Demis / Bellot
 
             var templateOutput = result.NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
@@ -946,7 +930,6 @@ Demis / Bellot
 
             var templateOutput = RazorFormat.RenderToHtml(staticPage, layout: "websiteTemplate").NormalizeNewLines();
 
-            templateOutput.Print();
             Assert.That(templateOutput, Is.EqualTo(expectedHtml));
         }
 
