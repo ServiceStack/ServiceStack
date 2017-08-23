@@ -14,7 +14,7 @@ namespace ServiceStack.Templates
     
     public class TemplateProtectedFilters : TemplateFilter
     {
-        public static IVirtualFile ResolveFile(string filterName, TemplateScopeContext scope, string virtualPath)
+        public IVirtualFile ResolveFile(string filterName, TemplateScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
             if (file == null)
@@ -23,12 +23,30 @@ namespace ServiceStack.Templates
             return file;
         }
 
-        public static IVirtualFile ResolveFile(IVirtualPathProvider virtualFiles, string fromVirtualPath, string virtualPath)
+        public IVirtualFile ResolveFile(IVirtualPathProvider virtualFiles, string fromVirtualPath, string virtualPath)
         {
             IVirtualFile file = null;
+
+            var pathMapKey = nameof(ResolveFile) + ">" + fromVirtualPath;
+            var pathMapping = Context.GetPathMapping(pathMapKey, virtualPath);
+            if (pathMapping != null)
+            {
+                file = virtualFiles.GetFile(pathMapping);
+                if (file != null)
+                    return file;                    
+                Context.RemovePathMapping(pathMapKey, pathMapping);
+            }
+
             var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if nested path specified, look for an exact match first
             if (tryExactMatch)
+            {
                 file = virtualFiles.GetFile(virtualPath);
+                if (file != null)
+                {
+                    Context.SetPathMapping(pathMapKey, virtualPath, virtualPath);
+                    return file;
+                }
+            }
 
             if (file == null)
             {
@@ -41,7 +59,10 @@ namespace ServiceStack.Templates
                     var seekPath = parentPath.CombineWith(virtualPath);
                     file = virtualFiles.GetFile(seekPath);
                     if (file != null)
-                        break;
+                    {
+                        Context.SetPathMapping(pathMapKey, virtualPath, seekPath);
+                        return file;
+                    }
 
                     if (parentPath == "")
                         break;
@@ -51,7 +72,7 @@ namespace ServiceStack.Templates
                         : "";
                 } while (true);
             }
-            return file;
+            return null;
         }
 
         public async Task includeFile(TemplateScopeContext scope, string virtualPath)
@@ -238,7 +259,7 @@ namespace ServiceStack.Templates
                 ? TimeSpan.FromSeconds(value.ConvertTo<int>())
                 : (TimeSpan)scope.Context.Args[TemplateConstants.DefaultFileCacheExpiry];
             
-            var cacheKey = CreateCacheKey("file:" + virtualPath, scopedParams);
+            var cacheKey = CreateCacheKey("file:" + scope.PageResult.VirtualPath + ">" + virtualPath, scopedParams);
             if (Context.ExpiringCache.TryGetValue(cacheKey, out Tuple<DateTime, object> cacheEntry))
             {
                 if (cacheEntry.Item1 > DateTime.UtcNow && cacheEntry.Item2 is byte[] bytes)

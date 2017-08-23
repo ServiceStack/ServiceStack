@@ -107,13 +107,11 @@ namespace ServiceStack
                 }
             }
 
-            var tryDirMatch = pathInfo[pathInfo.Length - 1] != '/';
-
-            var codePage = Pages.GetCodePage(pathInfo) ?? (tryDirMatch ? Pages.GetCodePage(pathInfo + '/') : null);
+            var codePage = Pages.GetCodePage(pathInfo);
             if (codePage != null)
                 return new TemplateCodePageHandler(codePage);
 
-            var page = Pages.GetPage(pathInfo) ?? (tryDirMatch ? Pages.GetPage(pathInfo + '/') : null);
+            var page = Pages.GetPage(pathInfo);
             if (page != null)
             {
                 if (page.File.Name.StartsWith("_"))
@@ -214,7 +212,7 @@ namespace ServiceStack
             var page = base.Request.GetPage(pagePath);
             if (page == null)
                 throw HttpError.NotFound($"No API Page was found at '{pagePath}'");
-
+            
             var requestArgs = base.Request.GetTemplateRequestParams();
             requestArgs[TemplateConstants.PathInfo] = request.PathInfo;
             requestArgs[TemplateConstants.PathArgs] = pathArgs; 
@@ -225,23 +223,16 @@ namespace ServiceStack
                 Args = requestArgs
             };
 
-            try
-            {
-                var discardedOutput = await pageResult.RenderToStringAsync();
+            var discardedOutput = await pageResult.RenderToStringAsync();
 
-                if (!pageResult.Args.TryGetValue("return", out object response))
-                    throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
+            if (!pageResult.Args.TryGetValue("return", out object response))
+                throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
 
-                var httpResultHeaders = (pageResult.Args.TryGetValue("returnArgs", out object returnArgs) ? returnArgs : null).ToStringDictionary();
+            var httpResultHeaders = (pageResult.Args.TryGetValue("returnArgs", out object returnArgs) ? returnArgs : null).ToStringDictionary();
 
-                var result = new HttpResult(response);
-                httpResultHeaders.Each(x => result.Options[x.Key] = x.Value);
-                return result;
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
+            var result = new HttpResult(response);
+            httpResultHeaders.Each(x => result.Options[x.Key] = x.Value);
+            return result;
         }
     }
 

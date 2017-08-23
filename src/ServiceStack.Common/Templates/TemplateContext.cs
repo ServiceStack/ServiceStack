@@ -58,6 +58,8 @@ namespace ServiceStack.Templates
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 
         public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
+
+        public ConcurrentDictionary<string, string> PathMappings { get; } = new ConcurrentDictionary<string, string>();
         
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
@@ -102,6 +104,20 @@ namespace ServiceStack.Templates
 
         public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
+            var pathMapKey = nameof(TryGetPage) + ">" + fromVirtualPath;
+            var mappedPath = GetPathMapping(pathMapKey, virtualPath);
+            if (mappedPath != null)
+            {
+                var mappedPage = Pages.GetPage(mappedPath);
+                if (mappedPage != null)
+                {
+                    page = mappedPage;
+                    codePage = null;
+                    return;                        
+                }
+                RemovePathMapping(pathMapKey, mappedPath);
+            }
+
             var tryExactMatch = virtualPath.IndexOf('/') >= 0; //if nested path specified, look for an exact match first
             if (tryExactMatch)
             {
@@ -142,6 +158,7 @@ namespace ServiceStack.Templates
                 {
                     page = p;
                     codePage = null;
+                    SetPathMapping(pathMapKey, virtualPath, seekPath);
                     return;
                 }
 
@@ -175,6 +192,34 @@ namespace ServiceStack.Templates
             var instance = (TemplateCodePage) Container.Resolve(type);
             instance.Init();
             return instance;
+        }
+
+        public string SetPathMapping(string prefix, string mapPath, string toPath) 
+        {
+            if (!DebugMode && toPath != null && mapPath != toPath)
+                PathMappings[prefix + ">" + mapPath] = toPath;
+
+            return toPath;
+        }
+
+        public void RemovePathMapping(string prefix, string mapPath) 
+        {
+            if (DebugMode)
+                return;
+
+            if (mapPath != null)
+                PathMappings.TryRemove(prefix + ">" + mapPath, out _);
+        }
+
+        public string GetPathMapping(string prefix, string key)
+        {
+            if (DebugMode)
+                return null;
+
+            if (PathMappings.TryGetValue(prefix + ">" + key, out string mappedPath))
+                return mappedPath;
+
+            return null;
         }
 
         public TemplateContext()

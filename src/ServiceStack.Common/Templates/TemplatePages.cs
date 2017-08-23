@@ -105,7 +105,8 @@ namespace ServiceStack.Templates
             return null;
         }
 
-        public TemplateCodePage GetCodePage(string virtualPath) => Context.GetCodePage(virtualPath);
+        public TemplateCodePage GetCodePage(string virtualPath) => Context.GetCodePage(virtualPath)
+            ?? (virtualPath?.Length > 0 && virtualPath[virtualPath.Length - 1] != '/' ? Context.GetCodePage(virtualPath + '/') : null);
 
         public virtual TemplatePage AddPage(string virtualPath, IVirtualFile file)
         {
@@ -116,17 +117,29 @@ namespace ServiceStack.Templates
         {
             var santizePath = path.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            return pageMap.TryGetValue(santizePath, out TemplatePage page) 
-                ? page 
-                : null;
+            if (pageMap.TryGetValue(santizePath, out TemplatePage page)) 
+                return page;
+
+            return null;
         }
 
-        public virtual TemplatePage GetPage(string path)
+        public virtual TemplatePage GetPage(string pathInfo)
         {
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(pathInfo))
                 return null;
 
-            var santizePath = path.Replace('\\','/').TrimPrefixes("/");
+            var santizePath = pathInfo.Replace('\\','/').TrimPrefixes("/");
+            var isDirectory = santizePath.Length == 0 || santizePath[santizePath.Length - 1] == '/';
+
+            TemplatePage page = null;
+            var mappedPath = Context.GetPathMapping(nameof(TemplatePages), santizePath);
+            if (mappedPath != null)
+            {
+                page = TryGetPage(mappedPath);
+                if (page != null)
+                    return page;
+                Context.RemovePathMapping(nameof(TemplatePages), mappedPath);
+            }
 
             var fileNameParts = santizePath.LastRightPart('/').SplitOnLast('.');
             var ext = fileNameParts.Length > 1 ? fileNameParts[1] : null;
@@ -137,20 +150,38 @@ namespace ServiceStack.Templates
                     return null;
             }
 
-            var isDirectory = santizePath.Length == 0 || santizePath[santizePath.Length - 1] == '/';
             var filePath = santizePath.LastLeftPart('.');
-            var page = !isDirectory ? TryGetPage(filePath) : null;
+            page = TryGetPage(filePath) ?? (!isDirectory ? TryGetPage(filePath + '/') : null);
             if (page != null)
                 return page;
 
             foreach (var format in Context.PageFormats)
             {
                 var file = !isDirectory
-                    ? Context.VirtualFiles.GetFile($"{filePath}.{format.Extension}")
-                    : Context.VirtualFiles.GetFile($"{filePath}{Context.IndexPage}.{format.Extension}");
+                    ? Context.VirtualFiles.GetFile(filePath + "." + format.Extension)
+                    : Context.VirtualFiles.GetFile(filePath + Context.IndexPage + "." + format.Extension);
 
                 if (file != null)
-                    return AddPage(file.VirtualPath.WithoutExtension(), file);
+                {
+                    var pageVirtualPath = file.VirtualPath.WithoutExtension();
+                    Context.SetPathMapping(nameof(TemplatePages), santizePath, pageVirtualPath);
+                    return AddPage(pageVirtualPath, file);
+                }
+            }
+
+            if (!isDirectory)
+            {
+                var tryFilePath = filePath + '/';
+                foreach (var format in Context.PageFormats)
+                {
+                    var file = Context.VirtualFiles.GetFile(tryFilePath + Context.IndexPage + "." + format.Extension);
+                    if (file != null)
+                    {
+                        var pageVirtualPath = file.VirtualPath.WithoutExtension();
+                        Context.SetPathMapping(nameof(TemplatePages), santizePath, pageVirtualPath);
+                        return AddPage(pageVirtualPath, file);
+                    }
+                }
             }
 
             return null; 
@@ -211,7 +242,7 @@ namespace ServiceStack.Templates
                 {
                     if (fragment.InitialValue is string filePath)
                     {
-                        var file = TemplateProtectedFilters.ResolveFile(Context.VirtualFiles, page.VirtualPath, filePath);
+                        var file = Context.ProtectedFilters.ResolveFile(Context.VirtualFiles, page.VirtualPath, filePath);
                         maxLastModified = GetMaxLastModified(file, maxLastModified);
                     }
                 }
