@@ -305,5 +305,53 @@ namespace ServiceStack.Templates
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
+
+        internal IDictionary GetCache(string cacheName)
+        {
+            switch (cacheName)
+            {
+                case "Cache":
+                    return Context.Cache;
+                case "ExpiringCache":
+                    return Context.ExpiringCache;
+                case "BinderCache":
+                    return Context.BinderCache;
+                case "AssignExpressionCache":
+                    return Context.AssignExpressionCache;
+                case "PathMappings":
+                    return Context.PathMappings;
+            }
+            return null;
+        }
+
+        public object cacheClear(TemplateScopeContext scope, object cacheNames)
+        {
+            List<string> caches;
+            if (cacheNames is string strName)
+            {
+                caches = strName.EqualsIgnoreCase("all")
+                    ? new List<string> {"Cache", "ExpiringCache", "BinderCache", "AssignExpressionCache", "PathMappings"}
+                    : new List<string> {strName};
+            }
+            else if (cacheNames is IEnumerable<string> nameList)
+            {
+                caches = new List<string>(nameList);
+            }
+            else throw new NotSupportedException(nameof(cacheClear) + 
+                 " expects a cache name or list of cache names but received: " + (cacheNames.GetType()?.Name ?? "null"));
+
+            int entriesRemoved = 0;
+            foreach (var cacheName in caches)
+            {
+                var cache = GetCache(cacheName);
+                if (cache == null)
+                    throw new NotSupportedException(nameof(cacheClear) + $": Unknown cache '{cacheName}'");
+
+                entriesRemoved += cache.Count;
+                cache.Clear();
+            }
+
+            return entriesRemoved;
+        }
     }
 }
