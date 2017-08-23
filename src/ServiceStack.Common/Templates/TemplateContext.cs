@@ -67,7 +67,7 @@ namespace ServiceStack.Templates
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
 
         // Whether to check for modified pages by default when not in DebugMode
-        public bool CheckForModifiedPages { get; set; } = true;
+        public bool CheckForModifiedPages { get; set; } = false;
 
         ///How long in between checking for modified pages
         public TimeSpan? CheckForModifiedPagesAfter { get; set; }
