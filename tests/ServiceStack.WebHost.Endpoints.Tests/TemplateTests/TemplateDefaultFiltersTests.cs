@@ -1412,5 +1412,26 @@ dir-file: dir/dir-file.txt
 {{ nums | join }}
 ".NormalizeNewLines()), Is.EqualTo("3,2,1"));
         }
+
+        [Test]
+        public void Return_does_stop_all_execution()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"A{{ return }}B"), Is.EqualTo("A"));
+            
+            var pageResult = new PageResult(context.OneTimePage("A{{ 1 | return }}B"));
+            Assert.That(pageResult.Result, Is.EqualTo("A"));
+            Assert.That(pageResult.Args[TemplateConstants.Return], Is.EqualTo(1));
+            
+            pageResult = new PageResult(context.OneTimePage("A{{ 1 | return({ a: 1 }) }}B"));
+            Assert.That(pageResult.Result, Is.EqualTo("A"));
+            Assert.That(pageResult.Args[TemplateConstants.Return], Is.EqualTo(1));
+            Assert.That(pageResult.Args[TemplateConstants.ReturnArgs], Is.EquivalentTo(new Dictionary<string,object>
+            {
+                { "a", 1 }
+            }));
+        }
+
     }
 }

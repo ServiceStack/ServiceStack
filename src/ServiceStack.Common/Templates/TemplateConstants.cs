@@ -13,6 +13,8 @@ namespace ServiceStack.Templates
         public const string DefaultTableClassName = nameof(DefaultTableClassName);
         public const string DefaultErrorClassName = nameof(DefaultErrorClassName);
         public const string MaxQuota = nameof(MaxQuota);
+        public const string Return = "return";
+        public const string ReturnArgs = "returnArgs";
         public const string Debug = "debug";
         public const string AssignError = "assignError";
         public const string HtmlEncode = "htmlencode";
@@ -24,6 +26,8 @@ namespace ServiceStack.Templates
         public const string Comparer = "comparer";
         public const string Map = "map";
         public const string Request = "Request";
+        public const string PathInfo = "PathInfo";
+        public const string PathArgs = "PathArgs";
         public const string DefaultFileCacheExpiry = nameof(DefaultFileCacheExpiry);
         public const string DefaultUrlCacheExpiry = nameof(DefaultUrlCacheExpiry);
 

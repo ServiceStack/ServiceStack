@@ -1034,12 +1034,13 @@ namespace ServiceStack.Templates
         public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
         
+        public object @return(TemplateScopeContext scope) => @return(scope, null, null);
         public object @return(TemplateScopeContext scope, object returnValue) => @return(scope, returnValue, null);
         public object @return(TemplateScopeContext scope, object returnValue, object returnArgs)
         {
-            scope.PageResult.Args["return"] = returnValue;
-            scope.PageResult.Args["returnArgs"] = returnArgs;
-            scope.PageResult.SkipFilterExecution = true;
+            scope.PageResult.Args[TemplateConstants.Return] = returnValue;
+            scope.PageResult.Args[TemplateConstants.ReturnArgs] = returnArgs;
+            scope.PageResult.HaltExecution = true;
             return StopExecution.Value;
         }
     }
