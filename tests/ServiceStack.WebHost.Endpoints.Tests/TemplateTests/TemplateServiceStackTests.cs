@@ -3,6 +3,7 @@ using System.Linq;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
+using ServiceStack.Formats;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
@@ -41,7 +42,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             public AppHost() : base(nameof(TemplateIntegrationTests), typeof(MyTemplateServices).GetAssembly()) {}
 
-            public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
+            public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider>
+            {
+                new MemoryVirtualFiles(),
+                new ResourceVirtualFiles(typeof(HtmlFormat).GetAssembly()),
+            };
             public override List<IVirtualPathProvider> GetVirtualFileSources() => TemplateFiles;
 
             public override void Configure(Container container)
@@ -118,12 +123,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
 {{ 'select CustomerId, CompanyName, City, Country from Customer' | assignTo: sql }}
 
-{{ city    | onlyIfExists | use('City = @city')       | addTo: filters }}
-{{ country | onlyIfExists | use('Country = @country') | addTo: filters }}
-{{ filters | onlyIfExists | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
+{{ PathArgs | endIfEmpty | useFmt('{0} where CustomerId = @id', sql) | dbSingle({ id: PathArgs[0] }) 
+            | return }}
 
-{{ sql | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
-       | dbSelect({ country, city }) | return }}
+{{ id       | endIfEmpty | use('CustomerId = @id')           | addTo: filters }}
+{{ city     | endIfEmpty | use('City = @city')       | addTo: filters }}
+{{ country  | endIfEmpty | use('Country = @country') | addTo: filters }}
+{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and '))      | assignTo: sql }}
+
+{{ sql      | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
+            | dbSelect({ country, city }) 
+            | return }}
 ");
             }
         }
@@ -326,12 +336,42 @@ CONSH: Consolidated Holdings, UK
 
             var json = url.GetJsonFromUrl();
             var customers = json.FromJson<List<Customer>>();
-            customers.PrintDump();
 
             Assert.That(customers.Map(x => x.CustomerId), Is.EquivalentTo("AROUT,BSBEV,CONSH,EASTC,NORTS,SEVES".Split(',')));
             Assert.That(customers.All(x => x.Country == "UK"));
             Assert.That(customers.All(x => x.City == "London"));
         }
 
+        [Test]
+        public void Can_call_single_customer_with_path_args()
+        {
+            var json = BaseUrl.CombineWith("api", "customers", "ALFKI").GetJsonFromUrl();
+            var customer = json.FromJson<Customer>();
+            Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
+            Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
+            Assert.That(customer.City, Is.EqualTo("Berlin"));
+            Assert.That(customer.Country, Is.EqualTo("Germany"));
+        }
+
+        [Test]
+        public void Can_call_customer_with_json_extension_to_force_ContentType()
+        {
+            var html = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl();
+            Assert.That(html, Does.StartWith("<"));
+            
+            var json = BaseUrl.CombineWith("api", "customers.json").AddQueryParam("limit", 1).GetStringFromUrl();
+            Assert.That(json, Does.StartWith("["));
+        }
+
+        [Test]
+        public void Can_call_single_customer_with_json_extension_to_force_ContentType()
+        {
+            var json = BaseUrl.CombineWith("api", "customers", "ALFKI.json").GetStringFromUrl();
+            var customer = json.FromJson<Customer>();
+            Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
+            Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
+            Assert.That(customer.City, Is.EqualTo("Berlin"));
+            Assert.That(customer.Country, Is.EqualTo("Germany"));
+        }
     }
 }

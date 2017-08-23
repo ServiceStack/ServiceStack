@@ -191,8 +191,20 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(request.PageName))
                 throw new ArgumentNullException("PageName");
 
-            var parts = request.PageName.SplitOnLast('.');
-            var pageName = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1])
+            var parts = string.IsNullOrEmpty(request.PathInfo)  
+                ? TypeConstants.EmptyStringArray
+                : request.PathInfo.SplitOnLast('.');
+
+            var pathInfo = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1])
+                ? parts[0]
+                : request.PathInfo;
+            
+            var pathArgs = string.IsNullOrEmpty(pathInfo)
+                ? TypeConstants.EmptyStringArray
+                : pathInfo.Split('/');
+            
+            parts = request.PageName.SplitOnLast('.');
+            var pageName = pathArgs.Length == 0 && parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1])
                 ? parts[0]
                 : request.PageName;
 
@@ -204,9 +216,11 @@ namespace ServiceStack
                 throw HttpError.NotFound($"No API Page was found at '{pagePath}'");
 
             var requestArgs = base.Request.GetTemplateRequestParams();
-            requestArgs["PathInfo"] = request.PathInfo;
+            requestArgs[TemplateConstants.PathInfo] = request.PathInfo;
+            requestArgs[TemplateConstants.PathArgs] = pathArgs; 
 
             var pageResult = new PageResult(page) {
+                NoLayout = true,
                 RethrowExceptions = true,
                 Args = requestArgs
             };
@@ -534,9 +548,9 @@ User:
         {
             var reqParams = request.GetRequestParams();
             reqParams["RawUrl"] = request.RawUrl;
-            reqParams["PathInfo"] = request.OriginalPathInfo;
+            reqParams[TemplateConstants.PathInfo] = request.OriginalPathInfo;
             reqParams["AbsoluteUri"] = request.AbsoluteUri;
-            reqParams["Verb"] = request.Verb;
+            reqParams["Verb"] = reqParams["Method"] = request.Verb;
 
             var to = reqParams.ToObjectDictionary();
             to[TemplateConstants.Request] = request;

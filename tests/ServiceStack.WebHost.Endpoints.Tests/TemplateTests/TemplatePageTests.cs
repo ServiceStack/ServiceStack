@@ -316,8 +316,11 @@ title: We encode < & >
 </html>
 ");
             context.VirtualFiles.WriteFile("page.html", "<h1>Original Contents</h1>");
-            
-            var output = new PageResult(context.GetPage("page")).Result;            
+
+            var pageResult = new PageResult(context.GetPage("page"));
+            Assert.That(pageResult.ResultOutput, Is.Null);
+
+            var output = pageResult.Result;            
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=original>
