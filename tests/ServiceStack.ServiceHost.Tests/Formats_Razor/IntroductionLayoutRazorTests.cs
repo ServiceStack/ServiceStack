@@ -130,7 +130,6 @@ comes from ^^^websiteTemplate.</p>
 
 <p>And obviously I can have code in here too. Here is the
 current date/year: 2017</p>
-
         </div>
     
     </body>
@@ -142,8 +141,7 @@ current date/year: 2017</p>
 
             var template = RazorFormat.RenderToHtml(dynamicPage);
 
-            template.Print();
-            Assert.That(template, Is.EqualTo(expectedHtml));
+            Assert.That(template.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
         [Test]
@@ -176,7 +174,6 @@ current date/year: 2017</p>
             RazorFormat.AddFileAndPage("/views/websiteTemplate1.cshtml", websiteTemplate1);
             var dynamicPage = RazorFormat.AddFileAndPage(@"/page.cshtml", pageTemplate);
             var template = RazorFormat.RenderToHtml(dynamicPage);
-            template.Print();
 
             Assert.That(template, Is.EqualTo(expectedHtml));
         }
@@ -286,7 +283,6 @@ current date/year: 2017</p>
 
             var html = RazorFormat.RenderToHtml(dynamicPage, layout: "websiteTemplate");
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -323,7 +319,6 @@ current date/year: 2017</p>
             var product = new Product { ProductID = 10 };
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, product);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -360,7 +355,6 @@ current date/year: 2017</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, model: products);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -386,7 +380,6 @@ current date/year: 2017</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 

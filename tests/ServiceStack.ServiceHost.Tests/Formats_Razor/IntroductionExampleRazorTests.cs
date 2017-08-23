@@ -81,7 +81,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: new { name = "Demis", productId = 10 });
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -107,7 +106,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -128,8 +126,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.EqualTo(expectedHtml));
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
         [Test]
@@ -150,8 +147,7 @@ var message = ""Number is "" + number;
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.EqualTo(expectedHtml));
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
 
@@ -168,7 +164,6 @@ var message = ""Number is "" + number;
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
             Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
@@ -193,7 +188,6 @@ the date: 02/06/2013 06:42:45</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
             Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
@@ -210,7 +204,6 @@ the date: 02/06/2013 06:42:45</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(template, new { stringContainingHtml = "<span>html</span>" });
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
