@@ -401,8 +401,7 @@ namespace ServiceStack.Api.OpenApi
                     Type = OpenApiType.Object,
                     Title = schemaType.Name,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                    Properties = new OrderedDictionary<string, OpenApiProperty>(),
-                    Required = new List<string>()
+                    Properties = new OrderedDictionary<string, OpenApiProperty>()
                 };
                 parseProperties = schemaType.IsUserType();
             }
@@ -471,6 +470,8 @@ namespace ServiceStack.Api.OpenApi
                         if (propAttr.IsRequired)
                         {
                             schemaProperty.Required = true;
+                            if (schema.Required == null)
+                                schema.Required = new List<string>();
                             schema.Required.Add(schemaPropertyName);
                         }
                     }
