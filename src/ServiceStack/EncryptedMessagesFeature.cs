@@ -159,6 +159,7 @@ namespace ServiceStack
                     var requestType = appHost.Metadata.GetOperationType(operationName);
                     var request = JsonSerializer.DeserializeFromString(requestJson, requestType);
 
+                    req.RequestAttributes |= RequestAttributes.Secure;
                     req.Items[RequestItemsCryptKey] = cryptKey;
                     req.Items[RequestItemsAuthKey] = authKey;
                     req.Items[RequestItemsIv] = iv;
