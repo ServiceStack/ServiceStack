@@ -3,7 +3,6 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-
 using ServiceStack.Web;
 using ServiceStack.Logging;
 using ServiceStack.NetCore;
@@ -104,11 +103,32 @@ namespace ServiceStack
 
             RequestContext.Instance.StartRequestContext();
 
-            var httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo);
-            httpReq.RequestAttributes = httpReq.GetAttributes();
+            NetCoreRequest httpReq;
+            IResponse httpRes;
+            System.Web.IHttpHandler handler;
 
-            var httpRes = httpReq.Response;
-            var handler = HttpHandlerFactory.GetHandler(httpReq);
+            try 
+            {
+                httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo); 
+                httpReq.RequestAttributes = httpReq.GetAttributes();
+                httpRes = httpReq.Response;
+                handler = HttpHandlerFactory.GetHandler(httpReq);
+            } 
+            catch (Exception ex) //Request Initialization error
+            {
+                var logFactory = context.Features.Get<ILoggerFactory>();
+                if (logFactory != null)
+                {
+                    var log = logFactory.CreateLogger(GetType());
+                    log.LogError(default(EventId), ex, ex.Message);
+                }
+
+                context.Response.ContentType = MimeTypes.PlainText;
+                await context.Response.WriteAsync($"{ex.GetType().Name}: {ex.Message}");
+                if (Config.DebugMode)
+                    await context.Response.WriteAsync($"\nStackTrace:\n{ex.StackTrace}");
+                return;
+            }
 
             var serviceStackHandler = handler as IServiceStackHandler;
             if (serviceStackHandler != null)
@@ -135,8 +155,11 @@ namespace ServiceStack
                 catch (Exception ex)
                 {
                     var logFactory = context.Features.Get<ILoggerFactory>();
-                    var log = logFactory.CreateLogger(GetType());
-                    log.LogError(default(EventId), ex, ex.Message);
+                    if (logFactory != null)
+                    {
+                        var log = logFactory.CreateLogger(GetType());
+                        log.LogError(default(EventId), ex, ex.Message);
+                    }
                 }
                 finally
                 {
