@@ -228,6 +228,9 @@ namespace ServiceStack
             if (!pageResult.Args.TryGetValue("return", out object response))
                 throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
 
+            if (response is Task<object> responseTask)
+                response = await responseTask;
+            
             var httpResultHeaders = (pageResult.Args.TryGetValue("returnArgs", out object returnArgs) ? returnArgs : null).ToStringDictionary();
 
             var result = new HttpResult(response);

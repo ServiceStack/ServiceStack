@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -430,6 +432,29 @@ title: We encode < & >
 
             var lastModified = context.Pages.GetLastModified(page);
             Assert.That(lastModified, Is.EqualTo(new DateTime(2001, 01, 07)));
+        }
+
+        public class AsyncFilters : TemplateFilter
+        {
+            public async Task<object> reverseString(string text)
+            {
+                await Task.Yield();
+                var chars = text.ToCharArray();
+                Array.Reverse(chars);
+                return new string(chars);            
+            }
+        }
+
+        [Test]
+        public void Can_call_async_filters()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new AsyncFilters() }
+            }.Init();
+
+            var output = context.EvaluateTemplate("{{ 'foo' | reverseString }}");
+            Assert.That(output, Is.EqualTo("oof"));
         }
 
 

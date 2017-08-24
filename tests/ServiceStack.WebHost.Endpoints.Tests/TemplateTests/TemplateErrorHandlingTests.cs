@@ -25,6 +25,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Exceptions_in_filter_bubble_by_default_async()
+        {
+            var context = new TemplateContext
+            {
+            }.Init();
+
+            try
+            {
+                context.EvaluateTemplate("{{ 'in filter' | throwAsync }}");
+            }
+            catch (Exception ex)
+            {
+                Assert.That(ex.Message, Is.EqualTo("in filter"));
+            }
+        }
+
+        [Test]
         public void Can_capture_exception_using_AssignException()
         {
             var context = new TemplateContext

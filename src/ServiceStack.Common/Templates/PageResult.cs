@@ -716,6 +716,9 @@ namespace ServiceStack.Templates
 
                         return IgnoreResult.Value;
                     }
+
+                    if (value is Task<object> valueTask)
+                        value = await valueTask;
                 }
                 catch (StopFilterExecutionException ex)
                 {

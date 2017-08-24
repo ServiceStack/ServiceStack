@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Templates
 {
@@ -243,5 +244,17 @@ namespace ServiceStack.Templates
         public object throwFileNotFoundException(TemplateScopeContext scope, string message, object options) => new FileNotFoundException(message).InStopFilter(scope, options);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, null);
         public object throwOptimisticConcurrencyException(TemplateScopeContext scope, string message, object options) => new Data.OptimisticConcurrencyException(message).InStopFilter(scope, options);
-     }
+
+        public async Task<object> @throwAsync(TemplateScopeContext scope, string message)
+        {
+            await Task.Yield();
+            return new Exception(message).InStopFilter(scope, null);
+        }
+
+        public async Task<object> @throwAsync(TemplateScopeContext scope, string message, object options)
+        {
+            await Task.Yield();
+            return new Exception(message).InStopFilter(scope, options);
+        }
+    }
 }
