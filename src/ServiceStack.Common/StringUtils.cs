@@ -84,7 +84,7 @@ namespace ServiceStack
 
         public static string HtmlEncode(this string html)
         {
-            return System.Net.WebUtility.HtmlEncode(html);
+            return System.Net.WebUtility.HtmlEncode(html).Replace("′","&prime;");
         }
 
         public static string HtmlDecode(this string html)
