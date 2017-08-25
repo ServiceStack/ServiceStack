@@ -75,16 +75,16 @@ namespace ServiceStack
             appHost.CatchAllHandlers.Add(RequestHandler);
 
             if (!DisableHotReload)
-                appHost.RegisterService(typeof(TemplatePagesServices));
+                appHost.RegisterService(typeof(TemplateHotReloadService));
             
             if (!string.IsNullOrEmpty(ApiPath))
-                appHost.RegisterService(typeof(TemplatePagesApiServices), 
+                appHost.RegisterService(typeof(TemplateApiPagesService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
             if (DebugMode || EnableDebugTemplate || EnableDebugTemplateToAll)
             {
-                appHost.RegisterService(typeof(MetadataTemplateServices), MetadataTemplateServices.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataTemplateServices.Route, "Debug Templates");
+                appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
             }
 
             Init();
@@ -147,7 +147,7 @@ namespace ServiceStack
 
     [DefaultRequest(typeof(HotReloadPage))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplatePagesServices : Service
+    public class TemplateHotReloadService : Service
     {
         public ITemplatePages Pages { get; set; }
 
@@ -182,7 +182,7 @@ namespace ServiceStack
 
     [DefaultRequest(typeof(ApiPages))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplatePagesApiServices : Service
+    public class TemplateApiPagesService : Service
     {
         public async Task<object> Any(ApiPages request) 
         {
@@ -240,15 +240,15 @@ namespace ServiceStack
     }
 
     [ExcludeMetadata]
-    public class MetadataDebugTemplate : IReturn<string>
+    public class TemplateMetadataDebug : IReturn<string>
     {
         public string Template { get; set; }
         public string AuthSecret { get; set; }
     }
 
-    [DefaultRequest(typeof(MetadataDebugTemplate))]
+    [DefaultRequest(typeof(TemplateMetadataDebug))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class MetadataTemplateServices : Service
+    public class TemplateMetadataDebugService : Service
     {
         public static string Route = "/metadata/debug"; 
         
@@ -284,7 +284,7 @@ User:
 <td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
 </tr></table>";
         
-        public object Any(MetadataDebugTemplate request)
+        public object Any(TemplateMetadataDebug request)
         {
             if (string.IsNullOrEmpty(request.Template))
                 return null;
@@ -319,7 +319,7 @@ User:
             return new HttpResult(result) { ContentType = MimeTypes.PlainText }; 
         }
 
-        public object GetHtml(MetadataDebugTemplate request)
+        public object GetHtml(TemplateMetadataDebug request)
         {
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
             if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
