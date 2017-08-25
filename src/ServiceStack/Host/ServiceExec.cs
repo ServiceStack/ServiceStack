@@ -32,6 +32,10 @@ namespace ServiceStack.Host
             {
                 if (mi.GetParameters().Length != 1)
                     continue;
+                
+                var paramType = mi.GetParameters()[0].ParameterType;
+                if (paramType.IsValueType() || paramType == typeof(string))
+                    continue;
 
                 var actionName = mi.Name.ToUpper();
                 if (!HttpMethods.AllVerbs.Contains(actionName) && 
