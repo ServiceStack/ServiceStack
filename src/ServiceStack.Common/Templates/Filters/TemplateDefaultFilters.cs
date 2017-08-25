@@ -114,9 +114,9 @@ namespace ServiceStack.Templates
             return false;
         }
 
-        [HandleUnknownValue] public object end() => StopExecution.Value;
+        [HandleUnknownValue] public StopExecution end() => StopExecution.Value;
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
-        [HandleUnknownValue] public object end(object ignore) => StopExecution.Value;
+        [HandleUnknownValue] public StopExecution end(object ignore) => StopExecution.Value;
 
         [HandleUnknownValue] public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
         [HandleUnknownValue] public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
@@ -1034,9 +1034,9 @@ namespace ServiceStack.Templates
         public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
         
-        public object @return(TemplateScopeContext scope) => @return(scope, null, null);
-        public object @return(TemplateScopeContext scope, object returnValue) => @return(scope, returnValue, null);
-        public object @return(TemplateScopeContext scope, object returnValue, object returnArgs)
+        public StopExecution @return(TemplateScopeContext scope) => @return(scope, null, null);
+        public StopExecution @return(TemplateScopeContext scope, object returnValue) => @return(scope, returnValue, null);
+        public StopExecution @return(TemplateScopeContext scope, object returnValue, object returnArgs)
         {
             scope.PageResult.Args[TemplateConstants.Return] = returnValue;
             scope.PageResult.Args[TemplateConstants.ReturnArgs] = returnArgs;
