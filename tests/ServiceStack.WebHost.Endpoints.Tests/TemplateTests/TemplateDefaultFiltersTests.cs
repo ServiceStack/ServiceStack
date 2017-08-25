@@ -1414,6 +1414,32 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_appendTo_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | appendTo: string }}
+{{ 'b' | appendTo: string }}
+{{ 'c' | appendTo: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("abc"));
+        }
+
+        [Test]
+        public void Can_prependTo_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | prependTo: string }}
+{{ 'b' | prependTo: string }}
+{{ 'c' | prependTo: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("cba"));
+        }
+
+        [Test]
         public void Return_does_stop_all_execution()
         {
             var context = new TemplateContext().Init();

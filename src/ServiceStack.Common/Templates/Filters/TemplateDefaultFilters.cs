@@ -319,10 +319,50 @@ namespace ServiceStack.Templates
 
         public KeyValuePair<string, object> keyValuePair(string key, object value) => new KeyValuePair<string, object>(key, value);
 
-        public object addToStart(TemplateScopeContext scope, object value, string argName)
+        public IgnoreResult prependTo(TemplateScopeContext scope, string value, string argName)
         {
             if (value == null)
-                return null;
+                return IgnoreResult.Value;
+
+            if (scope.ScopedParams.TryGetValue(argName, out object oString))
+            {
+                if (oString is string s)
+                {
+                    scope.ScopedParams[argName] = value + s;
+                }
+            }
+            else
+            {
+                scope.ScopedParams[argName] = value;
+            }
+            
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult appendTo(TemplateScopeContext scope, string value, string argName)
+        {
+            if (value == null)
+                return IgnoreResult.Value;
+
+            if (scope.ScopedParams.TryGetValue(argName, out object oString))
+            {
+                if (oString is string s)
+                {
+                    scope.ScopedParams[argName] = s + value;
+                }
+            }
+            else
+            {
+                scope.ScopedParams[argName] = value;
+            }
+            
+            return IgnoreResult.Value;
+        }
+        
+        public IgnoreResult addToStart(TemplateScopeContext scope, object value, string argName)
+        {
+            if (value == null)
+                return IgnoreResult.Value;
             
             if (scope.ScopedParams.TryGetValue(argName, out object collection))
             {
@@ -352,10 +392,10 @@ namespace ServiceStack.Templates
             return IgnoreResult.Value;
         }
 
-        public object addTo(TemplateScopeContext scope, object value, string argName) 
+        public IgnoreResult addTo(TemplateScopeContext scope, object value, string argName) 
         {
             if (value == null)
-                return null;
+                return IgnoreResult.Value;
             
             if (scope.ScopedParams.TryGetValue(argName, out object collection))
             {
@@ -447,7 +487,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        public object assignTo(TemplateScopeContext scope, object value, string argName)
+        public IgnoreResult assignTo(TemplateScopeContext scope, object value, string argName)
         {
             scope.ScopedParams[argName] = value;
             return IgnoreResult.Value;
