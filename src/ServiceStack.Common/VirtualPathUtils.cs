@@ -9,7 +9,7 @@ using ServiceStack.IO;
 
 namespace ServiceStack
 {
-    public static class VirtualPathExtensions
+    public static class VirtualPathUtils
     {
         public static Stack<string> TokenizeVirtualPath(this string str, IVirtualPathProvider pathProvider)
         {
@@ -86,6 +86,18 @@ namespace ServiceStack
             }
 
             return null;
+        }
+
+        public static TimeSpan MaxRetryOnExceptionTimeout { get; } = TimeSpan.FromSeconds(10);
+
+        internal static void SleepBackOffMultiplier(this int i)
+        {
+            var nextTryMs = (2 ^ i) * 50;
+#if NETSTANDARD1_3
+            System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
+#elif NET45
+            System.Threading.Thread.Sleep(nextTryMs);
+#endif
         }
     }
 }
