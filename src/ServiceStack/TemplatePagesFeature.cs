@@ -31,6 +31,7 @@ namespace ServiceStack
         public string DebugDefaultTemplate { get; set; }
         
         public string ApiPath { get; set; }
+        public string ApiDefaultContentType { get; set; } = MimeTypes.Json;
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
@@ -193,7 +194,8 @@ namespace ServiceStack
                 ? TypeConstants.EmptyStringArray
                 : request.PathInfo.SplitOnLast('.');
 
-            var pathInfo = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1])
+            var hasPathContentType = parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var pathInfo = hasPathContentType
                 ? parts[0]
                 : request.PathInfo;
             
@@ -202,11 +204,20 @@ namespace ServiceStack
                 : pathInfo.Split('/');
             
             parts = request.PageName.SplitOnLast('.');
-            var pageName = pathArgs.Length == 0 && parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1])
+            var hasPageContentType = pathArgs.Length == 0 && parts.Length > 1 && Host.ContentTypes.KnownFormats.Contains(parts[1]);
+            var pageName = hasPageContentType
                 ? parts[0]
                 : request.PageName;
 
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
+
+            if (feature.ApiDefaultContentType != null &&
+                !hasPathContentType &&
+                !hasPageContentType &&
+                base.Request.QueryString["format"] == null && base.Request.ResponseContentType == MimeTypes.Html)
+            {
+                base.Request.ResponseContentType = feature.ApiDefaultContentType;
+            }
 
             var pagePath = feature.ApiPath.CombineWith(pageName).TrimStart('/');
             var page = base.Request.GetPage(pagePath);

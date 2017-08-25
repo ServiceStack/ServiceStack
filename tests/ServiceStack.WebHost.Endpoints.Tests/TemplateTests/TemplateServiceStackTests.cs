@@ -354,13 +354,16 @@ CONSH: Consolidated Holdings, UK
         }
 
         [Test]
-        public void Can_call_customer_with_json_extension_to_force_ContentType()
+        public void Can_call_customer_with_csv_extension_to_force_ContentType()
         {
-            var html = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl();
+            var json = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl();
+            Assert.That(json, Does.StartWith("["));
+            
+            var html = BaseUrl.CombineWith("api", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl();
             Assert.That(html, Does.StartWith("<"));
             
-            var json = BaseUrl.CombineWith("api", "customers.json").AddQueryParam("limit", 1).GetStringFromUrl();
-            Assert.That(json, Does.StartWith("["));
+            var csv = BaseUrl.CombineWith("api", "customers.csv").AddQueryParam("limit", 1).GetStringFromUrl();
+            Assert.That(csv, Does.StartWith("CustomerId,"));
         }
 
         [Test]
