@@ -309,11 +309,17 @@ namespace ServiceStack.Templates
             }
 
             if (Page != null)
+            {
                 await Page.Init();
+                InitPageArgs(Page.Args);
+            }
             else
+            {
                 CodePage.Init();
+                InitPageArgs(CodePage.Args);
+            }
 
-            if (Layout != null)
+            if (Layout != null && !NoLayout)
             {
                 LayoutPage = Page != null
                     ? Context.Pages.ResolveLayoutPage(Page, Layout)
@@ -323,6 +329,15 @@ namespace ServiceStack.Templates
             hasInit = true;
 
             return this;
+        }
+
+        private void InitPageArgs(Dictionary<string, object> pageArgs)
+        {
+            if (pageArgs?.Count > 0)
+            {
+                NoLayout = (pageArgs.TryGetValue("ignore", out object ignore) && "template".Equals(ignore?.ToString())) ||
+                           (pageArgs.TryGetValue("layout", out object layout) && "none".Equals(layout?.ToString()));
+            }
         }
 
         private Task InitIfNewPage(TemplatePage page) => page != Page 

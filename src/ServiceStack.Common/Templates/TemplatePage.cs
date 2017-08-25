@@ -96,8 +96,11 @@ namespace ServiceStack.Templates
                 bodyContents = fileContents.SafeSubsegment(pos).AdvancePastWhitespace();
             }
 
-            var pageFragments = TemplatePageUtils.ParseTemplatePage(bodyContents);
-
+            var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
+                    && ("page".Equals(ignore.ToString()) || "template".Equals(ignore.ToString()))
+                ? new List<PageFragment> { new PageStringFragment(bodyContents) } 
+                : TemplatePageUtils.ParseTemplatePage(bodyContents); 
+                
             lock (semaphore)
             {
                 LastModified = lastModified;

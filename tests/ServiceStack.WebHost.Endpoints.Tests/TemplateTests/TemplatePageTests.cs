@@ -457,6 +457,22 @@ title: We encode < & >
             Assert.That(output, Is.EqualTo("oof"));
         }
 
+        [Test]
+        public void Can_ignore_page_template_and_layout_with_Page_args()
+        {
+            var context = new TemplateContext().Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", "<html><body>{{ page }}</body></html>");
+            context.VirtualFiles.WriteFile("page.html", "<pre>{{ 12.34 | currency }}</pre>");
+            context.VirtualFiles.WriteFile("page-nolayout.html", "<!--\nlayout: none\n-->\n<pre>{{ 12.34 | currency }}</pre>");
+            context.VirtualFiles.WriteFile("ignore-page.html", "<!--\nignore: page\n-->\n<pre>{{ 12.34 | currency }}</pre>");
+            context.VirtualFiles.WriteFile("ignore-template.html", "<!--\nignore: template\n-->\n<pre>{{ 12.34 | currency }}</pre>");
+            
+            Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<html><body><pre>$12.34</pre></body></html>"));
+            Assert.That(new PageResult(context.GetPage("page-nolayout")).Result, Is.EqualTo("<pre>$12.34</pre>"));
+            Assert.That(new PageResult(context.GetPage("ignore-page")).Result, Is.EqualTo("<html><body><pre>{{ 12.34 | currency }}</pre></body></html>"));
+            Assert.That(new PageResult(context.GetPage("ignore-template")).Result, Is.EqualTo("<pre>{{ 12.34 | currency }}</pre>"));
+        }
 
     }
 }
