@@ -209,6 +209,9 @@ namespace ServiceStack
                 ? parts[0]
                 : request.PageName;
 
+            // Change .csv download file name
+            base.Request.OperationName = pageName + (pathArgs.Length > 0 ? "_" + string.Join("_", pathArgs) : "");
+            
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
 
             if (feature.ApiDefaultContentType != null &&
