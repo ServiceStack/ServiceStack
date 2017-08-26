@@ -64,7 +64,7 @@ namespace ServiceStack
         /// The assemblies reflected to find api services.
         /// These can be provided in the constructor call.
         /// </summary>
-        public Assembly[] ServiceAssemblies { get; private set; }
+        public List<Assembly> ServiceAssemblies { get; private set; }
 
         /// <summary>
         /// Wether AppHost configuration is done.
@@ -85,7 +85,7 @@ namespace ServiceStack
             ServiceName = serviceName;
             AppSettings = new AppSettings();
             Container = new Container { DefaultOwner = Owner.External };
-            ServiceAssemblies = assembliesWithServices;
+            ServiceAssemblies = assembliesWithServices.ToList();
 
             ContentTypes = Host.ContentTypes.Instance;
             RestPaths = new List<RestPath>();
@@ -109,6 +109,8 @@ namespace ServiceStack
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
+            BeforeConfigure = new List<Action<ServiceStackHost>>();
+            AfterConfigure = new List<Action<ServiceStackHost>>();
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
             OnEndRequestCallbacks = new List<Action<IRequest>>();
@@ -180,7 +182,7 @@ namespace ServiceStack
             Service.GlobalResolver = Instance = this;
 
             if (ServiceController == null)
-                ServiceController = CreateServiceController(ServiceAssemblies);
+                ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
             Config = HostConfig.ResetInstance();
             OnConfigLoad();
@@ -192,7 +194,10 @@ namespace ServiceStack
 
             OnBeforeInit();
             ServiceController.Init();
+
+            BeforeConfigure.Each(fn => fn(this));
             Configure(Container);
+            AfterConfigure.Each(fn => fn(this));
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -381,6 +386,10 @@ namespace ServiceStack
         public List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; set; }
 
         public List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; set; }
+
+        public List<Action<ServiceStackHost>> BeforeConfigure { get; set; }
+
+        public List<Action<ServiceStackHost>> AfterConfigure { get; set; }
 
         public List<Action<IAppHost>> AfterInitCallbacks { get; set; }
 
