@@ -147,6 +147,15 @@ namespace ServiceStack
             }
         }
 
+        public static T AssertPlugin<T>() where T : class, IPlugin
+        {
+            var appHost = AppHost;
+            var plugin = appHost.GetPlugin<T>();
+            if (plugin == null)
+                throw new NotImplementedException($"Plugin '{typeof(T).Name}' has not been registered.");
+            return plugin;
+        }
+
         public static T GetPlugin<T>() where T : class, IPlugin
         {
             var appHost = AppHost;

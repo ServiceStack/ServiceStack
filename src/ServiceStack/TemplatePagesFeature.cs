@@ -567,12 +567,17 @@ User:
         
         public static TemplateCodePage GetCodePage(this IRequest request, string virtualPath)
         {
-            return HostContext.GetPlugin<TemplatePagesFeature>().GetCodePage(virtualPath).With(request);
+            return HostContext.AssertPlugin<TemplatePagesFeature>().GetCodePage(virtualPath).With(request);
         }
         
         public static TemplatePage GetPage(this IRequest request, string virtualPath)
         {
-            return HostContext.GetPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+            return HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+        }
+        
+        public static TemplatePage OneTimePage(this IRequest request, string contents, string ext=null)
+        {
+            return HostContext.AssertPlugin<TemplatePagesFeature>().OneTimePage(contents, ext);
         }
         
         public static TemplateCodePage With(this TemplateCodePage page, IRequest request)
