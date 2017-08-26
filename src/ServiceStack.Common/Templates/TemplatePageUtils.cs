@@ -46,63 +46,72 @@ namespace ServiceStack.Templates
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
-                var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
 
-                List<JsExpression> filterCommands = null;
-
-                literal = literal.ParseNextToken(out _, out JsBinding filterOp);
-                if (filterOp == JsBitwiseOr.Operator)
+                var isComment = text.GetChar(varStartPos) == '*';
+                if (!isComment)
                 {
-                    var varEndPos = 0;
-                    bool foundVarEnd = false;
-                
-                    filterCommands = literal.ParseExpression<JsExpression>(
-                        separator: '|',
-                        atEndIndex: (str, strPos) =>
-                        {
-                            while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
-                                strPos++;
-
-                            if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
+                    var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
+    
+                    List<JsExpression> filterCommands = null;
+    
+                    literal = literal.ParseNextToken(out _, out JsBinding filterOp);
+                    if (filterOp == JsBitwiseOr.Operator)
+                    {
+                        var varEndPos = 0;
+                        bool foundVarEnd = false;
+                    
+                        filterCommands = literal.ParseExpression<JsExpression>(
+                            separator: '|',
+                            atEndIndex: (str, strPos) =>
                             {
-                                foundVarEnd = true;
-                                varEndPos = varEndPos + 1 + strPos + 1;
-                                return strPos;
-                            }
-                            return null;
-                        },
-                        allowWhitespaceSensitiveSyntax: true);
-                
-                    if (!foundVarEnd)
-                        throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
-
-                    literal = literal.Advance(varEndPos);
+                                while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
+                                    strPos++;
+    
+                                if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
+                                {
+                                    foundVarEnd = true;
+                                    varEndPos = varEndPos + 1 + strPos + 1;
+                                    return strPos;
+                                }
+                                return null;
+                            },
+                            allowWhitespaceSensitiveSyntax: true);
+                    
+                        if (!foundVarEnd)
+                            throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
+    
+                        literal = literal.Advance(varEndPos);
+                    }
+                    else
+                    {
+                        literal = literal.Advance(1);
+                    }
+    
+                    var length = text.Length - pos - literal.Length;
+                    var originalText = text.Subsegment(pos, length);
+                    lastPos = pos + length;
+    
+                    var varFragment = new PageVariableFragment(originalText, initialValue, initialBinding, filterCommands);
+                    to.Add(varFragment);
+    
+                    var newLineLen = literal.StartsWith("\n")
+                        ? 1
+                        : literal.StartsWith("\r\n")
+                            ? 2
+                            : 0;
+                    if (newLineLen > 0)
+                    {
+                        var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
+                        var filterName = lastExpr?.NameString ?? varFragment?.InitialExpression?.NameString ?? varFragment.BindingString;
+                        if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
+                        {
+                            lastPos += newLineLen;
+                        }
+                    }
                 }
                 else
                 {
-                    literal = literal.Advance(1);
-                }
-
-                var length = text.Length - pos - literal.Length;
-                var originalText = text.Subsegment(pos, length);
-                lastPos = pos + length;
-
-                var varFragment = new PageVariableFragment(originalText, initialValue, initialBinding, filterCommands);
-                to.Add(varFragment);
-
-                var newLineLen = literal.StartsWith("\n")
-                    ? 1
-                    : literal.StartsWith("\r\n")
-                        ? 2
-                        : 0;
-                if (newLineLen > 0)
-                {
-                    var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
-                    var filterName = lastExpr?.NameString ?? varFragment?.InitialExpression?.NameString ?? varFragment.BindingString;
-                    if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
-                    {
-                        lastPos += newLineLen;
-                    }
+                    lastPos = text.IndexOf("*}}", varStartPos) + 3;
                 }
             }
 

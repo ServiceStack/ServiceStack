@@ -474,5 +474,14 @@ title: We encode < & >
             Assert.That(new PageResult(context.GetPage("ignore-template")).Result, Is.EqualTo("<pre>{{ 12.34 | currency }}</pre>"));
         }
 
+        [Test]
+        public void Can_comment_out_filters()
+        {
+            var context = new TemplateContext().Init();
+            context.VirtualFiles.WriteFile("page.html", "<pre>currency: {{* 12.34 | currency *}}, date: {{* now *}}</pre>");
+            
+            Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<pre>currency: , date: </pre>"));
+        }
+
     }
 }
