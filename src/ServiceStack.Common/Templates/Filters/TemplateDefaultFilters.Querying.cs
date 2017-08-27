@@ -445,21 +445,25 @@ namespace ServiceStack.Templates
             return to;
         }
 
-        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter) => orderBy(scope, target, filter, null);
-        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
-            orderByInternal(nameof(orderBy), scope, target, filter, scopeOptions);
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object expression) => orderBy(scope, target, expression, null);
+        public IEnumerable<object> orderBy(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            orderByInternal(nameof(orderBy), scope, target, expression, scopeOptions);
 
-        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter) => orderByDescending(scope, target, filter, null);
-        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
-            orderByInternal(nameof(orderByDescending), scope, target, filter, scopeOptions);
+        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object expression) => orderByDescending(scope, target, expression, null);
+        public IEnumerable<object> orderByDescending(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            orderByInternal(nameof(orderByDescending), scope, target, expression, scopeOptions);
 
-        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter) => thenBy(scope, target, filter, null);
-        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
-            thenByInternal(nameof(thenBy), scope, target, filter, scopeOptions);
+        public IEnumerable<object> orderByDesc(TemplateScopeContext scope, object target, object expression) => orderByDesc(scope, target, expression, null);
+        public IEnumerable<object> orderByDesc(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            orderByInternal(nameof(orderByDescending), scope, target, expression, scopeOptions);
 
-        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object filter) => thenByDescending(scope, target, filter, null);
-        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object filter, object scopeOptions) =>
-            thenByInternal(nameof(thenByDescending), scope, target, filter, scopeOptions);
+        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object expression) => thenBy(scope, target, expression, null);
+        public IEnumerable<object> thenBy(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            thenByInternal(nameof(thenBy), scope, target, expression, scopeOptions);
+
+        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object expression) => thenByDescending(scope, target, expression, null);
+        public IEnumerable<object> thenByDescending(TemplateScopeContext scope, object target, object expression, object scopeOptions) =>
+            thenByInternal(nameof(thenByDescending), scope, target, expression, scopeOptions);
 
         class ComparerWrapper : IComparer<object>
         {
