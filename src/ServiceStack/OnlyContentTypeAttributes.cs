@@ -1,4 +1,5 @@
-﻿using ServiceStack.Web;
+﻿using System;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -25,5 +26,14 @@ namespace ServiceStack
     public class CsvOnly : RequestFilterAttribute
     {
         public override void Execute(IRequest req, IResponse res, object requestDto) => req.ResponseContentType = MimeTypes.Csv;
+    }
+    
+    public class ReturnExceptionsInJsonAttribute : ResponseFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object responseDto)
+        {
+            if (responseDto is Exception || responseDto is IHttpError)
+                req.ResponseContentType = MimeTypes.Json;
+        }
     }
 }
