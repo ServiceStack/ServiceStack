@@ -34,5 +34,11 @@ namespace ServiceStack
             var result = scope.Evaluate(value, binding);
             return result;
         }
+
+        public static object value(string js)
+        {
+            js.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            return value;
+        }
     }
 }

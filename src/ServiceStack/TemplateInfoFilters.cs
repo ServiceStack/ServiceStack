@@ -78,5 +78,7 @@ namespace ServiceStack
         public List<string> metaAllOperationNames() => HostContext.Metadata.GetAllOperationNames();
         public List<Type> metaAllOperationTypes() => HostContext.Metadata.GetAllOperationTypes();
         public Operation metaOperation(string name) => HostContext.Metadata.GetOperation(HostContext.Metadata.GetOperationType(name));
+
+        public List<IPlugin> plugins() => HostContext.AppHost.Plugins;
     }
 }

@@ -69,10 +69,14 @@ namespace ServiceStack
         /// </summary>
         public bool LimitToServiceRequests { get; set; }
 
-        public RequestLogsFeature(int? capacity = null)
+        public RequestLogsFeature(int capacity) : this()
+        {
+            this.Capacity = capacity;
+        }
+
+        public RequestLogsFeature()
         {
             this.AtRestPath = "/requestlogs";
-            this.Capacity = capacity;
             this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;

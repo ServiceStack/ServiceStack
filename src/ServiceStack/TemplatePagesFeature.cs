@@ -291,6 +291,8 @@ User:
   - LastName              {{ userSession | select: { it.LastName } }}
   - Is Admin              {{ userHasRole('Admin') }}
   - Has Permission        {{ userHasPermission('ThePermission') }}
+
+Plugins: {{ plugins | select: \n  - { it | typeName } }}
 </pre></td><td style='width:50%'> 
 {{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
