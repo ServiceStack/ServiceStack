@@ -50,7 +50,7 @@ namespace CheckWeb
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
-                DebugMode = true,
+                DebugMode = false,
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
                 UseCamelCase = true,
@@ -71,7 +71,10 @@ namespace CheckWeb
                     CaptureSynchronizationContext = true,
                 });
 
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new TemplatePagesFeature
+            {
+                EnableDebugTemplateToAll = true
+            });
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(

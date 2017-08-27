@@ -87,6 +87,8 @@
     .error .output {
         padding: 0;
     }
+    .error textarea {
+    }
     .alert-danger {
         color: #721c24;
         background-color: #f8d7da;
@@ -146,6 +148,7 @@ $(".live-template").each(function(){
             contentType: "application/json",
             dataType: "html",
             success: function(data) {
+                el.removeClass('error');
                 el.find(".output").html(data)
             },
             error: function(jqxhr,status,errMsg) { handleError(el, jqxhr) }
@@ -158,11 +161,10 @@ function handleError(el, jqxhr) {
     try {
         console.log('template error:', jqxhr.status, jqxhr.statusText);
         el.addClass('error');
-        var errorResponse = JSON.parse(jqxhr.responseText);
-        var status = errorResponse.responseStatus;
+        var status = $.ss.parseResponseStatus(jqxhr.responseText, jqxhr.status + ' ' + jqxhr.statusText);
         if (status) {
             el.find('.output').html('<div class="alert alert-danger"><pre>' + status.errorCode + ' ' + htmlEscape(status.message) +
-                '\n\nStackTrace:\n' + htmlEscape(status.stackTrace) + '</pre></div>');
+                (status.stackTrace ? '\n\nStackTrace:\n' + htmlEscape(status.stackTrace) : '') + '</pre></div>');
         }
     } catch(e) {
         el.find('.output').html('<div class="alert alert-danger"><pre>' + jqxhr.status + ' ' + jqxhr.statusText + '</pre></div>');
@@ -170,7 +172,7 @@ function handleError(el, jqxhr) {
 }
 
 function htmlEscape(str) {
-    return str
+    return (str || '')
         .replace(/&/g, '&amp;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;')
