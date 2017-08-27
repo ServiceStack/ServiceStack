@@ -4,8 +4,11 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
+using ServiceStack.Templates;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -375,6 +378,46 @@ CONSH: Consolidated Holdings, UK
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
             Assert.That(customer.City, Is.EqualTo("Berlin"));
             Assert.That(customer.Country, Is.EqualTo("Germany"));
+        }
+
+        [Test]
+        public void Can_use_ifAuthenticated_filters_when_authenticated()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateServiceStackFilters() },
+                Args =
+                {
+                    [TemplateConstants.Request] = new MockHttpRequest
+                    {
+                        Items =
+                        {
+                            [Keywords.Session] = new AuthUserSession { DisplayName = "Auth User", IsAuthenticated = true }
+                        }
+                    }
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ isAuthenticated }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ ifAuthenticated | show: Y }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateTemplate("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIfAuthenticated }}"), Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Can_use_ifAuthenticated_filters_when_not_authenticated()
+        {
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateServiceStackFilters() },
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ isAuthenticated }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ ifAuthenticated | show: Y }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo("N"));
+            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ 1 | endIfAuthenticated }}"), Is.EqualTo("1"));
         }
     }
 }
