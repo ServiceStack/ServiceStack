@@ -162,6 +162,9 @@ namespace ServiceStack.Host
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
 #endif
+                    if (responseType?.Name == "Task`1" && responseType.GetGenericArguments()[0] != typeof(object))
+                        responseType = responseType.GetGenericArguments()[0];
+                    
                     RegisterRestPaths(requestType);
 
                     appHost.Metadata.Add(serviceType, requestType, responseType);
