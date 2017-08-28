@@ -210,8 +210,6 @@ namespace ServiceStack.Host.NetCore
 
         public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
 
-        public string RemoteIp => UserHostAddress;
-
         public string Authorization => request.Headers[HttpHeaders.Authorization];
 
         public bool IsSecureConnection => request.IsHttps;
@@ -297,12 +295,15 @@ namespace ServiceStack.Host.NetCore
                 ? null
                 : request.Headers[HttpHeaders.Accept].ToString();
 
+        private string remoteIp;
+        public string RemoteIp => 
+            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? UserHostAddress));
         
         public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
 
         public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
 
-        public bool IsDirectory{ get; }
+        public bool IsDirectory { get; }
 
         public bool IsFile { get; }
     }
