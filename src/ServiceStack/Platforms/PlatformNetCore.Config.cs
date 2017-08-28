@@ -1,12 +1,16 @@
 ﻿#if NETSTANDARD1_6
 
+using System;
 using System.IO;
 using ServiceStack.Configuration;
+using ServiceStack.Logging;
 
 namespace ServiceStack.Platforms
 {
     public partial class PlatformNetCore : Platform
     {
+        private static ILog log = LogManager.GetLogger(typeof(PlatformNetCore));
+        
         public static ServiceStackHost HostInstance { get; set; }
 
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
@@ -36,12 +40,24 @@ namespace ServiceStack.Platforms
             if (File.Exists(configPath))
                 return configPath;
 
-            //dll App.config
-            var appHostDll = new FileInfo(host.GetType().GetAssembly().Location).Name;
-            configPath = $"~/{appHostDll}.config".MapAbsolutePath();
-            return File.Exists(configPath) 
-                ? configPath 
-                : null;
+            try
+            {
+                //dll App.config
+                var location = host.GetType().GetAssembly().Location;
+                if (string.IsNullOrEmpty(location))
+                    return null;
+
+                var appHostDll = new FileInfo(location).Name;
+                configPath = $"~/{appHostDll}.config".MapAbsolutePath();
+                return File.Exists(configPath) 
+                    ? configPath 
+                    : null;
+            }
+            catch (Exception ex)
+            {
+                log.Error("GetAppConfigPath(): ", ex);
+                return null;
+            }
         }
 
         public override string GetNullableAppSetting(string key)

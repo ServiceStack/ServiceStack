@@ -35,6 +35,7 @@ using System.Text;
 using System.Net;
 using System.Web;
 using System.Security.Cryptography;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -65,6 +66,7 @@ namespace ServiceStack.Auth
     //
     public class OAuthAuthorizer
     {
+        private static ILog log = LogManager.GetLogger(typeof(OAuthAuthorizer)); 
         // Settable by the user
         public string xAuthUsername, xAuthPassword;
 
@@ -107,9 +109,14 @@ namespace ServiceStack.Auth
         // Makes an OAuth signature out of the HTTP method, the base URI and the headers
         static string MakeSignature(string method, string base_uri, Dictionary<string, string> headers)
         {
-            var items = from k in headers.Keys
-                        orderby k
-                        select k + "%3D" + OAuthUtils.PercentEncode(headers[k]);
+            var emptyHeaders = headers.Keys.Where(k => string.IsNullOrEmpty(headers[k])).ToArray();
+            if (emptyHeaders.Length > 0)
+            {
+                log.Warn("Empty Headers: " + string.Join(", ", emptyHeaders));
+            }
+                
+            var items = headers.Keys.OrderBy(k => k)                
+                .Select(k => k + "%3D" + OAuthUtils.PercentEncode(headers[k]));
 
             return method + "&" + OAuthUtils.PercentEncode(base_uri) + "&" +
                 string.Join("%26", items.ToArray());
@@ -336,6 +343,9 @@ namespace ServiceStack.Auth
         //
         public static string PercentEncode(string s)
         {
+            if (string.IsNullOrEmpty(s))
+                return s;
+            
             var sb = StringBuilderCache.Allocate();
 
             foreach (byte c in Encoding.UTF8.GetBytes(s))

@@ -22,6 +22,12 @@ namespace ServiceStack.Auth
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
+            if (string.IsNullOrEmpty(ConsumerKey))
+                throw new Exception("oauth.twitter.ConsumerKey is required");
+
+            if (string.IsNullOrEmpty(ConsumerSecret))
+                throw new Exception("oauth.twitter.ConsumerSecret is required");
+            
             var tokens = Init(authService, ref session, request);
 
             //Transfering AccessToken/Secret from Mobile/Desktop App to Server
