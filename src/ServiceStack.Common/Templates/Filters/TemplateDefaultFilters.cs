@@ -1064,6 +1064,30 @@ namespace ServiceStack.Templates
             }
             return target;
         }
+
+        public string dirPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
+                return null;
+
+            var lastDirPos = filePath.LastIndexOf('/');
+            return lastDirPos >= 0
+                ? filePath.Substring(0, lastDirPos)
+                : null;
+        }
+
+        public string resolveAsset(TemplateScopeContext scope, string virtualPath)
+        {
+            if (string.IsNullOrEmpty(virtualPath))
+                return string.Empty;
+
+            if (!scope.Context.Args.TryGetValue(TemplateConstants.AssetsBase, out object assetsBase))
+                return virtualPath;
+
+            return virtualPath[0] == '/'
+                ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
+                : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
+        }
    }
 
     public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        

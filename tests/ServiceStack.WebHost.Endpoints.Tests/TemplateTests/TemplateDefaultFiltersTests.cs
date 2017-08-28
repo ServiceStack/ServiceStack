@@ -1459,5 +1459,29 @@ dir-file: dir/dir-file.txt
             }));
         }
 
+        [Test]
+        public void Can_use_resolveAsset_to_resolve_external_paths()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    [TemplateConstants.AssetsBase] = "http://example.com/assets/"
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ 'img/logo.png'  | resolveAsset }}"), Is.EqualTo("http://example.com/assets/img/logo.png"));
+            Assert.That(context.EvaluateTemplate("{{ '/img/logo.png' | resolveAsset }}"), Is.EqualTo("http://example.com/assets/img/logo.png"));
+        }
+
+        [Test]
+        public void Returns_path_when_no_assetsBase_exists()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ 'img/logo.png'  | resolveAsset }}"), Is.EqualTo("img/logo.png"));
+            Assert.That(context.EvaluateTemplate("{{ '/img/logo.png' | resolveAsset }}"), Is.EqualTo("/img/logo.png"));
+        }
+
     }
 }
