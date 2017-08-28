@@ -250,27 +250,38 @@ namespace ServiceStack
                 return new IndexPageHttpHandler();
             }
 
-            var okToServe = ShouldAllow(httpReq.GetPhysicalPath());
+            var okToServe = ShouldAllow(httpReq.PathInfo);
             return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
         }
 
         // no handler registered 
         // serve the file from the filesystem, restricting to a safelist of extensions
-        public static bool ShouldAllow(string filePath)
+        public static bool ShouldAllow(string pathInfo)
         {
-            var parts = filePath.SplitOnLast('.');
+            if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
+                return true;
+
+            var config = HostContext.Config;
+            foreach (var path in config.ForbiddenPaths)
+            {
+                if (pathInfo.StartsWith(path))
+                    return false;
+            }
+            
+            var parts = pathInfo.SplitOnLast('.');
             if (parts.Length == 1 || string.IsNullOrEmpty(parts[1]))
                 return false;
 
             var fileExt = parts[1];
-            if (HostContext.Config.AllowFileExtensions.Contains(fileExt))
+            if (config.AllowFileExtensions.Contains(fileExt))
                 return true;
 
-            foreach (var pathGlob in HostContext.Config.AllowFilePaths)
+            foreach (var pathGlob in config.AllowFilePaths)
             {
-                if (filePath.GlobPath(pathGlob))
+                if (pathInfo.GlobPath(pathGlob))
                     return true;
             }
+            
             return false;
         }
 
