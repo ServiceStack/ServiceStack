@@ -152,6 +152,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map('htmlOption(it, { value: it })') | join('') | htmlSelect({ name:'sel' }) }}"), 
                 Is.EqualTo("<select name=\"sel\"><option value=\"A\">A</option><option value=\"B\">B</option><option value=\"C\">C</option></select>"));
+            
+            Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map('htmlOption(it, { value: it })') | join('') | htmlSelect({ name:'sel' }) }}"), 
+                Is.EqualTo("<select name=\"sel\"><option value=\"A\">A</option><option value=\"B\">B</option><option value=\"C\">C</option></select>"));
         }
 
     }

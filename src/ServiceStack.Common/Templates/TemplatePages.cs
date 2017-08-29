@@ -209,14 +209,13 @@ namespace ServiceStack.Templates
 
             page.File.Refresh();
             var maxLastModified = page.File.LastModified;
-            if (page.LayoutPage != null)
+
+            var layout = page.IsLayout ? null : page.LayoutPage ?? ResolveLayoutPage(page, null);
+            if (layout != null)
             {
-                maxLastModified = GetMaxLastModified(page.LayoutPage.File, maxLastModified);
-            }
-            else
-            {
-                var layout = ResolveLayoutPage(page, null);
-                maxLastModified = GetMaxLastModified(layout?.File, maxLastModified);
+                var layoutLastModified = GetLastModified(layout);
+                if (layoutLastModified > maxLastModified)
+                    maxLastModified = layoutLastModified;
             }
 
             var varFragments = page.PageFragments.OfType<PageVariableFragment>();
@@ -238,7 +237,7 @@ namespace ServiceStack.Templates
                         }
                     }
                 }
-                else if (filter?.NameString == "includeFile")
+                else if (filter?.NameString == "includeFile" || filter?.NameString == "fileContents")
                 {
                     if (fragment.InitialValue is string filePath)
                     {
