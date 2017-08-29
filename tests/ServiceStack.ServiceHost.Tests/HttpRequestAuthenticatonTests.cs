@@ -56,6 +56,22 @@ namespace ServiceStack.ServiceHost.Tests
         }
 
         [Test]
+        public void Should_Return_Null_As_Bearer_Token_When_Authorization_Header_Does_Not_Prefix()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            headers.Add("Authorization", "Blablabla");
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.Null(bearerToken);
+        }
+
+        [Test]
         public void Should_Return_Null_As_Bearer_Token_When_Authorization_Header_Does_Not_Contain_Bearer()
         {
             // PREPARE
@@ -70,6 +86,8 @@ namespace ServiceStack.ServiceHost.Tests
             // ASSERT
             Assert.Null(bearerToken);
         }
+
+
 
         [Test]
         public void Can_Return_Bearer_Token()

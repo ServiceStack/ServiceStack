@@ -15,6 +15,9 @@ namespace ServiceStack.Host
                 return null;
 
             var pos = auth.IndexOf(' ');
+            if (pos < 0)
+                return null;
+
             return auth.Substring(0, pos).EqualsIgnoreCase("Bearer") ? auth.Substring(pos + 1) : null;
         }
 
