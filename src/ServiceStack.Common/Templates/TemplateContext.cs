@@ -271,7 +271,7 @@ namespace ServiceStack.Templates
                 ScanType(type);
             }
 
-            foreach (var assembly in ScanAssemblies)
+            foreach (var assembly in ScanAssemblies.Safe())
             {
                 foreach (var type in assembly.GetTypes())
                 {
