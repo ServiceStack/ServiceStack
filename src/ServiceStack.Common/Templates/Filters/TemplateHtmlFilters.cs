@@ -369,5 +369,82 @@ namespace ServiceStack.Templates
             var html = StringBuilderCache.ReturnAndFree(sb);
             return html.ToRawString();
         }
+
+        public string htmlAttrs(Dictionary<string, object> attrs)
+        {
+            if (attrs == null || attrs.Count == 0)
+                return string.Empty;
+            
+            var sb = StringBuilderCache.Allocate();
+
+            foreach (var entry in attrs)
+            {
+                if (entry.Key == "text" || entry.Key == "html") 
+                    continue;
+
+                var key = entry.Key == "className"
+                    ? "class"
+                    : entry.Key == "htmlFor"
+                        ? "for"
+                        : entry.Key;
+                
+                sb.Append(' ').Append(key).Append('=').Append('"').Append(entry.Value?.ToString().HtmlEncode()).Append('"');
+            }
+            
+            return sb.ToString();
+        }
+
+        [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object>{ ["text"] = href });
+        [HandleUnknownValue] public IRawString htmlLink(string href, Dictionary<string, object> attrs)
+        {
+            if (string.IsNullOrEmpty(href))
+                return RawString.Empty;
+
+            return htmlA(new Dictionary<string, object>(attrs) { ["href"] = href });
+        }
+
+        public IRawString htmlTag(Dictionary<string, object> attrs, string tag)
+        {
+            var scopedParams = attrs ?? TypeConstants.EmptyObjectDictionary;
+            
+            var innerHtml = scopedParams.TryGetValue("html", out object oInnerHtml)
+                ? oInnerHtml?.ToString()
+                : null;
+
+            if (innerHtml == null)
+            {
+                innerHtml = scopedParams.TryGetValue("text", out object text)
+                    ? text?.ToString().HtmlEncode()
+                    : null;
+            }
+            
+            var attrString = htmlAttrs(attrs);
+            return $"<{tag}{attrString}>{innerHtml}</{tag}>".ToRawString();
+        }
+
+        public IRawString htmlDiv(Dictionary<string, object> attrs) => htmlTag(attrs, "div");
+        public IRawString htmlSpan(Dictionary<string, object> attrs) => htmlTag(attrs, "span");
+        
+        public IRawString htmlA(Dictionary<string, object> attrs) => htmlTag(attrs, "a");
+        public IRawString htmlImg(Dictionary<string, object> attrs) => htmlTag(attrs, "img");
+
+        public IRawString htmlH1(Dictionary<string, object> attrs) => htmlTag(attrs, "h1");
+        public IRawString htmlH2(Dictionary<string, object> attrs) => htmlTag(attrs, "h2");
+        public IRawString htmlH3(Dictionary<string, object> attrs) => htmlTag(attrs, "h3");
+        public IRawString htmlH4(Dictionary<string, object> attrs) => htmlTag(attrs, "h4");
+        public IRawString htmlH5(Dictionary<string, object> attrs) => htmlTag(attrs, "h5");
+        public IRawString htmlH6(Dictionary<string, object> attrs) => htmlTag(attrs, "h6");
+        
+        public IRawString htmlEm(Dictionary<string, object> attrs) => htmlTag(attrs, "em");
+        public IRawString htmlb(Dictionary<string, object> attrs) => htmlTag(attrs, "b");
+        
+        public IRawString htmlTable(Dictionary<string, object> attrs) => htmlTag(attrs, "table");
+        public IRawString htmlTr(Dictionary<string, object> attrs) => htmlTag(attrs, "tr");
+        public IRawString htmlTh(Dictionary<string, object> attrs) => htmlTag(attrs, "th");
+        public IRawString htmlTd(Dictionary<string, object> attrs) => htmlTag(attrs, "td");
+        
+        public IRawString htmlUl(Dictionary<string, object> attrs) => htmlTag(attrs, "ul");
+        public IRawString htmlOl(Dictionary<string, object> attrs) => htmlTag(attrs, "ol");
+        public IRawString htmlLi(Dictionary<string, object> attrs) => htmlTag(attrs, "li");
     }
 }

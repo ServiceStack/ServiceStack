@@ -88,4 +88,10 @@ public static class DictionaryExtensions
             return true;
         }
     }
+
+    public static Dictionary<TKey, TValue> RemoveKey<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey key)
+    {
+        map?.Remove(key);
+        return map;
+    }
 }
