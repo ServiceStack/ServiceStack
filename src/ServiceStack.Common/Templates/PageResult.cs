@@ -949,7 +949,7 @@ namespace ServiceStack.Templates
             {
                 value = binding != null 
                     ? GetValue(binding.BindingString, scope) 
-                    : outValue;
+                    : EvaluateAnyBindings(outValue, scope);
             }
 
             if (unaryOp != null)

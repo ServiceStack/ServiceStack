@@ -313,7 +313,7 @@ namespace ServiceStack.Templates
         public IRawString pass(string target) => ("{{ " + target + " }}").ToRawString();
 
         public IEnumerable join(IEnumerable<object> values) => join(values, ",");
-        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.AsString()).Join(delimiter);
 
         public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
