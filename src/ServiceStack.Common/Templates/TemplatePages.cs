@@ -37,6 +37,9 @@ namespace ServiceStack.Templates
             if (!page.HasInit)
                 throw new ArgumentException($"Page {page.File.VirtualPath} has not been initialized");
 
+            if (page.IsLayout)
+                return null;
+            
             var layoutWithoutExt = (layout ?? Context.DefaultLayoutPage).LeftPart('.');
 
             var dir = page.File.Directory;
@@ -201,7 +204,7 @@ namespace ServiceStack.Templates
             page.Init().Wait(); // Safe as Memory Files are non-blocking
             return page;
         }
-
+        
         public DateTime GetLastModified(TemplatePage page)
         {
             if (page == null)
@@ -213,10 +216,25 @@ namespace ServiceStack.Templates
             var layout = page.IsLayout ? null : page.LayoutPage ?? ResolveLayoutPage(page, null);
             if (layout != null)
             {
-                var layoutLastModified = GetLastModified(layout);
+                var layoutLastModified = GetLastModifiedPage(layout);
                 if (layoutLastModified > maxLastModified)
                     maxLastModified = layoutLastModified;
             }
+
+            var pageLastModified = GetLastModifiedPage(page);
+            if (pageLastModified > maxLastModified)
+                maxLastModified = pageLastModified;
+
+            return maxLastModified;
+        }
+
+        public DateTime GetLastModifiedPage(TemplatePage page)
+        {
+            if (page == null)
+                throw new ArgumentNullException(nameof(page));
+
+            page.File.Refresh();
+            var maxLastModified = page.File.LastModified;
 
             var varFragments = page.PageFragments.OfType<PageVariableFragment>();
             foreach (var fragment in varFragments)
@@ -231,7 +249,7 @@ namespace ServiceStack.Templates
 
                         if (partialPage?.HasInit == true)
                         {
-                            var partialLastModified = GetLastModified(partialPage);
+                            var partialLastModified = GetLastModifiedPage(partialPage);
                             if (partialLastModified > maxLastModified)
                                 maxLastModified = partialLastModified;
                         }
@@ -245,6 +263,7 @@ namespace ServiceStack.Templates
                         maxLastModified = GetMaxLastModified(file, maxLastModified);
                     }
                 }
+                
                 var lastFilter = fragment.FilterExpressions?.LastOrDefault();
                 if (lastFilter?.NameString == "selectPartial")
                 {
@@ -253,6 +272,13 @@ namespace ServiceStack.Templates
                     {
                         Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
                         maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
+
+                        if (partialPage?.HasInit == true)
+                        {
+                            var partialLastModified = GetLastModifiedPage(partialPage);
+                            if (partialLastModified > maxLastModified)
+                                maxLastModified = partialLastModified;
+                        }
                     }
                 }
             }

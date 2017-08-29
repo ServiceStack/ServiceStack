@@ -470,8 +470,8 @@ namespace ServiceStack.Templates
         
         public IRawString htmlEm(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "em");
         public IRawString htmlEm(string text) => htmlTag(new Dictionary<string, object>{ ["text"] = text }, "em");
-        public IRawString htmlb(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "b");
-        public IRawString htmlb(string text) => htmlTag(new Dictionary<string, object>{ ["text"] = text }, "b");
+        public IRawString htmlB(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "b");
+        public IRawString htmlB(string text) => htmlTag(new Dictionary<string, object>{ ["text"] = text }, "b");
         
         public IRawString htmlUl(Dictionary<string, object> attrs) => htmlTag(attrs, "ul");
         public IRawString htmlUl(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "ul");
@@ -499,7 +499,6 @@ namespace ServiceStack.Templates
         public IRawString htmlTextArea(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "textarea");
         public IRawString htmlButton(Dictionary<string, object> attrs) => htmlTag(attrs, "button");
         public IRawString htmlButton(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "button");
-
         public IRawString htmlSelect(Dictionary<string, object> attrs) => htmlTag(attrs, "select");
         public IRawString htmlSelect(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "select");
         public IRawString htmlOption(string innerHtml, Dictionary<string, object> attrs) => htmlTag(innerHtml, attrs, "option");
