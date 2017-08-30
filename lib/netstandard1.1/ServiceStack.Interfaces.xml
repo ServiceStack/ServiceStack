@@ -382,7 +382,7 @@
         </member>
         <member name="M:ServiceStack.Caching.ISessionFactory.GetOrCreateSession(ServiceStack.Web.IRequest,ServiceStack.Web.IResponse)">
             <summary>
-            Gets the session for this request, creates one if it doesn't exist.
+            Gets the Session Bag for this request, creates one if it doesn't exist.
             </summary>
             <param name="httpReq"></param>
             <param name="httpRes"></param>
@@ -390,9 +390,16 @@
         </member>
         <member name="M:ServiceStack.Caching.ISessionFactory.GetOrCreateSession">
             <summary>
-            Gets the session for this request, creates one if it doesn't exist.
+            Gets the Session Bag for this request, creates one if it doesn't exist.
             Only for ASP.NET apps. Uses the HttpContext.Current singleton.
             </summary>
+        </member>
+        <member name="M:ServiceStack.Caching.ISessionFactory.CreateSession(System.String)">
+            <summary>
+            Create a Session Bag using a custom sessionId
+            </summary>
+            <param name="sessionId"></param>
+            <returns></returns>
         </member>
         <member name="T:ServiceStack.Configuration.IContainerAdapter">
             <summary>
