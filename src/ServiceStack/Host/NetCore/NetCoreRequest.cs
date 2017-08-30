@@ -212,7 +212,7 @@ namespace ServiceStack.Host.NetCore
 
         public string Authorization => request.Headers[HttpHeaders.Authorization];
 
-        public bool IsSecureConnection => request.IsHttps;
+        public bool IsSecureConnection => request.IsHttps || XForwardedProtocol == "https";
 
         public string[] AcceptTypes => request.Headers[HttpHeaders.Accept].ToArray();
 
