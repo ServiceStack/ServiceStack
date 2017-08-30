@@ -120,7 +120,8 @@ namespace ServiceStack.Templates
 
         private MethodInfo GetContextFilterInvokerMethod(string name, int argsCount)
         {
-            var method = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public);
+            var method = methods
                 .FirstOrDefault(x => name.EqualsIgnoreCase(x.Name) && 
                      x.GetParameters().Length == argsCount && 
                      x.GetParameters()[0].ParameterType == typeof(TemplateScopeContext) &&
@@ -148,7 +149,8 @@ namespace ServiceStack.Templates
 
         private MethodInfo GetContextBlockInvokerMethod(string name, int argsCount)
         {
-            var method = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            var methods = GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public);
+            var method = methods
                 .FirstOrDefault(x => name.EqualsIgnoreCase(x.Name) && 
                      x.GetParameters().Length == argsCount && 
                      x.GetParameters()[0].ParameterType == typeof(TemplateScopeContext) &&
