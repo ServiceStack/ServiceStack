@@ -67,7 +67,10 @@ namespace ServiceStack.NativeTypes.VbNet
             "With",
             "When",
             "Operator",
-            "Class"
+            "Class",
+            "Date",
+            "End",
+            "end",
         };
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
