@@ -190,7 +190,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return userName == "user" && password == "pass";
         }
     }
-
+    
+    [Explicit("Unnecessary suite of tests")]
     [TestFixture]
     public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
     {
