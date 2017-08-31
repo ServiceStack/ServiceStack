@@ -44,6 +44,9 @@ sO2GRzjw6Kx9d2+RzsaH+vWINhuB6+zIQ2KKH39ZvV19AMvxmhRyqyYoTYjm7v7P0vNlpqeYYPqDx2sb
         }
 
         [Test]
+#if NETCORE_SUPPORT
+        [Ignore("Operation not supported on .NET Core")]
+#endif        
         public void Can_parse_private_key_xml()
         {
             var pk1 = PlatformRsaUtils.ExtractFromXml(PrivateKeyXml);
@@ -65,6 +68,9 @@ sO2GRzjw6Kx9d2+RzsaH+vWINhuB6+zIQ2KKH39ZvV19AMvxmhRyqyYoTYjm7v7P0vNlpqeYYPqDx2sb
         }
 
         [Test]
+#if NETCORE_SUPPORT
+        [Ignore("Operation not supported on .NET Core")]
+#endif        
         public void Can_parse_public_key_xml()
         {
             var pk1 = PlatformRsaUtils.ExtractFromXml(PublicKeyXml);
