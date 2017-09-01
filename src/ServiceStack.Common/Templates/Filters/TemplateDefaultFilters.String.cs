@@ -12,7 +12,7 @@ namespace ServiceStack.Templates
     
     public partial class TemplateDefaultFilters
     {
-        public IRawString raw(object value)
+        [HandleUnknownValue] public IRawString raw(object value)
         {
             if (value == null || Equals(value, JsNull.Value))
                 return TemplateConstants.EmptyRawString;
@@ -48,7 +48,7 @@ namespace ServiceStack.Templates
             return fmt;
         }
 
-        public IRawString formatRaw(object obj, string fmt) => raw(string.Format(fmt.Replace("{{","{").Replace("}}","}"), obj));
+        [HandleUnknownValue] public IRawString formatRaw(object obj, string fmt) => raw(string.Format(fmt.Replace("{{","{").Replace("}}","}"), obj));
         
         public string format(object obj, string format) => obj is IFormattable formattable
             ? formattable.ToString(format, null)
