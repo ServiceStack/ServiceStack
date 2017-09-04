@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Moq;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -22,6 +21,88 @@ namespace ServiceStack.ServiceHost.Tests
             var res = requestMock.Object.GetDigestAuth();
 
             Assert.NotNull(res);
+        }
+
+        [Test]
+        public void Should_Return_Null_When_Authorization_Header_Is_Missing()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.Null(bearerToken);
+        }
+
+        [Test]
+        public void Should_Return_Null_As_Bearer_Token_When_Authorization_Header_Is_Empty()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            headers.Add("Authorization", string.Empty);
+
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.Null(bearerToken);
+        }
+
+        [Test]
+        public void Should_Return_Null_As_Bearer_Token_When_Authorization_Header_Does_Not_Prefix()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            headers.Add("Authorization", "Blablabla");
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.Null(bearerToken);
+        }
+
+        [Test]
+        public void Should_Return_Null_As_Bearer_Token_When_Authorization_Header_Does_Not_Contain_Bearer()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            headers.Add("Authorization", "Basic blablabla");
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.Null(bearerToken);
+        }
+
+
+
+        [Test]
+        public void Can_Return_Bearer_Token()
+        {
+            // PREPARE
+            var sut = new Mock<IRequest>();
+            var headers = PclExportClient.Instance.NewNameValueCollection();
+            headers.Add("Authorization", "Bearer blablabla");
+            sut.Setup(e => e.Headers).Returns(headers);
+
+            // RUN
+            var bearerToken = sut.Object.GetBearerToken();
+
+            // ASSERT
+            Assert.True("blablabla" == bearerToken);
         }
     }
 }
