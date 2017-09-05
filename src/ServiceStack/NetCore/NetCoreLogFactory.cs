@@ -47,7 +47,7 @@ namespace ServiceStack.NetCore
 
         public void Debug(object message, Exception exception)
         {
-            log.LogDebug(message.ToString(), exception);
+            log.LogDebug(default(EventId), exception, message.ToString());
         }
 
         public void DebugFormat(string format, params object[] args)
@@ -62,7 +62,7 @@ namespace ServiceStack.NetCore
 
         public void Error(object message, Exception exception)
         {
-            log.LogError(message.ToString(), exception);
+            log.LogError(default(EventId), exception, message.ToString());
         }
 
         public void ErrorFormat(string format, params object[] args)
@@ -77,7 +77,7 @@ namespace ServiceStack.NetCore
 
         public void Fatal(object message, Exception exception)
         {
-            log.LogCritical(message.ToString(), exception);
+            log.LogCritical(default(EventId), exception, message.ToString());
         }
 
         public void FatalFormat(string format, params object[] args)
@@ -92,7 +92,7 @@ namespace ServiceStack.NetCore
 
         public void Info(object message, Exception exception)
         {
-            log.LogInformation(message.ToString(), exception);
+            log.LogInformation(default(EventId), exception, message.ToString());
         }
 
         public void InfoFormat(string format, params object[] args)
@@ -107,7 +107,7 @@ namespace ServiceStack.NetCore
 
         public void Warn(object message, Exception exception)
         {
-            log.LogWarning(message.ToString(), exception);
+            log.LogWarning(default(EventId), exception, message.ToString());
         }
 
         public void WarnFormat(string format, params object[] args)
