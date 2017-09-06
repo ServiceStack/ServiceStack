@@ -191,6 +191,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = await client.SendAsync(new RequestWithVersion { Version = 1 });
             Assert.That(response.Version, Is.EqualTo(1));
+            
+            client.Version = 1;
+            response = client.Send(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            response = await client.SendAsync(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
         }
 
         [Test]
@@ -201,6 +208,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Version, Is.EqualTo(1));
 
             response = await client.SendAsync(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            client.Version = 1;
+            response = client.Send(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            response = await client.SendAsync(new RequestWithVersion());
             Assert.That(response.Version, Is.EqualTo(1));
         }
     }
