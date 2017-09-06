@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
@@ -180,6 +181,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Version, Is.EqualTo(3));
         }
+
+        [Test]
+        public async Task Does_send_version_using_JsonServiceClient()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var response = client.Send(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+
+            response = await client.SendAsync(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Does_send_version_using_JsonHttpClient()
+        {
+            var client = new JsonHttpClient(Config.AbsoluteBaseUri);
+            var response = client.Send(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+
+            response = await client.SendAsync(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -232,7 +255,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/versioned-request")]
     [Route("/versioned-request/{Id}")]
-    public class RequestWithVersion : IHasVersion
+    public class RequestWithVersion : IReturn<RequestWithVersion>, IHasVersion
     {
         public int Id { get; set; }
         public int Version { get; set; }
@@ -298,7 +321,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetStringFromUrl();
 
             Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
-
         }
     }
 
