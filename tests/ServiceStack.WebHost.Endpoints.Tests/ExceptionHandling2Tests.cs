@@ -158,6 +158,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 appHost.Init();
                 appHost.Start(Config.ListeningOn);
                 appHost.Config.DebugMode = true;
+#if NETCORE               
+                LogManager.LogFactory = new NetCoreLogFactory(logFactory, true);
+#endif
             }
             catch (Exception ex)
             {
@@ -200,6 +203,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("OldNamingConvention")]
         public void OldNamingConv_Get_ArgumentException_InvalidAge(IRestClient client)
         {
+#if NETCORE            
+            LogManager.LogFactory = new NetCoreLogFactory(logFactory, true);
+#endif           
             try
             {
                 client.Get(new SearchReqstars { Age = -1 });
