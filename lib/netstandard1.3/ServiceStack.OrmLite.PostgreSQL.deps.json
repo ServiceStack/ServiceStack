@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v1.3/",
-    "signature": "64892d65c8611edb6793cf6f4641d69cb0f04982"
+    "signature": "62ab0c9661ff5a92cc810e6c2047ee0c584d4af0"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "ServiceStack.OrmLite.PostgreSQL/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "1.6.1",
-          "Npgsql": "3.2.4.1",
+          "Npgsql": "3.2.5",
           "ServiceStack.OrmLite": "1.0.0",
           "ServiceStack.Common": "4.0.0.0",
           "ServiceStack.Interfaces": "4.0.0.0",
@@ -77,7 +77,7 @@
           "System.Xml.XDocument": "4.3.0"
         }
       },
-      "Npgsql/3.2.4.1": {
+      "Npgsql/3.2.5": {
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "System.Collections.Specialized": "4.3.0",
@@ -1057,12 +1057,12 @@
       "path": "netstandard.library/1.6.1",
       "hashPath": "netstandard.library.1.6.1.nupkg.sha512"
     },
-    "Npgsql/3.2.4.1": {
+    "Npgsql/3.2.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-/ZmL7Ok0LwcYGshElFAamsBDV96rRjMW8IZL/5rOJPhQYB6Wmex6gldDQxXkiErcaJB9P438/5CxAfuAVdThCw==",
-      "path": "npgsql/3.2.4.1",
-      "hashPath": "npgsql.3.2.4.1.nupkg.sha512"
+      "sha512": "sha512-89z5pHuLuwjkHz/cQLuM/YxlepR/0NKJP+Cvu8z1cAMv7AdKZnN5leQqV6HxIQDR245Xal1w5OH7kDb9hDRupg==",
+      "path": "npgsql/3.2.5",
+      "hashPath": "npgsql.3.2.5.nupkg.sha512"
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {
       "type": "package",

@@ -4371,6 +4371,11 @@
             Execute using empty RequestContext
             </summary>
         </member>
+        <member name="M:ServiceStack.Host.ServiceController.Execute(System.Object,ServiceStack.Web.IRequest)">
+            <summary>
+            External HTTP Request called from HTTP handlers
+            </summary>
+        </member>
         <member name="M:ServiceStack.Host.XsdMetadata.GetBaseTypeWithTheSameName(System.Type)">
             <summary>
             Gets the name of the base most type in the heirachy tree with the same.
@@ -4762,6 +4767,11 @@
             ASP.NET or HttpListener ServiceStack host
             </summary>
         </member>
+        <member name="P:ServiceStack.IAppHost.ServiceAssemblies">
+            <summary>
+            The assemblies reflected to find api services provided in the AppHost constructor
+            </summary>
+        </member>
         <member name="M:ServiceStack.IAppHost.Register``1(``0)">
             <summary>
             Register dependency in AppHost IOC on Startup
@@ -4985,6 +4995,11 @@
         <member name="P:ServiceStack.IAppHost.VirtualFiles">
             <summary>
             Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.AddVirtualFileSources">
+            <summary>
+            Register additional Virtual File Sources
             </summary>
         </member>
         <member name="M:ServiceStack.IAppHost.CreateServiceRunner``1(ServiceStack.Host.ActionContext)">

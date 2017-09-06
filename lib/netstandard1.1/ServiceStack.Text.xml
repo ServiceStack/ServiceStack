@@ -1148,7 +1148,7 @@
             <param name="value">The value.</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Text.TypeSerializer.ToStringDictionary``1(``0)">
+        <member name="M:ServiceStack.Text.TypeSerializer.ToStringDictionary(System.Object)">
             <summary>
             Useful extension method to get the Dictionary[string,string] representation of any POCO type.
             </summary>

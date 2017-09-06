@@ -412,6 +412,11 @@
             Use Layout with specified name
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.NoLayout">
+            <summary>
+            Render without any Layout
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.PageResult.Model">
             <summary>
             
@@ -482,6 +487,16 @@
             Overrides Context to specify whether to Ignore or Continue executing filters on error 
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.RethrowExceptions">
+            <summary>
+            Whether to always rethrow Exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.HaltExecution">
+            <summary>
+            Immediately halt execution of the page
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.TemplateConfig.FatalExceptions">
             <summary>
             Rethrow fatal exceptions thrown on incorrect API usage    
@@ -491,6 +506,9 @@
             <summary>
             Available transformers that can transform context filter stream outputs
             </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.CheckForModifiedPagesAfter">
+            How long in between checking for modified pages
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.RenderExpressionExceptions">
             <summary>
