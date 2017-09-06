@@ -8,6 +8,7 @@ using ServiceStack.ProtoBuf;
 #if !NETCORE_SUPPORT
 using ServiceStack.ServiceModel;
 #endif
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -154,13 +155,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
+                LogManager.LogFactory = null;
                 appHost = new AppHost();
                 appHost.Init();
                 appHost.Start(Config.ListeningOn);
                 appHost.Config.DebugMode = true;
-#if NETCORE               
-                LogManager.LogFactory = new NetCoreLogFactory(logFactory, true);
-#endif
             }
             catch (Exception ex)
             {
@@ -203,9 +202,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Category("OldNamingConvention")]
         public void OldNamingConv_Get_ArgumentException_InvalidAge(IRestClient client)
         {
-#if NETCORE            
-            LogManager.LogFactory = new NetCoreLogFactory(logFactory, true);
-#endif           
             try
             {
                 client.Get(new SearchReqstars { Age = -1 });
