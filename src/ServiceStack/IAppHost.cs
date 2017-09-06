@@ -21,6 +21,11 @@ namespace ServiceStack
     public interface IAppHost : IResolver
     {
         /// <summary>
+        /// The assemblies reflected to find api services provided in the AppHost constructor
+        /// </summary>
+        List<Assembly> ServiceAssemblies { get; }
+        
+        /// <summary>
         /// Register dependency in AppHost IOC on Startup
         /// </summary>
         void Register<T>(T instance);
@@ -247,6 +252,11 @@ namespace ServiceStack
         /// Read/Write Virtual FileSystem. Defaults to FileSystemVirtualPathProvider
         /// </summary>
         IVirtualFiles VirtualFiles { get; set; }
+        
+        /// <summary>
+        /// Register additional Virtual File Sources
+        /// </summary>
+        List<IVirtualPathProvider> AddVirtualFileSources { get; }
 
         /// <summary>
         /// Create a service runner for IService actions
