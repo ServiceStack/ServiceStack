@@ -113,6 +113,7 @@ namespace ServiceStack
 
         public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
         {
+            this.PopulateRequestMetadata(requestDto);
             return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
         }
 
