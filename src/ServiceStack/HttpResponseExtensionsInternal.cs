@@ -286,6 +286,10 @@ namespace ServiceStack
                             
                             if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                                 response.ContentType = defaultContentType;
+                            
+                            //retain behavior with ASP.NET's response.Write(string)
+                            if (response.ContentType.IndexOf(';') == -1)
+                                response.ContentType += ContentFormat.Utf8Suffix;
 
                             if (bodyPrefix != null) 
                                 await response.OutputStream.WriteAsync(bodyPrefix, token);
