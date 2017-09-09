@@ -255,7 +255,7 @@ namespace ServiceStack.Templates
                         }
                     }
                 }
-                else if (filter?.NameString == "includeFile" || filter?.NameString == "fileContents")
+                else if (filter?.NameString != null && Context.FileFilterNames.Contains(filter?.NameString))
                 {
                     if (fragment.InitialValue is string filePath)
                     {

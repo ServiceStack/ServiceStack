@@ -63,6 +63,8 @@ namespace ServiceStack.Templates
        
         public List<ITemplatePlugin> Plugins { get; } = new List<ITemplatePlugin>();
         
+        public HashSet<string> FileFilterNames { get; } = new HashSet<string> { "includeFile", "fileContents" };
+        
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
