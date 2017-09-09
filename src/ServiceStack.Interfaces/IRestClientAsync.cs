@@ -1,9 +1,12 @@
 using System;
 using System.Threading;
+#if !UNITY
 using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
+#if !UNITY
     public interface IRestClientAsync : IDisposable
     {
         void SetCredentials(string userName, string password);
@@ -37,5 +40,6 @@ namespace ServiceStack
 
         void CancelAsync();
     }
+#endif
 
 }

@@ -4,7 +4,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
+#if !UNITY
 using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack.Web
 {
@@ -69,7 +71,9 @@ namespace ServiceStack.Web
         /// </summary>
         void Flush();
 
+#if !UNITY
         Task FlushAsync(CancellationToken token = default(CancellationToken));
+#endif
 
         /// <summary>
         /// Gets a value indicating whether this instance is closed.

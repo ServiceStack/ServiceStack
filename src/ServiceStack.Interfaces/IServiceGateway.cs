@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Threading;
+#if !UNITY
 using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack
 {
@@ -31,6 +33,7 @@ namespace ServiceStack
         void PublishAll(IEnumerable<object> requestDtos);
     }
 
+#if !UNITY
     /// <summary>
     /// The minimal API Surface to capture the most common ASYNC requests.
     /// Convenience extensions over these core API's available in ServiceGatewayExtensions
@@ -57,5 +60,6 @@ namespace ServiceStack
         /// </summary>
         Task PublishAllAsync(IEnumerable<object> requestDtos, CancellationToken token = default(CancellationToken));
     }
+#endif
 }
 

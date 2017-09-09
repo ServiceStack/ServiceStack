@@ -1,11 +1,15 @@
 using System;
 using System.Threading;
+#if !UNITY
 using System.Threading.Tasks;
+#endif
 
 namespace ServiceStack.Web
 {
+#if !UNITY
     [Obsolete("Use IPartialWriterAsync")]
-	public interface IPartialWriter
+#endif
+    public interface IPartialWriter
 	{
         /// <summary>
         /// Whether this HttpResult allows Partial Response
@@ -18,6 +22,7 @@ namespace ServiceStack.Web
         void WritePartialTo(IResponse response);
 	}
 
+#if !UNITY
     public interface IPartialWriterAsync
     {
         /// <summary>
@@ -30,4 +35,5 @@ namespace ServiceStack.Web
         /// </summary>
         Task WritePartialToAsync(IResponse response, CancellationToken token = default(CancellationToken));
     }
+#endif
 }
