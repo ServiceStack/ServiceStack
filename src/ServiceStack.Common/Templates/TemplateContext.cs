@@ -60,6 +60,8 @@ namespace ServiceStack.Templates
         public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
 
         public ConcurrentDictionary<string, string> PathMappings { get; } = new ConcurrentDictionary<string, string>();
+       
+        public List<ITemplatePlugin> Plugins { get; } = new List<ITemplatePlugin>();
         
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
@@ -266,6 +268,16 @@ namespace ServiceStack.Templates
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
 
+            var beforePlugins = Plugins.OfType<ITemplatePluginBefore>();
+            foreach (var plugin in beforePlugins)
+            {
+                plugin.BeforePluginsLoaded(this);
+            }
+            foreach (var plugin in Plugins)
+            {
+                plugin.Register(this);
+            }
+
             foreach (var type in ScanTypes)
             {
                 ScanType(type);
@@ -282,6 +294,12 @@ namespace ServiceStack.Templates
             foreach (var filter in TemplateFilters)
             {
                 InitFilter(filter);
+            }
+
+            var afterPlugins = Plugins.OfType<ITemplatePluginAfter>();
+            foreach (var plugin in afterPlugins)
+            {
+                plugin.AfterPluginsLoaded(this);
             }
 
             return this;
