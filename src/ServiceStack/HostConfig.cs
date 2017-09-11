@@ -215,6 +215,7 @@ namespace ServiceStack
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
+            this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
@@ -264,6 +265,7 @@ namespace ServiceStack
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
 
+        public bool IgnoreWarningsOnAllProperties { get; set; }
         public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
