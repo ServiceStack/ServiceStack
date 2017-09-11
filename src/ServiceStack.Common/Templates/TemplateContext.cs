@@ -322,17 +322,23 @@ namespace ServiceStack.Templates
             {
                 if (typeof(TemplateFilter).IsAssignableFromType(type))
                 {
-                    Container.AddSingleton(type);
-                    var filter = (TemplateFilter)Container.Resolve(type);
-                    TemplateFilters.Add(filter);
+                    if (TemplateFilters.All(x => x?.GetType() != type))
+                    {
+                        Container.AddSingleton(type);
+                        var filter = (TemplateFilter)Container.Resolve(type);
+                        TemplateFilters.Add(filter);
+                    }
                 }
                 else if (typeof(TemplateCodePage).IsAssignableFromType(type))
                 {
-                    Container.AddTransient(type);
-                    var pageAttr = type.FirstAttribute<PageAttribute>();
-                    if (pageAttr?.VirtualPath != null)
+                    if (CodePages.Values.All(x => x != type))
                     {
-                        CodePages[pageAttr.VirtualPath] = type;
+                        Container.AddTransient(type);
+                        var pageAttr = type.FirstAttribute<PageAttribute>();
+                        if (pageAttr?.VirtualPath != null)
+                        {
+                            CodePages[pageAttr.VirtualPath] = type;
+                        }
                     }
                 }
             }

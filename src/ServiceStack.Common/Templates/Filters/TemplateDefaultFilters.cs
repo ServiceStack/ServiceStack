@@ -1092,6 +1092,7 @@ namespace ServiceStack.Templates
 
     public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        
     {
+        [HandleUnknownValue] public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
         [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
