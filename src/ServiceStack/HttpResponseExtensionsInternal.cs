@@ -24,15 +24,13 @@ namespace ServiceStack
         [Obsolete("Use WriteToOutputStreamAsync")]
         public static bool WriteToOutputStream(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix)
         {
-            var partialResult = result as IPartialWriter;
-            if (HostContext.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
+            if (HostContext.Config.AllowPartialResponses && result is IPartialWriter partialResult && partialResult.IsPartialRequest)
             {
                 partialResult.WritePartialTo(response);
                 return true;
             }
 
-            var streamWriter = result as IStreamWriter;
-            if (streamWriter != null)
+            if (result is IStreamWriter streamWriter)
             {
                 if (bodyPrefix != null) response.OutputStream.Write(bodyPrefix, 0, bodyPrefix.Length);
                 streamWriter.WriteTo(response.OutputStream);
@@ -45,15 +43,13 @@ namespace ServiceStack
 
         public static async Task<bool> WriteToOutputStreamAsync(IResponse response, object result, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token=default(CancellationToken))
         {
-            var partialResult = result as IPartialWriterAsync;
-            if (HostContext.Config.AllowPartialResponses && partialResult != null && partialResult.IsPartialRequest)
+            if (HostContext.Config.AllowPartialResponses && result is IPartialWriterAsync partialResult && partialResult.IsPartialRequest)
             {
                 await partialResult.WritePartialToAsync(response, token);
                 return true;
             }
 
-            var streamWriter = result as IStreamWriterAsync;
-            if (streamWriter != null)
+            if (result is IStreamWriterAsync streamWriter)
             {
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await streamWriter.WriteToAsync(response.OutputStream, token);
@@ -61,8 +57,7 @@ namespace ServiceStack
                 return true;
             }
 
-            var stream = result as Stream;
-            if (stream != null)
+            if (result is Stream stream)
             {
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await stream.CopyToAsync(response.OutputStream, token);
@@ -70,8 +65,7 @@ namespace ServiceStack
                 return true;
             }
 
-            var bytes = result as byte[];
-            if (bytes != null)
+            if (result is byte[] bytes)
             {
                 var len = (bodyPrefix?.Length).GetValueOrDefault() +
                           bytes.Length +
@@ -108,8 +102,7 @@ namespace ServiceStack
                 return TypeConstants.TrueTask;
             }
 
-            var httpResult = result as IHttpResult;
-            if (httpResult != null)
+            if (result is IHttpResult httpResult)
             {
                 if (httpResult.ResponseFilter == null)
                 {
