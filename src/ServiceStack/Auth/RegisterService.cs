@@ -135,8 +135,7 @@ namespace ServiceStack.Auth
                     if (authResponse is IHttpError)
                         throw (Exception)authResponse;
 
-                    var typedResponse = authResponse as AuthenticateResponse;
-                    if (typedResponse != null)
+                    if (authResponse is AuthenticateResponse typedResponse)
                     {
                         response = new RegisterResponse
                         {
@@ -144,6 +143,8 @@ namespace ServiceStack.Auth
                             UserName = typedResponse.UserName,
                             ReferrerUrl = typedResponse.ReferrerUrl,
                             UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                            BearerToken = typedResponse.BearerToken,
+                            RefreshToken = typedResponse.RefreshToken,
                         };
                     }
                 }
@@ -186,8 +187,7 @@ namespace ServiceStack.Auth
 
         public IUserAuth ToUserAuth(IAuthRepository authRepo, Register request)
         {
-            var customUserAuth = authRepo as ICustomUserAuth;
-            var to = customUserAuth != null
+            var to = authRepo is ICustomUserAuth customUserAuth
                 ? customUserAuth.CreateUserAuth()
                 : new UserAuth();
 

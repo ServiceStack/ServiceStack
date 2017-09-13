@@ -50,8 +50,7 @@ namespace ServiceStack.Auth
                 if (!RequireSecureConnection || authService.Request.IsSecureConnection)
                 {
                     IEnumerable<string> roles = null, perms = null;
-                    var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request) as IManageRoles;
-                    if (authRepo != null && session.UserAuthId != null)
+                    if (HostContext.AppHost.GetAuthRepository(authService.Request) is IManageRoles authRepo && session.UserAuthId != null)
                     {
                         roles = authRepo.GetRoles(session.UserAuthId);
                         perms = authRepo.GetPermissions(session.UserAuthId);
@@ -69,8 +68,7 @@ namespace ServiceStack.Auth
         {
             Func<byte[], byte[]> hashAlgoritm = null;
 
-            Func<byte[], byte[], byte[]> hmac;
-            if (HmacAlgorithms.TryGetValue(HashAlgorithm, out hmac))
+            if (HmacAlgorithms.TryGetValue(HashAlgorithm, out var hmac))
             {
                 if (AuthKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
@@ -78,8 +76,7 @@ namespace ServiceStack.Auth
                 hashAlgoritm = data => hmac(AuthKey, data);
             }
 
-            Func<RSAParameters, byte[], byte[]> rsa;
-            if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out rsa))
+            if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out var rsa))
             {
                 if (PrivateKey == null)
                     throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
@@ -328,8 +325,7 @@ namespace ServiceStack.Auth
     {
         public object Any(ConvertSessionToToken request)
         {
-            var jwtAuthProvider = AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) as JwtAuthProvider;
-            if (jwtAuthProvider == null)
+            if (!(AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) is JwtAuthProvider jwtAuthProvider))
                 throw new NotSupportedException("JwtAuthProvider is not registered");
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
@@ -362,8 +358,7 @@ namespace ServiceStack.Auth
     {
         public object Any(GetAccessToken request)
         {
-            var jwtAuthProvider = AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) as JwtAuthProvider;
-            if (jwtAuthProvider == null)
+            if (!(AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) is JwtAuthProvider jwtAuthProvider))
                 throw new NotSupportedException("JwtAuthProvider is not registered");
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
@@ -372,8 +367,7 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
 
-            var userRepo = AuthRepository as IUserAuthRepository;
-            if (userRepo == null)
+            if (!(AuthRepository is IUserAuthRepository userRepo))
                 throw new NotSupportedException("JWT Refresh Tokens requires a registered IUserAuthRepository");
 
             JsonObject jwtPayload;
@@ -408,8 +402,7 @@ namespace ServiceStack.Auth
             jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
 
             IEnumerable<string> roles = null, perms = null;
-            var manageRoles = userRepo as IManageRoles;
-            if (manageRoles != null && session.UserAuthId != null)
+            if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
             {
                 roles = manageRoles.GetRoles(session.UserAuthId);
                 perms = manageRoles.GetPermissions(session.UserAuthId);
