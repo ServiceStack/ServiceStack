@@ -19,19 +19,18 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
 
-    <!--<Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />-->
-    <!--<Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />-->
-    <!--<Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />-->
-    <!--<Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />-->
-    <!--<Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.Sqlite.dll" />-->
+    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />
+    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />
+    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.Sqlite.dll" />
 
-    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />
-    <ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />
+    <!--<ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />-->
+    <!--<ProjectReference Include="..\..\..\ServiceStack.Text\src\ServiceStack.Text\ServiceStack.Text.csproj" />-->
+    <!--<ProjectReference Include="..\..\..\ServiceStack.Redis\src\ServiceStack.Redis\ServiceStack.Redis.csproj" />-->
+    <!--<ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite\ServiceStack.OrmLite.csproj" />-->
+    <!--<ProjectReference Include="..\..\..\ServiceStack.OrmLite\src\ServiceStack.OrmLite.Sqlite\ServiceStack.OrmLite.Sqlite.csproj" />-->
 
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
