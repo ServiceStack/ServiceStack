@@ -56,6 +56,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Server", "Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Wire", "ServiceStack.Wire\ServiceStack.Wire.csproj", "{867FACE8-26A1-426C-9450-5CD30ECEF745}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreWeb.Tests", "..\tests\NetCoreWeb.Tests\NetCoreWeb.Tests.csproj", "{CF9874FE-8937-44CF-98C4-88811DF88DF4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,10 @@ Global
 		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{867FACE8-26A1-426C-9450-5CD30ECEF745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF9874FE-8937-44CF-98C4-88811DF88DF4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -134,5 +140,6 @@ Global
 		{97002C10-48C4-4711-961B-F3E3D4FC3E4E} = {312EC6C7-3026-472C-85A1-8189207DA807}
 		{F62296EA-27ED-46F7-8782-E84555AB4438} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 		{0848319C-7A4C-4135-B14E-8376AD7AD7CE} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
+		{CF9874FE-8937-44CF-98C4-88811DF88DF4} = {43C8BF0C-1B57-4B1F-A5D2-6010B93C791A}
 	EndGlobalSection
 EndGlobal

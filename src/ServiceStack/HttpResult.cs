@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -271,24 +272,23 @@ namespace ServiceStack
                 {
                     if (response != null)
                     {
-                        var ms = ResponseStream as MemoryStream;
-                        if (ms != null)
+                        if (ResponseStream is MemoryStream ms)
                         {
                             var bytes = ms.ToArray();
                             response.SetContentLength(bytes.Length + paddingLength);
 
-                            responseStream.Write(bytes, 0, bytes.Length); //Write Sync to MemoryStream
+                            await responseStream.WriteAsync(bytes, 0, bytes.Length, token); //Write Sync to MemoryStream
                             return;
                         }
                     }
 
                     await ResponseStream.CopyToAsync(responseStream, token);
-                    return;
                 }
                 finally
                 {
                     DisposeStream();
                 }
+                return;
             }
 
             if (this.ResponseText != null)
@@ -305,8 +305,7 @@ namespace ServiceStack
             if (this.RequestContext == null)
                 throw new ArgumentNullException(nameof(RequestContext));
 
-            var bytesResponse = this.Response as byte[];
-            if (bytesResponse != null)
+            if (this.Response is byte[] bytesResponse)
             {
                 response?.SetContentLength(bytesResponse.Length + paddingLength);
 
@@ -323,7 +322,7 @@ namespace ServiceStack
 
             ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
         }
-
+        
         public bool IsPartialRequest => 
             AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null;
 
