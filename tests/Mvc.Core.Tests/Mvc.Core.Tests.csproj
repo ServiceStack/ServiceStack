@@ -30,16 +30,16 @@
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />-->
 
-    <PackageReference Include="ServiceStack.Interface.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.OrmLite.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.OrmLite.Sqlite.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Client.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.HttpClient.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Common.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Mvc.Core" Version="1.0.42" />
-    <PackageReference Include="ServiceStack.Server.Core" Version="1.0.42" />
+    <PackageReference Include="ServiceStack.Interfaces.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Redis.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.OrmLite.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Client.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.HttpClient.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Common.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Mvc.Core" Version="1.0.*" />
+    <PackageReference Include="ServiceStack.Server.Core" Version="1.0.*" />
 
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
