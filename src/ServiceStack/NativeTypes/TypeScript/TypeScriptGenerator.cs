@@ -54,6 +54,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
+            {"boolean", "false"},
             {"DateTime", declaredEmptyString},
             {"DateTimeOffset", declaredEmptyString},
             {"TimeSpan", declaredEmptyString},
