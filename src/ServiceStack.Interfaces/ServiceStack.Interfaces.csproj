@@ -3,7 +3,6 @@
     <TargetFrameworks>netstandard1.3;netstandard2.0;net35</TargetFrameworks>
     <AssemblyName>ServiceStack.Interfaces</AssemblyName>
     <PackageId>ServiceStack.Interfaces</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -49,4 +48,7 @@
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>
+  <PropertyGroup>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
 </Project>

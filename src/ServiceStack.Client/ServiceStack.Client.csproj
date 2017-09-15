@@ -4,7 +4,6 @@
     <TargetFrameworks>netstandard1.6</TargetFrameworks>
     <AssemblyName>ServiceStack.Client</AssemblyName>
     <PackageId>ServiceStack.Client</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -113,4 +112,8 @@
   </ItemGroup>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+
+  <PropertyGroup>
+    <DebugType>Full</DebugType>
+  </PropertyGroup>
 </Project>
