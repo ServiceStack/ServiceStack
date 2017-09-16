@@ -9,6 +9,8 @@ namespace ServiceStack
     public class RegistrationFeature : IPlugin
     {
         public string AtRestPath { get; set; }
+        
+        public bool AllowUpdates { get; set; }
 
         public RegistrationFeature()
         {

@@ -212,14 +212,12 @@ namespace CheckWeb
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[]
                 {
-                    new BasicAuthProvider(AppSettings),
+                    new CredentialsAuthProvider(AppSettings),
                     new ApiKeyAuthProvider(AppSettings),
-                })
-            {
-                ServiceRoutes = new Dictionary<Type, string[]> {
-                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
-                }
-            });
+                    new BasicAuthProvider(AppSettings),
+                }));
+            
+            Plugins.Add(new RegistrationFeature());
 
             var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
             container.Register<IAuthRepository>(c => authRepo);

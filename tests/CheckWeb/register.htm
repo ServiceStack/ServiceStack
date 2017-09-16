@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+
+    <link href="css/bootstrap.css" rel="stylesheet" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+    <script src="/js/ss-utils.js" type="text/javascript"></script>
+
+    <style>
+        body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<table style="width: auto;">
+    <tr>
+        <td>
+            <form id="register" class="form-stacked fade-when-loading" action="/register" method="POST">
+                <div>
+                    <fieldset>
+                        <legend>Create your member account</legend>
+
+                        <div class="clearfix">
+                            <label for="DisplayName">DisplayName</label>
+                            <input id="DisplayName" name="DisplayName" type="text" value="" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <label for="UserName">Username</label>
+                            <input id="UserName" name="UserName" type="text" value="" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <label for="Email">Email</label>
+                            <input id="Email" name="Email" type="text" value="" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <label for="Password">Password</label>
+                            <input id="Password" name="Password" type="password" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <label for="ConfirmPassword">ConfirmPassword</label>
+                            <input id="ConfirmPassword" name="ConfirmPassword" type="password" />
+                            <span class="help-inline"></span>
+                        </div>
+
+                        <span class="error-summary"></span>
+
+                        <p>
+                            <button class="btn" type="submit">Sign Up</button><b data-ajax="loading"></b>
+                            <button id="btnUpdate" class="btn" type="button">Update</button>
+                        </p>
+                    </fieldset>
+                </div>
+            </form>
+
+            <div class="alert-message success hide"><a class="close" href="#">×</a><p></p></div>
+        </td>
+        <td>
+            <form class="form-stacked fade-when-loading" action="/auth/credentials" method="POST">
+                <div>
+                    <fieldset>
+                        <legend>Sign In</legend>
+
+                        <div class="clearfix">
+                            <label for="UserName">Email Address</label>
+                            <input id="UserName" name="UserName" type="text" value="" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <label for="Password">Password</label>
+                            <input id="Password" name="Password" type="password" />
+                            <span class="help-inline"></span>
+                        </div>
+                        <div class="clearfix">
+                            <div class="input">
+                                <ul class="inputs-list">
+                                    <li>
+                                        <label>
+                                            <input id="RememberMe" name="RememberMe" type="checkbox" value="true" />
+                                            <span>Remember me</span>
+                                        </label>
+                                    </li>
+                                </ul>
+                            </div>
+                            <span class="help-block"></span>
+                        </div>
+
+                        <p>
+                            <span class="error-summary"></span>
+                        </p>
+
+                        <p>
+                            <button class="btn" type="submit">Sign In</button><b data-ajax="loading"></b>
+                        </p>
+                    </fieldset>
+                </div>
+            </form>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <h3>Auth Info</h3>
+            <div id="auth-info"></div>
+
+            <form action="/auth/logout" method="POST">
+                <button class="btn" type="submit">Logout</button><b data-ajax="loading"></b>
+            </form>
+
+        </td>
+    </tr>
+</table>
+
+
+<script type="text/javascript">
+
+    $(document).applyValues({
+        DisplayName: 'First Last',
+        UserName: 'mythz',
+        Email: 'as@if.com',
+        Password: 'test',
+        ConfirmPassword: 'test'
+    });
+
+    function success(r) {
+        var msg = r.userName
+            ? "<strong>Welcome " + r.userName + "!</strong> your userId is <b>" + r.userId + "</b>."
+            : r.userId
+                ? "<strong>Welcome</strong> you are user #" + r.userId
+                + "! You should now <a href='#' data-click='toggle:signin,register'>sign in</a>."
+                : "";
+        if (msg) {
+            $(".success P").html(msg);
+            $(".success").fadeIn();
+        }
+    }
+
+    $("#register").bindForm({
+        validate: function () {
+            console.log("validate", $(this).serializeMap());
+            var formData = $(this).serializeMap();
+
+            if (formData["ConfirmPassword"] !== formData["Password"]) {
+                $(this).setFieldError("Password", "passwords do not match");
+                return false;
+            }
+        },
+        success: function (r) {
+            success(r);
+        }
+    });
+
+    $(document).bindHandlers({
+        toggle: function (show, hide) {
+            $("#" + hide).hide();
+            $("#" + show).fadeIn();
+        }
+    });
+    
+    $("#btnUpdate").on('click', function () {
+        var data = {};
+        $("#register INPUT").each(function(){ data[this.name] = this.value });
+        
+        $.ajax({
+            dataType: "json",
+            url: "/register",
+            type: "PUT",
+            data: data,
+            success: function (r) {
+                console.log('success', r)
+            },
+            error: function (r) {
+                console.log('error', r)
+            }
+        })
+    });
+
+    $.ajax({
+        dataType: "json",
+        url: "/auth",
+        success: function (r) {
+            var sb = "";
+            for (var k in r) {
+                var val = r[k];
+                if (k === "responseStatus") continue;
+                sb += "<tr><td>" + k + "</td><td>" + val + "</td>";
+            }
+            $("#auth-info").html("<table>" + sb + "</table>");
+        },
+        error: function (r) {
+            $("#auth-info").html("<h4 class='alert-message danger'>Not Authenticated</h4>")
+        }
+    });
+    
+</script>
+
+</body>
+</html>

@@ -97,6 +97,7 @@
     <Content Include="js\jsonreport.js" />
     <Content Include="js\underscore.min.js" />
     <EmbeddedResource Include="swagger-ui\index.html" />
+    <Content Include="register.htm" />
     <Content Include="Test.dtos.d.ts" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>

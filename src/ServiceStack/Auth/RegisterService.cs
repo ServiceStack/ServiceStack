@@ -114,6 +114,9 @@ namespace ServiceStack.Auth
                 {
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
+                
+                if (!registerNewUser && !HostContext.GetPlugin<RegistrationFeature>().AllowUpdates)
+                    throw new NotSupportedException("Updating existing user info not allowed unless RegistrationFeature.AllowUpdates=true");
 
                 user = registerNewUser
                     ? authRepo.CreateUserAuth(newUserAuth, request.Password)
