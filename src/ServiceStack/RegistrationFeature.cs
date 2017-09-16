@@ -10,7 +10,17 @@ namespace ServiceStack
     {
         public string AtRestPath { get; set; }
         
-        public bool AllowUpdates { get; set; }
+        public ValidateFn ValidateFn 
+        {
+            get => RegisterService.ValidateFn; 
+            set => RegisterService.ValidateFn = value;
+        }
+
+        public bool DisableUpdates
+        {
+            get => RegisterService.DisableUpdates; 
+            set => RegisterService.DisableUpdates = value;
+        }
 
         public RegistrationFeature()
         {
