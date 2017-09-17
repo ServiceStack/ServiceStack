@@ -469,7 +469,6 @@ namespace ServiceStack.Api.OpenApi
 
                         if (propAttr.IsRequired)
                         {
-                            schemaProperty.Required = true;
                             if (schema.Required == null)
                                 schema.Required = new List<string>();
                             schema.Required.Add(schemaPropertyName);
@@ -832,7 +831,7 @@ namespace ServiceStack.Api.OpenApi
                                 );
                             p.Type = member.DataType ?? p.Type;
                             p.Format = member.Format ?? p.Format;
-                            p.Required = member.IsRequired;
+                            p.Required = p.In =="path" || member.IsRequired;
                             p.Description = member.Description ?? p.Description;
 
                             //Fix old Swagger 1.2 parameter type

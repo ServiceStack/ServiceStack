@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Net;
+using System.Runtime.Serialization;
 
 namespace ServiceStack.OpenApi.Tests.Services
 {
@@ -61,6 +62,23 @@ namespace ServiceStack.OpenApi.Tests.Services
         public string[] Includes { get; set; }
     }
 
+    [Api("CRUD for ServiceProviders")]
+    [Route("/ServiceProvider/{Id}", "Delete", Summary = "Delete a ServiceProvider by Id")]
+    [ApiResponse(HttpStatusCode.InternalServerError, "Something went wrong. Please contact the support team")]
+    public class DeleteServiceProviderRequestDto : IReturn<DeleteServiceProviderReponseDto>
+    {
+        [ApiMember(ParameterType = "path", IsRequired = true)]
+        public int Id { get; set; }
+        [ApiMember(DataType = "boolean")]
+        public bool ForceDelete { get; set; }
+    }
+
+    public class DeleteServiceProviderReponseDto : IHasResponseStatus
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+
     public class AnnotatedService : Service
     {
         public object Any(GetMovie request) => new MovieResponse {Includes = request.Includes};
@@ -69,5 +87,6 @@ namespace ServiceStack.OpenApi.Tests.Services
 
         public object Any(CreateHelloReq request) => new Hello { Name = request.Hello.Name };
 
+        public object Any(DeleteServiceProviderRequestDto request) => new DeleteServiceProviderReponseDto { ResponseStatus = new ResponseStatus() {ErrorCode = "200"}};
     }
 }
