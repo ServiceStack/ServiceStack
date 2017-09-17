@@ -37,8 +37,8 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <PackageReference Include="FluentNHibernate" Version="2.0.3.0" />
-    <PackageReference Include="Iesi.Collections" Version="4.0.1.4000" />
-    <PackageReference Include="NHibernate" Version="4.0.4.4000" />
+    <PackageReference Include="Iesi.Collections" Version="4.0.2" />
+    <PackageReference Include="NHibernate" Version="4.1.1.4000" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />

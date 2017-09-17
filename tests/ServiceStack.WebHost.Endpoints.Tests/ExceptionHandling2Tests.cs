@@ -8,6 +8,7 @@ using ServiceStack.ProtoBuf;
 #if !NETCORE_SUPPORT
 using ServiceStack.ServiceModel;
 #endif
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -154,6 +155,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             try
             {
+                LogManager.LogFactory = null;
                 appHost = new AppHost();
                 appHost.Init();
                 appHost.Start(Config.ListeningOn);

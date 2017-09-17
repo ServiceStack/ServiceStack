@@ -161,11 +161,18 @@ namespace ServiceStack.Host.NetCore
 
         public void SetCookie(Cookie cookie)
         {
-            if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
-                return;
+            try
+            {
+                if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+                    return;
 
-            var cookieOptions = cookie.ToCookieOptions();
-            response.Cookies.Append(cookie.Name, cookie.Value, cookieOptions);
+                var cookieOptions = cookie.ToCookieOptions();
+                response.Cookies.Append(cookie.Name, cookie.Value, cookieOptions);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not Set-Cookie '{cookie.Name}': " + ex.Message, ex);
+            }
         }
 
         public void ClearCookies()

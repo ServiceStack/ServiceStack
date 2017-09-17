@@ -75,6 +75,9 @@ namespace ServiceStack.Templates
             return null;
         }
 
+        //alias
+        public Task fileContents(TemplateScopeContext scope, string virtualPath) => includeFile(scope, virtualPath);
+
         public async Task includeFile(TemplateScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(nameof(includeFile), scope, virtualPath);
@@ -143,6 +146,10 @@ namespace ServiceStack.Templates
         public string fileReadAll(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath)?.ReadAllText();
         public byte[] fileReadAllBytes(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath)?.ReadAllBytes();
         public string fileHash(string virtualPath) => Context.VirtualFiles.GetFileHash(virtualPath);
+
+        //alias
+        public Task urlContents(TemplateScopeContext scope, string url) => includeUrl(scope, url, null);
+        public Task urlContents(TemplateScopeContext scope, string url, object options) => includeUrl(scope, url, options);
 
         public Task includeUrl(TemplateScopeContext scope, string url) => includeUrl(scope, url, null);
         public async Task includeUrl(TemplateScopeContext scope, string url, object options)
@@ -251,6 +258,10 @@ namespace ServiceStack.Templates
             return StringBuilderCache.ReturnAndFree(sb);
         }
         
+        //alias
+        public Task fileContentsWithCache(TemplateScopeContext scope, string virtualPath) => includeFileWithCache(scope, virtualPath, null);
+        public Task fileContentsWithCache(TemplateScopeContext scope, string virtualPath, object options) => includeFileWithCache(scope, virtualPath, options);
+
         public Task includeFileWithCache(TemplateScopeContext scope, string virtualPath) => includeFileWithCache(scope, virtualPath, null);
         public async Task includeFileWithCache(TemplateScopeContext scope, string virtualPath, object options)
         {
@@ -285,6 +296,10 @@ namespace ServiceStack.Templates
             }
         }
 
+        //alias
+        public Task urlContentsWithCache(TemplateScopeContext scope, string url) => includeUrlWithCache(scope, url, null);
+        public Task urlContentsWithCache(TemplateScopeContext scope, string url, object options) => includeUrlWithCache(scope, url, options);
+        
         public Task includeUrlWithCache(TemplateScopeContext scope, string url) => includeUrlWithCache(scope, url, null);
         public async Task includeUrlWithCache(TemplateScopeContext scope, string url, object options)
         {

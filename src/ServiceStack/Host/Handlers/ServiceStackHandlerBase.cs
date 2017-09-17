@@ -49,66 +49,55 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public Task HandleResponse(object response, Func<object, Task> callback)
+        public async Task HandleResponse(object response, Func<object, Task> callback)
         {
             try
             {
-                var taskResponse = response as Task;
-                if (taskResponse != null)
+                if (response is Task taskResponse)
                 {
                     if (taskResponse.Status == TaskStatus.Created)
                     {
                         taskResponse.Start();
                     }
 
-                    return taskResponse
-                        .Continue(task =>
-                        {
-                            if (task.IsFaulted)
-                                return task;
+                    await taskResponse;
+                    var taskResult = taskResponse.GetResult();
 
-                            if (task.IsCanceled)
-                                return new OperationCanceledException("The async Task operation was cancelled").AsTaskException();
+                    if (!(taskResult is Task[] taskResults))
+                    {
+                        if (taskResult is Task subTask)
+                            taskResult = subTask.GetResult();
 
-                            if (task.IsCompleted)
-                            {
-                                var taskResult = task.GetResult();
+                        await callback(taskResult);
+                        return;
+                    }
 
-                                var taskResults = taskResult as Task[];
-                                
-                                if (taskResults == null)
-                                {
-                                    var subTask = taskResult as Task;
-                                    if (subTask != null)
-                                        taskResult = subTask.GetResult();
+                    if (taskResults.Length == 0)
+                    {
+                        await callback(TypeConstants.EmptyObjectArray);
+                        return;
+                    }
 
-                                    return callback(taskResult);
-                                }
+                    var firstResponse = taskResults[0].GetResult();
+                    var batchedResponses = firstResponse != null 
+                        ? (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
+                        : new object[taskResults.Length];
 
-                                if (taskResults.Length == 0)
-                                    return callback(TypeConstants.EmptyObjectArray);
-
-                                var firstResponse = taskResults[0].GetResult();
-                                var batchedResponses = firstResponse != null 
-                                    ? (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
-                                    : new object[taskResults.Length];
-                                batchedResponses[0] = firstResponse;
-                                for (var i = 1; i < taskResults.Length; i++)
-                                {
-                                    batchedResponses[i] = taskResults[i].GetResult();
-                                }
-                                return callback(batchedResponses);
-                            }
-
-                            return new InvalidOperationException("Unknown Task state").AsTaskException();
-                        });
+                    batchedResponses[0] = firstResponse;
+                    for (var i = 1; i < taskResults.Length; i++)
+                    {
+                        batchedResponses[i] = taskResults[i].GetResult();
+                    }
+                    
+                    await callback(batchedResponses);
+                    return;
                 }
 
-                return callback(response);
+                await callback(response);
             }
             catch (Exception ex)
             {
-                return ex.AsTaskException();
+                throw;
             }
         }
 

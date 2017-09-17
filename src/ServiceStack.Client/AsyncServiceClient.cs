@@ -129,6 +129,7 @@ namespace ServiceStack
         public bool ShareCookiesWithBrowser { get; set; }
 
         public int Version { get; set; }
+        
         public string SessionId { get; set; }
 
         internal Action CancelAsyncFn;

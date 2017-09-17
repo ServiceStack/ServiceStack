@@ -109,6 +109,14 @@ namespace ServiceStack
 #endif
             return appHost;
         }
+
+        public static List<IPlugin> AddIfNotExists<T>(this List<IPlugin> plugins, T plugin) where T : class, IPlugin
+        {
+            if (!plugins.Any(x => x is T))
+                plugins.Add(plugin);
+            
+            return plugins;
+        }
     }
 
 }

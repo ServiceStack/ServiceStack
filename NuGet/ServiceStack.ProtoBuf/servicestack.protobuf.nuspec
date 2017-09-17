@@ -17,7 +17,7 @@
     <language>en-US</language>
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
-      <dependency id="protobuf-net" version="2.2.0" />
+      <dependency id="protobuf-net" version="2.3.2" />
       <dependency id="ServiceStack" version="4.5" />
     </dependencies> 
   </metadata>

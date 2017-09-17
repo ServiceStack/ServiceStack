@@ -78,6 +78,7 @@ namespace ServiceStack
                 {
                     "jspm_packages/**/*.json"
                 },
+                ForbiddenPaths = new List<string>(),
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
                 DebugHttpListenerHostEnvironment = Env.IsMono ? "XSP" : "WebServer20",
                 EnableFeatures = Feature.All,
@@ -190,6 +191,7 @@ namespace ServiceStack
             this.CompressFilesWithExtensions = instance.CompressFilesWithExtensions;
             this.CompressFilesLargerThanBytes = instance.CompressFilesLargerThanBytes;
             this.AllowFilePaths = instance.AllowFilePaths;
+            this.ForbiddenPaths = instance.ForbiddenPaths;
             this.EnableFeatures = instance.EnableFeatures;
             this.WriteErrorsToResponse = instance.WriteErrorsToResponse;
             this.DisposeDependenciesAfterUse = instance.DisposeDependenciesAfterUse;
@@ -213,6 +215,7 @@ namespace ServiceStack
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
+            this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
             this.IgnoreWarningsOnPropertyNames = instance.IgnoreWarningsOnPropertyNames;
             this.FallbackRestPath = instance.FallbackRestPath;
             this.AllowAclUrlReservation = instance.AllowAclUrlReservation;
@@ -262,6 +265,7 @@ namespace ServiceStack
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
 
+        public bool IgnoreWarningsOnAllProperties { get; set; }
         public List<string> IgnoreWarningsOnPropertyNames { get; private set; }
 
         public HashSet<string> IgnoreFormatsInMetadata { get; set; }
@@ -269,6 +273,7 @@ namespace ServiceStack
         public HashSet<string> AllowFileExtensions { get; set; }
         public HashSet<string> CompressFilesWithExtensions { get; set; }
         public long? CompressFilesLargerThanBytes { get; set; }
+        public List<string> ForbiddenPaths { get; set; }
         public List<string> AllowFilePaths { get; set; }
 
         public string WebHostUrl { get; set; }

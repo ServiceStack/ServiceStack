@@ -20,8 +20,8 @@
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack" version="4.5" />
-      <dependency id="NHibernate" version="4.0.4.4000" />
-      <dependency id="Iesi.Collections" version="4.0.1.4000" />
+      <dependency id="NHibernate" version="4.1.1.4000" />
+      <dependency id="Iesi.Collections" version="4.0.2" />
       <dependency id="FluentNHibernate" version="2.0.3.0" />
     </dependencies>
   </metadata>

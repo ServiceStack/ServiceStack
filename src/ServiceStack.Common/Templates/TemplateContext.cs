@@ -60,6 +60,10 @@ namespace ServiceStack.Templates
         public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
 
         public ConcurrentDictionary<string, string> PathMappings { get; } = new ConcurrentDictionary<string, string>();
+       
+        public List<ITemplatePlugin> Plugins { get; } = new List<ITemplatePlugin>();
+        
+        public HashSet<string> FileFilterNames { get; } = new HashSet<string> { "includeFile", "fileContents" };
         
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
@@ -266,12 +270,22 @@ namespace ServiceStack.Templates
             Container.AddSingleton(() => this);
             Container.AddSingleton(() => Pages);
 
+            var beforePlugins = Plugins.OfType<ITemplatePluginBefore>();
+            foreach (var plugin in beforePlugins)
+            {
+                plugin.BeforePluginsLoaded(this);
+            }
+            foreach (var plugin in Plugins)
+            {
+                plugin.Register(this);
+            }
+
             foreach (var type in ScanTypes)
             {
                 ScanType(type);
             }
 
-            foreach (var assembly in ScanAssemblies)
+            foreach (var assembly in ScanAssemblies.Safe())
             {
                 foreach (var type in assembly.GetTypes())
                 {
@@ -282,6 +296,12 @@ namespace ServiceStack.Templates
             foreach (var filter in TemplateFilters)
             {
                 InitFilter(filter);
+            }
+
+            var afterPlugins = Plugins.OfType<ITemplatePluginAfter>();
+            foreach (var plugin in afterPlugins)
+            {
+                plugin.AfterPluginsLoaded(this);
             }
 
             return this;
@@ -302,17 +322,23 @@ namespace ServiceStack.Templates
             {
                 if (typeof(TemplateFilter).IsAssignableFromType(type))
                 {
-                    Container.AddSingleton(type);
-                    var filter = (TemplateFilter)Container.Resolve(type);
-                    TemplateFilters.Add(filter);
+                    if (TemplateFilters.All(x => x?.GetType() != type))
+                    {
+                        Container.AddSingleton(type);
+                        var filter = (TemplateFilter)Container.Resolve(type);
+                        TemplateFilters.Add(filter);
+                    }
                 }
                 else if (typeof(TemplateCodePage).IsAssignableFromType(type))
                 {
-                    Container.AddTransient(type);
-                    var pageAttr = type.FirstAttribute<PageAttribute>();
-                    if (pageAttr?.VirtualPath != null)
+                    if (CodePages.Values.All(x => x != type))
                     {
-                        CodePages[pageAttr.VirtualPath] = type;
+                        Container.AddTransient(type);
+                        var pageAttr = type.FirstAttribute<PageAttribute>();
+                        if (pageAttr?.VirtualPath != null)
+                        {
+                            CodePages[pageAttr.VirtualPath] = type;
+                        }
                     }
                 }
             }

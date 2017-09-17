@@ -6,6 +6,7 @@ using ServiceStack.Text;
 using ServiceStack.Text.Common;
 using ServiceStack.Text.Jsv;
 using System.Linq;
+using System.Threading;
 using ServiceStack.Web;
 
 namespace ServiceStack.Serialization
@@ -25,8 +26,8 @@ namespace ServiceStack.Serialization
                 PropertyParseStringFn = propertyParseStringFn;
             }
 
-            public SetMemberDelegate PropertySetFn;
-            public ParseStringDelegate PropertyParseStringFn;
+            public readonly SetMemberDelegate PropertySetFn;
+            public readonly ParseStringDelegate PropertyParseStringFn;
             public Type PropertyType;
         }
 
@@ -145,9 +146,7 @@ namespace ServiceStack.Serialization
                 {
                     if (propertyName == "v")
                     {
-                        int version;
-                        var hasVersion = instance as IHasVersion;
-                        if (hasVersion != null && int.TryParse(propertyTextValue, out version))
+                        if (instance is IHasVersion hasVersion && int.TryParse(propertyTextValue, out var version))
                         {
                             hasVersion.Version = version;
                         }
@@ -155,8 +154,7 @@ namespace ServiceStack.Serialization
                     }
 
                     var ignoredProperty = propertyName.ToLowerInvariant();
-                    if (ignoredWarningsOnPropertyNames == null ||
-                        !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
+                    if (ignoredWarningsOnPropertyNames != null && !ignoredWarningsOnPropertyNames.Contains(ignoredProperty))
                     {
                         Log.WarnFormat("Property '{0}' does not exist on type '{1}'", ignoredProperty, type.FullName);
                     }

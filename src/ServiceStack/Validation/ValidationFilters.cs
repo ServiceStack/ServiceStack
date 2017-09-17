@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Web;
 
 namespace ServiceStack.Validation
@@ -39,7 +40,7 @@ namespace ServiceStack.Validation
                 using (validator as IDisposable) {}
             }
         }
-
+        
         public static Task RequestFilterAsync(IRequest req, IResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
@@ -55,25 +56,38 @@ namespace ServiceStack.Validation
 
             return HostContext.Async.ContinueWith(req, validateTask, t =>
                 {
-                    var validationResult = t.Result;
-                    if (validationResult.IsValid)
-                        return TypeConstants.TrueTask;
-
-                    var errorResponse = HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
-                                        ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
-
-                    var validationFeature = HostContext.GetPlugin<ValidationFeature>();
-                    if (validationFeature?.ErrorResponseFilter != null)
+                    if (t.IsFaulted)
                     {
-                        errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
-                    }
+                        var validationEx = t.Exception.UnwrapIfSingleException();
+                        
+                        var errorResponse = HostContext.RaiseServiceException(req, requestDto, validationEx)
+                                            ?? DtoUtils.CreateErrorResponse(requestDto, validationEx);
 
-                    return res.WriteToResponse(req, errorResponse);
+                        return res.WriteToResponse(req, errorResponse);
+                    }
+                    else
+                    {
+                        var validationResult = t.Result;
+                        if (validationResult.IsValid)
+                            return TypeConstants.TrueTask;
+
+                        var errorResponse = HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
+                                            ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
+
+                        var validationFeature = HostContext.GetPlugin<ValidationFeature>();
+                        if (validationFeature?.ErrorResponseFilter != null)
+                        {
+                            errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
+                        }
+
+                        return res.WriteToResponse(req, errorResponse);
+                    }
                 })
                 .ContinueWith(t =>
                 {
                     using (validator as IDisposable) { }
                 });
         }
+        
     }
 }

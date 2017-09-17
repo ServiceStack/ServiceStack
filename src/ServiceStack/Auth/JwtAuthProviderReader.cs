@@ -21,7 +21,7 @@ namespace ServiceStack.Auth
         public const string Name = AuthenticateService.JwtProvider;
         public const string Realm = "/auth/" + AuthenticateService.JwtProvider;
 
-        public static HashSet<string> IgnoreForOperationTypes = new HashSet<string>
+        public static readonly HashSet<string> IgnoreForOperationTypes = new HashSet<string>
         {
             typeof(StaticFileHandler).Name,
         };
@@ -485,8 +485,7 @@ namespace ServiceStack.Auth
 
         public static IAuthSession CreateSessionFromJwt(IRequest req)
         {
-            var jwtProvider = AuthenticateService.GetAuthProvider(Name) as JwtAuthProviderReader;
-            if (jwtProvider == null)
+            if (!(AuthenticateService.GetAuthProvider(Name) is JwtAuthProviderReader jwtProvider))
                 throw new Exception("JwtAuthProvider or JwtAuthProviderReader is not registered");
 
             var jwtToken = req.GetJwtToken();

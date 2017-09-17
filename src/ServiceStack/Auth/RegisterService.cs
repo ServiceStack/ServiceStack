@@ -67,6 +67,8 @@ namespace ServiceStack.Auth
     public class RegisterService : Service
     {
         public static ValidateFn ValidateFn { get; set; }
+        
+        public static bool DisableUpdates { get; set; }
 
         public IValidator<Register> RegistrationValidator { get; set; }
 
@@ -106,7 +108,7 @@ namespace ServiceStack.Auth
             var newUserAuth = ToUserAuth(authRepo, request);
             using (authRepo as IDisposable)
             {
-                var existingUser = authRepo.GetUserAuth(session, null);
+                var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
                 registerNewUser = existingUser == null;
 
                 if (HostContext.GlobalRequestFilters == null
@@ -114,6 +116,9 @@ namespace ServiceStack.Auth
                 {
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
+                
+                if (!registerNewUser && DisableUpdates)
+                    throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled);
 
                 user = registerNewUser
                     ? authRepo.CreateUserAuth(newUserAuth, request.Password)
@@ -135,8 +140,7 @@ namespace ServiceStack.Auth
                     if (authResponse is IHttpError)
                         throw (Exception)authResponse;
 
-                    var typedResponse = authResponse as AuthenticateResponse;
-                    if (typedResponse != null)
+                    if (authResponse is AuthenticateResponse typedResponse)
                     {
                         response = new RegisterResponse
                         {
@@ -144,6 +148,8 @@ namespace ServiceStack.Auth
                             UserName = typedResponse.UserName,
                             ReferrerUrl = typedResponse.ReferrerUrl,
                             UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                            BearerToken = typedResponse.BearerToken,
+                            RefreshToken = typedResponse.RefreshToken,
                         };
                     }
                 }
@@ -186,8 +192,7 @@ namespace ServiceStack.Auth
 
         public IUserAuth ToUserAuth(IAuthRepository authRepo, Register request)
         {
-            var customUserAuth = authRepo as ICustomUserAuth;
-            var to = customUserAuth != null
+            var to = authRepo is ICustomUserAuth customUserAuth
                 ? customUserAuth.CreateUserAuth()
                 : new UserAuth();
 

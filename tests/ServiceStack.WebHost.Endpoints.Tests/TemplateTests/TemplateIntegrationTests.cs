@@ -146,7 +146,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
-                SetConfig(new HostConfig { DebugMode = true });
+                SetConfig(new HostConfig
+                {
+                    DebugMode = true,
+                    ForbiddenPaths = { "/plugins" }
+                });
                 
                 container.Register<IDbConnectionFactory>(new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider));
 
@@ -286,6 +290,8 @@ layout: alt/alt-layout
 {{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
 {{ 'rockstar-gateway' | partial({ firstName }) }}
 {{ htmlError }}");
+
+                files.WriteFile("plugins/dll.txt", "Forbidden File");
             }
 
             public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider> { new MemoryVirtualFiles() };
@@ -664,6 +670,21 @@ Parameter name: lastName
 
 StackTrace:
    at Expression (Dictionary`2): {id:".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Should_not_be_allowed_to_access_plugins_folder()
+        {
+
+            try
+            {
+                var contents = BaseUrl.AppendPath("plugins", "dll.txt").GetStringFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException ex)
+            {
+                Assert.That(ex.GetStatus(), Is.EqualTo(HttpStatusCode.Forbidden));
+            }
         }
 
     }

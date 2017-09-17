@@ -38,6 +38,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	{
 		private static readonly ILog Log = LogManager.GetLogger(typeof(CompressionTests));
 
+		[OneTimeSetUp]
+		public void Init()
+		{
+			LogManager.LogFactory = null;
+		}
+
 		[Test]
 		public void Can_compress_and_decompress_SimpleDto()
 		{

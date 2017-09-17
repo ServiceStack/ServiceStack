@@ -201,7 +201,17 @@ namespace ServiceStack
 
         public string AsyncOneWayBaseUri { get; set; }
 
-        public int Version { get; set; }
+        private int version;
+        public int Version
+        {
+            get => version;
+            set
+            {
+                this.version = value;
+                this.asyncClient.Version = value;
+            }
+        }
+        
         public string SessionId { get; set; }
 
         public string UserAgent
@@ -475,6 +485,7 @@ namespace ServiceStack
 
         public virtual string ResolveTypedUrl(string httpMethod, object requestDto)
         {
+            this.PopulateRequestMetadata(requestDto);
             return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
         }
 

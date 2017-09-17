@@ -19,7 +19,7 @@
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="ServiceStack.Interfaces" version="4.5" />
-      <dependency id="Serilog" version="2.3.0" />
+      <dependency id="Serilog" version="2.5.0" />
     </dependencies>
   </metadata>
   <files>

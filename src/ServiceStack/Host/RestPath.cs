@@ -482,7 +482,8 @@ namespace ServiceStack.Host
                 }
             }
 
-            return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, HostContext.Config.IgnoreWarningsOnPropertyNames);
+            return this.typeDeserializer.PopulateFromMap(fromInstance, requestKeyValuesMap, 
+                HostContext.Config.IgnoreWarningsOnAllProperties ? null : HostContext.Config.IgnoreWarningsOnPropertyNames);
         }
 
         public bool IsVariable(string name)

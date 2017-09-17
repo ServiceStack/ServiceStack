@@ -11,9 +11,13 @@ namespace ServiceStack.Host
         public static string GetBearerToken(this IRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];
-            if (auth == null) return null;
+            if (string.IsNullOrEmpty(auth))
+                return null;
 
             var pos = auth.IndexOf(' ');
+            if (pos < 0)
+                return null;
+
             return auth.Substring(0, pos).EqualsIgnoreCase("Bearer") ? auth.Substring(pos + 1) : null;
         }
 

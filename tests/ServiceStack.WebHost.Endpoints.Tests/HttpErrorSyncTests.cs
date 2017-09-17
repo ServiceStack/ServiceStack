@@ -5,6 +5,7 @@ using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -38,6 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
+            LogManager.LogFactory = null;
             appHost = new ExampleAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);

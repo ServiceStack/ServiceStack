@@ -50,9 +50,9 @@ namespace CheckWeb
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
-                DebugMode = true,
+                DebugMode = false,
                 //UseHttpsLinks = true,
-                AppendUtf8CharsetOnContentTypes = new HashSet<string> { MimeTypes.Html },
+                AppendUtf8CharsetOnContentTypes = { MimeTypes.Html },
                 UseCamelCase = true,
                 //HandlerFactoryPath = "CheckWeb", //when hosted on IIS
                 //AllowJsConfig = false,
@@ -71,7 +71,10 @@ namespace CheckWeb
                     CaptureSynchronizationContext = true,
                 });
 
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new TemplatePagesFeature
+            {
+                EnableDebugTemplateToAll = true
+            });
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
@@ -209,14 +212,12 @@ namespace CheckWeb
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[]
                 {
-                    new BasicAuthProvider(AppSettings),
+                    new CredentialsAuthProvider(AppSettings),
                     new ApiKeyAuthProvider(AppSettings),
-                })
-            {
-                ServiceRoutes = new Dictionary<Type, string[]> {
-                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
-                }
-            });
+                    new BasicAuthProvider(AppSettings),
+                }));
+            
+            Plugins.Add(new RegistrationFeature());
 
             var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
             container.Register<IAuthRepository>(c => authRepo);
@@ -370,11 +371,21 @@ namespace CheckWeb
     {
         public string PathInfo { get; set; }
     }
+
+    [Route("/return/text")]
+    public class ReturnText
+    {
+        public string Text { get; set; }
+    }
+
     public class MyServices : Service
     {
         //Return default.html for unmatched requests so routing is handled on client
         public object Any(IndexPage request) =>
             new HttpResult(VirtualFileSources.GetFile("default.html"));
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(ReturnText request) => request.Text;
     }
 
     public class Global : System.Web.HttpApplication

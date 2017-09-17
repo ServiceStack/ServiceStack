@@ -101,6 +101,58 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             return new ValidCustomersResponse { Result = request };
         }
     }
+    
+    public class SaveUser : IReturn<SaveUser>
+    {
+        public int Id { get; set; }
+
+        public User User { get; set; }
+    }
+    
+    public class User
+    {
+        public string Name { get; set; }
+    }
+    
+    public class UserValidator : AbstractValidator<User>
+    {
+        public UserValidator()
+        {
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
+
+            RuleFor(x => x.Name).NotEmpty();
+        }
+    }
+    
+    public class SaveUserValidator : AbstractValidator<SaveUser>
+    {
+        public SaveUserValidator()
+        {
+            this.CascadeMode = CascadeMode.StopOnFirstFailure;
+
+            RuleFor(x => x.Id)
+                .Must(ThrowException);
+
+            RuleFor(x => x.User)
+                .NotEmpty()
+                .SetValidator(new UserValidator());
+        }
+
+        private bool ThrowException(int arg)
+        {
+            if (arg < 0)
+                throw new ApplicationException("Validator Exception");
+            return true;
+        }
+    }
+    
+    public class UserService : Service
+    {
+        public object Post(SaveUser request)
+        {
+            return new HttpResult(new SaveUser { Id = -100, User = new User { Name = "bad name" } }, HttpStatusCode.Created);
+        }
+    }
 
     [TestFixture]
     public class CustomerServiceValidationTests
@@ -192,6 +244,44 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                 HasDiscount = true,
                 Postcode = "11215",
             };
+        }
+
+        [Test]
+        public void Does_validate_using_registered_UserValidator()
+        {
+            var client = new JsonServiceClient(ListeningOn);
+
+            try
+            {
+                var response = client.Post(new SaveUser());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                var status = ex.ResponseStatus;
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'User' should not be empty."));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("User"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'User' should not be empty."));
+            }
+        }
+
+        [Test]
+        public void Does_handle_Exception_thrown_in_validator()
+        {
+            var client = new JsonServiceClient(ListeningOn);
+
+            try
+            {
+                var response = client.Post(new SaveUser { Id = -1 });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                var status = ex.ResponseStatus;
+                Assert.That(status.ErrorCode, Is.EqualTo(nameof(ApplicationException)));
+                Assert.That(status.Message, Is.EqualTo("Validator Exception"));
+            }
         }
 
         [Test]

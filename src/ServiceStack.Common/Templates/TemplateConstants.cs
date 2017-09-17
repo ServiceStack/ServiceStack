@@ -28,6 +28,7 @@ namespace ServiceStack.Templates
         public const string Request = "Request";
         public const string PathInfo = "PathInfo";
         public const string PathArgs = "PathArgs";
+        public const string AssetsBase = "assetsBase";
         public const string DefaultFileCacheExpiry = nameof(DefaultFileCacheExpiry);
         public const string DefaultUrlCacheExpiry = nameof(DefaultUrlCacheExpiry);
 

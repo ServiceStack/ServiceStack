@@ -9,5 +9,6 @@ namespace ServiceStack.Templates
             throw new StopFilterExecutionException(scope, options, ex);
         }
 
+        public static string AsString(this object str) => str is IRawString r ? r.ToRawString() : str?.ToString();
     }
 }

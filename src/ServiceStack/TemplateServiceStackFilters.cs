@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ServiceStack.Auth;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -132,5 +133,20 @@ namespace ServiceStack
             return results;
         }
        
+        public IAuthSession userSession(TemplateScopeContext scope) => req(scope).GetSession();
+
+        public bool isAuthenticated(TemplateScopeContext scope) => userSession(scope)?.IsAuthenticated == true;
+        
+        [HandleUnknownValue] public object ifAuthenticated(TemplateScopeContext scope) => isAuthenticated(scope) 
+            ? (object)IgnoreResult.Value : StopExecution.Value;
+       
+        [HandleUnknownValue] public object ifNotAuthenticated(TemplateScopeContext scope) => !isAuthenticated(scope) 
+            ? (object)IgnoreResult.Value : StopExecution.Value;
+        
+        [HandleUnknownValue] public object onlyIfAuthenticated(TemplateScopeContext scope, object value) => isAuthenticated(scope) 
+            ? value : StopExecution.Value;
+
+        [HandleUnknownValue] public object endIfAuthenticated(TemplateScopeContext scope, object value) => !isAuthenticated(scope) 
+            ? value : StopExecution.Value;
     }
 }

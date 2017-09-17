@@ -949,7 +949,7 @@ namespace ServiceStack.Templates
             {
                 value = binding != null 
                     ? GetValue(binding.BindingString, scope) 
-                    : outValue;
+                    : EvaluateAnyBindings(outValue, scope);
             }
 
             if (unaryOp != null)
@@ -1042,14 +1042,14 @@ namespace ServiceStack.Templates
                 : EvaluateAnyBindings(token, scope);
         }
 
-        internal object GetValue(string name, TemplateScopeContext scopedParams)
+        internal object GetValue(string name, TemplateScopeContext scope)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
             MethodInvoker invoker;
 
-            var value = scopedParams.ScopedParams != null && scopedParams.ScopedParams.TryGetValue(name, out object obj)
+            var value = scope.ScopedParams != null && scope.ScopedParams.TryGetValue(name, out object obj)
                 ? obj
                 : Args.TryGetValue(name, out obj)
                     ? obj
@@ -1063,11 +1063,13 @@ namespace ServiceStack.Templates
                                     ? obj
                                     : (invoker = GetFilterAsBinding(name, out TemplateFilter filter)) != null
                                         ? InvokeFilter(invoker, filter, new object[0], name)
-                                        : null;
+                                        : (invoker = GetContextFilterAsBinding(name, out filter)) != null
+                                             ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
+                                             : null;
 
             if (value is JsBinding binding)
             {
-                return GetValue(binding.BindingString, scopedParams);
+                return GetValue(binding.BindingString, scope);
             }
             
             return value;

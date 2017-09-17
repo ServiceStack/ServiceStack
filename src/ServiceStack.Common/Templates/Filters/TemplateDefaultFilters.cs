@@ -313,7 +313,7 @@ namespace ServiceStack.Templates
         public IRawString pass(string target) => ("{{ " + target + " }}").ToRawString();
 
         public IEnumerable join(IEnumerable<object> values) => join(values, ",");
-        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.ToString()).Join(delimiter);
+        public IEnumerable join(IEnumerable<object> values, string delimiter) => values.Map(x => x.AsString()).Join(delimiter);
 
         public IEnumerable<object> reverse(TemplateScopeContext scope, IEnumerable<object> original) => original.Reverse();
 
@@ -1064,10 +1064,35 @@ namespace ServiceStack.Templates
             }
             return target;
         }
+
+        public string dirPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
+                return null;
+
+            var lastDirPos = filePath.LastIndexOf('/');
+            return lastDirPos >= 0
+                ? filePath.Substring(0, lastDirPos)
+                : null;
+        }
+
+        public string resolveAsset(TemplateScopeContext scope, string virtualPath)
+        {
+            if (string.IsNullOrEmpty(virtualPath))
+                return string.Empty;
+
+            if (!scope.Context.Args.TryGetValue(TemplateConstants.AssetsBase, out object assetsBase))
+                return virtualPath;
+
+            return virtualPath[0] == '/'
+                ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
+                : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
+        }
    }
 
     public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        
     {
+        [HandleUnknownValue] public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
         [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 

@@ -16,12 +16,14 @@ namespace ServiceStack.Templates
             return StopExecution.Value;
         }
 
+        public object continueExecutingFiltersOnError(object ignoreTarget, TemplateScopeContext scope) => continueExecutingFiltersOnError(scope);
         public object continueExecutingFiltersOnError(TemplateScopeContext scope)
         {
             scope.PageResult.SkipExecutingFiltersIfError = false;
             return StopExecution.Value;
         }
-        
+
+        public object skipExecutingFiltersOnError(object ignoreTarget, TemplateScopeContext scope) => skipExecutingFiltersOnError(scope);
         public object skipExecutingFiltersOnError(TemplateScopeContext scope)
         {
             scope.PageResult.SkipExecutingFiltersIfError = true;

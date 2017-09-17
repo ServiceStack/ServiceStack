@@ -260,6 +260,7 @@ namespace ServiceStack
         public string AuthSecret { get; set; }
     }
 
+    [ReturnExceptionsInJsonAttribute]
     [DefaultRequest(typeof(TemplateMetadataDebug))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplateMetadataDebugService : Service
