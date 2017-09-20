@@ -1099,9 +1099,9 @@ namespace ServiceStack.Templates
         public object @throw(TemplateScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(TemplateScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
         
-        public StopExecution @return(TemplateScopeContext scope) => @return(scope, null, null);
-        public StopExecution @return(TemplateScopeContext scope, object returnValue) => @return(scope, returnValue, null);
-        public StopExecution @return(TemplateScopeContext scope, object returnValue, object returnArgs)
+        [HandleUnknownValue] public StopExecution @return(TemplateScopeContext scope) => @return(scope, null, null);
+        [HandleUnknownValue] public StopExecution @return(TemplateScopeContext scope, object returnValue) => @return(scope, returnValue, null);
+        [HandleUnknownValue] public StopExecution @return(TemplateScopeContext scope, object returnValue, object returnArgs)
         {
             scope.PageResult.Args[TemplateConstants.Return] = returnValue;
             scope.PageResult.Args[TemplateConstants.ReturnArgs] = returnArgs;
