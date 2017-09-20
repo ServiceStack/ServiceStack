@@ -167,8 +167,7 @@ namespace ServiceStack
 
                         httpResult.PaddingLength = paddingLength;
 
-                        var httpError = httpResult as IHttpError;
-                        if (httpError != null)
+                        if (httpResult is IHttpError httpError)
                         {
                             response.Dto = httpError.CreateErrorResponse();
                             if (response.HandleCustomErrorHandler(request,
@@ -202,8 +201,7 @@ namespace ServiceStack
                     }
 
                     /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
-                    var responseOptions = result as IHasOptions;
-                    if (responseOptions != null)
+                    if (result is IHasOptions responseOptions)
                     {
                         //Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
                         const string reservedOptions = ".";
@@ -217,17 +215,16 @@ namespace ServiceStack
                                 continue;
                             }
 
+                            if (responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
+                            {
+                                response.ContentType = responseHeaders.Value;
+                                continue;
+                            }
+
                             if (Log.IsDebugEnabled)
                                 Log.Debug($"Setting Custom HTTP Header: {responseHeaders.Key}: {responseHeaders.Value}");
 
-                            if (Env.IsMono && responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
-                            {
-                                response.ContentType = responseHeaders.Value;
-                            }
-                            else
-                            {
-                                response.AddHeader(responseHeaders.Key, responseHeaders.Value);
-                            }
+                            response.AddHeader(responseHeaders.Key, responseHeaders.Value);
                         }
                     }
 
