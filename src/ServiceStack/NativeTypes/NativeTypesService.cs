@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
@@ -213,8 +214,34 @@ namespace ServiceStack.NativeTypes
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
                 var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturn<>)));
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
+                var registerInterfaces = new List<Type>
+                {
+                    typeof(IReturn<>),
+                    typeof(IReturnVoid),
+                };
+                var builtinInterfaces = new[]
+                {
+                    typeof(IGet),
+                    typeof(IPost),
+                    typeof(IPut),
+                    typeof(IDelete),
+                    typeof(IPatch),
+                    typeof(IOptions),
+                };
+                
+                foreach (var op in metadataTypes.Operations)
+                {
+                    foreach (var typeName in op.Request.Implements.Safe())
+                    {
+                        var iface = builtinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
+                        if (iface != null)
+                        {
+                            registerInterfaces.AddIfNotExists(iface);
+                        }
+                    }
+                }
+                
+                metadataTypes.Types.InsertRange(0, registerInterfaces.Map(x => generator.ToType(x)));
             }
 
             ExportMissingSystemTypes(typesConfig);
