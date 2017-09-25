@@ -1,5 +1,7 @@
 ﻿using System.Configuration;
 using System.Data;
+using System.IO;
+using System.Runtime.Serialization;
 using System.Web.Mvc;
 using System.Web.Routing;
 using Check.ServiceInterface;
@@ -12,13 +14,14 @@ using ServiceStack.Mvc;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace CheckMvc
 {
     public class AppHost : AppHostBase
     {
         public AppHost()
-            : base("Check MVC", typeof(ErrorsService).Assembly) {}
+            : base("Check MVC", typeof(ErrorsService).Assembly, typeof(SmrImportServices).Assembly) {}
 
         public override void Configure(Container container)
         {
@@ -38,6 +41,49 @@ namespace CheckMvc
         }
     }
 
+    public class SmrImportServices : Service
+    {
+        public object Post(AddSmrImportRequest request)
+        {
+            return request;
+        }
+    }
+    
+    [ServiceStack.Route("/addsmrimportrequest/{Year}/{Month}/{ScheduledDay}/{ScheduledMonth}/{ScheduledYear}/{ScheduledHour}/{ScheduledMinutes}/{AuditUserName}/{AuditIpAddress}", 
+        Verbs = "OPTIONS POST")]
+    [DataContract]
+    public class AddSmrImportRequest : QueryBase, IRequiresRequestStream, IReturn<AddSmrImportRequest>
+    {
+        [DataMember(IsRequired = true, Order = 1)]
+        public int Year { get; set; }
+
+        [DataMember(IsRequired = true, Order = 2)]
+        public short Month { get; set; }
+
+        [DataMember(IsRequired = true, Order = 3)]
+        public short ScheduledDay { get; set; }
+
+        [DataMember(IsRequired = true, Order = 4)]
+        public short ScheduledMonth { get; set; }
+
+        [DataMember(IsRequired = true, Order = 5)]
+        public int ScheduledYear { get; set; }
+
+        [DataMember(IsRequired = true, Order = 6)]
+        public short ScheduledHour { get; set; }
+
+        [DataMember(IsRequired = true, Order = 7)]
+        public short ScheduledMinutes { get; set; }
+
+        [DataMember(IsRequired = true, Order = 8)]
+        public string AuditUserName { get; set; }
+
+        [DataMember(IsRequired = true, Order = 9)]
+        public string AuditIpAddress { get; set; }
+
+        public Stream RequestStream { get; set; }
+    }
+    
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
     public class MvcApplication : System.Web.HttpApplication
