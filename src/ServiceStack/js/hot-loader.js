@@ -4,7 +4,7 @@ var __lastEtag = "";
     var params = {}, tokens, re = /[?&]?([^=]+)=([^&]*)/g
     while (tokens = re.exec(qs)) {
         if (tokens[1] === "scroll") {
-            setTimeout(function(){ window.scrollTo(0, tokens[2]) }, 1)
+            setTimeout(function(){ window.scrollTo(0, tokens[2]) }, 1);
             return
         }
     }
@@ -20,7 +20,7 @@ var __lastEtag = "";
         .then(function(res){
             if (res.status !== 200) {
                 console.log("hotreload failed: " + res.status)
-                if (res.status != 404 && res.status != 405) setTimeout(shouldReload, 1000)
+                if (res.status !== 404 && res.status !== 405) setTimeout(shouldReload, 1000)
             } else {
                 res.json().then(function(r){
                     if (!__lastEtag) {
