@@ -18,8 +18,7 @@ namespace ServiceStack
         public static object GetDto(this object response)
         {
             if (response == null) return null;
-            var httpResult = response as IHttpResult;
-            return httpResult != null ? httpResult.Response : response;
+            return response is IHttpResult httpResult ? httpResult.Response : response;
         }
 
         /// <summary>

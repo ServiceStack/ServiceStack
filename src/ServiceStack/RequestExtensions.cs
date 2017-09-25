@@ -65,13 +65,14 @@ namespace ServiceStack
         /// <param name="request"></param>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public static object ToOptimizedResult<T>(this IRequest request, T dto)
+        public static object ToOptimizedResult(this IRequest request, object dto)
         {
+            dto = dto.GetDto();
             request.Response.Dto = dto;
 
             var compressionType = request.GetCompressionType();
             if (compressionType == null)
-                return (object)HostContext.ContentTypes.SerializeToString(request, dto);
+                return HostContext.ContentTypes.SerializeToString(request, dto);
 
             using (var ms = new MemoryStream())
             using (var compressionStream = GetCompressionStream(ms, compressionType))
