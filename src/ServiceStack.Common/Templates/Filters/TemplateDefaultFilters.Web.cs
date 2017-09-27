@@ -20,10 +20,15 @@ namespace ServiceStack.Templates
         public bool isHttpDelete(TemplateScopeContext scope) => req(scope)?.Verb == HttpMethods.Delete;
         public bool isHttpPatch(TemplateScopeContext scope) => req(scope)?.Verb == HttpMethods.Patch;
 
+        [HandleUnknownValue] public object ifHttpGet(TemplateScopeContext scope, object ignoreTarget) => ifHttpGet(scope);
         [HandleUnknownValue] public object ifHttpGet(TemplateScopeContext scope) => isHttpGet(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifHttpPost(TemplateScopeContext scope, object ignoreTarget) => ifHttpPost(scope);
         [HandleUnknownValue] public object ifHttpPost(TemplateScopeContext scope) => isHttpPost(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifHttpPut(TemplateScopeContext scope, object ignoreTarget) => ifHttpPut(scope);
         [HandleUnknownValue] public object ifHttpPut(TemplateScopeContext scope) => isHttpPut(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifHttpDelete(TemplateScopeContext scope, object ignoreTarget) => ifHttpDelete(scope);
         [HandleUnknownValue] public object ifHttpDelete(TemplateScopeContext scope) => isHttpDelete(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope, object ignoreTarget) => ifHttpPatch(scope);
         [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope) => isHttpPatch(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
     }
 }

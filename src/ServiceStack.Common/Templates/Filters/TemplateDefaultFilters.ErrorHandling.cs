@@ -16,14 +16,14 @@ namespace ServiceStack.Templates
             return StopExecution.Value;
         }
 
-        public object continueExecutingFiltersOnError(object ignoreTarget, TemplateScopeContext scope) => continueExecutingFiltersOnError(scope);
+        public object continueExecutingFiltersOnError(TemplateScopeContext scope, object ignoreTarget) => continueExecutingFiltersOnError(scope);
         public object continueExecutingFiltersOnError(TemplateScopeContext scope)
         {
             scope.PageResult.SkipExecutingFiltersIfError = false;
             return StopExecution.Value;
         }
 
-        public object skipExecutingFiltersOnError(object ignoreTarget, TemplateScopeContext scope) => skipExecutingFiltersOnError(scope);
+        public object skipExecutingFiltersOnError(TemplateScopeContext scope, object ignoreTarget) => skipExecutingFiltersOnError(scope);
         public object skipExecutingFiltersOnError(TemplateScopeContext scope)
         {
             scope.PageResult.SkipExecutingFiltersIfError = true;
@@ -36,7 +36,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object ifNoError(TemplateScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
         [HandleUnknownValue] public object ifNoError(TemplateScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
 
+        [HandleUnknownValue] public object ifError(TemplateScopeContext scope, object ignoreTarget) => ifError(scope);
         [HandleUnknownValue] public object ifError(TemplateScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
+        [HandleUnknownValue] public object ifDebug(TemplateScopeContext scope, object ignoreTarget) => ifDebug(scope);
         [HandleUnknownValue] public object ifDebug(TemplateScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
         
         [HandleUnknownValue] public Exception lastError(TemplateScopeContext scope) => scope.PageResult.LastFilterError;
