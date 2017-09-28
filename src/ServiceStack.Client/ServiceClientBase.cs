@@ -753,7 +753,7 @@ namespace ServiceStack
         readonly ConcurrentDictionary<Type, Action<Exception, string>> ResponseHandlers
             = new ConcurrentDictionary<Type, Action<Exception, string>>();
 
-        private void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
+        protected void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
         {
             var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
             Action<Exception, string> responseHandler;
