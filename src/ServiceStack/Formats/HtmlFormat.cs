@@ -35,8 +35,7 @@ namespace ServiceStack.Formats
 
         public void SerializeToStream(IRequest req, object response, IResponse res)
         {
-            var httpResult = req.GetItem("HttpResult") as IHttpResult;
-            if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
+            if (req.GetItem("HttpResult") is IHttpResult httpResult && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
                 && httpResult.StatusCode != System.Net.HttpStatusCode.Created)  
                 return;
 
@@ -83,8 +82,7 @@ namespace ServiceStack.Formats
                 && req.ResponseContentType != MimeTypes.JsonReport) return;
 
             var dto = response.GetDto();
-            var html = dto as string;
-            if (html == null)
+            if (!(dto is string html))
             {
                 // Serialize then escape any potential script tags to avoid XSS when displaying as HTML
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";

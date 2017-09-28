@@ -120,8 +120,7 @@ namespace ServiceStack.VirtualPath
 
         public override bool Equals(object obj)
         {
-            var other = obj as AbstractVirtualDirectoryBase;
-            if (other == null)
+            if (!(obj is AbstractVirtualDirectoryBase other))
                 return false;
 
             return other.VirtualPath == this.VirtualPath;

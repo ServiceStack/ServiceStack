@@ -125,8 +125,7 @@ namespace ServiceStack.Mvc
             if (req.Items.ContainsKey(RenderException))
                 return false;
 
-            var httpResult = dto as IHttpResult;
-            if (httpResult != null)
+            if (dto is IHttpResult httpResult)
                 dto = httpResult.Response;
 
             var viewNames = new List<string> { req.Dto.GetType().Name, dto.GetType().Name };
@@ -143,8 +142,7 @@ namespace ServiceStack.Mvc
 
             ViewDataDictionary viewData = null;
 
-            var errorDto = dto as ErrorResponse;
-            if (errorDto != null)
+            if (dto is ErrorResponse errorDto)
             {
                 var razorView = viewEngineResult.View as RazorView;
                 var genericDef = razorView.RazorPage.GetType().FirstGenericType();
@@ -274,10 +272,7 @@ namespace ServiceStack.Mvc
 
                     //If resolving from PathInfo, same RazorPage is used so must fetch new instance each time
                     var viewResult = format.GetPageFromPathInfo(PathInfo);
-                    if (viewResult == null)
-                        throw new ArgumentException("Could not find Razor Page at " + PathInfo);
-
-                    view = viewResult.View;
+                    view = viewResult?.View ?? throw new ArgumentException("Could not find Razor Page at " + PathInfo);
                 }
 
                 RenderView(format, req, res, view);
@@ -461,8 +456,7 @@ namespace ServiceStack.Mvc
         {
             get
             {
-                object oRequest;
-                if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out oRequest))
+                if (base.ViewContext.ViewData.TryGetValue(Keywords.IRequest, out var oRequest))
                     return (IHttpRequest)oRequest;
 
                 return AppHostBase.GetOrCreateRequest(Context) as IHttpRequest;
@@ -489,12 +483,10 @@ namespace ServiceStack.Mvc
             if (response == null)
                 return null;
 
-            var status = response as ResponseStatus;
-            if (status != null)
+            if (response is ResponseStatus status)
                 return status;
 
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
+            if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
             var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");

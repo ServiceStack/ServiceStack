@@ -31,6 +31,8 @@
         public static string IRequest = "__irequest";
         public static string RequestDuration = "_requestDurationStopwatch";
         public static string Code = "code";
+        public static string View = "View";
+        public static string Template = "Template";
     }
 
     public static class LocalizedStrings

@@ -21,8 +21,6 @@ namespace ServiceStack.Razor.Managers
     {
         public static ILog Log = LogManager.GetLogger(typeof(RazorPageResolver));
 
-        public const string ViewKey = "View";
-        public const string LayoutKey = "Template";
         public const string DefaultLayoutName = "_Layout";
         public bool MinifyHtml { get; set; }
         public bool UseAdvancedCompression { get; set; }
@@ -104,8 +102,7 @@ namespace ServiceStack.Razor.Managers
         public virtual bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
         {
             //for compatibility
-            var httpResult = dto as IHttpResult;
-            if (httpResult != null)
+            if (dto is IHttpResult httpResult)
                 dto = httpResult.Response;
 
             var existingRazorPage = ResolveViewPage(httpReq, dto)
@@ -124,8 +121,7 @@ namespace ServiceStack.Razor.Managers
 
         public RazorPage ResolveContentPage(IRequest httpReq)
         {
-            var viewName = httpReq.GetItem(ViewKey) as string;
-            if (viewName != null)
+            if (httpReq.GetItem(Keywords.View) is string viewName)
                 return viewManager.GetContentPage(viewName);
 
             return viewManager.GetContentPage(httpReq.PathInfo);
@@ -133,8 +129,7 @@ namespace ServiceStack.Razor.Managers
 
         public RazorPage ResolveViewPage(IRequest httpReq, object model)
         {
-            var viewName = httpReq.GetItem(ViewKey) as string;
-            if (viewName != null)
+            if (httpReq.GetItem(Keywords.View) is string viewName)
                 return viewManager.GetViewPage(viewName);
 
             return viewManager.GetViewPage(httpReq.OperationName) // Request DTO
@@ -167,12 +162,12 @@ namespace ServiceStack.Razor.Managers
                 if (includeLayout)
                 {
                     var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>
-                        httpReq.GetItem(LayoutKey) as string
+                        httpReq.GetItem(Keywords.Template) as string
                         ?? page.Layout
                         ?? DefaultLayoutName);
 
                     if (httpRes.IsClosed)
-                        return result != null ? result.Item1 : null;
+                        return result?.Item1;
 
                     var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
                     var html = HtmlFilter(result.Item2);

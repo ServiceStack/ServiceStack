@@ -266,8 +266,7 @@ namespace ServiceStack.Razor
             if (this.VirtualFileSources == null)
                 throw new ArgumentNullException("VirtualPathProvider");
 
-            var writableFileProvider = this.VirtualFileSources as IVirtualFiles;
-            if (writableFileProvider == null)
+            if (!(this.VirtualFileSources is IVirtualFiles writableFileProvider))
                 throw new InvalidOperationException("VirtualPathProvider is not IVirtualFiles");
 
             var tmpPath = "/__tmp/{0}.cshtml".Fmt(Guid.NewGuid().ToString("N"));
@@ -304,12 +303,12 @@ namespace ServiceStack.Razor
         public string RenderToHtml(RazorPage razorPage, out IRazorView razorView, object model = null, string layout = null)
         {
             if (razorPage == null)
-                throw new ArgumentNullException("razorPage");
+                throw new ArgumentNullException(nameof(razorPage));
 
             var httpReq = new BasicRequest();
             if (layout != null)
             {
-                httpReq.Items[RazorPageResolver.LayoutKey] = layout;
+                httpReq.Items[Keywords.Template] = layout;
             }
 
             razorView = PageResolver.ExecuteRazorPage(httpReq, httpReq.Response, model, razorPage);

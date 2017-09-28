@@ -342,8 +342,7 @@ namespace ServiceStack.Formats
 
         public string GetPageName(object dto, IRequest req)
         {
-            var httpResult = dto as IHttpResult;
-            if (httpResult != null)
+            if (dto is IHttpResult httpResult)
             {
                 dto = httpResult.Response;
             }
@@ -354,8 +353,7 @@ namespace ServiceStack.Formats
 
         public MarkdownPage GetViewPageByResponse(object dto, IRequest httpReq)
         {
-            var httpResult = dto as IHttpResult;
-            if (httpResult != null)
+            if (dto is IHttpResult httpResult)
             {
                 dto = httpResult.Response;
             }
