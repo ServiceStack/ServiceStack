@@ -275,8 +275,7 @@ namespace ServiceStack
 
         public static T ResolveService<T>(IRequest httpReq, T service)
         {
-            var hasRequest = service as IRequiresRequest;
-            if (hasRequest != null)
+            if (service is IRequiresRequest hasRequest)
             {
                 httpReq.SetInProcessRequest();
                 hasRequest.Request = httpReq;
