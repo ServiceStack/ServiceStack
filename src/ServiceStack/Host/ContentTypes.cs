@@ -18,11 +18,14 @@ namespace ServiceStack.Host
         public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers
             = new Dictionary<string, StreamSerializerDelegate>();
 
-        public Dictionary<string, ResponseSerializerDelegate> ContentTypeResponseSerializers
-            = new Dictionary<string, ResponseSerializerDelegate>();
-
         public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
             = new Dictionary<string, StreamDeserializerDelegate>();
+
+        public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync
+            = new Dictionary<string, StreamSerializerDelegateAsync>();
+
+        public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync
+            = new Dictionary<string, StreamDeserializerDelegateAsync>();
 
         public static HashSet<string> KnownFormats = new HashSet<string>
         {
@@ -60,8 +63,7 @@ namespace ServiceStack.Host
             if (format == "jsv")
                 return MimeTypes.Jsv;
 
-            string registeredFormats;
-            ContentTypeFormats.TryGetValue(format, out registeredFormats);
+            ContentTypeFormats.TryGetValue(format, out var registeredFormats);
 
             return registeredFormats;
         }
@@ -79,8 +81,8 @@ namespace ServiceStack.Host
             SetContentTypeDeserializer(contentType, streamDeserializer);
         }
 
-        public void Register(string contentType, ResponseSerializerDelegate responseSerializer,
-                             StreamDeserializerDelegate streamDeserializer)
+        public void RegisterAsync(string contentType, 
+            StreamSerializerDelegateAsync streamSerializer, StreamDeserializerDelegateAsync streamDeserializer)
         {
             if (contentType.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(contentType));
@@ -89,8 +91,8 @@ namespace ServiceStack.Host
             var format = parts[parts.Length - 1];
             this.ContentTypeFormats[format] = contentType;
 
-            this.ContentTypeResponseSerializers[contentType] = responseSerializer;
-            SetContentTypeDeserializer(contentType, streamDeserializer);
+            this.ContentTypeSerializersAsync[contentType] = streamSerializer;
+            this.ContentTypeDeserializersAsync[contentType] = streamDeserializer;
         }
 
         public void SetContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
@@ -107,8 +109,7 @@ namespace ServiceStack.Host
         {
             var contentType = req.ResponseContentType;
 
-            StreamSerializerDelegate responseStreamWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
@@ -119,14 +120,12 @@ namespace ServiceStack.Host
                 }
             }
 
-            ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
+            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriterAsync) ||
+                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriterAsync))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    var httpRes = new HttpResponseStreamWrapper(ms, req);
-                    responseWriter(req, response, httpRes);
+                    responseWriterAsync(req, response, ms).Wait();
                     ms.Position = 0;
                     return ms.ToArray();
                 }
@@ -159,8 +158,7 @@ namespace ServiceStack.Host
         {
             var contentType = req.ResponseContentType;
 
-            StreamSerializerDelegate responseStreamWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseStreamWriter) ||
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
@@ -173,16 +171,12 @@ namespace ServiceStack.Host
                 }
             }
 
-            ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
+            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriter) ||
+                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    var httpRes = new HttpResponseStreamWrapper(ms, req) {
-                        KeepOpen = true, //Don't let view engines close the OutputStream
-                    };
-                    responseWriter(req, response, httpRes);
+                    responseWriter(req, response, ms).Wait();
 
                     var bytes = ms.ToArray();
                     var result = bytes.FromUtf8Bytes();
@@ -218,45 +212,34 @@ namespace ServiceStack.Host
         public void SerializeToStream(IRequest req, object response, Stream responseStream)
         {
             var contentType = req.ResponseContentType;
-            var serializer = GetResponseSerializer(contentType);
-            if (serializer == null)
+            var serializerAsync = GetStreamSerializerAsync(contentType);
+            if (serializerAsync == null)
                 throw new NotSupportedException("ContentType not supported: " + contentType);
 
-            var httpRes = new HttpResponseStreamWrapper(responseStream, req) {
-                Dto = req.Response.Dto
-            };
-            serializer(req, response, httpRes);
+            serializerAsync(req, response, responseStream).Wait();
         }
 
-        public void SerializeToResponse(IRequest requestContext, object response, IResponse httpResponse)
+        public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
         {
-            var contentType = requestContext.ResponseContentType;
-            var serializer = GetResponseSerializer(contentType);
-            if (serializer == null)
-                throw new NotSupportedException("ContentType not supported: " + contentType);
-
-            serializer(requestContext, response, httpResponse);
-        }
-
-        public ResponseSerializerDelegate GetResponseSerializer(string contentType)
-        {
-            ResponseSerializerDelegate responseWriter;
-            if (this.ContentTypeResponseSerializers.TryGetValue(contentType, out responseWriter) ||
-                this.ContentTypeResponseSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
+            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var serializerAsync) ||
+                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out serializerAsync))
             {
-                return responseWriter;
+                return serializerAsync;
             }
 
             var serializer = GetStreamSerializer(contentType);
             if (serializer == null) return null;
 
-            return (httpReq, dto, httpRes) => serializer(httpReq, dto, httpRes.OutputStream);
+            return (httpReq, dto, stream) =>
+            {
+                serializer(httpReq, dto, stream);
+                return TypeConstants.EmptyTask;
+            };
         }
 
         public StreamSerializerDelegate GetStreamSerializer(string contentType)
         {
-            StreamSerializerDelegate responseWriter;
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out responseWriter) ||
+            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseWriter) ||
                 this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
             {
                 return responseWriter;
@@ -316,12 +299,9 @@ namespace ServiceStack.Host
 
         public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
         {
-            StreamDeserializerDelegate streamReader;
             var realContentType = ContentFormat.GetRealContentType(contentType);
-            if (this.ContentTypeDeserializers.TryGetValue(realContentType, out streamReader))
-            {
+            if (this.ContentTypeDeserializers.TryGetValue(realContentType, out var streamReader))
                 return streamReader;
-            }
 
             var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
             switch (contentTypeAttr)

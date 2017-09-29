@@ -60,7 +60,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             using (var ms = new MemoryStream())
             {
                 var httpRes = new HttpResponseStreamWrapper(ms, httpReq);
-                appHost.ViewEngines[0].ProcessRequest(httpReq, httpRes, dto);
+                appHost.ViewEngines[0].ProcessRequestAsync(httpReq, dto, httpRes.OutputStream);
 
                 var utf8Bytes = ms.ToArray();
                 var html = utf8Bytes.FromUtf8Bytes();

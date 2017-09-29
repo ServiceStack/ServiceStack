@@ -198,7 +198,7 @@ namespace ServiceStack
             return output;
         }
 
-        public bool ProcessRequest(IRequest req, IResponse res, object dto)
+        public async Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream)
         {
             if (dto is IHttpResult httpResult)
                 dto = httpResult.Response;
@@ -238,7 +238,7 @@ namespace ServiceStack
             if (codePage != null)
                 codePage.Init();
             else
-                viewPage.Init().Wait();
+                await viewPage.Init();
 
             var layoutName = req.GetItem(Keywords.Template) as string;
             var layoutPage = codePage != null 
@@ -246,10 +246,10 @@ namespace ServiceStack
                 : Pages.ResolveLayoutPage(viewPage, layoutName);
             
             var handler = codePage != null
-                ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { Model = dto }
-                : new TemplatePageHandler(viewPage, layoutPage) { Model = dto };
+                ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { OutputStream = outputStream, Model = dto }
+                : new TemplatePageHandler(viewPage, layoutPage) { OutputStream = outputStream, Model = dto };
 
-            handler.ProcessRequestAsync(req, res, req.OperationName);
+            await handler.ProcessRequestAsync(req, req.Response, req.OperationName);
 
             return true;
         }
@@ -491,6 +491,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         private readonly TemplatePage page;
         private readonly TemplatePage layoutPage;
         public object Model { get; set; }
+        public Stream OutputStream { get; set; }
 
         public TemplatePageHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
@@ -509,7 +510,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             };
             try
             {
-                await result.WriteToAsync(httpRes.OutputStream);
+                await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
             {
@@ -523,6 +524,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         private readonly TemplateCodePage page;
         private readonly TemplatePage layoutPage;
         public object Model { get; set; }
+        public Stream OutputStream { get; set; }
 
         public TemplateCodePageHandler(TemplateCodePage page, TemplatePage layoutPage = null)
         {
@@ -544,7 +546,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             try
             {
-                await result.WriteToAsync(httpRes.OutputStream);
+                await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
             {

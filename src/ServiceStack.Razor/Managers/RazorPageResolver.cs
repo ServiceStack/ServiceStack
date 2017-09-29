@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
@@ -79,18 +80,21 @@ namespace ServiceStack.Razor.Managers
         /// <summary>
         /// This is called by the hosting environment via CatchAll usually for content pages.
         /// </summary>
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
-            if (httpRes.IsClosed) return;
+            if (httpRes.IsClosed) 
+                return TypeConstants.EmptyTask;
 
             httpRes.ContentType = MimeTypes.Html;
 
             var contentPage = ResolveContentPage(httpReq);
-            using (ExecuteRazorPage(httpReq, httpRes, null, contentPage)) 
+            using (ExecuteRazorPage(httpReq, httpRes.OutputStream, null, contentPage)) 
             { 
                 httpRes.EndRequest(skipHeaders: true);
             }
+
+            return TypeConstants.EmptyTask;
         }
 
         /// <summary>
@@ -99,23 +103,19 @@ namespace ServiceStack.Razor.Managers
         /// allow another view engine to attempt to process it. If no view engines can process the DTO,
         /// HtmlFormat will simply handle it itself.
         /// </summary>
-        public virtual bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
+        public virtual Task<bool> ProcessRequestAsync(IRequest httpReq, object dto, Stream outputStream)
         {
             //for compatibility
             if (dto is IHttpResult httpResult)
                 dto = httpResult.Response;
 
-            var existingRazorPage = ResolveViewPage(httpReq, dto)
-                ?? ResolveContentPage(httpReq);
+            var existingRazorPage = ResolveViewPage(httpReq, dto) ?? ResolveContentPage(httpReq);
             if (existingRazorPage == null)
-            {
-                return false;
-            }
+                return TypeConstants.FalseTask;
 
-            using (ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage))
+            using (ExecuteRazorPage(httpReq, outputStream, dto, existingRazorPage))
             {
-                httpRes.EndRequest(skipHeaders:true);
-                return true;    
+                return TypeConstants.TrueTask;
             }
         }
 
@@ -146,8 +146,9 @@ namespace ServiceStack.Razor.Managers
                 : Minifiers.Html.Compress(html);
         }
 
-        public IRazorView ExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage)
+        public IRazorView ExecuteRazorPage(IRequest httpReq, Stream outputStream, object model, RazorPage razorPage)
         {
+            var httpRes = httpReq.Response;
             if (razorPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
@@ -169,7 +170,7 @@ namespace ServiceStack.Razor.Managers
                     if (httpRes.IsClosed)
                         return result?.Item1;
 
-                    var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                    var layoutWriter = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
                     var html = HtmlFilter(result.Item2);
 
                     layoutWriter.Write(html);
@@ -177,7 +178,7 @@ namespace ServiceStack.Razor.Managers
                     return result.Item1;
                 }
 
-                var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                var writer = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
                 page.WriteTo(writer);
                 writer.Flush();
 

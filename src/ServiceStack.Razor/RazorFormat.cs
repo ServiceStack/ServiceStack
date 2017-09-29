@@ -229,13 +229,14 @@ namespace ServiceStack.Razor
 
         public void ProcessRazorPage(IRequest httpReq, RazorPage contentPage, object model, IResponse httpRes)
         {
-            PageResolver.ExecuteRazorPage(httpReq, httpRes, model, contentPage);
+            PageResolver.ExecuteRazorPage(httpReq, httpRes.OutputStream, model, contentPage);
         }
 
-        public void ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
+        public void ProcessRequest(IRequest httpReq, IResponse httpRes, object dto) //only used in tests
         {
-            PageResolver.ProcessRequest(httpReq, httpRes, dto);
+            PageResolver.ProcessRequestAsync(httpReq, dto, httpRes.OutputStream).Wait();
         }
+        
         public void ProcessContentPageRequest(IRequest httpReq, IResponse httpRes)
         {
             ((IServiceStackHandler)PageResolver).ProcessRequest(httpReq, httpRes, httpReq.OperationName);
@@ -311,9 +312,9 @@ namespace ServiceStack.Razor
                 httpReq.Items[Keywords.Template] = layout;
             }
 
-            razorView = PageResolver.ExecuteRazorPage(httpReq, httpReq.Response, model, razorPage);
-
             var ms = (MemoryStream)httpReq.Response.OutputStream;
+            razorView = PageResolver.ExecuteRazorPage(httpReq, ms, model, razorPage);
+
             return ms.ToArray().FromUtf8Bytes();
         }
     }

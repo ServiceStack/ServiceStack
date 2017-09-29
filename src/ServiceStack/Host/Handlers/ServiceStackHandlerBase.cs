@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Runtime.Serialization;
@@ -199,10 +200,10 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
-        private static void WriteDebugRequest(IRequest requestContext, object dto, IResponse httpRes)
+        private static Task WriteDebugRequest(IRequest requestContext, object dto, Stream stream)
         {
             var bytes = Encoding.UTF8.GetBytes(dto.SerializeAndFormat());
-            httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+            return stream.WriteAsync(bytes, 0, bytes.Length);
         }
 
         public Task WriteDebugResponse(IResponse httpRes, object response)

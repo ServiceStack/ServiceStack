@@ -125,7 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppHost.cs" />
-    <Compile Include="Benchmarks.cs" />
     <Compile Include="ComplexModelService.cs" />
     <Compile Include="DynamicJsonTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -282,7 +281,9 @@
     <None Include="Pages\Dir\_Layout.shtml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Views\RockstarsMark.md">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

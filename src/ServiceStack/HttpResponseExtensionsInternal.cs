@@ -85,7 +85,7 @@ namespace ServiceStack
 
         public static Task<bool> WriteToResponse(this IResponse httpRes, object result, string contentType, CancellationToken token=default(CancellationToken))
         {
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             return httpRes.WriteToResponse(result, serializer, new BasicRequest { ContentType = contentType }, token);
         }
 
@@ -110,16 +110,16 @@ namespace ServiceStack
                 }
                 httpResult.RequestContext = httpReq;
                 httpReq.ResponseContentType = httpResult.ContentType ?? httpReq.ResponseContentType;
-                var httpResSerializer = httpResult.ResponseFilter.GetResponseSerializer(httpReq.ResponseContentType)
-                    ?? httpResult.ResponseFilter.GetResponseSerializer(HostContext.Config.DefaultContentType);
+                var httpResSerializer = httpResult.ResponseFilter.GetStreamSerializerAsync(httpReq.ResponseContentType)
+                    ?? httpResult.ResponseFilter.GetStreamSerializerAsync(HostContext.Config.DefaultContentType);
                 return httpRes.WriteToResponse(httpResult, httpResSerializer, httpReq, bodyPrefix, bodySuffix, token);
             }
 
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(httpReq.ResponseContentType);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(httpReq.ResponseContentType);
             return httpRes.WriteToResponse(result, serializer, httpReq, bodyPrefix, bodySuffix, token);
         }
 
-        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, ResponseSerializerDelegate serializer, IRequest serializationContext, CancellationToken token = default(CancellationToken))
+        public static Task<bool> WriteToResponse(this IResponse httpRes, object result, StreamSerializerDelegateAsync serializer, IRequest serializationContext, CancellationToken token = default(CancellationToken))
         {
             return httpRes.WriteToResponse(result, serializer, serializationContext, null, null, token);
         }
@@ -135,7 +135,7 @@ namespace ServiceStack
         /// <param name="bodyPrefix">Add prefix to response body if any</param>
         /// <param name="bodySuffix">Add suffix to response body if any</param>
         /// <returns></returns>
-        public static async Task<bool> WriteToResponse(this IResponse response, object result, ResponseSerializerDelegate defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
+        public static async Task<bool> WriteToResponse(this IResponse response, object result, StreamSerializerDelegateAsync defaultAction, IRequest request, byte[] bodyPrefix, byte[] bodySuffix, CancellationToken token = default(CancellationToken))
         {
             using (Profiler.Current.Step("Writing to Response"))
             {
@@ -302,7 +302,7 @@ namespace ServiceStack
                             await response.OutputStream.WriteAsync(bodyPrefix, token);
 
                         if (result != null)
-                            defaultAction(request, result, response);
+                            await defaultAction(request, result, response.OutputStream);
 
                         if (bodySuffix != null)
                             await response.OutputStream.WriteAsync(bodySuffix, token);
@@ -407,14 +407,14 @@ namespace ServiceStack
         public static void WriteError(this IResponse httpRes, IRequest httpReq, object dto, string errorMessage)
         {
             httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, dto.GetType().Name, errorMessage, null,
-                (int)HttpStatusCode.InternalServerError);
+                (int)HttpStatusCode.InternalServerError).Wait();
         }
 
         public static void WriteError(this IResponse httpRes, object dto, string errorMessage)
         {
             var httpReq = httpRes.Request;
             httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, dto.GetType().Name, errorMessage, null,
-                (int)HttpStatusCode.InternalServerError);
+                (int)HttpStatusCode.InternalServerError).Wait();
         }
 
         public static Task WriteError(this IResponse httpRes, Exception ex, int statusCode = 500, string errorMessage = null, string contentType = null)
@@ -435,13 +435,13 @@ namespace ServiceStack
             var req = httpRes.Request;
             var errorDto = ex.ToErrorResponse();
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(MimeTypes.Html);
-            serializer?.Invoke(req, errorDto, httpRes);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(MimeTypes.Html);
+            serializer?.Invoke(req, errorDto, httpRes.OutputStream);
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
             return TypeConstants.EmptyTask;
         }
 
-        public static Task WriteErrorToResponse(this IResponse httpRes, IRequest httpReq,
+        public static async Task WriteErrorToResponse(this IResponse httpRes, IRequest httpReq,
             string contentType, string operationName, string errorMessage, Exception ex, int statusCode)
         {
             if (ex == null)
@@ -451,7 +451,7 @@ namespace ServiceStack
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
             if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
-                return TypeConstants.EmptyTask;
+                return;
 
             if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
                 && contentType != null && contentType != httpRes.ContentType)
@@ -474,12 +474,11 @@ namespace ServiceStack
 
             httpRes.ApplyGlobalResponseHeaders();
 
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
-            serializer?.Invoke(httpReq, errorDto, httpRes);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
+            if (serializer != null)
+                await serializer(httpReq, errorDto, httpRes.OutputStream);
 
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
-
-            return TypeConstants.EmptyTask;
         }
 
         private static bool HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
@@ -509,8 +508,7 @@ namespace ServiceStack
             if (HostContext.DebugMode)
             {
 #if !NETSTANDARD1_6
-                var compileEx = ex as HttpCompileException;
-                if (compileEx != null && compileEx.Results.Errors.HasErrors)
+                if (ex is HttpCompileException compileEx && compileEx.Results.Errors.HasErrors)
                 {
                     errors = new List<ResponseError>();
                     foreach (var err in compileEx.Results.Errors)

@@ -485,7 +485,7 @@ namespace ServiceStack
 
             //httpRes.WriteToResponse always calls .Close in it's finally statement so 
             //if there is a problem writing to response, by now it will be closed
-            httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
+            httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode).Wait();
         }
 
         public virtual void OnStartupException(Exception ex)

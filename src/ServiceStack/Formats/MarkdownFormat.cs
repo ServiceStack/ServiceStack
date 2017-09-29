@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -152,8 +153,8 @@ namespace ServiceStack.Formats
                 };
             });
 
-            appHost.ContentTypes.Register(MimeTypes.MarkdownText, SerializeToStream, null);
-            appHost.ContentTypes.Register(MimeTypes.PlainText, SerializeToStream, null);
+            appHost.ContentTypes.RegisterAsync(MimeTypes.MarkdownText, SerializeToStreamAsync, null);
+            appHost.ContentTypes.RegisterAsync(MimeTypes.PlainText, SerializeToStreamAsync, null);
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.MarkdownText.ToContentFormat());
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.PlainText.ToContentFormat());
         }
@@ -167,16 +168,18 @@ namespace ServiceStack.Formats
             return markdownPage;
         }
 
-        public bool ProcessRequest(IRequest req, IResponse res, object dto)
+        public Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream)
         {
             MarkdownPage markdownPage;
             if ((markdownPage = GetViewPageByResponse(dto, req)) == null)
-                return false;
+                return TypeConstants.FalseTask;
 
             if (CheckLastModifiedForChanges)
                 ReloadModifiedPageAndTemplates(markdownPage);
 
-            return ProcessMarkdownPage(req, markdownPage, dto, res);
+            return ProcessMarkdownPage(req, markdownPage, dto, outputStream)
+                ? TypeConstants.TrueTask
+                : TypeConstants.FalseTask;
         }
 
         public bool HasView(string viewName, IRequest httpReq = null)
@@ -217,14 +220,15 @@ namespace ServiceStack.Formats
             return view;
         }
 
-        public bool ProcessMarkdownPage(IRequest httpReq, MarkdownPage markdownPage, object dto, IResponse httpRes)
+        public bool ProcessMarkdownPage(IRequest httpReq, MarkdownPage markdownPage, object dto, Stream outputStream)
         {
+            var httpRes = httpReq.Response;
             httpRes.AddHeaderLastModified(markdownPage.GetLastModified());
 
             var renderInTemplate = true;
             var renderHtml = true;
             string format;
-            if (httpReq != null && (format = httpReq.QueryString[Keywords.Format]) != null)
+            if ((format = httpReq.QueryString[Keywords.Format]) != null)
             {
                 renderHtml = !(format.StartsWithIgnoreCase("markdown")
                     || format.StartsWithIgnoreCase("text")
@@ -240,7 +244,7 @@ namespace ServiceStack.Formats
             var template = httpReq.GetTemplate();
             var markup = RenderDynamicPage(markdownPage, markdownPage.Name, dto, renderHtml, renderInTemplate, template);
             var markupBytes = markup.ToUtf8Bytes();
-            httpRes.OutputStream.Write(markupBytes, 0, markupBytes.Length);
+            outputStream.Write(markupBytes, 0, markupBytes.Length);
 
             return true;
         }
@@ -305,11 +309,10 @@ namespace ServiceStack.Formats
         /// <summary>
         /// Render Markdown for text/markdown and text/plain ContentTypes
         /// </summary>
-        public void SerializeToStream(IRequest request, object response, Stream stream)
+        public async Task SerializeToStreamAsync(IRequest request, object response, Stream stream)
         {
             var dto = response.GetDto();
-            var text = dto as string;
-            if (text != null)
+            if (dto is string text)
             {
                 var bytes = text.ToUtf8Bytes();
                 stream.Write(bytes, 0, bytes.Length);
@@ -324,7 +327,7 @@ namespace ServiceStack.Formats
                     var html = HostContext.GetPlugin<HtmlFormat>();
                     if (html != null)
                     {
-                        html.SerializeToStream(request, response, request.Response);
+                        await html.SerializeToStreamAsync(request, response, request.Response.OutputStream);
                         return;
                     }
                 }
@@ -337,7 +340,7 @@ namespace ServiceStack.Formats
             const bool renderHtml = false; //i.e. render Markdown
             var markup = RenderStaticPage(markdownPage, renderHtml);
             var markupBytes = markup.ToUtf8Bytes();
-            stream.Write(markupBytes, 0, markupBytes.Length);
+            await stream.WriteAsync(markupBytes, 0, markupBytes.Length);
         }
 
         public string GetPageName(object dto, IRequest req)

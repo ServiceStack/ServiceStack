@@ -43,7 +43,7 @@ namespace ServiceStack.Support.Markdown
             if (model == null)
                 httpReq.Items.TryGetValue("Model", out model);
 
-            MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes);
+            MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes.OutputStream);
         }
 
         public override object CreateRequest(IRequest request, string operationName)

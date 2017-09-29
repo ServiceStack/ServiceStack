@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Html
@@ -7,6 +8,6 @@ namespace ServiceStack.Html
     {
         bool HasView(string viewName, IRequest httpReq = null);
         string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null);
-        bool ProcessRequest(IRequest req, IResponse res, object dto);
+        Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream);
     }
 }

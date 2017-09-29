@@ -285,15 +285,14 @@ namespace ServiceStack.Host.HttpListener
             var httpRes = httpReq.Response;
             var contentType = httpReq.ResponseContentType;
 
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             if (serializer == null)
             {
                 contentType = HostContext.Config.DefaultContentType;
-                serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+                serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             }
 
-            var httpError = ex as IHttpError;
-            if (httpError != null)
+            if (ex is IHttpError httpError)
             {
                 httpRes.StatusCode = httpError.Status;
                 httpRes.StatusDescription = httpError.StatusDescription;
@@ -305,7 +304,7 @@ namespace ServiceStack.Host.HttpListener
 
             httpRes.ContentType = contentType;
 
-            serializer(httpReq, errorResponse, httpRes);
+            serializer(httpReq, errorResponse, httpRes.OutputStream).Wait();
 
             httpRes.Close();
         }

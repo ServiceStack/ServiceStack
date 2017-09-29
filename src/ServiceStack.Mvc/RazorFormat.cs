@@ -117,7 +117,7 @@ namespace ServiceStack.Mvc
 
         private const string RenderException = "RazorFormat.Exception";
 
-        public bool ProcessRequest(IRequest req, IResponse res, object dto)
+        public async Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream)
         {
             if (req.Dto == null || dto == null)
                 return false;
@@ -158,7 +158,7 @@ namespace ServiceStack.Mvc
             if (viewData == null)
                 viewData = CreateViewData(dto);
 
-            RenderView(req, res, viewData, viewEngineResult.View, req.GetTemplate());
+            await RenderView(req, outputStream, viewData, viewEngineResult.View, req.GetTemplate());
 
             return true;
         }
@@ -190,7 +190,7 @@ namespace ServiceStack.Mvc
             };
         }
 
-        internal void RenderView(IRequest req, IResponse res, ViewDataDictionary viewData, IView view, string layout=null)
+        internal async Task RenderView(IRequest req, Stream stream, ViewDataDictionary viewData, IView view, string layout=null)
         {
             var razorView = view as RazorView;
             try
@@ -199,8 +199,6 @@ namespace ServiceStack.Mvc
                     ((HttpRequest) req.OriginalRequest).HttpContext,
                     new RouteData(),
                     new ActionDescriptor());
-
-                var stream = res.OutputStream;
 
                 var sw = new StreamWriter(stream);
                 {
@@ -218,7 +216,7 @@ namespace ServiceStack.Mvc
                         sw,
                         new HtmlHelperOptions());
 
-                    view.RenderAsync(viewContext).GetAwaiter().GetResult();
+                    await view.RenderAsync(viewContext);
 
                     sw.Flush();
 
@@ -236,7 +234,7 @@ namespace ServiceStack.Mvc
             {
                 req.Items[RenderException] = ex;
                 //Can't set HTTP Headers which are already written at this point
-                req.Response.WriteErrorBody(ex);
+                await req.Response.WriteErrorBody(ex);
             }
         }
     }
@@ -259,7 +257,7 @@ namespace ServiceStack.Mvc
             this.Model = model;
         }
 
-        public override void ProcessRequest(IRequest req, IResponse res, string operationName)
+        public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             var format = HostContext.GetPlugin<RazorFormat>();
             try
@@ -275,16 +273,16 @@ namespace ServiceStack.Mvc
                     view = viewResult?.View ?? throw new ArgumentException("Could not find Razor Page at " + PathInfo);
                 }
 
-                RenderView(format, req, res, view);
+                await RenderView(format, req, res, view);
             }
             catch (Exception ex)
             {
                 //Can't set HTTP Headers which are already written at this point
-                req.Response.WriteErrorBody(ex);
+                await req.Response.WriteErrorBody(ex);
             }
         }
 
-        private void RenderView(RazorFormat format, IRequest req, IResponse res, IView view)
+        private async Task RenderView(RazorFormat format, IRequest req, IResponse res, IView view)
         {
             res.ContentType = MimeTypes.Html;
             var model = Model;
@@ -332,7 +330,7 @@ namespace ServiceStack.Mvc
                 }
             }
 
-            format.RenderView(req, res, viewData, view);
+            await format.RenderView(req, res.OutputStream, viewData, view);
         }
 
         public override object CreateRequest(IRequest request, string operationName)
