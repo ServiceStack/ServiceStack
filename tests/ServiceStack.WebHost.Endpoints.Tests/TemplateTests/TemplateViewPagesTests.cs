@@ -34,6 +34,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         public string Name { get; set; }
     }
+    
+    [Route("/view-pages-custom/{Name}")]
+    public class TemplateViewPageCustom : IReturn<TemplateViewPageCustom>
+    {
+        public string Name { get; set; }
+        public string View { get; set; }
+        public string Layout { get; set; }
+    }
 
     public class TemplateViewPagesServices : Service
     {
@@ -41,6 +49,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public object Any(TemplateViewPageRequest request) => request;
         public object Any(TemplateViewPageNested request) => request;
         public object Any(TemplateViewPageNestedSub request) => request;
+        public object Any(TemplateViewPageCustom request) => new HttpResult(request)
+        {
+            View = request.View,
+            Template = request.Layout,
+        };
     }
     
     public class TemplateViewPagesTests
@@ -66,6 +79,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 files.WriteFile("_layout.html", @"
 <html>
 <body id=root>
+{{ page }}
+{{ htmlErrorDebug }}
+</body>
+</html>
+");
+                
+                files.WriteFile("alt-layout.html", @"
+<html>
+<body id=alt-root>
 {{ page }}
 {{ htmlErrorDebug }}
 </body>
@@ -203,6 +225,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </body>
 </html>
 ".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Does_render_TemplateViewPageCustom_with_custom_view()
+        {
+            var html = BaseUrl.CombineWith("view-pages-custom", "test")
+                .AddQueryParam("view", "TemplateViewPageRequest")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=views>
+
+<h1>TemplateViewPageRequest</h1>
+<p>Name: test</p>
+
+
+</body>
+</html>
+".NormalizeNewLines()));
+            
+            html = BaseUrl.CombineWith("view-pages-custom", "test")
+                .AddQueryParam("view", "TemplateViewPageResponse")
+                .AddQueryParam("layout", "alt-layout")
+                .GetStringFromUrl(accept: MimeTypes.Html);
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
+<html>
+<body id=alt-root>
+
+<h1>TemplateViewPageResponse</h1>
+<p>Name: test</p>
+
+
+</body>
+</html>
+".NormalizeNewLines()));
+            
         }
     }
 }
