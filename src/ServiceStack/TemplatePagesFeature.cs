@@ -147,6 +147,9 @@ namespace ServiceStack
             var files = viewsDir.GetAllMatchingFiles("*." + htmlFormat.Extension);
             foreach (var file in files)
             {
+                if (file.Name.StartsWith("_")) // _layout.html or _partial.html which can have duplicate names
+                    continue;
+                
                 var viewName = file.Name.WithoutExtension();
                 if (viewPagesMap.TryGetValue(viewName, out var existingFile))
                     throw new NotSupportedException($"Multiple views found named '{file.Name}' in '{file.VirtualPath}' and '{existingFile.VirtualPath}'");
@@ -232,9 +235,15 @@ namespace ServiceStack
             if (codePage == null && viewPage == null)
                 return false;
 
-            var layoutPage = req.GetItem(Keywords.Template) is string layoutName
-                ? req.GetPage(layoutName)
-                : null;
+            if (codePage != null)
+                codePage.Init();
+            else
+                viewPage.Init().Wait();
+
+            var layoutName = req.GetItem(Keywords.Template) as string;
+            var layoutPage = codePage != null 
+                ? Pages.ResolveLayoutPage(codePage, layoutName)
+                : Pages.ResolveLayoutPage(viewPage, layoutName);
             
             var handler = codePage != null
                 ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { Model = dto }

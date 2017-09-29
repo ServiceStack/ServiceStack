@@ -71,6 +71,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </body>
 </html>
 ");
+                
+                files.WriteFile("Views/_layout.html", @"
+<html>
+<body id=views>
+{{ page }}
+{{ htmlErrorDebug }}
+</body>
+</html>
+");
 
                 files.WriteFile("Views/TemplateViewPageRequest.html", @"
 <h1>TemplateViewPageRequest</h1>
@@ -96,6 +105,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 <h1>TemplateViewPageNestedSub</h1>
 <p>Name: {{ Name }}</p>
 ");
+                files.WriteFile("Views/nested/sub/_layout.html", @"
+<html>
+<body id=views-nested-sub>
+{{ page }}
+{{ htmlErrorDebug }}
+</body>
+</html>
+");
+
             }
         }
         public static string BaseUrl = Config.ListeningOn;
@@ -111,7 +129,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-
         [Test]
         public void Does_render_TemplateViewPageResponse_on_HTML_requests()
         {
@@ -120,7 +137,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
-<body id=root>
+<body id=views>
 
 <h1>TemplateViewPageResponse</h1>
 <p>Name: test</p>
@@ -139,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
-<body id=root>
+<body id=views>
 
 <h1>TemplateViewPageRequest</h1>
 <p>Name: test</p>
@@ -158,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
-<body id=root>
+<body id=views>
 
 <h1>TemplateViewPageNested</h1>
 <p>Name: test</p>
@@ -177,7 +194,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
-<body id=root>
+<body id=views-nested-sub>
 
 <h1>TemplateViewPageNestedSub</h1>
 <p>Name: test</p>
