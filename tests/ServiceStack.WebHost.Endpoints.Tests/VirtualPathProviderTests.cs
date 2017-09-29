@@ -307,6 +307,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.DeleteFile("original.bin");
         }
 
+        [Test]
+        public void Does_create_file_in_nested_folders_with_correct_parent_directories()
+        {
+            var vfs = GetPathProvider();
+            
+            vfs.WriteFile("a/b/c/file.txt", "file");
+            var file = vfs.GetFile("a/b/c/file.txt");
+            Assert.That(file != null);
+
+            Assert.That(file.Directory.VirtualPath, Is.EqualTo("a/b/c"));
+            Assert.That(file.Directory.Name, Is.EqualTo("c"));
+            Assert.That(file.Directory.ParentDirectory.VirtualPath, Is.EqualTo("a/b"));
+            Assert.That(file.Directory.ParentDirectory.Name, Is.EqualTo("b"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.VirtualPath, Is.EqualTo("a"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.Name, Is.EqualTo("a"));
+            Assert.That(file.Directory.ParentDirectory.ParentDirectory.ParentDirectory.IsRoot);
+            
+            vfs.DeleteFile("a/b/c/file.txt");
+        }
+
         public void AssertContents(IVirtualDirectory dir,
             string[] expectedFilePaths, string[] expectedDirPaths)
         {

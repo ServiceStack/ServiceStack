@@ -45,14 +45,16 @@ namespace ServiceStack.VirtualPath
             return files.FirstOrDefault(x => x.FilePath == filePath);
         }
 
-        public override IVirtualDirectory GetDirectory(string virtualPath)
+        public override IVirtualDirectory GetDirectory(string virtualPath) => GetDirectory(virtualPath, forceDir: false);
+
+        public IVirtualDirectory GetDirectory(string virtualPath, bool forceDir)
         {
             var dirPath = SanitizePath(virtualPath);
             if (string.IsNullOrEmpty(dirPath))
                 return rootDirectory;
             
             var dir = new InMemoryVirtualDirectory(this, dirPath, GetParentDirectory(dirPath));
-            return dir.Files.Any()
+            return forceDir || dir.Files.Any()
                 ? dir
                 : null;
         }
@@ -67,7 +69,7 @@ namespace ServiceStack.VirtualPath
             {
                 var parentDir = dirPath.Substring(0, lastDirPos);
                 if (!string.IsNullOrEmpty(parentDir))
-                    GetDirectory(parentDir);
+                    return GetDirectory(parentDir, forceDir:true);
             }
 
             return this.rootDirectory;
