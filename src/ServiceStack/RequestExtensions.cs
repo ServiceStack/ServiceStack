@@ -67,7 +67,10 @@ namespace ServiceStack
         /// <returns></returns>
         public static object ToOptimizedResult(this IRequest request, object dto)
         {
-            dto = dto.GetDto();
+            var httpResult = dto as IHttpResult;
+            if (httpResult != null)
+                dto = httpResult.Response;
+            
             request.Response.Dto = dto;
 
             var compressionType = request.GetCompressionType();
@@ -77,8 +80,11 @@ namespace ServiceStack
             using (var ms = new MemoryStream())
             using (var compressionStream = GetCompressionStream(ms, compressionType))
             {
-                HostContext.ContentTypes.SerializeToStream(request, dto, compressionStream);
-                compressionStream.Close();
+                using (httpResult?.ResultScope?.Invoke())
+                {
+                    HostContext.ContentTypes.SerializeToStream(request, dto, compressionStream);
+                    compressionStream.Close();
+                }
 
                 var compressedBytes = ms.ToArray();
                 return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)

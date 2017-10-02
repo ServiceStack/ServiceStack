@@ -37,8 +37,7 @@ namespace ServiceStack
         public static TResponse GetDto<TResponse>(this object response) where TResponse : class
         {
             if (response == null) return default(TResponse);
-            var httpResult = response as IHttpResult;
-            return (httpResult != null ? httpResult.Response : response) as TResponse;
+            return (response is IHttpResult httpResult ? httpResult.Response : response) as TResponse;
         }
 
         /// <summary>

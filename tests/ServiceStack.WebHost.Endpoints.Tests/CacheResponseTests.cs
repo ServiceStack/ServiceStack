@@ -100,6 +100,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    [Route("/cache/custom-json/{Id}")]
+    public class CacheCustomJson : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
     public class CacheResponseServices : Service
     {
         [CacheResponse(Duration = 5000)]
@@ -161,8 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [CacheResponse(Duration = 10)]
         public object Any(ServerCustomCacheKey request)
         {
-            var cacheInfo = Request.GetItem(Keywords.CacheInfo) as CacheInfo;
-            if (cacheInfo != null)
+            if (Request.GetItem(Keywords.CacheInfo) is CacheInfo cacheInfo)
             {
                 cacheInfo.KeyBase += "::flag=" + (ServerCustomCacheKey.Count % 2 == 0);
                 if (Request.HandleValidCache(cacheInfo))
@@ -177,6 +185,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(CacheAlwaysThrows request)
         {
             throw new Exception(request.Message);
+        }
+
+        [CacheResponse(Duration = 10)]
+        public object Any(CacheCustomJson request)
+        {
+            Interlocked.Increment(ref CacheCustomJson.Count);
+            return new HttpResult(request)
+            {
+                ResultScope = () => JsConfig.With(emitCamelCaseNames:true, includeNullValues:true)
+            };
         }
     }
 
@@ -577,5 +595,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ErrorMessage, Is.EqualTo("bar"));
             }
         }
+
+        [Test]
+        public void Cache_does_use_custom_serialization()
+        {
+            var json = Config.ListeningOn.CombineWith("/cache/custom-json/1")
+                .GetJsonFromUrl();
+            
+            Assert.That(json, Is.EqualTo("{\"id\":1,\"value\":null}"));
+        }
+
     }
 }

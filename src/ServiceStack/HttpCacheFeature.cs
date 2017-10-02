@@ -94,13 +94,11 @@ namespace ServiceStack
             var responseBytes = dto as byte[];
             if (responseBytes == null)
             {
-                var rawStr = dto as string;
-                if (rawStr != null)
+                if (dto is string rawStr)
                     responseBytes = rawStr.ToUtf8Bytes();
                 else
                 {
-                    var stream = dto as Stream;
-                    if (stream != null)
+                    if (dto is Stream stream)
                         responseBytes = stream.ReadFully();
                 }
             }
@@ -112,44 +110,47 @@ namespace ServiceStack
             if (response is HttpResult customResult)
             {
                 if (customResult.View != null)
-                    req.Items["View"] = customResult.View;
+                    req.Items[Keywords.View] = customResult.View;
                 if (customResult.Template != null)
-                    req.Items["Template"] = customResult.Template;
+                    req.Items[Keywords.Template] = customResult.Template;
             }
 
-            var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
-            if (responseBytes != null || req.ResponseContentType.IsBinary())
+            using (httpResult?.ResultScope?.Invoke())
             {
-                if (responseBytes == null)
-                    responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
-
-                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
-
-                if (encoding != null)
+                var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
+                if (responseBytes != null || req.ResponseContentType.IsBinary())
                 {
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
-                    responseBytes = responseBytes.CompressBytes(encoding);
-                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    if (responseBytes == null)
+                        responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
+
+                    cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+
+                    if (encoding != null)
+                    {
+                        res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                        responseBytes = responseBytes.CompressBytes(encoding);
+                        cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    }
                 }
-            }
-            else
-            {
-                var serializedDto = req.SerializeToString(dto);
-                if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                else
                 {
-                    var jsonp = req.GetJsonpCallback();
-                    if (jsonp != null)
-                        serializedDto = jsonp + "(" + serializedDto + ")";
-                }
+                    var serializedDto = req.SerializeToString(dto);
+                    if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                    {
+                        var jsonp = req.GetJsonpCallback();
+                        if (jsonp != null)
+                            serializedDto = jsonp + "(" + serializedDto + ")";
+                    }
 
-                responseBytes = serializedDto.ToUtf8Bytes();
-                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+                    responseBytes = serializedDto.ToUtf8Bytes();
+                    cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
 
-                if (encoding != null)
-                {
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
-                    responseBytes = responseBytes.CompressBytes(encoding);
-                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    if (encoding != null)
+                    {
+                        res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                        responseBytes = responseBytes.CompressBytes(encoding);
+                        cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    }
                 }
             }
 
