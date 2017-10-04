@@ -165,8 +165,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 return (req, res, dto) =>
                 {
-                    var asyncDto = dto as TestAsyncFilter;
-                    if (asyncDto != null)
+                    if (dto is TestAsyncFilter asyncDto)
                     {
                         CancelledAt++;
 

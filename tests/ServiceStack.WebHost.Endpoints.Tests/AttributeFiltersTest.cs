@@ -32,10 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             previousCache = Cache;
         }
 
-        public IHasRequestFilter Copy()
-        {
-            return (IHasRequestFilter)this.MemberwiseClone();
-        }
+        public IRequestFilterBase Copy() => (IRequestFilterBase)this.MemberwiseClone();
     }
 
     //Only executed for the provided HTTP methods (GET, POST) 
@@ -89,10 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             previousCache = Cache;
         }
 
-        public IHasResponseFilter Copy()
-        {
-            return (IHasResponseFilter)this.MemberwiseClone();
-        }
+        public IResponseFilterBase Copy() => (IResponseFilterBase)this.MemberwiseClone();
     }
 
     //Only executed for the provided HTTP methods (GET, POST) 
@@ -396,7 +390,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var attrPriorities = attributes.ToList().ConvertAll(x => x.Priority);
             Assert.That(attrPriorities, Is.EquivalentTo(new[] { int.MinValue, -100, -90, -80, 0, 0 }));
 
-            var execOrder = new IHasRequestFilter[attributes.Length];
+            var execOrder = new IRequestFilterBase[attributes.Length];
             var i = 0;
             for (; i < attributes.Length && attributes[i].Priority < 0; i++)
             {

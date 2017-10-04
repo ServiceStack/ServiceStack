@@ -108,8 +108,8 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
-            req.ThrowIfNull("req");
-            res.ThrowIfNull("res");
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (res == null) throw new ArgumentNullException(nameof(res));
 
             if (res.IsClosed)
                 return true;
@@ -138,7 +138,8 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
-                attribute.RequestFilter(req, res, requestDto);
+                if (attribute is IHasRequestFilter filterSync)
+                    filterSync.RequestFilter(req, res, requestDto);
                 Release(attribute);
                 if (res.IsClosed) return res.IsClosed;
             }
@@ -158,7 +159,8 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
-                attribute.RequestFilter(req, res, requestDto);
+                if (attribute is IHasRequestFilter filterSync)
+                    filterSync.RequestFilter(req, res, requestDto);
                 Release(attribute);
                 if (res.IsClosed) return res.IsClosed;
             }
@@ -166,10 +168,10 @@ namespace ServiceStack
             return res.IsClosed;
         }
 
-        public virtual Task ApplyRequestFiltersAsync(IRequest req, IResponse res, object requestDto)
+        public virtual async Task ApplyRequestFiltersAsync(IRequest req, IResponse res, object requestDto)
         {
             if (GlobalRequestFiltersAsync.Count == 0)
-                return TypeConstants.EmptyTask;
+                return;
 
             using (Profiler.Current.Step("Executing Request Filters Async"))
             {
@@ -300,7 +302,8 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.ResponseFilter(req, res, response);
+                    if (attribute is IHasResponseFilter filterSync)
+                        filterSync.ResponseFilter(req, res, response);
                     Release(attribute);
                     if (res.IsClosed) return res.IsClosed;
                 }
@@ -326,7 +329,8 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.ResponseFilter(req, res, response);
+                    if (attribute is IHasResponseFilter filterSync)
+                        filterSync.ResponseFilter(req, res, response);
                     Release(attribute);
                     if (res.IsClosed) return res.IsClosed;
                 }

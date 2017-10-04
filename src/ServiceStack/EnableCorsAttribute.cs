@@ -46,9 +46,6 @@ namespace ServiceStack
                 res.EndRequest();
         }
 
-        public IHasRequestFilter Copy()
-        {
-            return (IHasRequestFilter)MemberwiseClone();
-        }
+        public IRequestFilterBase Copy() => (IRequestFilterBase)MemberwiseClone();
     }
 }

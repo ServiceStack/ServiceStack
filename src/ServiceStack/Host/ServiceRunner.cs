@@ -16,8 +16,8 @@ namespace ServiceStack.Host
         protected readonly IAppHost AppHost;
         protected readonly ActionContext ActionContext;
         protected readonly ActionInvokerFn ServiceAction;
-        protected readonly IHasRequestFilter[] RequestFilters;
-        protected readonly IHasResponseFilter[] ResponseFilters;
+        protected readonly IRequestFilterBase[] RequestFilters;
+        protected readonly IResponseFilterBase[] ResponseFilters;
 
         public ServiceRunner(IAppHost appHost, ActionContext actionContext)
         {
@@ -35,8 +35,7 @@ namespace ServiceStack.Host
         public T ResolveService<T>(IRequest requestContext)
         {
             var service = AppHost.TryResolve<T>();
-            var requiresContext = service as IRequiresRequest;
-            if (requiresContext != null)
+            if (service is IRequiresRequest requiresContext)
             {
                 requiresContext.Request = requestContext;
             }
@@ -81,7 +80,8 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.RequestFilter(req, req.Response, requestDto);
+                        if (attrInstance is IHasRequestFilter filter)
+                            filter.RequestFilter(req, req.Response, requestDto);
                         AppHost.Release(attrInstance);
                         if (req.Response.IsClosed) return null;
                     }
@@ -97,8 +97,7 @@ namespace ServiceStack.Host
                                                       StrictModeCodes.ReturnsValueType);
                 }
 
-                var taskResponse = response as Task;
-                if (taskResponse != null)
+                if (response is Task taskResponse)
                 {
                     if (taskResponse.Status == TaskStatus.Created)
                     {
@@ -129,7 +128,9 @@ namespace ServiceStack.Host
                                 var attrInstance = responseFilter.Copy();
                                 container.AutoWire(attrInstance);
 
-                                attrInstance.ResponseFilter(req, req.Response, response);
+                                if (attrInstance is IHasResponseFilter filter)
+                                    filter.ResponseFilter(req, req.Response, response);
+    
                                 AppHost.Release(attrInstance);
 
                                 if (req.Response.IsClosed)
@@ -145,8 +146,7 @@ namespace ServiceStack.Host
                     LogRequest(req, requestDto, response);
                 }
 
-                var error = response as IHttpError;
-                if (error != null)
+                if (response is IHttpError error)
                 {
                     var ex = (Exception) error;
                     var result = HandleException(req, requestDto, ex);
@@ -165,7 +165,9 @@ namespace ServiceStack.Host
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
 
-                        attrInstance.ResponseFilter(req, req.Response, response);
+                        if (attrInstance is IHasResponseFilter filter)
+                            filter.ResponseFilter(req, req.Response, response);
+
                         AppHost.Release(attrInstance);
 
                         if (req.Response.IsClosed) return null;

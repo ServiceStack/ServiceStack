@@ -40,10 +40,7 @@ namespace ServiceStack
         /// Create a ShallowCopy of this instance.
         /// </summary>
         /// <returns></returns>
-        public virtual IHasResponseFilter Copy()
-        {
-            return (IHasResponseFilter)this.MemberwiseClone();
-        }
+        public virtual IResponseFilterBase Copy() => (IResponseFilterBase)MemberwiseClone();
     }
     
     /// <summary>
@@ -84,9 +81,6 @@ namespace ServiceStack
         /// Create a ShallowCopy of this instance.
         /// </summary>
         /// <returns></returns>
-        public virtual IHasResponseFilterAsync Copy()
-        {
-            return (IHasResponseFilterAsync)this.MemberwiseClone();
-        }
+        public virtual IResponseFilterBase Copy() => (IResponseFilterBase)MemberwiseClone();
     }
 }

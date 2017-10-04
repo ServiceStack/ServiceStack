@@ -8,15 +8,15 @@ namespace ServiceStack.Support.WebHost
 {
     public static class FilterAttributeCache
     {
-        private static Dictionary<Type, IHasRequestFilter[]> requestFilterAttributes
-            = new Dictionary<Type, IHasRequestFilter[]>();
+        private static Dictionary<Type, IRequestFilterBase[]> requestFilterAttributes
+            = new Dictionary<Type, IRequestFilterBase[]>();
 
-        private static Dictionary<Type, IHasResponseFilter[]> responseFilterAttributes
-            = new Dictionary<Type, IHasResponseFilter[]>();
+        private static Dictionary<Type, IResponseFilterBase[]> responseFilterAttributes
+            = new Dictionary<Type, IResponseFilterBase[]>();
 
-        private static IHasRequestFilter[] ShallowCopy(this IHasRequestFilter[] filters)
+        private static IRequestFilterBase[] ShallowCopy(this IRequestFilterBase[] filters)
         {
-            var to = new IHasRequestFilter[filters.Length];
+            var to = new IRequestFilterBase[filters.Length];
             for (var i = 0; i < filters.Length; i++)
             {
                 to[i] = filters[i].Copy();
@@ -24,9 +24,9 @@ namespace ServiceStack.Support.WebHost
             return to;
         }
 
-        private static IHasResponseFilter[] ShallowCopy(this IHasResponseFilter[] filters)
+        private static IResponseFilterBase[] ShallowCopy(this IResponseFilterBase[] filters)
         {
-            var to = new IHasResponseFilter[filters.Length];
+            var to = new IResponseFilterBase[filters.Length];
             for (var i = 0; i < filters.Length; i++)
             {
                 to[i] = filters[i].Copy();
@@ -34,54 +34,54 @@ namespace ServiceStack.Support.WebHost
             return to;
         }
 
-        public static IHasRequestFilter[] GetRequestFilterAttributes(Type requestDtoType)
+        public static IRequestFilterBase[] GetRequestFilterAttributes(Type requestDtoType)
         {
-            IHasRequestFilter[] attrs;
-            if (requestFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
+            if (requestFilterAttributes.TryGetValue(requestDtoType, out var attrs)) 
+                return attrs.ShallowCopy();
 
-            var attributes = requestDtoType.AllAttributes().OfType<IHasRequestFilter>().ToList();
+            var attributes = requestDtoType.AllAttributes().OfType<IRequestFilterBase>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.AllAttributes().OfType<IHasRequestFilter>());
+                attributes.AddRange(serviceType.AllAttributes().OfType<IRequestFilterBase>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
             attrs = attributes.ToArray();
 
-            Dictionary<Type, IHasRequestFilter[]> snapshot, newCache;
+            Dictionary<Type, IRequestFilterBase[]> snapshot, newCache;
             do
             {
                 snapshot = requestFilterAttributes;
-                newCache = new Dictionary<Type, IHasRequestFilter[]>(requestFilterAttributes) { [requestDtoType] = attrs };
+                newCache = new Dictionary<Type, IRequestFilterBase[]>(requestFilterAttributes) { [requestDtoType] = attrs };
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref requestFilterAttributes, newCache, snapshot), snapshot));
 
             return attrs.ShallowCopy();
         }
 
-        public static IHasResponseFilter[] GetResponseFilterAttributes(Type requestDtoType)
+        public static IResponseFilterBase[] GetResponseFilterAttributes(Type requestDtoType)
         {
-            IHasResponseFilter[] attrs;
-            if (responseFilterAttributes.TryGetValue(requestDtoType, out attrs)) return attrs.ShallowCopy();
+            if (responseFilterAttributes.TryGetValue(requestDtoType, out var attrs)) 
+                return attrs.ShallowCopy();
 
-            var attributes = requestDtoType.AllAttributes().OfType<IHasResponseFilter>().ToList();
+            var attributes = requestDtoType.AllAttributes().OfType<IResponseFilterBase>().ToList();
 
             var serviceType = HostContext.Metadata.GetServiceTypeByRequest(requestDtoType);
             if (serviceType != null)
             {
-                attributes.AddRange(serviceType.AllAttributes().OfType<IHasResponseFilter>());
+                attributes.AddRange(serviceType.AllAttributes().OfType<IResponseFilterBase>());
             }
 
             attributes.Sort((x, y) => x.Priority - y.Priority);
             attrs = attributes.ToArray();
 
-            Dictionary<Type, IHasResponseFilter[]> snapshot, newCache;
+            Dictionary<Type, IResponseFilterBase[]> snapshot, newCache;
             do
             {
                 snapshot = responseFilterAttributes;
-                newCache = new Dictionary<Type, IHasResponseFilter[]>(responseFilterAttributes) {
+                newCache = new Dictionary<Type, IResponseFilterBase[]>(responseFilterAttributes) {
                     [requestDtoType] = attrs
                 };
 

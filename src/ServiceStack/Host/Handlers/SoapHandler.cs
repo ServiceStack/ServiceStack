@@ -114,8 +114,7 @@ namespace ServiceStack.Host.Handlers
 
                 httpReq.Dto = request;
 
-                var requiresSoapMessage = request as IRequiresSoapMessage;
-                if (requiresSoapMessage != null)
+                if (request is IRequiresSoapMessage requiresSoapMessage)
                 {
                     requiresSoapMessage.Message = requestMsg;
                 }
@@ -133,8 +132,7 @@ namespace ServiceStack.Host.Handlers
                 httpReq.RequestAttributes |= requestAttributes;
                 var response = ExecuteService(request, httpReq);
 
-                var taskResponse = response as Task;
-                if (taskResponse != null)
+                if (response is Task taskResponse)
                 {
                     taskResponse.Wait();
                     response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];

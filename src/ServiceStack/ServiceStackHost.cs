@@ -699,8 +699,7 @@ namespace ServiceStack
 
             foreach (var plugin in Plugins)
             {
-                var preInitPlugin = plugin as IPostInitPlugin;
-                if (preInitPlugin != null)
+                if (plugin is IPostInitPlugin preInitPlugin)
                 {
                     try
                     {
@@ -720,8 +719,7 @@ namespace ServiceStack
         {
             try
             {
-                var iocAdapterReleases = Container.Adapter as IRelease;
-                if (iocAdapterReleases != null)
+                if (Container.Adapter is IRelease iocAdapterReleases)
                 {
                     iocAdapterReleases.Release(instance);
                 }
