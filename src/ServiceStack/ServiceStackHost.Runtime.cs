@@ -176,90 +176,33 @@ namespace ServiceStack
             using (Profiler.Current.Step("Executing Request Filters Async"))
             {
                 if (!req.IsMultiRequest())
-                    return ApplyRequestFiltersSingleAsync(req, res, requestDto);
+                {
+                    await ApplyRequestFiltersSingleAsync(req, res, requestDto);
+                    return;
+                }
 
                 var dtos = (IEnumerable)requestDto;
-                var enumerator = dtos.GetEnumerator();
-                var tcs = new TaskCompletionSource<object>();
-                tcs.Task.ContinueWith(_ => { using (enumerator as IDisposable) {} }, TaskContinuationOptions.ExecuteSynchronously);
-
-                Action<Task> recursiveBody = null;
-                recursiveBody = t => {
-                    try
-                    {
-                        if (t?.IsCanceled == true)
-                        {
-                            tcs.TrySetCanceled();
-                        }
-                        else if (t?.IsFaulted == true)
-                        {
-                            tcs.TrySetException(t.Exception);
-                        }
-                        else if (enumerator.MoveNext() && !res.IsClosed)
-                        {
-                            ApplyRequestFiltersSingleAsync(req, res, enumerator.Current)
-                                .ContinueWith(recursiveBody, TaskContinuationOptions.ExecuteSynchronously);
-                        }
-                        else
-                        {
-                            tcs.TrySetResult(null);
-                        }
-                    }
-                    catch (Exception exc)
-                    {
-                        tcs.TrySetException(exc);
-                    }
-                };
-
-                recursiveBody(null);
-                return tcs.Task;
+                foreach (var dto in dtos)
+                {
+                    await ApplyRequestFiltersSingleAsync(req, res, dto);
+                    if (res.IsClosed)
+                        return;
+                }
             }
         }
 
-        protected virtual Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
+        protected virtual async Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
         {
-            return IterateAsyncFilters(GlobalRequestFiltersAsync, req, res, requestDto);
+            if (GlobalRequestFiltersAsync.Count == 0)
+                return;
+
+            foreach (var filter in GlobalRequestFiltersAsync)
+            {
+                await filter(req, res, requestDto);
+                if (res.IsClosed)
+                    return;
+            }
         }
-
-        public static Task IterateAsyncFilters(IEnumerable<Func<IRequest, IResponse, object, Task>> asyncIterator, 
-            IRequest req, IResponse res, object dto)
-        {
-            var enumerator = asyncIterator.GetEnumerator();
-            var tcs = new TaskCompletionSource<object>();
-            tcs.Task.ContinueWith(_ => enumerator.Dispose(), TaskContinuationOptions.ExecuteSynchronously);
-
-            Action<Task> recursiveBody = null;
-            recursiveBody = t => {
-                try
-                {
-                    if (t?.IsCanceled == true)
-                    {
-                        tcs.TrySetCanceled();
-                    }
-                    else if (t?.IsFaulted == true)
-                    {
-                        tcs.TrySetException(t.Exception);
-                    }
-                    else if (enumerator.MoveNext() && !res.IsClosed)
-                    {
-                        enumerator.Current(req, res, dto)
-                            .ContinueWith(recursiveBody, TaskContinuationOptions.ExecuteSynchronously);
-                    }
-                    else
-                    {
-                        tcs.TrySetResult(null);
-                    }
-                }
-                catch (Exception exc)
-                {
-                    tcs.TrySetException(exc);
-                }
-            };
-
-            recursiveBody(null);
-            return tcs.Task;
-        }
-
 
         /// <summary>
         /// Applies the response filters. Returns whether or not the request has been handled 
