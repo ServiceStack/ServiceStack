@@ -224,7 +224,8 @@ namespace ServiceStack
             requestContext = requestContext ?? new MockHttpRequest();
             ServiceController.InjectRequestContext(service, requestContext);
             var runner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
-            var response = runner.Execute(requestContext, service, request);
+            var responseTask = runner.ExecuteAsync(requestContext, service, request);
+            var response = responseTask.Result;
             return response;
         }
     }

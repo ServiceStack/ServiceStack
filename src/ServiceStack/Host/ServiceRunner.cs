@@ -67,7 +67,7 @@ namespace ServiceStack.Host
             return response;
         }
 
-        [Obsolete("Implement ExecuteAsync instead")]
+        [Obsolete("Implement ExecuteAsync")]
         public virtual object Execute(IRequest req, object instance, TRequest requestDto)
         {
             return ExecuteAsync(req, instance, requestDto);
