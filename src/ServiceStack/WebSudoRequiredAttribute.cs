@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
 
@@ -16,12 +17,12 @@ namespace ServiceStack
         public WebSudoRequiredAttribute()
             : this(ApplyTo.All) {}
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
-            base.Execute(req, res, requestDto);
+            await base.ExecuteAsync(req, res, requestDto);
             if (res.IsClosed)
                 return;
 

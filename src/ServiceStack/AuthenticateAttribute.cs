@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
 
@@ -11,7 +12,7 @@ namespace ServiceStack
     /// requires authentication.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-    public class AuthenticateAttribute : RequestFilterAttribute
+    public class AuthenticateAttribute : RequestFilterAsyncAttribute
     {
         /// <summary>
         /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
@@ -34,8 +35,7 @@ namespace ServiceStack
         }
 
         public AuthenticateAttribute()
-            : this(ApplyTo.All)
-        { }
+            : this(ApplyTo.All) {}
 
         public AuthenticateAttribute(string provider)
             : this(ApplyTo.All)
@@ -49,7 +49,7 @@ namespace ServiceStack
             this.Provider = provider;
         }
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (AuthenticateService.AuthProviders == null)
                 throw new InvalidOperationException(
@@ -64,7 +64,7 @@ namespace ServiceStack
 
             if (matchingOAuthConfigs.Count == 0)
             {
-                res.WriteError(req, requestDto, $"No OAuth Configs found matching {this.Provider ?? "any"} provider");
+                await res.WriteError(req, requestDto, $"No OAuth Configs found matching {this.Provider ?? "any"} provider");
                 res.EndRequest();
                 return;
             }
@@ -79,9 +79,10 @@ namespace ServiceStack
             var session = req.GetSession();
             if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
             {
-                if (this.DoHtmlRedirectIfConfigured(req, res, true)) return;
+                if (this.DoHtmlRedirectIfConfigured(req, res, true))
+                    return;
 
-                AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
+                await AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
             }
         }
 

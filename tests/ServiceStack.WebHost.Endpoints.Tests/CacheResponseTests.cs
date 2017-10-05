@@ -168,12 +168,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [CacheResponse(Duration = 10)]
-        public object Any(ServerCustomCacheKey request)
+        public async Task<object> Any(ServerCustomCacheKey request)
         {
             if (Request.GetItem(Keywords.CacheInfo) is CacheInfo cacheInfo)
             {
                 cacheInfo.KeyBase += "::flag=" + (ServerCustomCacheKey.Count % 2 == 0);
-                if (Request.HandleValidCache(cacheInfo))
+                if (await Request.HandleValidCache(cacheInfo))
                     return null;
             }
 

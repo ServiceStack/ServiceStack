@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -305,6 +306,12 @@ namespace ServiceStack.Auth
 
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
+        public virtual Task OnFailedAuthenticationAsync(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        {
+            OnFailedAuthentication(session, httpReq, httpRes);
+            return TypeConstants.EmptyTask;
+        }
+
         public virtual void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
@@ -312,19 +319,17 @@ namespace ServiceStack.Auth
             httpRes.EndRequest();
         }
 
-        public static void HandleFailedAuth(IAuthProvider authProvider,
+        public static Task HandleFailedAuth(IAuthProvider authProvider,
             IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             if (authProvider is AuthProvider baseAuthProvider)
-            {
-                baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
-                return;
-            }
+                return baseAuthProvider.OnFailedAuthenticationAsync(session, httpReq, httpRes);
 
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
-
             httpRes.EndRequest();
+
+            return TypeConstants.EmptyTask;
         }
 
         protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)

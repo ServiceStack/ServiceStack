@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -26,10 +27,10 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.GlobalResponseFilters.Add(HandleCacheResponses);
+            appHost.GlobalResponseFiltersAsync.Add(HandleCacheResponses);
         }
 
-        public void HandleCacheResponses(IRequest req, IResponse res, object response)
+        public async Task HandleCacheResponses(IRequest req, IResponse res, object response)
         {
             if (req.IsInProcessRequest())
                 return;
@@ -40,7 +41,7 @@ namespace ServiceStack
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
             if (cacheInfo?.CacheKey != null)
             {
-                if (CacheAndWriteResponse(cacheInfo, req, res, response))
+                if (await CacheAndWriteResponse(cacheInfo, req, res, response))
                     return;
             }
 
@@ -81,7 +82,7 @@ namespace ServiceStack
             }
         }
 
-        private bool CacheAndWriteResponse(CacheInfo cacheInfo, IRequest req, IResponse res, object response)
+        private async Task<bool> CacheAndWriteResponse(CacheInfo cacheInfo, IRequest req, IResponse res, object response)
         {
             var httpResult = response as IHttpResult;
             var dto = httpResult != null ? httpResult.Response : response;
@@ -180,7 +181,7 @@ namespace ServiceStack
                 }
             }
 
-            res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+            await res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
             return true;
         }
 

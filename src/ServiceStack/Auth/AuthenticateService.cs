@@ -132,7 +132,7 @@ namespace ServiceStack.Auth
             {
                 //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
                 //But as AuthenticateService doesn't have [Authenticate] we need to call it manually
-                new AuthenticateAttribute().Execute(base.Request, base.Response, request);
+                new AuthenticateAttribute().ExecuteAsync(base.Request, base.Response, request).Wait();
                 if (base.Response.IsClosed)
                     return null;
             }

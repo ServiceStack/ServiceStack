@@ -85,7 +85,7 @@ namespace ServiceStack.Common.Tests.OAuth
             HostContext.Container.Register(userAuth);
             var httpRes = request.Response;
 
-            requiredRole.Execute(request, request.Response, request.OperationName);
+            requiredRole.ExecuteAsync(request, request.Response, request.OperationName).Wait();
 
             Assert.That(!httpRes.IsClosed);
         }

@@ -239,14 +239,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomAuthenticateAttribute : AuthenticateAttribute
     {
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
             req.Items["TriedMyOwnAuthFirst"] = true; // let's simulate some sort of auth _before_ relaying to base class.
 
-            base.Execute(req, res, requestDto);
+            return base.ExecuteAsync(req, res, requestDto);
         }
     }
 
