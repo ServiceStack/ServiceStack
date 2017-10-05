@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Web;
 using Funq;
 using ServiceStack.Caching;
@@ -100,9 +101,19 @@ namespace ServiceStack
             return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
         }
 
+        public static Task ApplyRequestFiltersAsync(IRequest httpReq, IResponse httpRes, object requestDto)
+        {
+            return AssertAppHost().ApplyRequestFiltersAsync(httpReq, httpRes, requestDto);
+        }
+
         public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
         {
             return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
+        }
+
+        public static Task ApplyResponseFiltersAsync(IRequest httpReq, IResponse httpRes, object response)
+        {
+            return AssertAppHost().ApplyResponseFiltersAsync(httpReq, httpRes, response);
         }
 
         /// <summary>

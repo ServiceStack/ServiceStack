@@ -69,9 +69,6 @@ namespace ServiceStack.Host.Handlers
 
                 var request = httpReq.Dto = CreateRequest(httpReq, operationName);
 
-                if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
-                    return TypeConstants.EmptyTask;
-                
                 return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
                     .Continue(t =>
                     {

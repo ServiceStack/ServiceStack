@@ -81,16 +81,16 @@ namespace ServiceStack.Host
                 {
                     //Potential problems with MONO, using reflection for fallback
                     actionCtx.ServiceAction = (service, request) =>
-                                              mi.Invoke(service, new[] { request });
+                      mi.Invoke(service, new[] { request });
                 }
 
-                var reqFilters = new List<IHasRequestFilter>();
-                var resFilters = new List<IHasResponseFilter>();
+                var reqFilters = new List<IRequestFilterBase>();
+                var resFilters = new List<IResponseFilterBase>();
 
                 foreach (var attr in mi.GetCustomAttributes(true))
                 {
-                    var hasReqFilter = attr as IHasRequestFilter;
-                    var hasResFilter = attr as IHasResponseFilter;
+                    var hasReqFilter = attr as IRequestFilterBase;
+                    var hasResFilter = attr as IResponseFilterBase;
 
                     if (hasReqFilter != null)
                         reqFilters.Add(hasReqFilter);
@@ -152,7 +152,7 @@ namespace ServiceStack.Host
                 : new List<ActionContext>();
         }
 
-        public static void CreateServiceRunnersFor<TRequest>()
+        public static void CreateServiceRunnersFor<TRequest>() //used in ServiceController
         {
             foreach (var actionCtx in GetActionsFor<TRequest>())
             {
@@ -168,14 +168,12 @@ namespace ServiceStack.Host
             var actionName = request.Verb 
                 ?? HttpMethods.Post; //MQ Services
 
-            var overrideVerb = request.GetItem(Keywords.InvokeVerb) as string;
-            if (overrideVerb != null)
+            if (request.GetItem(Keywords.InvokeVerb) is string overrideVerb)
                 actionName = overrideVerb;
 
             var format = request.ResponseContentType.ToContentFormat()?.ToUpper();
 
-            InstanceExecFn action;
-            if (execMap.TryGetValue(ActionContext.Key(actionName + format, requestName), out action) ||
+            if (execMap.TryGetValue(ActionContext.Key(actionName + format, requestName), out var action) ||
                 execMap.TryGetValue(ActionContext.AnyFormatKey(format, requestName), out action) ||
                 execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action) ||
                 execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))

@@ -208,8 +208,7 @@ namespace ServiceStack.Host
             {
                 var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
 
-                var defaultAttr = attr as FallbackRouteAttribute;
-                if (defaultAttr != null)
+                if (attr is FallbackRouteAttribute defaultAttr)
                 {
                     if (appHost.Config.FallbackRestPath != null)
                         throw new NotSupportedException(
@@ -242,8 +241,7 @@ namespace ServiceStack.Host
                 throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' contains invalid chars. " +
                                             "See https://github.com/ServiceStack/ServiceStack/wiki/Routing for info on valid routes.");
 
-            List<RestPath> pathsAtFirstMatch;
-            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out pathsAtFirstMatch))
+            if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out var pathsAtFirstMatch))
             {
                 pathsAtFirstMatch = new List<RestPath>();
                 RestPathMap[restPath.FirstMatchHashKey] = pathsAtFirstMatch;
@@ -330,8 +328,7 @@ namespace ServiceStack.Host
         private readonly Dictionary<Type, List<Type>> serviceExecCache = new Dictionary<Type, List<Type>>();
         public void ResetServiceExecCachesIfNeeded(Type serviceType, Type requestType)
         {
-            List<Type> requestTypes;
-            if (!serviceExecCache.TryGetValue(serviceType, out requestTypes))
+            if (!serviceExecCache.TryGetValue(serviceType, out var requestTypes))
             {
                 var mi = typeof(ServiceExec<>)
                     .MakeGenericType(serviceType)
@@ -425,8 +422,7 @@ namespace ServiceStack.Host
                 finally
                 {
                     //Gets disposed by AppHost or ContainerAdapter if set
-                    var taskResponse = response as Task;
-                    if (taskResponse != null)
+                    if (response is Task taskResponse)
                     {
                         HostContext.Async.ContinueWith(request, taskResponse, task => appHost.Release(service));
                     }
@@ -447,8 +443,7 @@ namespace ServiceStack.Host
         {
             if (req == null) return;
 
-            var serviceRequiresContext = service as IRequiresRequest;
-            if (serviceRequiresContext != null)
+            if (service is IRequiresRequest serviceRequiresContext)
             {
                 serviceRequiresContext.Request = req;
             }
@@ -456,8 +451,7 @@ namespace ServiceStack.Host
 
         public object ApplyResponseFilters(object response, IRequest req)
         {
-            var taskResponse = response as Task;
-            if (taskResponse != null)
+            if (response is Task taskResponse)
             {
                 response = taskResponse.GetResult();
             }
@@ -498,8 +492,7 @@ namespace ServiceStack.Host
 
             var response = Execute(dto.Body, req);
 
-            var taskResponse = response as Task;
-            if (taskResponse != null)
+            if (response is Task taskResponse)
                 response = taskResponse.GetResult();
 
             response = appHost.ApplyResponseConverters(req, response);
@@ -533,7 +526,11 @@ namespace ServiceStack.Host
                 AssertServiceRestrictions(requestType, req.RequestAttributes);
 
             var handlerFn = GetService(requestType);
-            var response = appHost.OnAfterExecute(req, requestDto, handlerFn(req, requestDto));
+            var response = handlerFn(req, requestDto);
+            if (response is Task responseTask)
+                response = responseTask.GetResult();
+
+            response = appHost.OnAfterExecute(req, requestDto, response);
 
             return response;
         }
@@ -575,9 +572,8 @@ namespace ServiceStack.Host
             try
             {
                 req.SetInProcessRequest();
-                
-                string contentType;
-                var restPath = RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out contentType);
+
+                var restPath = RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out _);
                 req.SetRoute(restPath as RestPath);
                 req.OperationName = restPath.RequestType.GetOperationName();
                 var requestDto = RestHandler.CreateRequest(req, restPath);
@@ -622,13 +618,11 @@ namespace ServiceStack.Host
             var handlerFn = GetService(requestType);
             var response = handlerFn(req, requestDto);
 
-            var taskObj = response as Task<object>;
-            if (taskObj != null)
+            if (response is Task<object> taskObj)
             {
                 return HostContext.Async.ContinueWith(req, taskObj, t => 
                 {
-                    var taskArray = t.Result as Task[];
-                    if (taskArray != null)
+                    if (t.Result is Task[] taskArray)
                     {
                         return Task.Factory.ContinueWhenAll(taskArray, tasks =>
                         {
@@ -656,8 +650,7 @@ namespace ServiceStack.Host
 
         public virtual ServiceExecFn GetService(Type requestType)
         {
-            ServiceExecFn handlerFn;
-            if (!requestExecMap.TryGetValue(requestType, out handlerFn))
+            if (!requestExecMap.TryGetValue(requestType, out var handlerFn))
             {
                 if (requestType.IsArray)
                 {
@@ -691,10 +684,8 @@ namespace ServiceStack.Host
                     return firstResponse;
                 }
 
-                var asyncResponse = firstResponse as Task;
-
                 //sync
-                if (asyncResponse == null) 
+                if (!(firstResponse is Task asyncResponse)) 
                 {
                     var ret = firstResponse != null
                         ? (object[])Array.CreateInstance(firstResponse.GetType(), dtosList.Count)
@@ -741,13 +732,15 @@ namespace ServiceStack.Host
                     }
                     return asyncResponses[i];
                 });
-                return HostContext.Async.ContinueWith(req, task, x => {
+                var batchResponse = HostContext.Async.ContinueWith(req, task, x => {
                     if (firstAsyncError != null)
                         return (object)firstAsyncError;
 
                     req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return (object) asyncResponses;
                 }); //return error or completed responses
+
+                return batchResponse;
             };
         }
 
@@ -756,14 +749,11 @@ namespace ServiceStack.Host
             if (!appHost.Config.EnableAccessRestrictions) return;
             if ((RequestAttributes.InProcess & actualAttributes) == RequestAttributes.InProcess) return;
 
-            RestrictAttribute restrictAttr;
-            var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out restrictAttr)
+            var hasNoAccessRestrictions = !requestServiceAttrs.TryGetValue(requestType, out var restrictAttr)
                 || restrictAttr.HasNoAccessRestrictions;
 
             if (hasNoAccessRestrictions)
-            {
                 return;
-            }
 
             var failedScenarios = StringBuilderCache.Allocate();
             foreach (var requiredScenario in restrictAttr.AccessibleToAny)

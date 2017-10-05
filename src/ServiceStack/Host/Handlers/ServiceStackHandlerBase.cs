@@ -64,42 +64,56 @@ namespace ServiceStack.Host.Handlers
                     await taskResponse;
                     var taskResult = taskResponse.GetResult();
 
-                    if (!(taskResult is Task[] taskResults))
+                    var taskResults = taskResult as Task[];
+                    if (taskResults != null)
                     {
-                        if (taskResult is Task subTask)
-                            taskResult = subTask.GetResult();
-
-                        await callback(taskResult);
+                        await HandleAsyncBatchResponse(taskResults, callback);
                         return;
                     }
 
-                    if (taskResults.Length == 0)
-                    {
-                        await callback(TypeConstants.EmptyObjectArray);
-                        return;
-                    }
+                    if (taskResult is Task subTask)
+                        taskResult = subTask.GetResult();
 
-                    var firstResponse = taskResults[0].GetResult();
-                    var batchedResponses = firstResponse != null 
-                        ? (object[])Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
-                        : new object[taskResults.Length];
-
-                    batchedResponses[0] = firstResponse;
-                    for (var i = 1; i < taskResults.Length; i++)
-                    {
-                        batchedResponses[i] = taskResults[i].GetResult();
-                    }
-                    
-                    await callback(batchedResponses);
-                    return;
+                    await callback(taskResult);
                 }
+                else
+                {
+                    var taskResults = response as Task[];
+                    if (taskResults != null)
+                    {
+                        await HandleAsyncBatchResponse(taskResults, callback);
+                        return;
+                    }
 
-                await callback(response);
+                    await callback(response);
+                }
             }
             catch (Exception ex)
             {
                 throw;
             }
+        }
+
+        private static async Task HandleAsyncBatchResponse(Task[] taskResults, Func<object, Task> callback)
+        {
+            if (taskResults.Length == 0)
+            {
+                await callback(TypeConstants.EmptyObjectArray);
+                return;
+            }
+
+            var firstResponse = taskResults[0].GetResult();
+            var batchedResponses = firstResponse != null
+                ? (object[]) Array.CreateInstance(firstResponse.GetType(), taskResults.Length)
+                : new object[taskResults.Length];
+
+            batchedResponses[0] = firstResponse;
+            for (var i = 1; i < taskResults.Length; i++)
+            {
+                batchedResponses[i] = taskResults[i].GetResult();
+            }
+
+            await callback(batchedResponses);
         }
 
         public static object DeserializeHttpRequest(Type operationType, IRequest httpReq, string contentType)

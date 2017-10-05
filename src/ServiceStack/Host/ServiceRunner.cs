@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -66,12 +67,19 @@ namespace ServiceStack.Host
             return response;
         }
 
+        [Obsolete("Implement ExecuteAsync instead")]
         public virtual object Execute(IRequest req, object instance, TRequest requestDto)
+        {
+            return ExecuteAsync(req, instance, requestDto);
+        }
+
+        public virtual async Task<object> ExecuteAsync(IRequest req, object instance, TRequest requestDto)
         {
             try
             {
                 BeforeEachRequest(req, requestDto);
 
+                var res = req.Response;
                 var container = HostContext.Container;
 
                 if (RequestFilters != null)
@@ -80,10 +88,15 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        if (attrInstance is IHasRequestFilter filter)
-                            filter.RequestFilter(req, req.Response, requestDto);
+
+                        if (attrInstance is IHasRequestFilter filterSync)
+                            filterSync.RequestFilter(req, res, requestDto);
+                        else if (attrInstance is IHasRequestFilterAsync filterAsync)
+                            await filterAsync.RequestFilterAsync(req, res, requestDto);
+
                         AppHost.Release(attrInstance);
-                        if (req.Response.IsClosed) return null;
+                        if (res.IsClosed) 
+                            return null;
                     }
                 }
 
@@ -92,59 +105,21 @@ namespace ServiceStack.Host
                 if (HostContext.StrictMode)
                 {
                     if (response != null && response.GetType().IsValueType())
-                        throw new StrictModeException($"'{requestDto.GetType().Name}' Service cannot return Value Types for its Service Responses. " +
-                                                      $"You can embed its '{response.GetType().Name}' return value in a Response DTO or return as raw data in a string or byte[]",
-                                                      StrictModeCodes.ReturnsValueType);
+                        throw new StrictModeException(
+                            $"'{requestDto.GetType().Name}' Service cannot return Value Types for its Service Responses. " +
+                            $"You can embed its '{response.GetType().Name}' return value in a Response DTO or return as raw data in a string or byte[]",
+                            StrictModeCodes.ReturnsValueType);
                 }
 
                 if (response is Task taskResponse)
                 {
                     if (taskResponse.Status == TaskStatus.Created)
-                    {
                         taskResponse.Start();
-                    }
-                    return HostContext.Async.ContinueWith(req, taskResponse, task =>
-                    {
-                        if (task.IsFaulted)
-                        {
-                            var ex = task.Exception.UnwrapIfSingleException();
 
-                            //Async Exception Handling
-                            var result = HandleException(req, requestDto, ex);
-                            if (result == null)
-                                return ex;
-
-                            return result;
-                        }
-
-                        response = task.GetResult();
-                        LogRequest(req, requestDto, response);
-
-                        if (ResponseFilters != null)
-                        {
-                            //Async Exec ResponseFilters
-                            foreach (var responseFilter in ResponseFilters)
-                            {
-                                var attrInstance = responseFilter.Copy();
-                                container.AutoWire(attrInstance);
-
-                                if (attrInstance is IHasResponseFilter filter)
-                                    filter.ResponseFilter(req, req.Response, response);
-    
-                                AppHost.Release(attrInstance);
-
-                                if (req.Response.IsClosed)
-                                    return null;
-                            }
-                        }
-
-                        return response;
-                    });
+                    await taskResponse;
+                    response = taskResponse.GetResult();
                 }
-                else
-                {
-                    LogRequest(req, requestDto, response);
-                }
+                LogRequest(req, requestDto, response);
 
                 if (response is IHttpError error)
                 {
@@ -157,7 +132,6 @@ namespace ServiceStack.Host
                     return result;
                 }
 
-                //Sync Exec ResponseFilters
                 if (ResponseFilters != null)
                 {
                     foreach (var responseFilter in ResponseFilters)
@@ -166,11 +140,14 @@ namespace ServiceStack.Host
                         container.AutoWire(attrInstance);
 
                         if (attrInstance is IHasResponseFilter filter)
-                            filter.ResponseFilter(req, req.Response, response);
+                            filter.ResponseFilter(req, res, response);
+                        else if (attrInstance is IHasResponseFilterAsync filterAsync)
+                            await filterAsync.ResponseFilterAsync(req, res, response);
 
                         AppHost.Release(attrInstance);
 
-                        if (req.Response.IsClosed) return null;
+                        if (res.IsClosed)
+                            return null;
                     }
                 }
 
@@ -207,7 +184,8 @@ namespace ServiceStack.Host
 
         public virtual object Execute(IRequest req, object instance, IMessage<TRequest> request)
         {
-            return Execute(req, instance, request.GetBody());
+            var task = ExecuteAsync(req, instance, request.GetBody());
+            return task.Result;
         }
 
         public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
@@ -225,7 +203,8 @@ namespace ServiceStack.Host
             var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
-                return Execute(requestContext, instance, request);
+                var task = ExecuteAsync(requestContext, instance, request);
+                return task.Result;
             }
 
             //Capture and persist this async req on this Services 'In Queue' 

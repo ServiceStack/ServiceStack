@@ -62,9 +62,19 @@ namespace ServiceStack
             ExecValidators(request).Wait();
 
             var response = HostContext.ServiceController.Execute(request, req);
-            var responseTask = response as Task;
-            if (responseTask != null)
+            if (response is Task responseTask)
                 response = responseTask.GetResult();
+
+            if (response is Task[] batchResponseTasks)
+            {
+                Task.WaitAll(batchResponseTasks);
+                var to = new object[batchResponseTasks.Length];
+                for (int i = 0; i < batchResponseTasks.Length; i++)
+                {
+                    to[i] = batchResponseTasks[i].GetResult();
+                }
+                response = to.ConvertTo<TResponse>();
+            }
 
             return ConvertToResponse<TResponse>(response);
         }
@@ -81,8 +91,7 @@ namespace ServiceStack
             await ExecValidators(request);
 
             var response = await HostContext.ServiceController.ExecuteAsync(request, req, applyFilters: false);
-            var responseTask = response as Task;
-            if (responseTask != null)
+            if (response is Task responseTask)
                 response = responseTask.GetResult();
 
             return ConvertToResponse<TResponse>(response);
@@ -120,8 +129,7 @@ namespace ServiceStack
 
         private TResponse ConvertToResponse<TResponse>(object response)
         {
-            var error = response as HttpError;
-            if (error != null)
+            if (response is HttpError error)
                 throw error.ToWebServiceException();
 
             var responseDto = response.GetResponseDto();

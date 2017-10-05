@@ -98,6 +98,7 @@ namespace ServiceStack
             GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalResponseFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedResponseFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalMessageRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
@@ -364,6 +365,8 @@ namespace ServiceStack
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
+
+        public List<Func<IRequest, IResponse, object, Task>> GlobalResponseFiltersAsync { get; set; }
 
         public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
 

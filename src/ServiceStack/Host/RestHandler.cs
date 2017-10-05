@@ -89,9 +89,6 @@ namespace ServiceStack.Host
 
                 var request = httpReq.Dto = CreateRequest(httpReq, restPath);
 
-                if (appHost.ApplyRequestFilters(httpReq, httpRes, request))
-                    return TypeConstants.EmptyTask;
-
                 return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
                     .Continue(t =>
                     {
@@ -109,21 +106,28 @@ namespace ServiceStack.Host
                         if (httpRes.IsClosed)
                             return TypeConstants.EmptyTask;
 
-                        return HandleResponse(rawResponse, response =>
+                        return HandleResponse(rawResponse, async response =>
                         {
                             UpdateResponseContentType(httpReq, response);
                             response = appHost.ApplyResponseConverters(httpReq, response);
 
-                            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                                return TypeConstants.EmptyTask;
+                            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response);
+                            if (httpRes.IsClosed)
+                                return;
 
                             if (httpReq.ResponseContentType.Contains("jsv") && !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
-                                return WriteDebugResponse(httpRes, response);
+                            {
+                                await WriteDebugResponse(httpRes, response);
+                                return;
+                            }
 
                             if (doJsonp && !(response is CompressedResult))
-                                return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                            {
+                                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                                return;
+                            }
 
-                            return httpRes.WriteToResponse(httpReq, response);
+                            await httpRes.WriteToResponse(httpReq, response);
                         });
                     })
                     .Unwrap()

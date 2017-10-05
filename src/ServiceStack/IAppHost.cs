@@ -97,6 +97,11 @@ namespace ServiceStack
         List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; }
 
         /// <summary>
+        /// Add Async Response Filters for HTTP Responses
+        /// </summary>
+        List<Func<IRequest, IResponse, object, Task>> GlobalResponseFiltersAsync { get; set; }
+
+        /// <summary>
         /// Add Request Filters for MQ/TCP Requests
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }

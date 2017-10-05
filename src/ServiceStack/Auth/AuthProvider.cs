@@ -142,8 +142,7 @@ namespace ServiceStack.Auth
         {
             session.AuthProvider = Provider;
 
-            var userSession = session as AuthUserSession;
-            if (userSession != null)
+            if (session is AuthUserSession userSession)
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
@@ -316,8 +315,7 @@ namespace ServiceStack.Auth
         public static void HandleFailedAuth(IAuthProvider authProvider,
             IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
-            var baseAuthProvider = authProvider as AuthProvider;
-            if (baseAuthProvider != null)
+            if (authProvider is AuthProvider baseAuthProvider)
             {
                 baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
                 return;
@@ -429,11 +427,9 @@ namespace ServiceStack.Auth
         {
             if (!isHtml)
             {
-                var httpRes = failedResult as IHttpResult;
-                if (httpRes != null)
+                if (failedResult is IHttpResult httpRes)
                 {
-                    string location;
-                    if (httpRes.Headers.TryGetValue(HttpHeaders.Location, out location))
+                    if (httpRes.Headers.TryGetValue(HttpHeaders.Location, out var location))
                     {
                         var parts = location.SplitOnLast("f=");
                         if (parts.Length == 2)
@@ -490,8 +486,7 @@ namespace ServiceStack.Auth
 
         public static void SaveSession(this IAuthProvider provider, IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
         {
-            var authProvider = provider as AuthProvider;
-            var persistSession = authProvider == null || authProvider.PersistSession;
+            var persistSession = !(provider is AuthProvider authProvider) || authProvider.PersistSession;
             if (persistSession)
             {
                 authService.SaveSession(session, sessionExpiry);

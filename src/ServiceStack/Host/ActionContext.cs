@@ -15,8 +15,8 @@ namespace ServiceStack.Host
         public Type ServiceType { get; set; }
 
         public ActionInvokerFn ServiceAction { get; set; }
-        public IHasRequestFilter[] RequestFilters { get; set; }
-        public IHasResponseFilter[] ResponseFilters { get; set; }
+        public IRequestFilterBase[] RequestFilters { get; set; }
+        public IResponseFilterBase[] ResponseFilters { get; set; }
 
         public static string Key(string method, string requestDtoName)
         {

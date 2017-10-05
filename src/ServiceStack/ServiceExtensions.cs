@@ -214,8 +214,8 @@ namespace ServiceStack
         {
             var actionCtx = new ActionContext
             {
-                RequestFilters = TypeConstants<IHasRequestFilter>.EmptyArray,
-                ResponseFilters = TypeConstants<IHasResponseFilter>.EmptyArray,
+                RequestFilters = TypeConstants<IRequestFilterBase>.EmptyArray,
+                ResponseFilters = TypeConstants<IResponseFilterBase>.EmptyArray,
                 ServiceType = typeof(TService),
                 RequestType = typeof(TRequest),
                 ServiceAction = (instance, req) => invokeAction(service, request)

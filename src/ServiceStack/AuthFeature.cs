@@ -17,8 +17,6 @@ namespace ServiceStack
 
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
-        public static bool AddUserIdHttpHeader = true;
-
         private readonly Func<IAuthSession> sessionFactory;
         private readonly IAuthProvider[] authProviders;
 
