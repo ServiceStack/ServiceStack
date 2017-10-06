@@ -49,15 +49,5 @@ namespace ServiceStack.Razor
             RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
         }
-
-        public override object CreateRequest(IRequest request, string operationName)
-        {
-            return null;
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            return null;
-        }
     }
 }

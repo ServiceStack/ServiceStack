@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         public override void Configure(Container container)
         {
-            RequestConverters.Add((req, requestDto) => {
+            RequestConverters.Add(async (req, requestDto) => {
                 var encRequest = requestDto as BasicEncryptedMessage;
                 if (encRequest == null)
                     return null;
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 return request;
             });
 
-            ResponseConverters.Add((req, response) => {
+            ResponseConverters.Add(async (req, response) => {
                 if (!req.Items.ContainsKey("_encrypt"))
                     return null;
 

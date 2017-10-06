@@ -45,15 +45,5 @@ namespace ServiceStack.Support.Markdown
 
             MarkdownFormat.ProcessMarkdownPage(httpReq, contentPage, model, httpRes.OutputStream);
         }
-
-        public override object CreateRequest(IRequest request, string operationName)
-        {
-            return null;
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            return null;
-        }
     }
 }

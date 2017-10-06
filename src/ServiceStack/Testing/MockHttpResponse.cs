@@ -58,11 +58,6 @@ namespace ServiceStack.Testing
 
         public object Dto { get; set; }
 
-        public void Write(string text)
-        {
-            this.TextWritten.Append(text);
-        }
-
         public bool UseBufferedStream { get; set; }
 
         public void Close()

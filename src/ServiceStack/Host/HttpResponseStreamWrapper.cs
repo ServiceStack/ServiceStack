@@ -58,12 +58,6 @@ namespace ServiceStack.Host
 
         public object Dto { get; set; }
 
-        public void Write(string text)
-        {
-            var bytes = UTF8EncodingWithoutBom.GetBytes(text);
-            OutputStream.Write(bytes, 0, bytes.Length);
-        }
-
         public bool UseBufferedStream { get; set; }
 
         public void Close()

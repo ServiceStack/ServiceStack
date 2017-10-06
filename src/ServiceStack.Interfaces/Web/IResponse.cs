@@ -42,12 +42,6 @@ namespace ServiceStack.Web
         object Dto { get; set; }
 
         /// <summary>
-        /// Write once to the Response Stream then close it. 
-        /// </summary>
-        /// <param name="text"></param>
-        void Write(string text);
-
-        /// <summary>
         /// Buffer the Response OutputStream so it can be written in 1 batch
         /// </summary>
         bool UseBufferedStream { get; set; }

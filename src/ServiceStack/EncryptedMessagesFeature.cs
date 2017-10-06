@@ -9,6 +9,7 @@ using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Text;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -59,8 +60,8 @@ namespace ServiceStack
 
         public string PrivateKeyXml
         {
-            get { return PrivateKey.Value.FromPrivateRSAParameters(); }
-            set { PrivateKey = value.ToPrivateRSAParameters(); }
+            get => PrivateKey.Value.FromPrivateRSAParameters();
+            set => PrivateKey = value.ToPrivateRSAParameters();
         }
 
         public EncryptedMessagesFeature()
@@ -86,7 +87,7 @@ namespace ServiceStack
                 PrivateKeyModulusMap[Convert.ToBase64String(fallbackKey.Modulus)] = fallbackKey;
             }
 
-            appHost.RequestConverters.Add((req, requestDto) =>
+            appHost.RequestConverters.Add(async (req, requestDto) =>
             {
                 var encRequest = requestDto as EncryptedMessage;
                 if (encRequest == null)
@@ -101,7 +102,7 @@ namespace ServiceStack
                     var privateKey = GetPrivateKey(encRequest.KeyId);
                     if (Equals(privateKey, default(RSAParameters)))
                     {
-                        WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException");
+                        await WriteUnencryptedError(req, HttpError.NotFound(ErrorKeyNotFound.Fmt(encRequest.KeyId, PublicKeyPath)), "KeyNotFoundException");
                         return null;
                     }
 
@@ -168,12 +169,12 @@ namespace ServiceStack
                 }
                 catch (Exception ex)
                 {
-                    WriteEncryptedError(req, cryptKey, authKey, iv, ex, ErrorInvalidMessage);
+                    await WriteEncryptedError(req, cryptKey, authKey, iv, ex, ErrorInvalidMessage);
                     return null;
                 }
             });
 
-            appHost.ResponseConverters.Add((req, response) =>
+            appHost.ResponseConverters.Add(async (req, response) =>
             {
                 object oCryptKey, oAuthKey, oIv;
                 if (!req.Items.TryGetValue(RequestItemsCryptKey, out oCryptKey) ||
@@ -186,7 +187,7 @@ namespace ServiceStack
                 var ex = response as Exception;
                 if (ex != null)
                 {
-                    WriteEncryptedError(req, (byte[])oCryptKey, (byte[])oAuthKey, (byte[])oIv, ex);
+                    await WriteEncryptedError(req, (byte[])oCryptKey, (byte[])oAuthKey, (byte[])oIv, ex);
                     return null;
                 }
 
@@ -219,7 +220,7 @@ namespace ServiceStack
         }
 
         // Encrypted Messaging Errors before keys can be extracted have to be written unencrypted
-        private static void WriteUnencryptedError(IRequest req, Exception ex, string description = null)
+        private static async Task WriteUnencryptedError(IRequest req, Exception ex, string description = null)
         {
             var errorResponse = new ErrorResponse {
                 ResponseStatus = ex.ToResponseStatus()
@@ -230,11 +231,11 @@ namespace ServiceStack
             req.Response.StatusDescription = description ?? (httpError != null ? httpError.ErrorCode : ex.GetType().Name);
 
             req.Response.ContentType = MimeTypes.Json;
-            req.Response.Write(errorResponse.ToJson());
+            await req.Response.WriteAsync(errorResponse.ToJson());
             req.Response.EndRequest();
         }
 
-        public static void WriteEncryptedError(IRequest req, byte[] cryptKey, byte[] authKey, byte[] iv, Exception ex, string description = null)
+        public static async Task WriteEncryptedError(IRequest req, byte[] cryptKey, byte[] authKey, byte[] iv, Exception ex, string description = null)
         {
             var error = new ErrorResponse
             {
@@ -256,7 +257,7 @@ namespace ServiceStack
             };
 
             req.Response.ContentType = MimeTypes.Json;
-            req.Response.Write(errorResponse.ToJson());
+            await req.Response.WriteAsync(errorResponse.ToJson());
             req.Response.EndRequest();
         }
     }

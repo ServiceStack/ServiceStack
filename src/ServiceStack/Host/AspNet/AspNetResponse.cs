@@ -108,11 +108,6 @@ namespace ServiceStack.Host.AspNet
 
         public object Dto { get; set; }
 
-        public void Write(string text)
-        {
-            response.Write(text);
-        }
-
         public void Close()
         {
             this.IsClosed = true;

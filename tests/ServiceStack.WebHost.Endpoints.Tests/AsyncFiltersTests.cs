@@ -173,9 +173,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         if (asyncDto.ReturnAt == pos)
                         {
                             res.ContentType = MimeTypes.Json;
-                            res.Write(asyncDto.ToJson());
-                            res.EndRequest(skipHeaders: true);
-                            return TypeConstants.EmptyTask;
+                            return res.WriteAsync(asyncDto.ToJson())
+                                .ContinueWith(t => res.EndRequest(skipHeaders: true));
                         }
 
                         if (asyncDto.ErrorAt == pos)
@@ -184,8 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         if (asyncDto.DirectErrorAt == pos)
                         {
                             res.ContentType = MimeTypes.Json;
-                            res.WriteError(new ArgumentException("DirectErrorAt#" + pos));
-                            return TypeConstants.EmptyTask;
+                            return res.WriteError(new ArgumentException("DirectErrorAt#" + pos));
                         }
 
                         if (asyncDto.CancelAt == pos)

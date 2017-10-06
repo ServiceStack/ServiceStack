@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.Handlers;
@@ -121,7 +122,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// </summary>
 		public bool IsReusable => true;
 
-	    public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+	    public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
 		{
 			var path = httpReq.PathInfo;
 
@@ -144,7 +145,7 @@ namespace ServiceStack.MiniProfiler.UI
 					break;
 			}
 
-			httpRes.Write(output);
+			return httpRes.WriteAsync(output);
 		}
 
 		/// <summary>

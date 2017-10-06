@@ -74,12 +74,12 @@ namespace ServiceStack
         /// <summary>
         /// Add Request Converter to convert Request DTO's
         /// </summary>
-        List<Func<IRequest, object, object>> RequestConverters { get; }
+        List<Func<IRequest, object, Task<object>>> RequestConverters { get; }
 
         /// <summary>
         /// Add Response Converter to convert Response DTO's
         /// </summary>
-        List<Func<IRequest, object, object>> ResponseConverters { get; }
+        List<Func<IRequest, object, Task<object>>> ResponseConverters { get; }
 
         /// <summary>
         /// Add Request Filters for HTTP Requests

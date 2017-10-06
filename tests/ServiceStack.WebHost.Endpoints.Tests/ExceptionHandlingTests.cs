@@ -221,8 +221,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
                 {
-                    res.Write(string.Format("UncaughtException {0}", ex.GetType().Name));
-                    res.EndRequest(skipHeaders: true);
+                    res.WriteAsync($"UncaughtException {ex.GetType().Name}")
+                       .ContinueWith(t => res.EndRequest(skipHeaders: true));
                 });
 
                 this.ServiceExceptionHandlers.Add((httpReq, request, ex) =>
@@ -231,9 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         throw ex;
 
                     if (request is CaughtException || request is CaughtExceptionAsync)
-                    {
                         return DtoUtils.CreateErrorResponse(request, new ArgumentException("ExceptionCaught"));
-                    }
 
                     return null;
                 });

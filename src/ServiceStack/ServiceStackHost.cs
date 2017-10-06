@@ -92,8 +92,8 @@ namespace ServiceStack
             Routes = new ServiceRoutes(this);
             Metadata = new ServiceMetadata(RestPaths);
             PreRequestFilters = new List<Action<IRequest, IResponse>>();
-            RequestConverters = new List<Func<IRequest, object, object>>();
-            ResponseConverters = new List<Func<IRequest, object, object>>();
+            RequestConverters = new List<Func<IRequest, object, Task<object>>>();
+            ResponseConverters = new List<Func<IRequest, object, Task<object>>>();
             GlobalRequestFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedRequestFilters = new Dictionary<Type, ITypedFilter>();
@@ -106,7 +106,9 @@ namespace ServiceStack
             GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
             GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
             GatewayRequestFilters = new List<Action<IRequest, object>>();
+            GatewayRequestFiltersAsync = new List<Func<IRequest, object, Task>>();
             GatewayResponseFilters = new List<Action<IRequest, object>>();
+            GatewayResponseFiltersAsync = new List<Func<IRequest, object, Task>>();
             ViewEngines = new List<IViewEngine>();
             ServiceExceptionHandlers = new List<HandleServiceExceptionDelegate>();
             UncaughtExceptionHandlers = new List<HandleUncaughtExceptionDelegate>();
@@ -348,15 +350,15 @@ namespace ServiceStack
         /// 
         /// Note one converter could influence the input for the next converter!
         /// </summary>
-        public List<Func<IRequest, object, object>> RequestConverters { get; set; }
+        public List<Func<IRequest, object, Task<object>>> RequestConverters { get; set; }
 
         /// <summary>
         /// Collection of ResponseConverters.
         /// Can be used to convert/change Output Dto
         /// 
-        /// Called directly after response is handled, even before <see cref="ApplyResponseFilters"></see>!
+        /// Called directly after response is handled, even before <see cref="ApplyResponseFiltersAsync"></see>!
         /// </summary>
-        public List<Func<IRequest, object, object>> ResponseConverters { get; set; }
+        public List<Func<IRequest, object, Task<object>>> ResponseConverters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
 
@@ -427,7 +429,11 @@ namespace ServiceStack
 
         public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
 
+        public List<Func<IRequest, object, Task>> GatewayRequestFiltersAsync { get; set; }
+
         public List<Action<IRequest, object>> GatewayResponseFilters { get; set; }
+
+        public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
 
         [Obsolete("Renamed to VirtualFileSources")]
         public IVirtualPathProvider VirtualPathProvider
@@ -892,30 +898,17 @@ namespace ServiceStack
             }
         }
 
-        public virtual object ExecuteService(object requestDto)
-        {
-            return ExecuteService(requestDto, RequestAttributes.None);
-        }
+        public virtual object ExecuteService(object requestDto) => ExecuteService(requestDto, RequestAttributes.None);
 
-        public virtual object ExecuteService(object requestDto, IRequest req)
-        {
-            return ServiceController.Execute(requestDto, req);
-        }
+        public virtual object ExecuteService(object requestDto, IRequest req) => ServiceController.Execute(requestDto, req);
 
-        public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes)
-        {
-            return ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));
-        }
+        public virtual Task<object> ExecuteServiceAsync(object requestDto, IRequest req) => ServiceController.ExecuteAsync(requestDto, req);
 
-        public virtual object ExecuteMessage(IMessage mqMessage)
-        {
-            return ServiceController.ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
-        }
+        public virtual object ExecuteService(object requestDto, RequestAttributes requestAttributes) => ServiceController.Execute(requestDto, new BasicRequest(requestDto, requestAttributes));
 
-        public virtual object ExecuteMessage(IMessage dto, IRequest req)
-        {
-            return ServiceController.ExecuteMessage(dto, req);
-        }
+        public virtual object ExecuteMessage(IMessage mqMessage) => ServiceController.ExecuteMessage(mqMessage, new BasicRequest(mqMessage));
+
+        public virtual object ExecuteMessage(IMessage dto, IRequest req) => ServiceController.ExecuteMessage(dto, req);
 
         public virtual void RegisterService(Type serviceType, params string[] atRestPaths)
         {

@@ -96,19 +96,9 @@ namespace ServiceStack
             return AssertAppHost().ApplyPreRequestFilters(httpReq, httpRes);
         }
 
-        public static bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
-        {
-            return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
-        }
-
         public static Task ApplyRequestFiltersAsync(IRequest httpReq, IResponse httpRes, object requestDto)
         {
             return AssertAppHost().ApplyRequestFiltersAsync(httpReq, httpRes, requestDto);
-        }
-
-        public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
-        {
-            return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
         }
 
         public static Task ApplyResponseFiltersAsync(IRequest httpReq, IResponse httpRes, object response)

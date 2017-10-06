@@ -35,11 +35,11 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
-        public virtual object ApplyRequestConverters(IRequest req, object requestDto)
+        public virtual async Task<object> ApplyRequestConvertersAsync(IRequest req, object requestDto)
         {
             foreach (var converter in RequestConverters)
             {
-                requestDto = converter(req, requestDto) ?? requestDto;
+                requestDto = await converter(req, requestDto) ?? requestDto;
                 if (req.Response.IsClosed)
                     return requestDto;
             }
@@ -47,11 +47,11 @@ namespace ServiceStack
             return requestDto;
         }
 
-        public virtual object ApplyResponseConverters(IRequest req, object responseDto)
+        public virtual async Task<object> ApplyResponseConvertersAsync(IRequest req, object responseDto)
         {
             foreach (var converter in ResponseConverters)
             {
-                responseDto = converter(req, responseDto) ?? responseDto;
+                responseDto = await converter(req, responseDto) ?? responseDto;
                 if (req.Response.IsClosed)
                     return responseDto;
             }
@@ -101,6 +101,7 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Use ApplyRequestFiltersAsync")]
         public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
             ApplyRequestFiltersAsync(req, res, requestDto).Wait();
@@ -193,6 +194,7 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Use ApplyResponseFiltersAsync")]
         public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object response)
         {
             ApplyResponseFiltersAsync(req, res, response).Wait();

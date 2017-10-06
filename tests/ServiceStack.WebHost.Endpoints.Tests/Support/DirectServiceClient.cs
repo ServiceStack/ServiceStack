@@ -43,7 +43,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyRequestFilters<TResponse>(object request)
         {
-            if (HostContext.ApplyRequestFilters(httpReq, httpRes, request))
+            HostContext.ApplyRequestFiltersAsync(httpReq, httpRes, request).Wait();
+            if (httpRes.IsClosed)
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;
@@ -77,7 +78,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyResponseFilters<TResponse>(object response)
         {
-            if (HostContext.ApplyResponseFilters(httpReq, httpRes, response))
+            HostContext.ApplyResponseFiltersAsync(httpReq, httpRes, response).Wait();
+            if (httpRes.IsClosed)
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;

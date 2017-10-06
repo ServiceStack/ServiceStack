@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -27,7 +28,7 @@ namespace ServiceStack.Host.Handlers
             this.bytes = bytes;
         }
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
@@ -37,11 +38,11 @@ namespace ServiceStack.Host.Handlers
             httpRes.ContentType = contentType;
 
             if (textContents != null)
-                httpRes.Write(textContents);
+                await httpRes.WriteAsync(textContents);
             else if (bytes != null)
-                httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+                await httpRes.OutputStream.WriteAsync(bytes, 0, bytes.Length);
 
-            httpRes.Flush();
+            await httpRes.FlushAsync();
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
     }

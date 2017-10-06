@@ -274,16 +274,6 @@ namespace ServiceStack.Razor.Managers
             hasModel.SetModel(model);
         }
 
-        public override object CreateRequest(IRequest request, string operationName)
-        {
-            return null;
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            return null;
-        }
-
         public bool HasView(string viewName, IRequest httpReq = null)
         {
             throw new NotImplementedException();

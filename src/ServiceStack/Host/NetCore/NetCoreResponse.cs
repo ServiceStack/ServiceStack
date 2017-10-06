@@ -78,18 +78,6 @@ namespace ServiceStack.Host.NetCore
             response.Redirect(url);
         }
 
-        public void Write(string text)
-        {
-            var bytes = text.ToUtf8Bytes();
-            if (bytes.Length > 0)
-                hasResponseBody = true;
-            
-            if (Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true)
-                 response.ContentLength = bytes.Length;
-
-            response.Body.Write(bytes, 0, bytes.Length);
-        }
-
         bool closed = false;
 
         public void Close()
@@ -121,8 +109,11 @@ namespace ServiceStack.Host.NetCore
 
         public void SetContentLength(long contentLength)
         {
-            if (contentLength >= 0)
+            if (Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true && contentLength >= 0)
                 response.ContentLength = contentLength;
+            
+            if (contentLength > 0)
+                hasResponseBody = true;
         }
 
         public object OriginalResponse => response;

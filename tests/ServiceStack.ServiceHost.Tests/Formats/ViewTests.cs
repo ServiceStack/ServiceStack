@@ -186,15 +186,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers[HttpHeaders.Location] = url;
             }
 
-            public Stream OutputStream { get { return MemoryStream; } }
+            public Stream OutputStream => MemoryStream;
 
             public object Dto { get; set; }
-
-            public void Write(string text)
-            {
-                var bytes = Encoding.UTF8.GetBytes(text);
-                MemoryStream.Write(bytes, 0, bytes.Length);
-            }
 
             public bool UseBufferedStream { get; set; }
 

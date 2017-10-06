@@ -29,15 +29,6 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
 
         class TestHandler : ServiceStackHandlerBase
         {
-            public override object CreateRequest(IRequest request, string operationName)
-            {
-                throw new NotImplementedException();
-            }
-
-            public override object GetResponse(IRequest httpReq, object request)
-            {
-                throw new NotImplementedException();
-            }
         }
 
         [Test, TestCaseSource(typeof(EndpointHandlerBaseTests), "EndpointExpectations")]

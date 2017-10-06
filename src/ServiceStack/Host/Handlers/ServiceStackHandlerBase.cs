@@ -9,16 +9,29 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack.MiniProfiler;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
+    public interface IRequestHttpHandler
+    {
+        string RequestName { get; }
+
+        Task<object> CreateRequestAsync(IRequest req, string operationName);
+
+        Task<object> GetResponseAsync(IRequest httpReq, object request);
+
+        Task HandleResponse(IRequest httpReq, IResponse httpRes, object response);
+    }
+
     public abstract class ServiceStackHandlerBase : HttpAsyncTaskHandler
     {
         internal static readonly Dictionary<byte[], byte[]> NetworkInterfaceIpv4Addresses = new Dictionary<byte[], byte[]>();
         internal static readonly byte[][] NetworkInterfaceIpv6Addresses = TypeConstants.EmptyByteArrayArray;
+        internal readonly ServiceStackHost appHost = HostContext.AppHost;
 
         static ServiceStackHandlerBase()
         {
@@ -38,9 +51,6 @@ namespace ServiceStack.Host.Handlers
 
         public override bool IsReusable => false;
 
-        public abstract object CreateRequest(IRequest request, string operationName);
-        public abstract object GetResponse(IRequest request, object requestDto);
-
         public void UpdateResponseContentType(IRequest httpReq, object response)
         {
             var httpResult = response as IHttpResult;
@@ -50,57 +60,90 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public async Task HandleResponse(object response, Func<object, Task> callback)
+        public virtual Task<object> GetResponseAsync(IRequest httpReq, object request)
         {
-            try
+            using (Profiler.Current.Step("Execute " + GetType().Name + " Service"))
             {
-                if (response is Task taskResponse)
-                {
-                    if (taskResponse.Status == TaskStatus.Created)
-                    {
-                        taskResponse.Start();
-                    }
-
-                    await taskResponse;
-                    var taskResult = taskResponse.GetResult();
-
-                    var taskResults = taskResult as Task[];
-                    if (taskResults != null)
-                    {
-                        await HandleAsyncBatchResponse(taskResults, callback);
-                        return;
-                    }
-
-                    if (taskResult is Task subTask)
-                        taskResult = subTask.GetResult();
-
-                    await callback(taskResult);
-                }
-                else
-                {
-                    var taskResults = response as Task[];
-                    if (taskResults != null)
-                    {
-                        await HandleAsyncBatchResponse(taskResults, callback);
-                        return;
-                    }
-
-                    await callback(response);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
+                return appHost.ServiceController.ExecuteAsync(request, httpReq);
             }
         }
 
-        private static async Task HandleAsyncBatchResponse(Task[] taskResults, Func<object, Task> callback)
+        public async Task HandleResponse(IRequest httpReq, IResponse httpRes, object response)
         {
-            if (taskResults.Length == 0)
+            if (response is Task taskResponse)
             {
-                await callback(TypeConstants.EmptyObjectArray);
+                if (taskResponse.Status == TaskStatus.Created)
+                {
+                    taskResponse.Start();
+                }
+
+                await taskResponse;
+                var taskResult = taskResponse.GetResult();
+
+                var taskResults = taskResult as Task[];
+                if (taskResults != null)
+                {
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults);
+                    await HandleResponseNext(httpReq, httpRes, batchResponse);
+                    return;
+                }
+
+                if (taskResult is Task subTask)
+                {
+                    await subTask;
+                    taskResult = subTask.GetResult();
+                }
+
+                await HandleResponseNext(httpReq, httpRes, taskResult);
+            }
+            else
+            {
+                var taskResults = response as Task[];
+                if (taskResults != null)
+                {
+                    var batchResponse = await HandleAsyncBatchResponse(taskResults);
+                    await HandleResponseNext(httpReq, httpRes, batchResponse);
+                    return;
+                }
+
+                await HandleResponseNext(httpReq, httpRes, response);
+            }
+        }
+
+        private async Task HandleResponseNext(IRequest httpReq, IResponse httpRes, object response)
+        {
+            var callback = httpReq.GetJsonpCallback();
+            var doJsonp = HostContext.Config.AllowJsonpRequests && !string.IsNullOrEmpty(callback);
+
+            UpdateResponseContentType(httpReq, response);
+            response = await appHost.ApplyResponseConvertersAsync(httpReq, response);
+
+            await appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response);
+            if (httpRes.IsClosed)
+                return;
+
+            if (httpReq.ResponseContentType.Contains("jsv") &&
+                !string.IsNullOrEmpty(httpReq.QueryString[Keywords.Debug]))
+            {
+                await WriteDebugResponse(httpRes, response);
                 return;
             }
+
+            if (doJsonp && !(response is CompressedResult))
+            {
+                await httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
+                return;
+            }
+
+            await httpRes.WriteToResponse(httpReq, response);
+        }
+
+        private static async Task<object[]> HandleAsyncBatchResponse(Task[] taskResults)
+        {
+            if (taskResults.Length == 0)
+                return TypeConstants.EmptyObjectArray;
+
+            await Task.WhenAll(taskResults);
 
             var firstResponse = taskResults[0].GetResult();
             var batchedResponses = firstResponse != null
@@ -113,7 +156,7 @@ namespace ServiceStack.Host.Handlers
                 batchedResponses[i] = taskResults[i].GetResult();
             }
 
-            await callback(batchedResponses);
+            return batchedResponses;
         }
 
         public static object DeserializeHttpRequest(Type operationType, IRequest httpReq, string contentType)
@@ -200,7 +243,7 @@ namespace ServiceStack.Host.Handlers
             {
                 if (!HostContext.HasFeature(feature))
                 {
-                    HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
+                    appHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Feature Not Available");
                     return false;
                 }
             }
@@ -208,7 +251,7 @@ namespace ServiceStack.Host.Handlers
             var format = feature.ToFormat();
             if (!HostContext.Metadata.CanAccess(httpReq, format, operationName))
             {
-                HostContext.AppHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
+                appHost.HandleErrorResponse(httpReq, httpRes, HttpStatusCode.Forbidden, "Service Not Available");
                 return false;
             }
             return true;

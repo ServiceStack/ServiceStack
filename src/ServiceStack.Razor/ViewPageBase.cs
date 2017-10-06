@@ -608,7 +608,7 @@ namespace ServiceStack.Razor
 
         public void ApplyRequestFilters(object requestDto)
         {
-            HostContext.ApplyRequestFilters(base.Request, base.Response, requestDto);
+            HostContext.ApplyRequestFiltersAsync(base.Request, base.Response, requestDto).Wait();
             if (base.Response.IsClosed)
                 throw new StopExecutionException();
         }

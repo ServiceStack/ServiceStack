@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Logging;
@@ -252,6 +253,51 @@ namespace ServiceStack
             return addToQueryString
                 ? url.AddQueryParam(key, val)
                 : url.AddHashParam(key, val);
+        }
+
+        [Obsolete("Use WriteAsync")]
+        public static void Write(this IResponse response, string contents)
+        {
+#if !NETSTANDARD1_6
+            if (response is Host.AspNet.AspNetResponse aspRes)
+            {
+                aspRes.Write(contents);
+                return;
+            }
+#endif
+
+            if (contents == null)
+            {
+                response.SetContentLength(0);
+                response.EndRequest();
+                return;
+            }
+
+            //retain behavior with ASP.NET's response.Write(string)
+            if (response.ContentType?.IndexOf(';') == -1)
+                response.ContentType += ContentFormat.Utf8Suffix;
+
+            var bytes = contents.ToUtf8Bytes();
+            response.SetContentLength(bytes.Length);
+            response.OutputStream.Write(bytes, 0, bytes.Length);
+        }
+
+        public static Task WriteAsync(this IResponse response, string contents)
+        {
+            if (contents == null)
+            {
+                response.SetContentLength(0);
+                response.EndRequest();
+                return TypeConstants.EmptyTask;
+            }
+
+            //retain behavior with ASP.NET's response.Write(string)
+            if (response.ContentType?.IndexOf(';') == -1)
+                response.ContentType += ContentFormat.Utf8Suffix;
+
+            var bytes = contents.ToUtf8Bytes();
+            response.SetContentLength(bytes.Length);
+            return response.OutputStream.WriteAsync(bytes);
         }
     }
 

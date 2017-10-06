@@ -156,7 +156,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
     {
         public object Get(Error request)
         {
-            if (request != null && !string.IsNullOrEmpty(request.Id))
+            if (!string.IsNullOrEmpty(request?.Id))
                 return new ErrorResponse(new Error { Id = "Test" });
 
             return new ErrorCollectionResponse(new List<Error> { new Error { Id = "TestCollection" } });
@@ -180,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             base.Response.ContentType = request.ContentType ?? MimeTypes.PlainText;
 
             if (request.Body != null)
-                base.Response.Write(request.Body);
+                base.Response.WriteAsync(request.Body).Wait();
 
             base.Response.EndRequest(skipHeaders:true);
 

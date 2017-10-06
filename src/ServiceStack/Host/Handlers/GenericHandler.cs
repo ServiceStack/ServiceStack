@@ -7,7 +7,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
 {
-    public class GenericHandler : ServiceStackHandlerBase
+    public class GenericHandler : ServiceStackHandlerBase, IRequestHttpHandler
     {
         public GenericHandler(string contentType, RequestAttributes handlerAttributes, Feature format)
         {
@@ -15,16 +15,14 @@ namespace ServiceStack.Host.Handlers
             this.ContentTypeAttribute = ContentFormat.GetEndpointAttributes(contentType);
             this.HandlerAttributes = handlerAttributes;
             this.format = format;
-            this.appHost = HostContext.AppHost;
         }
 
-        private readonly ServiceStackHost appHost;
         private readonly Feature format;
         public string HandlerContentType { get; set; }
 
         public RequestAttributes ContentTypeAttribute { get; set; }
 
-        public override object CreateRequest(IRequest req, string operationName)
+        public Task<object> CreateRequestAsync(IRequest req, string operationName)
         {
             var requestType = GetOperationType(operationName);
 
@@ -32,20 +30,12 @@ namespace ServiceStack.Host.Handlers
 
             using (Profiler.Current.Step("Deserialize Request"))
             {
-                var requestDto = GetCustomRequestFromBinder(req, requestType) 
+                var requestDto = GetCustomRequestFromBinder(req, requestType)
                     ?? (DeserializeHttpRequest(requestType, req, HandlerContentType)
                     ?? requestType.CreateInstance());
 
-                return appHost.ApplyRequestConverters(req, requestDto);
+                return appHost.ApplyRequestConvertersAsync(req, requestDto);
             }
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            httpReq.RequestAttributes |= HandlerAttributes;
-            var response = ExecuteService(request, httpReq);
-
-            return response;
         }
 
         public override bool RunAsAsync()
@@ -53,77 +43,48 @@ namespace ServiceStack.Host.Handlers
             return true;
         }
 
-        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             try
             {
                 appHost.AssertFeatures(format);
 
                 if (appHost.ApplyPreRequestFilters(httpReq, httpRes))
-                    return TypeConstants.EmptyTask;
+                    return;
 
                 httpReq.ResponseContentType = httpReq.GetQueryStringContentType() ?? this.HandlerContentType;
-                var callback = httpReq.QueryString[Keywords.Callback];
-                var doJsonp = HostContext.Config.AllowJsonpRequests
-                              && !string.IsNullOrEmpty(callback);
 
-                var request = httpReq.Dto = CreateRequest(httpReq, operationName);
+                var request = httpReq.Dto = await CreateRequestAsync(httpReq, operationName);
 
-                return appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request)
-                    .Continue(t =>
-                    {
-                        if (t.IsFaulted)
-                        {
-                            return t;
-                        }
+                await appHost.ApplyRequestFiltersAsync(httpReq, httpRes, request);
+                if (httpRes.IsClosed)
+                    return;
 
-                        if (t.IsCanceled)
-                        {
-                            httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
-                            httpRes.EndRequest();
-                        }
+                httpReq.RequestAttributes |= HandlerAttributes;
 
-                        if (httpRes.IsClosed)
-                            return TypeConstants.EmptyTask;
+                var rawResponse = await GetResponseAsync(httpReq, request);
+                if (httpRes.IsClosed)
+                    return;
 
-                        var rawResponse = GetResponse(httpReq, request);
-
-                        if (httpRes.IsClosed)
-                            return TypeConstants.EmptyTask;
-
-                        return HandleResponse(rawResponse, response =>
-                        {
-                            UpdateResponseContentType(httpReq, response);
-                            response = appHost.ApplyResponseConverters(httpReq, response);
-
-                            if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
-                                return TypeConstants.EmptyTask;
-
-                            if (doJsonp && !(response is CompressedResult))
-                                return httpRes.WriteToResponse(httpReq, response, (callback + "(").ToUtf8Bytes(), ")".ToUtf8Bytes());
-
-                            return httpRes.WriteToResponse(httpReq, response);
-                        });
-                    })
-                    .Unwrap()
-                    .Continue(t =>
-                    {
-                        if (t.IsFaulted)
-                        {
-                            var taskEx = t.Exception.UnwrapIfSingleException();
-                            return !HostContext.Config.WriteErrorsToResponse
-                                ? taskEx.ApplyResponseConverters(httpReq).AsTaskException()
-                                : HandleException(httpReq, httpRes, operationName, taskEx.ApplyResponseConverters(httpReq));
-                        }
-                        return t;
-                    })
-                    .Unwrap();
+                await HandleResponse(httpReq, httpRes, rawResponse);
+            }
+            //sync with RestHandler
+            catch (TaskCanceledException tce)
+            {
+                httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
+                httpRes.EndRequest();
             }
             catch (Exception ex)
             {
-                return !HostContext.Config.WriteErrorsToResponse
-                    ? ex.ApplyResponseConverters(httpReq).AsTaskException()
-                    : HandleException(httpReq, httpRes, operationName, ex.ApplyResponseConverters(httpReq));
+                if (!HostContext.Config.WriteErrorsToResponse)
+                {
+                    await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex);
+                }
+                else
+                {
+                    await HandleException(httpReq, httpRes, operationName, 
+                        await HostContext.AppHost.ApplyResponseConvertersAsync(httpReq, ex) as Exception ?? ex);
+                }
             }
         }
 

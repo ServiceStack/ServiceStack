@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
@@ -198,7 +199,7 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestHandlerInfo LastRequestInfo;
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
@@ -249,8 +250,8 @@ namespace ServiceStack.Host.Handlers
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
-            httpRes.Write(json);
-            httpRes.EndHttpHandlerRequest(skipHeaders:true);
+            return httpRes.WriteAsync(json)
+                .ContinueWith(t => httpRes.EndHttpHandlerRequest(skipHeaders: true));
         }
 
         public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
@@ -333,7 +334,9 @@ namespace ServiceStack.Host.Handlers
                     {"PreRequestFilters", HostContext.AppHost.PreRequestFilters.Count.ToString() },
                     {"RequestBinders", HostContext.AppHost.RequestBinders.Count.ToString() },
                     {"GlobalRequestFilters", HostContext.AppHost.GlobalRequestFilters.Count.ToString() },
+                    {"GlobalRequestFiltersAsync", HostContext.AppHost.GlobalRequestFiltersAsync.Count.ToString() },
                     {"GlobalResponseFilters", HostContext.AppHost.GlobalResponseFilters.Count.ToString() },
+                    {"GlobalResponseFiltersAsync", HostContext.AppHost.GlobalResponseFiltersAsync.Count.ToString() },
                     {"CatchAllHandlers", HostContext.AppHost.CatchAllHandlers.Count.ToString() },
                     {"Plugins", HostContext.AppHost.Plugins.Count.ToString() },
                     {"ViewEngines", HostContext.AppHost.ViewEngines.Count.ToString() },

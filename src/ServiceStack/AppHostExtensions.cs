@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Funq;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -94,11 +95,6 @@ namespace ServiceStack
         public static string Localize(this string text, IRequest request)
         {
             return HostContext.AppHost.ResolveLocalizedString(text, request);
-        }
-
-        public static Exception ApplyResponseConverters(this Exception ex, IRequest httpReq)
-        {
-            return (HostContext.AppHost.ApplyResponseConverters(httpReq, ex) as Exception) ?? ex;
         }
 
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)

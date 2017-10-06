@@ -644,14 +644,14 @@ namespace ServiceStack.Common.Tests
                     formData.ToNameValueCollection()
                 );
 
-            var httpHandler = GetHandler(httpReq);
+            var httpHandler = (IRequestHttpHandler)GetHandler(httpReq);
             httpReq.OperationName = httpHandler.RequestName;
 
-            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            var request = httpHandler.CreateRequestAsync(httpReq, httpHandler.RequestName).Result;
             object response;
             try
             {
-                response = httpHandler.GetResponse(httpReq, request);
+                response = httpHandler.GetResponseAsync(httpReq, request).Result;
             }
             catch (Exception ex)
             {
@@ -670,16 +670,13 @@ namespace ServiceStack.Common.Tests
                     };
                 }
                 var hasResponseStatus = httpRes.Response as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                var status = hasResponseStatus?.ResponseStatus;
+                if (status != null && !status.ErrorCode.IsNullOrEmpty())
                 {
-                    var status = hasResponseStatus.ResponseStatus;
-                    if (status != null && !status.ErrorCode.IsNullOrEmpty())
-                    {
-                        throw new WebServiceException(status.Message) {
-                            StatusCode = (int)HttpStatusCode.InternalServerError,
-                            ResponseDto = httpRes.Response,
-                        };
-                    }
+                    throw new WebServiceException(status.Message) {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                        ResponseDto = httpRes.Response,
+                    };
                 }
 
                 return httpRes.Response;
@@ -726,10 +723,10 @@ namespace ServiceStack.Common.Tests
                     formData.ToNameValueCollection()
                 );
 
-            var httpHandler = GetHandler(httpReq);
+            var httpHandler = (IRequestHttpHandler)GetHandler(httpReq);
             httpReq.OperationName = httpHandler.RequestName;
 
-            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            var request = httpHandler.CreateRequestAsync(httpReq, httpHandler.RequestName).Result;
             return request;
         }
 

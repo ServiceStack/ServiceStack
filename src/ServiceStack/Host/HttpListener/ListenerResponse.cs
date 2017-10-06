@@ -101,21 +101,6 @@ namespace ServiceStack.Host.HttpListener
 
         public object Dto { get; set; }
 
-        public void Write(string text)
-        {
-            try
-            {
-                var bOutput = System.Text.Encoding.UTF8.GetBytes(text);
-                response.ContentLength64 += bOutput.Length; // required to avoid ProtocolViolation
-                OutputStream.Write(bOutput, 0, bOutput.Length);
-            }
-            catch (Exception ex)
-            {
-                Log.Error("Could not WriteTextToResponse: " + ex.Message, ex);
-                throw;
-            }
-        }
-
         public void Close()
         {
             if (!this.IsClosed)
