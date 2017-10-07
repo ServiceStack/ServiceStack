@@ -11,10 +11,7 @@ namespace ServiceStack.Host.Handlers
 
         public CustomActionHandler(Action<IRequest, IResponse> action)
         {
-            if (action == null)
-                throw new NullReferenceException("action");
-
-            Action = action;
+            Action = action ?? throw new NullReferenceException(nameof(action));
             this.RequestName = GetType().Name;
         }
 
@@ -34,7 +31,7 @@ namespace ServiceStack.Host.Handlers
 
         public CustomActionHandlerAsync(Func<IRequest, IResponse, Task> action)
         {
-            Action = action ?? throw new NullReferenceException("action");
+            Action = action ?? throw new NullReferenceException(nameof(action));
             this.RequestName = GetType().Name;
         }
 

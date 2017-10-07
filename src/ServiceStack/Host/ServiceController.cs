@@ -449,7 +449,7 @@ namespace ServiceStack.Host
             }
         }
 
-        [Obsolete("Use ApplyResponseFilters")]
+        [Obsolete("Use ApplyResponseFiltersAsync")]
         public object ApplyResponseFilters(object response, IRequest req)
         {
             return ApplyResponseFiltersAsync(response, req).Result;
