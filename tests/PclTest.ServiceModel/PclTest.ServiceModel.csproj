@@ -39,7 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
