@@ -9,7 +9,7 @@ namespace ServiceStack
     /// Used by <see cref="RequestContext"></see> to track <see cref="Funq.Container"></see> created IDisposable instances.
     /// These instances are tracked and disposed at the end of a request.
     /// </summary>
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     [Serializable]
 #endif
     public class DisposableTracker : IDisposable

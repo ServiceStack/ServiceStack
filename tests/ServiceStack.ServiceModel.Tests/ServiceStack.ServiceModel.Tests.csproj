@@ -21,7 +21,7 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">

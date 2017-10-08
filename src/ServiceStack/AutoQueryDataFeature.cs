@@ -18,7 +18,7 @@ using ServiceStack.Web;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

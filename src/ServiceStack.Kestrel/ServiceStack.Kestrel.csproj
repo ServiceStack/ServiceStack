@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>ServiceStack.Kestrel</AssemblyName>
     <PackageId>ServiceStack.Kestrel</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
@@ -21,17 +20,17 @@
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="1.1.1" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.0.0" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

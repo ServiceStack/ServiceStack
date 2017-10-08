@@ -42,7 +42,7 @@ namespace ServiceStack.FluentValidation
 		/// Finds all the validators in the specified assembly.
 		/// </summary>
 		public static AssemblyScanner FindValidatorsInAssembly(Assembly assembly) {
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
 			return new AssemblyScanner(assembly.ExportedTypes);
 #else
 			return new AssemblyScanner(assembly.GetExportedTypes());
@@ -59,7 +59,7 @@ namespace ServiceStack.FluentValidation
 		private IEnumerable<AssemblyScanResult> Execute() {
 			var openGenericType = typeof(IValidator<>);
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
 			var query = from type in types
 						let interfaces = type.GetTypeInfo().ImplementedInterfaces
 						let genericInterfaces = interfaces.Where(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == openGenericType)

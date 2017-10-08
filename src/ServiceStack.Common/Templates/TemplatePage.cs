@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

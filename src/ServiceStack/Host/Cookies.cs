@@ -3,7 +3,7 @@ using System.Net;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Web;
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
 using Microsoft.AspNetCore.Http;
 #endif
 
@@ -66,7 +66,7 @@ namespace ServiceStack.Host
     {
         private static readonly DateTime Session = DateTime.MinValue;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
@@ -88,7 +88,7 @@ namespace ServiceStack.Host
         }
 #endif
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
         public static CookieOptions ToCookieOptions(this Cookie cookie)
         {
             var cookieOptions = new CookieOptions

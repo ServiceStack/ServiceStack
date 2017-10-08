@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <group targetFramework=".NETStandard1.6">
+      <group targetFramework=".NETStandard2.0">
         <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
         <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
         <dependency id="System.Runtime.Serialization.Primitives" version="[4.3.0, )" />

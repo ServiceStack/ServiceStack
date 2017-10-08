@@ -20,7 +20,7 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <group targetFramework=".NETStandard1.6">
+      <group targetFramework=".NETStandard2.0">
         <dependency id="Microsoft.AspNetCore.Mvc" version="[1.1.2, )" />
         <dependency id="Microsoft.AspNetCore.Mvc.Razor" version="[1.1.2, )" />
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />

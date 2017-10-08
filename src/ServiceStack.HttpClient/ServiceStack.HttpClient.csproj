@@ -1,10 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.1;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
     <PackageId>ServiceStack.HttpClient</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -33,27 +32,21 @@
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.1' ">
-    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
-    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <PackageReference Include="System.ServiceModel.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Text.dll" />
-  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="System.Net.Requests" Version="4.3.0" />
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

@@ -72,37 +72,35 @@
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
-      <InterfaceCoreFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreFiles>
-      <InterfaceCoreLibFiles Include="$(BuildSolutionDir)/lib/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceCoreLibFiles>
+      <InterfaceCoreFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard2.0/ServiceStack.Interfaces.*"></InterfaceCoreFiles>
+      <InterfaceCoreLibFiles Include="$(BuildSolutionDir)/lib/netstandard2.0/ServiceStack.Interfaces.*"></InterfaceCoreLibFiles>
 
-      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.dll"></ServiceStackCoreFiles>
-      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.pdb"></ServiceStackCoreFiles>
-      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard1.6/ServiceStack.xml"></ServiceStackCoreFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard2.0/ServiceStack.dll"></ServiceStackCoreFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard2.0/ServiceStack.pdb"></ServiceStackCoreFiles>
+      <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard2.0/ServiceStack.xml"></ServiceStackCoreFiles>
 
-      <KestrelFiles Include="$(SrcDir)/ServiceStack.Kestrel/bin/$(Configuration)/netstandard1.6/ServiceStack.Kestrel.*"></KestrelFiles>
+      <KestrelFiles Include="$(SrcDir)/ServiceStack.Kestrel/bin/$(Configuration)/netstandard2.0/ServiceStack.Kestrel.*"></KestrelFiles>
 
-      <ServerCoreFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/netstandard1.6/ServiceStack.Server.*"></ServerCoreFiles>
-      <RabbitMqCoreFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/netstandard1.6/ServiceStack.RabbitMq.*"></RabbitMqCoreFiles>
+      <ServerCoreFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/netstandard2.0/ServiceStack.Server.*"></ServerCoreFiles>
+      <RabbitMqCoreFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/netstandard2.0/ServiceStack.RabbitMq.*"></RabbitMqCoreFiles>
 
-      <ClientCoreFiles11 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.1/ServiceStack.Client.*"></ClientCoreFiles11>
-      <ClientCoreFiles16 Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard1.6/ServiceStack.Client.*"></ClientCoreFiles16>
+      <ClientCoreFiles Include="$(SrcDir)/ServiceStack.Client/bin/$(Configuration)/netstandard2.0/ServiceStack.Client.*"></ClientCoreFiles>
 
-      <HttpClientCoreFiles11 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.1/ServiceStack.HttpClient.*"></HttpClientCoreFiles11>
-      <HttpClientCoreFiles16 Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard1.6/ServiceStack.HttpClient.*"></HttpClientCoreFiles16>
+      <HttpClientCoreFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard2.0/ServiceStack.HttpClient.*"></HttpClientCoreFiles>
 
-      <CommonCoreFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/netstandard1.3/ServiceStack.Common.*"></CommonCoreFiles>
+      <CommonCoreFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/netstandard2.0/ServiceStack.Common.*"></CommonCoreFiles>
 
-      <MvcCoreFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/netstandard1.6/ServiceStack.Mvc.*"></MvcCoreFiles>
+      <MvcCoreFiles Include="$(SrcDir)/ServiceStack.Mvc/bin/$(Configuration)/netstandard2.0/ServiceStack.Mvc.*"></MvcCoreFiles>
 
-      <ProtoBufCoreFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/netstandard1.6/ServiceStack.ProtoBuf.*"></ProtoBufCoreFiles>
+      <ProtoBufCoreFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/netstandard2.0/ServiceStack.ProtoBuf.*"></ProtoBufCoreFiles>
 
-      <MsgPackCoreFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/netstandard1.6/ServiceStack.MsgPack.*"></MsgPackCoreFiles>
+      <MsgPackCoreFiles Include="$(SrcDir)/ServiceStack.MsgPack/bin/$(Configuration)/netstandard2.0/ServiceStack.MsgPack.*"></MsgPackCoreFiles>
 
-      <WireCoreFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/netstandard1.6/ServiceStack.Wire.*"></WireCoreFiles>
+      <WireCoreFiles Include="$(SrcDir)/ServiceStack.Wire/bin/$(Configuration)/netstandard2.0/ServiceStack.Wire.*"></WireCoreFiles>
 
-      <SwaggerCoreFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/netstandard1.6/ServiceStack.Api.Swagger.*"></SwaggerCoreFiles>
+      <SwaggerCoreFiles Include="$(SrcDir)/ServiceStack.Api.Swagger/bin/$(Configuration)/netstandard2.0/ServiceStack.Api.Swagger.*"></SwaggerCoreFiles>
 
-      <OpenApiCoreFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/netstandard1.6/ServiceStack.Api.OpenApi.*"></OpenApiCoreFiles>
+      <OpenApiCoreFiles Include="$(SrcDir)/ServiceStack.Api.OpenApi/bin/$(Configuration)/netstandard2.0/ServiceStack.Api.OpenApi.*"></OpenApiCoreFiles>
     </ItemGroup>
 
 
@@ -112,8 +110,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />-->
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1')" />
-    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard1.1" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Core/servicestack.interfaces.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -124,8 +122,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(SwaggerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(SwaggerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/servicestack.api.swagger.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -136,8 +134,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/servicestack.api.openapi.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -148,8 +146,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(MvcCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(MvcCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc.Core/servicestack.mvc.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -160,8 +158,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.MsgPack.Core/servicestack.msgpack.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -172,8 +170,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/servicestack.protobuf.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -184,8 +182,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(WireCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(WireCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Wire.Core/servicestack.wire.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -196,10 +194,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.1')" />
-    <Copy SourceFiles="%(ClientCoreFiles11.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.1" />
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(ClientCoreFiles16.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Core/servicestack.client.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -210,10 +206,8 @@
             Targets="Build"
             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1')" />
-    <Copy SourceFiles="%(HttpClientCoreFiles11.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.1" />
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(HttpClientCoreFiles16.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(HttpClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient.Core/servicestack.httpclient.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -224,8 +218,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard1.3" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard1.3')" />
-    <Copy SourceFiles="%(CommonCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard1.3" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(CommonCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common.Core/servicestack.common.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -236,8 +230,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(ServerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ServerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server.Core/servicestack.server.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -248,8 +242,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/servicestack.rabbitmq.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -260,8 +254,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(ServiceStackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ServiceStackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Core/servicestack.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />
@@ -272,8 +266,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6')" />
-    <Copy SourceFiles="%(KestrelFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard1.6" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(KestrelFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Kestrel/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Kestrel/servicestack.kestrel.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
           LogStandardErrorAsError="true" />

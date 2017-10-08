@@ -24,7 +24,7 @@ namespace ServiceStack.FluentValidation.Results
     /// <summary>
     /// Defines a validation failure
     /// </summary>
-#if !PORTABLE && !PORTABLE40 && !NETSTANDARD1_6
+#if !PORTABLE && !PORTABLE40 && !NETSTANDARD2_0
     [Serializable]
 #endif
 	public class ValidationFailure {

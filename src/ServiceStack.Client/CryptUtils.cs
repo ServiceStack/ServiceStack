@@ -471,7 +471,7 @@ namespace ServiceStack
 
     public static class PlatformRsaUtils
     {
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
         public static void FromXmlString(this RSA rsa, string xml)
         {
             var csp = ExtractFromXml(xml);
@@ -505,7 +505,7 @@ namespace ServiceStack
 
         public static byte[] Encrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Encrypt(bytes, RsaUtils.DoOAEPPadding);
 #else
             return rsa.Encrypt(bytes, RSAEncryptionPadding.OaepSHA1);
@@ -514,7 +514,7 @@ namespace ServiceStack
 
         public static byte[] Decrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Decrypt(bytes, RsaUtils.DoOAEPPadding);
 #else
             return rsa.Decrypt(bytes, RSAEncryptionPadding.OaepSHA1);
@@ -523,7 +523,7 @@ namespace ServiceStack
 
         public static byte[] SignData(this RSA rsa, byte[] bytes, string hashAlgorithm)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).SignData(bytes, hashAlgorithm);
 #else
             return rsa.SignData(bytes, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
@@ -532,7 +532,7 @@ namespace ServiceStack
 
         public static bool VerifyData(this RSA rsa, byte[] bytes, byte[] signature, string hashAlgorithm)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).VerifyData(bytes, hashAlgorithm, signature);
 #else
             return rsa.VerifyData(bytes, signature, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);

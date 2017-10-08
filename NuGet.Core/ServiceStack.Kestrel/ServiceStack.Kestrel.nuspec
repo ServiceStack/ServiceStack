@@ -20,15 +20,15 @@
     <language>en-US</language>
     <copyright>Copyright 2016 Service Stack</copyright>
     <dependencies>
-      <group targetFramework=".NETStandard1.6">
-        <dependency id="Microsoft.AspNetCore.Server.Kestrel" version="[1.1.1, )" />
-        <dependency id="Microsoft.AspNetCore.Http" version="[1.1.1, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[1.1.1, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[1.1.1, )" />
-        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[1.1.1, )" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[1.1.1, )" />
-        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[1.1.1, )" />
-        <dependency id="Microsoft.Extensions.Primitives" version="[1.1.1, )" />
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="Microsoft.AspNetCore.Server.Kestrel" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
         <dependency id="ServiceStack.Core" version="1.0.0" />
         <dependency id="ServiceStack.Interfaces.Core" version="1.0.0" />
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />

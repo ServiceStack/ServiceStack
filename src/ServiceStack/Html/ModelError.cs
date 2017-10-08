@@ -2,7 +2,7 @@
 
 namespace ServiceStack.Html
 {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     [Serializable]
 #endif
 	public class ModelError

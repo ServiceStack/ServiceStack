@@ -12,7 +12,7 @@ namespace ServiceStack.Testing
             : base(typeof (BasicAppHost).GetOperationName(),
                    serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
                    {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                        Assembly.GetExecutingAssembly()
 #else
                        typeof(BasicAppHost).GetTypeInfo().Assembly

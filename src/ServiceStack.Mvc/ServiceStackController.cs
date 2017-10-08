@@ -11,7 +11,7 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Web;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     using ServiceStack.Host.AspNet;
     using System.Web.Mvc;
     using System.Web.Routing;
@@ -94,7 +94,7 @@ namespace ServiceStack.Mvc
                 action = "Unauthorized"
             }));
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static Func<System.Web.Routing.RequestContext, ServiceStackController> CatchAllController;
 
         protected virtual ActionResult InvokeDefaultAction(HttpContextBase httpContext)
@@ -160,7 +160,7 @@ namespace ServiceStack.Mvc
         private IServiceStackProvider serviceStackProvider;
         public virtual IServiceStackProvider ServiceStackProvider => 
             serviceStackProvider ?? (serviceStackProvider = 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             new ServiceStackProvider(new AspNetRequest(base.HttpContext, GetType().Name)));
 #else
             new ServiceStackProvider(new NetCoreRequest(base.HttpContext, GetType().Name)));
@@ -203,7 +203,7 @@ namespace ServiceStack.Mvc
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         [Obsolete("Use Gateway")]
         protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto) => ServiceStackProvider.Execute(requestDto);
 
@@ -233,7 +233,7 @@ namespace ServiceStack.Mvc
             HostContext.AppHost.OnEndRequest(ServiceStackRequest);
     }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     public class ServiceStackJsonResult : JsonResult
     {
         public override void ExecuteResult(ControllerContext context)

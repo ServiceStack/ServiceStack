@@ -33,7 +33,7 @@ namespace ServiceStack.Html
 
 		public static readonly Assembly MsCorLibAssembly = typeof(string).GetAssembly();
         //public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static readonly Assembly SystemWebAssembly = typeof(HttpContext).GetAssembly();
 #endif
 

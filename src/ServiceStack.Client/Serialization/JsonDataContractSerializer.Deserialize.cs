@@ -13,7 +13,7 @@ namespace ServiceStack.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromString(json, returnType);
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -56,7 +56,7 @@ namespace ServiceStack.Serialization
                 return streamSerializer.DeserializeFromStream<T>(stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
@@ -74,7 +74,7 @@ namespace ServiceStack.Serialization
                 return streamSerializer.DeserializeFromStream(type, stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);

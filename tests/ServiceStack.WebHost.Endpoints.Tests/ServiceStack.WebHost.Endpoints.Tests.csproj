@@ -1,8 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
-    <!--<TargetFrameworks>net45</TargetFrameworks>-->
-    <!--<DebugType>portable</DebugType>-->
     <OutputType>Library</OutputType>
     <AssemblyName>ServiceStack.WebHost.Endpoints.Tests</AssemblyName>
     <PackageId>ServiceStack.WebHost.Endpoints.Tests</PackageId>
@@ -48,7 +46,7 @@
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
@@ -75,17 +73,17 @@
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="1.1.2" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="1.1.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Redis.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.Sqlite.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.OrmLite.SqlServer.dll" />
-    <Reference Include="..\..\lib\netstandard1.6\ServiceStack.OrmLite.MySql.dll" />
-    <Reference Include="..\..\lib\netstandard1.6\ServiceStack.Aws.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.Sqlite.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.SqlServer.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.MySql.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Update="TestExistingDir\default.html">

@@ -35,7 +35,7 @@
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>

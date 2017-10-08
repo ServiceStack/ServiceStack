@@ -93,7 +93,7 @@ namespace ServiceStack
         internal static void SleepBackOffMultiplier(this int i)
         {
             var nextTryMs = (2 ^ i) * 50;
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
             System.Threading.Tasks.Task.Delay(nextTryMs).Wait();
 #elif NET45
             System.Threading.Thread.Sleep(nextTryMs);

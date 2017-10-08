@@ -1806,7 +1806,7 @@ namespace ServiceStack
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
-#if NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETSTANDARD1_1 || NETSTANDARD2_0
             var compressionType = webResponse.Headers[HttpHeaders.ContentEncoding];
 #endif
 
@@ -1817,14 +1817,14 @@ namespace ServiceStack
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-#if NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETSTANDARD1_1 || NETSTANDARD2_0
                 return (TResponse)(object)webResponse.GetResponseStream().Decompress(compressionType);
 #else
                 return (TResponse)(object)webResponse.GetResponseStream();
 #endif
             }
 
-#if NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETSTANDARD1_1 || NETSTANDARD2_0
             using (var responseStream = webResponse.GetResponseStream().Decompress(compressionType))
 #else
             using (var responseStream = webResponse.GetResponseStream())

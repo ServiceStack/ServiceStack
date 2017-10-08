@@ -26,7 +26,7 @@ namespace ServiceStack.Metadata
 
             if (httpReq.QueryString["xsd"] != null)
             {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
                 var schemas = schemaSet.Schemas();

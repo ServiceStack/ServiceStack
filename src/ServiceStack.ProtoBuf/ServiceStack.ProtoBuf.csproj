@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net45;netstandard1.6</TargetFrameworks>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <AssemblyName>ServiceStack.ProtoBuf</AssemblyName>
     <PackageId>ServiceStack.ProtoBuf</PackageId>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
@@ -34,18 +34,17 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD1_6</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
   </PropertyGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard1.6' ">
-    <PackageReference Include="Microsoft.NETCore.Portable.Compatibility" Version="1.0.1" />
-    <Reference Include="..\..\lib\netstandard1.1\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard1.3\ServiceStack.Text.dll" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
 
 </Project>

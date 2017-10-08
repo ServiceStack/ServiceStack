@@ -121,7 +121,7 @@ namespace ServiceStack.Html
 		{
 			get
 			{
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 				return !(TypeDescriptor.GetConverter(ModelType).CanConvertFrom(typeof(string)));
 #else
 				return ModelType.GetTypeInfo().IsClass;
@@ -416,7 +416,7 @@ namespace ServiceStack.Html
 
 				modelAccessor = () => vdi.Value;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 if (vdi.PropertyDescriptor != null)
                 {
                     propertyName = vdi.PropertyDescriptor.Name;

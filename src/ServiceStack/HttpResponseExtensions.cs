@@ -31,14 +31,14 @@ namespace ServiceStack
 
             //IsWebDevServer = !Env.IsMono;
             //IsIis = !Env.IsMono;
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             IsHttpListener = HttpContext.Current == null;
 #else
             IsNetCore = true;
 #endif
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static void CloseOutputStream(this HttpResponseBase response)
         {
             try
@@ -81,7 +81,7 @@ namespace ServiceStack
 
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
@@ -100,7 +100,7 @@ namespace ServiceStack
 
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
             if (aspNetRes != null)
             {
@@ -258,7 +258,7 @@ namespace ServiceStack
         [Obsolete("Use WriteAsync")]
         public static void Write(this IResponse response, string contents)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             if (response is Host.AspNet.AspNetResponse aspRes)
             {
                 aspRes.Write(contents);

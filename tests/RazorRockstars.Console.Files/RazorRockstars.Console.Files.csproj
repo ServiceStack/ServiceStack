@@ -85,7 +85,7 @@
       <HintPath>..\..\lib\net45\ServiceStack.Aws.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>

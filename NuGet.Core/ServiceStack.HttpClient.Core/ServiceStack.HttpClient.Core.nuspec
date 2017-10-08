@@ -26,7 +26,7 @@
         <dependency id="ServiceStack.Text.Core" version="1.0.0" />
         <dependency id="ServiceStack.Client.Core" version="1.0.0" />
       </group>
-      <group targetFramework=".NETStandard1.6">
+      <group targetFramework=".NETStandard2.0">
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
         <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
         <dependency id="System.Collections.Specialized" version="[4.3.0, )" />

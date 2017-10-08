@@ -34,7 +34,7 @@
     <RegexTransform Items="@(RegexTransform)" />
 
     <ItemGroup>
-      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/portable40-net40+sl5+win8+wp8+wpa81/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/net45/ServiceStack.Interfaces.*"></InterfaceFiles>
     </ItemGroup>
 
     <!-- Signed .NET 4.5 -->
@@ -42,7 +42,7 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/pcl" />
+    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.Signed.csproj"
              Targets="Build"

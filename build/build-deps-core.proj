@@ -33,7 +33,7 @@
     <RegexTransform Items="@(RegexTransform)" />
 
     <ItemGroup>
-      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard1.1/ServiceStack.Interfaces.*"></InterfaceFiles>
+      <InterfaceFiles Include="$(SrcDir)/ServiceStack.Interfaces/bin/$(Configuration)/netstandard2.0/ServiceStack.Interfaces.*"></InterfaceFiles>
     </ItemGroup>    
 
     <!-- Interfaces .NET Core -->
@@ -41,7 +41,7 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/netstandard1.1" />
+    <Copy SourceFiles="%(InterfaceFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/netstandard2.0" />
 
   </Target>
 

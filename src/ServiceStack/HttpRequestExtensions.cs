@@ -17,7 +17,7 @@ using ServiceStack.Validation;
 using ServiceStack.Web;
 using static System.String;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 #endif
@@ -117,7 +117,7 @@ namespace ServiceStack
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
             if (aspNetReq != null)
             {
@@ -372,7 +372,7 @@ namespace ServiceStack
             return pathInfo;
         }
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
         public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
             var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
@@ -393,7 +393,7 @@ namespace ServiceStack
             return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == null || System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == "/"
             ? TypeConstants.EmptyStringArray
@@ -938,7 +938,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;

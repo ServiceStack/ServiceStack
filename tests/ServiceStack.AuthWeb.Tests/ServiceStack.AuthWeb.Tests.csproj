@@ -78,7 +78,7 @@
       <HintPath>..\..\src\packages\RavenDB.Client.3.5.4\lib\net45\Raven.Client.Lightweight.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>

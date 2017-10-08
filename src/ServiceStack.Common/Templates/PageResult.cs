@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

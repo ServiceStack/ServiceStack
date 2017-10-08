@@ -15,7 +15,7 @@ using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

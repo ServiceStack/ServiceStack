@@ -49,7 +49,7 @@
       <HintPath>..\..\src\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Mvc.Stubs.Tests">
       <HintPath>..\..\lib\thirdparty\ServiceStack.Mvc.Stubs.Tests.dll</HintPath>

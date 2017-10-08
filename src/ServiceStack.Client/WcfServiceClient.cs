@@ -1,4 +1,4 @@
-#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(NETFX_CORE || SL5 || __IOS__ || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
 using System;
 using System.Collections.Generic;
 using System.IO;

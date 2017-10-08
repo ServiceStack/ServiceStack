@@ -22,7 +22,7 @@ namespace ServiceStack
             var pathController = pathParts[0].ToLower();
             if (pathParts.Length == 1)
             {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 if (pathController == "soap11")
                     return new Soap11MessageReplyHttpHandler();
                 if (pathController == "soap12")

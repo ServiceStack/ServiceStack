@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

@@ -25,7 +25,7 @@ namespace ServiceStack.Metadata
                 {"xml", metadataConfig.Xml},
                 {"json", metadataConfig.Json},
                 {"jsv", metadataConfig.Jsv},
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 {"soap11", metadataConfig.Soap11},
                 {"soap12", metadataConfig.Soap12},
 #endif

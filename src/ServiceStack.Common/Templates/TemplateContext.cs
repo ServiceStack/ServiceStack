@@ -11,7 +11,7 @@ using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
 

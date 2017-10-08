@@ -21,7 +21,7 @@ namespace ServiceStack.Serialization
 
         public static DataContractSerializer Instance
             = new DataContractSerializer(
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
 new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
 #endif
 );
@@ -45,7 +45,7 @@ XmlDictionaryReaderQuotas quotas = null
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
                     var xw = new XmlTextWriter(ms, Encoding); 
                     if (indentXml)
                     {
@@ -77,7 +77,7 @@ XmlDictionaryReaderQuotas quotas = null
 
         public void SerializeToStream(object obj, Stream stream)
         {
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             using (var xw = new XmlTextWriter(stream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
@@ -89,7 +89,7 @@ XmlDictionaryReaderQuotas quotas = null
 #endif
         }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
             using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))

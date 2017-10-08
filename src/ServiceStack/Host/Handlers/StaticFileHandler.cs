@@ -266,7 +266,7 @@ namespace ServiceStack.Host.Handlers
                         }
                     }
                 }
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 catch (System.Net.HttpListenerException ex)
                 {
                     if (ex.ErrorCode == 1229)

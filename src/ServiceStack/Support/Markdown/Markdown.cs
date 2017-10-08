@@ -163,7 +163,7 @@ namespace MarkdownSharp
         {
             if (!loadOptionsFromConfigFile) return;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var settings = ConfigurationManager.AppSettings;
             foreach (string key in settings.Keys)
             {

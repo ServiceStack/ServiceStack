@@ -412,7 +412,7 @@ namespace ServiceStack.Html
 					return null;
 				}
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 // Second, we try to use PropertyDescriptors and treat the expression as a property name
                 var descriptor = TypeDescriptor.GetProperties(container).Find(propertyName, true);
                 if (descriptor == null)

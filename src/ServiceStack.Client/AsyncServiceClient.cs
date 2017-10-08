@@ -327,7 +327,7 @@ namespace ServiceStack
                 }
 
                 // Read the response into a Stream object.
-#if NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETSTANDARD1_1 || NETSTANDARD2_0
                 var responseStream = requestState.WebResponse.GetResponseStream()
                     .Decompress(requestState.WebResponse.Headers[HttpHeaders.ContentEncoding]);
 #else

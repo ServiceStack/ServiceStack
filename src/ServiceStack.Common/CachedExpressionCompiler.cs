@@ -480,7 +480,7 @@ namespace ServiceStack.ExpressionUtil
         }
 
         protected
-#if !NETSTANDARD1_3
+#if !NETSTANDARD2_0
     	override
 #endif
     	Expression VisitDynamic(DynamicExpression node)

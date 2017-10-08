@@ -121,7 +121,7 @@ namespace ServiceStack
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                 ReturnRedirectHandler,
                 ReturnRequestInfoHandler,
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
 #endif
             };

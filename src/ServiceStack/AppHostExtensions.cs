@@ -99,7 +99,7 @@ namespace ServiceStack
 
         public static IAppHost Start(this IAppHost appHost, IEnumerable<string> urlBases)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var listener = (ServiceStack.Host.HttpListener.HttpListenerBase)appHost;
             listener.Start(urlBases);
 #endif

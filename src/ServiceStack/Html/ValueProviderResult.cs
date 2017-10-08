@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace ServiceStack.Html
 {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     [Serializable]
 #endif
 	public class ValueProviderResult
@@ -65,7 +65,7 @@ namespace ServiceStack.Html
 				return null;
 			}
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 			TypeConverter converter = TypeDescriptor.GetConverter(destinationType);
 			bool canConvertFrom = converter.CanConvertFrom(value.GetType());
 			if (!canConvertFrom)

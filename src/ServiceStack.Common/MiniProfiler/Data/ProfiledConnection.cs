@@ -86,7 +86,7 @@ namespace ServiceStack.MiniProfiler.Data
         }
 
         protected
-#if !NETSTANDARD1_3
+#if !NETSTANDARD2_0
         override
 #endif
         bool CanRaiseEvents
@@ -142,7 +142,7 @@ namespace ServiceStack.MiniProfiler.Data
 		//{
 		//    _conn.EnlistTransaction(transaction);
 		//}
-#if !NETSTANDARD1_3
+#if !NETSTANDARD2_0
         public override DataTable GetSchema()
         {
             return _conn.GetSchema();

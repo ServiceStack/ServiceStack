@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
@@ -19,7 +19,7 @@ namespace ServiceStack
     {
         public static readonly RequestContext Instance = new RequestContext();
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         /// <summary>
         /// Tell ServiceStack to use ThreadStatic Items Collection for RequestScoped items.
         /// Warning: ThreadStatic Items aren't pinned to the same request in async services which callback on different threads.
@@ -65,7 +65,7 @@ namespace ServiceStack
 
         private IDictionary GetItems()
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             try
             {
                 if (UseThreadStatic)
@@ -92,7 +92,7 @@ namespace ServiceStack
 
         private IDictionary CreateItems(IDictionary items = null)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             try
             {
                 if (UseThreadStatic)
@@ -125,7 +125,7 @@ namespace ServiceStack
 
         public void EndRequest()
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             if (UseThreadStatic)
                 Items = null;
             else
