@@ -369,16 +369,6 @@
             Target constructor parameter
             </summary>
         </member>
-        <member name="T:ServiceStack.OrmLite.Dapper.SqlDataRecordListTVPParameter">
-            <summary>
-            Used to pass a IEnumerable&lt;SqlDataRecord&gt; as a SqlDataRecordListTVPParameter
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlDataRecordListTVPParameter.#ctor(System.Collections.Generic.IEnumerable{Microsoft.SqlServer.Server.SqlDataRecord},System.String)">
-            <summary>
-            Create a new instance of SqlDataRecordListTVPParameter
-            </summary>
-        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper">
             <summary>
             Dapper, a light weight object mapper for ADO.NET
@@ -1258,31 +1248,6 @@
             <b>MUST</b> yield the same hash-code.
             </summary>
         </member>
-        <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.DataTableTypeNameKey">
-            <summary>
-            Key used to indicate the type name associated with a DataTable
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsTableValuedParameter(System.Data.DataTable,System.String)">
-            <summary>
-            Used to pass a DataTable as a TableValuedParameter
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.SetTypeName(System.Data.DataTable,System.String)">
-            <summary>
-            Associate a DataTable with a type name
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetTypeName(System.Data.DataTable)">
-            <summary>
-            Fetch the type name associated with a DataTable
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsTableValuedParameter(System.Collections.Generic.IEnumerable{Microsoft.SqlServer.Server.SqlDataRecord},System.String)">
-            <summary>
-            Used to pass a IEnumerable&lt;SqlDataRecord&gt; as a TableValuedParameter
-            </summary>
-        </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.DontMap">
             <summary>
             Dummy type for excluding from multi-map
@@ -1904,32 +1869,6 @@
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1.SetValue(System.Data.IDbDataParameter,System.Object)">
             <summary>
             Not intended for direct usage
-            </summary>
-        </member>
-        <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler">
-            <summary>
-            A type handler for data-types that are supported by the underlying provider, but which need
-            a well-known UdtTypeName to be specified
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler.#ctor(System.String)">
-            <summary>
-            Creates a new instance of UdtTypeHandler with the specified UdtTypeName
-            </summary>
-        </member>
-        <member name="T:ServiceStack.OrmLite.Dapper.TableValuedParameter">
-            <summary>
-            Used to pass a DataTable as a TableValuedParameter
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.TableValuedParameter.#ctor(System.Data.DataTable)">
-            <summary>
-            Create a new instance of TableValuedParameter
-            </summary>
-        </member>
-        <member name="M:ServiceStack.OrmLite.Dapper.TableValuedParameter.#ctor(System.Data.DataTable,System.String)">
-            <summary>
-            Create a new instance of TableValuedParameter
             </summary>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.IWrappedDataReader">
