@@ -10,7 +10,6 @@
     <TargetFrameworks>portable45-net45+win8</TargetFrameworks>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
     <PackageId>ServiceStack.HttpClient</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -45,8 +44,8 @@
     <Reference Include="System.Net.Requests" />
     <Reference Include="System.Dynamic.Runtime" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

@@ -106,10 +106,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Client">
-      <HintPath>..\..\lib\pcl\ServiceStack.Client.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Client.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Collections" />
@@ -124,7 +124,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="Xamarin.iOS" />
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\pcl\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
   </ItemGroup>

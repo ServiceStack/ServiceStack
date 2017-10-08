@@ -6,7 +6,6 @@
     <RootNamespace>ServiceStack.Server</RootNamespace>
     <PackageId>ServiceStack.Server.Signed</PackageId>
     <Configuration>Signed</Configuration>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -30,7 +29,7 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.Signed.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.Signed.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.Signed.csproj" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
   </ItemGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">

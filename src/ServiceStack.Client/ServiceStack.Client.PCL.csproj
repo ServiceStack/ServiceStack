@@ -11,7 +11,6 @@
     <AssemblyName>ServiceStack.Client</AssemblyName>
     <RootNamespace>ServiceStack.Client</RootNamespace>
     <PackageId>ServiceStack.Client</PackageId>
-    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
@@ -75,8 +74,8 @@
     <Reference Include="System.Xml.ReaderWriter" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Dynamic.Runtime" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\pcl\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
