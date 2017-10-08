@@ -6,7 +6,6 @@
     <AssemblyName>ServiceStack.Server.Tests</AssemblyName>
     <OutputType>Library</OutputType>
     <PackageId>ServiceStack.Server.Tests</PackageId>
-    <PackageTargetFallback>$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
