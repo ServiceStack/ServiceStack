@@ -1,48 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-    <AssemblyName>ServiceStack.Common</AssemblyName>
-    <PackageId>ServiceStack.Common</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-    <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.0.0" />
-    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
-    <PackageReference Include="System.Net.Requests" Version="4.3.0" />
-    <PackageReference Include="System.Data.Common" Version="4.3.0" />
-    <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+        <AssemblyName>ServiceStack.Common</AssemblyName>
+        <PackageId>ServiceStack.Common</PackageId>
+        <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+        <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+        <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+    
+    <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
+    </ItemGroup>
+    
+    <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
+        <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
+    </ItemGroup>
+    
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+        <SignAssembly>True</SignAssembly>
+        <DelaySign>False</DelaySign>
+        <AssemblyOriginatorKeyFile>../servicestack-sn.pfx</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+    
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll"/>
+        <Reference Include="..\..\lib\net45\ServiceStack.Text.dll"/>
+    </ItemGroup>
+    
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
+    
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.0.0"/>
+        <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0"/>
+        <PackageReference Include="System.Net.Requests" Version="4.3.0"/>
+        <PackageReference Include="System.Data.Common" Version="4.3.0"/>
+        <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0"/>
+        <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0"/>
+        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0"/>
+        <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0"/>
+        <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll"/>
+        <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll"/>
+    </ItemGroup>
+
 </Project>

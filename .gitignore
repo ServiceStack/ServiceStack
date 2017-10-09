@@ -54,7 +54,6 @@ requestlogs/
 NuGet/
 NuGet.Pcl/
 NuGet.Signed/
-*.pfx
 
 build/
 

@@ -1,62 +1,76 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
-    <AssemblyName>ServiceStack</AssemblyName>
-    <PackageId>ServiceStack</PackageId>
-    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
-    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
-    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
-    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
-    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
-    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
-    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
-    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <Optimize>true</Optimize>
-  </PropertyGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Templates\*.*;js\*.*;MiniProfiler\UI\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DebugType>portable</DebugType>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>RELEASE</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <Reference Include="System.Net" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.ServiceModel" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
-    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
-    <PackageReference Include="System.Linq.Queryable" Version="4.3.0" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
-  </ItemGroup>
+
+    <PropertyGroup>
+        <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+        <AssemblyName>ServiceStack</AssemblyName>
+        <PackageId>ServiceStack</PackageId>
+        <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+        <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+        <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+        <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+        <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+        <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+        <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+        <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Include="Templates\*.*;js\*.*;MiniProfiler\UI\*.*"
+                          Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj"/>
+        <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <DebugType>portable</DebugType>
+        <DefineConstants>TRACE;DEBUG</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DefineConstants>RELEASE</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+        <SignAssembly>True</SignAssembly>
+        <DelaySign>False</DelaySign>
+        <AssemblyOriginatorKeyFile>../servicestack-sn.pfx</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+        <Reference Include="System.Net"/>
+        <Reference Include="System.Web"/>
+        <Reference Include="System.ServiceModel"/>
+        <Reference Include="System.Configuration"/>
+        <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll"/>
+        <Reference Include="..\..\lib\net45\ServiceStack.Text.dll"/>
+    </ItemGroup>
+
+    <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Microsoft.Extensions.Primitives" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0"/>
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0"/>
+        <PackageReference Include="System.Threading.Thread" Version="4.3.0"/>
+        <PackageReference Include="System.Reflection.Emit" Version="4.3.0"/>
+        <PackageReference Include="System.Linq.Queryable" Version="4.3.0"/>
+        <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll"/>
+        <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll"/>
+    </ItemGroup>
+
 </Project>
