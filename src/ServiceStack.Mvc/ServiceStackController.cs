@@ -187,19 +187,19 @@ namespace ServiceStack.Mvc
 
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
-        protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+        public virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
 
-        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+        public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
-        protected virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
+        public virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
-        protected virtual void ClearSession() => ServiceStackProvider.ClearSession();
+        public virtual void ClearSession() => ServiceStackProvider.ClearSession();
 
-        protected virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
+        public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
 
-        protected virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+        public virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
 
-        protected virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
+        public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
