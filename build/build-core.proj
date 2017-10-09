@@ -31,8 +31,8 @@
 
   <Target Name="TeamCityBuild">
     <CallTarget Targets="UpdateVersion" />
-    <CallTarget Targets="Default" />
-    </Target>
+    <!--<CallTarget Targets="Default" />-->
+  </Target>
 
   <Target Name="BuildSolutions">
     <MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
