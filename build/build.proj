@@ -30,6 +30,7 @@
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
 
   <Target Name="TeamCityBuild">
+    <CallTarget Targets="UpdateVersion" />
     <CallTarget Targets="Default" />
   </Target>
 
@@ -71,8 +72,6 @@
   </Target>
 
   <Target Name="NuGetPack">
-    <CallTarget Targets="UpdateVersion" />
-
     <Delete Files="@(NugetPackageFilesToDelete)" />
 
     <ItemGroup>
