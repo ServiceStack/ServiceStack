@@ -16,9 +16,9 @@
           "System.Net.NameResolution": "4.3.0",
           "System.Net.Security": "4.3.1",
           "System.Threading.Thread": "4.3.0",
-          "ServiceStack.Common": "4.0.0.0",
-          "ServiceStack.Interfaces": "4.0.0.0",
-          "ServiceStack.Text": "4.0.0.0"
+          "ServiceStack.Common": "5.0.0.0",
+          "ServiceStack.Interfaces": "5.0.0.0",
+          "ServiceStack.Text": "5.0.0.0"
         },
         "runtime": {
           "ServiceStack.Redis.dll": {}
@@ -575,17 +575,17 @@
           "lib/netstandard1.3/System.Threading.ThreadPool.dll": {}
         }
       },
-      "ServiceStack.Common/4.0.0.0": {
+      "ServiceStack.Common/5.0.0.0": {
         "runtime": {
           "ServiceStack.Common.dll": {}
         }
       },
-      "ServiceStack.Interfaces/4.0.0.0": {
+      "ServiceStack.Interfaces/5.0.0.0": {
         "runtime": {
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.Text/4.0.0.0": {
+      "ServiceStack.Text/5.0.0.0": {
         "runtime": {
           "ServiceStack.Text.dll": {}
         }
@@ -1025,17 +1025,17 @@
       "path": "system.threading.threadpool/4.3.0",
       "hashPath": "system.threading.threadpool.4.3.0.nupkg.sha512"
     },
-    "ServiceStack.Common/4.0.0.0": {
+    "ServiceStack.Common/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Interfaces/4.0.0.0": {
+    "ServiceStack.Interfaces/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Text/4.0.0.0": {
+    "ServiceStack.Text/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
