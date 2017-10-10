@@ -117,7 +117,6 @@
       <AuthenticationNHibernateFiles Include="$(SrcDir)/ServiceStack.Authentication.NHibernate/bin/$(Configuration)/net45/ServiceStack.Authentication.NHibernate.*"></AuthenticationNHibernateFiles>
       <AuthenticationRavenDbFiles Include="$(SrcDir)/ServiceStack.Authentication.RavenDb/bin/$(Configuration)/net45/ServiceStack.Authentication.RavenDb.*"></AuthenticationRavenDbFiles>
 
-      <CachingAzureFiles Include="$(SrcDir)/ServiceStack.Caching.Azure/bin/$(Configuration)/net45/ServiceStack.Caching.Azure.*"></CachingAzureFiles>
       <CachingMemcachedFiles Include="$(SrcDir)/ServiceStack.Caching.Memcached/bin/$(Configuration)/net45/ServiceStack.Caching.Memcached.*"></CachingMemcachedFiles>
 
       <ElmahFiles Include="$(SrcDir)/ServiceStack.Logging.Elmah/bin/$(Configuration)/net45/ServiceStack.Logging.Elmah.*"></ElmahFiles>
@@ -249,18 +248,6 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Authentication.RavenDb/servicestack.authentication.ravendb.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
         LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Caching.Azure -->
-
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Caching.Azure/ServiceStack.Caching.Azure.csproj"
-             Targets="Build"
-             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
-
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Caching.Azure/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Caching.Azure/lib/net45')" />
-    <Copy SourceFiles="%(CachingAzureFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Caching.Azure/lib/net45" />
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Caching.Azure/servicestack.caching.azure.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
-            LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Caching.Memcached -->
 
