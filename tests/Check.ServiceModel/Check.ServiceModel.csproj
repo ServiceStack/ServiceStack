@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
@@ -59,6 +56,10 @@
     <Compile Include="ThrowHttpError.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
       <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
       <Name>ServiceStack</Name>

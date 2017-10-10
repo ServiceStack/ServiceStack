@@ -54,10 +54,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="ServiceStack.Interfaces, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.OrmLite, Version=4.0.40.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
@@ -176,6 +172,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>

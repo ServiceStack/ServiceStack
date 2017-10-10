@@ -21,6 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
   </ItemGroup>
 
@@ -35,7 +36,6 @@
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
     <Reference Include="System" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
 
@@ -48,7 +48,6 @@
     <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
     <PackageReference Include="System.ServiceModel.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
 

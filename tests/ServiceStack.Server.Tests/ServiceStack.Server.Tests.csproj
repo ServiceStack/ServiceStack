@@ -28,8 +28,9 @@
     <PackageReference Include="MongoDB.Driver" Version="2.4.4" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.4.4" />
     <PackageReference Include="NUnit" Version="3.6.1" />
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
@@ -46,7 +47,6 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.MongoDb\ServiceStack.Authentication.MongoDb.csproj" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
@@ -63,7 +63,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.dll" />

@@ -34,9 +34,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -140,6 +137,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

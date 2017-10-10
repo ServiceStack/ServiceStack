@@ -52,9 +52,6 @@
     <Reference Include="ServiceStack.Admin">
       <HintPath>..\..\lib\net45\ServiceStack.Admin.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -175,6 +172,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
       <Project>{982416db-c143-4028-a0c3-cf41892d18d3}</Project>
       <Name>ServiceStack.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>

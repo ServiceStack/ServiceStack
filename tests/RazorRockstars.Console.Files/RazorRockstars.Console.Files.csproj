@@ -84,9 +84,6 @@
     <Reference Include="ServiceStack.Aws">
       <HintPath>..\..\lib\net45\ServiceStack.Aws.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.OrmLite">
       <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
@@ -382,6 +379,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
       <Project>{C05DE4A1-84C5-481B-8BD4-C837A1303B01}</Project>
       <Name>ServiceStack.HttpClient</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.MsgPack\ServiceStack.MsgPack.csproj">
       <Project>{6b751a07-75d4-4a9d-b3a0-eea27808e64c}</Project>

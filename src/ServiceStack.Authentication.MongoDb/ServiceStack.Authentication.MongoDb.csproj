@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
   </ItemGroup>

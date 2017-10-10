@@ -27,6 +27,10 @@
     <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
         <Compile Include="..\..\ServiceStack.Common\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj"/>
+    </ItemGroup>
     
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
         <DefineConstants>$(DefineConstants);NET45</DefineConstants>
@@ -36,7 +40,6 @@
     </PropertyGroup>
     
     <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-        <Reference Include="..\..\lib\net45\ServiceStack.Interfaces.dll"/>
         <Reference Include="..\..\lib\net45\ServiceStack.Text.dll"/>
     </ItemGroup>
     
@@ -53,7 +56,6 @@
         <PackageReference Include="System.Net.NetworkInformation" Version="4.3.0"/>
         <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0"/>
         <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0"/>
-        <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Interfaces.dll"/>
         <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll"/>
     </ItemGroup>
 

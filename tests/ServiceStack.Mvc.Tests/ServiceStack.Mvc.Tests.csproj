@@ -48,9 +48,6 @@
     <Reference Include="nunit.framework, Version=3.6.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\NUnit.3.6.1\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
     <Reference Include="ServiceStack.Mvc.Stubs.Tests">
       <HintPath>..\..\lib\thirdparty\ServiceStack.Mvc.Stubs.Tests.dll</HintPath>
     </Reference>
@@ -62,7 +59,6 @@
       <HintPath>..\..\lib\thirdparty\System.Web.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
@@ -73,6 +69,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
+      <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
+      <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj">
       <Project>{672f2dfe-4ee8-498b-b449-23e9e7f6961c}</Project>
       <Name>ServiceStack.Mvc</Name>
