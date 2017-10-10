@@ -58,7 +58,7 @@
       <!-- Keep AssemblyVersion at 4.0.0.0 -->
       <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
         <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+        <ReplaceWith>AssemblyVersion("5.0.0.0")</ReplaceWith>
       </RegexTransform>
 
       <!--Update Min Dependency Version -->

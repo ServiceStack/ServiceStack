@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Interfaces</id>
     <title>Lightweight and implementation-free interfaces for ServiceStack</title>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>

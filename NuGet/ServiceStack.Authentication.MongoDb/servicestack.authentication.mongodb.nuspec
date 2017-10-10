@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Authentication.MongoDB</id> 
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <authors>ServiceStack contributors</authors> 
     <owners>ServiceStack contributors</owners>
     <summary>A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB</summary>
@@ -19,7 +19,7 @@
     <language>en-US</language> 
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.5" />	
+      <dependency id="ServiceStack" version="5.0" />	
       <dependency id="mongocsharpdriver" version="2.4.4" />
     </dependencies> 
   </metadata> 

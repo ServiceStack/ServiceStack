@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Razor</id>
     <title>ServiceStack.Razor - ServiceStack's HTML story including MVC Razor</title>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Provides ServiceStack's HTML Story including integrated support for MVC Razor's ViewEngine</summary>
@@ -29,8 +29,8 @@
     <language>en-US</language>
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.5" />
-      <dependency id="ServiceStack.OrmLite" version="4.5" />
+      <dependency id="ServiceStack" version="5.0" />
+      <dependency id="ServiceStack.OrmLite" version="5.0" />
       <dependency id="Microsoft.AspNet.Razor" version="3.2.3" />
     </dependencies>
   </metadata>

@@ -2,7 +2,7 @@
 <package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Logging.Log4Net</id>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <title>ServiceStack.Logging.Log4Net</title>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
@@ -19,7 +19,7 @@
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
       <dependency id="log4net" version="2.0.8" />
-      <dependency id="ServiceStack.Interfaces" version="4.5" />
+      <dependency id="ServiceStack.Interfaces" version="5.0" />
     </dependencies>
   </metadata>
   <files>

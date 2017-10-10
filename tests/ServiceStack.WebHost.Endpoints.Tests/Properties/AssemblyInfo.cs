@@ -34,7 +34,7 @@ using System.Runtime.Serialization;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("4.0.0.0")]	
+[assembly: AssemblyFileVersion("5.0.0.0")]	
 
 //Default DataContract namespace instead of tempuri.org
 //Note: doesn't work for ilmerged assemblies

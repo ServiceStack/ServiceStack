@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
-[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2016")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2017")]
 [assembly: AssemblyTrademark("ServiceStack")]
 [assembly: AssemblyCulture("")]
 
@@ -22,5 +22,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("0428d353-cd67-481f-877a-676e3bbcf903")]
 
-[assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("4.0.0.0")]
+[assembly: AssemblyVersion("5.0.0.0")]
+[assembly: AssemblyFileVersion("5.0.0.0")]

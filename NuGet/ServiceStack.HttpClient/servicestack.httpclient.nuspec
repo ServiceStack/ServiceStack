@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.HttpClient</id>
     <title>JSON HttpClient for ServiceStack</title>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <authors>Service Stack</authors>
     <owners>Service Stack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
@@ -18,7 +18,7 @@
     <language>en-US</language>
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Client" version="4.5" />
+      <dependency id="ServiceStack.Client" version="5.0" />
       <dependency id="Microsoft.Net.Http" version="2.2.29" />
     </dependencies>
   </metadata>

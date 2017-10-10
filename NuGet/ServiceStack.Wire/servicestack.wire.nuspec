@@ -3,7 +3,7 @@
   <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <id>ServiceStack.Wire</id> 
     <title>Wire support for ServiceStack. Includes typed Wire Service Client</title>
-    <version>4.5.0</version> 
+    <version>5.0.0</version> 
     <authors>Service Stack</authors> 
     <owners>Service Stack</owners>
     <summary>Wire Format Serializer ContentType ServiceClients for ServiceStack</summary>
@@ -17,7 +17,7 @@
     <language>en-US</language>
     <copyright>Copyright 2017 ServiceStack</copyright>
     <dependencies>
-      <dependency id="ServiceStack" version="4.5" />
+      <dependency id="ServiceStack" version="5.0" />
     </dependencies> 
   </metadata>
   <files>

@@ -11,7 +11,7 @@ using System.Runtime.Serialization;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
-[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2016")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2017")]
 [assembly: AssemblyTrademark("ServiceStack")]
 [assembly: AssemblyCulture("")]
 
@@ -23,8 +23,8 @@ using System.Runtime.Serialization;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("3871f659-64fb-4dfb-a49f-17dc2f8a47e2")]
 
-[assembly: AssemblyVersion("4.0.0.0")]
-[assembly: AssemblyFileVersion("4.0.0.0")]
+[assembly: AssemblyVersion("5.0.0.0")]
+[assembly: AssemblyFileVersion("5.0.0.0")]
 
 // CCB Custom
 [assembly: ContractNamespace("http://schemas.servicestack.net/types",

@@ -55,7 +55,7 @@
       <!-- Keep ServiceStack.Interfaces AssemblyVersion at 4.0.0.0 -->
       <RegexTransform Include="$(SrcDir)/**/ServiceStack.Interfaces/Properties/AssemblyInfo.cs">
         <Find>AssemblyVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
-        <ReplaceWith>AssemblyVersion("4.0.0.0")</ReplaceWith>
+        <ReplaceWith>AssemblyVersion("5.0.0.0")</ReplaceWith>
       </RegexTransform>
       <!--Update Min Dependency Version -->
       <RegexTransform Include="$(NuGetPackageDir)/**/*.nuspec">

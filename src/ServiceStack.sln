@@ -7,21 +7,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
-		..\build\appsettings.license.txt = ..\build\appsettings.license.txt
 		..\build\build-core.proj = ..\build\build-core.proj
 		..\build\build-deps-core.proj = ..\build\build-deps-core.proj
-		..\build\build-deps-net45.proj = ..\build\build-deps-net45.proj
 		..\build\build-deps.proj = ..\build\build-deps.proj
 		..\build\build-pcl.proj = ..\build\build-pcl.proj
-		..\build\build-sn.proj = ..\build\build-sn.proj
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
 		..\build\build.tasks = ..\build\build.tasks
-		..\build\codegen-projs.js = ..\build\codegen-projs.js
 		..\CONTRIBUTORS.md = ..\CONTRIBUTORS.md
 		..\build\copy-interfaces.bat = ..\build\copy-interfaces.bat
-		..\build\copy-pcl.bat = ..\build\copy-pcl.bat
-		..\build\copy-sn.bat = ..\build\copy-sn.bat
 		..\build\copy.bat = ..\build\copy.bat
 		..\README.md = ..\README.md
 		..\docs\2016\release-notes.md = ..\docs\2016\release-notes.md
@@ -32,12 +26,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec = ..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec
 		..\NuGet\ServiceStack.Authentication.RavenDb\servicestack.authentication.ravendb.nuspec = ..\NuGet\ServiceStack.Authentication.RavenDb\servicestack.authentication.ravendb.nuspec
 		..\NuGet\ServiceStack.Caching.AwsDynamoDb\servicestack.caching.awsdynamodb.nuspec = ..\NuGet\ServiceStack.Caching.AwsDynamoDb\servicestack.caching.awsdynamodb.nuspec
-		..\NuGet\ServiceStack.Caching.Azure\servicestack.caching.azure.nuspec = ..\NuGet\ServiceStack.Caching.Azure\servicestack.caching.azure.nuspec
 		..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec = ..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec
 		..\NuGet\ServiceStack.Client\servicestack.client.nuspec = ..\NuGet\ServiceStack.Client\servicestack.client.nuspec
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
-		..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec = ..\NuGet\ServiceStack.Host.AspNet\servicestack.host.aspnet.nuspec
-		..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec = ..\NuGet\ServiceStack.Host.Mvc\servicestack.host.mvc.nuspec
 		..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec = ..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec
 		..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec = ..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec
 		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec
@@ -56,6 +47,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec = ..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec
 		..\NuGet\ServiceStack.Server\servicestack.server.nuspec = ..\NuGet\ServiceStack.Server\servicestack.server.nuspec
 		..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec = ..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec
+		..\NuGet\ServiceStack.Api.OpenApi\servicestack.api.openapi.nuspec = ..\NuGet\ServiceStack.Api.OpenApi\servicestack.api.openapi.nuspec
+		..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec = ..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec
+		..\NuGet\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
@@ -65,19 +59,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Caching", "Caching", "{515043B6-1FFD-4CBF-8916-23B82C67CF8C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AuthRepos", "AuthRepos", "{2E143186-E565-48B8-A8AE-6FE03B70FE68}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Signed", "Signed", "{C57AF946-06A7-4CFC-BC4D-F9E7AE4FC5C8}"
-	ProjectSection(SolutionItems) = preProject
-		..\NuGet.Signed\ServiceStack.Api.Swagger.Signed\servicestack.api.swagger.signed.nuspec = ..\NuGet.Signed\ServiceStack.Api.Swagger.Signed\servicestack.api.swagger.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Authentication.OAuth2.Signed\servicestack.authentication.oauth2.signed.nuspec = ..\NuGet.Signed\ServiceStack.Authentication.OAuth2.Signed\servicestack.authentication.oauth2.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec = ..\NuGet.Signed\ServiceStack.Client.Signed\servicestack.client.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec = ..\NuGet.Signed\ServiceStack.Common.Signed\servicestack.common.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec = ..\NuGet.Signed\ServiceStack.Mvc.Signed\servicestack.mvc.signed.nuspec
-		..\NuGet.Signed\ServiceStack.ProtoBuf.Signed\servicestack.protobuf.signed.nuspec = ..\NuGet.Signed\ServiceStack.ProtoBuf.Signed\servicestack.protobuf.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec = ..\NuGet.Signed\ServiceStack.Razor.Signed\servicestack.razor.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec = ..\NuGet.Signed\ServiceStack.Server.Signed\servicestack.server.signed.nuspec
-		..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec = ..\NuGet.Signed\ServiceStack.Signed\servicestack.signed.nuspec
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Common.Tests", "..\tests\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj", "{3FA9197A-462D-44CC-9AB3-61AF414D0B45}"
 EndProject
@@ -130,8 +111,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Authentication.NHibernate", "ServiceStack.Authentication.NHibernate\ServiceStack.Authentication.NHibernate.csproj", "{E5C9B657-D8AF-4DF2-9BB8-C09AA8F5CBE2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Authentication.RavenDb", "ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj", "{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Caching.Azure", "ServiceStack.Caching.Azure\ServiceStack.Caching.Azure.csproj", "{08840867-041E-46A2-97C3-EA223161D942}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Caching.Memcached", "ServiceStack.Caching.Memcached\ServiceStack.Caching.Memcached.csproj", "{600612F3-15B4-45B5-9D39-06FA016B81C9}"
 EndProject
@@ -608,22 +587,6 @@ Global
 		{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
 		{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}.Signed|x86.ActiveCfg = Release|Any CPU
 		{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}.Signed|x86.Build.0 = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Release|Any CPU.Build.0 = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Release|x86.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|Any CPU.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|Any CPU.Build.0 = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|x86.ActiveCfg = Release|Any CPU
-		{08840867-041E-46A2-97C3-EA223161D942}.Signed|x86.Build.0 = Release|Any CPU
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{600612F3-15B4-45B5-9D39-06FA016B81C9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
@@ -873,7 +836,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C57AF946-06A7-4CFC-BC4D-F9E7AE4FC5C8} = {EB65E771-6C97-4D64-8E11-FD88AE48A41A}
 		{3FA9197A-462D-44CC-9AB3-61AF414D0B45} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{94A33BC4-AC22-49A3-A38E-2ABFCD997ABA} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{A5646013-C243-453F-A2B6-3B6870A9637D} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
@@ -893,7 +855,6 @@ Global
 		{16E42781-8872-4468-9B7A-9140778A4D5E} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
 		{E5C9B657-D8AF-4DF2-9BB8-C09AA8F5CBE2} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
 		{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3} = {2E143186-E565-48B8-A8AE-6FE03B70FE68}
-		{08840867-041E-46A2-97C3-EA223161D942} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
 		{600612F3-15B4-45B5-9D39-06FA016B81C9} = {515043B6-1FFD-4CBF-8916-23B82C67CF8C}
 		{45DAECA2-659E-40D7-AA70-8EB4A56B2331} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{F709A373-6FD5-4415-B2ED-2520EA7CC568} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
