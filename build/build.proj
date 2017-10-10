@@ -346,16 +346,6 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Slack/servicestack.logging.slack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
-    <!-- ServiceStack.Host.AspNet - Content Templates -->
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.AspNet/servicestack.host.aspnet.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
-            LogStandardErrorAsError="true" />
-
-    <!-- ServiceStack.Host.Mvc - Content Templates -->
-
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Host.Mvc/servicestack.host.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion)"
-            LogStandardErrorAsError="true" />
-
     <!-- ServiceStack.Mvc -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Mvc/ServiceStack.Mvc.csproj"
