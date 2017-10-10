@@ -12,9 +12,9 @@
           "MySql.Data": "8.0.8-dmr",
           "NETStandard.Library": "2.0.0",
           "ServiceStack.OrmLite": "1.0.0",
-          "ServiceStack.Common": "4.0.0.0",
-          "ServiceStack.Interfaces": "4.0.0.0",
-          "ServiceStack.Text": "4.0.0.0"
+          "ServiceStack.Common": "5.0.0.0",
+          "ServiceStack.Interfaces": "5.0.0.0",
+          "ServiceStack.Text": "5.0.0.0"
         },
         "runtime": {
           "ServiceStack.OrmLite.MySql.dll": {}
@@ -1301,17 +1301,17 @@
           "ServiceStack.OrmLite.dll": {}
         }
       },
-      "ServiceStack.Common/4.0.0.0": {
+      "ServiceStack.Common/5.0.0.0": {
         "runtime": {
           "ServiceStack.Common.dll": {}
         }
       },
-      "ServiceStack.Interfaces/4.0.0.0": {
+      "ServiceStack.Interfaces/5.0.0.0": {
         "runtime": {
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.Text/4.0.0.0": {
+      "ServiceStack.Text/5.0.0.0": {
         "runtime": {
           "ServiceStack.Text.dll": {}
         }
@@ -2148,17 +2148,17 @@
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Common/4.0.0.0": {
+    "ServiceStack.Common/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Interfaces/4.0.0.0": {
+    "ServiceStack.Interfaces/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Text/4.0.0.0": {
+    "ServiceStack.Text/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

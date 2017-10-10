@@ -19,14 +19,14 @@
           "System.Threading.Thread": "4.3.0",
           "System.Threading.ThreadPool": "4.3.0",
           "System.Xml.XmlSerializer": "4.3.0",
-          "ServiceStack.Client": "4.0.0.0",
-          "ServiceStack.Common": "4.0.0.0",
-          "ServiceStack": "4.0.0.0",
-          "ServiceStack.Interfaces": "4.0.0.0",
-          "ServiceStack.OrmLite": "4.0.0.0",
-          "ServiceStack.Redis": "4.0.0.0",
-          "ServiceStack.Server": "4.0.0.0",
-          "ServiceStack.Text": "4.0.0.0"
+          "ServiceStack.Client": "5.0.0.0",
+          "ServiceStack.Common": "5.0.0.0",
+          "ServiceStack": "5.0.0.0",
+          "ServiceStack.Interfaces": "5.0.0.0",
+          "ServiceStack.OrmLite": "5.0.0.0",
+          "ServiceStack.Redis": "5.0.0.0",
+          "ServiceStack.Server": "5.0.0.0",
+          "ServiceStack.Text": "5.0.0.0"
         },
         "runtime": {
           "ServiceStack.Admin.dll": {}
@@ -1097,42 +1097,42 @@
           "lib/netstandard1.3/System.Xml.XmlSerializer.dll": {}
         }
       },
-      "ServiceStack.Client/4.0.0.0": {
+      "ServiceStack.Client/5.0.0.0": {
         "runtime": {
           "ServiceStack.Client.dll": {}
         }
       },
-      "ServiceStack.Common/4.0.0.0": {
+      "ServiceStack.Common/5.0.0.0": {
         "runtime": {
           "ServiceStack.Common.dll": {}
         }
       },
-      "ServiceStack/4.0.0.0": {
+      "ServiceStack/5.0.0.0": {
         "runtime": {
           "ServiceStack.dll": {}
         }
       },
-      "ServiceStack.Interfaces/4.0.0.0": {
+      "ServiceStack.Interfaces/5.0.0.0": {
         "runtime": {
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.OrmLite/4.0.0.0": {
+      "ServiceStack.OrmLite/5.0.0.0": {
         "runtime": {
           "ServiceStack.OrmLite.dll": {}
         }
       },
-      "ServiceStack.Redis/4.0.0.0": {
+      "ServiceStack.Redis/5.0.0.0": {
         "runtime": {
           "ServiceStack.Redis.dll": {}
         }
       },
-      "ServiceStack.Server/4.0.0.0": {
+      "ServiceStack.Server/5.0.0.0": {
         "runtime": {
           "ServiceStack.Server.dll": {}
         }
       },
-      "ServiceStack.Text/4.0.0.0": {
+      "ServiceStack.Text/5.0.0.0": {
         "runtime": {
           "ServiceStack.Text.dll": {}
         }
@@ -1796,42 +1796,42 @@
       "path": "system.xml.xmlserializer/4.3.0",
       "hashPath": "system.xml.xmlserializer.4.3.0.nupkg.sha512"
     },
-    "ServiceStack.Client/4.0.0.0": {
+    "ServiceStack.Client/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Common/4.0.0.0": {
+    "ServiceStack.Common/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack/4.0.0.0": {
+    "ServiceStack/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Interfaces/4.0.0.0": {
+    "ServiceStack.Interfaces/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.OrmLite/4.0.0.0": {
+    "ServiceStack.OrmLite/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Redis/4.0.0.0": {
+    "ServiceStack.Redis/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Server/4.0.0.0": {
+    "ServiceStack.Server/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.Text/4.0.0.0": {
+    "ServiceStack.Text/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

@@ -14,7 +14,7 @@
           "ServiceStack.Client": "1.0.0",
           "ServiceStack.Common": "1.0.0",
           "ServiceStack.Interfaces": "1.0.0",
-          "ServiceStack.OrmLite": "4.0.0.0",
+          "ServiceStack.OrmLite": "5.0.0.0",
           "ServiceStack.Redis": "5.0.0.0",
           "ServiceStack.Text": "5.0.0.0"
         },
@@ -1387,7 +1387,7 @@
           "ServiceStack.Interfaces.dll": {}
         }
       },
-      "ServiceStack.OrmLite/4.0.0.0": {
+      "ServiceStack.OrmLite/5.0.0.0": {
         "runtime": {
           "ServiceStack.OrmLite.dll": {}
         }
@@ -2256,7 +2256,7 @@
       "serviceable": false,
       "sha512": ""
     },
-    "ServiceStack.OrmLite/4.0.0.0": {
+    "ServiceStack.OrmLite/5.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
