@@ -154,8 +154,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net45')" />
     <Copy SourceFiles="%(InterfaceLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -169,8 +169,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45')" />
     <Copy SourceFiles="%(SwaggerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(SwaggerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(SwaggerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.Swagger/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.Swagger/servicestack.api.swagger.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -184,8 +184,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45')" />
     <Copy SourceFiles="%(OpenApiFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi/servicestack.api.openapi.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -378,8 +378,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc/lib/net45')" />
     <Copy SourceFiles="%(MvcFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(MvcCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Mvc/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Mvc/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(MvcCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Mvc/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Mvc/servicestack.mvc.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -393,8 +393,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack/lib/net45')" />
     <Copy SourceFiles="%(MsgPackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.MsgPack/servicestack.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -408,8 +408,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/net45')" />
     <Copy SourceFiles="%(ProtoBufFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf/servicestack.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -423,8 +423,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire/lib/net45')" />
     <Copy SourceFiles="%(WireFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(WireCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Wire/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Wire/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(WireCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Wire/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Wire/servicestack.wire.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -470,8 +470,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/net45')" />
     <Copy SourceFiles="%(ClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(ClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0" />
 
     <!-- NET 4.5 pcl provider -->
     <!--<MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration)"/>-->
@@ -509,8 +509,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45')" />
     <Copy SourceFiles="%(HttpClientFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(HttpClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(HttpClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient/servicestack.httpclient.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -524,8 +524,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/net45')" />
     <Copy SourceFiles="%(CommonFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(CommonCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Common/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Common/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(CommonCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Common/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Common/servicestack.common.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -539,8 +539,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server/lib/net45')" />
     <Copy SourceFiles="%(ServerFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(ServerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Server/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Server/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ServerCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Server/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Server/servicestack.server.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -554,8 +554,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45')" />
     <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq/servicestack.rabbitmq.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
@@ -569,8 +569,8 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack/lib/net45')" />
     <Copy SourceFiles="%(ServiceStackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack/lib/net45" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0')" />
-    <Copy SourceFiles="%(ServiceStackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Core/lib/netstandard2.0" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ServiceStackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
