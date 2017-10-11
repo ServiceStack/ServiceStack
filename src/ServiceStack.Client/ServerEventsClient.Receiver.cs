@@ -74,12 +74,10 @@ namespace ServiceStack
 
         private void CreateReceiverHandler<T>(ServerEventsClient client, ServerEventMessage msg)
         {
-            var receiver = Resolver.TryResolve<T>() as IReceiver;
-            if (receiver == null)
+            if (!(Resolver.TryResolve<T>() is IReceiver receiver))
                 throw new ArgumentNullException("receiver", "Resolver returned null receiver");
 
-            var injectRecevier = receiver as ServerEventReceiver;
-            if (injectRecevier != null)
+            if (receiver is ServerEventReceiver injectRecevier)
             {
                 injectRecevier.Client = client;
                 injectRecevier.Request = msg;
@@ -87,8 +85,7 @@ namespace ServiceStack
 
             var target = msg.Target.Replace("-", ""); //css bg-image
 
-            ReceiverExecContext receiverCtx;
-            ReceiverExec<T>.RequestTypeExecMap.TryGetValue(target, out receiverCtx);
+            ReceiverExec<T>.RequestTypeExecMap.TryGetValue(target, out var receiverCtx);
             if (StrictMode && receiverCtx != null && !receiverCtx.Method.EqualsIgnoreCase(target))
                 receiverCtx = null;
 
