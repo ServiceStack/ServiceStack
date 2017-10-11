@@ -19,7 +19,7 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework="net45">
-        <dependency id="elmah.corelibrary" version="[1.2.2, 0)" />
+        <dependency id="elmah.corelibrary" version="[1.2.2, )" />
         <dependency id="ServiceStack.Interfaces" version="5.0.0" />
       </group>
     </dependencies>
