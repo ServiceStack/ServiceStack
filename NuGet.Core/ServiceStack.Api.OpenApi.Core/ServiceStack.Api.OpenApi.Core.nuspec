@@ -1,11 +1,11 @@
-<?xml version="1.0"?>
-<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
     <id>ServiceStack.Api.OpenApi.Core</id>
     <title>ServiceStack.Api.OpenApi.Core</title>
     <version>1.0.0</version>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <summary>ServiceStack integration with OpenApi</summary>
     <description>
       Provides a set of services to be discovered by OpenApi (http://swagger.io/)
@@ -16,7 +16,7 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>Swagger API REST Docs ServiceStack</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework=".NETStandard2.0">
         <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />

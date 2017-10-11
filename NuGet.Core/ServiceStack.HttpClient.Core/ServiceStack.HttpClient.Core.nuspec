@@ -4,8 +4,8 @@
     <id>ServiceStack.HttpClient.Core</id>
     <version>1.0.0</version>
     <title>ServiceStack.HttpClient.Core</title>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
@@ -14,7 +14,7 @@
       JSON ServiceClient implementation based on .NET's HttpClient
     </description>
     <summary>JSON ServiceClient implementation based on .NET's HttpClient</summary>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <language>en-US</language>
     <tags>ServiceStack Common Framework Clients ServiceClients JSON HttpClient Gateway</tags>
     <dependencies>

@@ -1,11 +1,11 @@
-<?xml version="1.0"?>
-<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
     <id>ServiceStack.Logging.EventLog</id>
     <version>5.0.0</version>
     <title>ServiceStack.Logging.EventLog</title>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <summary>Windows Event Log integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
@@ -16,9 +16,11 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>servicestack log logging eventlog</tags>
     <language>en-US</language>
-    <copyright>Copyright 2017 ServiceStack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <dependencies>
-      <dependency id="ServiceStack.Interfaces" version="5.0" />
+      <group targetFramework="net45">
+        <dependency id="ServiceStack.Interfaces" version="5.0.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>

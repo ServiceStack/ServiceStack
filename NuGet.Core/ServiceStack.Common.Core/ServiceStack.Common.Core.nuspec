@@ -4,15 +4,15 @@
     <id>ServiceStack.Common.Core</id>
     <version>1.0.0</version>
     <title>ServiceStack.Common.Core</title>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <description>Common base library for ServiceStack projects.</description>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <language>en-US</language>
     <tags>ServiceStack Common Framework Clients ServiceClients Gateway</tags>
     <dependencies>

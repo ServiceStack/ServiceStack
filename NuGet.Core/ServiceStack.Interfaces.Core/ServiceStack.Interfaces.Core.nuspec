@@ -4,15 +4,15 @@
     <id>ServiceStack.Interfaces.Core</id>
     <version>1.0.0</version>
     <title>ServiceStack.Interfaces.Core</title>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <description>Lightweight and implementation-free interfaces for DTO's, providers and adapters.</description>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <language>en-US</language>
     <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
     <dependencies>
