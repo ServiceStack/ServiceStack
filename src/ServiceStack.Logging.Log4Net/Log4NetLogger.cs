@@ -23,9 +23,9 @@ namespace ServiceStack.Logging.Log4Net
             _log = log4net.LogManager.GetLogger(type);
         }
 
-		public bool IsDebugEnabled { get { return _log.IsDebugEnabled; } }
+	public bool IsDebugEnabled { get { return _log.IsDebugEnabled; } }
 	
-		/// <summary>
+	/// <summary>
         /// Logs a Debug message.
         /// </summary>
         /// <param name="message">The message.</param>
