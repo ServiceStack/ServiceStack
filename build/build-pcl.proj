@@ -43,7 +43,7 @@
     <!--<MSBuild Projects="$(SrcDir)/ServiceStack.Signed.sln" Targets="Build" Properties="Configuration=$(Configuration);" />-->
 
     <!--<MSBuild Projects="$(SrcDir)/ServiceStack.sln" Targets="Build"
-          Properties="Configuration=$(Configuration);SignAssembly=true;AssemblyOriginatorKeyFile=../src/servicestack-sn.pfx" />-->
+          Properties="Configuration=$(Configuration);SignAssembly=true;AssemblyOriginatorKeyFile=../src/servicestack.snk" />-->
   </Target>
 
   <Target Name="UpdateVersion">
