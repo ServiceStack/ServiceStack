@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class InMemoryVirtualPathProviderTests : VirtualPathProviderTests
+    public class MemoryVirtualFilesTests : VirtualPathProviderTests
     {
         public override IVirtualPathProvider GetPathProvider()
         {
