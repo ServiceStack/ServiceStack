@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_0
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
@@ -15,55 +16,63 @@ namespace ServiceStack.Platforms
 
         const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
         public const string ConfigNullValue = "{null}";
+        
+        public static readonly List<string> AppConfigPaths = new List<string> {
+            "~/web.config",
+            "~/app.config",
+            "~/Web.config",
+            "~/App.config",
+        };
 
         public override string GetAppConfigPath()
         {
             var host = ServiceStackHost.Instance
-                ?? (ServiceStackHost) HostInstance;
+                ?? HostInstance;
 
-            if (host == null) return null;
-
-            var configPath = host.MapProjectPath("~/web.config");
-            if (File.Exists(configPath))
-                return configPath;
-
-            configPath = host.MapProjectPath("~/app.config");
-            if (File.Exists(configPath))
-                return configPath;
-
-            //*nix FS FTW!
-            configPath = host.MapProjectPath("~/Web.config"); 
-            if (File.Exists(configPath))
-                return configPath;
-
-            configPath = host.MapProjectPath("~/App.config"); 
-            if (File.Exists(configPath))
-                return configPath;
+            if (host == null) 
+                return null;
+            
+            var appConfigPaths = new List<string>(AppConfigPaths);
 
             try
             {
                 //dll App.config
                 var location = host.GetType().GetAssembly().Location;
-                if (string.IsNullOrEmpty(location))
-                    return null;
-
-                var appHostDll = new FileInfo(location).Name;
-                configPath = $"~/{appHostDll}.config".MapAbsolutePath();
-                return File.Exists(configPath) 
-                    ? configPath 
-                    : null;
+                if (!string.IsNullOrEmpty(location))
+                {
+                    var appHostDll = new FileInfo(location).Name;
+                    appConfigPaths.Add($"~/{appHostDll}.config");
+                }
             }
             catch (Exception ex)
             {
-                log.Error("GetAppConfigPath(): ", ex);
-                return null;
+                log.Warn("GetAppConfigPath() GetAssembly().Location: ", ex);
             }
+
+            foreach (var configPath in appConfigPaths)
+            {
+                try
+                {
+                    var resolvedPath = host.MapProjectPath(configPath);
+                    if (File.Exists(resolvedPath))
+                        return resolvedPath;
+
+                    resolvedPath = configPath.MapAbsolutePath();
+                    if (File.Exists(resolvedPath))
+                        return resolvedPath;
+                }
+                catch (Exception ex)
+                {
+                    log.Error("GetAppConfigPath(): ", ex);
+                }
+            }
+
+            return null;
         }
 
         public override string GetNullableAppSetting(string key)
         {
-            string value;
-            return ConfigUtils.GetAppSettingsMap().TryGetValue(key, out value)
+            return ConfigUtils.GetAppSettingsMap().TryGetValue(key, out var value)
                 ? value
                 : null;
         }
