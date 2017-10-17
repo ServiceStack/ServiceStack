@@ -71,6 +71,8 @@ namespace ServiceStack.NativeTypes.VbNet
             "Date",
             "End",
             "end",
+            "True",
+            "False",
         };
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
@@ -282,6 +284,9 @@ namespace ServiceStack.NativeTypes.VbNet
                     {
                         var name = type.EnumNames[i];
                         var value = type.EnumValues?[i];
+                        if (KeyWords.Contains(name))
+                            name = $"[{name}]";
+                        
                         sb.AppendLine(value == null
                             ? name
                             : $"{name} = {value}");
