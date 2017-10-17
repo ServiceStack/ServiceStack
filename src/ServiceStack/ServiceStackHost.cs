@@ -87,7 +87,7 @@ namespace ServiceStack
             Container = new Container { DefaultOwner = Owner.External };
             ServiceAssemblies = assembliesWithServices.ToList();
 
-            ContentTypes = Host.ContentTypes.Instance;
+            ContentTypes = new ContentTypes();
             RestPaths = new List<RestPath>();
             Routes = new ServiceRoutes(this);
             Metadata = new ServiceMetadata(RestPaths);
@@ -545,31 +545,42 @@ namespace ServiceStack
                 {
                     config.IgnoreFormatsInMetadata.Add("xml");
                     Config.PreferredContentTypes.Remove(MimeTypes.Xml);
+                    ContentTypes.Remove(MimeTypes.Xml);
                 }
                 if ((Feature.Json & config.EnableFeatures) != Feature.Json)
                 {
                     config.IgnoreFormatsInMetadata.Add("json");
                     Config.PreferredContentTypes.Remove(MimeTypes.Json);
+                    ContentTypes.Remove(MimeTypes.Json);
                 }
                 if ((Feature.Jsv & config.EnableFeatures) != Feature.Jsv)
                 {
                     config.IgnoreFormatsInMetadata.Add("jsv");
                     Config.PreferredContentTypes.Remove(MimeTypes.Jsv);
+                    ContentTypes.Remove(MimeTypes.Jsv);
                 }
                 if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
                 {
                     config.IgnoreFormatsInMetadata.Add("csv");
                     Config.PreferredContentTypes.Remove(MimeTypes.Csv);
+                    ContentTypes.Remove(MimeTypes.Csv);
                 }
                 if ((Feature.Html & config.EnableFeatures) != Feature.Html)
                 {
                     config.IgnoreFormatsInMetadata.Add("html");
                     Config.PreferredContentTypes.Remove(MimeTypes.Html);
+                    ContentTypes.Remove(MimeTypes.Html);
                 }
                 if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
+                {
                     config.IgnoreFormatsInMetadata.Add("soap11");
+                    ContentTypes.Remove(MimeTypes.Soap11);
+                }
                 if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
+                {
                     config.IgnoreFormatsInMetadata.Add("soap12");
+                    ContentTypes.Remove(MimeTypes.Soap12);
+                }
             }
 
             if ((Feature.Html & config.EnableFeatures) != Feature.Html)

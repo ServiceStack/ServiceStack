@@ -18,7 +18,7 @@ namespace ServiceStack.Web
         void RegisterAsync(string contentType,
             StreamSerializerDelegateAsync responseSerializer, StreamDeserializerDelegateAsync streamDeserializer);
 
-        void ClearCustomFilters();
+        void Remove(string contentType);
     }
 
     public interface IContentTypeReader
@@ -28,6 +28,8 @@ namespace ServiceStack.Web
         object DeserializeFromStream(string contentType, Type type, Stream requestStream);
 
         StreamDeserializerDelegate GetStreamDeserializer(string contentType);
+
+        StreamDeserializerDelegateAsync GetStreamDeserializerAsync(string contentType);
     }
     
     public interface IContentTypeWriter
@@ -53,4 +55,7 @@ namespace ServiceStack.Web
 
     public delegate Task<object> StreamDeserializerDelegateAsync(Type type, Stream fromStream);
 
+    public delegate string StringSerializerDelegate(IRequest req, object dto);
+    
+    public delegate object StringDeserializerDelegate(string contents, Type type);
 }

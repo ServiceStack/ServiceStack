@@ -249,8 +249,7 @@ namespace ServiceStack
 
         public static int ToStatusCode(this Exception ex)
         {
-            var hasStatusCode = ex as IHasStatusCode;
-            if (hasStatusCode != null)
+            if (ex is IHasStatusCode hasStatusCode)
                 return hasStatusCode.StatusCode;
 
             if (HostContext.AppHost != null && HostContext.Config != null)

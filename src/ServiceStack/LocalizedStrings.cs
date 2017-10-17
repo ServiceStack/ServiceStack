@@ -100,6 +100,9 @@
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
         public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
         public static string CacheFeatureMustBeEnabled = "HttpCacheFeature Plugin must be registered to use {0}";
+        
+        //Request
+        public static string ContentTypeNotSupported = "ContentType not supported '{0}'";
     }
 
     public static class HelpMessages

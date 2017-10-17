@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
@@ -16,16 +18,47 @@ namespace ServiceStack.Host
         public static ContentTypes Instance = new ContentTypes();
 
         public Dictionary<string, StreamSerializerDelegate> ContentTypeSerializers
-            = new Dictionary<string, StreamSerializerDelegate>();
+            = new Dictionary<string, StreamSerializerDelegate> {
+                { MimeTypes.Json, (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s) },
+                { MimeTypes.Jsv, (r, o, s) => TypeSerializer.SerializeToStream(o, s) },
+                { MimeTypes.Xml, (r, o, s) => XmlSerializer.SerializeToStream(o, s) },
+#if !NETSTANDARD2_0
+                { MimeTypes.Soap11, SoapHandler.SerializeSoap11ToStream },
+                { MimeTypes.Soap12, SoapHandler.SerializeSoap12ToStream },
+#endif
+            };
 
         public Dictionary<string, StreamDeserializerDelegate> ContentTypeDeserializers
-            = new Dictionary<string, StreamDeserializerDelegate>();
+            = new Dictionary<string, StreamDeserializerDelegate> {
+                { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromStream },
+                { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
+                { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
+                { MimeTypes.Soap11, XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" also matches xml
+            };
 
         public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync
             = new Dictionary<string, StreamSerializerDelegateAsync>();
 
         public Dictionary<string, StreamDeserializerDelegateAsync> ContentTypeDeserializersAsync
             = new Dictionary<string, StreamDeserializerDelegateAsync>();
+
+        public Dictionary<string, StringSerializerDelegate> ContentTypeStringSerializers
+            = new Dictionary<string, StringSerializerDelegate> {
+                { MimeTypes.Json, (r, o) => JsonDataContractSerializer.Instance.SerializeToString(o) },
+                { MimeTypes.Jsv, (r, o) => TypeSerializer.SerializeToString(o) },
+                { MimeTypes.Xml, (r, o) => XmlSerializer.SerializeToString(o) },
+#if !NETSTANDARD2_0
+                { MimeTypes.Soap11, (r,o) => SoapHandler.SerializeSoap11ToBytes(r, o).FromUtf8Bytes() },
+                { MimeTypes.Soap12, (r,o) => SoapHandler.SerializeSoap12ToBytes(r, o).FromUtf8Bytes() },
+#endif
+            };
+
+        public Dictionary<string, StringDeserializerDelegate> ContentTypeStringDeserializers
+            = new Dictionary<string, StringDeserializerDelegate> {
+                { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromString },
+                { MimeTypes.Jsv, TypeSerializer.DeserializeFromString },
+                { MimeTypes.Xml, XmlSerializer.DeserializeFromString },
+            };
 
         public static HashSet<string> KnownFormats = new HashSet<string>
         {
@@ -39,33 +72,18 @@ namespace ServiceStack.Host
             "wire",
         };
 
-        public ContentTypes()
-        {
-            this.ContentTypeFormats = new Dictionary<string, string>();
-        }
-
-        public void ClearCustomFilters()
-        {
-            this.ContentTypeFormats = new Dictionary<string, string>();
-            this.ContentTypeSerializers = new Dictionary<string, StreamSerializerDelegate>();
-            this.ContentTypeDeserializers = new Dictionary<string, StreamDeserializerDelegate>();
-        }
-
-        public Dictionary<string, string> ContentTypeFormats { get; set; }
+        //built-in formats
+        public Dictionary<string, string> ContentTypeFormats { get; } = new Dictionary<string, string> {
+            { "json", MimeTypes.Json },
+            { "xml", MimeTypes.Xml },
+            { "jsv", MimeTypes.Jsv },
+        };
 
         public string GetFormatContentType(string format)
         {
-            //built-in formats
-            if (format == "json")
-                return MimeTypes.Json;
-            if (format == "xml")
-                return MimeTypes.Xml;
-            if (format == "jsv")
-                return MimeTypes.Jsv;
-
-            ContentTypeFormats.TryGetValue(format, out var registeredFormats);
-
-            return registeredFormats;
+            return ContentTypeFormats.TryGetValue(format, out var registeredFormats)
+                ? registeredFormats
+                : null;
         }
 
         public void Register(string contentType, StreamSerializerDelegate streamSerializer, StreamDeserializerDelegate streamDeserializer)
@@ -73,12 +91,13 @@ namespace ServiceStack.Host
             if (contentType.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(contentType));
 
-            var parts = contentType.Split('/');
-            var format = parts[parts.Length - 1];
-            this.ContentTypeFormats[format] = contentType;
+            var format = contentType.LastRightPart('/');
+            
+            var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
+            ContentTypeFormats[format] = normalizedContentType;
 
-            SetContentTypeSerializer(contentType, streamSerializer);
-            SetContentTypeDeserializer(contentType, streamDeserializer);
+            SetContentTypeSerializer(normalizedContentType, streamSerializer);
+            SetContentTypeDeserializer(normalizedContentType, streamDeserializer);
         }
 
         public void RegisterAsync(string contentType, 
@@ -87,30 +106,52 @@ namespace ServiceStack.Host
             if (contentType.IsNullOrEmpty())
                 throw new ArgumentNullException(nameof(contentType));
 
-            var parts = contentType.Split('/');
-            var format = parts[parts.Length - 1];
-            this.ContentTypeFormats[format] = contentType;
+            var format = contentType.LastRightPart('/');
+            
+            var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
+            ContentTypeFormats[format] = normalizedContentType;
 
-            this.ContentTypeSerializersAsync[contentType] = streamSerializer;
-            this.ContentTypeDeserializersAsync[contentType] = streamDeserializer;
+            ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
+            ContentTypeDeserializersAsync[normalizedContentType] = streamDeserializer;
+        }
+
+        public void Remove(string contentType)
+        {
+            contentType = ContentFormat.NormalizeContentType(contentType);
+
+            ContentTypeFormats.Remove(contentType);
+            
+            ContentTypeSerializers.Remove(contentType);
+            ContentTypeSerializersAsync.Remove(contentType);
+            ContentTypeStringSerializers.Remove(contentType);
+
+            ContentTypeDeserializers.Remove(contentType);
+            ContentTypeDeserializersAsync.Remove(contentType);
+            ContentTypeStringDeserializers.Remove(contentType);
+
+            if (contentType == MimeTypes.Xml)
+            {
+                //"text/xml; charset=utf-8" also matches xml
+                ContentTypeSerializers.Remove(MimeTypes.Soap11);
+                ContentTypeDeserializers.Remove(MimeTypes.Soap11);
+            }
         }
 
         public void SetContentTypeSerializer(string contentType, StreamSerializerDelegate streamSerializer)
         {
-            this.ContentTypeSerializers[contentType] = streamSerializer;
+            ContentTypeSerializers[ContentFormat.NormalizeContentType(contentType)] = streamSerializer;
         }
 
         public void SetContentTypeDeserializer(string contentType, StreamDeserializerDelegate streamDeserializer)
         {
-            this.ContentTypeDeserializers[contentType] = streamDeserializer;
+            ContentTypeDeserializers[ContentFormat.NormalizeContentType(contentType)] = streamDeserializer;
         }
         
         public byte[] SerializeToBytes(IRequest req, object response)
         {
-            var contentType = req.ResponseContentType;
+            var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
 
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
+            if (ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
@@ -120,8 +161,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriterAsync) ||
-                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriterAsync))
+            if (ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriterAsync))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
@@ -131,35 +171,19 @@ namespace ServiceStack.Host
                 }
             }
 
-            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
-            switch (contentTypeAttr)
-            {
-                case RequestAttributes.Xml:
-                    return XmlSerializer.SerializeToString(response).ToUtf8Bytes();
-
-                case RequestAttributes.Json:
-                    return JsonDataContractSerializer.Instance.SerializeToString(response).ToUtf8Bytes();
-
-                case RequestAttributes.Jsv:
-                    return TypeSerializer.SerializeToString(response).ToUtf8Bytes();
-#if !NETSTANDARD2_0
-                case RequestAttributes.Soap11:
-                    return SoapHandler.SerializeSoap11ToBytes(req, response);
-
-                case RequestAttributes.Soap12:
-                    return SoapHandler.SerializeSoap12ToBytes(req, response);
-#endif
-            }
-
-            throw new NotSupportedException("ContentType not supported: " + contentType);
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
         public string SerializeToString(IRequest req, object response)
         {
-            var contentType = req.ResponseContentType;
+            var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
 
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseStreamWriter))
+            if (ContentTypeStringSerializers.TryGetValue(contentType, out var stringSerializer))
+            {
+                return stringSerializer(req, response);
+            }
+
+            if (ContentTypeSerializers.TryGetValue(contentType, out var responseStreamWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
@@ -171,8 +195,7 @@ namespace ServiceStack.Host
                 }
             }
 
-            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriter) ||
-                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
+            if (ContentTypeSerializersAsync.TryGetValue(contentType, out var responseWriter))
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
@@ -184,51 +207,42 @@ namespace ServiceStack.Host
                     return result;
                 }
             }
-            
-            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
-            switch (contentTypeAttr)
-            {
-                case RequestAttributes.Xml:
-                    return XmlSerializer.SerializeToString(response);
 
-                case RequestAttributes.Json:
-                    return JsonDataContractSerializer.Instance.SerializeToString(response);
-
-                case RequestAttributes.Jsv:
-                    return TypeSerializer.SerializeToString(response);
-
-#if !NETSTANDARD2_0
-                case RequestAttributes.Soap11:
-                    return SoapHandler.SerializeSoap11ToBytes(req, response).FromUtf8Bytes();
-
-                case RequestAttributes.Soap12:
-                    return SoapHandler.SerializeSoap12ToBytes(req, response).FromUtf8Bytes();
-#endif
-            }
-
-            throw new NotSupportedException("ContentType not supported: " + contentType);
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
-
+        
         public void SerializeToStream(IRequest req, object response, Stream responseStream)
         {
-            var contentType = req.ResponseContentType;
-            var serializerAsync = GetStreamSerializerAsync(contentType);
-            if (serializerAsync == null)
-                throw new NotSupportedException("ContentType not supported: " + contentType);
+            var contentType = ContentFormat.NormalizeContentType(req.ResponseContentType);
 
-            serializerAsync(req, response, responseStream).Wait();
+            var serializer = GetStreamSerializer(contentType);
+            if (serializer != null)
+            {
+                serializer(req, response, responseStream);
+                return;
+            }
+
+            var serializerAsync = GetStreamSerializerAsync(contentType);
+            if (serializerAsync != null)
+            {
+                var task = serializerAsync(req, response, responseStream);
+                task.Wait();
+                return;
+            }
+            
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
         public StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType)
         {
-            if (this.ContentTypeSerializersAsync.TryGetValue(contentType, out var serializerAsync) ||
-                this.ContentTypeSerializersAsync.TryGetValue(ContentFormat.GetRealContentType(contentType), out serializerAsync))
-            {
+            contentType = ContentFormat.NormalizeContentType(contentType);
+            
+            if (ContentTypeSerializersAsync.TryGetValue(contentType, out var serializerAsync))
                 return serializerAsync;
-            }
 
             var serializer = GetStreamSerializer(contentType);
-            if (serializer == null) return null;
+            if (serializer == null) 
+                return null;
 
             return (httpReq, dto, stream) =>
             {
@@ -239,85 +253,68 @@ namespace ServiceStack.Host
 
         public StreamSerializerDelegate GetStreamSerializer(string contentType)
         {
-            if (this.ContentTypeSerializers.TryGetValue(contentType, out var responseWriter) ||
-                this.ContentTypeSerializers.TryGetValue(ContentFormat.GetRealContentType(contentType), out responseWriter))
-            {
-                return responseWriter;
-            }
-
-            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
-            switch (contentTypeAttr)
-            {
-                case RequestAttributes.Xml:
-                    return (r, o, s) => XmlSerializer.SerializeToStream(o, s);
-
-                case RequestAttributes.Json:
-                    return (r, o, s) => JsonDataContractSerializer.Instance.SerializeToStream(o, s);
-
-                case RequestAttributes.Jsv:
-                    return (r, o, s) => TypeSerializer.SerializeToStream(o, s);
-
-#if !NETSTANDARD2_0
-                case RequestAttributes.Soap11:
-                    return SoapHandler.SerializeSoap11ToStream;
-
-                case RequestAttributes.Soap12:
-                    return SoapHandler.SerializeSoap12ToStream;
-#endif
-            }
-
-            return null;
+            return ContentTypeSerializers.TryGetValue(ContentFormat.NormalizeContentType(contentType), out var serializer) 
+                ? serializer 
+                : null;
         }
 
         public object DeserializeFromString(string contentType, Type type, string request)
         {
-            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
-            switch (contentTypeAttr)
+            contentType = ContentFormat.NormalizeContentType(contentType);
+
+            if (ContentTypeStringDeserializers.TryGetValue(contentType, out var stringDeserializer))
+                return stringDeserializer(request, type);
+
+            var deserializerAsync = GetStreamDeserializerAsync(contentType);
+            if (deserializerAsync != null)
             {
-                case RequestAttributes.Xml:
-                    return XmlSerializer.DeserializeFromString(request, type);
-
-                case RequestAttributes.Json:
-                    return JsonDataContractSerializer.Instance.DeserializeFromString(request, type);
-
-                case RequestAttributes.Jsv:
-                    return TypeSerializer.DeserializeFromString(request, type);
-
-                default:
-                    throw new NotSupportedException("ContentType not supported: " + contentType);
+                using (var ms = MemoryStreamFactory.GetStream(request.ToUtf8Bytes()))
+                {
+                    var task = deserializerAsync(type, ms);
+                    return task.Result;
+                }
             }
+            
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
         public object DeserializeFromStream(string contentType, Type type, Stream fromStream)
         {
-            var deserializer = GetStreamDeserializer(contentType);
-            if (deserializer == null)
-                throw new NotSupportedException("ContentType not supported: " + contentType);
+            contentType = ContentFormat.NormalizeContentType(contentType);
 
-            return deserializer(type, fromStream);
+            var deserializer = GetStreamDeserializer(contentType);
+            if (deserializer != null)
+                return deserializer(type, fromStream);
+
+            var deserializerAsync = GetStreamDeserializerAsync(contentType);
+            if (deserializerAsync != null)
+            {
+                var task = deserializerAsync(type, fromStream);
+                return task.Result;
+            }
+            
+            throw new NotSupportedException(ErrorMessages.ContentTypeNotSupported.Fmt(contentType));
         }
 
         public StreamDeserializerDelegate GetStreamDeserializer(string contentType)
         {
-            var realContentType = ContentFormat.GetRealContentType(contentType);
-            if (this.ContentTypeDeserializers.TryGetValue(realContentType, out var streamReader))
-                return streamReader;
+            return ContentTypeDeserializers.TryGetValue(ContentFormat.NormalizeContentType(contentType), out var deserializer) 
+                ? deserializer 
+                : null;
+        }
+ 
+        public StreamDeserializerDelegateAsync GetStreamDeserializerAsync(string contentType)
+        {
+            contentType = ContentFormat.NormalizeContentType(contentType);
+            
+            if (ContentTypeDeserializersAsync.TryGetValue(contentType, out var deserializerAsync))
+                return deserializerAsync;
 
-            var contentTypeAttr = ContentFormat.GetEndpointAttributes(contentType);
-            switch (contentTypeAttr)
-            {
-                case RequestAttributes.Xml:
-                case RequestAttributes.Soap11: //"text/xml; charset=utf-8" also matches xml
-                    return XmlSerializer.DeserializeFromStream;
+            var deserializer = GetStreamDeserializer(contentType);
+            if (deserializer == null) 
+                return null;
 
-                case RequestAttributes.Json:
-                    return JsonDataContractSerializer.Instance.DeserializeFromStream;
-
-                case RequestAttributes.Jsv:
-                    return TypeSerializer.DeserializeFromStream;
-            }
-
-            return null;
+            return (type, stream) => Task.FromResult(deserializer(type, stream));
         }
     }
 }

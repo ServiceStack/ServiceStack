@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
             var response = Config.AbsoluteBaseUri.CombineWith("/testxml")
                   .PostStringToUrl(xml, contentType: "text/xml; charset=utf-8", accept: "application/json");
 
-            Assert.That(response, Is.EqualTo("{\"User\":\"steve\"}").Or.EqualTo(("{\"user\":\"steve\"}")));
+            Assert.That(response, Is.EqualTo("{\"User\":\"steve\"}").Or.EqualTo("{\"user\":\"steve\"}"));
         }
     }
 }

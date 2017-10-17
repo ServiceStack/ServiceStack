@@ -36,7 +36,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                ContentTypes.ClearCustomFilters();
                 SetConfig(new HostConfig
                 {
                     DefaultContentType = MimeTypes.Json,
