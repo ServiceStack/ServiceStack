@@ -8,7 +8,7 @@
     <owners>ServiceStack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-      Common base library for ServiceStack projects.
+      ServiceStack Templates, Virtual File System, SimpleContainer and Common library for ServiceStack projects.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>

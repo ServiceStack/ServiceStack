@@ -113,10 +113,15 @@ namespace ServiceStack.Auth
 
         public string CreateJwtRefreshToken(string userId)
         {
+            return CreateJwtRefreshToken(userId, ExpireRefreshTokensIn);
+        }
+
+        public string CreateJwtRefreshToken(string userId, TimeSpan expireRefreshTokenIn)
+        {
             var jwtHeader = new JsonObject
             {
-                { "typ", "JWTR" }, //RefreshToken
-                { "alg", HashAlgorithm }
+                {"typ", "JWTR"}, //RefreshToken
+                {"alg", HashAlgorithm}
             };
 
             var keyId = GetKeyId();
@@ -128,7 +133,7 @@ namespace ServiceStack.Auth
             {
                 {"sub", userId},
                 {"iat", now.ToUnixTime().ToString()},
-                {"exp", now.Add(ExpireRefreshTokensIn).ToUnixTime().ToString()},
+                {"exp", now.Add(expireRefreshTokenIn).ToUnixTime().ToString()},
             };
 
             if (Audience != null)

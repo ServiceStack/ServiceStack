@@ -118,6 +118,21 @@ namespace CheckWeb
             {
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(GetRockstars());
+                
+                db.DropAndCreateTable<AllTypes>();
+                db.Insert(new AllTypes
+                {
+                    Id = 1,
+                    Int = 2,
+                    Long = 3,
+                    Float = 1.1f,
+                    Double = 2.2,
+                    Decimal = 3.3m,
+                    DateTime = DateTime.Now,
+                    Guid = Guid.NewGuid(),
+                    TimeSpan = TimeSpan.FromMilliseconds(1),
+                    String = "String"
+                });
             }
 
             var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
@@ -322,6 +337,9 @@ namespace CheckWeb
             return existingProviders;
         }
     }
+    
+    [Route("/query/alltypes")]
+    public class QueryAllTypes : QueryDb<AllTypes> {}
 
     [Route("/test/html")]
     public class TestHtml : IReturn<TestHtml>
