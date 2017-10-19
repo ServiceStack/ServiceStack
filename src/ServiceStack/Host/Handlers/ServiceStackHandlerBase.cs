@@ -80,8 +80,7 @@ namespace ServiceStack.Host.Handlers
                 await taskResponse;
                 var taskResult = taskResponse.GetResult();
 
-                var taskResults = taskResult as Task[];
-                if (taskResults != null)
+                if (taskResult is Task[] taskResults)
                 {
                     var batchResponse = await HandleAsyncBatchResponse(taskResults);
                     await HandleResponseNext(httpReq, httpRes, batchResponse);
@@ -98,8 +97,7 @@ namespace ServiceStack.Host.Handlers
             }
             else
             {
-                var taskResults = response as Task[];
-                if (taskResults != null)
+                if (response is Task[] taskResults)
                 {
                     var batchResponse = await HandleAsyncBatchResponse(taskResults);
                     await HandleResponseNext(httpReq, httpRes, batchResponse);
