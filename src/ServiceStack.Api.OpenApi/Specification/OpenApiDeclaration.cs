@@ -46,7 +46,7 @@ namespace ServiceStack.Api.OpenApi.Specification
         public Dictionary<string, OpenApiSecuritySchema> SecurityDefinitions { get; set; }
 
         [DataMember(Name = "security")]
-        public Dictionary<string, List<string>> Security { get; set; }
+        public List<Dictionary<string, List<string>>> Security { get; set; }
 
         [DataMember(Name = "tags")]
         public List<OpenApiTag> Tags { get; set; }
