@@ -143,15 +143,20 @@ namespace ServiceStack
         /// </summary>
         public static void EndRequestWithNoContent(this IResponse httpRes)
         {
-            if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)
+            var headOrOptions = httpRes.Request.Verb == HttpMethods.Head || httpRes.Request.Verb == HttpMethods.Options;
+            if (!headOrOptions)
             {
-                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)
                 {
-                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                    {
+                        httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    }
                 }
-            }
 
-            httpRes.SetContentLength(0);
+                httpRes.SetContentLength(0);
+            }
+            
             httpRes.EndRequest();
         }
     }

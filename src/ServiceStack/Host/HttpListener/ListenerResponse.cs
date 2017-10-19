@@ -167,8 +167,8 @@ namespace ServiceStack.Host.HttpListener
 
         public bool KeepAlive
         {
-            get { return response.KeepAlive; }
-            set { response.KeepAlive = true; }
+            get => response.KeepAlive;
+            set => response.KeepAlive = true;
         }
 
         public Dictionary<string, object> Items { get; private set; }

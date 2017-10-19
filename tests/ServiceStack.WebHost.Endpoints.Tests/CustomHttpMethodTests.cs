@@ -38,7 +38,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Response.AddHeader("X-Id", request.Id.ToString());
             Response.AddHeader("Content-Type", "video/mp4");
             Response.SetContentLength(100);
-            Response.EndRequest();
         }
 
         public object Any(CustomMethodHeaders request) => request;
