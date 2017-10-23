@@ -10,6 +10,7 @@ using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Formats;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
 using ServiceStack.Validation;
@@ -23,6 +24,7 @@ namespace RazorRockstars.Console.Files
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
         public bool EnableRazor = true;
+        public bool EnableMarkdown = false;
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
@@ -38,7 +40,9 @@ namespace RazorRockstars.Console.Files
 
             if (EnableRazor)
                 Plugins.Add(new RazorFormat());
-
+            if (EnableMarkdown)
+                Plugins.Add(new MarkdownFormat());
+            
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new RequestInfoFeature());
             Plugins.Add(new RequestLogsFeature());

@@ -30,7 +30,10 @@ namespace RazorRockstars.Console.Files
         {
             LogManager.LogFactory = new ConsoleLogFactory();
             startedAt = Stopwatch.StartNew();
-            appHost = new AppHost();
+            appHost = new AppHost
+            {
+                EnableMarkdown = true,
+            };
             appHost.Init();
             appHost.Start(ListeningOn);
         }
