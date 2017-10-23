@@ -16,6 +16,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using ServiceStack;
+using ServiceStack.Html;
 using ServiceStack.Text;
 
 namespace MarkdownDeep
@@ -30,7 +32,7 @@ namespace MarkdownDeep
 	}
 
 
-	public class Markdown
+	public class Markdown : IMarkdownTransformer
 	{
 		// Constructor
 		public Markdown()

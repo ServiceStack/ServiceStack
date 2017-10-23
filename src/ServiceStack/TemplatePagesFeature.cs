@@ -173,7 +173,7 @@ namespace ServiceStack
             return GetCodePage("Views/" + viewName) != null || GetViewPage(viewName) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null, HtmlHelper htmlHelper = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null, IHtmlContext htmlHelper = null)
         {
             var codePage = htmlHelper?.HttpRequest != null 
                 ? htmlHelper.HttpRequest.GetCodePage("Views/" + pageName) 
@@ -563,14 +563,12 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             ContentType = MimeTypes.MarkdownText;
         }
 
-        private static readonly MarkdownSharp.Markdown markdown = new MarkdownSharp.Markdown();
-
         public static async Task<Stream> TransformToHtml(Stream markdownStream)
         {
             using (var reader = new StreamReader(markdownStream))
             {
                 var md = await reader.ReadToEndAsync();
-                var html = markdown.Transform(md);
+                var html = MarkdownConfig.Transformer.Transform(md);
                 return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
             }
         }
