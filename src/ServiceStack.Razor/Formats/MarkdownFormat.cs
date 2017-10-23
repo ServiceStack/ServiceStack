@@ -96,8 +96,8 @@ namespace ServiceStack.Formats
             foreach (var ns in appHost.Config.RazorNamespaces)
                 Evaluator.AddAssembly(ns);
 
-            this.MarkdownBaseType = appHost.Config.MarkdownBaseType ?? this.MarkdownBaseType;
-            this.MarkdownGlobalHelpers = appHost.Config.MarkdownGlobalHelpers ?? this.MarkdownGlobalHelpers;
+            this.MarkdownBaseType = this.MarkdownBaseType;
+            this.MarkdownGlobalHelpers = this.MarkdownGlobalHelpers;
 
             this.ReplaceTokens = appHost.Config.HtmlReplaceTokens ?? new Dictionary<string, string>();
             var webHostUrl = appHost.Config.WebHostUrl;
@@ -187,7 +187,7 @@ namespace ServiceStack.Formats
             return GetViewPage(viewName, httpReq) != null;
         }
 
-        public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper = null)
+        public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, IHtmlContext htmlHelper = null)
         {
             var markdownPage = ReloadIfNeeded(GetViewPage(pageName, htmlHelper.GetHttpRequest()));
             var output = RenderDynamicPage(markdownPage, pageName, model, renderHtml, false);

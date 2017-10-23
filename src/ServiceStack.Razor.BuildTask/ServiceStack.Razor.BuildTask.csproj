@@ -115,9 +115,6 @@
     <Compile Include="..\ServiceStack.Razor\Compilation\RazorPageHost.cs">
       <Link>Compilation\RazorPageHost.cs</Link>
     </Compile>
-    <Compile Include="..\ServiceStack\Html\MvcResources.cs">
-      <Link>Support\MvcResources.cs</Link>
-    </Compile>
     <Compile Include="AppConfigScope.cs" />
     <Compile Include="Support\HelperResult.cs" />
     <Compile Include="Support\HostContext.cs" />

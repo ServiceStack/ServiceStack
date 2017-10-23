@@ -113,7 +113,7 @@ namespace ServiceStack.Mvc
         public bool HasView(string viewName, IRequest httpReq = null) => false;
 
         public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null,
-            Html.HtmlHelper htmlHelper = null) => null;
+            Html.IHtmlContext htmlHelper = null) => null;
 
         private const string RenderException = "RazorFormat.Exception";
 
@@ -405,10 +405,7 @@ namespace ServiceStack.Mvc
 
         public static IHtmlContent RenderMarkdown(this IHtmlHelper htmlHelper, string markdown)
         {
-            var feature = HostContext.GetPlugin<Formats.MarkdownFormat>();
-            return feature != null
-                ? new HtmlString(feature.Transform(markdown))
-                : new HtmlString(new MarkdownSharp.Markdown().Transform(markdown));
+            return new HtmlString(MarkdownConfig.Transform(markdown));
         }
 
         public static string ResolveLayout(this IHtmlHelper htmlHelper, string defaultLayout)

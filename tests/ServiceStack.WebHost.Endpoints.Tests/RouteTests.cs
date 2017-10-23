@@ -232,8 +232,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Plugins.Add(new CsvFormat()); //required to allow .csv
 
-            Plugins.RemoveAll(x => x is MarkdownFormat);
-
             ContentTypes.Register(MimeTypes.PlainText,
                 (req, o, stream) => JsonSerializer.SerializeToStream(o.GetType(), stream),
                 JsonSerializer.DeserializeFromStream);

@@ -279,15 +279,16 @@ namespace ServiceStack.Razor.Managers
             throw new NotImplementedException();
         }
 
-        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper)
+        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, IHtmlContext htmlHelper)
         {
             var httpReq = htmlHelper.HttpRequest;
+            var _htmlHelper = (HtmlHelper)htmlHelper;
             var razorPage = viewManager.GetPartialPage(httpReq, pageName);
             if (razorPage != null)
             {
-                using (var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage))
+                using (var page = CreateRazorPageInstance(httpReq, _htmlHelper.HttpResponse, model, razorPage))
                 {
-                    page.ParentPage = htmlHelper.RazorPage;
+                    page.ParentPage = _htmlHelper.RazorPage;
                     page.WriteTo(writer);
                 }
             }
@@ -295,7 +296,7 @@ namespace ServiceStack.Razor.Managers
             {
                 if (RenderPartialFn != null)
                 {
-                    RenderPartialFn(pageName, model, renderHtml, writer, htmlHelper, httpReq);
+                    RenderPartialFn(pageName, model, renderHtml, writer, _htmlHelper, httpReq);
                 }
                 else
                 {

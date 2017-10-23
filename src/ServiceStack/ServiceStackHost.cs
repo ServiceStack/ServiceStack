@@ -136,7 +136,6 @@ namespace ServiceStack
             Plugins = new List<IPlugin> {
                 new HtmlFormat(),
                 new CsvFormat(),
-                new MarkdownFormat(),
                 new PredefinedRoutesFeature(),
                 new MetadataFeature(),
                 new NativeTypesFeature(),
@@ -588,9 +587,6 @@ namespace ServiceStack
 
             if ((Feature.Csv & config.EnableFeatures) != Feature.Csv)
                 Plugins.RemoveAll(x => x is CsvFormat);
-
-            if ((Feature.Markdown & config.EnableFeatures) != Feature.Markdown)
-                Plugins.RemoveAll(x => x is MarkdownFormat);
 
             if ((Feature.PredefinedRoutes & config.EnableFeatures) != Feature.PredefinedRoutes)
                 Plugins.RemoveAll(x => x is PredefinedRoutesFeature);

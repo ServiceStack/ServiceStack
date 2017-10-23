@@ -18,7 +18,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Html
 {
-	public class HtmlHelper
+	public class HtmlHelper : IHtmlContext
     {
         public const string DefaultTemplate = null;
         public const string EmptyTemplate = "";
@@ -506,18 +506,9 @@ namespace ServiceStack.Html
             var feature = HostContext.GetPlugin<MarkdownFormat>();
             return feature != null
                 ? MvcHtmlString.Create(feature.Transform(markdown))
-                : new MvcHtmlString(new MarkdownSharp.Markdown().Transform(markdown));
+                : new MvcHtmlString(MarkdownConfig.Transform(markdown));
         }
     }
-
-	public static class HtmlHelperExtensions
-	{
-	    public static IRequest GetHttpRequest(this HtmlHelper html)
-	    {
-	        return html != null ? html.HttpRequest : null;
-	    }
-	}
-
 }
 
 #endif

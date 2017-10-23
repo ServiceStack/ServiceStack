@@ -124,15 +124,13 @@ namespace ServiceStack.Host
                 {
                     entry.ErrorResponse = ToSerializableErrorResponse(response);
 
-                    var httpError = response as IHttpError;
-                    if (httpError != null)
+                    if (response is IHttpError httpError)
                     {
                         entry.StatusCode = (int)httpError.StatusCode;
                         entry.StatusDescription = httpError.StatusDescription;
                     }
 
-                    var exception = response as Exception;
-                    if (exception != null)
+                    if (response is Exception exception)
                     {
                         if (exception.InnerException != null)
                             exception = exception.InnerException;
@@ -175,8 +173,7 @@ namespace ServiceStack.Host
 
         public static object ToSerializableErrorResponse(object response)
         {
-            var errorResult = response as IHttpResult;
-            if (errorResult != null)
+            if (response is IHttpResult errorResult)
                 return errorResult.Response;
 
             var ex = response as Exception;

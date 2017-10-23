@@ -5,10 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using MarkdownSharp;
 using ServiceStack.Host;
 using ServiceStack.Logging;
-using ServiceStack.Markdown;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
 
@@ -86,9 +84,6 @@ namespace ServiceStack
                 ReturnsInnerException = true,
                 DisposeDependenciesAfterUse = true,
                 LogUnobservedTaskExceptions = true,
-                MarkdownOptions = new MarkdownOptions(),
-                MarkdownBaseType = typeof(MarkdownViewBase),
-                MarkdownGlobalHelpers = new Dictionary<string, Type>(),
                 HtmlReplaceTokens = new Dictionary<string, string>(),
                 AddMaxAgeForStaticMimeTypes = new Dictionary<string, TimeSpan> {
                     { "image/gif", TimeSpan.FromHours(1) },
@@ -197,9 +192,6 @@ namespace ServiceStack
             this.DisposeDependenciesAfterUse = instance.DisposeDependenciesAfterUse;
             this.LogUnobservedTaskExceptions = instance.LogUnobservedTaskExceptions;
             this.ReturnsInnerException = instance.ReturnsInnerException;
-            this.MarkdownOptions = instance.MarkdownOptions;
-            this.MarkdownBaseType = instance.MarkdownBaseType;
-            this.MarkdownGlobalHelpers = instance.MarkdownGlobalHelpers;
             this.HtmlReplaceTokens = instance.HtmlReplaceTokens;
             this.AddMaxAgeForStaticMimeTypes = instance.AddMaxAgeForStaticMimeTypes;
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
@@ -295,9 +287,6 @@ namespace ServiceStack
         public bool DisposeDependenciesAfterUse { get; set; }
         public bool LogUnobservedTaskExceptions { get; set; }
 
-        public MarkdownOptions MarkdownOptions { get; set; }
-        public Type MarkdownBaseType { get; set; }
-        public Dictionary<string, Type> MarkdownGlobalHelpers { get; set; }
         public Dictionary<string, string> HtmlReplaceTokens { get; set; }
 
         public HashSet<string> AppendUtf8CharsetOnContentTypes { get; set; }
