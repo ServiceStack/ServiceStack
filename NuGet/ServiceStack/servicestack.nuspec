@@ -49,6 +49,5 @@
     <file src="..\..\src\ServiceStack\**\*.ts" target="src" />
     <file src="..\..\src\ServiceStack\**\*.css" target="src" />
     <file src="..\..\src\ServiceStack\**\*.html" target="src" />
-    <file src="..\..\src\ServiceStack\**\*.tmpl" target="src" />
   </files>
 </package>

@@ -79,6 +79,8 @@
       <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard2.0/ServiceStack.pdb"></ServiceStackCoreFiles>
       <ServiceStackCoreFiles Include="$(SrcDir)/ServiceStack/bin/$(Configuration)/netstandard2.0/ServiceStack.xml"></ServiceStackCoreFiles>
 
+      <NetFrameworkFiles Include="$(SrcDir)/ServiceStack.NetFramework/bin/$(Configuration)/net45/ServiceStack.NetFramework.*"></NetFrameworkFiles>
+
       <KestrelFiles Include="$(SrcDir)/ServiceStack.Kestrel/bin/$(Configuration)/netstandard2.0/ServiceStack.Kestrel.*"></KestrelFiles>
 
 
@@ -551,6 +553,18 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack/servicestack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.NetFramework -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.NetFramework/ServiceStack.NetFramework.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.NetFramework/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.NetFramework/lib/net45')" />
+    <Copy SourceFiles="%(NetFrameworkFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.NetFramework/lib/net45" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.NetFramework/servicestack.netframework.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Kestrel -->
 
