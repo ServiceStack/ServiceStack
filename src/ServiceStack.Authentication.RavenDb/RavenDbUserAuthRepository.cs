@@ -117,7 +117,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             newUser.ValidateNewUser();
 
-            AssertNoExistingUser(newUser);
+            AssertNoExistingUser(newUser, existingUser);
 
             newUser.Id = existingUser.Id;
             newUser.PasswordHash = existingUser.PasswordHash;
