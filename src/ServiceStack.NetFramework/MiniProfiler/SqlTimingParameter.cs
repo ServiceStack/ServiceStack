@@ -22,25 +22,25 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Parameter name, e.g. "@routeName"
         /// </summary>
-        [DataMember(Order = 1)]
+        [DataMember(Order = 1, Name = "Name")]
         public string Name { get; set; }
 
         /// <summary>
         /// The value submitted to the database.
         /// </summary>
-        [DataMember(Order = 2)]
+        [DataMember(Order = 2, Name = "Value")]
         public string Value { get; set; }
 
         /// <summary>
         /// System.Data.DbType, e.g. "String", "Bit"
         /// </summary>
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3, Name = "DbType")]
         public string DbType { get; set; }
 
         /// <summary>
         /// How large the type is, e.g. for string, size could be 4000
         /// </summary>
-        [DataMember(Order = 4)]
+        [DataMember(Order = 4, Name = "Size")]
         public int Size { get; set; }
 
         /// <summary>

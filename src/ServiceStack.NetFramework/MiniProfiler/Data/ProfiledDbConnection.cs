@@ -7,7 +7,7 @@ using System.Data.Common;
 namespace ServiceStack.MiniProfiler.Data
 {
     /// <summary>
-    /// Wraps a database connection, allowing sql execution timings to be collected when a <see cref="MiniProfiler.Profiler"/> session is started.
+    /// Wraps a database connection, allowing sql execution timings to be collected when a <see cref="ServiceStack.MiniProfiler"/> session is started.
     /// </summary>
     public class ProfiledDbConnection : ProfiledConnection, ICloneable
     {
@@ -19,13 +19,23 @@ namespace ServiceStack.MiniProfiler.Data
         /// <param name="profiler">The currently started <see cref="IDbProfiler"/> or null.</param>
         /// <param name="autoDisposeConnection">Determines whether the ProfiledDbConnection will dispose the underlying connection.</param>
         public ProfiledDbConnection(DbConnection connection, IDbProfiler profiler, bool autoDisposeConnection = true)
-            : base(connection, profiler, autoDisposeConnection)
-        {
-        }
+            : base(connection, profiler, autoDisposeConnection) {}
 
         public ProfiledDbConnection(IDbConnection connection, IDbProfiler profiler, bool autoDisposeConnection=true)
-            : base(connection, profiler, autoDisposeConnection)
+            : base(connection, profiler, autoDisposeConnection) {}
+
+        public ProfiledDbConnection(DbConnection connection, IProfiler profiler, bool autoDisposeConnection = true)
+            : base(connection, GetDbProfiler(profiler), autoDisposeConnection) {}
+
+        public ProfiledDbConnection(IDbConnection connection, IProfiler profiler, bool autoDisposeConnection=true)
+            : base(connection, GetDbProfiler(profiler), autoDisposeConnection) {}
+
+        private static IDbProfiler GetDbProfiler(IProfiler profiler)
         {
+            if (profiler is IDbProfiler dbProfiler)
+                return dbProfiler;
+
+            return profiler.GetMiniProfiler();
         }
 
         /// <summary>
@@ -38,7 +48,7 @@ namespace ServiceStack.MiniProfiler.Data
         }
 
         /// <summary>
-        /// This will be made private; use <see cref="Profiler"/>
+        /// This will be made private; use <see cref="MiniProfiler"/>
         /// </summary>
         protected IDbProfiler _profiler // TODO: in MiniProfiler 2.0, make private
         {

@@ -12,7 +12,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.MiniProfiler
 {
-    partial class Profiler
+    partial class MiniProfiler
     {
         /// <summary>
         /// Various configuration properties.
@@ -185,7 +185,7 @@ namespace ServiceStack.MiniProfiler
             public static bool ExcludeStackTraceSnippetFromSqlTimings { get; set; }
 
             /// <summary>
-            /// When <see cref="Profiler.Start"/> is called, if the current request url contains any items in this property,
+            /// When <see cref="MiniProfiler.Start"/> is called, if the current request url contains any items in this property,
             /// no profiler will be instantiated and no results will be displayed.
 			/// Default value is { "/ssr-", "/content/", "/scripts/", "/favicon.ico" }.
             /// </summary>
@@ -241,7 +241,7 @@ namespace ServiceStack.MiniProfiler
             /// <remarks>
             /// Both the HttpRequest and MiniProfiler parameters that will be passed into this function should never be null.
             /// </remarks>
-            public static Func<IRequest, Profiler, bool> Results_Authorize { get; set; }
+            public static Func<IRequest, MiniProfiler, bool> Results_Authorize { get; set; }
 
             /// <summary>
             /// Make sure we can at least store profiler results to the http runtime cache.

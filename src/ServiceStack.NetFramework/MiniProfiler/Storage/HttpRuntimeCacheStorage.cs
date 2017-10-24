@@ -7,7 +7,7 @@ using System.Web;
 namespace ServiceStack.MiniProfiler.Storage
 {
     /// <summary>
-    /// Understands how to store a <see cref="Profiler"/> to the <see cref="System.Web.HttpRuntime.Cache"/> with absolute expiration.
+    /// Understands how to store a <see cref="MiniProfiler"/> to the <see cref="System.Web.HttpRuntime.Cache"/> with absolute expiration.
     /// </summary>
     public class HttpRuntimeCacheStorage : IStorage
     {
@@ -18,7 +18,7 @@ namespace ServiceStack.MiniProfiler.Storage
         public const string CacheKeyPrefix = "mini-profiler-";
 
         /// <summary>
-        /// How long to cache each <see cref="Profiler"/> for (i.e. the absolute expiration parameter of 
+        /// How long to cache each <see cref="MiniProfiler"/> for (i.e. the absolute expiration parameter of 
         /// <see cref="System.Web.Caching.Cache.Insert(string, object, System.Web.Caching.CacheDependency, System.DateTime, System.TimeSpan, System.Web.Caching.CacheItemUpdateCallback)"/>)
         /// </summary>
         public TimeSpan CacheDuration { get; set; }
@@ -33,9 +33,9 @@ namespace ServiceStack.MiniProfiler.Storage
 
         /// <summary>
         /// Saves <paramref name="profiler"/> to the HttpRuntime.Cache under a key concated with <see cref="CacheKeyPrefix"/>
-        /// and the parameter's <see cref="Profiler.Id"/>.
+        /// and the parameter's <see cref="MiniProfiler.Id"/>.
         /// </summary>
-        public void Save(Profiler profiler)
+        public void Save(MiniProfiler profiler)
         {
             InsertIntoCache(GetCacheKey(profiler.Id), profiler);
 
@@ -51,12 +51,12 @@ namespace ServiceStack.MiniProfiler.Storage
         }
 
         /// <summary>
-        /// Returns the saved <see cref="Profiler"/> identified by <paramref name="id"/>. Also marks the resulting
-        /// profiler <see cref="Profiler.HasUserViewed"/> to true.
+        /// Returns the saved <see cref="MiniProfiler"/> identified by <paramref name="id"/>. Also marks the resulting
+        /// profiler <see cref="MiniProfiler.HasUserViewed"/> to true.
         /// </summary>
-        public Profiler Load(Guid id)
+        public MiniProfiler Load(Guid id)
         {
-            var result = HttpRuntime.Cache[GetCacheKey(id)] as Profiler;
+            var result = HttpRuntime.Cache[GetCacheKey(id)] as MiniProfiler;
 
             if (result != null)
             {
@@ -73,9 +73,9 @@ namespace ServiceStack.MiniProfiler.Storage
         }
 
         /// <summary>
-        /// Returns a list of <see cref="Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
+        /// Returns a list of <see cref="MiniProfiler.Id"/>s that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="Profiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
         public List<Guid> GetUnviewedIds(string user)
         {
             var ids = GetPerUserUnviewedIds(user);
@@ -108,7 +108,7 @@ namespace ServiceStack.MiniProfiler.Storage
             return CacheKeyPrefix + "unviewed-for-user-" + user;
         }
 
-        private List<Guid> GetPerUserUnviewedIds(Profiler profiler)
+        private List<Guid> GetPerUserUnviewedIds(MiniProfiler profiler)
         {
             return GetPerUserUnviewedIds(profiler.User);
         }

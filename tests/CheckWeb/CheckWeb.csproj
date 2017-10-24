@@ -131,7 +131,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="TestMinifier.cshtml" />
-    <Content Include="TestMinifier.html" />
+    <Content Include="TestMinifier2.html" />
     <Content Include="default.html" />
     <Content Include="TestError.cshtml" />
     <Content Include="GlobalErrorHandler.cshtml" />
@@ -176,6 +176,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj">
       <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
       <Name>ServiceStack.Interfaces</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj">
+      <Project>{22f8d050-2c96-4993-b221-da16ebc61f31}</Project>
+      <Name>ServiceStack.NetFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>

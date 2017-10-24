@@ -170,6 +170,10 @@
       <Project>{55942102-033a-4da8-a6af-1db7b2f34a2d}</Project>
       <Name>ServiceStack.Interfaces</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj">
+      <Project>{22f8d050-2c96-4993-b221-da16ebc61f31}</Project>
+      <Name>ServiceStack.NetFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{D73274AE-006B-4CEE-BA60-0ECF5873048D}</Project>
       <Name>ServiceStack.Razor</Name>

@@ -21,49 +21,49 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Unique identifer for this timing; set during construction.
         /// </summary>
-        [DataMember(Order = 1)]
+        [DataMember(Order = 1, Name = "Id")]
         public Guid Id { get; set; }
 
         /// <summary>
         /// Text displayed when this Timing is rendered.
         /// </summary>
-        [DataMember(Order = 2)]
+        [DataMember(Order = 2, Name = "Name")]
         public string Name { get; set; }
 
         /// <summary>
         /// How long this Timing step took in ms; includes any <see cref="Children"/> Timings' durations.
         /// </summary>
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3, Name = "DurationMilliseconds")]
         public decimal? DurationMilliseconds { get; set; }
 
         /// <summary>
         /// The offset from the start of profiling.
         /// </summary>
-        [DataMember(Order = 4)]
+        [DataMember(Order = 4, Name = "StartMilliseconds")]
         public decimal StartMilliseconds { get; set; }
 
         /// <summary>
         /// All sub-steps that occur within this Timing step. Add new children through <see cref="AddChild"/>
         /// </summary>
-        [DataMember(Order = 5)]
+        [DataMember(Order = 5, Name = "Children")]
         public List<Timing> Children { get; set; }
 
         /// <summary>
         /// Stores arbitrary key/value strings on this Timing step. Add new tuples through <see cref="AddKeyValue"/>.
         /// </summary>
-        [DataMember(Order = 6)]
+        [DataMember(Order = 6, Name = "KeyValues")]
         public Dictionary<string, string> KeyValues { get; set; }
 
         /// <summary>
         /// Any queries that occurred during this Timing step.
         /// </summary>
-        [DataMember(Order = 7)]
+        [DataMember(Order = 7, Name = "SqlTimings")]
         public List<SqlTiming> SqlTimings { get; set; }
 
         /// <summary>
         /// Needed for database deserialization and JSON serialization.
         /// </summary>
-		[DataMember(Order = 8)]
+		[DataMember(Order = 8, Name = "ParentTimingId")]
 		public Guid? ParentTimingId { get; set; }
 
         private Timing _parentTiming;
@@ -109,7 +109,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Gets the elapsed milliseconds in this step without any children's durations.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "DurationWithoutChildrenMilliseconds")]
 		public decimal DurationWithoutChildrenMilliseconds
         {
             get
@@ -131,7 +131,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Gets the aggregate elapsed milliseconds of all SqlTimings executed in this Timing, excluding Children Timings.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "SqlTimingsDurationMilliseconds")]
 		public decimal SqlTimingsDurationMilliseconds
         {
             get { return HasSqlTimings ? Math.Round(SqlTimings.Sum(s => s.DurationMilliseconds), 1) : 0; }
@@ -139,18 +139,18 @@ namespace ServiceStack.MiniProfiler
 
         /// <summary>
         /// Returns true when this <see cref="DurationWithoutChildrenMilliseconds"/> is less than the configured
-        /// <see cref="MiniProfiler.Profiler.Settings.TrivialDurationThresholdMilliseconds"/>, by default 2.0 ms.
+        /// <see cref="MiniProfiler.Settings.TrivialDurationThresholdMilliseconds"/>, by default 2.0 ms.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "IsTrivial")]
 		public bool IsTrivial
         {
-            get { return DurationWithoutChildrenMilliseconds <= MiniProfiler.Profiler.Settings.TrivialDurationThresholdMilliseconds; }
+            get { return DurationWithoutChildrenMilliseconds <= MiniProfiler.Settings.TrivialDurationThresholdMilliseconds; }
         }
 
         /// <summary>
         /// Reference to the containing profiler, allowing this Timing to affect the Head and get Stopwatch readings.
         /// </summary>
-        internal Profiler Profiler { get; private set; }
+        internal MiniProfiler Profiler { get; private set; }
 
         /// <summary>
         /// Offset from parent MiniProfiler's creation that this Timing was created.
@@ -160,7 +160,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when this Timing has inner Timing steps.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "HasChildren")]
 		public bool HasChildren
         {
             get { return Children != null && Children.Count > 0; }
@@ -169,7 +169,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true if this Timing step collected sql execution timings.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "HasSqlTimings")]
 		public bool HasSqlTimings
         {
             get { return SqlTimings != null && SqlTimings.Count > 0; }
@@ -178,7 +178,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true if any <see cref="SqlTiming"/>s executed in this step are detected as duplicate statements.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "HasDuplicateSqlTimings")]
 		public bool HasDuplicateSqlTimings
         {
             get { return HasSqlTimings && SqlTimings.Any(s => s.IsDuplicate); }
@@ -187,7 +187,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when this Timing is the first one created in a MiniProfiler session.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "IsRoot")]
 		public bool IsRoot
         {
             get { return ParentTiming == null; }
@@ -196,7 +196,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How far away this Timing is from the Profiler's Root.
         /// </summary>
-        [DataMember]
+        [DataMember(Name = "Depth")]
         public Int16 Depth
         {
             get
@@ -217,7 +217,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql data readers were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "ExecutedReaders")]
 		public int ExecutedReaders
         {
             get { return GetExecutedCount(ExecuteType.Reader); }
@@ -226,7 +226,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql scalar queries were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "ExecutedScalars")]
 		public int ExecutedScalars
         {
             get { return GetExecutedCount(ExecuteType.Scalar); }
@@ -235,7 +235,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql non-query statements were executed in this Timing step. Does not include queries in any child Timings.
         /// </summary>
-		[DataMember]
+		[DataMember(Name = "ExecutedNonQueries")]
 		public int ExecutedNonQueries
         {
             get { return GetExecutedCount(ExecuteType.NonQuery); }
@@ -244,7 +244,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Creates a new Timing named 'name' in the 'profiler's session, with 'parent' as this Timing's immediate ancestor.
         /// </summary>
-        public Timing(Profiler profiler, Timing parent, string name)
+        public Timing(MiniProfiler profiler, Timing parent, string name)
         {
             this.Id = Guid.NewGuid();
             Profiler = profiler;

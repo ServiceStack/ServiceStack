@@ -9,7 +9,7 @@ using ServiceStack.MiniProfiler.Data;
 
 namespace ServiceStack.MiniProfiler
 {
-    partial class Profiler : IDbProfiler
+    partial class MiniProfiler : IDbProfiler
     {
         /// <summary>
         /// Contains information about queries executed during this profiling session.
@@ -27,7 +27,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Milliseconds, to one decimal place, that this MiniProfiler was executing sql.
         /// </summary>
-		[DataMember(Order = 14)]
+		[DataMember(Order = 14, Name = "DurationMillisecondsInSql")]
 		public decimal DurationMillisecondsInSql
         {
             get { return GetTimingHierarchy().Sum(t => t.HasSqlTimings ? t.SqlTimings.Sum(s => s.DurationMilliseconds) : 0); }
@@ -36,19 +36,19 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when we have profiled queries.
         /// </summary>
-		[DataMember(Order = 15)]
+		[DataMember(Order = 15, Name = "HasSqlTimings")]
 		public bool HasSqlTimings { get; set; }
 
         /// <summary>
         /// Returns true when any child Timings have duplicate queries.
         /// </summary>
-		[DataMember(Order = 16)]
+		[DataMember(Order = 16, Name = "HasDuplicateSqlTimings")]
 		public bool HasDuplicateSqlTimings { get; set; }
 
         /// <summary>
         /// How many sql data readers were executed in all <see cref="Timing"/> steps.
         /// </summary>
-		[DataMember(Order = 17)]
+		[DataMember(Order = 17, Name = "ExecutedReaders")]
 		public int ExecutedReaders
         {
             get { return GetExecutedCount(ExecuteType.Reader); }
@@ -57,7 +57,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql scalar queries were executed in all <see cref="Timing"/> steps.
         /// </summary>
-		[DataMember(Order = 18)]
+		[DataMember(Order = 18, Name = "ExecutedScalars")]
 		public int ExecutedScalars
         {
             get { return GetExecutedCount(ExecuteType.Scalar); }
@@ -66,7 +66,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// How many sql non-query statements were executed in all <see cref="Timing"/> steps.
         /// </summary>
-		[DataMember(Order = 19)]
+		[DataMember(Order = 19, Name = "ExecutedNonQueries")]
 		public int ExecutedNonQueries
         {
             get { return GetExecutedCount(ExecuteType.NonQuery); }

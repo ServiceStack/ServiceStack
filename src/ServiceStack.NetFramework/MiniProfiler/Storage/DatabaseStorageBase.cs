@@ -25,19 +25,19 @@ namespace ServiceStack.MiniProfiler.Storage
         }
 
         /// <summary>
-        /// Saves 'profiler' to a database under its <see cref="Profiler.Id"/>.
+        /// Saves 'profiler' to a database under its <see cref="MiniProfiler.Id"/>.
         /// </summary>
-        public abstract void Save(Profiler profiler);
+        public abstract void Save(MiniProfiler profiler);
 
         /// <summary>
         /// Returns the MiniProfiler identified by 'id' from the database or null when no MiniProfiler exists under that 'id'.
         /// </summary>
-        public abstract Profiler Load(Guid id);
+        public abstract MiniProfiler Load(Guid id);
 
         /// <summary>
-        /// Returns a list of <see cref="Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
+        /// Returns a list of <see cref="MiniProfiler.Id"/>s that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="Profiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
         public abstract List<Guid> GetUnviewedIds(string user);
 
         /// <summary>

@@ -15,44 +15,58 @@ using ServiceStack.Text;
 
 namespace ServiceStack.MiniProfiler
 {
+    public class MiniProfilerAdapter : IProfiler
+    {
+        public IProfiler Current => MiniProfiler.Current;
+
+        public IProfiler Start() => MiniProfiler.Start(ProfileLevel.Info);
+        public void Stop() => MiniProfiler.Stop(discardResults:false);
+        public IDisposable Step(string name) => Current?.Step(name);
+
+        public IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null,
+            int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
+        {
+            return Current?.RenderIncludes(position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls);
+        }
+    }
+    
     /// <summary>
     /// A single MiniProfiler can be used to represent any number of steps/levels in a call-graph, via Step()
     /// </summary>
     /// <remarks>Totally baller.</remarks>
     [Exclude(Feature.Soap)]
     [DataContract]
-    public partial class Profiler
+    public partial class MiniProfiler : IProfiler 
     {
-
         /// <summary>
         /// Identifies this Profiler so it may be stored/cached.
         /// </summary>
-        [DataMember(Order = 1)]
+        [DataMember(Order = 1, Name = "Id")]
         public Guid Id { get; set; }
 
         /// <summary>
         /// A display name for this profiling session.
         /// </summary>
-        [DataMember(Order = 2)]
+        [DataMember(Order = 2, Name = "Name")]
         public string Name { get; set; }
 
         /// <summary>
         /// When this profiler was instantiated.
         /// </summary>
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3, Name = "Started")]
         public DateTime Started { get; set; }
 
         /// <summary>
         /// Where this profiler was run.
         /// </summary>
-        [DataMember(Order = 4)]
+        [DataMember(Order = 4, Name = "MachineName")]
         public string MachineName { get; set; }
 
         /// <summary>
         /// Allows filtering of <see cref="Timing"/> steps based on what <see cref="ProfileLevel"/> 
         /// the steps are created with.
         /// </summary>
-        [DataMember(Order = 5)]
+        [DataMember(Order = 5, Name = "Level")]
         public ProfileLevel Level { get; set; }
 
         private Timing _root;
@@ -60,7 +74,7 @@ namespace ServiceStack.MiniProfiler
         /// The first <see cref="Timing"/> that is created and started when this profiler is instantiated.
         /// All other <see cref="Timing"/>s will be children of this one.
         /// </summary>
-        [DataMember(Order = 6)]
+        [DataMember(Order = 6, Name = "Root")]
         public Timing Root
         {
             get { return _root; }
@@ -95,24 +109,24 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// A string identifying the user/client that is profiling this request.  Set <see cref="Profiler.Settings.UserProvider"/>
+        /// A string identifying the user/client that is profiling this request.  Set <see cref="MiniProfiler.Settings.UserProvider"/>
         /// with an <see cref="IUserProvider"/>-implementing class to provide a custom value.
         /// </summary>
         /// <remarks>
-        /// If this is not set manually at some point, the <see cref="Profiler.Settings.UserProvider"/> implementation will be used;
+        /// If this is not set manually at some point, the <see cref="MiniProfiler.Settings.UserProvider"/> implementation will be used;
         /// by default, this will be the current request's ip address.
         /// </remarks>
-        [DataMember(Order = 7)]
+        [DataMember(Order = 7, Name = "User")]
         public string User { get; set; }
 
         /// <summary>
         /// Returns true when this MiniProfiler has been viewed by the <see cref="User"/> that recorded it.
         /// </summary>
         /// <remarks>
-        /// Allows POSTs that result in a redirect to be profiled. <see cref="Profiler.Settings.Storage"/> implementation
+        /// Allows POSTs that result in a redirect to be profiled. <see cref="MiniProfiler.Settings.Storage"/> implementation
         /// will keep a list of all profilers that haven't been fetched down.
         /// </remarks>
-        [DataMember(Order = 8)]
+        [DataMember(Order = 8, Name = "HasUserViewed")]
         public bool HasUserViewed { get; set; }
 
         /// <summary>
@@ -128,7 +142,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Milliseconds, to one decimal place, that this MiniProfiler ran.
         /// </summary>
-		[DataMember(Order = 9)]
+		[DataMember(Order = 9, Name = "DurationMilliseconds")]
         public decimal DurationMilliseconds
         {
             get { return _root.DurationMilliseconds ?? GetRoundedMilliseconds(ElapsedTicks); }
@@ -137,7 +151,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when <see cref="Root"/> or any of its <see cref="Timing.Children"/> are <see cref="Timing.IsTrivial"/>.
         /// </summary>
-		[DataMember(Order = 10)]
+		[DataMember(Order = 10, Name = "HasTrivialTimings")]
 		public bool HasTrivialTimings
         {
             get
@@ -154,7 +168,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Returns true when all child <see cref="Timing"/>s are <see cref="Timing.IsTrivial"/>.
         /// </summary>
-		[DataMember(Order = 11)]
+		[DataMember(Order = 11, Name = "HasAllTrivialTimings")]
 		public bool HasAllTrivialTimings
         {
             get
@@ -171,7 +185,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Any Timing step with a duration less than or equal to this will be hidden by default in the UI; defaults to 2.0 ms.
         /// </summary>
-		[DataMember(Order = 12)]
+		[DataMember(Order = 12, Name = "TrivialDurationThresholdMilliseconds")]
 		public decimal TrivialDurationThresholdMilliseconds
         {
             get { return Settings.TrivialDurationThresholdMilliseconds; }
@@ -188,7 +202,7 @@ namespace ServiceStack.MiniProfiler
         /// <remarks>
         /// Is used when storing the Profiler in SqlStorage
         /// </remarks>
-        [DataMember(Order = 13)]
+        [DataMember(Order = 13, Name = "Json")]
         public string Json { get; set; }
 
         /// <summary>
@@ -200,7 +214,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Creates and starts a new MiniProfiler for the root <paramref name="url"/>, filtering <see cref="Timing"/> steps to <paramref name="level"/>.
         /// </summary>
-        public Profiler(string url, ProfileLevel level = ProfileLevel.Info)
+        public MiniProfiler(string url, ProfileLevel level = ProfileLevel.Info)
         {
             Id = Guid.NewGuid();
             Level = level;
@@ -227,7 +241,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         public override bool Equals(object obj)
         {
-            return obj != null && obj is Profiler && Id.Equals(((Profiler)obj).Id);
+            return obj != null && obj is MiniProfiler && Id.Equals(((MiniProfiler)obj).Id);
         }
 
         /// <summary>
@@ -238,11 +252,16 @@ namespace ServiceStack.MiniProfiler
             return Id.GetHashCode();
         }
 
+        public IDisposable Step(string name)
+        {
+            return this.Step(name, ProfileLevel.Info);
+        }
+
         /// <summary>
         /// Obsolete - used for serialization.
         /// </summary>
         [Obsolete("Used for serialization")]
-        public Profiler()
+        public MiniProfiler()
         {
         }
 
@@ -304,11 +323,14 @@ namespace ServiceStack.MiniProfiler
             return msTimesTen / 10;
         }
 
+        public IProfiler Start() => Start(ProfileLevel.Info);
+        public void Stop() => Stop(discardResults: false);
+
         /// <summary>
         /// Starts a new MiniProfiler based on the current <see cref="IProfilerProvider"/>. This new profiler can be accessed by
-        /// <see cref="Profiler.Current"/>
+        /// <see cref="MiniProfiler.Current"/>
         /// </summary>
-        public static Profiler Start(ProfileLevel level = ProfileLevel.Info)
+        public static MiniProfiler Start(ProfileLevel level)
         {
             Settings.EnsureProfilerProvider();
             return Settings.ProfilerProvider.Start(level);
@@ -318,10 +340,10 @@ namespace ServiceStack.MiniProfiler
         /// Ends the current profiling session, if one exists.
         /// </summary>
         /// <param name="discardResults">
-        /// When true, clears the <see cref="Profiler.Current"/> for this HttpContext, allowing profiling to 
+        /// When true, clears the <see cref="MiniProfiler.Current"/> for this HttpContext, allowing profiling to 
         /// be prematurely stopped and discarded. Useful for when a specific route does not need to be profiled.
         /// </param>
-        public static void Stop(bool discardResults = false)
+        public static void Stop(bool discardResults)
         {
             Settings.EnsureProfilerProvider();
             Settings.ProfilerProvider.Stop(discardResults);
@@ -332,7 +354,7 @@ namespace ServiceStack.MiniProfiler
         /// do not wish to include the MvcMiniProfiler namespace for the <see cref="MiniProfilerExtensions.Step"/> extension method.
         /// </summary>
         /// <param name="name">A descriptive name for the code that is encapsulated by the resulting IDisposable's lifetime.</param>
-        /// <param name="level">This step's visibility level; allows filtering when <see cref="Profiler.Start"/> is called.</param>
+        /// <param name="level">This step's visibility level; allows filtering when <see cref="MiniProfiler.Start"/> is called.</param>
         public static IDisposable StepStatic(string name, ProfileLevel level = ProfileLevel.Info)
         {
             return MiniProfilerExtensions.Step(Current, name, level);
@@ -348,7 +370,7 @@ namespace ServiceStack.MiniProfiler
         /// <param name="xhtml">xhtml rendering mode, ensure script tag is closed ... etc</param>
         /// <param name="showControls">when true, shows buttons to minimize and clear MiniProfiler results</param>
         /// <returns>Script and link elements normally; an empty string when there is no active profiling session.</returns>
-        public static IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
+        public IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
         {
             return MiniProfilerHandler.RenderIncludes(Current, position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls);
         }
@@ -356,7 +378,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Gets the currently running MiniProfiler for the current HttpContext; null if no MiniProfiler was <see cref="Start"/>ed.
         /// </summary>
-        public static Profiler Current
+        public static MiniProfiler Current
         {
             get
             {
@@ -367,7 +389,7 @@ namespace ServiceStack.MiniProfiler
 
 
         /// <summary>
-        /// Renders the current <see cref="Profiler"/> to json.
+        /// Renders the current <see cref="MiniProfiler"/> to json.
         /// </summary>
         public static string ToJson()
         {
@@ -375,9 +397,9 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Renders the parameter <see cref="Profiler"/> to json.
+        /// Renders the parameter <see cref="MiniProfiler"/> to json.
         /// </summary>
-        public static string ToJson(Profiler profiler)
+        public static string ToJson(MiniProfiler profiler)
         {
             if (profiler == null) return null;
 
@@ -387,13 +409,13 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Deserializes the json string parameter to a <see cref="Profiler"/>.
+        /// Deserializes the json string parameter to a <see cref="MiniProfiler"/>.
         /// </summary>
-        public static Profiler FromJson(string json)
+        public static MiniProfiler FromJson(string json)
         {
 			if (json.IsNullOrWhiteSpace()) return null;
 
-			var result = JsonSerializer.DeserializeFromString<Profiler>(json);
+			var result = JsonSerializer.DeserializeFromString<MiniProfiler>(json);
             return result;
         }
 
@@ -412,14 +434,14 @@ namespace ServiceStack.MiniProfiler
         /// Create a DEEP clone of this object
         /// </summary>
         /// <returns></returns>
-        public Profiler Clone()
+        public MiniProfiler Clone()
         {
-            var serializer = new DataContractSerializer(typeof(Profiler), null, int.MaxValue, false, true, null);
+            var serializer = new DataContractSerializer(typeof(MiniProfiler), null, int.MaxValue, false, true, null);
             using (var ms = new System.IO.MemoryStream())
             {
                 serializer.WriteObject(ms, this);
                 ms.Position = 0;
-                return (Profiler)serializer.ReadObject(ms);
+                return (MiniProfiler)serializer.ReadObject(ms);
             }
         }
     }
@@ -441,27 +463,11 @@ namespace ServiceStack.MiniProfiler
     }
 
     /// <summary>
-    /// Dictates on which side of the page the profiler popup button is displayed; defaults to left.
-    /// </summary>
-    public enum RenderPosition
-    {
-        /// <summary>
-        /// Profiler popup button is displayed on the left.
-        /// </summary>
-        Left = 0,
-
-        /// <summary>
-        /// Profiler popup button is displayed on the right.
-        /// </summary>
-        Right = 1
-    }
-
-    /// <summary>
-    /// Contains helper methods that ease working with null <see cref="Profiler"/>s.
+    /// Contains helper methods that ease working with null <see cref="MiniProfiler"/>s.
     /// </summary>
     public static class MiniProfilerExtensions
     {
-        public static Func<Profiler, string, IDisposable> CustomStepFn { get; set; }
+        public static Func<MiniProfiler, string, IDisposable> CustomStepFn { get; set; }
 
         /// <summary>
         /// Wraps <paramref name="selector"/> in a <see cref="Step"/> call and executes it, returning its result.
@@ -470,7 +476,7 @@ namespace ServiceStack.MiniProfiler
         /// <param name="selector">Method to execute and profile.</param>
         /// <param name="name">The <see cref="Timing"/> step name used to label the profiler results.</param>
         /// <returns></returns>
-        public static T Inline<T>(this Profiler profiler, Func<T> selector, string name)
+        public static T Inline<T>(this MiniProfiler profiler, Func<T> selector, string name)
         {
             if (selector == null) throw new ArgumentNullException("selector");
             if (profiler == null) return selector();
@@ -485,13 +491,14 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         /// <param name="profiler">The current profiling session or null.</param>
         /// <param name="name">A descriptive name for the code that is encapsulated by the resulting IDisposable's lifetime.</param>
-        /// <param name="level">This step's visibility level; allows filtering when <see cref="Profiler.Start"/> is called.</param>
-        public static IDisposable Step(this Profiler profiler, string name, ProfileLevel level = ProfileLevel.Info)
+        /// <param name="level">This step's visibility level; allows filtering when <see cref="MiniProfiler.Start"/> is called.</param>
+        public static IDisposable Step(this IProfiler profiler, string name, ProfileLevel level)
         {
+            var miniProfiler = profiler.GetMiniProfiler();
             if (CustomStepFn != null)
-                return CustomStepFn(profiler, name);
+                return CustomStepFn(miniProfiler, name);
 
-            return profiler == null ? null : profiler.StepImpl(name, level);
+            return profiler == null ? null : miniProfiler.StepImpl(name, level);
         }
 
         // TODO: get this working in the UI
@@ -504,7 +511,7 @@ namespace ServiceStack.MiniProfiler
         /// Adds <paramref name="externalProfiler"/>'s <see cref="Timing"/> hierarchy to this profiler's current Timing step,
         /// allowing other threads, remote calls, etc. to be profiled and joined into this profiling session.
         /// </summary>
-        public static void AddProfilerResults(this Profiler profiler, Profiler externalProfiler)
+        public static void AddProfilerResults(this MiniProfiler profiler, MiniProfiler externalProfiler)
         {
             if (profiler == null || profiler.Head == null || externalProfiler == null) return;
             profiler.Head.AddChild(externalProfiler.Root);
@@ -514,7 +521,7 @@ namespace ServiceStack.MiniProfiler
         /// Returns an html-encoded string with a text-representation of <paramref name="profiler"/>; returns "" when profiler is null.
         /// </summary>
         /// <param name="profiler">The current profiling session or null.</param>
-        public static IHtmlString Render(this Profiler profiler)
+        public static IHtmlString Render(this MiniProfiler profiler)
         {
             if (profiler == null) return new HtmlString("");
 
@@ -535,6 +542,17 @@ namespace ServiceStack.MiniProfiler
                 }
             }
             return new HtmlString(StringBuilderCache.ReturnAndFree(text));
+        }
+
+        public static MiniProfiler GetMiniProfiler(this IProfiler profiler)
+        {
+            if (profiler is MiniProfiler miniProfiler)
+                return miniProfiler;
+            
+            if (profiler is MiniProfilerAdapter profilerAdapter)
+                return (MiniProfiler)profilerAdapter.Current;
+            
+            throw new NotSupportedException($"Expected MiniProfiler but was '{profiler.GetType().Name}'. Ensure MiniProfilerFeature plugin is registered.");
         }
 
     }

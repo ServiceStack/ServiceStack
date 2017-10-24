@@ -141,6 +141,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Api.OpenApi", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Kestrel", "ServiceStack.Kestrel\ServiceStack.Kestrel.csproj", "{3170CB82-DFD4-4E65-8292-CEE38967D75F}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.NetFramework", "ServiceStack.NetFramework\ServiceStack.NetFramework.csproj", "{22F8D050-2C96-4993-B221-DA16EBC61F31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -579,6 +581,18 @@ Global
 		{3170CB82-DFD4-4E65-8292-CEE38967D75F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3170CB82-DFD4-4E65-8292-CEE38967D75F}.Release|x86.ActiveCfg = Release|Any CPU
 		{3170CB82-DFD4-4E65-8292-CEE38967D75F}.Release|x86.Build.0 = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Debug|x86.Build.0 = Debug|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|x86.ActiveCfg = Release|Any CPU
+		{22F8D050-2C96-4993-B221-DA16EBC61F31}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

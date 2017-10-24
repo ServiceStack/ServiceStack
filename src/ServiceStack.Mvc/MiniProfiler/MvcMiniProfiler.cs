@@ -24,7 +24,7 @@ namespace ServiceStack.Mvc.MiniProfiler
     	}
     }
 
-	public static class MiniProfiler
+	public static class MvcMiniProfiler
 	{
 		internal static void RegisterRoutes()
 		{
@@ -38,7 +38,7 @@ namespace ServiceStack.Mvc.MiniProfiler
 		    };
 			var routes = RouteTable.Routes;
 			var handler = new MiniProfilerRouteHandler(new MiniProfilerHandler());
-			var prefix = (Profiler.Settings.RouteBasePath ?? "").Replace("~/", "").WithTrailingSlash();
+			var prefix = (ServiceStack.MiniProfiler.MiniProfiler.Settings.RouteBasePath ?? "").Replace("~/", "").WithTrailingSlash();
 
 			using (routes.GetWriteLock())
 			{
@@ -58,7 +58,7 @@ namespace ServiceStack.Mvc.MiniProfiler
 		public static System.Web.IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
 		{
 			var path = VirtualPathUtility.ToAbsolute("~");
-			return MiniProfilerHandler.RenderIncludes(Profiler.Current, position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls, path)
+			return MiniProfilerHandler.RenderIncludes((ServiceStack.MiniProfiler.MiniProfiler)Profiler.Current, position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls, path)
 				.ToMvcHtmlString();
 		}		 
 

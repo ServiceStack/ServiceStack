@@ -21,12 +21,12 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// The profiling session this SqlProfiler is part of.
         /// </summary>
-        public Profiler Profiler { get; private set; }
+        public MiniProfiler Profiler { get; private set; }
 
         /// <summary>
         /// Returns a new SqlProfiler to be used in the 'profiler' session.
         /// </summary>
-        public SqlProfiler(Profiler profiler)
+        public SqlProfiler(MiniProfiler profiler)
         {
             Profiler = profiler;
         }

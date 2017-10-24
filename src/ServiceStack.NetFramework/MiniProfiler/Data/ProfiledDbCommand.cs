@@ -78,9 +78,9 @@ namespace ServiceStack.MiniProfiler.Data
             {
                 // TODO: we need a way to grab the IDbProfiler which may not be the same as the MiniProfiler, it could be wrapped
                 // allow for command reuse, it is clear the connection is going to need to be reset
-                if (Profiler.Current != null)
+                if (MiniProfiler.Current != null)
                 {
-                    _profiler = Profiler.Current;
+                    _profiler = MiniProfiler.Current;
                 }
 
                 base.DbConnection = value;

@@ -33,7 +33,7 @@ namespace ServiceStack.OpenApi.Tests.Host
     }
 
     public class TestAppHost
-    : AppSelfHostBase
+        : AppSelfHostBase
     {
         //private static ILog log;
 

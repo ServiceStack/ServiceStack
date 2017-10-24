@@ -1,4 +1,5 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Data;
 using System.IO;
 using System.Runtime.Serialization;
@@ -10,6 +11,7 @@ using ServiceStack;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
+using ServiceStack.MiniProfiler;
 using ServiceStack.Mvc;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
@@ -27,6 +29,8 @@ namespace CheckMvc
         {
             //Set MVC to use the same Funq IOC as ServiceStack
             ControllerBuilder.Current.SetControllerFactory(new FunqControllerFactory(container));
+            
+            Plugins.Add(new MiniProfilerFeature());
 
             container.Register<IRedisClientsManager>(c =>
                 new RedisManagerPool());
@@ -106,6 +110,17 @@ namespace CheckMvc
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
             new AppHost().Init();
+        }
+
+        protected void Application_BeginRequest(object src, EventArgs e)
+        {
+            if (Request.IsLocal)
+                Profiler.Start();
+        }
+
+        protected void Application_EndRequest(object src, EventArgs e)
+        {
+            Profiler.Stop();
         }
     }
 

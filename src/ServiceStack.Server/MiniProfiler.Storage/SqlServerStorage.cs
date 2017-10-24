@@ -26,7 +26,7 @@ namespace ServiceStack.MiniProfiler.Storage
         /// Stores <param name="profiler"/> to dbo.MiniProfilers under its <see cref="Profiler.Id"/>; 
         /// stores all child Timings and SqlTimings to their respective tables.
         /// </summary>
-        public override void Save(Profiler profiler)
+        public override void Save(MiniProfiler profiler)
         {
             const string sql =
 @"insert into MiniProfilers
@@ -98,7 +98,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
         /// <summary>
         /// Loads the MiniProfiler identifed by 'id' from the database.
         /// </summary>
-        public override Profiler Load(Guid id)
+        public override MiniProfiler Load(Guid id)
         {
             using (var conn = GetOpenConnection())
             {
@@ -121,9 +121,9 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
             }
         }
 
-        private Profiler LoadIndividually(DbConnection conn, object idParameter)
+        private MiniProfiler LoadIndividually(DbConnection conn, object idParameter)
         {
-            var result = LoadFor<Profiler>(conn, idParameter).SingleOrDefault();
+            var result = LoadFor<MiniProfiler>(conn, idParameter).SingleOrDefault();
 
             if (result != null)
             {
@@ -145,7 +145,7 @@ where not exists (select 1 from MiniProfilers where Id = @Id)"; // this syntax w
         /// <summary>
         /// Returns a list of <see cref="Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
         /// </summary>
-        /// <param name="user">User identified by the current <see cref="Profiler.Settings.UserProvider"/>.</param>
+        /// <param name="user">User identified by the current <see cref="MiniProfiler.Settings.UserProvider"/>.</param>
         public override List<Guid> GetUnviewedIds(string user)
         {
             const string sql =

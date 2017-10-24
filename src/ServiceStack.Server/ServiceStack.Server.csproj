@@ -35,6 +35,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.ComponentModel.DataAnnotations" />

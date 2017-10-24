@@ -28,7 +28,7 @@ namespace ServiceStack.MiniProfiler.UI
 				: null;
 		}
 
-		public static HtmlString RenderIncludes(Profiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null, string path = null)
+		public static IHtmlString RenderIncludes(MiniProfiler profiler, RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null, string path = null)
 		{
 			const string format =
 @"<link rel=""stylesheet"" type=""text/css"" href=""{path}ssr-includes.css?v={version}""{closeXHTML}>
@@ -57,23 +57,23 @@ namespace ServiceStack.MiniProfiler.UI
 			{
 				// HACK: unviewed ids are added to this list during Storage.Save, but we know we haven't see the current one yet,
 				// so go ahead and add it to the end - it's usually the only id, but if there was a redirect somewhere, it'll be there, too
-				Profiler.Settings.EnsureStorageStrategy();
-				var ids = Profiler.Settings.Storage.GetUnviewedIds(profiler.User);
+				MiniProfiler.Settings.EnsureStorageStrategy();
+				var ids = MiniProfiler.Settings.Storage.GetUnviewedIds(profiler.User);
 				ids.Add(profiler.Id);
 
-                path = (path ?? VirtualPathUtility.ToAbsolute(Profiler.Settings.RouteBasePath).EnsureTrailingSlash()) + HostContext.Config.HandlerFactoryPath;
+                path = (path ?? VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash()) + HostContext.Config.HandlerFactoryPath;
 
 				result = format.Format(new {
 					//path = VirtualPathUtility.ToAbsolute(MiniProfiler.Settings.RouteBasePath).EnsureTrailingSlash(),
                     path = !string.IsNullOrEmpty(path) ? path.EnsureTrailingSlash() : "",
-					version = Profiler.Settings.Version,
+					version = MiniProfiler.Settings.Version,
 					ids = ids.ToJson(),
-					position = (position ?? Profiler.Settings.PopupRenderPosition).ToString().ToLower(),
-					showTrivial = showTrivial ?? Profiler.Settings.PopupShowTrivial ? "true" : "false",
-					showChildren = showTimeWithChildren ?? Profiler.Settings.PopupShowTimeWithChildren ? "true" : "false",
-					maxTracesToShow = maxTracesToShow ?? Profiler.Settings.PopupMaxTracesToShow,
+					position = (position ?? MiniProfiler.Settings.PopupRenderPosition).ToString().ToLower(),
+					showTrivial = showTrivial ?? MiniProfiler.Settings.PopupShowTrivial ? "true" : "false",
+					showChildren = showTimeWithChildren ?? MiniProfiler.Settings.PopupShowTimeWithChildren ? "true" : "false",
+					maxTracesToShow = maxTracesToShow ?? MiniProfiler.Settings.PopupMaxTracesToShow,
 					closeXHTML = xhtml ? "/" : "",
-					showControls = showControls ?? Profiler.Settings.ShowControls ? "true" : "false"
+					showControls = showControls ?? MiniProfiler.Settings.ShowControls ? "true" : "false"
 				});
 			}
 
@@ -120,7 +120,7 @@ namespace ServiceStack.MiniProfiler.UI
 		/// <summary>
 		/// Try to keep everything static so we can easily be reused.
 		/// </summary>
-		public bool IsReusable => true;
+		public override bool IsReusable => true;
 
 	    public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
 		{
@@ -202,14 +202,14 @@ namespace ServiceStack.MiniProfiler.UI
 			if (!validGuid)
 				return isPopup ? NotFound(httpRes) : NotFound(httpRes, "text/plain", "No Guid id specified on the query string");
 
-			Profiler.Settings.EnsureStorageStrategy();
-			var profiler = Profiler.Settings.Storage.Load(id);
+			MiniProfiler.Settings.EnsureStorageStrategy();
+			var profiler = MiniProfiler.Settings.Storage.Load(id);
 
 			if (profiler == null)
 				return isPopup ? NotFound(httpRes) : NotFound(httpRes, "text/plain", "No MiniProfiler results found with Id=" + id.ToString());
 
 			// ensure that callers have access to these results
-			var authorize = Profiler.Settings.Results_Authorize;
+			var authorize = MiniProfiler.Settings.Results_Authorize;
 			if (authorize != null && !authorize(httpReq, profiler))
 			{
 				httpRes.StatusCode = 401;
@@ -220,13 +220,13 @@ namespace ServiceStack.MiniProfiler.UI
 			return isPopup ? ResultsJson(httpRes, profiler) : ResultsFullPage(httpRes, profiler);
 		}
 
-		private static string ResultsJson(IResponse httpRes, Profiler profiler)
+		private static string ResultsJson(IResponse httpRes, MiniProfiler profiler)
 		{
 			httpRes.ContentType = "application/json";
-			return Profiler.ToJson(profiler);
+			return MiniProfiler.ToJson(profiler);
 		}
 
-		private static string ResultsFullPage(IResponse httpRes, Profiler profiler)
+		private static string ResultsFullPage(IResponse httpRes, MiniProfiler profiler)
 		{
 			httpRes.ContentType = "text/html";
 			var sb = StringBuilderCache.Allocate()
@@ -235,7 +235,7 @@ namespace ServiceStack.MiniProfiler.UI
 				.AppendLine()
 				.AppendLine("<script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>")
 				.Append("<script type='text/javascript'> var profiler = ")
-				.Append(Profiler.ToJson(profiler))
+				.Append(MiniProfiler.ToJson(profiler))
 				.AppendLine(";</script>")
 				.Append(RenderIncludes(profiler)) // figure out how to better pass display options
 				.AppendLine("</head><body><div class='profiler-result-full'></div></body></html>");

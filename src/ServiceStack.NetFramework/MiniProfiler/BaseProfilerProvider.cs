@@ -16,7 +16,7 @@ namespace ServiceStack.MiniProfiler
         /// Starts a new MiniProfiler and sets it to be current.  By the end of this method
         /// <see cref="GetCurrentProfiler"/> should return the new MiniProfiler.
         /// </summary>
-        public abstract Profiler Start(ProfileLevel level);
+        public abstract MiniProfiler Start(ProfileLevel level);
 
         /// <summary>
         /// Stops the current MiniProfiler (if any is currently running).
@@ -26,10 +26,10 @@ namespace ServiceStack.MiniProfiler
         public abstract void Stop(bool discardResults);
 
         /// <summary>
-        /// Returns the current MiniProfiler.  This is used by <see cref="Profiler.Current"/>.
+        /// Returns the current MiniProfiler.  This is used by <see cref="MiniProfiler.Current"/>.
         /// </summary>
         /// <returns></returns>
-        public abstract Profiler GetCurrentProfiler();
+        public abstract MiniProfiler GetCurrentProfiler();
 
         /// <summary>
         /// Sets <paramref name="profiler"/> to be active (read to start profiling)
@@ -37,7 +37,7 @@ namespace ServiceStack.MiniProfiler
         /// </summary>
         /// <param name="profiler">The profiler to set to active</param>
         /// <exception cref="ArgumentNullException">If <paramref name="profiler"/> is null</exception>
-        protected static void SetProfilerActive(Profiler profiler)
+        protected static void SetProfilerActive(MiniProfiler profiler)
         {
             if (profiler == null)
                 throw new ArgumentNullException("profiler");
@@ -51,7 +51,7 @@ namespace ServiceStack.MiniProfiler
         /// <param name="profiler">The profiler to stop</param>
         /// <returns>True if successful, false if Stop had previously been called on this profiler</returns>
         /// <exception cref="ArgumentNullException">If <paramref name="profiler"/> is null</exception>
-        protected static bool StopProfiler(Profiler profiler)
+        protected static bool StopProfiler(MiniProfiler profiler)
         {
             if (profiler == null)
                 throw new ArgumentNullException("profiler");
@@ -64,15 +64,15 @@ namespace ServiceStack.MiniProfiler
         }
 
         /// <summary>
-        /// Calls <see cref="Profiler.Settings.EnsureStorageStrategy"/> to save the current
+        /// Calls <see cref="MiniProfiler.Settings.EnsureStorageStrategy"/> to save the current
         /// profiler using the current storage settings
         /// </summary>
         /// <param name="current"></param>
-        protected static void SaveProfiler(Profiler current)
+        protected static void SaveProfiler(MiniProfiler current)
         {
             // because we fetch profiler results after the page loads, we have to put them somewhere in the meantime
-            Profiler.Settings.EnsureStorageStrategy();
-            Profiler.Settings.Storage.Save(current);
+            MiniProfiler.Settings.EnsureStorageStrategy();
+            MiniProfiler.Settings.Storage.Save(current);
         }
     }
 }

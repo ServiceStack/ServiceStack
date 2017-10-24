@@ -84,6 +84,8 @@ namespace ServiceStack.WebHost.IntegrationTests
                         res.ReturnAuthRequired();
                     }
                 });
+                
+                Plugins.Add(new MiniProfilerFeature());
 
                 this.Container.Register<IDbConnectionFactory>(c =>
                     new OrmLiteConnectionFactory(

@@ -28,59 +28,59 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Category of sql statement executed.
         /// </summary>
-        [DataMember(Order = 1)]
+        [DataMember(Order = 1, Name = "ExecuteType")]
         public ExecuteType ExecuteType { get; set; }
 
         /// <summary>
         /// The sql that was executed.
         /// </summary>
 		//[ScriptIgnore]
-        [DataMember(Order = 2)]
+        [DataMember(Order = 2, Name = "CommandString")]
         public string CommandString { get; set; }
 
         /// <summary>
         /// The command string with special formatting applied based on MiniProfiler.Settings.SqlFormatter
         /// </summary>
-		[DataMember(Order = 3)]
+		[DataMember(Order = 3, Name = "FormattedCommandString")]
 		public string FormattedCommandString
         {
             get
             {
-                if (Profiler.Settings.SqlFormatter == null) return CommandString;
+                if (MiniProfiler.Settings.SqlFormatter == null) return CommandString;
 
-                return Profiler.Settings.SqlFormatter.FormatSql(this);
+                return MiniProfiler.Settings.SqlFormatter.FormatSql(this);
             }
         }
 
         /// <summary>
         /// Roughly where in the calling code that this sql was executed.
         /// </summary>
-        [DataMember(Order = 4)]
+        [DataMember(Order = 4, Name = "StackTraceSnippet")]
         public string StackTraceSnippet { get; set; }
 
         /// <summary>
         /// Offset from main MiniProfiler start that this sql began.
         /// </summary>
-        [DataMember(Order = 5)]
+        [DataMember(Order = 5, Name = "StartMilliseconds")]
         public decimal StartMilliseconds { get; set; }
 
         /// <summary>
         /// How long this sql statement took to execute.
         /// </summary>
-        [DataMember(Order = 6)]
+        [DataMember(Order = 6, Name = "DurationMilliseconds")]
         public decimal DurationMilliseconds { get; set; }
 
         /// <summary>
         /// When executing readers, how long it took to come back initially from the database, 
         /// before all records are fetched and reader is closed.
         /// </summary>
-        [DataMember(Order = 7)]
+        [DataMember(Order = 7, Name = "FirstFetchDurationMilliseconds")]
         public decimal FirstFetchDurationMilliseconds { get; set; }
 
         /// <summary>
         /// Stores any parameter names and values used by the profiled DbCommand.
         /// </summary>
-        [DataMember(Order = 8)]
+        [DataMember(Order = 8, Name = "Parameters")]
         public List<SqlTimingParameter> Parameters { get; set; }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace ServiceStack.MiniProfiler
         /// <remarks>
         /// Needed for database deserialization.
         /// </remarks>
-		[DataMember(Order = 9)]
+		[DataMember(Order = 9, Name = "ParentTimingId")]
 		public Guid? ParentTimingId { get; set; }
 
         private Timing _parentTiming;
@@ -112,16 +112,16 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// True when other identical sql statements have been executed during this MiniProfiler session.
         /// </summary>
-        [DataMember(Order = 10)]
+        [DataMember(Order = 10, Name = "IsDuplicate")]
         public bool IsDuplicate { get; set; }
 
         private long _startTicks;
-        private Profiler _profiler;
+        private MiniProfiler _profiler;
 
         /// <summary>
         /// Creates a new SqlTiming to profile 'command'.
         /// </summary>
-        public SqlTiming(DbCommand command, ExecuteType type, Profiler profiler)
+        public SqlTiming(DbCommand command, ExecuteType type, MiniProfiler profiler)
         {
             Id = Guid.NewGuid();
 
@@ -129,7 +129,7 @@ namespace ServiceStack.MiniProfiler
             Parameters = GetCommandParameters(command);
             ExecuteType = type;
 
-            if (!Profiler.Settings.ExcludeStackTraceSnippetFromSqlTimings)
+            if (!MiniProfiler.Settings.ExcludeStackTraceSnippetFromSqlTimings)
                 StackTraceSnippet = ServiceStack.MiniProfiler.Helpers.StackTraceSnippet.Get();
 
             _profiler = profiler;

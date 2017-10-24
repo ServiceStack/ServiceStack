@@ -24,7 +24,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Starts a new MiniProfiler and associates it with the current <see cref="HttpContext.Current"/>.
         /// </summary>
-        public override Profiler Start(ProfileLevel level)
+        public override MiniProfiler Start(ProfileLevel level)
         {
             var context = HttpContext.Current;
             if (context == null) return null;
@@ -33,13 +33,13 @@ namespace ServiceStack.MiniProfiler
             var path = context.Request.AppRelativeCurrentExecutionFilePath.Substring(1);
 
             // don't profile /content or /scripts, either - happens in web.dev
-            foreach (var ignored in Profiler.Settings.IgnoredPaths.Safe())
+            foreach (var ignored in MiniProfiler.Settings.IgnoredPaths.Safe())
             {
                 if (path.ToUpperInvariant().Contains((ignored ?? "").ToUpperInvariant()))
                     return null;
             }
 
-            var result = new Profiler(url.OriginalString, level);
+            var result = new MiniProfiler(url.OriginalString, level);
             Current = result;
 
             SetProfilerActive(result);
@@ -55,7 +55,7 @@ namespace ServiceStack.MiniProfiler
         /// Ends the current profiling session, if one exists.
         /// </summary>
         /// <param name="discardResults">
-        /// When true, clears the <see cref="Profiler.Current"/> for this HttpContext, allowing profiling to 
+        /// When true, clears the <see cref="MiniProfiler.Current"/> for this HttpContext, allowing profiling to 
         /// be prematurely stopped and discarded. Useful for when a specific route does not need to be profiled.
         /// </param>
         public override void Stop(bool discardResults)
@@ -89,7 +89,7 @@ namespace ServiceStack.MiniProfiler
 
             try
             {
-                var arrayOfIds = Profiler.Settings.Storage.GetUnviewedIds(current.User).ToJson();
+                var arrayOfIds = MiniProfiler.Settings.Storage.GetUnviewedIds(current.User).ToJson();
                 // allow profiling of ajax requests
                 response.AppendHeader("X-MiniProfiler-Ids", arrayOfIds);
             }
@@ -100,7 +100,7 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Makes sure 'profiler' has a Name, pulling it from route data or url.
         /// </summary>
-        private static void EnsureName(Profiler profiler, HttpRequest request)
+        private static void EnsureName(MiniProfiler profiler, HttpRequest request)
         {
             // also set the profiler name to Controller/Action or /url
             if (profiler.Name.IsNullOrWhiteSpace())
@@ -130,7 +130,7 @@ namespace ServiceStack.MiniProfiler
         /// Returns the current profiler
         /// </summary>
         /// <returns></returns>
-        public override Profiler GetCurrentProfiler()
+        public override MiniProfiler GetCurrentProfiler()
         {
             return Current;
         }
@@ -141,12 +141,12 @@ namespace ServiceStack.MiniProfiler
         /// <summary>
         /// Gets the currently running MiniProfiler for the current HttpContext; null if no MiniProfiler was <see cref="Start"/>ed.
         /// </summary>
-        private Profiler Current
+        private MiniProfiler Current
         {
             get
             {
                 var context = HttpContext.Current;
-                return context?.Items[CacheKey] as Profiler;
+                return context?.Items[CacheKey] as MiniProfiler;
             }
             set
             {

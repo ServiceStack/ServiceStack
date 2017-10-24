@@ -37,9 +37,9 @@ namespace ServiceStack.MiniProfiler.Helpers
 					break;
 
 				var assembly = method.Module.Assembly.GetName().Name;
-				if (!Profiler.Settings.AssembliesToExclude.Contains(assembly) &&
+				if (!MiniProfiler.Settings.AssembliesToExclude.Contains(assembly) &&
 					!ShouldExcludeType(method) &&
-					!Profiler.Settings.MethodsToExclude.Contains(method.Name))
+					!MiniProfiler.Settings.MethodsToExclude.Contains(method.Name))
 				{
 					methods.Add(method.Name);
 				}
@@ -47,10 +47,10 @@ namespace ServiceStack.MiniProfiler.Helpers
 
 			var result = string.Join(" ", methods.ToArray());
 
-            if (result.Length > Profiler.Settings.StackMaxLength)
+            if (result.Length > MiniProfiler.Settings.StackMaxLength)
             {
-                var index = result.IndexOf(" ", Profiler.Settings.StackMaxLength);		
-	            if (index >= Profiler.Settings.StackMaxLength)		
+                var index = result.IndexOf(" ", MiniProfiler.Settings.StackMaxLength);		
+	            if (index >= MiniProfiler.Settings.StackMaxLength)		
 	            {
 	                result = result.Substring(0, index);		
 	            }
@@ -65,7 +65,7 @@ namespace ServiceStack.MiniProfiler.Helpers
 
 			while (t != null)
 			{
-				if (Profiler.Settings.TypesToExclude.Contains(t.Name))
+				if (MiniProfiler.Settings.TypesToExclude.Contains(t.Name))
 					return true;
 
 				t = t.DeclaringType;

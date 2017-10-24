@@ -121,9 +121,6 @@ namespace ServiceStack
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                 ReturnRedirectHandler,
                 ReturnRequestInfoHandler,
-#if !NETSTANDARD2_0
-                ServiceStack.MiniProfiler.UI.MiniProfilerHandler.MatchesRequest,
-#endif
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {

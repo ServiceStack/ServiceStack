@@ -134,9 +134,10 @@ namespace CheckWeb
                     String = "String"
                 });
             }
+            
+            Plugins.Add(new MiniProfilerFeature());
 
             var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
-
             dbFactory.RegisterConnection("SqlServer",
                 new OrmLiteConnectionFactory(
                     "Server=localhost;Database=test;User Id=test;Password=test;",

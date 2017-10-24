@@ -54,32 +54,6 @@ namespace System.Configuration
     }
 }
 
-namespace ServiceStack.MiniProfiler
-{
-    public enum RenderPosition { Left = 0, Right = 1 }
-
-    public class Profiler
-    {
-        public static Profiler Current { get; } = new Profiler();
-        readonly MockDisposable disposable = new MockDisposable();
-
-        class MockDisposable : IDisposable
-        {
-            public void Dispose() {}
-        }
-
-        public IDisposable Step(string deserializeRequest)
-        {
-            return disposable;
-        }
-
-        public static IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null, int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
-        {
-            return new HtmlString(string.Empty);
-        }
-    }
-}
-
 namespace ServiceStack.Platforms
 {
     public partial class PlatformNetCore : Platform

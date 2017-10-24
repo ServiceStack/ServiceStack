@@ -4,26 +4,6 @@ using System.IO;
 
 namespace ServiceStack.MiniProfiler
 {
-    public class HtmlString : IHtmlString, System.Web.IHtmlString
-	{
-		private string value;
-
-		public HtmlString(string value)
-		{
-			this.value = value;
-		}
-
-		public override string ToString()
-		{
-			return value;
-		}
-
-		public string ToHtmlString()
-		{
-			return this.ToString();
-		}
-	}
-
 	public class HelperResult : IHtmlString, System.Web.IHtmlString
 	{
 		private readonly Action<TextWriter> action;

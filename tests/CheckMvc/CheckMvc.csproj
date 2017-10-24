@@ -165,6 +165,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Content Include="Global.asax" />
     <Content Include="TypeScript.dtos.d.ts" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -202,6 +203,10 @@
       <Project>{672f2dfe-4ee8-498b-b449-23e9e7f6961c}</Project>
       <Name>ServiceStack.Mvc</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj">
+      <Project>{22f8d050-2c96-4993-b221-da16ebc61f31}</Project>
+      <Name>ServiceStack.NetFramework</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
       <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
       <Name>ServiceStack.Server</Name>
@@ -218,9 +223,6 @@
       <Project>{F709A373-6FD5-4415-B2ED-2520EA7CC568}</Project>
       <Name>CheckHttpListener</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Shared\_Layout.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\Home\Index.cshtml" />
