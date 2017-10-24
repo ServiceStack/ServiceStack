@@ -4,50 +4,33 @@ using System;
 using System.Net;
 using System.Reflection;
 using System.Threading;
-using System.Threading.Tasks;
 using Amib.Threading;
 using ServiceStack.Logging;
 
-namespace ServiceStack
+namespace ServiceStack.SmartThreadPool
 {
-    public abstract class AppHostHttpListenerSmartPoolBase
+    public abstract class AppSelfHostBase
         : AppHostHttpListenerBase
     {
-        private readonly ILog log = LogManager.GetLogger(typeof(AppHostHttpListenerSmartPoolBase));
+        private readonly ILog log = LogManager.GetLogger(typeof(AppSelfHostBase));
         private readonly AutoResetEvent listenForNextRequest = new AutoResetEvent(false);
-        private readonly SmartThreadPool threadPoolManager;
-
-        public SmartThreadPool ThreadPoolManager => threadPoolManager;
-
-        public int MinThreads
-        {
-            get { return threadPoolManager.MinThreads; }
-            set { threadPoolManager.MinThreads = value; }
-        }
-
-        public int MaxThreads
-        {
-            get { return threadPoolManager.MaxThreads; }
-            set { threadPoolManager.MaxThreads = value; }
-        }
+        private readonly Amib.Threading.SmartThreadPool threadPoolManager;
 
         private const int IdleTimeout = 300;
 
-        protected AppHostHttpListenerSmartPoolBase(string serviceName, params Assembly[] assembliesWithServices)
+        protected AppSelfHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices)
-        { threadPoolManager = new SmartThreadPool(IdleTimeout); }
+        {
+            threadPoolManager = new Amib.Threading.SmartThreadPool(IdleTimeout,
+                maxWorkerThreads: Math.Max(16, Environment.ProcessorCount * 2));
+        }
 
-        protected AppHostHttpListenerSmartPoolBase(string serviceName, int poolSize, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices)
-        { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
-
-        protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
-            : this(serviceName, handlerPath, CalculatePoolSize(), assembliesWithServices)
-        { }
-
-        protected AppHostHttpListenerSmartPoolBase(string serviceName, string handlerPath, int poolSize, params Assembly[] assembliesWithServices)
+        protected AppSelfHostBase(string serviceName, string handlerPath, params Assembly[] assembliesWithServices)
             : base(serviceName, handlerPath, assembliesWithServices)
-        { threadPoolManager = new SmartThreadPool(IdleTimeout, poolSize); }
+        {
+            threadPoolManager = new Amib.Threading.SmartThreadPool(IdleTimeout,
+                maxWorkerThreads: Math.Max(16, Environment.ProcessorCount * 2));
+        }
 
         private bool disposed = false;
 
