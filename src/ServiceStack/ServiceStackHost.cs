@@ -683,8 +683,7 @@ namespace ServiceStack
             //Some plugins need to initialize before other plugins are registered.
             foreach (var plugin in Plugins)
             {
-                var preInitPlugin = plugin as IPreInitPlugin;
-                if (preInitPlugin != null)
+                if (plugin is IPreInitPlugin preInitPlugin)
                 {
                     try
                     {
