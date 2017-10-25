@@ -189,8 +189,6 @@ namespace ServiceStack
             AbstractVirtualFileBase.ScanSkipPaths = Config.ScanSkipPaths;
             ResourceVirtualDirectory.EmbeddedResourceTreatAsFiles = Config.EmbeddedResourceTreatAsFiles;
 
-            Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
-
             OnBeforeInit();
             ServiceController.Init();
 
@@ -514,6 +512,7 @@ namespace ServiceStack
 
         public virtual void OnConfigLoad()
         {
+            Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
         }
 
         // Config has changed
