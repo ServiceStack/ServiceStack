@@ -314,11 +314,22 @@ namespace ServiceStack.Auth
 
         public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth)
         {
+            repo.RecordSuccessfulLogin(userAuth, rehashPassword:false, password:null);
+        }
+        
+        public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth, bool rehashPassword, string password)
+        {
             var feature = HostContext.GetPlugin<AuthFeature>();
             if (feature?.MaxLoginAttempts == null) return;
 
             userAuth.InvalidLoginAttempts = 0;
             userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+
+            if (rehashPassword)
+            {
+                userAuth.PopulatePasswordHashes(password);
+            }
+            
             repo.SaveUserAuth(userAuth);
         }
 

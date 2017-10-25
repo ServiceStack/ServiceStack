@@ -187,9 +187,9 @@ namespace ServiceStack.Authentication.RavenDb
             if (userAuth == null)
                 return false;
 
-            if (userAuth.VerifyPassword(password))
+            if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                this.RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth, needsRehash, password);
 
                 return true;
             }

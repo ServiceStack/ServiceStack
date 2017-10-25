@@ -542,8 +542,9 @@ namespace ServiceStack.Auth
             }
         }
 
-        public static bool VerifyPassword(this IUserAuth userAuth, string password)
+        public static bool VerifyPassword(this IUserAuth userAuth, string password, out bool needsRehash)
         {
+            needsRehash = false;
             if (userAuth == null)
                 throw new ArgumentNullException(nameof(userAuth));
             
