@@ -501,6 +501,63 @@ namespace ServiceStack.Auth
                 authService.Request.Items[Keywords.Session] = session;
             }
         }
+
+        public static void PopulatePasswordHashes(this IUserAuth newUser, string password, IUserAuth existingUser = null)
+        {
+            if (newUser == null)
+                throw new ArgumentNullException(nameof(newUser));
+            
+            var hash = existingUser?.PasswordHash;
+            var salt = existingUser?.Salt;
+
+            if (password != null)
+            {
+                var hashProvider = HostContext.Resolve<IHashProvider>();
+                hashProvider.GetHashAndSaltString(password, out hash, out salt);
+            }
+
+            newUser.PasswordHash = hash;
+            newUser.Salt = salt;
+            
+            newUser.PopulateDigestAuthHash(password, existingUser);
+        }
+
+        private static void PopulateDigestAuthHash(this IUserAuth newUser, string password, IUserAuth existingUser = null)
+        {
+            if (HostContext.GetPlugin<AuthFeature>()?.CreateDigestAuthHashes == true)
+            {
+                if (existingUser == null)
+                {
+                    var digestHelper = new DigestAuthFunctions();
+                    newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
+                else
+                {
+                    newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+
+                    // If either one changes the digest hash has to be recalculated
+                    if (password != null || existingUser.UserName != newUser.UserName)
+                        newUser.DigestHa1Hash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
+            }
+        }
+
+        public static bool VerifyPassword(this IUserAuth userAuth, string password)
+        {
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+            
+            var hashProvider = HostContext.Resolve<IHashProvider>();
+            return hashProvider.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt);
+        }
+
+        public static bool VerifyDigestAuth(this IUserAuth userAuth, Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence)
+        {
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+
+            return new DigestAuthFunctions().ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence);
+        }
     }
 
 }

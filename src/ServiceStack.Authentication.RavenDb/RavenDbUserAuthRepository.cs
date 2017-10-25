@@ -20,8 +20,6 @@ namespace ServiceStack.Authentication.RavenDb
         private readonly IDocumentStore documentStore;
         private static bool isInitialized = false;
 
-        public IHashProvider HashProvider { get; set; }
-
         public static void CreateOrUpdateUserAuthIndex(IDocumentStore store)
         {
             // put this index into the ravendb database
@@ -93,14 +91,7 @@ namespace ServiceStack.Authentication.RavenDb
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HashProvider ?? HostContext.Resolve<IHashProvider>();
-            string salt;
-            string hash;
-            saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            var digestHelper = new DigestAuthFunctions();
-            newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -159,20 +150,8 @@ namespace ServiceStack.Authentication.RavenDb
 
             AssertNoExistingUser(newUser, existingUser);
 
-            var hash = existingUser.PasswordHash;
-            var salt = existingUser.Salt;
-            if (password != null)
-                HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
-
-            // If either one changes the digest hash has to be recalculated
-            var digestHash = existingUser.DigestHa1Hash;
-            if (password != null || existingUser.UserName != newUser.UserName)
-                digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-
             newUser.Id = existingUser.Id;
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
-            newUser.DigestHa1Hash = digestHash;
+            newUser.PopulatePasswordHashes(password, existingUser);
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -208,7 +187,7 @@ namespace ServiceStack.Authentication.RavenDb
             if (userAuth == null)
                 return false;
 
-            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password))
             {
                 this.RecordSuccessfulLogin(userAuth);
 
@@ -227,8 +206,7 @@ namespace ServiceStack.Authentication.RavenDb
             if (userAuth == null)
                 return false;
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
 
@@ -260,8 +238,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             using (var session = documentStore.OpenSession())
             {
-                int userId;
-                if (int.TryParse(userAuthId, out userId))
+                if (int.TryParse(userAuthId, out var userId))
                 {
                     var userAuth = session.Load<TUserAuth>(userId);
                     session.Delete(userAuth);

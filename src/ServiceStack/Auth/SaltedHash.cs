@@ -7,9 +7,7 @@ namespace ServiceStack.Auth
 {
     public interface IHashProvider
     {
-        void GetHashAndSalt(byte[] Data, out byte[] Hash, out byte[] Salt);
         void GetHashAndSaltString(string Data, out string Hash, out string Salt);
-        bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt);
         bool VerifyHashString(string Data, string Hash, string Salt);
     }
 

@@ -88,7 +88,7 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth == null)
                 return false;
 
-            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password))
             {
                 this.RecordSuccessfulLogin(userAuth);
 
@@ -107,8 +107,7 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth == null)
                 return false;
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
 
@@ -212,13 +211,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            string salt;
-            string hash;
-            saltedHash.GetHashAndSaltString(password, out hash, out salt);
-
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -280,17 +273,8 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser, existingUser);
 
-            var hash = existingUser.PasswordHash;
-            var salt = existingUser.Salt;
-            if (password != null)
-            {
-                var saltedHash = HostContext.Resolve<IHashProvider>();
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            }
-
             newUser.Id = existingUser.Id;
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password, existingUser);
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 
