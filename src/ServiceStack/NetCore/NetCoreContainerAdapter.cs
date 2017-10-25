@@ -6,23 +6,28 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ServiceStack.NetCore
 {
-    public class NetCoreContainerAdapter : IContainerAdapter
+    public class NetCoreContainerAdapter : IContainerAdapter, IDisposable
     {
-        private readonly IServiceProvider appServices;
+        private readonly IServiceScope scope;
 
         public NetCoreContainerAdapter(IServiceProvider appServices)
         {
-            this.appServices = appServices;
+            this.scope = appServices.GetService<IServiceScopeFactory>().CreateScope();
         }
 
         public T TryResolve<T>()
         {
-            return appServices.GetService<T>();
+            return scope.ServiceProvider.GetService<T>();
         }
 
         public T Resolve<T>()
         {
-            return appServices.GetRequiredService<T>();
+            return scope.ServiceProvider.GetRequiredService<T>();
+        }
+
+        public void Dispose()
+        {
+            scope?.Dispose();
         }
     }
 }

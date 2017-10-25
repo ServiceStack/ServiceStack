@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Host.NetCore;
+using ServiceStack.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -37,14 +38,17 @@ namespace ServiceStack
 
         public override void OnConfigLoad()
         {
+            base.OnConfigLoad();
             if (app != null)
             {
                 //Initialize VFS
                 var env = app.ApplicationServices.GetService<IHostingEnvironment>();
                 Config.WebHostPhysicalPath = env.WebRootPath ?? env.ContentRootPath;
+                Config.DebugMode = env.IsDevelopment();
 
+                //Set VirtualFiles to point to ContentRootPath (Project Folder)
+                VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
                 AppHostBase.RegisterLicenseFromAppSettings(AppSettings);
-
                 Config.MetadataRedirectPath = "metadata";
             }
         }
@@ -212,6 +216,7 @@ namespace ServiceStack
             }
 
             base.Dispose(disposing);
+            LogManager.LogFactory = null;
         }
     }    
 }

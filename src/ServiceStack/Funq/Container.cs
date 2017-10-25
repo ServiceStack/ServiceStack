@@ -92,12 +92,13 @@ namespace Funq
 
             foreach (var serviceEntry in services.Values)
             {
-                var disposable = serviceEntry.GetInstance() as IDisposable;
-                if (disposable != null && !(disposable is Container))
+                if (serviceEntry.GetInstance() is IDisposable disposable && !(disposable is Container))
                 {
                     disposable.Dispose();
                 }
             }
+            
+            using (Adapter as IDisposable){}
         }
 
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>

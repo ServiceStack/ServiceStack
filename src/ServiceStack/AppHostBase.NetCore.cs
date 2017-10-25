@@ -208,6 +208,12 @@ namespace ServiceStack
             }
             return null;
         }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            LogManager.LogFactory = null;
+        }
     }
 
     public static class NetCoreAppHostExtensions
