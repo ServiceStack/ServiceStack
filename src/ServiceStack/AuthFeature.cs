@@ -43,7 +43,7 @@ namespace ServiceStack
         /// Create Digest Auth MD5 Hash when Creating/Updating Users.
         /// Defaults to only creating Digest Auth when DigestAuthProvider is registered.
         /// </summary>
-        public bool? CreateDigestAuthHashes { get; set; }
+        public bool CreateDigestAuthHashes { get; set; }
         
         /// <summary>
         /// Should UserName or Emails be saved in AuthRepository in LowerCase
@@ -119,9 +119,7 @@ namespace ServiceStack
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
             this.GenerateNewSessionCookiesOnAuthentication = true;
-
-            if (CreateDigestAuthHashes == null)
-                CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
+            this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
         public void Register(IAppHost appHost)

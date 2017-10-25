@@ -109,36 +109,6 @@ namespace ServiceStack.Auth
             return new AuthenticateResponse();
         }
 
-        /// <summary>
-        /// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
-        /// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
-        /// </summary>
-        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IAuthRepository authRepo, IAuthTokens tokens)
-        {
-            if (authRepo == null) return;
-            if (tokens != null)
-            {
-                session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
-            }
-
-            authRepo.LoadUserAuth(session, tokens);
-
-            foreach (var oAuthToken in session.GetAuthTokens())
-            {
-                var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                var userAuthProvider = authProvider as OAuthProvider;
-                userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
-            }
-
-            authRepo.SaveUserAuth(session);
-
-            var httpRes = authService.Request.Response as IHttpResponse;
-            httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-            OnSaveUserAuth(authService, session);
-        }
-
-        public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
-
         public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             session.AuthProvider = Provider;
