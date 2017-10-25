@@ -26,8 +26,13 @@ namespace ServiceStack
         {
             var pathController = pathParts[0].ToLower();
 
-            if (HandlerMappings.TryGetValue(pathController, out var handlerFn))
-                return handlerFn();
+            if (pathParts.Length == 1)
+            {
+                if (HandlerMappings.TryGetValue(pathController, out var handlerFn))
+                    return handlerFn();
+
+                return null;
+            }
 
             var pathAction = pathParts[1].ToLower();
             var requestName = pathParts.Length > 2 ? pathParts[2] : null;

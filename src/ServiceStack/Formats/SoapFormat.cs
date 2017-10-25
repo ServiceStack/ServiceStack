@@ -10,7 +10,7 @@ using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Web;
 
-namespace ServiceStack.Formats
+namespace ServiceStack
 {
     public class SoapFormat : IPlugin
     {
@@ -45,10 +45,7 @@ namespace ServiceStack.Formats
             }
         }
     }
-}
 
-namespace ServiceStack
-{
     // Overridable APIs to customize SOAP behavior
     public abstract partial class ServiceStackHost
     {

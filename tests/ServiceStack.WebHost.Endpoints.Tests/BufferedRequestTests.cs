@@ -155,6 +155,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
+#if !NETCORE
+            Plugins.Add(new SoapFormat());
+#endif
             PreRequestFilters.Add((httpReq, httpRes) => {
                 if (UseBufferredStream)
                     httpReq.UseBufferedStream = UseBufferredStream;

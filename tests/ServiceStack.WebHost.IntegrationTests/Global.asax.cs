@@ -21,6 +21,7 @@ using ServiceStack.Redis;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Tests;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Formats;
 using ServiceStack.Shared.Tests;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -85,6 +86,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                     }
                 });
                 
+                Plugins.Add(new SoapFormat());
                 Plugins.Add(new MiniProfilerFeature());
 
                 this.Container.Register<IDbConnectionFactory>(c =>

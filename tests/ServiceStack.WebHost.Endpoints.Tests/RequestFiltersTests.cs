@@ -132,6 +132,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
+#if !NETCORE
+                Plugins.Add(new SoapFormat());
+#endif
+
                 this.GlobalRequestFilters.Add((req, res, dto) =>
                 {
                     var userPass = req.GetBasicAuthUserAndPassword();
@@ -202,7 +206,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static void Assert401(IServiceClient client, WebServiceException ex)
         {
-#if !NETCORE            
+#if !NETCORE
             if (client is Soap11ServiceClient || client is Soap12ServiceClient)
             {
                 if (ex.StatusCode != 401)
