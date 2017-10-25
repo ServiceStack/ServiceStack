@@ -119,6 +119,9 @@ namespace ServiceStack
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
             this.GenerateNewSessionCookiesOnAuthentication = true;
+
+            if (CreateDigestAuthHashes == null)
+                CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
         public void Register(IAppHost appHost)
@@ -154,11 +157,6 @@ namespace ServiceStack
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
-
-            if (CreateDigestAuthHashes == null)
-            {
-                CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
-            }
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)
