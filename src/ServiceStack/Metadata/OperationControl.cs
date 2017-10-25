@@ -50,7 +50,7 @@ namespace ServiceStack.Metadata
                         : path;
                 }
 
-                var endpointConfig = MetadataConfig.GetEndpointConfig(ContentType);
+                var endpointConfig = MetadataConfig.GetEndpointConfig(ServiceStack.ContentFormat.GetContentFormat(ContentType));
                 var endpontPath = ResponseMessage != null
                     ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
                 return $"{endpontPath}/{OperationName}";

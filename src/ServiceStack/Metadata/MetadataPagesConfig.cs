@@ -21,45 +21,25 @@ namespace ServiceStack.Metadata
             this.ignoredFormats = ignoredFormats;
             this.metadata = metadata;
 
-            metadataConfigMap = new Dictionary<string, MetadataConfig> {
-                {"xml", metadataConfig.Xml},
-                {"json", metadataConfig.Json},
-                {"jsv", metadataConfig.Jsv},
-#if !NETSTANDARD2_0
-                {"soap11", metadataConfig.Soap11},
-                {"soap12", metadataConfig.Soap12},
-#endif
-            };
-
+            metadataConfigMap = new Dictionary<string, MetadataConfig>();
             AvailableFormatConfigs = new List<MetadataConfig>();
-
-            var config = GetMetadataConfig("xml");
-            if (config != null) AvailableFormatConfigs.Add(config);
-            config = GetMetadataConfig("json");
-            if (config != null) AvailableFormatConfigs.Add(config);
-            config = GetMetadataConfig("jsv");
-            if (config != null) AvailableFormatConfigs.Add(config);
 
             foreach (var format in contentTypeFormats)
             {
-                metadataConfigMap[format] = metadataConfig.Custom.Create(format);
+                metadataConfigMap[format] = metadataConfig.GetEndpointConfig(format);
 
-                config = GetMetadataConfig(format);
-                if (config != null) AvailableFormatConfigs.Add(config);
+                var config = GetMetadataConfig(format);
+                if (config != null) 
+                    AvailableFormatConfigs.Add(config);
             }
-
-            config = GetMetadataConfig("soap11");
-            if (config != null) AvailableFormatConfigs.Add(config);
-            config = GetMetadataConfig("soap12");
-            if (config != null) AvailableFormatConfigs.Add(config);
         }
 
         public MetadataConfig GetMetadataConfig(string format)
         {
-            if (ignoredFormats.Contains(format)) return null;
+            if (ignoredFormats.Contains(format)) 
+                return null;
 
-            MetadataConfig conf;
-            metadataConfigMap.TryGetValue(format, out conf);
+            metadataConfigMap.TryGetValue(format, out var conf);
             return conf;
         }
 
@@ -83,8 +63,7 @@ namespace ServiceStack.Metadata
 
         public bool AlwaysHideInMetadata(string operationName)
         {
-            Operation operation;
-            metadata.OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            metadata.OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             return operation?.RestrictTo?.VisibilityTo == RequestAttributes.None;
         }
     }

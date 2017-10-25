@@ -33,7 +33,7 @@ namespace ServiceStack.Host
                 { MimeTypes.Json, JsonDataContractSerializer.Instance.DeserializeFromStream },
                 { MimeTypes.Jsv, TypeSerializer.DeserializeFromStream },
                 { MimeTypes.Xml, XmlSerializer.DeserializeFromStream },
-                { MimeTypes.Soap11, XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" also matches xml
+                { "text/xml; charset=utf-8", XmlSerializer.DeserializeFromStream }, //"text/xml; charset=utf-8" also matches xml
             };
 
         public Dictionary<string, StreamSerializerDelegateAsync> ContentTypeSerializersAsync
@@ -77,6 +77,10 @@ namespace ServiceStack.Host
             { "json", MimeTypes.Json },
             { "xml", MimeTypes.Xml },
             { "jsv", MimeTypes.Jsv },
+#if !NETSTANDARD2_0
+            { "soap11", MimeTypes.Soap11 },
+            { "soap12", MimeTypes.Soap12 },
+#endif
         };
 
         public string GetFormatContentType(string format)
