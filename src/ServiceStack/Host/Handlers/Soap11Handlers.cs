@@ -16,16 +16,6 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap11ReplyHandler : Soap11Handler
-    {
-        public Soap11ReplyHandler() : base(RequestAttributes.Soap11) { }
-    }
-
-    public class Soap11OneWayHandler : Soap11Handler
-    {
-        public Soap11OneWayHandler() : base(RequestAttributes.Soap11) { }
-    }
-
     public class Soap11MessageReplyHttpHandler : Soap11Handler
     {
         public Soap11MessageReplyHttpHandler() : base(RequestAttributes.Soap11) { }

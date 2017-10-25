@@ -611,23 +611,6 @@ namespace ServiceStack
             return typesConfig;
         }
 
-        public virtual List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
-        {
-            var types = operationTypes
-                .Where(x => !x.AllAttributes<ExcludeAttribute>()
-                            .Any(attr => attr.Feature.Has(Feature.Soap)))
-                .Where(x => !x.IsGenericTypeDefinition())
-                .ToList();
-            return types;
-        }
-
-        public virtual bool ExportSoapType(Type type)
-        {
-            return !type.IsGenericTypeDefinition() &&
-                   !type.AllAttributes<ExcludeAttribute>()
-                        .Any(attr => attr.Feature.Has(Feature.Soap));
-        }
-
         /// <summary>
         /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
         /// See multitenancy: https://github.com/ServiceStack/ServiceStack/wiki/Multitenancy
@@ -642,8 +625,7 @@ namespace ServiceStack
             ConnectionInfo connInfo;
             if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
             {
-                var dbFactoryExtended = dbFactory as IDbConnectionFactoryExtended;
-                if (dbFactoryExtended == null)
+                if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
                     throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
                 if (connInfo.ConnectionString != null && connInfo.ProviderName != null)

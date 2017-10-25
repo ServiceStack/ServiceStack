@@ -16,6 +16,7 @@ using ServiceStack.Api.OpenApi.Specification;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
+using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
@@ -76,6 +77,8 @@ namespace CheckWeb
             {
                 EnableDebugTemplateToAll = true
             });
+            
+//            Plugins.Add(new SoapFormat());
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(

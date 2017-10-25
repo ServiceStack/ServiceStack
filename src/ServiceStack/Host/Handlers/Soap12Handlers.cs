@@ -16,22 +16,6 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap12Handlers : Soap12Handler
-    {
-        public Soap12Handlers() : base(RequestAttributes.Soap12) { }
-    }
-
-    public class Soap12OneWayHandler : Soap12Handler
-    {
-        public Soap12OneWayHandler() : base(RequestAttributes.Soap12) { }
-    }
-
-    public class Soap12MessageOneWayHttpHandler
-        : Soap12Handler
-    {
-        public Soap12MessageOneWayHttpHandler() : base(RequestAttributes.Soap12) { }
-    }
-
     public class Soap12MessageReplyHttpHandler : Soap12Handler
     {
         public Soap12MessageReplyHttpHandler() : base(RequestAttributes.Soap12) { }

@@ -567,16 +567,6 @@ namespace ServiceStack
                     Config.PreferredContentTypes.Remove(MimeTypes.Html);
                     ContentTypes.Remove(MimeTypes.Html);
                 }
-                if ((Feature.Soap11 & config.EnableFeatures) != Feature.Soap11)
-                {
-                    config.IgnoreFormatsInMetadata.Add("soap11");
-                    ContentTypes.Remove(MimeTypes.Soap11);
-                }
-                if ((Feature.Soap12 & config.EnableFeatures) != Feature.Soap12)
-                {
-                    config.IgnoreFormatsInMetadata.Add("soap12");
-                    ContentTypes.Remove(MimeTypes.Soap12);
-                }
             }
 
             if ((Feature.Html & config.EnableFeatures) != Feature.Html)

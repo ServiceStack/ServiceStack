@@ -212,6 +212,11 @@ namespace ServiceStack
 
         public static string GetContentFormat(Format format)
         {
+            if (format == Format.Soap11)
+                return "soap11";
+            if (format == Format.Soap12)
+                return "soap12";
+            
             var formatStr = format.ToString().ToLowerInvariant();
             return format == Format.MsgPack || format == Format.ProtoBuf
                 ? "x-" + formatStr
@@ -220,6 +225,11 @@ namespace ServiceStack
 
         public static string GetContentFormat(string contentType)
         {
+            if (contentType == MimeTypes.Soap11)
+                return "soap11";
+            if (contentType == MimeTypes.Soap12)
+                return "soap12";
+            
             return contentType?.RightPart('/');
         }
 

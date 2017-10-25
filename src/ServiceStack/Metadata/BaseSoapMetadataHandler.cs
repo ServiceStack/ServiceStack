@@ -22,11 +22,11 @@ namespace ServiceStack.Metadata
 
             if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
 
-            var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
 
             if (httpReq.QueryString["xsd"] != null)
             {
 #if !NETSTANDARD2_0
+                var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
                 var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
                 var schemas = schemaSet.Schemas();
