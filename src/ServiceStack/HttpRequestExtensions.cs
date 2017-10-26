@@ -613,7 +613,7 @@ namespace ServiceStack
             if (format == null)
             {
                 // 3 or 4 letters in URI between slashes `/[xml|json|html|jsv|csv]/[reply|oneway]/[servicename]`
-                //see https://github.com/ServiceStack/ServiceStack/wiki/Formats#default-endpoint
+                //see http://docs.servicestack.net/formats#pre-defined-routes
                 const int formatMaxLength = 4;
                 const int formatMinLength = 3;
                 int start = 0, end = -1;

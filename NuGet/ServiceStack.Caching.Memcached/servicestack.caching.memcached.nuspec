@@ -7,7 +7,7 @@
     <owners>ServiceStack</owners>
     <description>
         An Memcached cache client implementing ServiceStack's ICacheClient:
-        https://github.com/ServiceStack/ServiceStack/wiki/Caching
+        http://docs.servicestack.net/caching
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>

@@ -9,7 +9,7 @@
     <description>
         An NHibernate IUserAuthRepository to persist User registration and authentication info in any RDBMS NHibernate supports.
         Implements ServiceStack's built-in AuthProvider Model:
-        https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
+        http://docs.servicestack.net/authentication-and-authorization
         inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>

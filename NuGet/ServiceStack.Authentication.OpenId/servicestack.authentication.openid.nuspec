@@ -11,8 +11,8 @@
         Adds OpenId Auth Providers for use in ServiceStack Web and REST Services. 
         Includes built-in support for Google, Yahoo, MyOpenId and Custom OpenId providers.
         
-        More Info on Auth Providers: 
-        https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
+        More Info on Auth Providers:
+        http://docs.servicestack.net/authentication-and-authorization
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>

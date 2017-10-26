@@ -9,7 +9,7 @@
     <description>
       A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB.
       Implements ServiceStack's built-in AuthProvider Model:
-      https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
+      http://docs.servicestack.net/authentication-and-authorization
       inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
