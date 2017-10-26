@@ -1099,6 +1099,8 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            HttpClient?.Dispose();
+            HttpClient = null;
         }
     }
 
