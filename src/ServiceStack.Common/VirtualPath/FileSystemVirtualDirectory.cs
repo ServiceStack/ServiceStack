@@ -26,7 +26,7 @@ namespace ServiceStack.VirtualPath
 
         public override string Name => BackingDirInfo.Name;
 
-        public override DateTime LastModified => BackingDirInfo.LastWriteTime;
+        public override DateTime LastModified => BackingDirInfo.LastWriteTimeUtc;
 
         public override string RealPath => BackingDirInfo.FullName;
 

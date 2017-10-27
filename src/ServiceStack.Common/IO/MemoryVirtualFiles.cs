@@ -316,8 +316,7 @@ namespace ServiceStack.IO
 
         public override void Refresh()
         {
-            var file = base.VirtualPathProvider.GetFile(VirtualPath) as InMemoryVirtualFile;
-            if (file != null)
+            if (base.VirtualPathProvider.GetFile(VirtualPath) is InMemoryVirtualFile file)
             {
                 this.FilePath = file.FilePath;
                 this.FileLastModified = file.FileLastModified;

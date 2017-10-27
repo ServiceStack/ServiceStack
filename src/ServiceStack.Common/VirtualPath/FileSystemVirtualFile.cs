@@ -12,7 +12,7 @@ namespace ServiceStack.VirtualPath
 
         public override string RealPath => BackingFile.FullName;
 
-        public override DateTime LastModified => BackingFile.LastWriteTime;
+        public override DateTime LastModified => BackingFile.LastWriteTimeUtc;
 
         public override long Length => BackingFile.Length;
 
