@@ -335,7 +335,7 @@ namespace ServiceStack.Auth
             return session.ReferrerUrl;
         }
 
-        internal virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
+        protected virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
         {
             return userAuth?.LockedDate != null;
         }
