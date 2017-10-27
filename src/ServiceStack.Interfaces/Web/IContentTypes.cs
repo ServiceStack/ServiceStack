@@ -38,7 +38,7 @@ namespace ServiceStack.Web
 
         string SerializeToString(IRequest req, object response);
 
-        void SerializeToStream(IRequest requestContext, object response, Stream toStream);
+        Task SerializeToStreamAsync(IRequest requestContext, object response, Stream toStream);
 
         StreamSerializerDelegateAsync GetStreamSerializerAsync(string contentType);
     }

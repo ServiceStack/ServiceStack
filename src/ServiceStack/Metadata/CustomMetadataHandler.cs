@@ -27,8 +27,8 @@ namespace ServiceStack.Metadata
 
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    HostContext.ContentTypes.SerializeToStream(
-                        new BasicRequest { ContentType = this.ContentType }, requestObj, ms);
+                    HostContext.ContentTypes.SerializeToStreamAsync(
+                        new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
 
                     return Encoding.UTF8.GetString(ms.ToArray());
                 }
