@@ -56,6 +56,7 @@ namespace CheckWeb
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = { MimeTypes.Html },
                 UseCamelCase = true,
+                AdminAuthSecret = "secretz",
                 //HandlerFactoryPath = "CheckWeb", //when hosted on IIS
                 //AllowJsConfig = false,
 

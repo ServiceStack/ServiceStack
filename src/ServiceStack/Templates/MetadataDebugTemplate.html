@@ -140,7 +140,7 @@
         
         fetch(location.pathname, {
             method: "POST",
-            body: JSON.stringify({ template: template }),
+            body: JSON.stringify({ template: template }), //sync with: TemplateMetadataDebug
             credentials: 'include',
             headers: {
                 'Accept': 'text/html, */*',
@@ -169,7 +169,7 @@
                     }
                 })
             } catch(e) {
-                output.innerHTML = '<div class="alert alert-danger"><pre>' + jqxhr.status + ' ' + jqxhr.statusText + '</pre></div>';
+                output.innerHTML = '<div class="alert alert-danger"><pre>' + res.status + ' ' + res.statusText + '</pre></div>';
             }
         });
     };
