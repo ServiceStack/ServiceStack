@@ -80,7 +80,10 @@ namespace ServiceStack
             InitViewPages(appHost);
 
             if (!DisableHotReload)
+            {
                 appHost.RegisterService(typeof(TemplateHotReloadService));
+                appHost.RegisterService(typeof(TemplateHotReloadFilesService));                
+            }
             
             if (!string.IsNullOrEmpty(ApiPath))
                 appHost.RegisterService(typeof(TemplateApiPagesService), 
@@ -295,6 +298,43 @@ namespace ServiceStack
 
             var shouldReload = lastModified.Ticks > long.Parse(request.ETag);
             return new HotReloadPageResponse { Reload = shouldReload, ETag = lastModified.Ticks.ToString() };
+        }
+    }
+
+    [ExcludeMetadata]
+    [Route("/templates/hotreload/files")]
+    public class HotReloadFiles : IReturn<HotReloadPageResponse>
+    {
+        public string Pattern { get; set; }
+        public string ETag { get; set; }
+    }
+
+    [DefaultRequest(typeof(HotReloadFiles))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class TemplateHotReloadFilesService : Service
+    {
+        public object Any(HotReloadFiles request)
+        {
+            if (!HostContext.DebugMode)
+                throw new NotImplementedException("set 'debug true' in web.settings to enable this service");
+
+            var pattern = request.Pattern ?? "*";
+
+            var maxLastModified = DateTime.MinValue;
+
+            var files = VirtualFileSources.GetAllMatchingFiles(pattern);
+            foreach (var file in files)
+            {
+                file.Refresh();
+                if (file.LastModified > maxLastModified)
+                    maxLastModified = file.LastModified;
+            }
+
+            if (string.IsNullOrEmpty(request.ETag))
+                return new HotReloadPageResponse { ETag = maxLastModified.Ticks.ToString() };
+
+            var shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
+            return new HotReloadPageResponse { Reload = shouldReload, ETag = maxLastModified.Ticks.ToString() };
         }
     }
 
