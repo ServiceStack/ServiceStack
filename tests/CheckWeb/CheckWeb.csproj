@@ -95,6 +95,8 @@
     <Content Include="js\underscore.min.js" />
     <Content Include="register.htm" />
     <Content Include="Test.dtos.d.ts" />
+    <Content Include="TestAuth.cshtml" />
+    <Content Include="Views\Authenticate.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>

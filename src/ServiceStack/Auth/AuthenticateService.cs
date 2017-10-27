@@ -167,8 +167,7 @@ namespace ServiceStack.Auth
                     ReferrerUrl = referrerUrl,
                 };
 
-                var authResponse = response as AuthenticateResponse;
-                if (authResponse != null)
+                if (response is AuthenticateResponse authResponse)
                 {
                     var authCtx = new AuthFilterContext {
                         AuthService = this,

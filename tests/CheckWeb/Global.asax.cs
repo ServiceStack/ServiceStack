@@ -52,7 +52,7 @@ namespace CheckWeb
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {
-                DebugMode = false,
+                DebugMode = true,
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = { MimeTypes.Html },
                 UseCamelCase = true,
