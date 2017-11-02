@@ -28,7 +28,7 @@ namespace ServiceStack
 
         public bool envIsMono() => Env.IsMono;
         public bool envIsAndroid() => Env.IsAndroid;
-        public bool envIsMonoTouch() => Env.IsMonoTouch;
+        public bool envIsIOS() => Env.IsIOS;
 
 #if NET45
         public bool envIsWindows() => Env.IsWindows;
