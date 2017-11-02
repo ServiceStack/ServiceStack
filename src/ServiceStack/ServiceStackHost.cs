@@ -252,12 +252,6 @@ namespace ServiceStack
             }
         }
 
-        [Obsolete("Renamed to GetVirtualFileSources")]
-        public virtual List<IVirtualPathProvider> GetVirtualPathProviders()
-        {
-            return GetVirtualFileSources();
-        }
-
         /// <summary>
         /// Gets Full Directory Path of where the app is running
         /// </summary>

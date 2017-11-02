@@ -124,7 +124,7 @@ namespace ServiceStack.Templates
 
         public TemplatePage HtmlResolveLayout(TemplatePage page)
         {
-            var isCompletePage = page.BodyContents.StartsWith("<!DOCTYPE HTML>") || page.BodyContents.StartsWithIgnoreCase("<html");
+            var isCompletePage = page.BodyContents.StartsWithIgnoreCase("<!DOCTYPE HTML>") || page.BodyContents.StartsWithIgnoreCase("<html");
             if (isCompletePage)
                 return null;
 
