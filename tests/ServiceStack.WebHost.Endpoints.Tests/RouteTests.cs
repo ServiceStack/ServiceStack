@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -217,11 +218,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = await client.SendAsync(new RequestWithVersion());
             Assert.That(response.Version, Is.EqualTo(1));
         }
+
+        [Test]
+        public async Task Can_POST_to_IdWithAlias_with_JsonServiceClient_async()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = await client.PostAsync(new IdWithAlias { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Can_POST_to_IdWithAlias_with_JsonHttpClient_async()
+        {
+            var client = new JsonHttpClient(Config.AbsoluteBaseUri);
+
+            var response = await client.PostAsync(new IdWithAlias { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
     {
-        public RouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).GetAssembly()) { }
+        public RouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -273,27 +292,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Version { get; set; }
     }
 
+    [Route("/thing/{Id}/point", "POST")]
+    [DataContract]
+    public class IdWithAlias : IReturn<IdWithAlias>
+    {
+        [DataMember(Name = "id")]
+        public int Id { get; set; }
+    }
+
+
     public class CustomRouteService : IService
     {
-        public object Any(CustomRoute request)
-        {
-            return request;
-        }
-
-        public object Any(CustomRouteDot request)
-        {
-            return request;
-        }
-
-        public object Any(GetPngPic request)
-        {
-            return request;
-        }
-
-        public object Any(RequestWithVersion request)
-        {
-            return request;
-        }
+        public object Any(CustomRoute request) => request;
+        public object Any(CustomRouteDot request) => request;
+        public object Any(GetPngPic request) => request;
+        public object Any(RequestWithVersion request) => request;
+        public object Any(IdWithAlias request) => request;
     }
 
     [TestFixture]
