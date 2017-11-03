@@ -16,7 +16,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [Route("/matchroute/csv", MatchRule = "AcceptsCsv")]
     public class MatchesCsv : IReturn<MatchesCsv>
     {
         public string Name { get; set; }
@@ -77,6 +76,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         { "AcceptsCsv", httpReq => httpReq.Accept?.IndexOf(MimeTypes.Csv) >= 0 },
                     }
                 });
+
+                Routes.Add(typeof(MatchesCsv), "/matchroute/csv", null, null, null, matchRule:"AcceptsCsv");
             }
         }
 

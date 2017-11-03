@@ -89,5 +89,34 @@ namespace ServiceStack.Web
         /// <returns>The same <see cref="IServiceRoutes"/> instance;
         ///		never <see langword="null"/>.</returns>
         IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string summary, string notes);
+
+        /// <summary>
+        ///		Maps the specified REST path to the specified request DTO, 
+        ///		specifies the HTTP verbs supported by the path, and indicates
+        ///		the default MIME type of the returned response.
+        /// </summary>
+        /// <param name="requestType">
+        ///		The type of request DTO to map the path to.
+        /// </param>
+        /// <param name="restPath">The path to map the request DTO to.
+        ///		See <see cref="RouteAttribute.Path">RouteAttribute.Path</see>
+        ///		for details on the correct format.</param>
+        /// <param name="verbs">
+        ///		The comma-delimited list of HTTP verbs supported by the path, 
+        ///		such as "GET,PUT,DELETE".
+        /// </param>
+        /// <param name="summary">
+        ///     The short summary of what the REST does. 
+        /// </param>
+        /// <param name="notes">
+        ///     The longer text to explain the behaviour of the REST. 
+        /// </param>
+        /// <param name="matchRule">
+        ///     Must match rule defined in Config.RequestRules or Regex expression with format: 
+        ///     "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
+        /// </param>
+        /// <returns>The same <see cref="IServiceRoutes"/> instance;
+        ///		never <see langword="null"/>.</returns>
+        IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string summary, string notes, string matchRule);
     }
 }
