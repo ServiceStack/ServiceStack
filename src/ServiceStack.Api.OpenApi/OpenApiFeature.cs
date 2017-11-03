@@ -49,7 +49,7 @@ namespace ServiceStack.Api.OpenApi
 
         public void Configure(IAppHost appHost)
         {
-            appHost.Config.EmbeddedResourceSources.Add(typeof(OpenApiFeature).GetAssembly());
+            appHost.Config.EmbeddedResourceSources.Add(typeof(OpenApiFeature).Assembly);
         }
 
         public void Register(IAppHost appHost)
