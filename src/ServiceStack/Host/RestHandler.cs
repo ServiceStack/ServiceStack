@@ -16,11 +16,16 @@ namespace ServiceStack.Host
             this.HandlerAttributes = RequestAttributes.Reply;
         }
 
+        public static IRestPath FindMatchingRestPath(IHttpRequest httpReq, out string contentType)
+        {
+            var pathInfo = GetSanitizedPathInfo(httpReq.PathInfo, out contentType);
+            return HostContext.ServiceController.GetRestPathForRequest(httpReq.HttpMethod, pathInfo, httpReq);
+        }
+
         public static IRestPath FindMatchingRestPath(string httpMethod, string pathInfo, out string contentType)
         {
             pathInfo = GetSanitizedPathInfo(pathInfo, out contentType);
-
-            return HostContext.ServiceController.GetRestPathForRequest(httpMethod, pathInfo);
+            return HostContext.ServiceController.GetRestPathForRequest(httpMethod, pathInfo, null);
         }
 
         public static string GetSanitizedPathInfo(string pathInfo, out string contentType)
@@ -42,12 +47,11 @@ namespace ServiceStack.Host
             return pathInfo;
         }
 
-        public IRestPath GetRestPath(string httpMethod, string pathInfo)
+        public IRestPath GetRestPath(IHttpRequest httpReq)
         {
             if (this.RestPath == null)
             {
-                string contentType;
-                this.RestPath = FindMatchingRestPath(httpMethod, pathInfo, out contentType);
+                this.RestPath = FindMatchingRestPath(httpReq, out var contentType);
 
                 if (contentType != null)
                     ResponseContentType = contentType;
@@ -62,11 +66,12 @@ namespace ServiceStack.Host
 
         public override bool RunAsAsync() => true;
 
-        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest req, IResponse httpRes, string operationName)
         {
+            var httpReq = (IHttpRequest) req;
             try
             {
-                var restPath = GetRestPath(httpReq.Verb, httpReq.PathInfo);
+                var restPath = GetRestPath(httpReq);
                 if (restPath == null)
                     throw new NotSupportedException("No RestPath found for: " + httpReq.Verb + " " + httpReq.PathInfo);
 

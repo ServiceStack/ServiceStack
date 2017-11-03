@@ -252,12 +252,15 @@ namespace ServiceStack
             if (ex is IHasStatusCode hasStatusCode)
                 return hasStatusCode.StatusCode;
 
+            if (ex is WebException webEx)
+                return (int) webEx.GetStatus().GetValueOrDefault(HttpStatusCode.InternalServerError);
+
             if (HostContext.AppHost != null && HostContext.Config != null)
             {
                 var exType = ex.GetType();
                 foreach (var entry in HostContext.Config.MapExceptionToStatusCode)
                 {
-                    if (entry.Key.IsAssignableFromType(exType))
+                    if (entry.Key.IsAssignableFrom(exType))
                         return entry.Value;
                 }
             }
@@ -1051,6 +1054,50 @@ namespace ServiceStack
         public static bool IsHtml(this IRequest req)
         {
             return req.ResponseContentType.MatchesContentType(MimeTypes.Html);
+        }
+
+        public static string GetRequestValue(this IHttpRequest req, string name)
+        {
+            switch (name)
+            {
+                case nameof(req.PathInfo):
+                    return req.PathInfo;
+                case nameof(req.HttpMethod):
+                case nameof(req.Verb):
+                    return req.HttpMethod;
+                case nameof(req.ContentType):
+                    return req.ContentType;
+                case nameof(req.RawUrl):
+                    return req.RawUrl;
+                case nameof(req.AbsoluteUri):
+                    return req.AbsoluteUri;
+                case nameof(req.UserAgent):
+                    return req.UserAgent;
+                case nameof(req.Accept):
+                    return req.Accept;
+                case nameof(req.IsLocal):
+                    return req.IsLocal.ToString();
+                case nameof(req.IsSecureConnection):
+                    return req.IsSecureConnection.ToString();
+                case nameof(req.UserHostAddress):
+                    return req.UserHostAddress;
+                case nameof(req.RemoteIp):
+                    return req.RemoteIp;
+                case nameof(req.XRealIp):
+                    return req.XRealIp;
+                case nameof(req.XForwardedFor):
+                    return req.XForwardedFor;
+                case nameof(req.XForwardedPort):
+                    return req.XForwardedPort.ToString();
+                case nameof(req.XForwardedProtocol):
+                    return req.XForwardedProtocol;
+                case nameof(req.UrlReferrer):
+                    return req.UrlReferrer.ToString();
+                case nameof(req.ContentLength):
+                    return req.ContentLength.ToString();
+                default:
+                    throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
+            }
         }
     }
 }

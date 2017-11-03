@@ -194,9 +194,9 @@ namespace ServiceStack.Host
         public static bool IsServiceType(Type serviceType)
         {
             return typeof(IService).IsAssignableFrom(serviceType)
-                && !serviceType.IsAbstract() 
-                && !serviceType.IsGenericTypeDefinition() 
-                && !serviceType.ContainsGenericParameters();
+                && !serviceType.IsAbstract 
+                && !serviceType.IsGenericTypeDefinition 
+                && !serviceType.ContainsGenericParameters;
         }
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
@@ -206,7 +206,7 @@ namespace ServiceStack.Host
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes);
+                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.MatchRule);
 
                 if (attr is FallbackRouteAttribute defaultAttr)
                 {
@@ -214,11 +214,7 @@ namespace ServiceStack.Host
                         throw new NotSupportedException(
                             "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed.");
 
-                    appHost.Config.FallbackRestPath = (httpMethod, pathInfo, filePath) =>
-                    {
-                        var pathInfoParts = RestPath.GetPathPartsForMatching(pathInfo);
-                        return restPath.IsMatch(httpMethod, pathInfoParts) ? restPath : null;
-                    };
+                    appHost.Config.FallbackRestPath = httpReq => restPath.IsMatch(httpReq) ? restPath : null;
 
                     continue;
                 }
@@ -231,7 +227,7 @@ namespace ServiceStack.Host
             }
         }
 
-        private static readonly char[] InvalidRouteChars = new[] { '?', '&' };
+        private static readonly char[] InvalidRouteChars = { '?', '&' };
 
         public void RegisterRestPath(RestPath restPath)
         {
@@ -269,16 +265,27 @@ namespace ServiceStack.Host
             //Sync the RestPaths collections
             appHost.RestPaths.Clear();
             appHost.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
+            appHost.RestPaths.ForEach(x => x.AfterInit());
 
             appHost.Metadata.AfterInit();
         }
 
-        public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo)
+        [Obsolete("Use GetRestPathForRequest(httpMethod, pathInfo, httpReq)")]
+        public IRestPath GetRestPathForRequest(string httpMethod, string pathInfo) => GetRestPathForRequest(httpMethod, pathInfo, null);
+        
+        /// <summary>
+        /// Get Best Matching Route. 
+        /// </summary>
+        /// <param name="httpMethod"></param>
+        /// <param name="pathInfo"></param>
+        /// <param name="httpReq">If not null, ensures any Route matches any [Route(MatchRule)]</param>
+        /// <returns></returns>
+        public RestPath GetRestPathForRequest(string httpMethod, string pathInfo, IHttpRequest httpReq)
         {
             var matchUsingPathParts = RestPath.GetPathPartsForMatching(pathInfo);
 
             List<RestPath> firstMatches;
-            IRestPath bestMatch = null;
+            RestPath bestMatch = null;
 
             var yieldedHashMatches = RestPath.GetFirstMatchHashKeys(matchUsingPathParts);
             foreach (var potentialHashMatch in yieldedHashMatches)
@@ -288,6 +295,18 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
+                    //Match any  
+                    if (httpReq != null)
+                    {
+                        var matchFn = restPath.GetRequestRule();
+                        if (matchFn != null)
+                        {
+                            var validRoute = matchFn(httpReq);
+                            if (!validRoute)
+                                continue;
+                        }
+                    }
+                    
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
                     if (score > bestScore) 
                     {
@@ -602,8 +621,11 @@ namespace ServiceStack.Host
             try
             {
                 req.SetInProcessRequest();
+                
+                var restPath = req is IHttpRequest httpReq
+                    ? RestHandler.FindMatchingRestPath(httpReq, out _)
+                    : RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out _);
 
-                var restPath = RestHandler.FindMatchingRestPath(req.Verb, req.PathInfo, out _);
                 req.SetRoute(restPath as RestPath);
                 req.OperationName = restPath.RequestType.GetOperationName();
                 var requestDto = RestHandler.CreateRequestAsync(req, restPath).Result;

@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             foreach (var item in pathInfoMap)
             {
                 var expectedType = item.Value;
-                var httpReq = new BasicRequest
+                var httpReq = new BasicHttpRequest
                 {
                     PathInfo = item.Key,
                 };
@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var expectedType = item.Value;
                 var lowerPathInfo = item.Key.ToLower();
                 lowerPathInfo.Print();
-                var httpReq = new BasicRequest
+                var httpReq = new BasicHttpRequest
                 {
                     PathInfo = lowerPathInfo,
                 };

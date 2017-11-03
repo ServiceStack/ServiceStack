@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Threading;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -65,6 +67,10 @@ namespace ServiceStack.Host
         public string Summary { get; private set; }
 
         public string Notes { get; private set; }
+        
+        public string MatchRule { get; private set; }
+
+        private Func<IHttpRequest, bool> matchRuleFn;
 
         public bool AllowsAllVerbs { get; }
 
@@ -122,11 +128,12 @@ namespace ServiceStack.Host
 
         public RestPath(Type requestType, string path) : this(requestType, path, null) { }
 
-        public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null)
+        public RestPath(Type requestType, string path, string verbs, string summary = null, string notes = null, string matchRule = null)
         {
             this.RequestType = requestType;
             this.Summary = summary;
             this.Notes = notes;
+            this.MatchRule = matchRule;
             this.Path = path;
 
             this.AllowsAllVerbs = verbs == null || verbs == WildCard;
@@ -262,8 +269,7 @@ namespace ServiceStack.Host
             if (CalculateMatchScore != null)
                 return CalculateMatchScore(this, httpMethod, withPathInfoParts);
 
-            int wildcardMatchCount;
-            var isMatch = IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+            var isMatch = IsMatch(httpMethod, withPathInfoParts, out var wildcardMatchCount);
             if (!isMatch) return -1;
 
             var score = 0;
@@ -285,14 +291,63 @@ namespace ServiceStack.Host
         /// For performance withPathInfoParts should already be a lower case string
         /// to minimize redundant matching operations.
         /// </summary>
-        /// <param name="httpMethod"></param>
-        /// <param name="withPathInfoParts"></param>
         /// <returns></returns>
-        public bool IsMatch(string httpMethod, string[] withPathInfoParts)
+        public bool IsMatch(IHttpRequest httpReq)
         {
-            int wildcardMatchCount;
-            return IsMatch(httpMethod, withPathInfoParts, out wildcardMatchCount);
+            var pathInfo = httpReq.PathInfo;
+
+            var matchFn = GetRequestRule();
+            if (matchFn != null)
+            {
+                var validRoute = matchFn(httpReq);
+                if (!validRoute)
+                    return false;
+            }
+
+            pathInfo = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
+                        
+            var pathInfoParts = GetPathPartsForMatching(pathInfo);
+
+            return IsMatch(httpReq.HttpMethod, pathInfoParts, out var wildcardMatchCount);
         }
+
+        public void AfterInit()
+        {
+            if (this.MatchRule != null)
+            {
+                if (!HostContext.Config.RequestRules.TryGetValue(this.MatchRule, out this.matchRuleFn))
+                {
+                    var regexParts = this.MatchRule.SplitOnFirst("=~");
+                    if (regexParts.Length == 2)
+                    {
+                        var field = regexParts[0].Trim();
+                        var regex = regexParts[1].Trim();
+                        var isNull = regex == "null";
+                        var compiledRegex = !isNull 
+                            ? new Regex(regex, RegexOptions.Compiled)
+                            : null;
+
+                        matchRuleFn = req =>
+                        {
+                            var reqValue = req.GetRequestValue(field);
+                            if (reqValue == null)
+                                return isNull;
+
+                            if (compiledRegex == null)
+                                return false;
+
+                            return compiledRegex.IsMatch(reqValue);
+                        };
+                    }
+                    else
+                    {
+                        throw new NotSupportedException($"Unknown MatchRule '{MatchRule}' in Route '{Path}'");
+                    }
+                }
+            }
+        }
+
+        public Func<IHttpRequest, bool> GetRequestRule() => this.matchRuleFn;
 
         /// <summary>
         /// For performance withPathInfoParts should already be a lower case string
@@ -413,8 +468,7 @@ namespace ServiceStack.Host
                     continue;
                 }
 
-                string propertyNameOnRequest;
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out propertyNameOnRequest))
+                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out var propertyNameOnRequest))
                 {
                     if (Keywords.Ignore.EqualsIgnoreCase(variableName))
                     {

@@ -39,9 +39,6 @@ namespace ServiceStack.Web
         /// </summary>
         object Execute(object requestDto);
 
-        [Obsolete("Use Execute(IRequest, applyFilters:true)")]
-        object Execute(IRequest request);
-
         /// <summary>
         /// Executes the DTO request with the current HttpRequest and option to Execute Request/Response Filters.
         /// </summary>

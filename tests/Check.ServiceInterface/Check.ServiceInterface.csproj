@@ -74,6 +74,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReturnDataService.cs" />
     <Compile Include="ReturnGenericListServices.cs" />
+    <Compile Include="RouteMatchService.cs" />
     <Compile Include="SwaggerServices.cs" />
     <Compile Include="TestErrorService.cs" />
     <Compile Include="TestMinifierServices.cs" />

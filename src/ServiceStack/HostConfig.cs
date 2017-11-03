@@ -9,6 +9,7 @@ using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Metadata;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -60,6 +61,12 @@ namespace ServiceStack
                 GlobalResponseHeaders = new Dictionary<string, string> {
                     { "Vary", "Accept" },
                     { "X-Powered-By", Env.ServerUserAgent },
+                },
+                RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
+                    {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
+                    {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
+                    {"LastInt", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
+                    {"!LastInt", req => !int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
                 },
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {
@@ -180,6 +187,7 @@ namespace ServiceStack
             this.DebugMode = instance.DebugMode;
             this.StrictMode = instance.StrictMode;
             this.DefaultDocuments = instance.DefaultDocuments;
+            this.RequestRules = instance.RequestRules;
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
             this.AllowFileExtensions = instance.AllowFileExtensions;
@@ -280,6 +288,7 @@ namespace ServiceStack
         public ILogFactory LogFactory { get; set; }
         public bool EnableAccessRestrictions { get; set; }
         public bool UseBclJsonSerializers { get; set; }
+        public Dictionary<string, Func<IHttpRequest, bool>> RequestRules { get; set; }
         public Dictionary<string, string> GlobalResponseHeaders { get; set; }
         public Feature EnableFeatures { get; set; }
         public bool ReturnsInnerException { get; set; }
