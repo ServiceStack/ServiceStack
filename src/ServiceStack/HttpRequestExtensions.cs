@@ -238,9 +238,8 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return httpReq?.QueryString[Keywords.Callback];
+            return httpReq?.QueryString[Keywords.Callback].SafeVarName();
         }
-
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
