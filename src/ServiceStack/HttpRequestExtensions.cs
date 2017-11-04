@@ -776,7 +776,15 @@ namespace ServiceStack
 
         public static string ResolveAbsoluteUrl(this IRequest httpReq, string virtualPath=null)
         {
-            return HostContext.ResolveAbsoluteUrl(virtualPath ?? "~".CombineWith(httpReq.RawUrl), httpReq);
+            return HostContext.ResolveAbsoluteUrl(virtualPath ?? "~" + httpReq.GetRawUrl(), httpReq);
+        }
+
+        public static string GetRawUrl(this IRequest httpReq)
+        {
+            var handlerPath = HostContext.Config.HandlerFactoryPath;
+            return handlerPath != null
+                ? httpReq.RawUrl.IndexOf(handlerPath, StringComparison.OrdinalIgnoreCase) == 1 ? httpReq.RawUrl.Substring(1 + handlerPath.Length) : httpReq.RawUrl
+                : httpReq.RawUrl;
         }
 
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)

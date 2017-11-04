@@ -92,11 +92,13 @@ namespace CheckHttpListener
     {
         private static void Main(string[] args)
         {
+            var baseUrl = "http://localhost:8000/TestSite/";
             var appHost = new AppSelfHost()
                 .Init()
-                .Start("http://localhost/TestSite/");
+                .Start(baseUrl);
 
-            Process.Start("http://localhost/TestSite/");
+            Console.WriteLine(baseUrl);
+            Process.Start(baseUrl);
             Console.ReadLine();
         }
     }
