@@ -65,8 +65,12 @@ namespace ServiceStack
                 RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
                     {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
-                    {"LastInt", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
-                    {"!LastInt", req => !int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
+                    {"**/{int}", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
+                    {"{int}/**", req => int.TryParse(req.PathInfo.Substring(1).LeftPart('/'), out _) },
+                    {"path/{int}/**", req => {
+                        var afterFirst = req.PathInfo.Substring(1).RightPart('/');
+                        return !string.IsNullOrEmpty(afterFirst) && int.TryParse(afterFirst.LeftPart('/'), out _);
+                    }},
                 },
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 {

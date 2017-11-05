@@ -4,13 +4,13 @@ using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Route("/matchroute/html", Matches = "AcceptsHtml")]
+    [Route("/matches/html", Matches = "AcceptsHtml")]
     public class MatchesHtml : IReturn<MatchesHtml>
     {
         public string Name { get; set; }
     }
 
-    [Route("/matchroute/json", Matches = "AcceptsJson")]
+    [Route("/matches/json", Matches = "AcceptsJson")]
     public class MatchesJson : IReturn<MatchesJson>
     {
         public string Name { get; set; }
@@ -21,16 +21,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [Route("/matchlast/{Slug}")]
-    public class MatchesNotLastInt
+    [Route("/{SlugFirst}/matchrule")]
+    public class MatchesNotFirstInt
     {
-        public string Slug { get; set; }
+        public string SlugFirst { get; set; }
     }
 
-    [Route("/matchlast/{Id}", Matches = @"LastInt")]
+    [Route("/{IdFirst}/matchrule", Matches = @"{int}/**")]
+    public class MatchesFirstInt
+    {
+        public int IdFirst { get; set; }
+    }
+
+    [Route("/matchrule/{SlugLast}")]
+    public class MatchesNotLastInt
+    {
+        public string SlugLast { get; set; }
+    }
+
+    [Route("/matchrule/{IdLast}", Matches = @"**/{int}")]
     public class MatchesLastInt
     {
-        public int Id { get; set; }
+        public int IdLast { get; set; }
+    }
+
+    [Route("/matchrule/{Slug2}/remaining/path")]
+    public class MatchesSecondSlug
+    {
+        public string Slug2 { get; set; }
+    }
+
+    [Route("/matchrule/{Id2}/remaining/path", Matches = @"path/{int}/**")]
+    public class MatchesSecondInt
+    {
+        public int Id2 { get; set; }
     }
 
     [Route("/matchregex/{Slug}")]
@@ -51,8 +75,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(MatchesJson request) => request;
         public object Any(MatchesCsv request) => request;
 
+        public object Any(MatchesNotFirstInt request) => request;
+        public object Any(MatchesFirstInt request) => request;
+
         public object Any(MatchesNotLastInt request) => request;
         public object Any(MatchesLastInt request) => request;
+
+        public object Any(MatchesSecondSlug request) => request;
+        public object Any(MatchesSecondInt request) => request;
 
         public object Any(MatchesSlug request) => request;
         public object Any(MatchesInt request) => request;
@@ -77,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     }
                 });
 
-                Routes.Add(typeof(MatchesCsv), "/matchroute/csv", null, null, null, matchRule:"AcceptsCsv");
+                Routes.Add(typeof(MatchesCsv), "/matches/csv", null, null, null, matchRule:"AcceptsCsv");
             }
         }
 
@@ -101,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var html = Config.ListeningOn.AppendPath("matchroute/json").AddQueryParam("name", "JSON")
+                var html = Config.ListeningOn.AppendPath("matches/json").AddQueryParam("name", "JSON")
                     .GetStringFromUrl(accept: MimeTypes.Html);
                 Assert.Fail("Should throw");
             }
@@ -116,7 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = CreateClient();
 
-            var html = Config.ListeningOn.AppendPath("matchroute/html").AddQueryParam("name", "HTML")
+            var html = Config.ListeningOn.AppendPath("matches/html").AddQueryParam("name", "HTML")
                 .GetStringFromUrl(accept: MimeTypes.Html);
             Assert.That(html, Does.StartWith("<"));
 
@@ -136,7 +166,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = CreateClient();
 
-            var csv = Config.ListeningOn.AppendPath("matchroute/csv").AddQueryParam("name", "CSV")
+            var csv = Config.ListeningOn.AppendPath("matches/csv").AddQueryParam("name", "CSV")
                 .GetStringFromUrl(accept: MimeTypes.Csv);
             Assert.That(csv.NormalizeNewLines(), Is.EqualTo("Name\nCSV"));
 
@@ -152,21 +182,57 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_match_on_builtin_LastInt()
+        public void Can_match_on_builtin_FirstInt()
         {
-            var json = Config.ListeningOn.AppendPath("matchlast/1")
+            var json = Config.ListeningOn.AppendPath("1/matchrule")
                 .GetJsonFromUrl();
 
-            Assert.That(json.ToLower(), Is.EqualTo("{\"id\":1}"));
+            Assert.That(json.ToLower(), Is.EqualTo("{\"idfirst\":1}"));
         }
 
         [Test]
-        public void Can_match_on_builtin_not_LastInt()
+        public void Can_match_on_builtin_NotFirstInt()
         {
-            var json = Config.ListeningOn.AppendPath("matchlast/name")
+            var json = Config.ListeningOn.AppendPath("name/matchrule")
                 .GetJsonFromUrl();
 
-            Assert.That(json.ToLower(), Is.EqualTo("{\"slug\":\"name\"}"));
+            Assert.That(json.ToLower(), Is.EqualTo("{\"slugfirst\":\"name\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_LastInt()
+        {
+            var json = Config.ListeningOn.AppendPath("matchrule/1")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"idlast\":1}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_NotLastInt()
+        {
+            var json = Config.ListeningOn.AppendPath("matchrule/name")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"sluglast\":\"name\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_Int2()
+        {
+            var json = Config.ListeningOn.AppendPath("matchrule/1/remaining/path")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"id2\":1}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_NotInt2()
+        {
+            var json = Config.ListeningOn.AppendPath("matchrule/name/remaining/path")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"slug2\":\"name\"}"));
         }
 
         [Test]
