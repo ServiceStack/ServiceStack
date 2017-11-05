@@ -10,9 +10,10 @@ namespace ServiceStack.Logging.Serilog
     /// <summary>
     /// Implementation of <see cref="ILog"/> for <see cref="Serilog"/>.
     /// </summary>
-    public class SerilogLogger : ILog
+    public class SerilogLogger : ILogWithContext
     {
         private readonly ILogger _log;
+        private static Lazy<Func<string, object, bool, IDisposable>> _pushProperty = new Lazy<Func<string, object, bool, IDisposable>>(GetPushProperty);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerilogLogger"/> class.
@@ -229,6 +230,44 @@ namespace ServiceStack.Logging.Serilog
         }
 
         /// <summary>
+        /// Dynamically add and remove properties from the ambient "execution context"
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        /// <remarks>
+        /// Must install package: Serilog.Enrichers.Thread
+        /// Must enable enricher: var log = new LoggerConfiguration().Enrich.FromLogContext()
+        /// </remarks>
+        public IDisposable PushProperty(string key, object value)
+        {
+            return _pushProperty.Value(key, value, false);
+        }
+
+        private static Func<string, object, bool, IDisposable> GetPushProperty()
+        {
+            Type ndcContextType = Type.GetType("Serilog.Context.LogContext, Serilog") ??
+                                  Type.GetType("Serilog.Context.LogContext, Serilog.FullNetFx");
+
+            var pushPropertyMethod = ndcContextType.GetMethod("PushProperty", new[] { typeof(string), typeof(object), typeof(bool) });
+
+            var nameParam = System.Linq.Expressions.Expression.Parameter(typeof(string), "name");
+            var valueParam = System.Linq.Expressions.Expression.Parameter(typeof(object), "value");
+            var destructureObjectParam = System.Linq.Expressions.Expression.Parameter(typeof(bool), "destructureObjects");
+            var pushPropertyMethodCall = System.Linq.Expressions.Expression
+                .Call(null, pushPropertyMethod, nameParam, valueParam, destructureObjectParam);
+            var pushProperty = System.Linq.Expressions.Expression
+                .Lambda<Func<string, object, bool, IDisposable>>(
+                    pushPropertyMethodCall,
+                    nameParam,
+                    valueParam,
+                    destructureObjectParam)
+                .Compile();
+
+            return (key, value, destructure) => pushProperty(key, value, destructure);
+        }
+
+        /// <summary>
         /// Logs a Warning message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -274,7 +313,7 @@ namespace ServiceStack.Logging.Serilog
 
         internal ILog ForContext(string propertyName, object value, bool destructureObjects = false)
         {
-            return new SerilogLogger(_log.ForContext(propertyName, value, destructureObjects));;
+            return new SerilogLogger(_log.ForContext(propertyName, value, destructureObjects));
         }
 
         internal ILog ForContext(ILogEventEnricher enricher)

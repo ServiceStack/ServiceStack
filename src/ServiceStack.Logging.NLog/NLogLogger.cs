@@ -1,19 +1,18 @@
 using System;
 using NLog;
-using ServiceStack.Logging;
 
 namespace ServiceStack.Logging.NLogger
 {
     /// <summary>
     /// Wrapper over the NLog 2.0 beta and above logger 
     /// </summary>
-    public class NLogLogger : ServiceStack.Logging.ILog
+    public class NLogLogger : ILogWithContext
     {
         private readonly NLog.Logger log;
 
         public NLogLogger(string typeName)
         {
-            log = NLog.LogManager.GetLogger(typeName);
+            log = NLog.LogManager.GetLogger(typeName, typeof(NLogLogger));
         }
 
         /// <summary>
@@ -22,7 +21,7 @@ namespace ServiceStack.Logging.NLogger
         /// <param name="type">The type.</param>
         public NLogLogger(Type type)
         {
-            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.FullName : type.Name);
+            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.FullName : type.Name, typeof(NLogLogger));
         }
 
         public static bool UseFullTypeNames { get; set; }
@@ -75,6 +74,17 @@ namespace ServiceStack.Logging.NLogger
         }
 
         /// <summary>
+        /// Logs a Debug format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Debug(Exception exception, string format, params object[] args)
+        {
+            log.Debug(exception, format, args);
+        }
+
+        /// <summary>
         /// Logs a Error message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -104,6 +114,17 @@ namespace ServiceStack.Logging.NLogger
         {
             if (IsErrorEnabled)
                 Log(LogLevel.Error, format, args);
+        }
+
+        /// <summary>
+        /// Logs an Error format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Error(Exception exception, string format, params object[] args)
+        {
+            log.Error(exception, format, args);
         }
 
         /// <summary>
@@ -139,6 +160,17 @@ namespace ServiceStack.Logging.NLogger
         }
 
         /// <summary>
+        /// Logs a Fatal format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Fatal(Exception exception, string format, params object[] args)
+        {
+            log.Fatal(exception, format, args);
+        }
+
+        /// <summary>
         /// Logs an Info message 
         /// </summary>
         /// <param name="message">The message.</param>
@@ -168,6 +200,17 @@ namespace ServiceStack.Logging.NLogger
         {
             if (IsInfoEnabled)
                 Log(LogLevel.Info, format, args);
+        }
+
+        /// <summary>
+        /// Logs an Info format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Info(Exception exception, string format, params object[] args)
+        {
+            log.Info(exception, format, args);
         }
 
         /// <summary>
@@ -202,6 +245,17 @@ namespace ServiceStack.Logging.NLogger
                 Log(LogLevel.Warn, format, args);
         }
 
+        /// <summary>
+        /// Logs a Warn format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Warn(Exception exception, string format, params object[] args)
+        {
+            log.Warn(exception, format, args);
+        }
+
         public void Log(NLog.LogLevel logLevel, string message, Exception ex)
         {
             log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, message, null, ex));
@@ -215,6 +269,27 @@ namespace ServiceStack.Logging.NLogger
         public void Log(NLog.LogLevel logLevel, string format, object[] args, Exception ex)
         {
             log.Log(typeof(NLogLogger), new LogEventInfo(logLevel, log.Name, null, format, args, ex));
+        }
+
+        public IDisposable PushProperty(string key, object value)
+        {
+            NLog.MappedDiagnosticsLogicalContext.Set(key, value);
+            return new RemovePropertyOnDispose(key);
+        }
+
+        private class RemovePropertyOnDispose : IDisposable
+        {
+            private readonly string _removeKey;
+
+            public RemovePropertyOnDispose(string removeKey)
+            {
+                _removeKey = removeKey;
+            }
+
+            public void Dispose()
+            {
+                NLog.MappedDiagnosticsLogicalContext.Remove(_removeKey);
+            }
         }
     }
 }
