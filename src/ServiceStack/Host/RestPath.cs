@@ -341,7 +341,7 @@ namespace ServiceStack.Host
                     }
                     else
                     {
-                        throw new NotSupportedException($"Unknown MatchRule '{MatchRule}' in Route '{Path}'");
+                        throw new NotSupportedException($"Unknown Matches Rule '{MatchRule}' in Route '{Path}'");
                     }
                 }
             }

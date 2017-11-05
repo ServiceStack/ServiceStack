@@ -121,7 +121,7 @@ namespace ServiceStack
         /// Must match rule defined in Config.RequestRules or Regex expression with format: 
         /// "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
         /// </summary>
-        public string MatchRule { get; set; }
+        public string Matches { get; set; }
 
         protected bool Equals(RouteAttribute other)
         {

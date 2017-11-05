@@ -206,7 +206,7 @@ namespace ServiceStack.Host
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.MatchRule);
+                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.Matches);
 
                 if (attr is FallbackRouteAttribute defaultAttr)
                 {
@@ -278,7 +278,7 @@ namespace ServiceStack.Host
         /// </summary>
         /// <param name="httpMethod"></param>
         /// <param name="pathInfo"></param>
-        /// <param name="httpReq">If not null, ensures any Route matches any [Route(MatchRule)]</param>
+        /// <param name="httpReq">If not null, ensures any Route matches any [Route(Matches)]</param>
         /// <returns></returns>
         public RestPath GetRestPathForRequest(string httpMethod, string pathInfo, IHttpRequest httpReq)
         {

@@ -4,13 +4,13 @@ using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Route("/matchroute/html", MatchRule = "AcceptsHtml")]
+    [Route("/matchroute/html", Matches = "AcceptsHtml")]
     public class MatchesHtml : IReturn<MatchesHtml>
     {
         public string Name { get; set; }
     }
 
-    [Route("/matchroute/json", MatchRule = "AcceptsJson")]
+    [Route("/matchroute/json", Matches = "AcceptsJson")]
     public class MatchesJson : IReturn<MatchesJson>
     {
         public string Name { get; set; }
@@ -21,25 +21,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
-    [Route("/matchlast/{Id}", MatchRule = @"LastInt")]
+    [Route("/matchlast/{Id}", Matches = @"LastInt")]
     public class MatchesLastInt
     {
         public int Id { get; set; }
     }
 
-    [Route("/matchlast/{Slug}", MatchRule = @"!LastInt")]
+    [Route("/matchlast/{Slug}", Matches = @"!LastInt")]
     public class MatchesNotLastInt
     {
         public string Slug { get; set; }
     }
 
-    [Route("/matchregex/{Id}", MatchRule = @"PathInfo =~ \/[0-9]+$")]
+    [Route("/matchregex/{Id}", Matches = @"PathInfo =~ \/[0-9]+$")]
     public class MatchesId
     {
         public int Id { get; set; }
     }
 
-    [Route("/matchregex/{Slug}", MatchRule = @"PathInfo =~ \/[^0-9]+$")]
+    [Route("/matchregex/{Slug}", Matches = @"PathInfo =~ \/[^0-9]+$")]
     public class MatchesSlug
     {
         public string Slug { get; set; }
