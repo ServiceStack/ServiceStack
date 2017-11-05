@@ -322,26 +322,32 @@ namespace ServiceStack.Host
                     {
                         var field = regexParts[0].Trim();
                         var regex = regexParts[1].Trim();
-                        var isNull = regex == "null";
-                        var compiledRegex = !isNull 
-                            ? new Regex(regex, RegexOptions.Compiled)
-                            : null;
+                        var compiledRegex = new Regex(regex, RegexOptions.Compiled);
 
                         matchRuleFn = req =>
                         {
                             var reqValue = req.GetRequestValue(field);
-                            if (reqValue == null)
-                                return isNull;
-
-                            if (compiledRegex == null)
-                                return false;
-
                             return compiledRegex.IsMatch(reqValue);
                         };
                     }
                     else
                     {
-                        throw new NotSupportedException($"Unknown Matches Rule '{MatchRule}' in Route '{Path}'");
+                        var exactMatchParts = this.MatchRule.SplitOnFirst('=');
+                        if (exactMatchParts.Length == 2)
+                        {
+                            var field = exactMatchParts[0].Trim();
+                            var exactMatch = exactMatchParts[1].Trim();
+                            var isNull = exactMatch == "null";
+
+                            matchRuleFn = req =>
+                            {
+                                var reqValue = req.GetRequestValue(field);
+                                if (reqValue == null)
+                                    return isNull;
+                                return reqValue == exactMatch;
+                            };
+                        }
+                        else throw new NotSupportedException($"Unknown Matches Rule '{MatchRule}' in Route '{Path}'");
                     }
                 }
             }

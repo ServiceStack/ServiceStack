@@ -69,6 +69,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id { get; set; }
     }
 
+    [Route("/matchexact/{Exact}", Matches = @"UserAgent = specific-client")]
+    public class MatchesExactUserAgent
+    {
+        public string Exact { get; set; }
+    }
+
+    [Route("/matchexact/{Any}")]
+    public class MatchesAnyUserAgent
+    {
+        public string Any { get; set; }
+    }
+
     public class RouteMatchService : Service
     {
         public object Any(MatchesHtml request) => request;
@@ -86,6 +98,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(MatchesSlug request) => request;
         public object Any(MatchesInt request) => request;
+
+        public object Any(MatchesExactUserAgent request) => request;
+        public object Any(MatchesAnyUserAgent request) => request;
     }
 
     public class RouteMatchTests
@@ -251,6 +266,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl();
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"slug\":\"name\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_exact_UserAgent()
+        {
+            var json = Config.ListeningOn.AppendPath("matchexact/specific-client")
+                .GetJsonFromUrl(req => req.UserAgent = "specific-client");
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"exact\":\"specific-client\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_any_UserAgent()
+        {
+            var json = Config.ListeningOn.AppendPath("matchexact/any-client")
+                .GetJsonFromUrl(req => req.UserAgent = "any-client");
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"any\":\"any-client\"}"));
         }
 
     }
