@@ -295,7 +295,8 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
-                    //Match any  
+                    var matchScore = 0;
+                    //Handle [Route(Matches)]
                     if (httpReq != null)
                     {
                         var matchFn = restPath.GetRequestRule();
@@ -304,10 +305,12 @@ namespace ServiceStack.Host
                             var validRoute = matchFn(httpReq);
                             if (!validRoute)
                                 continue;
+
+                            matchScore = 1;
                         }
                     }
                     
-                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
+                    var score = restPath.MatchScore(httpMethod, matchUsingPathParts) + matchScore;
                     if (score > bestScore) 
                     {
                         bestScore = score;

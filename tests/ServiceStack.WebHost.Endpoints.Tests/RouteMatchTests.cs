@@ -21,28 +21,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    [Route("/matchlast/{Slug}")]
+    public class MatchesNotLastInt
+    {
+        public string Slug { get; set; }
+    }
+
     [Route("/matchlast/{Id}", Matches = @"LastInt")]
     public class MatchesLastInt
     {
         public int Id { get; set; }
     }
 
-    [Route("/matchlast/{Slug}", Matches = @"!LastInt")]
-    public class MatchesNotLastInt
+    [Route("/matchregex/{Slug}")]
+    public class MatchesSlug
     {
         public string Slug { get; set; }
     }
 
     [Route("/matchregex/{Id}", Matches = @"PathInfo =~ \/[0-9]+$")]
-    public class MatchesId
+    public class MatchesInt
     {
         public int Id { get; set; }
-    }
-
-    [Route("/matchregex/{Slug}", Matches = @"PathInfo =~ \/[^0-9]+$")]
-    public class MatchesSlug
-    {
-        public string Slug { get; set; }
     }
 
     public class RouteMatchService : Service
@@ -51,11 +51,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(MatchesJson request) => request;
         public object Any(MatchesCsv request) => request;
 
-        public object Any(MatchesLastInt request) => request;
         public object Any(MatchesNotLastInt request) => request;
+        public object Any(MatchesLastInt request) => request;
 
-        public object Any(MatchesId request) => request;
         public object Any(MatchesSlug request) => request;
+        public object Any(MatchesInt request) => request;
     }
 
     public class RouteMatchTests
