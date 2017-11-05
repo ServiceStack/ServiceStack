@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using ServiceStack.Host;
 using ServiceStack.Logging;
@@ -62,9 +63,11 @@ namespace ServiceStack
                     { "Vary", "Accept" },
                     { "X-Powered-By", Env.ServerUserAgent },
                 },
+                IsMobileRegex = new Regex("Mobile|iP(hone|od|ad)|Android|BlackBerry|IEMobile|Kindle|(hpw|web)OS|Fennec|Minimo|Opera M(obi|ini)|Blazer|Dolfin|Dolphin|Skyfire|Zune", RegexOptions.Compiled),
                 RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
                     {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
+                    {"IsMobile", req => Instance.IsMobileRegex.IsMatch(req.UserAgent) },
                     {"**/{int}", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
                     {"{int}/**", req => int.TryParse(req.PathInfo.Substring(1).LeftPart('/'), out _) },
                     {"path/{int}/**", req => {
@@ -191,6 +194,7 @@ namespace ServiceStack
             this.DebugMode = instance.DebugMode;
             this.StrictMode = instance.StrictMode;
             this.DefaultDocuments = instance.DefaultDocuments;
+            this.IsMobileRegex = instance.IsMobileRegex;
             this.RequestRules = instance.RequestRules;
             this.GlobalResponseHeaders = instance.GlobalResponseHeaders;
             this.IgnoreFormatsInMetadata = instance.IgnoreFormatsInMetadata;
@@ -292,6 +296,7 @@ namespace ServiceStack
         public ILogFactory LogFactory { get; set; }
         public bool EnableAccessRestrictions { get; set; }
         public bool UseBclJsonSerializers { get; set; }
+        public Regex IsMobileRegex { get; set; }
         public Dictionary<string, Func<IHttpRequest, bool>> RequestRules { get; set; }
         public Dictionary<string, string> GlobalResponseHeaders { get; set; }
         public Feature EnableFeatures { get; set; }

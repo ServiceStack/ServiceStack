@@ -81,6 +81,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Any { get; set; }
     }
 
+    [Route("/matchsite/{Mobile}", Matches = "IsMobile")]
+    public class MatchMobileSite
+    {
+        public string Mobile { get; set; }
+    }
+
+    [Route("/matchsite/{Desktop}")]
+    public class MatchDesktopSite
+    {
+        public string Desktop { get; set; }
+    }
+
     public class RouteMatchService : Service
     {
         public object Any(MatchesHtml request) => request;
@@ -101,6 +113,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(MatchesExactUserAgent request) => request;
         public object Any(MatchesAnyUserAgent request) => request;
+
+        public object Any(MatchMobileSite request) => request;
+        public object Any(MatchDesktopSite request) => request;
     }
 
     public class RouteMatchTests
@@ -284,6 +299,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl(req => req.UserAgent = "any-client");
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"any\":\"any-client\"}"));
+        }
+
+        [Test]
+        public void Does_match_builtin_IsMobile_Rule_with_iPhone6UA()
+        {
+            const string iPhone6UA = "Mozilla/5.0 (iPhone; CPU iPhone OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25";
+            var json = Config.ListeningOn.AppendPath("matchsite/iPhone6")
+                .GetJsonFromUrl(req => req.UserAgent = iPhone6UA);
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"mobile\":\"iphone6\"}"));
+        }
+
+        [Test]
+        public void Does_not_match_builtin_IsMobile_Rule_with_SafariUA()
+        {
+            const string SafariUA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_6) AppleWebKit/601.7.7 (KHTML, like Gecko) Version/9.1.2 Safari/601.7.7";
+            var json = Config.ListeningOn.AppendPath("matchsite/Safari")
+                .GetJsonFromUrl(req => req.UserAgent = SafariUA);
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"desktop\":\"safari\"}"));
         }
 
     }
