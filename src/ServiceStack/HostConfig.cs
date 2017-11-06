@@ -68,11 +68,15 @@ namespace ServiceStack
                     {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
                     {"IsMobile", req => Instance.IsMobileRegex.IsMatch(req.UserAgent) },
-                    {"**/{int}", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
                     {"{int}/**", req => int.TryParse(req.PathInfo.Substring(1).LeftPart('/'), out _) },
                     {"path/{int}/**", req => {
                         var afterFirst = req.PathInfo.Substring(1).RightPart('/');
                         return !string.IsNullOrEmpty(afterFirst) && int.TryParse(afterFirst.LeftPart('/'), out _);
+                    }},
+                    {"**/{int}", req => int.TryParse(req.PathInfo.LastRightPart('/'), out _) },
+                    {"**/{int}/path", req => {
+                        var beforeLast = req.PathInfo.LastLeftPart('/');
+                        return !string.IsNullOrEmpty(beforeLast) && int.TryParse(beforeLast.LastRightPart('/'), out _);
                     }},
                 },
                 IgnoreFormatsInMetadata = new HashSet<string>(StringComparer.OrdinalIgnoreCase)

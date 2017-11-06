@@ -57,6 +57,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int Id2 { get; set; }
     }
 
+    [Route("/remaining/path/{Slug2}/matchrule")]
+    public class MatchesSecondLastSlug
+    {
+        public string Slug2 { get; set; }
+    }
+
+    [Route("/remaining/path/{Id2}/matchrule", Matches = @"**/{int}/path")]
+    public class MatchesSecondLastInt
+    {
+        public int Id2 { get; set; }
+    }
+
     [Route("/matchregex/{Slug}")]
     public class MatchesSlug
     {
@@ -107,6 +119,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(MatchesSecondSlug request) => request;
         public object Any(MatchesSecondInt request) => request;
+
+        public object Any(MatchesSecondLastSlug request) => request;
+        public object Any(MatchesSecondLastInt request) => request;
 
         public object Any(MatchesSlug request) => request;
         public object Any(MatchesInt request) => request;
@@ -248,7 +263,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_match_on_builtin_Int2()
+        public void Can_match_on_builtin_Second_Int()
         {
             var json = Config.ListeningOn.AppendPath("matchrule/1/remaining/path")
                 .GetJsonFromUrl();
@@ -257,9 +272,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_match_on_builtin_NotInt2()
+        public void Can_match_on_builtin_Second_NotInt()
         {
             var json = Config.ListeningOn.AppendPath("matchrule/name/remaining/path")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"slug2\":\"name\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_SecondLast_Int()
+        {
+            var json = Config.ListeningOn.AppendPath("/remaining/path/1/matchrule")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"id2\":1}"));
+        }
+
+        [Test]
+        public void Can_match_on_builtin_SecondLast_NotInt()
+        {
+            var json = Config.ListeningOn.AppendPath("/remaining/path/name/matchrule")
                 .GetJsonFromUrl();
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"slug2\":\"name\"}"));
