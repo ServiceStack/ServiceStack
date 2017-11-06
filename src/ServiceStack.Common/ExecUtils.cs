@@ -132,14 +132,70 @@ namespace ServiceStack
             }
         }
 
-        private static void SleepBackOffMultiplier(int i)
-        {
-            //exponential/random retry back-off.
-            var rand = new Random(Guid.NewGuid().GetHashCode());
-            var nextTry = rand.Next(
-                (int)Math.Pow(i, 2), (int)Math.Pow(i + 1, 2) + 1);
+        /// <summary>
+        /// Default base sleep time (milliseconds).
+        /// </summary>
+        public static int BaseDelayMs { get; set; } = 100;
 
-            TaskUtils.Sleep(nextTry);
+        /// <summary>
+        /// Default maximum back-off time before retrying a request
+        /// </summary>
+        public static int MaxBackOffMs { get; set; } = 1000 * 20;
+
+        /// <summary>
+        /// Maximum retry limit. Avoids integer overflow issues.
+        /// </summary>
+        public static int MaxRetries { get; set; } = 30;
+
+        /// <summary>
+        /// How long to sleep before next retry using Exponential BackOff delay with Full Jitter.
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        public static void SleepBackOffMultiplier(int retriesAttempted) => TaskUtils.Sleep(CalculateFullJitterBackOffDelay(retriesAttempted));
+
+        /// <summary>
+        /// Exponential BackOff Delay with Full Jitter
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        /// <returns></returns>
+        public static int CalculateFullJitterBackOffDelay(int retriesAttempted) => CalculateFullJitterBackOffDelay(retriesAttempted, BaseDelayMs, MaxBackOffMs);
+
+        /// <summary>
+        /// Exponential BackOff Delay with Full Jitter from:
+        /// https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-core/src/main/java/com/amazonaws/retry/PredefinedBackoffStrategies.java
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        /// <param name="baseDelay"></param>
+        /// <param name="maxBackOffMs"></param>
+        /// <returns></returns>
+        public static int CalculateFullJitterBackOffDelay(int retriesAttempted, int baseDelay, int maxBackOffMs)
+        {
+            var random = new Random(Guid.NewGuid().GetHashCode());
+            var ceil = CalculateExponentialDelay(retriesAttempted, baseDelay, maxBackOffMs);
+            return random.Next(ceil);
+        }
+
+        /// <summary>
+        /// Calculate exponential retry back-off.
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        /// <returns></returns>
+        public static int CalculateExponentialDelay(int retriesAttempted) => CalculateExponentialDelay(retriesAttempted, BaseDelayMs, MaxBackOffMs);
+
+        /// <summary>
+        /// Calculate exponential retry back-off.
+        /// </summary>
+        /// <param name="retriesAttempted"></param>
+        /// <param name="baseDelay"></param>
+        /// <param name="maxBackOffMs"></param>
+        /// <returns></returns>
+        public static int CalculateExponentialDelay(int retriesAttempted, int baseDelay, int maxBackOffMs)
+        {
+            if (retriesAttempted <= 0)
+                return baseDelay;
+
+            var retries = Math.Min(retriesAttempted, MaxRetries);
+            return (int)Math.Min((1L << retries) * baseDelay, maxBackOffMs);
         }
     }
 }
