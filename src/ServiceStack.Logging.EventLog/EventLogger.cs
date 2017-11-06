@@ -7,7 +7,7 @@ namespace ServiceStack.Logging.EventLog
     /// <summary>
     /// ILog used to write to the Event Log
     /// </summary>
-    public class EventLogger : ILog
+    public class EventLogger : ILogWithException
     {
         private const string NEW_LINE = "\r\n\r\n";
         public static string ERROR_MSG = "An error occurred in the application: {0}\r\nException: {1}";
@@ -50,9 +50,9 @@ namespace ServiceStack.Logging.EventLog
         /// Writes the specified message.
         /// </summary>
         /// <param name="message">The message.</param>
-        /// <param name="execption">The execption.</param>
+        /// <param name="exeception">The execption.</param>
         /// <param name="eventLogType">Type of the event log.</param>
-        private void Write(object message, Exception execption, EventLogEntryType eventLogType)
+        private void Write(object message, Exception exeception, EventLogEntryType eventLogType)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -63,15 +63,15 @@ namespace ServiceStack.Logging.EventLog
             }
 
             sb.Append(message).Append(NEW_LINE);
-            while (execption != null)
+            while (exeception != null)
             {
-                sb.Append("Message: ").Append(execption.Message).Append(NEW_LINE)
-                .Append("Source: ").Append(execption.Source).Append(NEW_LINE)
-                .Append("Target site: ").Append(execption.TargetSite).Append(NEW_LINE)
-                .Append("Stack trace: ").Append(execption.StackTrace).Append(NEW_LINE);
+                sb.Append("Message: ").Append(exeception.Message).Append(NEW_LINE)
+                .Append("Source: ").Append(exeception.Source).Append(NEW_LINE)
+                .Append("Target site: ").Append(exeception.TargetSite).Append(NEW_LINE)
+                .Append("Stack trace: ").Append(exeception.StackTrace).Append(NEW_LINE);
 
                 // Walk the InnerException tree
-                execption = execption.InnerException;
+                exeception = exeception.InnerException;
             }
 
             eventLogger.Source = eventLogSource;
@@ -111,6 +111,18 @@ namespace ServiceStack.Logging.EventLog
         }
 
         /// <summary>
+        /// Logs a Debug format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Debug(Exception exception, string format, params object[] args)
+        {
+            if (IsDebugEnabled)
+                Write("DEBUG: " + string.Format(format, args), exception, EventLogEntryType.Information);
+        }
+
+        /// <summary>
         /// Logs a Error message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -137,6 +149,17 @@ namespace ServiceStack.Logging.EventLog
         public void ErrorFormat(string format, params object[] args)
         {
             Write("ERROR: " + string.Format(format, args), EventLogEntryType.Error);
+        }
+
+        /// <summary>
+        /// Logs an Error format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Error(Exception exception, string format, params object[] args)
+        {
+            Write("ERROR: " + string.Format(format, args), exception, EventLogEntryType.Error);
         }
 
         /// <summary>
@@ -169,6 +192,17 @@ namespace ServiceStack.Logging.EventLog
         }
 
         /// <summary>
+        /// Logs a Fatal format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Fatal(Exception exception, string format, params object[] args)
+        {
+            Write("FATAL: " + string.Format(format, args), exception, EventLogEntryType.Error);
+        }
+
+        /// <summary>
         /// Logs an Info message and exception.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -195,6 +229,17 @@ namespace ServiceStack.Logging.EventLog
         public void InfoFormat(string format, params object[] args)
         {
             Write("INFO: " + string.Format(format, args), EventLogEntryType.Information);
+        }
+
+        /// <summary>
+        /// Logs an Info format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Info(Exception exception, string format, params object[] args)
+        {
+            Write("INFO: " + string.Format(format, args), exception, EventLogEntryType.Information);
         }
 
         /// <summary>
@@ -226,5 +271,15 @@ namespace ServiceStack.Logging.EventLog
             Write("WARN: " + string.Format(format, args), EventLogEntryType.Warning);
         }
 
+        /// <summary>
+        /// Logs a Warn format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Warn(Exception exception, string format, params object[] args)
+        {
+            Write("WARN: " + string.Format(format, args), exception, EventLogEntryType.Warning);
+        }
     }
 }

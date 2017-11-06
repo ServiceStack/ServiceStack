@@ -15,5 +15,17 @@ namespace ServiceStack.Logging.Tests.UseCases
             log.Debug("Debug Event Log Entry.");
             log.Warn("Warning Event Log Entry.");
         }
+
+        [Test]
+        public void Log4NetUseCasePushProperty()
+        {
+            LogManager.LogFactory = new Log4NetFactory();
+            ILog log = LogManager.GetLogger(GetType());
+
+            using (log.PushProperty("Hello", "World"))
+            {
+                log.Warn("Warning Event Log Entry.");
+            }
+        }
     }
 }
