@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
-using ServiceStack.FluentValidation.Internal;
 using ServiceStack.Host;
 using ServiceStack.Testing;
 using ServiceStack.Text;
@@ -310,8 +309,8 @@ namespace ServiceStack.Auth
             var combinedRoles = new List<string>(session.Roles.Safe());
             var combinedPerms = new List<string>(session.Permissions.Safe());
 
-            roles?.ForEach(x => combinedRoles.AddIfNotExists(x));
-            permissions?.ForEach(x => combinedPerms.AddIfNotExists(x));
+            roles.Each(x => combinedRoles.AddIfNotExists(x));
+            permissions.Each(x => combinedPerms.AddIfNotExists(x));
 
             if (combinedRoles.Count > 0)
                 jwtPayload["roles"] = combinedRoles.ToJson();
