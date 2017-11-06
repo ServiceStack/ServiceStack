@@ -5,7 +5,7 @@ namespace ServiceStack.Logging.Log4Net
     /// <summary>
     /// Wrapper over the log4net.1.2.10 and above logger 
     /// </summary>
-	public class Log4NetLogger : ILog
+	public class Log4NetLogger : ILogWithContext
     {
         private readonly log4net.ILog _log;
 
@@ -23,9 +23,9 @@ namespace ServiceStack.Logging.Log4Net
             _log = log4net.LogManager.GetLogger(type);
         }
 
-	public bool IsDebugEnabled { get { return _log.IsDebugEnabled; } }
-	
-	/// <summary>
+        public bool IsDebugEnabled { get { return _log.IsDebugEnabled; } }
+
+        /// <summary>
         /// Logs a Debug message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -44,6 +44,18 @@ namespace ServiceStack.Logging.Log4Net
         {
             if (_log.IsDebugEnabled)
                 _log.Debug(message, exception);
+        }
+
+        /// <summary>
+        /// Logs a Debug format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Debug(Exception exception, string format, params object[] args)
+        {
+            if (_log.IsDebugEnabled)
+                _log.Debug(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -79,6 +91,18 @@ namespace ServiceStack.Logging.Log4Net
         }
 
         /// <summary>
+        /// Logs an Error format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Error(Exception exception, string format, params object[] args)
+        {
+            if (_log.IsErrorEnabled)
+                _log.Error(string.Format(format, args), exception);
+        }
+
+        /// <summary>
         /// Logs a Error format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -108,6 +132,18 @@ namespace ServiceStack.Logging.Log4Net
         {
             if (_log.IsFatalEnabled)
                 _log.Fatal(message, exception);
+        }
+
+        /// <summary>
+        /// Logs a Fatal format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Fatal(Exception exception, string format, params object[] args)
+        {
+            if (_log.IsFatalEnabled)
+                _log.Fatal(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -143,6 +179,18 @@ namespace ServiceStack.Logging.Log4Net
         }
 
         /// <summary>
+        /// Logs an Info format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Info(Exception exception, string format, params object[] args)
+        {
+            if (_log.IsInfoEnabled)
+                _log.Info(string.Format(format, args), exception);
+        }
+
+        /// <summary>
         /// Logs an Info format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -151,6 +199,12 @@ namespace ServiceStack.Logging.Log4Net
         {
             if (_log.IsInfoEnabled)
                 _log.InfoFormat(format, args);
+        }
+
+        public IDisposable PushProperty(string key, object value)
+        {
+            log4net.LogicalThreadContext.Properties[key] = value;
+            return new RemovePropertyOnDispose(key);
         }
 
         /// <summary>
@@ -175,6 +229,18 @@ namespace ServiceStack.Logging.Log4Net
         }
 
         /// <summary>
+        /// Logs a Warn format message and exception.
+        /// </summary>
+        /// <param name="exception">Exception related to the event.</param>
+        /// <param name="format">The format.</param>
+        /// <param name="args">The args.</param>
+        public void Warn(Exception exception, string format, params object[] args)
+        {
+            if (_log.IsWarnEnabled)
+                _log.Warn(string.Format(format, args), exception);
+        }
+
+        /// <summary>
         /// Logs a Warning format message.
         /// </summary>
         /// <param name="format">The format.</param>
@@ -183,6 +249,21 @@ namespace ServiceStack.Logging.Log4Net
         {
             if (_log.IsWarnEnabled)
                 _log.WarnFormat(format, args);
+        }
+
+        private class RemovePropertyOnDispose : IDisposable
+        {
+            private readonly string _removeKey;
+
+            public RemovePropertyOnDispose(string removeKey)
+            {
+                _removeKey = removeKey;
+            }
+
+            public void Dispose()
+            {
+                log4net.LogicalThreadContext.Properties.Remove(_removeKey);
+            }
         }
     }
 }
