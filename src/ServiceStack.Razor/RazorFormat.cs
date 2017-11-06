@@ -239,7 +239,7 @@ namespace ServiceStack.Razor
         
         public void ProcessContentPageRequest(IRequest httpReq, IResponse httpRes)
         {
-            ((IServiceStackHandler)PageResolver).ProcessRequest(httpReq, httpRes, httpReq.OperationName);
+            ((IServiceStackHandler)PageResolver).ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
         }
 
         public RazorPage AddPage(string filePath)

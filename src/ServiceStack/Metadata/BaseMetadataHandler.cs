@@ -19,10 +19,10 @@ namespace ServiceStack.Metadata
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
+                return TypeConstants.EmptyTask;
 
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
@@ -32,6 +32,8 @@ namespace ServiceStack.Metadata
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
+
+            return TypeConstants.EmptyTask;
         }
 
         public virtual string CreateResponse(Type type)

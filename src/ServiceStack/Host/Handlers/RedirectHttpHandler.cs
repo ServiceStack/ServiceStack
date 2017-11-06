@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -31,7 +32,7 @@ namespace ServiceStack.Host.Handlers
                 : "~/" + relativeUrl;
         }
 
-        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        public override Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
         {
             if (string.IsNullOrEmpty(RelativeUrl) && string.IsNullOrEmpty(AbsoluteUrl))
                 throw new ArgumentException("RelativeUrl and AbsoluteUrl is Required");
@@ -55,6 +56,7 @@ namespace ServiceStack.Host.Handlers
             }
 
             response.EndHttpHandlerRequest(skipClose: true);
+            return TypeConstants.EmptyTask;
         }
     }
 }

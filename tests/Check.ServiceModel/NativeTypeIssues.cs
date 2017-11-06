@@ -1,5 +1,8 @@
-﻿namespace Check.ServiceModel
+﻿using ServiceStack.DataAnnotations;
+
+namespace Check.ServiceModel
 {
+    [ExcludeMetadata]
     public abstract class Issue221Base<T>
     {
         public T Id { get; set; }
@@ -10,6 +13,7 @@
         }
     }
 
+    [ExcludeMetadata]
     public class Issue221Long : Issue221Base<long>
     {
         public Issue221Long(long id) : base(id)

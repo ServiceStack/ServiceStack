@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Web;
@@ -15,12 +16,13 @@ namespace ServiceStack.Metadata
 
         public string OperationName { get; set; }
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
+                return TypeConstants.EmptyTask;
 
-            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
+            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) 
+                return TypeConstants.EmptyTask;
 
 
             if (httpReq.QueryString["xsd"] != null)
@@ -54,6 +56,8 @@ namespace ServiceStack.Metadata
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
+
+            return TypeConstants.EmptyTask;
         }
 
     }
