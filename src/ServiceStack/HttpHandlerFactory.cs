@@ -168,11 +168,6 @@ namespace ServiceStack
                 return NonRootModeDefaultHttpHandler;
             }
 
-            if (mode != null && pathInfo.EndsWith("/" + mode))
-            {
-                return ReturnDefaultHandler(httpReq);
-            }
-
             return GetHandlerForPathInfo(httpReq, pathTranslated)
                ?? NotFoundHttpHandler;
         }
@@ -221,26 +216,8 @@ namespace ServiceStack
                 return NonRootModeDefaultHttpHandler;
             }
 
-            if (mode != null && pathInfo.EndsWith("/" + mode))
-                return ReturnDefaultHandler(httpReq);
-
             return GetHandlerForPathInfo(httpReq, httpReq.GetPhysicalPath())
                    ?? NotFoundHttpHandler;
-        }
-
-        private static IHttpHandler ReturnDefaultHandler(IHttpRequest httpReq)
-        {
-            var pathProvider = HostContext.VirtualFileSources;
-
-            var defaultDoc = pathProvider.GetFile(DefaultRootFileName ?? "");
-            if (httpReq.GetPhysicalPath() != WebHostPhysicalPath
-                || defaultDoc == null)
-            {
-                return new IndexPageHttpHandler();
-            }
-
-            var okToServe = ShouldAllow(httpReq.PathInfo);
-            return okToServe ? DefaultHttpHandler : ForbiddenHttpHandler;
         }
 
         // no handler registered 
