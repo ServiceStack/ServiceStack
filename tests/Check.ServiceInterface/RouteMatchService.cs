@@ -20,13 +20,13 @@ namespace Check.ServiceInterface
         public string Name { get; set; }
     }
 
-    [Route("/matchlast/{Id}", Matches = @"LastInt")]
+    [Route("/matchlast/{Id}", Matches = @"**/{int}")]
     public class MatchesLastInt
     {
         public int Id { get; set; }
     }
 
-    [Route("/matchlast/{Slug}", Matches = @"!LastInt")]
+    [Route("/matchlast/{Slug}")]
     public class MatchesNotLastInt
     {
         public string Slug { get; set; }
@@ -38,7 +38,7 @@ namespace Check.ServiceInterface
         public int Id { get; set; }
     }
 
-    [Route("/matchregex/{Slug}", Matches = @"PathInfo =~ \/[^0-9]+$")]
+    [Route("/matchregex/{Slug}")]
     public class MatchesSlug
     {
         public string Slug { get; set; }
