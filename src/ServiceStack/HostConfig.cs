@@ -67,6 +67,9 @@ namespace ServiceStack
                 RequestRules = new Dictionary<string, Func<IHttpRequest, bool>> {
                     {"AcceptsHtml", req => req.Accept?.IndexOf(MimeTypes.Html, StringComparison.Ordinal) >= 0 },
                     {"AcceptsJson", req => req.Accept?.IndexOf(MimeTypes.Json, StringComparison.Ordinal) >= 0 },
+                    {"AcceptsXml", req => req.Accept?.IndexOf(MimeTypes.Xml, StringComparison.Ordinal) >= 0 },
+                    {"AcceptsJsv", req => req.Accept?.IndexOf(MimeTypes.Jsv, StringComparison.Ordinal) >= 0 },
+                    {"AcceptsCsv", req => req.Accept?.IndexOf(MimeTypes.Csv, StringComparison.Ordinal) >= 0 },
                     {"IsAuthenticated", req => req.IsAuthenticated() },
                     {"IsMobile", req => Instance.IsMobileRegex.IsMatch(req.UserAgent) },
                     {"{int}/**", req => int.TryParse(req.PathInfo.Substring(1).LeftPart('/'), out _) },
