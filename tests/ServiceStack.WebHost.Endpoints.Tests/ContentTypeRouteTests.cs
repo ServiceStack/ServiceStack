@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(ContentTypeRouteTests), typeof(ContentRouteService).GetAssembly()) { }
+                : base(nameof(ContentTypeRouteTests), typeof(ContentRouteService).Assembly) { }
 
             public override void Configure(Container container) {}
         }

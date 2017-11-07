@@ -47,7 +47,7 @@ namespace ServiceStack.Api.Swagger
 
         public void Configure(IAppHost appHost)
         {
-            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).GetAssembly());
+            appHost.Config.EmbeddedResourceSources.Add(typeof(SwaggerFeature).Assembly);
         }
 
         public void Register(IAppHost appHost)
@@ -66,8 +66,8 @@ namespace ServiceStack.Api.Swagger
             SwaggerApiService.ModelPropertyFilter = ModelPropertyFilter;
             SwaggerApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
 
-            appHost.RegisterService(typeof(SwaggerResourcesService), new[] { "/resources" });
-            appHost.RegisterService(typeof(SwaggerApiService), new[] { SwaggerResourcesService.RESOURCE_PATH + "/{Name*}" });
+            appHost.RegisterService(typeof(SwaggerResourcesService), "/resources");
+            appHost.RegisterService(typeof(SwaggerApiService), SwaggerResourcesService.RESOURCE_PATH + "/{Name*}");
 
             var swaggerUrl = UseBootstrapTheme
                 ? "swagger-ui-bootstrap/"

@@ -158,7 +158,7 @@ namespace ServiceStack.Host
                         : mi.ReturnType != typeof(object) && mi.ReturnType != typeof(void) ?
                           mi.ReturnType
 #if NETSTANDARD2_0
-                        : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.GetAssembly().GetName().Name);
+                        : Type.GetType(requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name);
 #else                                                  
                         : AssemblyUtils.FindType(requestType.FullName + ResponseDtoSuffix);
 #endif

@@ -37,7 +37,7 @@ namespace ServiceStack.Platforms
             try
             {
                 //dll App.config
-                var location = host.GetType().GetAssembly().Location;
+                var location = host.GetType().Assembly.Location;
                 if (!string.IsNullOrEmpty(location))
                 {
                     var appHostDll = new FileInfo(location).Name;

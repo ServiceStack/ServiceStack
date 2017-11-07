@@ -47,7 +47,7 @@ namespace ServiceStack.Reflection
 
         public PropertyAccessor(string propertyName)
         {
-            this.pi = typeof(TEntity).GetPropertyInfo(propertyName);
+            this.pi = typeof(TEntity).GetProperty(propertyName);
             this.Name = propertyName;
             this.PropertyType = pi.PropertyType;
 

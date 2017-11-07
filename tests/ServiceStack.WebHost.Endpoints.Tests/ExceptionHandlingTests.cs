@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public ExceptionHandlingAppHostHttpListener()
-                : base("Exception handling tests", typeof(UserService).GetAssembly()) { }
+                : base("Exception handling tests", typeof(UserService).Assembly) { }
 
             public override void Configure(Container container)
             {

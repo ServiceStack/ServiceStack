@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost(GetType().GetAssembly())
+            appHost = new BasicAppHost(GetType().Assembly)
             {
 #if !NETCORE
                 ConfigureAppHost = host =>

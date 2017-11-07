@@ -49,7 +49,7 @@ namespace ServiceStack.Common.Tests.Perf
                 return propertyInfo.GetGetMethod().Invoke(entity, new object[0]);
             }
 
-            if (typeof(T).IsValueType() || typeof(T) == typeof(string))
+            if (typeof(T).IsValueType || typeof(T) == typeof(string))
             {
                 return entity.GetHashCode();
             }

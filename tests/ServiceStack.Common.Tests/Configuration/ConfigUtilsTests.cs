@@ -12,7 +12,7 @@ namespace ServiceStack.Common.Tests
         public class AppHostTest : AppSelfHostBase
         {
             public AppHostTest() 
-                : base("Test Config AppHost", typeof(AppHostTest).GetAssembly()) {}
+                : base("Test Config AppHost", typeof(AppHostTest).Assembly) {}
 
             public override void Configure(Container container) {}
         }

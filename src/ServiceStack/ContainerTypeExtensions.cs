@@ -16,7 +16,7 @@ namespace ServiceStack
         public static void RegisterAutoWiredType(this Container container, Type serviceType, Type inFunqAsType,
             ReuseScope scope = ReuseScope.None)
         {
-            if (serviceType.IsAbstract() || serviceType.ContainsGenericParameters())
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
                 return;
 
             var methodInfo = typeof(Container).GetMethodInfo("RegisterAutoWiredAs", Type.EmptyTypes);
@@ -35,7 +35,7 @@ namespace ServiceStack
         public static void RegisterAutoWiredType(this Container container, string name, Type serviceType, Type inFunqAsType,
             ReuseScope scope = ReuseScope.None)
         {
-            if (serviceType.IsAbstract() || serviceType.ContainsGenericParameters())
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
                 return;
 
             var methodInfo = typeof(Container).GetMethodInfo("RegisterAutoWiredAs", new[] { typeof(string) });
@@ -55,7 +55,7 @@ namespace ServiceStack
             ReuseScope scope = ReuseScope.None)
         {
             //Don't try to register base service classes
-            if (serviceType.IsAbstract() || serviceType.ContainsGenericParameters())
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
                 return;
 
             var methodInfo = typeof(Container).GetMethodInfo("RegisterAutoWired", Type.EmptyTypes);
@@ -75,7 +75,7 @@ namespace ServiceStack
             ReuseScope scope = ReuseScope.None)
         {
             //Don't try to register base service classes
-            if (serviceType.IsAbstract() || serviceType.ContainsGenericParameters())
+            if (serviceType.IsAbstract || serviceType.ContainsGenericParameters)
                 return;
 
             var methodInfo = typeof(Container).GetMethodInfo("RegisterAutoWired", new[] { typeof(string) });
@@ -104,7 +104,7 @@ namespace ServiceStack
         public static Container Register(this Container container, object instance, Type asType)
         {
             var mi = container.GetType()
-                .GetMethodInfos()
+                .GetMethods()
                 .First(x => x.Name == "Register" && x.GetParameters().Length == 1 && x.ReturnType == typeof(void))
                 .MakeGenericMethod(asType);
 

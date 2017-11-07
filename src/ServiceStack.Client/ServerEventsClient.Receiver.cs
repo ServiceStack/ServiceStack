@@ -155,7 +155,7 @@ namespace ServiceStack
             RequestTypeExecMap = new Dictionary<string, ReceiverExecContext>(StringComparer.OrdinalIgnoreCase);
             MethodNameExecMap = new Dictionary<string, ReceiverExecContext>(StringComparer.OrdinalIgnoreCase);
 
-            var methods = typeof(T).GetMethodInfos().Where(x => x.IsPublic && !x.IsStatic);
+            var methods = typeof(T).GetMethods().Where(x => x.IsPublic && !x.IsStatic);
             foreach (var mi in methods)
             {
                 var actionName = mi.Name;

@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(TemplateProtectedFilterTests), typeof(TemplatePageServices).GetAssembly()) {}
+            public AppHost() : base(nameof(TemplateProtectedFilterTests), typeof(TemplatePageServices).Assembly) {}
 
             public override void Configure(Container container)
             {

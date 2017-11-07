@@ -39,7 +39,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
         {
             public class AppHost : AppHostHttpListenerBase
             {
-                public AppHost() : base(typeof(EmptyArrayDtoTest).Name, typeof(GetEmptyArray).GetAssembly()) { }
+                public AppHost() : base(typeof(EmptyArrayDtoTest).Name, typeof(GetEmptyArray).Assembly) { }
 
                 public override void Configure(Container container) { }
             }

@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost() 
-                : base(nameof(RawRequestTests), typeof(RawRequestService).GetAssembly()) {}
+                : base(nameof(RawRequestTests), typeof(RawRequestService).Assembly) {}
 
             public override void Configure(Container container)
             {

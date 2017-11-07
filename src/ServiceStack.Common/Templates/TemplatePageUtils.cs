@@ -236,7 +236,7 @@ namespace ServiceStack.Templates
                         if (depth >= 1)
                         {
                             var memberName = member.Value;
-                            if (typeof(IDictionary).IsAssignableFromType(currType))
+                            if (typeof(IDictionary).IsAssignableFrom(currType))
                             {
                                 var pi = AssertProperty(currType, "Item", expr);
                                 currType = pi.PropertyType;

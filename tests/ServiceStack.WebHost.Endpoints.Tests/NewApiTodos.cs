@@ -8,7 +8,7 @@ namespace NewApi.Todos
 {
     public class AppHost : AppHostHttpListenerBase
     {
-        public AppHost() : base("TODOs Tests", typeof(Todo).GetAssembly()) {}
+        public AppHost() : base("TODOs Tests", typeof(Todo).Assembly) {}
 
         public override void Configure(Container container)
         {

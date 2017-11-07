@@ -16,7 +16,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(RequestInfoTests), typeof(RequestInfoServices).GetAssembly()) {}
+            public AppHost() : base(nameof(RequestInfoTests), typeof(RequestInfoServices).Assembly) {}
 
             public override void Configure(Container container)
             {

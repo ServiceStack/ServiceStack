@@ -94,7 +94,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost() 
-                : base(nameof(ServiceClientSendBodyTests), typeof(SendRawService).GetAssembly()) {}
+                : base(nameof(ServiceClientSendBodyTests), typeof(SendRawService).Assembly) {}
 
             public override void Configure(Container container)
             {

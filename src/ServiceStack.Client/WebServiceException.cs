@@ -141,7 +141,7 @@ namespace ServiceStack
                 if (hasResponseStatus != null)
                     return hasResponseStatus.ResponseStatus;
 
-                var propertyInfo = this.ResponseDto.GetType().GetPropertyInfo("ResponseStatus");
+                var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");
                 return propertyInfo?.GetProperty(this.ResponseDto) as ResponseStatus;
             }
         }

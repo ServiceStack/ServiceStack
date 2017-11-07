@@ -18,7 +18,7 @@ namespace ServiceStack.Common.Tests.OAuth
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost(typeof(OrmLiteUserAuthRepositoryTests).GetAssembly()) 
+            appHost = new BasicAppHost(typeof(OrmLiteUserAuthRepositoryTests).Assembly) 
             {
                 ConfigureAppHost = host =>
                 {

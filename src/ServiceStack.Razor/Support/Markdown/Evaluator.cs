@@ -48,14 +48,14 @@ namespace ServiceStack.Support.Markdown
 		private IDictionary<string, Type> TypeProperties { get; set; }
 
         public static readonly List<Assembly> Assemblies = new List<Assembly> {
-            typeof(string).GetAssembly(),       //"system.dll",
-//			typeof(XmlDocument).GetAssembly(),  //"system.xml.dll",
-            typeof(System.Web.HtmlString).GetAssembly(), //"system.web.dll",
-            typeof(Expression).GetAssembly(),   //"system.core.dll",
-            typeof(AppHostBase).GetAssembly(),  //"ServiceStack.dll",
-            typeof(JsConfig).GetAssembly(),     //"ServiceStack.Text.dll",
-            typeof(IService).GetAssembly(),   //"ServiceStack.Interfaces.dll",
-            typeof(UrnId).GetAssembly(), //"ServiceStack.Common.dll"
+            typeof(string).Assembly,       //"system.dll",
+//			typeof(XmlDocument).Assembly,  //"system.xml.dll",
+            typeof(System.Web.HtmlString).Assembly, //"system.web.dll",
+            typeof(Expression).Assembly,   //"system.core.dll",
+            typeof(AppHostBase).Assembly,  //"ServiceStack.dll",
+            typeof(JsConfig).Assembly,     //"ServiceStack.Text.dll",
+            typeof(IService).Assembly,   //"ServiceStack.Interfaces.dll",
+            typeof(UrnId).Assembly, //"ServiceStack.Common.dll"
         };
 
 	    public static readonly List<string> AssemblyNames = new List<string> {
@@ -185,7 +185,7 @@ namespace ServiceStack.Support.Markdown
 
 				if (type.HasGenericType()
 					//TODO: support GenericTypeDefinition properly
-					&& !type.IsGenericTypeDefinition()
+					&& !type.IsGenericTypeDefinition
 				)
 				{
 					var genericArgs = type.GetGenericArguments();

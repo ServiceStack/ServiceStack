@@ -80,7 +80,7 @@ namespace ServiceStack
             if (returnTypeDef == null)
                 throw new ArgumentException("Late-bound Send<object> can only be called for Request DTO's implementing IReturn<T>");
 
-            var resposneType = returnTypeDef.GetTypeGenericArguments()[0];
+            var resposneType = returnTypeDef.GetGenericArguments()[0];
             return resposneType;
         }
 

@@ -50,7 +50,7 @@ namespace ServiceStack
         protected virtual bool IncludeProperty(PropertyInfo pi)
         {
             return pi.CanWrite
-                   && !pi.PropertyType.IsValueType()
+                   && !pi.PropertyType.IsValueType
                    && pi.PropertyType != typeof(string)
                    && pi.PropertyType != typeof(object)
                    && !IgnoreTypesNamed.Contains(pi.PropertyType.FullName);

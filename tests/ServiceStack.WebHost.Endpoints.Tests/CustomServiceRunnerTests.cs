@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class CustomServiceRunnerAppHost : AppHostHttpListenerBase
         {
             public CustomServiceRunnerAppHost()
-                : base("CustomServiceRunner", typeof(CustomServiceRunnerAppHost).GetAssembly()) { }
+                : base("CustomServiceRunner", typeof(CustomServiceRunnerAppHost).Assembly) { }
 
             public override void Configure(Container container) {}
 

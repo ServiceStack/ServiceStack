@@ -128,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             private Guid currentSessionGuid;
 
             public RequestFiltersAppHostHttpListener()
-                : base("Request Filters Tests", typeof(GetFactorialService).GetAssembly()) { }
+                : base("Request Filters Tests", typeof(GetFactorialService).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -505,7 +505,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             protected override IRestClientAsync CreateNewRestClientAsync()
             {
                 return null; //TODO implement REST calls with DirectServiceClient (i.e. Unit Tests)
-                //EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).GetAssembly());
+                //EndpointHandlerBase.ServiceManager = new ServiceManager(true, typeof(SecureService).Assembly);
                 //return new DirectServiceClient(EndpointHandlerBase.ServiceManager);
             }
         }

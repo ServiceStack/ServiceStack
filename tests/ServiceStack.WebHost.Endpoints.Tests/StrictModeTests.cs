@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(StrictModeTests), typeof(BadService).GetAssembly()) { }
+                : base(nameof(StrictModeTests), typeof(BadService).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class BadUserSessionAppHost : AppSelfHostBase
         {
             public BadUserSessionAppHost()
-                : base(nameof(StrictModeTests), typeof(BadService).GetAssembly()) { }
+                : base(nameof(StrictModeTests), typeof(BadService).Assembly) { }
 
             public override void Configure(Container container)
             {

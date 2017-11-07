@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost() 
-                : base(nameof(RedirectPathTests), typeof(RedirectPathTests).GetAssembly())
+                : base(nameof(RedirectPathTests), typeof(RedirectPathTests).Assembly)
             {
             }
 

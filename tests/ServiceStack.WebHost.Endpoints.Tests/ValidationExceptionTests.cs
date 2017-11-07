@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(ValidationExceptionTests), typeof(ValidationExceptionTests).GetAssembly()) { }
+            public AppHost() : base(nameof(ValidationExceptionTests), typeof(ValidationExceptionTests).Assembly) { }
 
             public override void Configure(Container container)
             {

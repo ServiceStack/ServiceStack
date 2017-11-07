@@ -46,7 +46,7 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
-            if (type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(Task<>))
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
                 type = type.GetGenericArguments()[0]; 
 
             return CreateMessage(type);

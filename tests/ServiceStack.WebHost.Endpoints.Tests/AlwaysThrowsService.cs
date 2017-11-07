@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AlwaysThrowsAppHost : AppHostHttpListenerBase
     {
         public AlwaysThrowsAppHost()
-            : base("Always Throws Service", typeof(AlwaysThrowsService).GetAssembly()) { }
+            : base("Always Throws Service", typeof(AlwaysThrowsService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #endif
             Plugins.Add(new ValidationFeature());
 
-            container.RegisterValidators(typeof(AlwaysThrowsValidator).GetAssembly());
+            container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
 
             Plugins.Add(new CustomAuthenticationPlugin());
         }

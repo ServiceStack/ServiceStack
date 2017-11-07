@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class TypedFilterAppHost : AppSelfHostBase
         {
             public TypedFilterAppHost() 
-                : base("Typed Filters", typeof(TypedFilterService).GetAssembly())
+                : base("Typed Filters", typeof(TypedFilterService).Assembly)
             {
             }
 

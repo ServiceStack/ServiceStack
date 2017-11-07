@@ -302,7 +302,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private readonly Action<Container> configureFn;
 
         public AuthAppHost(string webHostUrl, Action<Container> configureFn = null)
-            : base("Validation Tests", typeof(CustomerService).GetAssembly())
+            : base("Validation Tests", typeof(CustomerService).Assembly)
         {
             this.webHostUrl = webHostUrl;
             this.configureFn = configureFn;

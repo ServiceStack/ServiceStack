@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class OperationTestsAppHost : AppHostHttpListenerBase
     {
-        public OperationTestsAppHost() : base(typeof(GetCustomer).Name, typeof(GetCustomer).GetAssembly()) { }
+        public OperationTestsAppHost() : base(typeof(GetCustomer).Name, typeof(GetCustomer).Assembly) { }
         public override void Configure(Container container) { }
     }
 

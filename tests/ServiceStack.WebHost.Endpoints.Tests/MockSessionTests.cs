@@ -62,7 +62,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_Mock_IntegrationTest_Session_with_Request()
         {
-            using (new BasicAppHost(typeof(SessionService).GetAssembly()).Init())
+            using (new BasicAppHost(typeof(SessionService).Assembly).Init())
             {
                 var req = new MockHttpRequest
                 {
@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base("Mock Session Integration Test", typeof(MockSessionTestService).GetAssembly()) { }
+                : base("Mock Session Integration Test", typeof(MockSessionTestService).Assembly) { }
 
             public override void Configure(Container container)
             {

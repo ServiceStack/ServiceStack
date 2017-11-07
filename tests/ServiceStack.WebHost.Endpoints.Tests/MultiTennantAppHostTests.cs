@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class MultiTenantChangeDbAppHost : AppSelfHostBase
     {
         public MultiTenantChangeDbAppHost()
-            : base("Multi Tennant Test", typeof (MultiTenantChangeDbAppHost).GetAssembly()) {}
+            : base("Multi Tennant Test", typeof (MultiTenantChangeDbAppHost).Assembly) {}
 
         public override void Configure(Container container)
         {
@@ -132,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class MultiTenantCustomDbFactoryAppHost : AppSelfHostBase
     {
         public MultiTenantCustomDbFactoryAppHost()
-            : base("Multi Tennant Test", typeof(MultiTenantCustomDbFactoryAppHost).GetAssembly()) { }
+            : base("Multi Tennant Test", typeof(MultiTenantCustomDbFactoryAppHost).Assembly) { }
 
         public override void Configure(Container container)
         {

@@ -46,21 +46,18 @@ namespace ServiceStack
 
         public static IEnumerable<T> GetResults<T>(object response)
         {
-            var task = response as Task;
-            if (task != null)
+            if (response is Task task)
                 response = task.GetResult();
 
-            var httpResult = response as IHttpResult;
-            if (httpResult != null)
+            if (response is IHttpResult httpResult)
                 response = httpResult.Response;
 
-            var result = response as IEnumerable<T>;
-            if (result != null)
+            if (response is IEnumerable<T> result)
                 return result;
 
             foreach (var pi in response.GetType().GetPublicProperties())
             {
-                if (typeof(IEnumerable<T>).IsAssignableFromType(pi.PropertyType))
+                if (typeof(IEnumerable<T>).IsAssignableFrom(pi.PropertyType))
                 {
                     return (IEnumerable<T>)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray);
                 }
@@ -71,21 +68,18 @@ namespace ServiceStack
 
         public static List<object> GetResults(object response)
         {
-            var task = response as Task;
-            if (task != null)
+            if (response is Task task)
                 response = task.GetResult();
 
-            var httpResult = response as IHttpResult;
-            if (httpResult != null)
+            if (response is IHttpResult httpResult)
                 response = httpResult.Response;
 
-            var result = response as IEnumerable;
-            if (result != null)
+            if (response is IEnumerable result)
                 return result.Map(x => x);
 
             foreach (var pi in response.GetType().GetPublicProperties())
             {
-                if (typeof(IEnumerable).IsAssignableFromType(pi.PropertyType))
+                if (typeof(IEnumerable).IsAssignableFrom(pi.PropertyType))
                 {
                     return ((IEnumerable)pi.GetGetMethod().Invoke(response, TypeConstants.EmptyObjectArray)).Map(x => x);
                 }

@@ -54,14 +54,14 @@ namespace ServiceStack
             var types = operationTypes
                 .Where(x => !x.AllAttributes<ExcludeAttribute>()
                     .Any(attr => attr.Feature.Has(Feature.Soap)))
-                .Where(x => !x.IsGenericTypeDefinition())
+                .Where(x => !x.IsGenericTypeDefinition)
                 .ToList();
             return types;
         }
 
         public virtual bool ExportSoapType(Type type)
         {
-            return !type.IsGenericTypeDefinition() &&
+            return !type.IsGenericTypeDefinition &&
                    !type.AllAttributes<ExcludeAttribute>()
                        .Any(attr => attr.Feature.Has(Feature.Soap));
         }

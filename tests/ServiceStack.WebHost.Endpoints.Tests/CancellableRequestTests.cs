@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class CancellableRequestAppHost : AppSelfHostBase
     {
         public CancellableRequestAppHost()
-            : base("CancellableRequests", typeof(CancellableRequestTestService).GetAssembly()) { }
+            : base("CancellableRequests", typeof(CancellableRequestTestService).Assembly) { }
 
         public override void Configure(Container container)
         {

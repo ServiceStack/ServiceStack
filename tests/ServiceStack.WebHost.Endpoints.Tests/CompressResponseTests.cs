@@ -67,7 +67,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(CompressResponseTests), typeof(CompressedServices).GetAssembly()) { }
+                : base(nameof(CompressResponseTests), typeof(CompressedServices).Assembly) { }
 
             public override void Configure(Container container)
             {

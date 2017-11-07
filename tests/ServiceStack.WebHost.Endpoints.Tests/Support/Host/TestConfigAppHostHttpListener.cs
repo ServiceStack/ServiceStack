@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		: AppHostHttpListenerBase
 	{
 		public TestConfigAppHostHttpListener()
-			: base("TestConfigAppHost Service", typeof(BclDto).GetAssembly())
+			: base("TestConfigAppHost Service", typeof(BclDto).Assembly)
 		{
 		}
 

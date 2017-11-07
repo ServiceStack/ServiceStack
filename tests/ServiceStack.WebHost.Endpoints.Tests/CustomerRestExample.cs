@@ -10,7 +10,7 @@ namespace NewApi.Customers
 {
     public class AppHost : AppSelfHostBase
     {
-        public AppHost() : base("Customer REST Example", typeof(CustomerService).GetAssembly()) {}
+        public AppHost() : base("Customer REST Example", typeof(CustomerService).Assembly) {}
 
         public override void Configure(Container container)
         {

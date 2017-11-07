@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     public class EncryptedMessagesAppHost : AppSelfHostBase
     {
         public EncryptedMessagesAppHost()
-            : base(typeof(EncryptedMessagesAppHost).Name, typeof(SecureServices).GetAssembly())
+            : base(typeof(EncryptedMessagesAppHost).Name, typeof(SecureServices).Assembly)
         { }
 
         public override void Configure(Container container)

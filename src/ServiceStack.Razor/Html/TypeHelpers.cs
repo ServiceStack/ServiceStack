@@ -31,10 +31,10 @@ namespace ServiceStack.Html
 
 		private static readonly MethodInfo _strongTryGetValueImplInfo = typeof(TypeHelpers).GetMethod("StrongTryGetValueImpl", BindingFlags.NonPublic | BindingFlags.Static);
 
-		public static readonly Assembly MsCorLibAssembly = typeof(string).GetAssembly();
+		public static readonly Assembly MsCorLibAssembly = typeof(string).Assembly;
         //public static readonly Assembly MvcAssembly = typeof(Controller).Assembly;
 #if !NETSTANDARD2_0
-        public static readonly Assembly SystemWebAssembly = typeof(HttpContext).GetAssembly();
+        public static readonly Assembly SystemWebAssembly = typeof(HttpContext).Assembly;
 #endif
 
         // method is used primarily for lighting up new .NET Framework features even if MVC targets the previous version
@@ -120,7 +120,7 @@ namespace ServiceStack.Html
 
 		public static Type ExtractGenericInterface(Type queryType, Type interfaceType)
 		{
-			Func<Type, bool> matchesInterface = t => t.IsGenericType() && t.GetGenericTypeDefinition() == interfaceType;
+			Func<Type, bool> matchesInterface = t => t.IsGenericType && t.GetGenericTypeDefinition() == interfaceType;
 			return (matchesInterface(queryType)) ? queryType : queryType.GetInterfaces().FirstOrDefault(matchesInterface);
 		}
 
@@ -160,7 +160,7 @@ namespace ServiceStack.Html
 
 		public static bool TypeAllowsNullValue(Type type)
 		{
-			return (!type.IsValueType() || IsNullableValueType(type));
+			return (!type.IsValueType || IsNullableValueType(type));
 		}
 	}
 }

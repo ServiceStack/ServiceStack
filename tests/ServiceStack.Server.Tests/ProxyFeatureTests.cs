@@ -20,7 +20,7 @@ namespace ServiceStack.Server.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(ProxyFeatureTests), typeof(ProxyFeatureTests).GetAssembly()) { }
+                : base(nameof(ProxyFeatureTests), typeof(ProxyFeatureTests).Assembly) { }
 
             public override void Configure(Container container)
             {

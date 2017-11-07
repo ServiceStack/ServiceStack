@@ -167,7 +167,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
             httpReq.HttpMethod = HttpMethods.Get;
 
             var requestTypeName = typeof(TResponse).Namespace + "." + relativeOrAbsoluteUrl;
-            var requestType = typeof(TResponse).GetAssembly().GetType(requestTypeName);
+            var requestType = typeof(TResponse).Assembly.GetType(requestTypeName);
             if (requestType == null)
                 throw new ArgumentException("Type not found: " + requestTypeName);
 

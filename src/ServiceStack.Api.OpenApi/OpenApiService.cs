@@ -150,8 +150,8 @@ namespace ServiceStack.Api.OpenApi
         private static bool IsSwaggerScalarType(Type type)
         {
             return ClrTypesToSwaggerScalarTypes.ContainsKey(type)
-                || (Nullable.GetUnderlyingType(type) ?? type).IsEnum()
-                || (type.IsValueType() && !IsKeyValuePairType(type))
+                || (Nullable.GetUnderlyingType(type) ?? type).IsEnum
+                || (type.IsValueType && !IsKeyValuePairType(type))
                 || type.IsNullableType();
         }
 
@@ -174,15 +174,14 @@ namespace ServiceStack.Api.OpenApi
             if (route == null && verb == null && type == typeof(byte[]))
                 return OpenApiTypeFormat.Binary;
 
-            string format;
-            return ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out format) ? format : null;
+            return ClrTypesToSwaggerScalarFormats.TryGetValue(lookupType, out var format) ? format : null;
         }
 
         private static Type GetListElementType(Type type)
         {
             if (type.IsArray) return type.GetElementType();
 
-            if (!type.IsGenericType()) return null;
+            if (!type.IsGenericType) return null;
             var genericType = type.GetGenericTypeDefinition();
             if (genericType == typeof(List<>) || genericType == typeof(IList<>) || genericType == typeof(IEnumerable<>))
                 return type.GetGenericArguments()[0];
@@ -242,7 +241,7 @@ namespace ServiceStack.Api.OpenApi
 
         private static bool IsDictionaryType(Type type)
         {
-            if (!type.IsGenericType()) return false;
+            if (!type.IsGenericType) return false;
 
             var genericType = type.GetGenericTypeDefinition();
             if (genericType == typeof(Dictionary<,>)
@@ -261,7 +260,7 @@ namespace ServiceStack.Api.OpenApi
             if (!IsDictionaryType(schemaType))
                 return null;
 
-            var valueType = schemaType.GetTypeGenericArguments()[1];
+            var valueType = schemaType.GetGenericArguments()[1];
 
             ParseDefinitions(schemas, valueType, route, verb);
 
@@ -276,7 +275,7 @@ namespace ServiceStack.Api.OpenApi
 
         private static bool IsKeyValuePairType(Type type)
         {
-            return type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
+            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
         }
 
         private OpenApiSchema GetKeyValuePairSchema(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
@@ -284,8 +283,8 @@ namespace ServiceStack.Api.OpenApi
             if (!IsKeyValuePairType(schemaType))
                 return null;
 
-            var keyType = schemaType.GetTypeGenericArguments()[0];
-            var valueType = schemaType.GetTypeGenericArguments()[1];
+            var keyType = schemaType.GetGenericArguments()[0];
+            var valueType = schemaType.GetGenericArguments()[1];
 
             return new OpenApiSchema
             {
@@ -307,10 +306,10 @@ namespace ServiceStack.Api.OpenApi
 
         private static string GetSchemaTypeName(Type schemaType)
         {
-            if ((!IsKeyValuePairType(schemaType) && schemaType.IsValueType()) || schemaType.IsNullableType())
+            if ((!IsKeyValuePairType(schemaType) && schemaType.IsValueType) || schemaType.IsNullableType())
                 return OpenApiType.String;
 
-            if (!schemaType.IsGenericType())
+            if (!schemaType.IsGenericType)
                 return schemaType.Name;
 
             var typeName = schemaType.ToPrettyName();
@@ -349,7 +348,7 @@ namespace ServiceStack.Api.OpenApi
                 }
                 ParseDefinitions(schemas, listItemType, route, verb);
             }
-            else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum())
+            else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
             {
                 var enumType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
                 if (enumType.IsNumericType())
@@ -415,11 +414,11 @@ namespace ServiceStack.Api.OpenApi
             if (dataContractAttr != null && properties.Any(prop => prop.IsDefined(typeof(DataMemberAttribute), true)))
             {
                 var typeOrder = new List<Type> { schemaType };
-                var baseType = schemaType.BaseType();
+                var baseType = schemaType.BaseType;
                 while (baseType != null)
                 {
                     typeOrder.Add(baseType);
-                    baseType = baseType.BaseType();
+                    baseType = baseType.BaseType;
                 }
 
                 var propsWithDataMember = properties.Where(prop => prop.IsDefined(typeof(DataMemberAttribute), true));
@@ -513,7 +512,7 @@ namespace ServiceStack.Api.OpenApi
                 if (i == typeof(IReturnVoid))
                     return GetSchemaForResponseType(typeof(void), schemas, out schemaDescription);
 
-                if (i.IsGenericType() && i.GetGenericTypeDefinition() == typeof(IReturn<>))
+                if (i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IReturn<>))
                 {
                     var schemaType = i.GetGenericArguments()[0];
                     return GetSchemaForResponseType(schemaType, schemas, out schemaDescription);
@@ -605,9 +604,7 @@ namespace ServiceStack.Api.OpenApi
                 var routePath = restPath.Path.Replace("*", "");
                 var requestType = restPath.RequestType;
 
-                OpenApiPath curPath;
-
-                if (!apiPaths.TryGetValue(restPath.Path, out curPath))
+                if (!apiPaths.TryGetValue(restPath.Path, out var curPath))
                 {
                     curPath = new OpenApiPath
                     {
@@ -639,8 +636,7 @@ namespace ServiceStack.Api.OpenApi
                             .SelectMany(x => x.AllAttributes<AuthenticateAttribute>()).Any();
 
                     var userTags = new List<string>();
-                    ApplyTo applyToVerb;
-                    if (ApplyToUtils.VerbsApplyTo.TryGetValue(verb, out applyToVerb))
+                    if (ApplyToUtils.VerbsApplyTo.TryGetValue(verb, out var applyToVerb))
                     {
                         userTags = annotatingTagAttributes.Where(x => x.ApplyTo.HasFlag(applyToVerb)).Select(x => x.Name).ToList();
                     }
@@ -736,8 +732,7 @@ namespace ServiceStack.Api.OpenApi
             if (entries.Length > 1)
                 pathPostfix = string.Join(string.Empty, entries, 1, entries.Length - 1);
 
-            string verbPostfix;
-            postfixes.TryGetValue(verb, out verbPostfix);
+            postfixes.TryGetValue(verb, out var verbPostfix);
             verbPostfix = verbPostfix ?? string.Empty;
 
             var operationId = name + pathPostfix + verbPostfix;
@@ -925,7 +920,7 @@ namespace ServiceStack.Api.OpenApi
 
         private string GetTagName(string path)
         {
-            var tags = path.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+            var tags = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
 
             return tags.Length > 0 ? tags[0] : null;
         }
@@ -959,7 +954,7 @@ namespace ServiceStack.Api.OpenApi
                 Type = OpenApiType.String,
                 Name = "Accept",
                 Description = "Accept Header",
-                Enum = new List<string>() { "application/json" },
+                Enum = new List<string> { "application/json" },
                 In = "header",
                 Required = true,
             };

@@ -139,7 +139,7 @@ namespace ServiceStack.Support.Markdown
 
             try
             {
-                if (!typeof(MarkdownViewBase).IsAssignableFromType(this.Markdown.MarkdownBaseType))
+                if (!typeof(MarkdownViewBase).IsAssignableFrom(this.Markdown.MarkdownBaseType))
                 {
                     throw new ConfigurationErrorsException(
                         "Config.MarkdownBaseType must inherit from MarkdownViewBase");

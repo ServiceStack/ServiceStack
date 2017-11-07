@@ -142,7 +142,7 @@ namespace ServiceStack
         public static string GetFullyQualifiedName(this Type type)
         {
             var sb = StringBuilderCache.Allocate().Append(type.Name);
-            if (type.IsGenericType())
+            if (type.IsGenericType)
             {
                 var genericMarker = type.Name.IndexOf('`');
                 if (genericMarker > 0)
@@ -164,7 +164,7 @@ namespace ServiceStack
 
         public static string ExpandTypeName(this Type type)
         {
-            if (type.IsGenericType())
+            if (type.IsGenericType)
                 return ExpandGenericTypeName(type);
 
             return type.GetOperationName();
@@ -175,7 +175,7 @@ namespace ServiceStack
             var nameOnly = type.Name.LeftPart('`');
 
             var sb = StringBuilderCache.Allocate();
-            foreach (var arg in type.GetTypeGenericArguments())
+            foreach (var arg in type.GetGenericArguments())
             {
                 if (sb.Length > 0)
                     sb.Append(",");

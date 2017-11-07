@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(TemplatePageTests), typeof(TemplatePagesService).GetAssembly()) { }
+                : base(nameof(TemplatePageTests), typeof(TemplatePagesService).Assembly) { }
 
             public override void Configure(Container container)
             {

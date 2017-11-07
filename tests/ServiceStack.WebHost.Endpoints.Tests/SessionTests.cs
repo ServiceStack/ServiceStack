@@ -91,7 +91,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public class SessionAppHost : AppHostHttpListenerBase
         {
-            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).GetAssembly()) { }
+            public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) { }
 
             public override void Configure(Container container)
             {

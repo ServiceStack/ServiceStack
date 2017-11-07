@@ -43,12 +43,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(TemplateIntegrationTests), typeof(MyTemplateServices).GetAssembly()) {}
+            public AppHost() : base(nameof(TemplateIntegrationTests), typeof(MyTemplateServices).Assembly) {}
 
             public readonly List<IVirtualPathProvider> TemplateFiles = new List<IVirtualPathProvider>
             {
                 new MemoryVirtualFiles(),
-                new ResourceVirtualFiles(typeof(HtmlFormat).GetAssembly()),
+                new ResourceVirtualFiles(typeof(HtmlFormat).Assembly),
             };
             public override List<IVirtualPathProvider> GetVirtualFileSources() => TemplateFiles;
 

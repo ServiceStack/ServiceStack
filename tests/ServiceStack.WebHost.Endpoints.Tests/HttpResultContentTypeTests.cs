@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class SimpleAppHostHttpListener : AppHostHttpListenerBase {
             //Tell Service Stack the name of your application and where to find your web services
             public SimpleAppHostHttpListener()
-                : base("Test Services", typeof(SimpleAppHostHttpListener).GetAssembly()) {
+                : base("Test Services", typeof(SimpleAppHostHttpListener).Assembly) {
                 LogManager.LogFactory = new TestLogFactory();
             }
 

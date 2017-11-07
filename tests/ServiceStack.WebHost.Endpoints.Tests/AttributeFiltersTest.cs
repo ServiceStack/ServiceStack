@@ -232,7 +232,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
 
             public AttributeFiltersAppHostHttpListener()
-                : base("Attribute Filters Tests", typeof(AttributeAttributeFilteredService).GetAssembly())
+                : base("Attribute Filters Tests", typeof(AttributeAttributeFilteredService).Assembly)
             { }
 
             public override void Configure(Funq.Container container)

@@ -14,7 +14,7 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         public class CredentialsTestAppHost : BasicAppHost
         {
-            public CredentialsTestAppHost() : base(typeof(CredentialsServiceTests).GetAssembly()) {}
+            public CredentialsTestAppHost() : base(typeof(CredentialsServiceTests).Assembly) {}
 
             public override void Configure(Container container)
             {

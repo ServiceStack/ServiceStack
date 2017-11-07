@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         [Test]
         public void Can_access_MQ_Restriction_when_using_ExecuteMessage()
         {
-            using (var appHost = new BasicAppHost(typeof(MessageQueueRestrictionService).GetAssembly()).Init())
+            using (var appHost = new BasicAppHost(typeof(MessageQueueRestrictionService).Assembly).Init())
             {
                 var request = new MessageQueueRestriction { Id = 1 };
                 var response = appHost.ExecuteMessage(new Message<MessageQueueRestriction>(request));

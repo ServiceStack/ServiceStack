@@ -31,18 +31,8 @@ namespace ServiceStack.Html
 
 		public CultureInfo Culture
 		{
-			get
-			{
-				if (_instanceCulture == null)
-				{
-					_instanceCulture = _staticCulture;
-				}
-				return _instanceCulture;
-			}
-			protected set
-			{
-				_instanceCulture = value;
-			}
+			get => _instanceCulture ?? (_instanceCulture = _staticCulture);
+		    protected set => _instanceCulture = value;
 		}
 
 		public object RawValue
@@ -53,14 +43,13 @@ namespace ServiceStack.Html
 
 		private static object ConvertSimpleType(CultureInfo culture, object value, Type destinationType)
 		{
-			if (value == null || destinationType.InstanceOfType(value))
+			if (value == null || destinationType.IsInstanceOfType(value))
 			{
 				return value;
 			}
 
 			// if this is a user-input value but the user didn't type anything, return no value
-			string valueAsString = value as string;
-			if (valueAsString != null && valueAsString.Trim().Length == 0)
+		    if (value is string valueAsString && valueAsString.Trim().Length == 0)
 			{
 				return null;
 			}
@@ -74,7 +63,7 @@ namespace ServiceStack.Html
 			}
 			if (!(canConvertFrom || converter.CanConvertTo(destinationType)))
 			{
-				string message = String.Format(CultureInfo.CurrentCulture, MvcResources.ValueProviderResult_NoConverterExists,
+				string message = string.Format(CultureInfo.CurrentCulture, MvcResources.ValueProviderResult_NoConverterExists,
 					value.GetType().FullName, destinationType.FullName);
 				throw new InvalidOperationException(message);
 			}
@@ -106,17 +95,15 @@ namespace ServiceStack.Html
 		public virtual object ConvertTo(Type type, CultureInfo culture)
 		{
 			if (type == null)
-			{
-				throw new ArgumentNullException("type");
-			}
+			    throw new ArgumentNullException(nameof(type));
 
-			CultureInfo cultureToUse = culture ?? Culture;
+            CultureInfo cultureToUse = culture ?? Culture;
 			return UnwrapPossibleArrayType(cultureToUse, RawValue, type);
 		}
 
 		private static object UnwrapPossibleArrayType(CultureInfo culture, object value, Type destinationType)
 		{
-			if (value == null || destinationType.InstanceOfType(value))
+			if (value == null || destinationType.IsInstanceOfType(value))
 			{
 				return value;
 			}

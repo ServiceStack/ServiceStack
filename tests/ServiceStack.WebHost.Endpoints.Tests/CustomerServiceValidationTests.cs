@@ -163,13 +163,13 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
             : AppHostHttpListenerBase
         {
             public ValidationAppHostHttpListener()
-                : base("Validation Tests", typeof(CustomerService).GetAssembly()) { }
+                : base("Validation Tests", typeof(CustomerService).Assembly) { }
 
             public override void Configure(Container container)
             {
                 Plugins.Add(new ValidationFeature());
                 container.Register<IAddressValidator>(new AddressValidator());
-                container.RegisterValidators(typeof(CustomersValidator).GetAssembly());
+                container.RegisterValidators(typeof(CustomersValidator).Assembly);
             }
         }
 

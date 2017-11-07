@@ -72,7 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		[Test]
 		public void Test_response_with_CompressedResult()
 		{
-            using (new BasicAppHost(typeof(CompressionTests).GetAssembly()).Init())
+            using (new BasicAppHost(typeof(CompressionTests).Assembly).Init())
 		    {
                 var mockResponse = new MockHttpResponse();
 

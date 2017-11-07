@@ -19,7 +19,7 @@ namespace ServiceStack.IO
         public DateTime LastModified { get; set; } 
 
         public ResourceVirtualFiles(Type baseTypeInAssmebly)
-            : this(baseTypeInAssmebly.GetAssembly(), GetNamespace(baseTypeInAssmebly)) { }
+            : this(baseTypeInAssmebly.Assembly, GetNamespace(baseTypeInAssmebly)) { }
 
         public ResourceVirtualFiles(Assembly backingAssembly, string rootNamespace=null)
         {

@@ -48,7 +48,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ConfigureAppHost = host =>
                 {
-                    host.Routes.AddFromAssembly(typeof(RoutePriorityTests).GetAssembly());
+                    host.Routes.AddFromAssembly(typeof(RoutePriorityTests).Assembly);
                 },
             }.Init())
             {

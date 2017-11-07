@@ -39,7 +39,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         [Test]
         public void Can_use_nested_classes_as_Request_DTOs()
         {
-            using (var appHost = new BasicAppHost(typeof(NestedService).GetAssembly()).Init())
+            using (var appHost = new BasicAppHost(typeof(NestedService).Assembly).Init())
             {
                 var root = (Root)appHost.ExecuteService(new Root { Id = 1 });
                 Assert.That(root.Id, Is.EqualTo(1));

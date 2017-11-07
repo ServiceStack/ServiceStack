@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class IocAppHost : AppHostHttpListenerBase
     {
         public IocAppHost()
-            : base("IocApp Service", typeof(IocService).GetAssembly()) { }
+            : base("IocApp Service", typeof(IocService).Assembly) { }
 
         public override void Configure(Container container)
         {

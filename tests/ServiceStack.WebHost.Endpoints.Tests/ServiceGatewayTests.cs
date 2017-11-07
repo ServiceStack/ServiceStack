@@ -365,7 +365,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class MixedAppHost : AppSelfHostBase
         {
-            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).GetAssembly()) { }
+            public MixedAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -389,7 +389,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         class AllExternalAppHost : AppSelfHostBase
         {
-            public AllExternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).GetAssembly()) { }
+            public AllExternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -412,7 +412,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         class AllInternalAppHost : AppSelfHostBase
         {
-            public AllInternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).GetAssembly()) { }
+            public AllInternalAppHost() : base(typeof(ServiceGatewayTests).Name, typeof(ServiceGatewayServices).Assembly) { }
 
             public override void Configure(Container container)
             {

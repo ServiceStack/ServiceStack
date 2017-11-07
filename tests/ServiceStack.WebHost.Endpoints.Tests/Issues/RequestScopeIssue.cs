@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
     public class RequestScopeAppHost : AppSelfHostBase
     {
         public RequestScopeAppHost() 
-            : base(typeof(RequestScopeAppHost).Name, typeof(RequestScopeService).GetAssembly()) {}
+            : base(typeof(RequestScopeAppHost).Name, typeof(RequestScopeService).Assembly) {}
 
         private static int counter = 0;
 

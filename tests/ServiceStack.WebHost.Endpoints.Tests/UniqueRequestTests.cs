@@ -38,7 +38,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class UniqueRequestAppHost : AppHostHttpListenerBase
     {
-        public UniqueRequestAppHost() : base("Unique Request Tests", typeof(UniqueRequestService).GetAssembly()) {}
+        public UniqueRequestAppHost() : base("Unique Request Tests", typeof(UniqueRequestService).Assembly) {}
         public override void Configure(Container container) {}
     }
 

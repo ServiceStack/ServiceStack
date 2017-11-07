@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(CustomOrmLiteAuthRepositoryTests), typeof(CustomOrmLiteAuthRepositoryTests).GetAssembly()) { }
+                : base(nameof(CustomOrmLiteAuthRepositoryTests), typeof(CustomOrmLiteAuthRepositoryTests).Assembly) { }
 
             public override void Configure(Container container)
             {

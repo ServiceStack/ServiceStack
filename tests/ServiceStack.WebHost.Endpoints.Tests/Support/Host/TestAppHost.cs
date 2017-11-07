@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 	{
         public TestAppHost(params Assembly[] assembliesWithServices)
             : base("Example Service", 
-                    assembliesWithServices.Length > 0 ? assembliesWithServices : new[] { typeof(Nested).GetAssembly() })
+                    assembliesWithServices.Length > 0 ? assembliesWithServices : new[] { typeof(Nested).Assembly })
 		{
 			Instance = null;
 		}

@@ -474,7 +474,7 @@ namespace ServiceStack.Mvc
             if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
             return propertyInfo?.GetProperty(response) as ResponseStatus;
         }
 

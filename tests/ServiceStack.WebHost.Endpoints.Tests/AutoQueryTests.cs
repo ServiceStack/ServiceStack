@@ -18,7 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AutoQueryAppHost : AppSelfHostBase
     {
         public AutoQueryAppHost()
-            : base("AutoQuery", typeof(AutoQueryService).GetAssembly()) { }
+            : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
 
         public static readonly string SqlServerConnString = TestsConfig.SqlServerConnString;
         public const string SqlServerNamedConnection = "SqlServer";

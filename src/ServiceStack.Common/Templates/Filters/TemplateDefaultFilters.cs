@@ -250,16 +250,16 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public bool isStringDictionary(object target) => target is IDictionary<string, string>;
 
         [HandleUnknownValue] public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
-        [HandleUnknownValue] public bool isNumber(object target) => target?.GetType()?.IsNumericType() == true;
-        [HandleUnknownValue] public bool isRealNumber(object target) => target?.GetType()?.IsRealNumberType() == true;
-        [HandleUnknownValue] public bool isEnum(object target) => target?.GetType()?.IsEnum() == true;
-        [HandleUnknownValue] public bool isArray(object target) => target?.GetType()?.IsArray() == true;
-        [HandleUnknownValue] public bool isAnonObject(object target) => target?.GetType()?.IsAnonymousType() == true;
-        [HandleUnknownValue] public bool isClass(object target) => target?.GetType()?.IsClass() == true;
-        [HandleUnknownValue] public bool isValueType(object target) => target?.GetType()?.IsValueType() == true;
-        [HandleUnknownValue] public bool isDto(object target) => target?.GetType()?.IsDto() == true;
-        [HandleUnknownValue] public bool isTuple(object target) => target?.GetType()?.IsTuple() == true;
-        [HandleUnknownValue] public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType()?.Name);
+        [HandleUnknownValue] public bool isNumber(object target) => target?.GetType().IsNumericType() == true;
+        [HandleUnknownValue] public bool isRealNumber(object target) => target?.GetType().IsRealNumberType() == true;
+        [HandleUnknownValue] public bool isEnum(object target) => target?.GetType().IsEnum == true;
+        [HandleUnknownValue] public bool isArray(object target) => target?.GetType().IsArray == true;
+        [HandleUnknownValue] public bool isAnonObject(object target) => target?.GetType().IsAnonymousType() == true;
+        [HandleUnknownValue] public bool isClass(object target) => target?.GetType().IsClass == true;
+        [HandleUnknownValue] public bool isValueType(object target) => target?.GetType().IsValueType == true;
+        [HandleUnknownValue] public bool isDto(object target) => target?.GetType().IsDto() == true;
+        [HandleUnknownValue] public bool isTuple(object target) => target?.GetType().IsTuple() == true;
+        [HandleUnknownValue] public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType().Name);
 
         [HandleUnknownValue] public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
 
@@ -518,8 +518,7 @@ namespace ServiceStack.Templates
         public Task forEach(TemplateScopeContext scope, object target, object items) => forEach(scope, target, items, null);
         public async Task forEach(TemplateScopeContext scope, object target, object items, object scopeOptions)
         {
-            var objs = items as IEnumerable;
-            if (objs != null)
+            if (items is IEnumerable objs)
             {
                 var scopedParams = scope.GetParamsWithItemBinding(nameof(select), scopeOptions, out string itemBinding);
 
@@ -815,7 +814,7 @@ namespace ServiceStack.Templates
             if (target == null || names == null)
                 return null;
             
-            if (target is string || target.GetType().IsValueType())
+            if (target is string || target.GetType().IsValueType)
                 throw new NotSupportedException(nameof(selectFields) + " requires an IEnumerable, IDictionary or POCO Target, received instead: " + target.GetType().Name);
 
             var namesList = names is IEnumerable eKeys

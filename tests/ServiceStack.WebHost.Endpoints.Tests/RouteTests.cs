@@ -352,7 +352,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class ModifiedRouteAppHost : AppHostHttpListenerBase
     {
-        public ModifiedRouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).GetAssembly()) { }
+        public ModifiedRouteAppHost() : base(typeof(BufferedRequestTests).Name, typeof(CustomRouteService).Assembly) { }
 
         public override void Configure(Container container)
         {
@@ -390,7 +390,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         class InvalidRoutesAppHost : AppSelfHostBase
         {
-            public InvalidRoutesAppHost() : base(typeof(InvalidRoutesAppHost).Name, typeof(InvalidRoutesAppHost).GetAssembly()) { }
+            public InvalidRoutesAppHost() : base(typeof(InvalidRoutesAppHost).Name, typeof(InvalidRoutesAppHost).Assembly) { }
 
             public override void Configure(Container container)
             {
@@ -444,7 +444,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     class RouteInfoAppHost : AppSelfHostBase
     {
-        public RouteInfoAppHost() : base(typeof(RouteInfoAppHost).Name, typeof(RouteInfoAppHost).GetAssembly()) { }
+        public RouteInfoAppHost() : base(typeof(RouteInfoAppHost).Name, typeof(RouteInfoAppHost).Assembly) { }
         public override void Configure(Container container)
         {
             CatchAllHandlers.Add((httpMethod, pathInfo, filePath) =>

@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class AppHost : AppHostHttpListenerBase
         {
             public AppHost()
-                : base("Echo AppHost", typeof(AppHost).GetAssembly())
+                : base("Echo AppHost", typeof(AppHost).Assembly)
             {
             }
 

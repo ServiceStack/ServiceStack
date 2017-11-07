@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class PartialContentAppHost : AppHostHttpListenerBase
     {
-        public PartialContentAppHost() : base(typeof(PartialFile).Name, typeof(PartialFile).GetAssembly()) { }
+        public PartialContentAppHost() : base(typeof(PartialFile).Name, typeof(PartialFile).Assembly) { }
         public override void Configure(Container container) {}
     }
 

@@ -133,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class AppHost : AppHostHttpListenerBase
     {
         public AppHost()
-            : base("Test ErrorHandling", typeof(ReqstarsService).GetAssembly())
+            : base("Test ErrorHandling", typeof(ReqstarsService).Assembly)
         {
         }
 

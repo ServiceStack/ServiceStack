@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
-using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -24,17 +23,17 @@ namespace ServiceStack
 
         public static void AddReferencedTypes(Type type, HashSet<Type> refTypes)
         {
-            if (type.BaseType() != null)
+            if (type.BaseType != null)
             {
-                if (!refTypes.Contains(type.BaseType()))
+                if (!refTypes.Contains(type.BaseType))
                 {
-                    refTypes.Add(type.BaseType());
-                    AddReferencedTypes(type.BaseType(), refTypes);
+                    refTypes.Add(type.BaseType);
+                    AddReferencedTypes(type.BaseType, refTypes);
                 }
 
-                if (!type.BaseType().GetGenericArguments().IsEmpty())
+                if (!type.BaseType.GetGenericArguments().IsEmpty())
                 {
-                    foreach (var arg in type.BaseType().GetGenericArguments())
+                    foreach (var arg in type.BaseType.GetGenericArguments())
                     {
                         if (!refTypes.Contains(arg))
                         {
@@ -45,7 +44,7 @@ namespace ServiceStack
                 }
             }
 
-            var properties = type.GetPropertyInfos();
+            var properties = type.GetProperties();
             if (!properties.IsEmpty())
             {
                 foreach (var p in properties)
@@ -108,8 +107,7 @@ namespace ServiceStack
 
         public static ObjectActivator GetActivator(this ConstructorInfo ctor)
         {
-            ObjectActivator fn;
-            if (activatorCache.TryGetValue(ctor, out fn))
+            if (activatorCache.TryGetValue(ctor, out var fn))
                 return fn;
 
             fn = GetActivatorToCache(ctor);
@@ -163,8 +161,7 @@ namespace ServiceStack
 
         public static MethodInvoker GetInvoker(this MethodInfo method)
         {
-            MethodInvoker fn;
-            if (invokerCache.TryGetValue(method, out fn))
+            if (invokerCache.TryGetValue(method, out var fn))
                 return fn;
 
             fn = GetInvokerToCache(method);
@@ -186,8 +183,8 @@ namespace ServiceStack
             if (value == null)
                 return default(T);
             
-            if (value is T)
-                return (T)value;
+            if (value is T variable)
+                return variable;
 
             if (typeof(T) == typeof(string) && value is IRawString rs)
                 return (T)(object)rs.ToRawString();

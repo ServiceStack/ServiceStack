@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).GetAssembly()) {}
+            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).Assembly) {}
 
             public override void Configure(Container container)
             {
@@ -102,7 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).GetAssembly()) {}
+            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).Assembly) {}
 
             public override void Configure(Container container)
             {
@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).GetAssembly()) {}
+            public AppHost() : base(nameof(AuthCaseInsensitiveUserNameTests), typeof(AuthCaseInsensitiveUserNameTests).Assembly) {}
 
             public override void Configure(Container container)
             {

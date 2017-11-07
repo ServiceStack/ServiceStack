@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             : AppHostHttpListenerBase
         {
             public CorsFeatureAppHostHttpListener()
-                : base("Cors Feature Tests", typeof(CorsFeatureService).GetAssembly()) { }
+                : base("Cors Feature Tests", typeof(CorsFeatureService).Assembly) { }
 
             public override void Configure(Funq.Container container) {}
         }

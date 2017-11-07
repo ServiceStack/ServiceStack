@@ -12,7 +12,7 @@ namespace ServiceStack.Server.Tests.Messaging
     public class MqAppHost : AppSelfHostBase
     {
         public MqAppHost()
-            : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).GetAssembly()) {}
+            : base(typeof(MqAppHost).Name, typeof(MqAppHostServices).Assembly) {}
 
         public override void Configure(Container container)
         {

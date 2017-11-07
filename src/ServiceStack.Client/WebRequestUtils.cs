@@ -262,7 +262,7 @@ namespace ServiceStack
         public static string GetResponseDtoName(Type requestType)
         {
 #if NETSTANDARD1_1 || NETSTANDARD2_0
-            return requestType.FullName + ResponseDtoSuffix + "," + requestType.GetAssembly().GetName().Name;
+            return requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name;
 #else        
             return requestType.FullName + ResponseDtoSuffix;
 #endif
@@ -270,12 +270,11 @@ namespace ServiceStack
 
         public static Type GetErrorResponseDtoType<TResponse>(object request)
         {
-            var batchRequest = request as object[];
-            if (batchRequest != null && batchRequest.Length > 0)
+            if (request is object[] batchRequest && batchRequest.Length > 0)
                 request = batchRequest[0]; 
 
-            var hasResponseStatus = typeof(TResponse) is IHasResponseStatus
-                || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
+            var hasResponseStatus = typeof(TResponse).HasInterface(typeof(IHasResponseStatus))
+                || typeof(TResponse).GetProperty("ResponseStatus") != null;
 
             return hasResponseStatus ? typeof(TResponse) : GetErrorResponseDtoType(request);
         }
@@ -303,9 +302,9 @@ namespace ServiceStack
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericDef != null)
                 {
-                    var returnDtoType = genericDef.GenericTypeArguments()[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus
-                        || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
+                    var returnDtoType = genericDef.GetGenericArguments()[0];
+                    var hasResponseStatus = returnDtoType.HasInterface(typeof(IHasResponseStatus))
+                        || returnDtoType.GetProperty("ResponseStatus") != null;
 
                     //Only use the specified Return type if it has a ResponseStatus property
                     if (hasResponseStatus)
@@ -328,15 +327,13 @@ namespace ServiceStack
             if (response == null)
                 return null;
 
-            var status = response as ResponseStatus;
-            if (status != null)
+            if (response is ResponseStatus status)
                 return status;
 
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
+            if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
 
             return propertyInfo?.GetProperty(response) as ResponseStatus;
         }

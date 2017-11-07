@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class EncodingTestsAppHost : AppHostHttpListenerBase
     {
-        public EncodingTestsAppHost() : base("EncodingTests", typeof(HelloWorldService).GetAssembly()) { }
+        public EncodingTestsAppHost() : base("EncodingTests", typeof(HelloWorldService).Assembly) { }
         public override void Configure(Funq.Container container) {}
     }
 

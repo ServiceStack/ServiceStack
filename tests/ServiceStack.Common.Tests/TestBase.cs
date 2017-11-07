@@ -28,7 +28,7 @@ namespace ServiceStack.Common.Tests
         protected TestBase(string serviceClientBaseUri, params Assembly[] serviceAssemblies)
         {
             if (serviceAssemblies.Length == 0)
-                serviceAssemblies = new[] { GetType().GetAssembly() };
+                serviceAssemblies = new[] { GetType().Assembly };
 
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;

@@ -45,7 +45,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeSetUp]
         public void OnTestFixtureSetup()
         {
-            appHost = new BasicAppHost(typeof(DtoService).GetAssembly())
+            appHost = new BasicAppHost(typeof(DtoService).Assembly)
             {
                 ConfigureContainer = c =>
                 {

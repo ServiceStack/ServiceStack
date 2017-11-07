@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public class AsyncTaskAppHost : AppHostHttpListenerBase
         {
             public AsyncTaskAppHost() 
-                : base(typeof(AsyncTaskAppHost).Name, typeof(AsyncTaskAppHost).GetAssembly()) {}
+                : base(typeof(AsyncTaskAppHost).Name, typeof(AsyncTaskAppHost).Assembly) {}
 
             public override void Configure(Container container) {}
         }

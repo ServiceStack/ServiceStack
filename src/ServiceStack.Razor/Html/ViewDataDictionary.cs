@@ -118,7 +118,7 @@ namespace ServiceStack.Html
                 //Skip non-poco's, i.e. List
                 modelState = new ModelStateDictionary();
                 var modelType = model.GetType();
-                var listType = modelType.IsGenericType()
+                var listType = modelType.IsGenericType
                     ? modelType.GetTypeWithGenericInterfaceOf(typeof(IList<>))
                     : null;
                 if (listType != null || model.GetType().IsArray) return;

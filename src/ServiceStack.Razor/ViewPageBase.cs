@@ -588,7 +588,7 @@ namespace ServiceStack.Razor
             if (hasResponseStatus != null)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
             if (propertyInfo == null)
                 return null;
 

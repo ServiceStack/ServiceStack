@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             
             RouteNamingConvention.PropertyNamesToMatch.Add("Key");
 			RouteNamingConvention.AttributeNamesToMatch.Add(typeof(KeyAttribute).Name);
-            appHost.Routes.AddFromAssembly(typeof(RouteInferenceTests).GetAssembly());
+            appHost.Routes.AddFromAssembly(typeof(RouteInferenceTests).Assembly);
 		}
 
         [OneTimeTearDown]

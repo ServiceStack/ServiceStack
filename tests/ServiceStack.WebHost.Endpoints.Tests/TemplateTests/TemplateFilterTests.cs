@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 },
                 new TemplateContext
                 {
-                    ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
+                    ScanAssemblies = {typeof(FilterExamples).Assembly}
                 },
                 new TemplateContext
                 {
@@ -69,7 +69,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
         class AppHost : BasicAppHost
         {
-            public AppHost() : base(typeof(AppHost).GetAssembly()) {}
+            public AppHost() : base(typeof(AppHost).Assembly) {}
         }
 
         [Test]
@@ -90,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = new TemplateContext
             {
-                ScanAssemblies = {typeof(FilterExamples).GetAssembly()}
+                ScanAssemblies = {typeof(FilterExamples).Assembly}
             };
 
             context.Container.AddSingleton<IDep>(() => new Dep { Greeting = "hi " });

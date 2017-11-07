@@ -72,7 +72,7 @@ namespace ServiceStack.Html
 			if (values == null)
 				return;
 
-			foreach (var pi in values.GetType().GetPropertyInfos())
+			foreach (var pi in values.GetType().GetProperties())
 			{
 				try
 				{

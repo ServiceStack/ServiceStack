@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 		: AppHostHttpListenerBase
 	{
 		public TestAppHostHttpListener()
-			: base("Example Service", typeof(TestService).GetAssembly())
+			: base("Example Service", typeof(TestService).Assembly)
 		{
 			Instance = null;
 		}

@@ -16,7 +16,7 @@ namespace ServiceStack.Server.Tests.Auth
 {
     public class AppHost : AppSelfHostBase
     {
-        public AppHost() : base("Test Auth", typeof(AppHost).GetAssembly()) { }
+        public AppHost() : base("Test Auth", typeof(AppHost).Assembly) { }
 
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;

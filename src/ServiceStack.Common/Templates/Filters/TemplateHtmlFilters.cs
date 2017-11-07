@@ -298,7 +298,7 @@ namespace ServiceStack.Templates
 
         private static bool isComplexType(object first)
         {
-            return !(first == null || first is string || first.GetType().IsValueType());
+            return !(first == null || first is string || first.GetType().IsValueType);
         }
 
         public IRawString htmlError(TemplateScopeContext scope) => htmlError(scope, scope.PageResult.LastFilterError);

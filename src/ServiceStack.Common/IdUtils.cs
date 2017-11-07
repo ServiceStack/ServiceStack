@@ -29,7 +29,7 @@ namespace ServiceStack
             }
 #endif
 
-            if (typeof(T).IsClass() || typeof(T).IsInterface())
+            if (typeof(T).IsClass || typeof(T).IsInterface())
             {
                 foreach (var pi in typeof(T).GetPublicProperties()
                     .Where(pi => pi.AllAttributes<Attribute>()
@@ -205,7 +205,7 @@ namespace ServiceStack
 
         public static PropertyInfo GetIdProperty(this Type type)
         {
-            foreach (var pi in type.GetPropertyInfos())
+            foreach (var pi in type.GetProperties())
             {
                 if (string.Equals(IdField, pi.Name, StringComparison.OrdinalIgnoreCase))
                 {

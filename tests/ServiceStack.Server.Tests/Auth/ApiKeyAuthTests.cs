@@ -51,7 +51,7 @@ namespace ServiceStack.Server.Tests.Auth
         {
             public static ApiKey LastApiKey;
 
-            public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).GetAssembly()) { }
+            public AppHost() : base(nameof(ApiKeyAuthTests), typeof(AppHost).Assembly) { }
 
             public override void Configure(Container container)
             {

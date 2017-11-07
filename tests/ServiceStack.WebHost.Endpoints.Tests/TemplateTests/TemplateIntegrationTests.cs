@@ -142,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     {
         class AppHost : AppSelfHostBase
         {
-            public AppHost() : base(nameof(TemplateIntegrationTests), typeof(MyTemplateServices).GetAssembly()) {}
+            public AppHost() : base(nameof(TemplateIntegrationTests), typeof(MyTemplateServices).Assembly) {}
 
             public override void Configure(Container container)
             {

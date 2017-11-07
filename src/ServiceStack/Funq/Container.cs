@@ -419,7 +419,7 @@ namespace Funq
                 var genericDef = typeof(TService).FirstGenericTypeDefinition();
                 if (genericDef != null && genericDef.Name.StartsWith("Func`")) //Lazy Dependencies
                 {
-                    var argTypes = typeof(TService).GetTypeGenericArguments();
+                    var argTypes = typeof(TService).GetGenericArguments();
                     var lazyResolver = GetLazyResolver(argTypes);
 
                     return new ServiceEntry<TService, TFunc>(

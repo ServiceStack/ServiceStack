@@ -264,7 +264,7 @@ namespace ServiceStack
             };
 
             pathProviders.AddRange(Config.EmbeddedResourceBaseTypes.Distinct()
-                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x.GetAssembly()) } ));
+                .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x.Assembly) } ));
 
             pathProviders.AddRange(Config.EmbeddedResourceSources.Distinct()
                 .Map(x => new ResourceVirtualFiles(x) { LastModified = GetAssemblyLastModified(x) } ));
@@ -506,7 +506,7 @@ namespace ServiceStack
 
         public virtual void OnConfigLoad()
         {
-            Config.DebugMode = GetType().GetAssembly().IsDebugBuild();
+            Config.DebugMode = GetType().Assembly.IsDebugBuild();
         }
 
         // Config has changed
