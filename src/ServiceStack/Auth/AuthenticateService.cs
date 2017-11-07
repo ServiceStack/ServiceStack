@@ -46,8 +46,39 @@ namespace ServiceStack.Auth
             CurrentSessionFactory = () => new AuthUserSession();
         }
 
+        /// <summary>
+        /// Get AuthProviders Registered in AuthFeature Plugin.
+        /// </summary>
+        /// <param name="provider">specific provider, or null for all providers</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public static IAuthProvider[] GetAuthProviders(string provider = null)
+        {
+            if (AuthProviders == null || AuthProviders.Length == 0)
+                return TypeConstants<IAuthProvider>.EmptyArray;
+
+            if (provider != null)
+            {
+                var matchingOAuthProviders = AuthProviders.Where(x =>
+                    string.IsNullOrEmpty(provider)
+                    || x.Provider == provider).ToArray();
+
+                return matchingOAuthProviders;
+            }
+
+            return AuthProviders;
+        }
+
+        /// <summary>
+        /// Get specific AuthProvider
+        /// </summary>
+        /// <param name="provider"></param>
+        /// <returns></returns>
         public static IAuthProvider GetAuthProvider(string provider)
         {
+            if (string.IsNullOrEmpty(provider))
+                throw new ArgumentNullException(nameof(provider));
+            
             if (AuthProviders.Length == 0)
                 return null;
             if (provider == LogoutAction)
@@ -55,17 +86,11 @@ namespace ServiceStack.Auth
 
             foreach (var authConfig in AuthProviders)
             {
-                if (string.Compare(authConfig.Provider, provider,
-                    StringComparison.OrdinalIgnoreCase) == 0)
+                if (string.Compare(authConfig.Provider, provider, StringComparison.OrdinalIgnoreCase) == 0)
                     return authConfig;
             }
 
             return null;
-        }
-
-        public static IAuthProvider[] GetAuthProviders()
-        {
-            return AuthProviders ?? TypeConstants<IAuthProvider>.EmptyArray;
         }
 
         public static void Init(Func<IAuthSession> sessionFactory, params IAuthProvider[] authProviders)

@@ -111,12 +111,12 @@ namespace ServiceStack.Web
         /// <param name="notes">
         ///     The longer text to explain the behaviour of the REST. 
         /// </param>
-        /// <param name="matchRule">
+        /// <param name="matches">
         ///     Must match rule defined in Config.RequestRules or Regex expression with format: 
         ///     "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
         /// </param>
         /// <returns>The same <see cref="IServiceRoutes"/> instance;
         ///		never <see langword="null"/>.</returns>
-        IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string summary, string notes, string matchRule);
+        IServiceRoutes Add(System.Type requestType, string restPath, string verbs, string summary, string notes, string matches);
     }
 }

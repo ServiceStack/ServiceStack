@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -138,6 +139,19 @@ namespace ServiceStack
             }
 
             return SessionFeature.GetOrCreateSession<TUserSession>(req.GetCacheClient(), req, req.Response);
+        }
+
+        public static bool IsAuthenticated(this IRequest req)
+        {
+            //Sync with [Authenticate] impl
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+            
+            var authProviders = AuthenticateService.GetAuthProviders();
+            AuthenticateAttribute.PreAuthenticate(req, authProviders);
+            
+            var session = req.GetSession();
+            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
         }
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)

@@ -105,6 +105,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Desktop { get; set; }
     }
 
+    [Route("/matchauth/{Authenticated}", Matches = "IsAuthenticated")]
+    public class MatchAuthenticated
+    {
+        public string Authenticated { get; set; }
+    }
+
+    [Route("/matchauth/{Unauthenticated}")]
+    public class MatchUnauthenticated
+    {
+        public string Unauthenticated { get; set; }
+    }
+
     public class RouteMatchService : Service
     {
         public object Any(MatchesHtml request) => request;
@@ -131,6 +143,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(MatchMobileSite request) => request;
         public object Any(MatchDesktopSite request) => request;
+
+        public object Any(MatchAuthenticated request) => request;
+        public object Any(MatchUnauthenticated request) => request;
     }
 
     public class RouteMatchTests
@@ -148,11 +163,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     RequestRules =
                     {
-                        { "AcceptsCsv", httpReq => httpReq.Accept?.IndexOf(MimeTypes.Csv) >= 0 },
-                    }
+                        { "CustomAcceptsCsv", httpReq => httpReq.Accept?.IndexOf(MimeTypes.Csv) >= 0 },
+                    },
+                    AdminAuthSecret = "secretz"
                 });
 
-                Routes.Add(typeof(MatchesCsv), "/matches/csv", null, null, null, matchRule:"AcceptsCsv");
+                Routes.Add(typeof(MatchesCsv), "/matches/csv", null, null, null, matches:"CustomAcceptsCsv");
             }
         }
 
@@ -352,6 +368,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl(req => req.UserAgent = SafariUA);
 
             Assert.That(json.ToLower(), Is.EqualTo("{\"desktop\":\"safari\"}"));
+        }
+
+        [Test]
+        public void Can_match_on_IsAuthenticated_using_AuthSecret()
+        {
+            var json = Config.ListeningOn.AppendPath("matchauth/secure")
+                .AddQueryParam("authsecret","secretz")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"authenticated\":\"secure\"}"));
+        }
+
+        [Test]
+        public void Does_not_match_on_IsAuthenticated_when_not_authenticated()
+        {
+            var json = Config.ListeningOn.AppendPath("matchauth/public")
+                .GetJsonFromUrl();
+
+            Assert.That(json.ToLower(), Is.EqualTo("{\"unauthenticated\":\"public\"}"));
         }
 
     }
