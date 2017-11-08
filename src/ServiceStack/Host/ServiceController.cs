@@ -830,9 +830,6 @@ namespace ServiceStack.Host
                 $"Could not execute service '{requestType.GetOperationName()}', The following restrictions were not met: " +
                 $"'{StringBuilderCache.ReturnAndFree(failedScenarios)}'{internalDebugMsg}");
         }
-
-        public static string[] ServiceStackServiceNamespaces = { "ServiceStack", "ServiceStack.Auth", "ServiceStack.NativeTypes", "ServiceStack.Server" };
-        public static bool IsServiceStackService(Type type) => type.Namespace != null && ServiceStackServiceNamespaces.Contains(type.Namespace);
     }
 
 }
