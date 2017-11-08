@@ -27,6 +27,12 @@ namespace ServiceStack.Host
         private const string ResponseDtoSuffix = "Response";
         private readonly ServiceStackHost appHost;
 
+        /// <summary>
+        /// Custom lambda for being able to skip Auto Registration of Services. 
+        /// Default skips auto-registration of all built-in Services which are all manually added by plugins and will cause Ambiguous Exception when ILMerged.
+        /// </summary>
+        public static Func<Type, bool> SkipServiceAutoRegisteration { get; set; } = serviceType => serviceType.Namespace?.StartsWith("ServiceStack") == true;
+
         public ServiceController(ServiceStackHost appHost)
         {
             this.appHost = appHost;
@@ -130,10 +136,14 @@ namespace ServiceStack.Host
             }
         }
 
-        public void Register(ITypeFactory serviceFactoryFn)
+        // Called from ServiceController.Init() in AppHost.Init()
+        internal void Register(ITypeFactory serviceFactoryFn)
         {
             foreach (var serviceType in ResolveServicesFn())
             {
+                if (SkipServiceAutoRegisteration?.Invoke(serviceType) == true)
+                    continue;
+
                 RegisterService(serviceFactoryFn, serviceType);
             }
         }

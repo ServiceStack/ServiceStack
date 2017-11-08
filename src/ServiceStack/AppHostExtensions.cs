@@ -38,8 +38,7 @@ namespace ServiceStack
                 {
                     try
                     {
-                        var plugin = pluginType.CreateInstance() as IPlugin;
-                        if (plugin != null)
+                        if (pluginType.CreateInstance() is IPlugin plugin)
                         {
                             ssHost.LoadPlugin(plugin);
                         }
