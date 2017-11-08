@@ -32,7 +32,7 @@ namespace ServiceStack.Host
         /// Custom lambda for being able to skip Auto Registration of Services. 
         /// Default skips auto-registration of all built-in Services which are all manually added by plugins and will cause Ambiguous Exception when ILMerged.
         /// </summary>
-        public static Func<Type, bool> SkipServiceAutoRegisteration { get; set; } = serviceType => serviceType.IsServiceStackType();
+        public static Func<Type, bool> SkipServiceAutoRegisteration { get; set; } = IsServiceStackService;
 
         public ServiceController(ServiceStackHost appHost)
         {
@@ -839,6 +839,9 @@ namespace ServiceStack.Host
                 $"Could not execute service '{requestType.GetOperationName()}', The following restrictions were not met: " +
                 $"'{StringBuilderCache.ReturnAndFree(failedScenarios)}'{internalDebugMsg}");
         }
+
+        public static string[] ServiceStackServiceNamespaces = { "ServiceStack", "ServiceStack.Auth", "ServiceStack.Server" };
+        public static bool IsServiceStackService(Type type) => type.Namespace != null && ServiceStackServiceNamespaces.Contains(type.Namespace);
     }
 
 }
