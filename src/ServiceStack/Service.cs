@@ -39,12 +39,6 @@ namespace ServiceStack
             return HostContext.ResolveService(this.Request, service);
         }
 
-        [Obsolete("Use Gateway")]
-        public object ExecuteRequest(object requestDto)
-        {
-            return HostContext.ServiceController.Execute(requestDto, Request);
-        }
-
         public IRequest Request { get; set; }
 
         protected virtual IResponse Response => Request?.Response;
@@ -72,7 +66,6 @@ namespace ServiceStack
 
         private IAuthRepository authRepository;
         public virtual IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
-
 
         private IServiceGateway gateway;
         public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));

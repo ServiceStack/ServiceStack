@@ -9,7 +9,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Web;
@@ -18,9 +17,6 @@ namespace ServiceStack.Host.HttpListener
 {
     public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
-        [Obsolete("Use Resolver")]
-        public Container Container => throw new NotSupportedException("Use Resolver");
-
         private IResolver resolver;
         public IResolver Resolver
         {

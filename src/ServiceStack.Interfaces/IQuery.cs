@@ -141,27 +141,6 @@ namespace ServiceStack
         public virtual Dictionary<string, string> Meta { get; set; }
     }
 
-
-    [Obsolete("Use [QueryDb]")]
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class QueryAttribute : AttributeBase { }
-
-    [Obsolete("Use [QueryDbField]")]
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class QueryFieldAttribute : AttributeBase { }
-
-    [Obsolete("Use QueryDb")]
-    public abstract class QueryBase<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
-
-    [Obsolete("Use QueryDb")]
-    public abstract class QueryBase<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
-
-    [Obsolete("Use IQueryDb<From>")]
-    public interface IQuery<From> : IQueryDb { }
-    [Obsolete("Use IQueryDb<From,Into>")]
-    public interface IQuery<From, Into> : IQueryDb { }
-
-
     public abstract class QueryDb<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
     public abstract class QueryDb<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
 

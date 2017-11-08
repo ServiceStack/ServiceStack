@@ -71,17 +71,6 @@ namespace ServiceStack.Redis
         string UrnKey<T>(object id);
         string UrnKey(Type type, object id);
 
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, string value);
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, string value, TimeSpan expireIn);
-        [Obsolete("Use SetValueIfNotExists()")]
-        bool SetEntryIfNotExists(string key, string value);
-        [Obsolete("Use GetValue()")]
-        string GetEntry(string key);
-        [Obsolete("Use GetAndSetValue()")]
-        string GetAndSetEntry(string key, string value);
-
         void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
         void SetAll(Dictionary<string, string> map);
         void SetValues(Dictionary<string, string> map);

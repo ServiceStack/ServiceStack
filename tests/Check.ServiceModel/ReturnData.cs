@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Net;
 using ServiceStack;
 
 namespace Check.ServiceModel
@@ -18,12 +17,6 @@ namespace Check.ServiceModel
 
     [Route("/return/stream")]
     public class ReturnStream : IReturn<Stream>
-    {
-        public byte[] Data { get; set; }
-    }
-
-    [Route("/return/httpwebresponse")]
-    public class ReturnHttpWebResponse : IReturn<HttpWebResponse>
     {
         public byte[] Data { get; set; }
     }

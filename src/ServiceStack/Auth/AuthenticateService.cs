@@ -274,8 +274,7 @@ namespace ServiceStack.Auth
                     return oAuthConfig.Logout(this, request) as AuthenticateResponse;
 
                 var result = Authenticate(request, provider, this.GetSession(), oAuthConfig);
-                var httpError = result as HttpError;
-                if (httpError != null)
+                if (result is HttpError httpError)
                     throw httpError;
 
                 return result as AuthenticateResponse;
@@ -299,26 +298,11 @@ namespace ServiceStack.Auth
             var authFeature = HostContext.GetPlugin<AuthFeature>();
             var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
 
-            object response = null;
+            if (generateNewCookies)
+                this.Request.GenerateNewSessionCookies(session);
 
-            var doAuth = !(authFeature?.SkipAuthenticationIfAlreadyAuthenticated == true)
-                || !oAuthConfig.IsAuthorized(session, session.GetAuthTokens(provider), request);
+            var response = oAuthConfig.Authenticate(this, session, request);
 
-            if (doAuth)
-            {
-                if (generateNewCookies)
-                    this.Request.GenerateNewSessionCookies(session);
-
-                response = oAuthConfig.Authenticate(this, session, request);
-            }
-            else
-            {
-                if (generateNewCookies)
-                {
-                    this.Request.GenerateNewSessionCookies(session);
-                    oAuthConfig.SaveSession(this, session, (oAuthConfig as AuthProvider)?.SessionExpiry);
-                }
-            }
             return response;
         }
 

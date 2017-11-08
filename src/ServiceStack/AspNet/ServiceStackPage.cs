@@ -125,15 +125,6 @@ namespace ServiceStack.AspNet
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
-        [Obsolete("Use Gateway")]
-        protected virtual object Execute(object requestDto) => ServiceStackProvider.Execute(requestDto);
-
-        [Obsolete("Use Gateway")]
-        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto) => ServiceStackProvider.Execute(requestDto);
-
-        [Obsolete("Use Gateway")]
-        protected virtual void PublishMessage<T>(T message) => ServiceStackProvider.PublishMessage(message);
-
         private bool hasDisposed;
         public override void Dispose()
         {

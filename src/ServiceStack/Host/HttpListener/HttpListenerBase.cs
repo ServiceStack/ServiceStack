@@ -34,9 +34,6 @@ namespace ServiceStack.Host.HttpListener
 
         private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
-        [Obsolete("Use OnBeforeRequestFn")]
-        public event DelReceiveWebRequest ReceiveWebRequest;
-
         public Action<HttpListenerContext> BeforeRequest { get; set; }
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
@@ -318,10 +315,8 @@ namespace ServiceStack.Host.HttpListener
 
         protected virtual void OnBeginRequest(HttpListenerContext context)
         {
-            ReceiveWebRequest?.Invoke(context);
             BeforeRequest?.Invoke(context);
         }
-
 
         /// <summary>
         /// Shut down the Web Service

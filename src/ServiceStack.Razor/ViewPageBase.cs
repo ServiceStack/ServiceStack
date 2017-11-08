@@ -417,16 +417,6 @@ namespace ServiceStack.Razor
             get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
         }
 
-        [Obsolete("Use Gateway")]
-        public virtual object ExecuteService<T>(Func<T, object> fn)
-        {
-            var service = ResolveService<T>();
-            using (service as IDisposable)
-            {
-                return fn(service);
-            }
-        }
-
         public bool IsError
         {
             get { return ModelError != null || GetErrorStatus() != null; }

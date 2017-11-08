@@ -116,9 +116,6 @@ namespace ServiceStack
         /// </summary>
         public static IVirtualPathProvider VirtualFileSources => AssertAppHost().VirtualFileSources;
 
-        [Obsolete("Renamed to VirtualFileSources")]
-        public static IVirtualPathProvider VirtualPathProvider => AssertAppHost().VirtualFileSources;
-
         public static ICacheClient Cache => TryResolve<ICacheClient>();
 
         public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();

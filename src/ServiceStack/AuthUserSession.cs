@@ -144,12 +144,6 @@ namespace ServiceStack
             return null;
         }
 
-        [Obsolete("Use GetAuthTokens()")]
-        public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
-        {
-            return GetAuthTokens(session, provider);
-        }
-
         public static string GetProfileUrl(this IAuthSession authSession, string defaultUrl = null)
         {
             if (authSession.ProfileUrl != null)

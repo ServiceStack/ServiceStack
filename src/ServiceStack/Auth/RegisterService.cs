@@ -58,11 +58,6 @@ namespace ServiceStack.Auth
         }
     }
 
-    [Obsolete("Use normal RegistrationFeature and have your IAuthRepository implement ICustomUserAuth instead")]
-    [DefaultRequest(typeof(Register))]
-    public class RegisterService<TUserAuth> : RegisterService
-        where TUserAuth : class, IUserAuth { }
-
     [DefaultRequest(typeof(Register))]
     public class RegisterService : Service
     {

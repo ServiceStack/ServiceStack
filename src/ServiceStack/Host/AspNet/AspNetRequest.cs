@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Web;
-using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -21,9 +20,6 @@ namespace ServiceStack.Host.AspNet
         : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
-
-        [Obsolete("Use Resolver")]
-        public Container Container => throw new NotSupportedException("Use Resolver");
 
         private IResolver resolver;
         public IResolver Resolver

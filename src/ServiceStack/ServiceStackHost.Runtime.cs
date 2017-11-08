@@ -557,20 +557,7 @@ namespace ServiceStack
         /// Inspect or modify ever new UserSession created or resolved from cache. 
         /// return null if Session is invalid to create new Session.
         /// </summary>
-        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
-        {
-            if (session == null || !SessionFeature.VerifyCachedSessionId)
-                return session;
-
-            if (session.Id == withSessionId)
-                return session;
-
-            if (Log.IsDebugEnabled)
-            {
-                Log.Debug($"ignoring cached sessionId '{session.Id}' which is different to request '{withSessionId}'");
-            }
-            return null;
-        }
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
 
         public virtual bool AllowSetCookie(IRequest req, string cookieName)
         {

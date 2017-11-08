@@ -737,7 +737,6 @@ namespace ServiceStack.NativeTypes.Swift
 
 #pragma warning disable 618
             if (typeName.Name == typeof(QueryBase).Name || 
-                typeName.Name == typeof(QueryBase<>).Name || 
                 typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
 #pragma warning restore 618

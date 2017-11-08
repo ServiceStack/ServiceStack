@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
+using ServiceStack.NativeTypes;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -31,7 +32,7 @@ namespace ServiceStack.Host
         /// Custom lambda for being able to skip Auto Registration of Services. 
         /// Default skips auto-registration of all built-in Services which are all manually added by plugins and will cause Ambiguous Exception when ILMerged.
         /// </summary>
-        public static Func<Type, bool> SkipServiceAutoRegisteration { get; set; } = serviceType => serviceType.Namespace?.StartsWith("ServiceStack") == true;
+        public static Func<Type, bool> SkipServiceAutoRegisteration { get; set; } = serviceType => serviceType.IsServiceStackType();
 
         public ServiceController(ServiceStackHost appHost)
         {
@@ -621,12 +622,6 @@ namespace ServiceStack.Host
             {
                 req.ReleaseIfInProcessRequest();
             }
-        }
-
-        [Obsolete("Use Execute(IRequest, applyFilters:true)")]
-        public object Execute(IRequest req)
-        {
-            return Execute(req, applyFilters:true);
         }
 
         public object Execute(IRequest req, bool applyFilters)

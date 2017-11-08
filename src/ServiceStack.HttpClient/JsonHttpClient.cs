@@ -117,12 +117,6 @@ namespace ServiceStack
             return ToAbsoluteUrl(TypedUrlResolver?.Invoke(this, httpMethod, requestDto) ?? requestDto.ToUrl(httpMethod, Format));
         }
 
-        [Obsolete("Renamed to ToAbsoluteUrl")]
-        public virtual string GetBaseUrl(string relativeOrAbsoluteUrl)
-        {
-            return ToAbsoluteUrl(relativeOrAbsoluteUrl);
-        }
-
         public HttpClient GetHttpClient()
         {
             //Should reuse same instance: http://social.msdn.microsoft.com/Forums/en-US/netfxnetcom/thread/4e12d8e2-e0bf-4654-ac85-3d49b07b50af/

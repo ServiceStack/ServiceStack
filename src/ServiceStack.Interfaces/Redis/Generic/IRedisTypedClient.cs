@@ -48,13 +48,6 @@ namespace ServiceStack.Redis.Generic
         RedisKeyType GetEntryType(string key);
         string GetRandomKey();
 
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, T value);
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, T value, TimeSpan expireIn);
-        [Obsolete("Use SetValueIfNotExists()")]
-        bool SetEntryIfNotExists(string key, T value);
-
         void SetValue(string key, T entity);
         void SetValue(string key, T entity, TimeSpan expireIn);
         bool SetValueIfNotExists(string key, T entity);

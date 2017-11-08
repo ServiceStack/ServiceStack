@@ -30,9 +30,6 @@ namespace ServiceStack
         public IQueryDb Dto { get; set; }
         public ISqlExpression SqlExpression { get; set; }
         public IQueryResponse Response { get; set; }
-
-        [Obsolete("Use Dto")]
-        public IQueryDb Request => Dto;
     }
 
     public class AutoQueryFeature : IPlugin, IPostInitPlugin
@@ -361,9 +358,6 @@ namespace ServiceStack
             ctx.Commands.RemoveAll(aggregateCommands.Contains);
         }
     }
-
-    [Obsolete("Use IAutoQueryDb")]
-    public interface IAutoQuery { }
 
     public interface IAutoQueryDb
     {

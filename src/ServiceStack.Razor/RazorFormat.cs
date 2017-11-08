@@ -56,13 +56,6 @@ namespace ServiceStack.Razor
         public bool LoadUnloadedAssemblies { get; set; }
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
-        [Obsolete("Renamed to VirtualFileSources")]
-        public IVirtualPathProvider VirtualPathProvider
-        {
-            get { return VirtualFileSources; }
-            set { VirtualFileSources = value; }
-        }
-
         public ILiveReload LiveReload { get; set; }
         public Func<RazorViewManager, ILiveReload> LiveReloadFactory { get; set; }
         public RenderPartialDelegate RenderPartialFn { get; set; }

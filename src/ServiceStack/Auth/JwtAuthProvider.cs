@@ -234,10 +234,6 @@ namespace ServiceStack.Auth
             }
         }
 
-        [Obsolete("Renamed to CreateJwt")]
-        public static string CreateJwtBearerToken(JsonObject jwtHeader, JsonObject jwtPayload, Func<byte[], byte[]> signData)
-            => CreateJwt(jwtHeader, jwtPayload, signData);
-
         public static string CreateJwt(
             JsonObject jwtHeader,
             JsonObject jwtPayload,

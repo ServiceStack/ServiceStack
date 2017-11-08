@@ -240,7 +240,6 @@ namespace ServiceStack.NativeTypes
 
 #pragma warning disable 618
                 if (!ignoreTypeFn(type.BaseType) || 
-                    genericBaseTypeDef == typeof(QueryBase<,>) ||
                     genericBaseTypeDef == typeof(QueryDb<,>) ||
                     genericBaseTypeDef == typeof(QueryData<,>))
 #pragma warning restore 618
@@ -1277,9 +1276,6 @@ namespace ServiceStack.NativeTypes
             return type;
         }
 
-        public static bool IsServiceStackType(this Type type)
-        {
-            return type.Namespace.StartsWith("ServiceStack");
-        }
+        public static bool IsServiceStackType(this Type type) => type.Namespace?.StartsWith("ServiceStack") == true;
     }
 }

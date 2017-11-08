@@ -423,13 +423,6 @@ namespace ServiceStack
 
         public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
 
-        [Obsolete("Renamed to VirtualFileSources")]
-        public IVirtualPathProvider VirtualPathProvider
-        {
-            get { return VirtualFileSources; }
-            set { VirtualFileSources = value; }
-        }
-
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.
         /// </summary>

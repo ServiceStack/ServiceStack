@@ -450,25 +450,6 @@ namespace ServiceStack
         }
     }
 
-    [Obsolete("Use RsaUtils.* static class")]
-    public class CryptUtils
-    {
-        public static string Encrypt(string publicKeyXml, string data, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.Encrypt(data, publicKeyXml, rsaKeyLength);
-        }
-
-        public static string Decrypt(string privateKeyXml, string encryptedData, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.Encrypt(encryptedData, privateKeyXml, rsaKeyLength);
-        }
-
-        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.CreatePublicAndPrivateKeyPair(rsaKeyLength);
-        }
-    }
-
     public static class PlatformRsaUtils
     {
 #if NETSTANDARD2_0

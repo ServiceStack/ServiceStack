@@ -20,12 +20,6 @@ namespace ServiceStack.IO
             return pathProvider.DirectoryExists(filePath);
         }
 
-        [Obsolete("Renamed to WriteFile")]
-        public static void AddFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
-        {
-            pathProvider.WriteFile(filePath, textContents);
-        }
-
         public static void WriteFile(this IVirtualPathProvider pathProvider, string filePath, string textContents)
         {
             if (!(pathProvider is IVirtualFiles writableFs))

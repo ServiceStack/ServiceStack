@@ -1,5 +1,4 @@
 using System;
-using System.Web;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Web;
@@ -13,18 +12,12 @@ namespace ServiceStack
         public const string SessionOptionsKey = "ss-opt";
         public const string XUserAuthId = HttpHeaders.XUserAuthId;
 
-        [Obsolete("Use Keywords.Session")]
-        public const string RequestItemsSessionKey = "__session";
-
         public static TimeSpan DefaultSessionExpiry = TimeSpan.FromDays(7 * 2); //2 weeks
         public static TimeSpan DefaultPermanentSessionExpiry = TimeSpan.FromDays(7 * 4); //4 weeks
 
         public TimeSpan? SessionExpiry { get; set; }
         public TimeSpan? SessionBagExpiry { get; set; }
         public TimeSpan? PermanentSessionExpiry { get; set; }
-
-        [Obsolete("Removing rarely used feature, if needed override OnSessionFilter() and return null if invalid session")]
-        public static bool VerifyCachedSessionId = false;
 
         private static bool alreadyConfigured;
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using Funq;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
@@ -13,9 +12,6 @@ namespace ServiceStack.Testing
 {
     public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
-        [Obsolete("Use Resolver")]
-        public Container Container => throw new NotSupportedException("Use Resolver");
-
         private IResolver resolver;
         public IResolver Resolver
         {

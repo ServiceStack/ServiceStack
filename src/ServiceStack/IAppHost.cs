@@ -245,9 +245,6 @@ namespace ServiceStack
         /// </summary>
         string MapProjectPath(string relativePath);
 
-        [Obsolete("Renamed to VirtualFileSources")]
-        IVirtualPathProvider VirtualPathProvider { get; set; }
-
         /// <summary>
         /// Cascading number of file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>

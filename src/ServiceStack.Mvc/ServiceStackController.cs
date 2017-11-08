@@ -203,14 +203,6 @@ namespace ServiceStack.Mvc
 
         public virtual IServiceGateway Gateway => ServiceStackProvider.Gateway;
 
-#if !NETSTANDARD2_0
-        [Obsolete("Use Gateway")]
-        protected virtual TResponse Execute<TResponse>(IReturn<TResponse> requestDto) => ServiceStackProvider.Execute(requestDto);
-
-        [Obsolete("Use Gateway")]
-        protected virtual void PublishMessage<T>(T message) => ServiceStackProvider.PublishMessage(message);
-#endif
-
         private bool hasDisposed = false;
         protected override void Dispose(bool disposing)
         {

@@ -21,6 +21,7 @@ namespace ServiceStack
         private readonly IAuthProvider[] authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+
         public List<IPlugin> RegisterPlugins { get; set; }
 
         public List<IAuthEvents> AuthEvents { get; set; }
@@ -50,10 +51,8 @@ namespace ServiceStack
         /// </summary>
         public bool SaveUserNamesInLowerCase { get; set; }
 
-        [Obsolete("Please update your App to not rely on this behavior as we plan on removing it eventually")]
-        public bool SkipAuthenticationIfAlreadyAuthenticated { get; set; }
-
         public TimeSpan? SessionExpiry { get; set; }
+
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
