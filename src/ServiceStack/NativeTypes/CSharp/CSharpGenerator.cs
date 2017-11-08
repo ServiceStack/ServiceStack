@@ -268,7 +268,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 var inheritsList = new List<string>();
                 if (type.Inherits != null)
                 {
-                    inheritsList.Add(Type(type.Inherits, includeNested:true));
+                    inheritsList.Add(Type(type.GetInherits(), includeNested:true));
                 }
 
                 if (options.ImplementsFn != null)
@@ -491,8 +491,7 @@ namespace ServiceStack.NativeTypes.CSharp
             if (arrParts.Length > 1)
                 return $"{TypeAlias(arrParts[0], includeNested: includeNested)}[]";
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
@@ -611,6 +610,24 @@ namespace ServiceStack.NativeTypes.CSharp
 
     public static class CSharpGeneratorExtensions
     {
+        // Handle inheriting from a nested class which needs to be fully-qualified in C#
+        public static MetadataTypeName GetInherits(this MetadataType type)
+        {
+            if (type.Inherits == null || type.Inherits.GenericArgs.IsEmpty() || type.InnerTypes.IsEmpty())
+                return type.Inherits;
 
+            for (var i = 0; i < type.Inherits.GenericArgs.Length; i++)
+            {
+                foreach (var innerType in type.InnerTypes)
+                {
+                    if (innerType.Name.LastRightPart('.') == type.Inherits.GenericArgs[i])
+                    {
+                        type.Inherits.GenericArgs[i] = innerType.Name;
+                    }
+                }
+            }
+
+            return type.Inherits;
+        }
     }
 }

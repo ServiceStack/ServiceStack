@@ -1,6 +1,6 @@
 /* Options:
-Date: 2017-02-08 03:59:46
-Version: 4.00
+Date: 2017-11-08 03:43:53
+Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://test.servicestack.net
 
@@ -106,6 +106,33 @@ namespace testdtos
     public partial class Account
     {
         public virtual string Name { get; set; }
+    }
+
+    [Route("/jwt")]
+    public partial class CreateJwt
+        : AuthUserSession, IReturn<CreateJwtResponse>
+    {
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/jwt-refresh")]
+    public partial class CreateRefreshJwt
+        : IReturn<CreateRefreshJwtResponse>
+    {
+        public virtual string UserAuthId { get; set; }
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateRefreshJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
     public partial class CustomUserSession
@@ -287,7 +314,18 @@ namespace testdtos
         public virtual int Id { get; set; }
     }
 
-    [Route("/{Path*}")]
+    [Route("/return/html")]
+    public partial class ReturnHtml
+    {
+        public virtual string Text { get; set; }
+    }
+
+    [Route("/return/text")]
+    public partial class ReturnText
+    {
+        public virtual string Text { get; set; }
+    }
+
     public partial class RootPathRoutes
     {
         public virtual string Path { get; set; }
@@ -385,8 +423,8 @@ namespace testdtos
     ///AllowedAttributes Description
     ///</summary>
     [Route("/allowed-attributes", "GET")]
-    [Api("AllowedAttributes Description")]
-    [ApiResponse(400, "Your request was not understood")]
+    [Api(Description="AllowedAttributes Description")]
+    [ApiResponse(Description="Your request was not understood", StatusCode=400)]
     [DataContract]
     public partial class AllowedAttributes
     {
@@ -394,7 +432,7 @@ namespace testdtos
         ///Range Description
         ///</summary>
         [DataMember(Name="Aliased")]
-        [ApiMember(ParameterType="path", Description="Range Description", DataType="double", IsRequired=true)]
+        [ApiMember(DataType="double", Description="Range Description", IsRequired=true, ParameterType="path")]
         public virtual double Range { get; set; }
     }
 
@@ -915,20 +953,20 @@ namespace testdtos
     }
 
     public partial class QueryPocoBase
-        : QueryBase<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
     {
         public virtual int Id { get; set; }
     }
 
     public partial class QueryPocoIntoBase
-        : QueryBase<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
     {
         public virtual int Id { get; set; }
     }
 
     [Route("/rockstars")]
     public partial class QueryRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
     }
 
@@ -988,6 +1026,32 @@ namespace testdtos
     {
         Global = 1,
         Sale = 2,
+    }
+
+    [Route("/sendjson")]
+    public partial class SendJson
+        : IReturn<string>
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+    }
+
+    [Route("/sendraw")]
+    public partial class SendRaw
+        : IReturn<byte[]>
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+        public virtual string ContentType { get; set; }
+    }
+
+    [Route("/sendtext")]
+    public partial class SendText
+        : IReturn<string>
+    {
+        public virtual int Id { get; set; }
+        public virtual string Name { get; set; }
+        public virtual string ContentType { get; set; }
     }
 
     public partial class StoreLogs

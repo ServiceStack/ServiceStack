@@ -1,11 +1,13 @@
 /* Options:
-Date: 2015-11-23 10:41:20
-Version: 4.00
+Date: 2017-11-07 22:43:17
+Version: 5.00
+Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
 
 //GlobalNamespace: 
 //MakePartial: True
 //MakeVirtual: True
+//MakeInternal: False
 //MakeDataContractsExtensible: False
 //AddReturnMarker: True
 //AddDescriptionAsComments: True
@@ -15,8 +17,10 @@ BaseUrl: http://localhost:55799
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //InitializeCollections: True
+//ExportValueTypes: False
 //IncludeTypes: 
 //ExcludeTypes: 
+//AddNamespaces: 
 //AddDefaultXmlNamespace: http://schemas.servicestack.net/types
 */
 
@@ -26,10 +30,12 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
+using System.IO;
 using Check.ServiceModel;
 using Check.ServiceInterface;
 using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
+using CheckWeb;
 
 
 namespace Check.ServiceInterface
@@ -109,6 +115,12 @@ namespace Check.ServiceInterface
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/compress/{Path*}")]
+    public partial class CompressFile
+    {
+        public virtual string Path { get; set; }
+    }
+
     public partial class CustomRockstar
     {
         [AutoQueryViewerField(Title="Name")]
@@ -135,14 +147,41 @@ namespace Check.ServiceInterface
         public virtual string CustomInfo { get; set; }
     }
 
-    [Route("{PathInfo*}")]
     public partial class FallbackRoute
     {
         public virtual string PathInfo { get; set; }
     }
 
+    [Route("/files/{Path*}")]
+    public partial class GetFile
+    {
+        public virtual string Path { get; set; }
+    }
+
+    [Route("/Request1/", "GET")]
+    public partial class GetRequest1
+        : IReturn<List<ReturnedDto>>, IGet
+    {
+    }
+
+    [Route("/Request3", "GET")]
+    public partial class GetRequest2
+        : IReturn<ReturnedDto>, IGet
+    {
+    }
+
+    [Route("/timestamp", "GET")]
+    public partial class GetTimestamp
+        : IReturn<TimestampData>
+    {
+    }
+
     public partial class GetUserSession
         : IReturn<CustomUserSession>
+    {
+    }
+
+    public partial interface IFilterRockstars
     {
     }
 
@@ -157,6 +196,44 @@ namespace Check.ServiceInterface
     {
         public virtual string LeadType { get; set; }
         public virtual int MyId { get; set; }
+    }
+
+    [Route("/matchroute/html")]
+    public partial class MatchesHtml
+        : IReturn<MatchesHtml>
+    {
+        public virtual string Name { get; set; }
+    }
+
+    [Route("/matchregex/{Id}")]
+    public partial class MatchesId
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/matchroute/json")]
+    public partial class MatchesJson
+        : IReturn<MatchesJson>
+    {
+        public virtual string Name { get; set; }
+    }
+
+    [Route("/matchlast/{Id}")]
+    public partial class MatchesLastInt
+    {
+        public virtual int Id { get; set; }
+    }
+
+    [Route("/matchlast/{Slug}")]
+    public partial class MatchesNotLastInt
+    {
+        public virtual string Slug { get; set; }
+    }
+
+    [Route("/matchregex/{Slug}")]
+    public partial class MatchesSlug
+    {
+        public virtual string Slug { get; set; }
     }
 
     public partial class MetadataRequest
@@ -209,26 +286,57 @@ namespace Check.ServiceInterface
         public virtual Guid Id { get; set; }
     }
 
-    [AutoQueryViewer(Title="Search for Rockstars", Description="Use this option to search for Rockstars!")]
+    public partial class ObjectDesign
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class ObjectDesignResponse
+    {
+        public virtual ObjectDesign data { get; set; }
+    }
+
+    [Route("/code/object", "GET")]
+    public partial class ObjectId
+        : IReturn<ObjectDesignResponse>
+    {
+        public virtual string objectName { get; set; }
+    }
+
+    public partial class PgRockstar
+        : Rockstar
+    {
+    }
+
+    [AutoQueryViewer(Description="Use this option to search for Rockstars!", Title="Search for Rockstars")]
     public partial class QueryCustomRockstars
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryCustomRockstarsFilter
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
+    [Route("/querydata/rockstars")]
+    public partial class QueryDataRockstars
+        : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/query-custom/rockstars")]
     public partial class QueryFieldRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public QueryFieldRockstars()
         {
             FirstNames = new string[]{};
             FirstNameBetween = new string[]{};
+            FirstNameContainsMulti = new string[]{};
         }
 
         public virtual string FirstName { get; set; }
@@ -239,16 +347,17 @@ namespace Check.ServiceInterface
         public virtual string LastNameEndsWith { get; set; }
         public virtual string[] FirstNameBetween { get; set; }
         public virtual string OrLastName { get; set; }
+        public virtual string[] FirstNameContainsMulti { get; set; }
     }
 
     public partial class QueryFieldRockstarsDynamic
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryGetRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public QueryGetRockstars()
         {
@@ -265,13 +374,13 @@ namespace Check.ServiceInterface
     }
 
     public partial class QueryGetRockstarsDynamic
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
     }
 
     [Route("/movies")]
     public partial class QueryMovies
-        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
     {
         public QueryMovies()
         {
@@ -287,39 +396,62 @@ namespace Check.ServiceInterface
 
     [Route("/OrRockstars")]
     public partial class QueryOrRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int? Age { get; set; }
         public virtual string FirstName { get; set; }
     }
 
     public partial class QueryOverridedCustomRockstars
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryOverridedRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
+    [Route("/pgsql/pgrockstars")]
+    public partial class QueryPostgresPgRockstars
+        : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/pgsql/rockstars")]
+    public partial class QueryPostgresRockstars
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/query/requestlogs")]
+    [Route("/query/requestlogs/{Date}")]
+    public partial class QueryRequestLogs
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+    {
+        public virtual DateTime? Date { get; set; }
+        public virtual bool ViewErrors { get; set; }
+    }
+
     [Route("/customrockstars")]
     public partial class QueryRockstarAlbums
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         public virtual int? Age { get; set; }
         public virtual string RockstarAlbumName { get; set; }
     }
 
     public partial class QueryRockstarAlbumsImplicit
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
     }
 
     public partial class QueryRockstarAlbumsLeftJoin
-        : QueryBase<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
     {
         public virtual int? Age { get; set; }
         public virtual string AlbumName { get; set; }
@@ -327,13 +459,13 @@ namespace Check.ServiceInterface
 
     [Route("/query/rockstars")]
     public partial class QueryRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsConventions
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public QueryRockstarsConventions()
         {
@@ -354,29 +486,34 @@ namespace Check.ServiceInterface
     }
 
     public partial class QueryRockstarsFilter
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsIFilter
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IFilterRockstars
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/query/rockstar-references")]
     public partial class QueryRockstarsWithReferences
-        : QueryBase<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
+        : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryUnknownRockstars
-        : QueryBase<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
     {
         public virtual int UnknownInt { get; set; }
         public virtual string UnknownProperty { get; set; }
+    }
+
+    public partial class ReturnedDto
+    {
+        public virtual int Id { get; set; }
     }
 
     public partial class RockstarAlbum
@@ -402,12 +539,12 @@ namespace Check.ServiceInterface
 
     [Route("/movies/search")]
     public partial class SearchMovies
-        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
     {
     }
 
     public partial class StreamMovies
-        : QueryBase<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
     {
         public StreamMovies()
         {
@@ -415,6 +552,12 @@ namespace Check.ServiceInterface
         }
 
         public virtual string[] Ratings { get; set; }
+    }
+
+    [Route("/test/errorview")]
+    public partial class TestErrorView
+    {
+        public virtual string Id { get; set; }
     }
 
     [Route("/testexecproc")]
@@ -425,10 +568,53 @@ namespace Check.ServiceInterface
     public partial class TestMiniverView
     {
     }
+
+    public partial class TimestampData
+    {
+        public virtual long Timestamp { get; set; }
+    }
+
+    public partial class TodayErrorLogs
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+    {
+    }
+
+    public partial class TodayLogs
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+    {
+    }
+
+    public partial class YesterdayErrorLogs
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+    {
+    }
+
+    public partial class YesterdayLogs
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+    {
+    }
 }
 
 namespace Check.ServiceModel
 {
+
+    [Route("/alwaysthrows")]
+    public partial class AlwaysThrows
+        : IReturn<AlwaysThrows>
+    {
+    }
+
+    [Route("/alwaysthrowsfilterattribute")]
+    public partial class AlwaysThrowsFilterAttribute
+        : IReturn<AlwaysThrowsFilterAttribute>
+    {
+    }
+
+    [Route("/alwaysthrowsglobalfilter")]
+    public partial class AlwaysThrowsGlobalFilter
+        : IReturn<AlwaysThrowsGlobalFilter>
+    {
+    }
 
     public partial class AsyncTest
         : IReturn<Echo>
@@ -436,6 +622,7 @@ namespace Check.ServiceModel
     }
 
     public partial class CachedEcho
+        : IReturn<Echo>
     {
         public virtual bool Reload { get; set; }
         public virtual string Sentence { get; set; }
@@ -465,6 +652,12 @@ namespace Check.ServiceModel
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
 
+    [Route("/dynamically/registered/{Name}")]
+    public partial class DynamicallyRegistered
+    {
+        public virtual string Name { get; set; }
+    }
+
     public partial class Echo
     {
         public virtual string Sentence { get; set; }
@@ -474,12 +667,20 @@ namespace Check.ServiceModel
     ///Echoes a sentence
     ///</summary>
     [Route("/echoes", "POST")]
-    [Api("Echoes a sentence")]
+    [Api(Description="Echoes a sentence")]
     public partial class Echoes
         : IReturn<Echo>
     {
-        [ApiMember(Description="The sentence to echo.", ParameterType="form", DataType="string", IsRequired=true, Name="Sentence")]
+        ///<summary>
+        ///The sentence to echo.
+        ///</summary>
+        [ApiMember(DataType="string", Description="The sentence to echo.", IsRequired=true, Name="Sentence", ParameterType="form")]
         public virtual string Sentence { get; set; }
+    }
+
+    public partial class ExcludeMetadataProperty
+    {
+        public virtual int Id { get; set; }
     }
 
     [Route("/example", "GET")]
@@ -500,14 +701,9 @@ namespace Check.ServiceModel
         public virtual MenuExample MenuExample1 { get; set; }
     }
 
-    public partial class Issue221Base<T>
+    public partial interface IEcho
     {
-        public virtual T Id { get; set; }
-    }
-
-    public partial class Issue221Long
-        : Issue221Base<long>
-    {
+        string Sentence { get; set; }
     }
 
     [DataContract]
@@ -586,13 +782,13 @@ namespace Check.ServiceModel
     }
 
     public partial class QueryPocoBase
-        : QueryBase<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
     {
         public virtual int Id { get; set; }
     }
 
     public partial class QueryPocoIntoBase
-        : QueryBase<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
     {
         public virtual int Id { get; set; }
     }
@@ -607,12 +803,61 @@ namespace Check.ServiceModel
     {
     }
 
+    [Route("/return/bytes")]
+    public partial class ReturnBytes
+        : IReturn<byte[]>
+    {
+        public ReturnBytes()
+        {
+            Data = new byte[]{};
+        }
+
+        public virtual byte[] Data { get; set; }
+    }
+
+    [Route("/return/stream")]
+    public partial class ReturnStream
+        : IReturn<Stream>
+    {
+        public ReturnStream()
+        {
+            Data = new byte[]{};
+        }
+
+        public virtual byte[] Data { get; set; }
+    }
+
+    [Route("/return/string")]
+    public partial class ReturnString
+        : IReturn<string>
+    {
+        public virtual string Data { get; set; }
+    }
+
     public partial class Rockstar
     {
+        ///<summary>
+        ///Идентификатор
+        ///</summary>
         public virtual int Id { get; set; }
+        ///<summary>
+        ///Фамилия
+        ///</summary>
         public virtual string FirstName { get; set; }
+        ///<summary>
+        ///Имя
+        ///</summary>
         public virtual string LastName { get; set; }
+        ///<summary>
+        ///Возраст
+        ///</summary>
         public virtual int? Age { get; set; }
+    }
+
+    [Route("/{Version}/userdata", "GET")]
+    public partial class SwaggerVersionTest
+    {
+        public virtual string Version { get; set; }
     }
 
     [Route("/throw404")]
@@ -646,6 +891,23 @@ namespace Check.ServiceModel
     {
         public virtual ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Route("/throwvalidation")]
+    public partial class ThrowValidation
+        : IReturn<ThrowValidationResponse>
+    {
+        public virtual int Age { get; set; }
+        public virtual string Required { get; set; }
+        public virtual string Email { get; set; }
+    }
+
+    public partial class ThrowValidationResponse
+    {
+        public virtual int Age { get; set; }
+        public virtual string Required { get; set; }
+        public virtual string Email { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
 }
 
 namespace Check.ServiceModel.Operations
@@ -655,13 +917,20 @@ namespace Check.ServiceModel.Operations
     ///AllowedAttributes Description
     ///</summary>
     [Route("/allowed-attributes", "GET")]
-    [Api("AllowedAttributes Description")]
-    [ApiResponse(400, "Your request was not understood")]
+    [Api(Description="AllowedAttributes Description")]
+    [ApiResponse(Description="Your request was not understood", StatusCode=400)]
     [DataContract]
     public partial class AllowedAttributes
     {
+        [DataMember]
+        [Required]
+        public virtual int Id { get; set; }
+
+        ///<summary>
+        ///Range Description
+        ///</summary>
         [DataMember(Name="Aliased")]
-        [ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)]
+        [ApiMember(DataType="double", Description="Range Description", IsRequired=true, ParameterType="path")]
         public virtual double Range { get; set; }
     }
 
@@ -699,6 +968,41 @@ namespace Check.ServiceModel.Operations
         public virtual string Name { get; set; }
 
         public virtual string Title { get; set; }
+    }
+
+    ///<summary>
+    ///Description for HelloACodeGenTest
+    ///</summary>
+    public partial class HelloACodeGenTest
+        : IReturn<HelloACodeGenTestResponse>
+    {
+        public HelloACodeGenTest()
+        {
+            SecondFields = new List<string>{};
+        }
+
+        ///<summary>
+        ///Description for FirstField
+        ///</summary>
+        public virtual int FirstField { get; set; }
+        public virtual List<string> SecondFields { get; set; }
+    }
+
+    [DataContract]
+    public partial class HelloACodeGenTestResponse
+    {
+        ///<summary>
+        ///Description for FirstResult
+        ///</summary>
+        [DataMember]
+        public virtual int FirstResult { get; set; }
+
+        ///<summary>
+        ///Description for SecondResult
+        ///</summary>
+        [DataMember]
+        [ApiMember(Description="Description for SecondResult")]
+        public virtual int SecondResult { get; set; }
     }
 
     public partial class HelloAllTypes
@@ -799,9 +1103,12 @@ namespace Check.ServiceModel.Operations
     ///<summary>
     ///Multi Line Class
     ///</summary>
-    [Api("Multi Line Class")]
+    [Api(Description="Multi Line Class")]
     public partial class HelloMultiline
     {
+        ///<summary>
+        ///Multi Line Property
+        ///</summary>
         [ApiMember(Description="Multi Line Property")]
         public virtual string Overflow { get; set; }
     }
@@ -999,6 +1306,10 @@ namespace Check.ServiceModel.Types
             StringList = new List<string>{};
             PocoArray = new Poco[]{};
             PocoList = new List<Poco>{};
+            NullableByteArray = new Nullable<Byte>[]{};
+            NullableByteList = new List<Nullable<Byte>>{};
+            NullableDateTimeArray = new Nullable<DateTime>[]{};
+            NullableDateTimeList = new List<Nullable<DateTime>>{};
             PocoLookup = new Dictionary<string, List<Poco>>{};
             PocoLookupMap = new Dictionary<string, List<Dictionary<String,Poco>>>{};
         }
@@ -1009,6 +1320,10 @@ namespace Check.ServiceModel.Types
         public virtual List<string> StringList { get; set; }
         public virtual Poco[] PocoArray { get; set; }
         public virtual List<Poco> PocoList { get; set; }
+        public virtual Nullable<Byte>[] NullableByteArray { get; set; }
+        public virtual List<Nullable<Byte>> NullableByteList { get; set; }
+        public virtual Nullable<DateTime>[] NullableDateTimeArray { get; set; }
+        public virtual List<Nullable<DateTime>> NullableDateTimeList { get; set; }
         public virtual Dictionary<string, List<Poco>> PocoLookup { get; set; }
         public virtual Dictionary<string, List<Dictionary<String,Poco>>> PocoLookupMap { get; set; }
     }
@@ -1042,6 +1357,7 @@ namespace Check.ServiceModel.Types
         public virtual DateTimeOffset DateTimeOffset { get; set; }
         public virtual Guid Guid { get; set; }
         public virtual Char Char { get; set; }
+        public virtual KeyValuePair<string, string> KeyValuePair { get; set; }
         public virtual DateTime? NullableDateTime { get; set; }
         public virtual TimeSpan? NullableTimeSpan { get; set; }
         public virtual List<string> StringList { get; set; }
@@ -1049,6 +1365,7 @@ namespace Check.ServiceModel.Types
         public virtual Dictionary<string, string> StringMap { get; set; }
         public virtual Dictionary<int, string> IntStringMap { get; set; }
         public virtual SubType SubType { get; set; }
+        public virtual string Point { get; set; }
         [DataMember(Name="aliasedName")]
         public virtual string OriginalName { get; set; }
     }
@@ -1113,6 +1430,12 @@ namespace Check.ServiceModel.Types
         public virtual int Id { get; set; }
     }
 
+    public partial class HelloImplementsInterface
+        : IReturn<HelloImplementsInterface>, ImplementsPoco
+    {
+        public virtual string Name { get; set; }
+    }
+
     public partial class HelloInnerTypes
         : IReturn<HelloInnerTypesResponse>
     {
@@ -1120,8 +1443,14 @@ namespace Check.ServiceModel.Types
 
     public partial class HelloInnerTypesResponse
     {
+        public HelloInnerTypesResponse()
+        {
+            InnerList = new List<TypesGroup.InnerTypeItem>{};
+        }
+
         public virtual TypesGroup.InnerType InnerType { get; set; }
         public virtual TypesGroup.InnerEnum InnerEnum { get; set; }
+        public virtual List<TypesGroup.InnerTypeItem> InnerList { get; set; }
     }
 
     public partial class HelloInterface
@@ -1177,6 +1506,28 @@ namespace Check.ServiceModel.Types
         public virtual AuthUserSession Result { get; set; }
     }
 
+    public partial class HelloStruct
+        : IReturn<HelloStruct>
+    {
+        public virtual string Point { get; set; }
+        public virtual string NullablePoint { get; set; }
+    }
+
+    public partial class HelloTuple
+        : IReturn<HelloTuple>
+    {
+        public HelloTuple()
+        {
+            Tuples2 = new List<Tuple<String,Int64>>{};
+            Tuples3 = new List<Tuple<String,Int64,Boolean>>{};
+        }
+
+        public virtual Tuple<string, long> Tuple2 { get; set; }
+        public virtual Tuple<string, long, bool> Tuple3 { get; set; }
+        public virtual List<Tuple<String,Int64>> Tuples2 { get; set; }
+        public virtual List<Tuple<String,Int64,Boolean>> Tuples3 { get; set; }
+    }
+
     public partial class HelloType
     {
         public virtual string Result { get; set; }
@@ -1194,6 +1545,11 @@ namespace Check.ServiceModel.Types
 
     public partial interface IEmptyInterface
     {
+    }
+
+    public partial interface ImplementsPoco
+    {
+        string Name { get; set; }
     }
 
     public partial interface IPoco
@@ -1258,6 +1614,18 @@ namespace Check.ServiceModel.Types
         public virtual TypeA Test { get; set; }
     }
 
+    public partial class RestrictInternal
+        : IReturn<RestrictInternal>
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public partial class RestrictLocalhost
+        : IReturn<RestrictLocalhost>
+    {
+        public virtual int Id { get; set; }
+    }
+
     [DataContract]
     public enum ScopeType
     {
@@ -1295,12 +1663,351 @@ namespace Check.ServiceModel.Types
             public virtual string Name { get; set; }
         }
 
+        public partial class InnerTypeItem
+        {
+            public virtual long Id { get; set; }
+            public virtual string Name { get; set; }
+        }
+
         public enum InnerEnum
         {
             Foo,
             Bar,
             Baz,
         }
+    }
+}
+
+namespace CheckWeb
+{
+
+    [Route("/lists", "GET")]
+    public partial class GetLists
+        : IReturn<GetLists>
+    {
+        public virtual string Id { get; set; }
+    }
+
+    ///<summary>
+    ///Api GET Id
+    ///</summary>
+    [Route("/swaggerexamples/{Id}", "GET")]
+    [Api(Description="Api GET Id")]
+    public partial class GetSwaggerExample
+        : IReturn<GetSwaggerExample>
+    {
+        public virtual int Id { get; set; }
+        public virtual string Get { get; set; }
+    }
+
+    ///<summary>
+    ///Api GET All
+    ///</summary>
+    [Route("/swaggerexamples", "GET")]
+    [Api(Description="Api GET All")]
+    public partial class GetSwaggerExamples
+        : IReturn<GetSwaggerExamples>
+    {
+        public virtual string Get { get; set; }
+    }
+
+    [Route("/index")]
+    public partial class IndexPage
+    {
+        public virtual string PathInfo { get; set; }
+    }
+
+    public enum MyColor
+    {
+        Red,
+        Green,
+        Blue,
+    }
+
+    public enum MyEnum
+    {
+        A,
+        B,
+        C,
+    }
+
+    ///<summary>
+    ///Api POST
+    ///</summary>
+    [Route("/swaggerexamples", "POST")]
+    [Api(Description="Api POST")]
+    public partial class PostSwaggerExamples
+        : IReturn<PostSwaggerExamples>
+    {
+        public virtual string Post { get; set; }
+    }
+
+    ///<summary>
+    ///Api PUT Id
+    ///</summary>
+    [Route("/swaggerexamples/{Id}", "PUT")]
+    [Api(Description="Api PUT Id")]
+    public partial class PutSwaggerExample
+        : IReturn<PutSwaggerExample>
+    {
+        public virtual int Id { get; set; }
+        public virtual string Get { get; set; }
+    }
+
+    [Route("/query/alltypes")]
+    public partial class QueryAllTypes
+        : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>
+    {
+    }
+
+    [Route("/return/text")]
+    public partial class ReturnText
+    {
+        public virtual string Text { get; set; }
+    }
+
+    [Route("/swagger-complex", "POST")]
+    public partial class SwaggerComplex
+        : IReturn<SwaggerComplexResponse>
+    {
+        public SwaggerComplex()
+        {
+            ArrayString = new string[]{};
+            ArrayInt = new int[]{};
+            ListString = new List<string>{};
+            ListInt = new List<int>{};
+            DictionaryString = new Dictionary<string, string>{};
+        }
+
+        [DataMember]
+        [ApiMember]
+        public virtual bool IsRequired { get; set; }
+
+        [DataMember]
+        [ApiMember(IsRequired=true)]
+        public virtual string[] ArrayString { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual int[] ArrayInt { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual List<string> ListString { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual List<int> ListInt { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual Dictionary<string, string> DictionaryString { get; set; }
+    }
+
+    public partial class SwaggerComplexResponse
+    {
+        public SwaggerComplexResponse()
+        {
+            ArrayString = new string[]{};
+            ArrayInt = new int[]{};
+            ListString = new List<string>{};
+            ListInt = new List<int>{};
+            DictionaryString = new Dictionary<string, string>{};
+        }
+
+        [DataMember]
+        [ApiMember]
+        public virtual bool IsRequired { get; set; }
+
+        [DataMember]
+        [ApiMember(IsRequired=true)]
+        public virtual string[] ArrayString { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual int[] ArrayInt { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual List<string> ListString { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual List<int> ListInt { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual Dictionary<string, string> DictionaryString { get; set; }
+    }
+
+    [Route("/swagger/multiattrtest", "POST")]
+    [ApiResponse(Description="Code 1", StatusCode=400)]
+    [ApiResponse(Description="Code 2", StatusCode=402)]
+    [ApiResponse(Description="Code 3", StatusCode=401)]
+    public partial class SwaggerMultiApiResponseTest
+        : IReturnVoid
+    {
+    }
+
+    public partial class SwaggerNestedModel
+    {
+        ///<summary>
+        ///NestedProperty description
+        ///</summary>
+        [ApiMember(Description="NestedProperty description")]
+        public virtual bool NestedProperty { get; set; }
+    }
+
+    public partial class SwaggerNestedModel2
+    {
+        ///<summary>
+        ///NestedProperty2 description
+        ///</summary>
+        [ApiMember(Description="NestedProperty2 description")]
+        public virtual bool NestedProperty2 { get; set; }
+
+        ///<summary>
+        ///MultipleValues description
+        ///</summary>
+        [ApiMember(Description="MultipleValues description")]
+        public virtual string MultipleValues { get; set; }
+
+        ///<summary>
+        ///TestRange description
+        ///</summary>
+        [ApiMember(Description="TestRange description")]
+        public virtual int TestRange { get; set; }
+    }
+
+    [Route("/swaggerpost/{Required1}", "GET")]
+    [Route("/swaggerpost/{Required1}/{Optional1}", "GET")]
+    [Route("/swaggerpost", "POST")]
+    public partial class SwaggerPostTest
+        : IReturn<HelloResponse>
+    {
+        [ApiMember(Verb="POST")]
+        [ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}", Verb="GET")]
+        [ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}/{Optional1}", Verb="GET")]
+        public virtual string Required1 { get; set; }
+
+        [ApiMember(Verb="POST")]
+        [ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}/{Optional1}", Verb="GET")]
+        public virtual string Optional1 { get; set; }
+    }
+
+    [Route("/swaggerpost2/{Required1}/{Required2}", "GET")]
+    [Route("/swaggerpost2/{Required1}/{Required2}/{Optional1}", "GET")]
+    [Route("/swaggerpost2", "POST")]
+    public partial class SwaggerPostTest2
+        : IReturn<HelloResponse>
+    {
+        [ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}", Verb="GET")]
+        [ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")]
+        public virtual string Required1 { get; set; }
+
+        [ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}", Verb="GET")]
+        [ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")]
+        public virtual string Required2 { get; set; }
+
+        [ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")]
+        public virtual string Optional1 { get; set; }
+    }
+
+    ///<summary>
+    ///SwaggerTest Service Description
+    ///</summary>
+    [Route("/swagger", "GET")]
+    [Route("/swagger/{Name}", "GET")]
+    [Route("/swagger/{Name}", "POST")]
+    [Api(Description="SwaggerTest Service Description")]
+    [ApiResponse(Description="Your request was not understood", StatusCode=400)]
+    [ApiResponse(Description="Oops, something broke", StatusCode=500)]
+    [DataContract]
+    public partial class SwaggerTest
+    {
+        public SwaggerTest()
+        {
+            MyDateBetween = new DateTime[]{};
+        }
+
+        ///<summary>
+        ///Color Description
+        ///</summary>
+        [DataMember]
+        [ApiMember(DataType="string", Description="Color Description", IsRequired=true, ParameterType="path")]
+        public virtual string Name { get; set; }
+
+        [DataMember]
+        [ApiMember]
+        public virtual MyColor Color { get; set; }
+
+        ///<summary>
+        ///Aliased Description
+        ///</summary>
+        [DataMember(Name="Aliased")]
+        [ApiMember(DataType="string", Description="Aliased Description", IsRequired=true)]
+        public virtual string Original { get; set; }
+
+        ///<summary>
+        ///Not Aliased Description
+        ///</summary>
+        [DataMember]
+        [ApiMember(DataType="string", Description="Not Aliased Description", IsRequired=true)]
+        public virtual string NotAliased { get; set; }
+
+        ///<summary>
+        ///Format as password
+        ///</summary>
+        [DataMember]
+        [ApiMember(DataType="password", Description="Format as password")]
+        public virtual string Password { get; set; }
+
+        [DataMember]
+        [ApiMember(AllowMultiple=true)]
+        public virtual DateTime[] MyDateBetween { get; set; }
+
+        ///<summary>
+        ///Nested model 1
+        ///</summary>
+        [DataMember]
+        [ApiMember(DataType="SwaggerNestedModel", Description="Nested model 1")]
+        public virtual SwaggerNestedModel NestedModel1 { get; set; }
+
+        ///<summary>
+        ///Nested model 2
+        ///</summary>
+        [DataMember]
+        [ApiMember(DataType="SwaggerNestedModel2", Description="Nested model 2")]
+        public virtual SwaggerNestedModel2 NestedModel2 { get; set; }
+    }
+
+    [Route("/swaggertest2", "POST")]
+    public partial class SwaggerTest2
+    {
+        [ApiMember]
+        public virtual MyEnum MyEnumProperty { get; set; }
+
+        [ApiMember(DataType="string", IsRequired=true, Name="Token", ParameterType="header")]
+        public virtual string Token { get; set; }
+    }
+
+    [Route("/test/html")]
+    public partial class TestHtml
+        : IReturn<TestHtml>
+    {
+        public virtual string Name { get; set; }
+    }
+
+    [Route("/test/html2")]
+    public partial class TestHtml2
+    {
+        public virtual string Name { get; set; }
+    }
+
+    [Route("/views/request")]
+    public partial class ViewRequest
+    {
+        public virtual string Name { get; set; }
     }
 }
 
