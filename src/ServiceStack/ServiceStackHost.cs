@@ -146,6 +146,10 @@ namespace ServiceStack
                 typeof(UnAssignRolesService),
                 typeof(NativeTypesService),
                 typeof(PostmanService),
+                typeof(TemplateHotReloadService),
+                typeof(TemplateHotReloadFilesService),
+                typeof(TemplateApiPagesService),
+                typeof(TemplateMetadataDebugService),
             };
 
             JsConfig.InitStatics();

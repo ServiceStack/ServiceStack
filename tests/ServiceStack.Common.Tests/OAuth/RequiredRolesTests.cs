@@ -4,7 +4,6 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Testing;
-using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -16,8 +15,17 @@ namespace ServiceStack.Common.Tests.OAuth
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost().Init();
-            AuthenticateService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
+            appHost = new BasicAppHost
+            {
+                ConfigureAppHost = host =>
+                {
+                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new[] { new CredentialsAuthProvider() })
+                    {
+                        IncludeRegistrationService = true,
+                    });
+                },
+
+            }.Init();
         }
 
         [OneTimeTearDown]
