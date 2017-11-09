@@ -36,7 +36,7 @@
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.106" />
     <PackageReference Include="Mysql.Data" Version="6.9.9" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />

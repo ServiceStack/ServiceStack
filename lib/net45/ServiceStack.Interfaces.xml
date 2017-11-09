@@ -784,6 +784,110 @@
             Gets the logger.
             </summary>
         </member>
+        <member name="M:ServiceStack.Logging.ILogWithContext.PushProperty(System.String,System.Object)">
+            <summary>
+            Pushes a property on the current log context, returning an <see cref="T:System.IDisposable"/>
+            to remove the property again from the async context.
+            </summary>
+            <param name="key">Property Name</param>
+            <param name="value">Property Value</param>
+            <returns>Interface for popping the property off the stack</returns>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithContextExtensions.PushProperty(ServiceStack.Logging.ILog,System.String,System.Object)">
+            <summary>
+            Pushes a property on the current log context, returning an <see cref="T:System.IDisposable"/>
+            to remove the property again from the async context.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="key">Property Name</param>
+            <param name="value">Property Value</param>
+            <returns>Interface for popping the property off the stack</returns>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithException.Debug(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Debug format message and exception.
+            </summary>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithException.Info(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an Info format message and exception.
+            </summary>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithException.Warn(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Warn format message and exception.
+            </summary>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithException.Error(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an Error format message and exception.
+            </summary>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithException.Fatal(System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Fatal format message and exception.
+            </summary>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithExceptionExtensions.Debug(ServiceStack.Logging.ILog,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Debug format message and exception.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithExceptionExtensions.Info(ServiceStack.Logging.ILog,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an Info format message and exception.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithExceptionExtensions.Warn(ServiceStack.Logging.ILog,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Warn format message and exception.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithExceptionExtensions.Error(ServiceStack.Logging.ILog,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs an Error format message and exception.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
+        <member name="M:ServiceStack.Logging.ILogWithExceptionExtensions.Fatal(ServiceStack.Logging.ILog,System.Exception,System.String,System.Object[])">
+            <summary>
+            Logs a Fatal format message and exception.
+            </summary>
+            <param name="logger">The logger</param>
+            <param name="exception">Exception related to the event.</param>
+            <param name="format">The format.</param>
+            <param name="args">The args.</param>
+        </member>
         <member name="T:ServiceStack.Logging.LogManager">
             <summary>
             Logging API for this library. You can inject your own implementation otherwise
@@ -1496,6 +1600,12 @@
             i.e. Priorities below 0 are auto-generated have less precedence.
             </summary>
         </member>
+        <member name="P:ServiceStack.RouteAttribute.Matches">
+            <summary>
+            Must match rule defined in Config.RequestRules or Regex expression with format: 
+            "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
+            </summary>
+        </member>
         <member name="T:ServiceStack.FallbackRouteAttribute">
             <summary>
             Fallback routes have the lowest precedence, i.e. after normal Routes, static files or any matching Catch All Handlers.
@@ -1753,6 +1863,11 @@
             The underlying ASP.NET or HttpListener HttpRequest
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IRequest.Response">
+            <summary>
+            The Response API for this Request
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequest.OperationName">
             <summary>
             The name of the service being called (e.g. Request DTO Name)
@@ -1761,6 +1876,11 @@
         <member name="P:ServiceStack.Web.IRequest.Verb">
             <summary>
             The Verb / HttpMethod or Action for this request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.RequestAttributes">
+            <summary>
+            Different Attribute Enum flags classifying this Request
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.RequestPreferences">
@@ -1778,6 +1898,21 @@
             The request ContentType
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IRequest.IsLocal">
+            <summary>
+            Whether this was an Internal Request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.UserAgent">
+            <summary>
+            The UserAgent for the request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.Cookies">
+            <summary>
+            A Dictionary of HTTP Cookies sent with this Request
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequest.ResponseContentType">
             <summary>
             The expected Response ContentType for this request
@@ -1793,6 +1928,21 @@
             Attach any data to this request that all filters and services can access.
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IRequest.Headers">
+            <summary>
+            The HTTP Headers in an INameValueCollection
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.QueryString">
+            <summary>
+            The ?query=string in an INameValueCollection
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.FormData">
+            <summary>
+            The HTTP POST'ed Form Data in an INameValueCollection
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequest.UseBufferedStream">
             <summary>
             Buffer the Request InputStream so it can be re-read
@@ -1804,9 +1954,19 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:ServiceStack.Web.IRequest.RawUrl">
+            <summary>
+            Relative URL containing /path/info?query=string
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.AbsoluteUri">
+            <summary>
+            The Absolute URL for the request
+            </summary>
+        </member>
         <member name="P:ServiceStack.Web.IRequest.UserHostAddress">
             <summary>
-            The Remote Ip as reported by Request.UserHostAddress
+            The Remote IP as reported by Request.UserHostAddress
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.RemoteIp">
@@ -1822,6 +1982,31 @@
         <member name="P:ServiceStack.Web.IRequest.IsSecureConnection">
             <summary>
             e.g. is https or not
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.AcceptTypes">
+            <summary>
+            Array of different Content-Types accepted by the client
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.PathInfo">
+            <summary>
+            The normalized /path/info for the request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.OriginalPathInfo">
+            <summary>
+            The original /path/info as sent
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.InputStream">
+            <summary>
+            The Request Body Input Stream
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IRequest.ContentLength">
+            <summary>
+            The size of the Request Body if provided
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.Files">
@@ -1923,7 +2108,58 @@
         </member>
         <member name="P:ServiceStack.Web.IResponse.OriginalResponse">
             <summary>
-            The underlying ASP.NET or HttpListener HttpResponse
+            The underlying ASP.NET, .NET Core or HttpListener HttpResponse
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.Request">
+            <summary>
+            The corresponding IRequest API for this Response
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.StatusCode">
+            <summary>
+            The Response Status Code
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.StatusDescription">
+            <summary>
+            The Response Status Description
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.ContentType">
+            <summary>
+            The Content-Type for this Response
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.AddHeader(System.String,System.String)">
+            <summary>
+            Add a Header to this Response
+            </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.RemoveHeader(System.String)">
+            <summary>
+            Remove an existing Header added on this Response
+            </summary>
+            <param name="name"></param>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.GetHeader(System.String)">
+            <summary>
+            Get an existing Header added to this Response
+            </summary>
+            <param name="name"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.Redirect(System.String)">
+            <summary>
+            Return a Redirect Response to the URL specified
+            </summary>
+            <param name="url"></param>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.OutputStream">
+            <summary>
+            The Response Body Output Stream
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IResponse.Dto">
@@ -1953,9 +2189,27 @@
             Response.Flush() and OutputStream.Flush() seem to have different behaviour in ASP.NET
             </summary>
         </member>
+        <member name="M:ServiceStack.Web.IResponse.FlushAsync(System.Threading.CancellationToken)">
+            <summary>
+            Flush this Response Output Stream Async
+            </summary>
+            <param name="token"></param>
+            <returns></returns>
+        </member>
         <member name="P:ServiceStack.Web.IResponse.IsClosed">
             <summary>
             Gets a value indicating whether this instance is closed.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Web.IResponse.SetContentLength(System.Int64)">
+            <summary>
+            Set the Content Length in Bytes for this Response
+            </summary>
+            <param name="contentLength"></param>
+        </member>
+        <member name="P:ServiceStack.Web.IResponse.KeepAlive">
+            <summary>
+            Whether the underlying TCP Connection for this Response should remain open
             </summary>
         </member>
         <member name="T:ServiceStack.Web.IServiceController">
@@ -2085,6 +2339,35 @@
             </param>
             <param name="notes">
                 The longer text to explain the behaviour of the REST. 
+            </param>
+            <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
+            	never <see langword="null"/>.</returns>
+        </member>
+        <member name="M:ServiceStack.Web.IServiceRoutes.Add(System.Type,System.String,System.String,System.String,System.String,System.String)">
+            <summary>
+            	Maps the specified REST path to the specified request DTO, 
+            	specifies the HTTP verbs supported by the path, and indicates
+            	the default MIME type of the returned response.
+            </summary>
+            <param name="requestType">
+            	The type of request DTO to map the path to.
+            </param>
+            <param name="restPath">The path to map the request DTO to.
+            	See <see cref="P:ServiceStack.RouteAttribute.Path">RouteAttribute.Path</see>
+            	for details on the correct format.</param>
+            <param name="verbs">
+            	The comma-delimited list of HTTP verbs supported by the path, 
+            	such as "GET,PUT,DELETE".
+            </param>
+            <param name="summary">
+                The short summary of what the REST does. 
+            </param>
+            <param name="notes">
+                The longer text to explain the behaviour of the REST. 
+            </param>
+            <param name="matches">
+                Must match rule defined in Config.RequestRules or Regex expression with format: 
+                "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
             </param>
             <returns>The same <see cref="T:ServiceStack.Web.IServiceRoutes"/> instance;
             	never <see langword="null"/>.</returns>
