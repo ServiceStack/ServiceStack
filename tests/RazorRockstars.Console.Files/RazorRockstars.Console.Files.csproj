@@ -74,8 +74,8 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.4.4.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\src\packages\MongoDB.Driver.Core.2.4.4\lib\net45\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MsgPack, Version=0.9.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167">
-      <HintPath>..\..\src\packages\MsgPack.Cli.0.9.1\lib\net45\MsgPack.dll</HintPath>
+    <Reference Include="MsgPack, Version=0.9.0.0, Culture=neutral, PublicKeyToken=a2625990d5dc0167, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\MsgPack.Cli.0.9.2\lib\net46\MsgPack.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=3.8.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\NUnit.3.8.1\lib\net45\nunit.framework.dll</HintPath>
