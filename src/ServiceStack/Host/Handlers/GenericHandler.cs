@@ -69,7 +69,7 @@ namespace ServiceStack.Host.Handlers
                 await HandleResponse(httpReq, httpRes, rawResponse);
             }
             //sync with RestHandler
-            catch (TaskCanceledException tce)
+            catch (TaskCanceledException)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
                 httpRes.EndRequest();

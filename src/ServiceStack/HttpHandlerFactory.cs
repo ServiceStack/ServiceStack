@@ -16,13 +16,11 @@ namespace ServiceStack
         public static string WebHostPhysicalPath;
         public static string DefaultRootFileName;
 
-        //internal static string ApplicationBaseUrl = null;
         private static IHttpHandler DefaultHttpHandler;
         private static RedirectHttpHandler NonRootModeDefaultHttpHandler;
         private static IHttpHandler ForbiddenHttpHandler;
         private static IHttpHandler NotFoundHttpHandler;
         private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
-        private static bool IsIntegratedPipeline;
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
@@ -31,12 +29,13 @@ namespace ServiceStack
         {
             try
             {
+                var isIntegratedPipeline = false;
 #if !NETSTANDARD2_0
                 //MONO doesn't implement this property
                 var pi = typeof(HttpRuntime).GetProperty("UsingIntegratedPipeline");
                 if (pi != null)
                 {
-                    IsIntegratedPipeline = (bool) pi.GetGetMethod().Invoke(null, TypeConstants.EmptyObjectArray);
+                    isIntegratedPipeline = (bool) pi.GetGetMethod().Invoke(null, TypeConstants.EmptyObjectArray);
                 }
 #endif
                 var appHost = HostContext.AppHost;
@@ -49,7 +48,7 @@ namespace ServiceStack
                 var hostedAtRootPath = config.HandlerFactoryPath == null;
 
                 //DefaultHttpHandler not supported in IntegratedPipeline mode
-                if (!IsIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
+                if (!isIntegratedPipeline && isAspNetHost && !hostedAtRootPath && !Env.IsMono)
                     DefaultHttpHandler = new DefaultHttpHandler();
 
                 var rootFiles = appHost.VirtualFileSources.GetRootFiles().ToList();
@@ -94,7 +93,6 @@ namespace ServiceStack
                 {
                     ForbiddenHttpHandler = new ForbiddenHttpHandler
                     {
-                        IsIntegratedPipeline = IsIntegratedPipeline,
                         WebHostPhysicalPath = WebHostPhysicalPath,
                         WebHostUrl = config.WebHostUrl,
                         DefaultRootFileName = DefaultRootFileName,
@@ -107,7 +105,6 @@ namespace ServiceStack
                 {
                     NotFoundHttpHandler = new NotFoundHttpHandler
                     {
-                        IsIntegratedPipeline = IsIntegratedPipeline,
                         WebHostPhysicalPath = WebHostPhysicalPath,
                         WebHostUrl = config.WebHostUrl,
                         DefaultRootFileName = DefaultRootFileName,

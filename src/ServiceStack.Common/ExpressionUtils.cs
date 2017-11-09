@@ -48,8 +48,7 @@ namespace ServiceStack
 
         public static Dictionary<string, object> AssignedValues<T>(this Expression<Func<T>> expr)
         {
-            var initExpr = expr?.Body as MemberInitExpression;
-            if (initExpr == null)
+            if (!(expr?.Body is MemberInitExpression initExpr))
                 return null;
 
             var to = new Dictionary<string, object>();
@@ -62,43 +61,36 @@ namespace ServiceStack
 
         public static string[] GetFieldNames<T>(this Expression<Func<T, object>> expr)
         {
-            var member = expr.Body as MemberExpression;
-            if (member != null)
+            if (expr.Body is MemberExpression member)
             {
-                if (member.Member.DeclaringType.AssignableFrom(typeof(T)))
+                if (member.Member.DeclaringType.IsAssignableFrom(typeof(T)))
                     return new[] { member.Member.Name };
 
                 var array = CachedExpressionCompiler.Evaluate(member);
-                var strEnum = array as IEnumerable<string>;
-                if (strEnum != null)
+                if (array is IEnumerable<string> strEnum)
                     return strEnum.ToArray();
             }
 
-            var newExpr = expr.Body as NewExpression;
-            if (newExpr != null)
+            if (expr.Body is NewExpression newExpr)
                 return newExpr.Arguments.OfType<MemberExpression>().Select(x => x.Member.Name).ToArray();
 
-            var init = expr.Body as MemberInitExpression;
-            if (init != null)
+            if (expr.Body is MemberInitExpression init)
                 return init.Bindings.Select(x => x.Member.Name).ToArray();
 
-            var newArray = expr.Body as NewArrayExpression;
-            if (newArray != null)
+            if (expr.Body is NewArrayExpression newArray)
             {
                 var constantExprs = newArray.Expressions.OfType<ConstantExpression>().ToList();
                 if (newArray.Expressions.Count == constantExprs.Count)
                     return constantExprs.Select(x => x.Value.ToString()).ToArray();
 
                 var array = CachedExpressionCompiler.Evaluate(newArray);
-                var strArray = array as string[];
-                if (strArray != null)
+                if (array is string[] strArray)
                     return strArray;
 
                 return array.ConvertTo<string[]>();
             }
 
-            var unary = expr.Body as UnaryExpression;
-            if (unary != null)
+            if (expr.Body is UnaryExpression unary)
             {
                 member = unary.Operand as MemberExpression;
                 if (member != null)
@@ -114,8 +106,7 @@ namespace ServiceStack
             {
                 case MemberBindingType.Assignment:
                     var assign = (MemberAssignment)binding;
-                    var constant = assign.Expression as ConstantExpression;
-                    if (constant != null)
+                    if (assign.Expression is ConstantExpression constant)
                         return constant.Value;
 
                     try

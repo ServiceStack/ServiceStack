@@ -102,7 +102,7 @@ namespace ServiceStack.Host
                 await HandleResponse(httpReq, httpRes, rawResponse);
             }
             //sync with GenericHandler
-            catch (TaskCanceledException tce)
+            catch (TaskCanceledException)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.PartialContent;
                 httpRes.EndRequest();

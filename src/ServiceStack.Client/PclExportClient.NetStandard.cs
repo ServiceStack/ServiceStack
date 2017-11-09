@@ -56,7 +56,7 @@ namespace ServiceStack
         static readonly Action<HttpWebRequest, DateTime> SetIfModifiedSinceDelegate = 
                     (Action<HttpWebRequest, DateTime>)typeof(HttpWebRequest)
                         .GetProperty("IfModifiedSince")
-                        ?.SetMethod()
+                        ?.GetSetMethod(nonPublic:true)
                         ?.CreateDelegate(typeof(Action<HttpWebRequest, DateTime>));
 
         public static PclExportClient Configure()

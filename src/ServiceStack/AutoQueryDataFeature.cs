@@ -691,7 +691,6 @@ namespace ServiceStack
 
         public Type GetFromType(Type requestDtoType)
         {
-            Type fromType;
             var intoTypeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryData<,>));
             if (intoTypeDef != null)
             {
@@ -893,7 +892,6 @@ namespace ServiceStack
         public IQueryResponse Execute(IQueryData request, IDataQuery q)
         {
             var requestDtoType = request.GetType();
-            ITypedQueryData typedQuery;
             
             Type fromType;
             Type intoType;
@@ -982,9 +980,9 @@ namespace ServiceStack
             this.context = context;
         }
 
-        public virtual IDataQuery From<T>()
+        public virtual IDataQuery From<TSource>()
         {
-            return new DataQuery<T>(context);
+            return new DataQuery<TSource>(context);
         }
 
         public abstract IEnumerable<T> GetDataSource(IDataQuery q);

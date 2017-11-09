@@ -167,7 +167,7 @@ namespace ServiceStack.NativeTypes
                 queue.Enqueue(t);
 
                 if ((!(t.IsSystemType() && !t.IsTuple())
-                        && (t.IsClass || t.IsEnum || t.IsInterface())
+                        && (t.IsClass || t.IsEnum || t.IsInterface)
                         && !t.IsGenericParameter)
                     || exportTypes.ContainsMatch(t))
                 {
@@ -207,7 +207,7 @@ namespace ServiceStack.NativeTypes
                 if (type.HasInterface(typeof(IService)) && type.GetNestedTypes(BindingFlags.Public | BindingFlags.Instance).IsEmpty())
                     continue;
 
-                if (!type.IsUserType() && !type.IsInterface()
+                if (!type.IsUserType() && !type.IsInterface
                     && !exportTypes.ContainsMatch(type))
                     continue;
 
@@ -263,7 +263,7 @@ namespace ServiceStack.NativeTypes
 
                 if (!config.ExcludeImplementedInterfaces)
                 {
-                    foreach (var iface in type.GetTypeInterfaces())
+                    foreach (var iface in type.GetInterfaces())
                     {
                         if (!iface.IsGenericType && !iface.IsSystemType() && !iface.IsServiceStackType())
                         {
@@ -332,7 +332,7 @@ namespace ServiceStack.NativeTypes
                 IsNested = type.IsNested ? true : (bool?)null,
                 IsEnum = type.IsEnum ? true : (bool?)null,
                 IsEnumInt = JsConfig.TreatEnumAsInteger || type.IsEnumFlags() ? true : (bool?)null,
-                IsInterface = type.IsInterface() ? true : (bool?)null,
+                IsInterface = type.IsInterface ? true : (bool?)null,
                 IsAbstract = type.IsAbstract ? true : (bool?)null,
             };
 
@@ -450,7 +450,7 @@ namespace ServiceStack.NativeTypes
 
         public List<MetadataAttribute> ToAttributes(Type type)
         {
-            return !(type.IsUserType() || type.IsUserEnum() || type.IsInterface()) 
+            return !(type.IsUserType() || type.IsUserEnum() || type.IsInterface) 
                     || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
                 ? null
                 : ToAttributes(type.AllAttributes());
@@ -459,7 +459,7 @@ namespace ServiceStack.NativeTypes
         public List<MetadataPropertyType> ToProperties(Type type)
         {
             var props = (!type.IsUserType() && 
-                         !type.IsInterface() && 
+                         !type.IsInterface && 
                          !type.IsTuple() &&
                          !(config.ExportTypes.ContainsMatch(type) && JsConfig.TreatValueAsRefTypes.ContainsMatch(type))) 
                 || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>))
@@ -473,7 +473,7 @@ namespace ServiceStack.NativeTypes
         {
             var to = new HashSet<string>();
 
-            if (type.IsUserType() || type.IsInterface() || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
+            if (type.IsUserType() || type.IsInterface || type.IsOrHasGenericInterfaceTypeOf(typeof(IEnumerable<>)))
             {
                 foreach (var pi in GetInstancePublicProperties(type))
                 {

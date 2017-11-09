@@ -479,11 +479,7 @@ namespace ServiceStack.ExpressionUtil
             return base.VisitDefault(node);
         }
 
-        protected
-#if !NETSTANDARD2_0
-    	override
-#endif
-    	Expression VisitDynamic(DynamicExpression node)
+        protected override Expression VisitDynamic(DynamicExpression node)
         {
             return GiveUp(node);
         }

@@ -252,7 +252,7 @@ namespace ServiceStack.Templates
                                 }
                                 else
                                 {
-                                    var fi = currType.GetFieldInfo(memberName);
+                                    var fi = currType.GetField(memberName);
                                     if (fi != null)
                                         currType = fi.FieldType;
                                 }

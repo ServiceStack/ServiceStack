@@ -13,7 +13,6 @@ namespace ServiceStack.Host.Handlers
             this.RequestName = nameof(ForbiddenHttpHandler);
         }
 
-        public bool? IsIntegratedPipeline { get; set; }
         public string WebHostPhysicalPath { get; set; }
         public string WebHostUrl { get; set; }
         public string DefaultRootFileName { get; set; }
@@ -39,8 +38,6 @@ Request.QueryString: {request.QueryString}
                 {
                     sb.AppendLine($"Request.RawUrl: {request.RawUrl}");
 
-                    if (IsIntegratedPipeline.HasValue)
-                        sb.AppendLine($"App.IsIntegratedPipeline: {IsIntegratedPipeline}");
                     if (!WebHostPhysicalPath.IsNullOrEmpty())
                         sb.AppendLine($"App.WebHostPhysicalPath: {WebHostPhysicalPath}");
                     if (!WebHostUrl.IsNullOrEmpty())

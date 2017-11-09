@@ -447,7 +447,6 @@ namespace ServiceStack
 
         public Type GetFromType(Type requestDtoType)
         {
-            Type fromType;
             var intoTypeDef = requestDtoType.GetTypeWithGenericTypeDefinitionOf(typeof(IQueryDb<,>));
             if (intoTypeDef != null)
             {
@@ -644,7 +643,6 @@ namespace ServiceStack
         public IQueryResponse Execute(IQueryDb request, ISqlExpression q)
         {
             var requestDtoType = request.GetType();
-            ITypedQueryData typedQuery;
             
             Type fromType;
             Type intoType;

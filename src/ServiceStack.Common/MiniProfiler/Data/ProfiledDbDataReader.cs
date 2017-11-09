@@ -39,11 +39,7 @@ namespace ServiceStack.MiniProfiler.Data
 
         public override object this[int ordinal] => reader[ordinal];
 
-        public
-#if !NETSTANDARD2_0
-    	override
-#endif 
-    	void Close()
+        public override void Close()
         {
             // this can occur when we're not profiling, but we've inherited from ProfiledDbCommand and are returning a
             // an unwrapped reader from the base command

@@ -19,12 +19,9 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
-        private readonly ServiceStackHost appHost;
-
         public SoapHandler(RequestAttributes soapType)
         {
             this.HandlerAttributes = soapType;
-            this.appHost = HostContext.AppHost;
         }
 
         public void SendOneWay(Message requestMsg)
@@ -106,7 +103,7 @@ namespace ServiceStack.Host.Handlers
             {
                 var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
-                var request = appHost.ApplyRequestConvertersAsync(httpReq, 
+                var request = appHost.ApplyRequestConvertersAsync(httpReq,
                     useXmlSerializerRequest
                         ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
                         : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType)
