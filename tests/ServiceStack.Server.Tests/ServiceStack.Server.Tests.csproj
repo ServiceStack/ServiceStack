@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
     <DebugType>full</DebugType>
     <AssemblyName>ServiceStack.Server.Tests</AssemblyName>
@@ -36,7 +36,7 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />

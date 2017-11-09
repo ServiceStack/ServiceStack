@@ -87,7 +87,7 @@
       <ServerFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/net45/ServiceStack.Server.*"></ServerFiles>
       <ServerCoreFiles Include="$(SrcDir)/ServiceStack.Server/bin/$(Configuration)/netstandard2.0/ServiceStack.Server.*"></ServerCoreFiles>
 
-      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/net45/ServiceStack.RabbitMq.*"></RabbitMqFiles>
+      <RabbitMqFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/net451/ServiceStack.RabbitMq.*"></RabbitMqFiles>
       <RabbitMqCoreFiles Include="$(SrcDir)/ServiceStack.RabbitMq/bin/$(Configuration)/netstandard2.0/ServiceStack.RabbitMq.*"></RabbitMqCoreFiles>
 
       <RazorFiles Include="$(SrcDir)/ServiceStack.Razor/bin/$(Configuration)/net45/ServiceStack.Razor.*"></RazorFiles>
@@ -530,8 +530,8 @@
              Targets="Build"
              Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
 
-    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45')" />
-    <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net45" />
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net451" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net451')" />
+    <Copy SourceFiles="%(RabbitMqFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/net451" />
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0')" />
     <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq/lib/netstandard2.0" />

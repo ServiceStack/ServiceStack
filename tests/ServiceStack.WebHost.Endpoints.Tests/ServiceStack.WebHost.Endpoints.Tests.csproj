@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFrameworks>net45;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <AssemblyName>ServiceStack.WebHost.Endpoints.Tests</AssemblyName>
     <PackageId>ServiceStack.WebHost.Endpoints.Tests</PackageId>
@@ -32,10 +32,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
   </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.105.2" />
     <PackageReference Include="Mysql.Data" Version="6.9.9" />
     <Reference Include="System.Xml" />

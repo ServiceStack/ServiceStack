@@ -287,7 +287,7 @@ namespace ServiceStack.RabbitMq
         {
             var channel = GetChannel();
             var consumer = new RabbitMqBasicConsumer(channel);
-            channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
+            channel.BasicConsume(QueueName, autoAck: false, consumer: consumer);
             return consumer;
         }
 
