@@ -351,7 +351,7 @@ namespace ServiceStack.Server.Tests.Messaging
                     var queueName = QueueNames<HelloResponse>.In;
                     channel.RegisterQueue(queueName);
 
-                    var basicMsg = channel.BasicGet(queueName, noAck: true);
+                    var basicMsg = channel.BasicGet(queueName, autoAck: true);
                     var props = basicMsg.BasicProperties;
 
                     Assert.That(props.Type, Is.EqualTo(typeof(HelloResponse).Name));
