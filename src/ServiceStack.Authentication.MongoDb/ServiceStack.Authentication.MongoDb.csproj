@@ -28,7 +28,7 @@
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
-    <SignAssembly>True</SignAssembly>
+    <SignAssembly>False</SignAssembly>
     <DelaySign>False</DelaySign>
     <AssemblyOriginatorKeyFile>../servicestack.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
