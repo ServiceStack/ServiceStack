@@ -164,7 +164,7 @@ var message = ""Number is "" + number;
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            Assert.That(html, Does.Match(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
 
@@ -188,7 +188,7 @@ the date: 02/06/2013 06:42:45</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            Assert.That(html, Does.Match(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
         [Test]

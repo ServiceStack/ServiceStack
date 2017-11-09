@@ -189,7 +189,7 @@ Your Message: @message
             var html = RenderToHtml(template, productArgs);
 
             Console.WriteLine(html);
-            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            Assert.That(html, Does.Match(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
 

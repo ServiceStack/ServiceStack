@@ -14,7 +14,7 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.7.1" />
+    <PackageReference Include="NUnit" Version="3.8.1" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.10.6" />
     <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.4.4" />
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">

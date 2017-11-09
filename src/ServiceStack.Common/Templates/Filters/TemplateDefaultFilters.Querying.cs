@@ -475,14 +475,14 @@ namespace ServiceStack.Templates
         {
             private readonly IEqualityComparer comparer;
             public EqualityComparerWrapper(IEqualityComparer comparer) => this.comparer = comparer;
-            public bool Equals(object x, object y) => comparer.Equals(x, y);
+            public new bool Equals(object x, object y) => comparer.Equals(x, y);
             public int GetHashCode(object obj) => comparer.GetHashCode(obj);
         }
         class EqualityComparerWrapper<T> : IEqualityComparer<object>
         {
             private readonly IEqualityComparer<T> comparer;
             public EqualityComparerWrapper(IEqualityComparer<T> comparer) => this.comparer = comparer;
-            public bool Equals(object x, object y) => comparer.Equals((T)x, (T)y);
+            public new bool Equals(object x, object y) => comparer.Equals((T)x, (T)y);
             public int GetHashCode(object obj) => comparer.GetHashCode((T)obj);
         }
 
