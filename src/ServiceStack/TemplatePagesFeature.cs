@@ -277,6 +277,9 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplateHotReloadService : Service
     {
+        public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
+        public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
+
         public ITemplatePages Pages { get; set; }
 
         public async Task<HotReloadPageResponse> Any(HotReloadPage request)
@@ -291,13 +294,26 @@ namespace ServiceStack
             if (!page.HasInit)
                 await page.Init();
 
-            var lastModified = Pages.GetLastModified(page);
+            var startedAt = DateTime.UtcNow;
+            var eTagTicks = string.IsNullOrEmpty(request.ETag) ? (long?) null : long.Parse(request.ETag);
+            var maxLastModified = DateTime.MinValue;
+            var shouldReload = false;
 
-            if (string.IsNullOrEmpty(request.ETag))
-                return new HotReloadPageResponse { ETag = lastModified.Ticks.ToString() };
+            while (DateTime.UtcNow - startedAt < LongPollDuration)
+            {
+                maxLastModified = Pages.GetLastModified(page);
 
-            var shouldReload = lastModified.Ticks > long.Parse(request.ETag);
-            return new HotReloadPageResponse { Reload = shouldReload, ETag = lastModified.Ticks.ToString() };
+                if (eTagTicks == null)
+                    return new HotReloadPageResponse { ETag = maxLastModified.Ticks.ToString() };
+
+                shouldReload = maxLastModified.Ticks > eTagTicks;
+                if (shouldReload)
+                    break;
+
+                await Task.Delay(CheckDelay);
+            }
+
+            return new HotReloadPageResponse { Reload = shouldReload, ETag = maxLastModified.Ticks.ToString() };
         }
     }
 
@@ -313,27 +329,41 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplateHotReloadFilesService : Service
     {
-        public object Any(HotReloadFiles request)
+        public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
+        public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
+
+        public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
             if (!HostContext.DebugMode)
                 throw new NotImplementedException("set 'debug true' in web.settings to enable this service");
 
             var pattern = request.Pattern ?? "*";
 
+            var startedAt = DateTime.UtcNow;
             var maxLastModified = DateTime.MinValue;
+            var shouldReload = false;
 
-            var files = VirtualFileSources.GetAllMatchingFiles(pattern);
-            foreach (var file in files)
+            while (DateTime.UtcNow - startedAt < LongPollDuration)
             {
-                file.Refresh();
-                if (file.LastModified > maxLastModified)
-                    maxLastModified = file.LastModified;
+                maxLastModified = DateTime.MinValue;
+                var files = VirtualFileSources.GetAllMatchingFiles(pattern);
+                foreach (var file in files)
+                {
+                    file.Refresh();
+                    if (file.LastModified > maxLastModified)
+                        maxLastModified = file.LastModified;
+                }
+
+                if (string.IsNullOrEmpty(request.ETag))
+                    return new HotReloadPageResponse { ETag = maxLastModified.Ticks.ToString() };
+
+                shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
+                if (shouldReload)
+                    break;
+
+                await Task.Delay(CheckDelay);
             }
 
-            if (string.IsNullOrEmpty(request.ETag))
-                return new HotReloadPageResponse { ETag = maxLastModified.Ticks.ToString() };
-
-            var shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
             return new HotReloadPageResponse { Reload = shouldReload, ETag = maxLastModified.Ticks.ToString() };
         }
     }

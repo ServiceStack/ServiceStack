@@ -33,7 +33,7 @@ var __qs = (function (qs) {
                         else
                             location.href = _replace(location.href,'scroll', scroll, scroll === 0)
                     }
-                    setTimeout(shouldReload, 1000)
+                    setTimeout(shouldReload, 1)
                 })
             }
         })
