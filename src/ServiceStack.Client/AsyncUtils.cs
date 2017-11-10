@@ -28,7 +28,6 @@ namespace ServiceStack
                 emulateHttpViaPost:client.EmulateHttpViaPost);
 
             PclExport.Instance.Config(webRequest);
-            client.CancelAsyncFn = webRequest.Abort;
 
             if (client.StoreCookies)
             {

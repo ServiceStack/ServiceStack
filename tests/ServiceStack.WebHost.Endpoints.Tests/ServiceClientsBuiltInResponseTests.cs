@@ -208,9 +208,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             //Note: HttpWebResponse is returned before any response is read, so it's ideal point for streaming in app code
 
-            var response = await client.GetAsync(new Headers { Text = "Test" });
-
-            Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
+            using (var response = await client.GetAsync(new Headers { Text = "Test" }))
+            {
+                Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
+            }
         }
 
         [Test, TestCaseSource("RestClients")]

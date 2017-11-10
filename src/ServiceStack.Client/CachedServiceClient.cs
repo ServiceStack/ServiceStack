@@ -360,11 +360,6 @@ namespace ServiceStack
             return client.CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request);
         }
 
-        public void CancelAsync()
-        {
-            client.CancelAsync();
-        }
-
         public void SendOneWay(object requestDto)
         {
             client.SendOneWay(requestDto);
