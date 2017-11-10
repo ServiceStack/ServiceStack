@@ -225,7 +225,7 @@ namespace ServiceStack
                 {
                     webReq.ContentType = ContentType;
 
-                    using (var requestStream = await webReq.GetRequestStreamAsync())
+                    using (var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false))
                     {
                         token.ThrowIfCancellationRequested();
                         if (request != null)
@@ -245,7 +245,7 @@ namespace ServiceStack
 
             try
             {
-                webRes = (HttpWebResponse) await webReq.GetResponseAsync();
+                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigureAwait(false);
                 {
                     token.ThrowIfCancellationRequested();
 
@@ -264,7 +264,7 @@ namespace ServiceStack
                     int read;
                     var ms = MemoryStreamFactory.GetStream();
 
-                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token)) != 0)
+                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigureAwait(false)) != 0)
                     {
                         ms.Write(bufferRead, 0, read);
                         totalRead += read;
@@ -367,7 +367,7 @@ namespace ServiceStack
                                 refreshClient.AddBearerToken(this.BearerToken = accessToken);
                             }
 
-                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true);
+                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
                         }
 
                         OnAuthenticationRequired?.Invoke();
@@ -379,7 +379,7 @@ namespace ServiceStack
 
                         HandleAuthException(ex, webReq);
 
-                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true);
+                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
                     }
                     catch (WebServiceException)
                     {
