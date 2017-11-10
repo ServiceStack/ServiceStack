@@ -9,7 +9,6 @@ using ServiceStack.MiniProfiler.Data;
 namespace ServiceStack.MiniProfiler
 {
 
-    // TODO: refactor this out into MiniProfiler
     /// <summary>
     /// Contains helper code to time sql statements.
     /// </summary>

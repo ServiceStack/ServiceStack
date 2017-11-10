@@ -6,15 +6,12 @@ using System.IO;
 using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.Text;
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
 using System.Security.Cryptography;
-#endif
 
 namespace ServiceStack
 {
     public static class StreamExt
     {
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL)
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
@@ -131,7 +128,6 @@ namespace ServiceStack
         {
             return GZipProvider.GUnzip(gzBuffer);
         }
-#endif
 
         public static string ToUtf8String(this Stream stream)
         {

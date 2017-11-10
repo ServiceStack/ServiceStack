@@ -766,11 +766,7 @@ namespace ServiceStack
 
         public static WebServiceException ToWebServiceException(WebException webEx, Func<Stream, object> parseDtoFn, string contentType)
         {
-            if (webEx?.Response != null
-#if !(SL5 || PCL || NETSTANDARD1_1)
-                && webEx.Status == WebExceptionStatus.ProtocolError
-#endif
-            )
+            if (webEx?.Response != null && webEx.Status == WebExceptionStatus.ProtocolError)
             {
                 var errorResponse = (HttpWebResponse)webEx.Response;
                 log.Error(webEx);
@@ -1800,7 +1796,7 @@ namespace ServiceStack
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
-#if NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             var compressionType = webResponse.Headers[HttpHeaders.ContentEncoding];
 #endif
 
@@ -1811,14 +1807,14 @@ namespace ServiceStack
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-#if NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
                 return (TResponse)(object)webResponse.GetResponseStream().Decompress(compressionType);
 #else
                 return (TResponse)(object)webResponse.GetResponseStream();
 #endif
             }
 
-#if NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             using (var responseStream = webResponse.GetResponseStream().Decompress(compressionType))
 #else
             using (var responseStream = webResponse.GetResponseStream())
@@ -1846,7 +1842,6 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {
@@ -1870,7 +1865,6 @@ namespace ServiceStack
                 return client.PostFileWithRequest<TResponse>(relativeOrAbsoluteUrl, fileStream, fileToUpload.Name, request, fieldName);
             }
         }
-#endif
 
         public static void PopulateRequestMetadata(this IHasSessionId client, object request)
         {

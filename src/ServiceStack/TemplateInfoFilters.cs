@@ -30,15 +30,13 @@ namespace ServiceStack
         public bool envIsAndroid() => Env.IsAndroid;
         public bool envIsIOS() => Env.IsIOS;
 
-#if NET45
+        public string envCurrentDirectory() => Environment.CurrentDirectory;
         public bool envIsWindows() => Env.IsWindows;
         public bool envIsLinux() => Env.IsLinux;
         public bool envIsOSX() => Env.IsOSX;
-
         public IDictionary envVariables() => Environment.GetEnvironmentVariables();
         public OperatingSystem envOSVersion() => Environment.OSVersion;
         public string envCommandLine() => Environment.CommandLine;
-        public string envCurrentDirectory() => Environment.CurrentDirectory;
         public string envMachineName() => Environment.MachineName;
         public string envSystemDirectory() => Environment.SystemDirectory;
         public string envUserDomainName() => Environment.UserDomainName;
@@ -47,12 +45,8 @@ namespace ServiceStack
         public bool envIs64BitProcess() => Environment.Is64BitProcess;
         public Version envVersion() => Environment.Version;
         public string[] envLogicalDrives() => Environment.GetLogicalDrives();
-#elif NETSTANDARD1_3
-        public string envCurrentDirectory() => Directory.GetCurrentDirectory();
-        public bool envIsWindows() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows);
-        public bool envIsLinux() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Linux);
-        public bool envIsOSX() => System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX);
 
+#if NETSTANDARD2_0
         public string envFrameworkDescription() => System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription;
         public string envOSDescription() => System.Runtime.InteropServices.RuntimeInformation.OSDescription;
         public System.Runtime.InteropServices.Architecture envOSArchitecture() => System.Runtime.InteropServices.RuntimeInformation.OSArchitecture;

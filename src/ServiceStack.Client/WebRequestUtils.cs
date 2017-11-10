@@ -165,18 +165,6 @@ namespace ServiceStack
             client.Headers[HttpHeaders.Authorization] = "Bearer " + bearerToken;
         }
 
-#if NETFX_CORE
-        public static string CalculateMD5Hash(string input)
-        {
-            var alg = HashAlgorithmProvider.OpenAlgorithm("MD5");
-            IBuffer buff = CryptographicBuffer.ConvertStringToBinary(input, BinaryStringEncoding.Utf8);
-            var hashed = alg.HashData(buff);
-            var res = CryptographicBuffer.EncodeToHexString(hashed);
-            return res.ToLower();
-        }
-#endif
-
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
         public static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
@@ -193,7 +181,6 @@ namespace ServiceStack
             }
             return StringBuilderCache.ReturnAndFree(sb).ToLower(); // The RFC requires the hex values are lowercase
         }
-#endif
 
         internal static string padNC(int num)
         {
@@ -223,9 +210,6 @@ namespace ServiceStack
 
         internal static void AddDigestAuth(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
-            //Silverlight MD5 impl at: http://archive.msdn.microsoft.com/SilverlightMD5
-
-#if !(SL5 || PCL || NETSTANDARD1_1)
             // by adamfowleruk
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
@@ -244,14 +228,10 @@ namespace ServiceStack
 
             string header =
                 "Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" +
-                    client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response +
-                    "\", opaque=\"" + authInfo.opaque + "\"";
+                client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response +
+                "\", opaque=\"" + authInfo.opaque + "\"";
 
             client.Headers[HttpHeaders.Authorization] = header;
-
-#else 
-            throw new NotImplementedException();
-#endif
         }
 
         /// <summary>
@@ -261,7 +241,7 @@ namespace ServiceStack
 
         public static string GetResponseDtoName(Type requestType)
         {
-#if NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             return requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name;
 #else        
             return requestType.FullName + ResponseDtoSuffix;
@@ -292,7 +272,7 @@ namespace ServiceStack
                 return typeof (ErrorResponse);
 
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
-#if NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
             var responseDtoType = Type.GetType(GetResponseDtoName(requestType));
 #else                        
             var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(requestType));

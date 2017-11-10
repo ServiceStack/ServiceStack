@@ -1,4 +1,3 @@
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.IO;
 using System.Runtime.Serialization;
@@ -8,7 +7,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Serialization
 {
-    public partial class XmlSerializableSerializer : IStringSerializer 
+    public partial class XmlSerializableSerializer : IStringSerializer
     {
         public static XmlSerializableSerializer Instance = new XmlSerializableSerializer();
 
@@ -23,7 +22,7 @@ namespace ServiceStack.Serialization
                         var ser = new XmlSerializerWrapper(from.GetType());
                         ser.WriteObject(xw, from);
                     }
-                     
+
                     ms.Position = 0;
                     using (var reader = new StreamReader(ms))
                     {
@@ -38,4 +37,3 @@ namespace ServiceStack.Serialization
         }
     }
 }
-#endif

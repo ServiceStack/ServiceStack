@@ -13,7 +13,6 @@ namespace ServiceStack.Serialization
             if (TextSerializer != null)
                 return TextSerializer.DeserializeFromString(json, returnType);
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (!UseBcl)
                 return JsonSerializer.DeserializeFromString(json, returnType);
 
@@ -32,9 +31,6 @@ namespace ServiceStack.Serialization
             {
                 throw new SerializationException("JsonDataContractDeserializer: Error converting to type: " + ex.Message, ex);
             }
-#else
-            return JsonSerializer.DeserializeFromString(json, returnType);
-#endif
         }
 
         public T DeserializeFromString<T>(string json)
@@ -50,37 +46,32 @@ namespace ServiceStack.Serialization
 
         public T DeserializeFromStream<T>(Stream stream)
         {
-            var streamSerializer = TextSerializer as IStringStreamSerializer;
-            if (streamSerializer != null)
+            if (TextSerializer is IStringStreamSerializer streamSerializer)
             {
                 return streamSerializer.DeserializeFromStream<T>(stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(typeof(T));
-                return (T)serializer.ReadObject(stream);				
+                return (T)serializer.ReadObject(stream);
             }
-#endif
+
             return JsonSerializer.DeserializeFromStream<T>(stream);
         }
 
         public object DeserializeFromStream(Type type, Stream stream)
         {
-            var streamSerializer = TextSerializer as IStringStreamSerializer;
-            if (streamSerializer != null)
+            if (TextSerializer is IStringStreamSerializer streamSerializer)
             {
                 return streamSerializer.DeserializeFromStream(type, stream);
             }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD2_0)
             if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
                 return serializer.ReadObject(stream);
             }
-#endif
 
             return JsonSerializer.DeserializeFromStream(type, stream);
         }

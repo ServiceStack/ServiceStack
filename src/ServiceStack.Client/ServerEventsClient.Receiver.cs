@@ -213,11 +213,6 @@ namespace ServiceStack
 
         private static ActionInvokerFn CreateExecFn(Type requestType, MethodInfo mi)
         {
-            //TODO optimize for PCL clients
-#if PCL
-            return (instance, request) =>
-                mi.Invoke(instance, new[] { request });
-#else
             var receiverType = typeof(T);
 
             var receiverParam = Expression.Parameter(typeof(object), "receiverObj");
@@ -247,16 +242,10 @@ namespace ServiceStack
                     return null;
                 };
             }
-#endif
         }
 
         private static ActionInvokerFn CreateExecFn(MethodInfo mi)
         {
-            //TODO optimize for PCL clients
-#if PCL
-            return (instance, request) =>
-                mi.Invoke(instance, new Object[0]);
-#else
             var receiverType = typeof(T);
 
             var receiverParam = Expression.Parameter(typeof(object), "receiverObj");
@@ -282,7 +271,6 @@ namespace ServiceStack
                     return null;
                 };
             }
-#endif
         }
     }
 

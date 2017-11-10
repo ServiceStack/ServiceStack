@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !(PCL || SL5 || NETSTANDARD1_1) || __IOS__ || ANDROID
-
 using System;
 using System.IO;
 using System.Security.Cryptography;
@@ -452,72 +450,24 @@ namespace ServiceStack
 
     public static class PlatformRsaUtils
     {
-#if NETSTANDARD2_0
-        public static void FromXmlString(this RSA rsa, string xml)
-        {
-            var csp = ExtractFromXml(xml);
-            rsa.ImportParameters(csp);
-        }
-
-        public static string ToXmlString(this RSA rsa, bool includePrivateParameters)
-        {
-            return ExportToXml(rsa.ExportParameters(includePrivateParameters), includePrivateParameters);
-        }
-
-        public static HashAlgorithmName ToHashAlgorithmName(string hashAlgorithm)
-        {
-            switch (hashAlgorithm.ToUpper())
-            {
-                case "MD5":
-                    return HashAlgorithmName.MD5;
-                case "SHA1":
-                     return HashAlgorithmName.SHA1;
-                case "SHA256":
-                     return HashAlgorithmName.SHA256;
-                case "SHA384":
-                     return HashAlgorithmName.SHA384;
-                case "SHA512":
-                     return HashAlgorithmName.SHA512;
-                default:
-                     throw new NotImplementedException(hashAlgorithm);
-            }
-        }
-#endif
-
         public static byte[] Encrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Encrypt(bytes, RsaUtils.DoOAEPPadding);
-#else
-            return rsa.Encrypt(bytes, RSAEncryptionPadding.OaepSHA1);
-#endif
         }
 
         public static byte[] Decrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Decrypt(bytes, RsaUtils.DoOAEPPadding);
-#else
-            return rsa.Decrypt(bytes, RSAEncryptionPadding.OaepSHA1);
-#endif
         }
 
         public static byte[] SignData(this RSA rsa, byte[] bytes, string hashAlgorithm)
         {
-#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).SignData(bytes, hashAlgorithm);
-#else
-            return rsa.SignData(bytes, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
-#endif
         }
 
         public static bool VerifyData(this RSA rsa, byte[] bytes, byte[] signature, string hashAlgorithm)
         {
-#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).VerifyData(bytes, hashAlgorithm, signature);
-#else
-            return rsa.VerifyData(bytes, signature, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
-#endif
         }
 
         public static RSAParameters ExtractFromXml(string xml)
@@ -599,4 +549,3 @@ namespace ServiceStack
         }
     }
 }
-#endif

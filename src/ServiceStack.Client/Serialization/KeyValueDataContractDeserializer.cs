@@ -1,4 +1,3 @@
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.Collections.Generic;
 using ServiceStack.Web;
@@ -15,13 +14,13 @@ namespace ServiceStack.Serialization
         public object Parse(IDictionary<string, string> keyValuePairs, Type returnType)
         {
             return GetOrAddStringMapTypeDeserializer(returnType)
-                    .CreateFromMap(keyValuePairs);
+                .CreateFromMap(keyValuePairs);
         }
 
         public object Parse(INameValueCollection nameValues, Type returnType)
         {
             return GetOrAddStringMapTypeDeserializer(returnType)
-                        .CreateFromMap(nameValues);
+                .CreateFromMap(nameValues);
         }
 
         private StringMapTypeDeserializer GetOrAddStringMapTypeDeserializer(Type returnType)
@@ -45,4 +44,3 @@ namespace ServiceStack.Serialization
         }
     }
 }
-#endif

@@ -56,13 +56,10 @@ namespace ServiceStack.Auth
 
         public void GetHashAndSaltString(string Data, out string Hash, out string Salt)
         {
-            byte[] HashOut;
-            byte[] SaltOut;
+            GetHashAndSalt(Encoding.UTF8.GetBytes(Data), out var hashOut, out var saltOut);
 
-            GetHashAndSalt(Encoding.UTF8.GetBytes(Data), out HashOut, out SaltOut);
-
-            Hash = Convert.ToBase64String(HashOut);
-            Salt = Convert.ToBase64String(SaltOut);
+            Hash = Convert.ToBase64String(hashOut);
+            Salt = Convert.ToBase64String(saltOut);
         }
 
         public bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt)

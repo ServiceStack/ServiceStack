@@ -15,11 +15,10 @@ namespace ServiceStack
             if (endpointUrl.IndexOf("format=jsv", StringComparison.Ordinal) >= 0)
                 return new JsvServiceClient(endpointUrl);
 
-#if !LITE
             if (endpointUrl.IndexOf("format=xml", StringComparison.Ordinal) >= 0)
                 return new XmlServiceClient(endpointUrl);
-#endif
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL || LITE || NETSTANDARD1_1 || NETSTANDARD2_0)
+
+#if NET45
             if (endpointUrl.IndexOf("format=soap11", StringComparison.Ordinal) >= 0)
                 return new Soap11ServiceClient(endpointUrl);
 

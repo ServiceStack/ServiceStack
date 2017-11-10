@@ -36,13 +36,9 @@ using ServiceStack.Text;
 using ServiceStack.Web;
 using System.Text;
 
-#if (PCL || SL5 || NETSTANDARD1_1) && !NET45
-using ServiceStack.Pcl;
-#else
 using System.Collections.Specialized;
-#endif
 
-#if NETFX_CORE || ANDROID || __IOS__ || __MAC__ || PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD2_0
+#if NETSTANDARD2_0
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -72,10 +68,7 @@ namespace ServiceStack.Pcl
             }
         }
 
-        public static NameValueCollection ParseQueryString(string query)
-        {
-            return ParseQueryString(query, Encoding.UTF8);
-        }
+        public static NameValueCollection ParseQueryString(string query) => ParseQueryString(query, Encoding.UTF8);
 
         public static NameValueCollection ParseQueryString(string query, Encoding encoding)
         {
@@ -160,122 +153,41 @@ namespace ServiceStack
     public class NameValueCollectionWrapper : INameValueCollection
     {
         private readonly NameValueCollection data;
+        public NameValueCollectionWrapper(NameValueCollection data) => this.data = data;
 
-        public NameValueCollectionWrapper(NameValueCollection data)
-        {
-            this.data = data;
-        }
+        public IEnumerator GetEnumerator() => data.GetEnumerator();
+        public object Original => data;
+        public void Add(string name, string value) => data.Add(name, value);
+        public void Clear() => data.Clear();
+        public void CopyTo(Array dest, int index) => data.CopyTo(dest, index);
+        public string Get(int index) => data.Get(index);
+        public string Get(string name) => data.Get(name);
+        public string GetKey(int index) => data.GetKey(index);
+        public string[] GetValues(string name) => data.GetValues(name);
+        public bool HasKeys() => data.HasKeys();
+        public void Remove(string name) => data.Remove(name);
+        public void Set(string name, string value) => data.Set(name, value);
 
-        public IEnumerator GetEnumerator()
-        {
-            return data.GetEnumerator();
-        }
-
-        public object Original
-        {
-            get { return data; }
-        }
-
-        public void Add(string name, string value)
-        {
-            data.Add(name, value);
-        }
-
-        public void Clear()
-        {
-            data.Clear();
-        }
-
-        public void CopyTo(Array dest, int index)
-        {
-            data.CopyTo(dest, index);
-        }
-
-        public string Get(int index)
-        {
-            return data.Get(index);
-        }
-
-        public string Get(string name)
-        {
-            return data.Get(name);
-        }
-
-        public string GetKey(int index)
-        {
-            return data.GetKey(index);
-        }
-
-        public string[] GetValues(string name)
-        {
-            return data.GetValues(name);
-        }
-
-        public bool HasKeys()
-        {
-            return data.HasKeys();
-        }
-
-        public void Remove(string name)
-        {
-            data.Remove(name);
-        }
-
-        public void Set(string name, string value)
-        {
-            data.Set(name, value);
-        }
-
-        public string this[int index]
-        {
-            get { return data[index]; }
-        }
-
+        public string this[int index] => data[index];
         public string this[string name]
         {
-            get { return data[name]; }
-            set { data[name] = value; }
+            get => data[name];
+            set => data[name] = value;
         }
 
-        public string[] AllKeys
-        {
-            get { return data.AllKeys; }
-        }
-
-        public int Count
-        {
-            get { return data.Count; }
-        }
-
+        public string[] AllKeys => data.AllKeys;
+        public int Count => data.Count;
         public bool IsReadOnly { get; set; }
-
-        public object SyncRoot
-        {
-            get { return data; }
-        }
-
-        public bool IsSynchronized
-        {
-            get { return false; }
-        }
-
-        public override string ToString()
-        {
-            return data.ToString();
-        }
+        public object SyncRoot => data;
+        public bool IsSynchronized => false;
+        public override string ToString() => data.ToString();
     }
 
     public static class NameValueCollectionWrapperExtensions
     {
-        public static NameValueCollectionWrapper InWrapper(this NameValueCollection nvc)
-        {
-            return new NameValueCollectionWrapper(nvc ?? new NameValueCollection());
-        }
+        public static NameValueCollectionWrapper InWrapper(this NameValueCollection nvc) => new NameValueCollectionWrapper(nvc ?? new NameValueCollection());
 
-        public static NameValueCollection ToNameValueCollection(this INameValueCollection nvc)
-        {
-            return (NameValueCollection)nvc.Original;
-        }
+        public static NameValueCollection ToNameValueCollection(this INameValueCollection nvc) => (NameValueCollection)nvc.Original;
 
         public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
         {
