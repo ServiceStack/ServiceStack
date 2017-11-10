@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -204,7 +205,7 @@ namespace ServiceStack.Host.Handlers
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
-#if !NETSTANDARD2_0
+#if NET45
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
@@ -254,7 +255,7 @@ namespace ServiceStack.Host.Handlers
                 .ContinueWith(t => httpRes.EndHttpHandlerRequest(skipHeaders: true));
         }
 
-        public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
+        public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();
             for (var i = 0; i < nvc.Count; i++)
@@ -264,7 +265,7 @@ namespace ServiceStack.Host.Handlers
             return map;
         }
 
-        public static string ToString(INameValueCollection nvc)
+        public static string ToString(NameValueCollection nvc)
         {
             var map = ToDictionary(nvc);
             return TypeSerializer.SerializeToString(map);
@@ -272,8 +273,7 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
         {
-            int virtualPathCount = 0;
-            int.TryParse(httpReq.QueryString["virtualPathCount"], out virtualPathCount);
+            int.TryParse(httpReq.QueryString["virtualPathCount"], out var virtualPathCount);
             var hostType = HostContext.AppHost.GetType();
 
             var ipv4Addr = "";

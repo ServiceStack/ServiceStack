@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using ServiceStack.Configuration;
@@ -33,13 +34,13 @@ namespace ServiceStack.Host
         {
             Message = message ?? new Message();
             ContentType = this.ResponseContentType = MimeTypes.Json;
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = new NameValueCollection();
 
             if (Message.Body != null)
             {
                 PathInfo = "/json/oneway/" + OperationName;
                 RawUrl = AbsoluteUri = "mq://" + PathInfo;
-                Headers = new NameValueCollectionWrapper(Message.ToHeaders().ToNameValueCollection());
+                Headers = Message.ToHeaders().ToNameValueCollection();
             }
 
             this.IsLocal = true;
@@ -49,8 +50,8 @@ namespace ServiceStack.Host
             this.Verb = HttpMethods.Post;
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
-            this.FormData = PclExportClient.Instance.NewNameValueCollection();
+            this.QueryString = new NameValueCollection();
+            this.FormData = new NameValueCollection();
             this.Files = TypeConstants<IHttpFile>.EmptyArray;
         }
 
@@ -108,11 +109,11 @@ namespace ServiceStack.Host
         
         public Uri UrlReferrer { get; set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
-        public INameValueCollection QueryString { get; set; }
+        public NameValueCollection QueryString { get; set; }
 
-        public INameValueCollection FormData { get; set; }
+        public NameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 

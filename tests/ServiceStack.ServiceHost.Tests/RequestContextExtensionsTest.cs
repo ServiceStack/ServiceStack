@@ -1,10 +1,6 @@
 ﻿using NUnit.Framework;
 using ServiceStack.Formats;
-using ServiceStack.Host;
-using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack.ServiceHost.Tests
 {

@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD2_0
+﻿#if NET45
 
 using System;
 using System.Collections.Specialized;
@@ -70,11 +70,11 @@ namespace ServiceStack.Host
 
         public override NameValueCollection Params => Original.Params;
 
-        public override NameValueCollection QueryString => request.QueryString.ToNameValueCollection();
+        public override NameValueCollection QueryString => request.QueryString;
 
-        public override NameValueCollection Form => request.FormData.ToNameValueCollection();
+        public override NameValueCollection Form => request.FormData;
 
-        public override NameValueCollection Headers => request.Headers.ToNameValueCollection();
+        public override NameValueCollection Headers => request.Headers;
 
         public override NameValueCollection ServerVariables => Original.ServerVariables;
     }

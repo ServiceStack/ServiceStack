@@ -66,18 +66,14 @@ namespace ServiceStack
             return Provider;
         }
 
-        public override INameValueCollection NewNameValueCollection()
-        {
-            return new NameValueCollectionWrapper(new NameValueCollection());
-        }
-
         public override void SetIfModifiedSince(HttpWebRequest webReq, DateTime lastModified)
         {
             //support for Xamarin and .NET platform
             if (SetIfModifiedSinceDelegate != null)
             {
                 SetIfModifiedSinceDelegate(webReq, lastModified);
-            } else
+            }
+            else
             {
 #if NETSTANDARD2_0
                 if (lastModified == DateTime.MinValue)

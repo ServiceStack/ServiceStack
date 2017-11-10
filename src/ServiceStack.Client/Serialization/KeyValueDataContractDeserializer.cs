@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ServiceStack.Web;
+using System.Collections.Specialized;
 
 namespace ServiceStack.Serialization
 {
@@ -17,7 +17,7 @@ namespace ServiceStack.Serialization
                 .CreateFromMap(keyValuePairs);
         }
 
-        public object Parse(INameValueCollection nameValues, Type returnType)
+        public object Parse(NameValueCollection nameValues, Type returnType)
         {
             return GetOrAddStringMapTypeDeserializer(returnType)
                 .CreateFromMap(nameValues);

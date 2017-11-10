@@ -2,99 +2,35 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Specialized;
 using Microsoft.AspNetCore.Http;
-using ServiceStack.Web;
 
 namespace ServiceStack.NetCore
 {
-    public class NetCoreHeadersCollection : INameValueCollection
+    public class NetCoreHeadersCollection : NameValueCollection
     {
-        IHeaderDictionary original;
+        readonly IHeaderDictionary original;
+        public NetCoreHeadersCollection(IHeaderDictionary original) => this.original = original;
 
-        public NetCoreHeadersCollection(IHeaderDictionary original)
-        {
-            this.original = original;
-        }
-
-        #region ICollection implementation
-        public int Count => original.Count;
-
+        public override int Count => original.Count;
         public bool IsSynchronized => false;
-
         public object SyncRoot => original;
-
-        public void CopyTo(Array array, int index)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            foreach (var pair in original)
-                yield return pair.Key;
-        }
-        #endregion
+        public override IEnumerator GetEnumerator() => original.GetEnumerator();
 
         public object Original => original;
 
-        public string this[int index] => Get(index);
+        public override string[] AllKeys => original.Keys.ToArray();
+        public override string Get(int index) => Get(GetKey(index));
+        public override string Get(string name) => name != null ? (string)original[name] : null;
+        public override string GetKey(int index) => AllKeys[index];
+        public override string[] GetValues(string name) => original[name];
+        public new bool HasKeys() => original.Count > 0;
 
-        public string this[string name] 
-        {
-            get { return original[name]; }
-
-            set { throw new NotSupportedException(); }
-        }
-
-        public string[] AllKeys => original.Keys.ToArray();
-
-        public void Add(string name, string value)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Clear()
-        {
-            throw new NotSupportedException();
-        }
-
-        public string Get(int index)
-        {
-            return Get(GetKey(index));
-        }
-
-        public string Get(string name)
-        {
-            return name != null ? (string)original[name] : null;
-        }
-
-        public string GetKey(int index)
-        {
-            return AllKeys[index];
-        }
-        
-        public string[] GetValues(string name)
-        {
-            return original[name];
-        }
-
-        public bool HasKeys()
-        {
-            return original.Count > 0;
-        }
-
-        public void Remove(string name)
-        {
-            throw new NotSupportedException();
-        }
-
-        public void Set(string key, string value)
-        {
-            throw new NotSupportedException();
-        }
-    } 
+        public override void Add(string name, string value) => throw new NotSupportedException();
+        public override void Clear() => throw new NotSupportedException();
+        public override void Remove(string name) => throw new NotSupportedException();
+        public override void Set(string key, string value) => throw new NotSupportedException();
+    }
 }
 
 #endif

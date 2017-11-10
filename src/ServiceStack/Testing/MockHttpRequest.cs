@@ -21,9 +21,9 @@ namespace ServiceStack.Testing
 
         public MockHttpRequest()
         {
-            this.FormData = PclExportClient.Instance.NewNameValueCollection();
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
-            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
+            this.FormData = new NameValueCollection();
+            this.Headers = new NameValueCollection();
+            this.QueryString = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
             this.Response = new MockHttpResponse(this);
@@ -40,8 +40,8 @@ namespace ServiceStack.Testing
             this.ResponseContentType = contentType;
             this.PathInfo = pathInfo;
             this.InputStream = inputStream;
-            this.QueryString = queryString.InWrapper();
-            this.FormData = formData.InWrapper();
+            this.QueryString = queryString;
+            this.FormData = formData;
         }
 
         public object OriginalRequest => null;
@@ -90,11 +90,11 @@ namespace ServiceStack.Testing
 
         public bool HasExplicitResponseContentType { get; private set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
-        public INameValueCollection QueryString { get; set; }
+        public NameValueCollection QueryString { get; set; }
 
-        public INameValueCollection FormData { get; set; }
+        public NameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 

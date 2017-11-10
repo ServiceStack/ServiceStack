@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -167,14 +168,14 @@ namespace ServiceStack.Host.HttpListener
 
         public string UserAgent => request.UserAgent;
 
-        private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = request.Headers);
 
-        private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query)));
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = HttpUtility.ParseQueryString(request.Url.Query));
 
-        private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(this.Form));
+        private NameValueCollection formData;
+        public NameValueCollection FormData => formData ?? (formData = this.Form);
 
         public bool IsLocal => request.IsLocal;
 

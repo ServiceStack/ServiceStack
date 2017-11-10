@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
@@ -183,14 +184,14 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = request.Headers);
 
-        private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString));
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = request.QueryString);
 
-        private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(request.Form));
+        private NameValueCollection formData;
+        public NameValueCollection FormData => formData ?? (formData = request.Form);
 
         public string GetRawBody()
         {

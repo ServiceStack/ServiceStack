@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using ServiceStack.Web;
@@ -63,25 +64,10 @@ namespace ServiceStack.ServiceHost.Tests
 
         public bool HasExplicitResponseContentType { get; private set; }
 
-        public Dictionary<string, object> Items
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public INameValueCollection Headers
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public INameValueCollection QueryString
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public INameValueCollection FormData
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public Dictionary<string, object> Items => throw new NotImplementedException();
+        public NameValueCollection Headers => throw new NotImplementedException();
+        public NameValueCollection QueryString => throw new NotImplementedException();
+        public NameValueCollection FormData => throw new NotImplementedException();
 
         public bool UseBufferedStream { get; set; }
 

@@ -2,6 +2,7 @@
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -59,7 +60,7 @@ namespace ServiceStack
 
         public bool StoreCookies { get; set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
         public CookieContainer CookieContainer { get; set; }
 

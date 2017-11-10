@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-        public INameValueCollection Headers { get; private set; }
+        public NameValueCollection Headers { get; private set; }
 
         public void SetBaseUri(string baseUri)
         {
@@ -82,7 +83,7 @@ namespace ServiceStack
         public JsonHttpClient()
         {
             this.Format = "json";
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = new NameValueCollection();
             this.CookieContainer = new CookieContainer();
 
             JsConfig.InitStatics();

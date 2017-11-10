@@ -150,60 +150,8 @@ namespace ServiceStack.Pcl
 
 namespace ServiceStack
 {
-    public class NameValueCollectionWrapper : INameValueCollection
-    {
-        private readonly NameValueCollection data;
-        public NameValueCollectionWrapper(NameValueCollection data) => this.data = data;
-
-        public IEnumerator GetEnumerator() => data.GetEnumerator();
-        public object Original => data;
-        public void Add(string name, string value) => data.Add(name, value);
-        public void Clear() => data.Clear();
-        public void CopyTo(Array dest, int index) => data.CopyTo(dest, index);
-        public string Get(int index) => data.Get(index);
-        public string Get(string name) => data.Get(name);
-        public string GetKey(int index) => data.GetKey(index);
-        public string[] GetValues(string name) => data.GetValues(name);
-        public bool HasKeys() => data.HasKeys();
-        public void Remove(string name) => data.Remove(name);
-        public void Set(string name, string value) => data.Set(name, value);
-
-        public string this[int index] => data[index];
-        public string this[string name]
-        {
-            get => data[name];
-            set => data[name] = value;
-        }
-
-        public string[] AllKeys => data.AllKeys;
-        public int Count => data.Count;
-        public bool IsReadOnly { get; set; }
-        public object SyncRoot => data;
-        public bool IsSynchronized => false;
-        public override string ToString() => data.ToString();
-    }
-
     public static class NameValueCollectionWrapperExtensions
     {
-        public static NameValueCollectionWrapper InWrapper(this NameValueCollection nvc) => new NameValueCollectionWrapper(nvc ?? new NameValueCollection());
-
-        public static NameValueCollection ToNameValueCollection(this INameValueCollection nvc) => (NameValueCollection)nvc.Original;
-
-        public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
-        {
-            var map = new Dictionary<string, string>(nameValues.Count);
-
-            foreach(var key in nameValues.AllKeys)
-            {
-                if (key != null)
-                {
-                    map[key] = nameValues[key];
-                }
-            }
-
-            return map;
-        }
-
         public static Dictionary<string, string> ToDictionary(this NameValueCollection nameValues)
         {
             if (nameValues == null) return new Dictionary<string, string>();
@@ -237,18 +185,6 @@ namespace ServiceStack
                 nameValues.Add(item.Key, item.Value);
             }
             return nameValues;
-        }
-
-        public static string ToFormUrlEncoded(this INameValueCollection queryParams)
-        {
-            var sb = StringBuilderCache.Allocate();
-            foreach (string key in queryParams)
-            {
-                var values = queryParams.GetValues(key);
-                AppendKeyValue(sb, key, values);
-            }
-
-            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public static string ToFormUrlEncoded(this NameValueCollection queryParams)

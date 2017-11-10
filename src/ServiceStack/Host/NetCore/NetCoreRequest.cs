@@ -11,7 +11,6 @@ using ServiceStack.Logging;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
@@ -150,32 +149,14 @@ namespace ServiceStack.Host.NetCore
 
         public Dictionary<string, object> Items { get; }
 
-        private INameValueCollection headers;
-        public INameValueCollection Headers
-        {
-            get
-            {
-                if (headers != null)
-                    return headers;
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = new NetCoreHeadersCollection(request.Headers));
 
-                return headers = new NetCoreHeadersCollection(request.Headers);
-            }
-        }
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = new NetCoreQueryStringCollection(request.Query));
 
-        private INameValueCollection queryString;
-        public INameValueCollection QueryString
-        {
-            get
-            {
-                if (queryString != null)
-                    return queryString;
-
-                return queryString = new NetCoreQueryStringCollection(request.Query);
-            }
-        }
-
-        private INameValueCollection formData;
-        public INameValueCollection FormData
+        private NameValueCollection formData;
+        public NameValueCollection FormData
         {
             get
             {
@@ -190,7 +171,7 @@ namespace ServiceStack.Host.NetCore
                         nvc.Add(form.Key, form.Value);
                     }
                 }
-                return formData = new NameValueCollectionWrapper(nvc);
+                return formData = nvc;
             }
         }
 

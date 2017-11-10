@@ -115,7 +115,7 @@ namespace ServiceStack
             res.RedirectToUrl(url);
         }
 
-        private static string ToQueryString(INameValueCollection queryStringCollection)
+        private static string ToQueryString(NameValueCollection queryStringCollection)
         {
             if (queryStringCollection == null || queryStringCollection.Count == 0)
                 return string.Empty;

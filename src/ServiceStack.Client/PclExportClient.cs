@@ -98,17 +98,15 @@ namespace ServiceStack
             return true;
         }
 
-        public virtual INameValueCollection NewNameValueCollection()
-        {
-            return new NameValueCollectionWrapper(new NameValueCollection());
-        }
+        [Obsolete("Use new NameValueCollection()")]
+        public NameValueCollection NewNameValueCollection() => new NameValueCollection();
 
-        public virtual INameValueCollection ParseQueryString(string query)
+        public virtual NameValueCollection ParseQueryString(string query)
         {
 #if NETSTANDARD2_0
-            return ServiceStack.Pcl.HttpUtility.ParseQueryString(query).InWrapper();
+            return ServiceStack.Pcl.HttpUtility.ParseQueryString(query);
 #else
-			return System.Web.HttpUtility.ParseQueryString(query).InWrapper();
+			return System.Web.HttpUtility.ParseQueryString(query);
 #endif
         }
 
@@ -141,7 +139,7 @@ namespace ServiceStack
             return WebUtility.HtmlDecode(html);
         }
 
-        public virtual void AddHeader(WebRequest webReq, INameValueCollection headers)
+        public virtual void AddHeader(WebRequest webReq, NameValueCollection headers)
         {
             if (headers == null)
                 return;

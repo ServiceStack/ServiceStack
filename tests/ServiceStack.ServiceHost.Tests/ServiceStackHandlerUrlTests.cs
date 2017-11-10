@@ -57,9 +57,9 @@ namespace ServiceStack.ServiceHost.Tests
             public string ResponseContentType { get; set; }
             public bool HasExplicitResponseContentType { get; private set; }
             public Dictionary<string, object> Items { get; private set; }
-            public INameValueCollection Headers { get; private set; }
-            public INameValueCollection QueryString { get; private set; }
-            public INameValueCollection FormData { get; private set; }
+            public NameValueCollection Headers { get; private set; }
+            public NameValueCollection QueryString { get; private set; }
+            public NameValueCollection FormData { get; private set; }
             public bool UseBufferedStream { get; set; }
 
             public string GetRawBody()

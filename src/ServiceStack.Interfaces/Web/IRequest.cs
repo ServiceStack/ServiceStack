@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using ServiceStack.Configuration;
 
@@ -86,17 +87,17 @@ namespace ServiceStack.Web
         /// <summary>
         /// The HTTP Headers in an INameValueCollection
         /// </summary>
-        INameValueCollection Headers { get; }
+        NameValueCollection Headers { get; }
 
         /// <summary>
         /// The ?query=string in an INameValueCollection
         /// </summary>
-        INameValueCollection QueryString { get; }
+        NameValueCollection QueryString { get; }
 
         /// <summary>
         /// The HTTP POST'ed Form Data in an INameValueCollection
         /// </summary>
-        INameValueCollection FormData { get; }
+        NameValueCollection FormData { get; }
         /// <summary>
         /// Buffer the Request InputStream so it can be re-read
         /// </summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Runtime.Serialization;
 using ServiceStack.Logging;
 using ServiceStack.Text;
@@ -108,7 +109,7 @@ namespace ServiceStack.Serialization
             return instance;
         }
 
-        public object PopulateFromMap(object instance, INameValueCollection nameValues, List<string> ignoredWarningsOnPropertyNames = null)
+        public object PopulateFromMap(object instance, NameValueCollection nameValues, List<string> ignoredWarningsOnPropertyNames = null)
         {
             var errors = new List<RequestBindingError>();
 
@@ -208,7 +209,7 @@ namespace ServiceStack.Serialization
             return PopulateFromMap(null, keyValuePairs, null);
         }
 
-        public object CreateFromMap(INameValueCollection nameValues)
+        public object CreateFromMap(NameValueCollection nameValues)
         {
             return PopulateFromMap(null, nameValues, null);
         }

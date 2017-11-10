@@ -73,7 +73,7 @@ namespace ServiceStack
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
         /// </summary>
-        public INameValueCollection Headers { get; private set; }
+        public NameValueCollection Headers { get; private set; }
 
         public const string DefaultHttpMethod = HttpMethods.Post;
         public static string DefaultUserAgent = "ServiceStack .NET Client " + Env.ServiceStackVersion;
@@ -83,7 +83,7 @@ namespace ServiceStack
         protected ServiceClientBase()
         {
             this.HttpMethod = DefaultHttpMethod;
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = new NameValueCollection();
 
             asyncClient = new AsyncServiceClient
             {
