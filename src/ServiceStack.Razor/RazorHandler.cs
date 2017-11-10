@@ -46,8 +46,10 @@ namespace ServiceStack.Razor
                     : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);
             }
 
-            RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes);
-            httpRes.EndHttpHandlerRequest(skipHeaders:true);
+            using (RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes))
+            {
+                httpRes.EndHttpHandlerRequest(skipHeaders: true);
+            }
         }
     }
 }
