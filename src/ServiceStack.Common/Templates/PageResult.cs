@@ -539,50 +539,44 @@ namespace ServiceStack.Templates
 
             if (value == null)
             {
-                if (var.InitialExpression != null && var.InitialExpression.IsBinding)
+                var handlesUnknownValue = HandlesUnknownValue(var);
+                if (!handlesUnknownValue)
                 {
-                    var expr = var.InitialExpression.NameString;
-                    expr = expr.Trim();
-                    var pos = expr.IndexOfAny(VarDelimiters, 0);
-                    if (pos > 0)
+                    if (var.InitialExpression != null && var.InitialExpression.IsBinding)
                     {
-                        var target = expr.Substring(0, pos);
+                        var expr = var.InitialExpression.NameString;
+                        expr = expr.Trim();
+                        var pos = expr.IndexOfAny(VarDelimiters, 0);
+                        if (pos > 0)
+                        {
+                            var target = expr.Substring(0, pos);
 
-                        //allow nested null bindings from an existing target to evaluate to an empty string 
-                        var targetValue = GetValue(target, scope);
-                        if (targetValue != null)
-                            return string.Empty;
+                            //allow nested null bindings from an existing target to evaluate to an empty string 
+                            var targetValue = GetValue(target, scope);
+                            if (targetValue != null)
+                                return string.Empty;
+                        }
                     }
-                }
-                
-                if (!var.Binding.HasValue) 
-                    return null;
 
-                var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
-                if (hasFilterAsBinding != null)
-                {
-                    value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.BindingString);
-                }
-                else
-                {
-                    var hasContexFilterAsBinding = GetContextFilterAsBinding(var.BindingString, out filter);
-                    if (hasContexFilterAsBinding != null)
+                    if (!var.Binding.HasValue)
+                        return null;
+
+                    var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
+                    if (hasFilterAsBinding != null)
                     {
-                        value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.BindingString);
+                        value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.BindingString);
                     }
                     else
                     {
-                        var handlesUnknownValue = false;
-                        if (var.FilterExpressions.Length > 0)
+                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.BindingString, out filter);
+                        if (hasContexFilterAsBinding != null)
                         {
-                            var filterName = var.FilterExpressions[0].NameString;
-                            var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
-                            handlesUnknownValue = TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) ||
-                                                  Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.BindingString);
                         }
-
-                        if (!handlesUnknownValue)
+                        else
+                        {
                             return null;
+                        }
                     }
                 }
             }
@@ -789,6 +783,18 @@ namespace ServiceStack.Templates
                 return string.Empty; // treat as empty value if evaluated to null
 
             return value;
+        }
+
+        private bool HandlesUnknownValue(PageVariableFragment var)
+        {
+            if (var.FilterExpressions.Length > 0)
+            {
+                var filterName = var.FilterExpressions[0].NameString;
+                var filterArgs = 1 + var.FilterExpressions[0].Args.Count;
+                return TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) 
+                    || Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
+            }
+            return false;
         }
 
         private string CreateMissingFilterErrorMessage(string filterName)

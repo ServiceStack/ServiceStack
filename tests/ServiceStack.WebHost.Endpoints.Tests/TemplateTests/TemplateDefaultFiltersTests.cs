@@ -1483,5 +1483,21 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ '/img/logo.png' | resolveAsset }}"), Is.EqualTo("/img/logo.png"));
         }
 
+        [Test]
+        public void Can_use_isNull_on_nested_properties()
+        {
+            var sampleModel = new
+            {
+                StringProperty = "Hello",
+                NullStringProperty = (string)null
+            };
+
+            var context = new TemplateContext().Init();
+
+            var args = new Dictionary<string, object> { { "sampleArg", sampleModel } };
+            Assert.That(context.EvaluateTemplate("{{ sampleArg | isNull }}", args), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ sampleArg.StringProperty | isNull }}", args), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ sampleArg.NullStringProperty | isNull }}", args), Is.EqualTo("True"));
+        }
     }
 }
