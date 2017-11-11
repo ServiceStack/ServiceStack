@@ -222,7 +222,7 @@ namespace ServiceStack.Razor
 
         public IRazorView ProcessRazorPage(IRequest httpReq, RazorPage contentPage, object model, IResponse httpRes)
         {
-            return PageResolver.ExecuteRazorPage(httpReq, httpRes, model, contentPage);
+            return PageResolver.ExecuteRazorPage(httpReq, httpRes.OutputStream, model, contentPage);
         }
 
         public void ProcessRequest(IRequest httpReq, IResponse httpRes, object dto) //only used in tests
