@@ -141,8 +141,7 @@ namespace ServiceStack.Auth
 
         static IUserAuthRepository AssertUserAuthRepository(this IAuthRepository repo)
         {
-            var userRepo = repo as IUserAuthRepository;
-            if (userRepo == null)
+            if (!(repo is IUserAuthRepository userRepo))
                 throw new NotSupportedException("This operation requires a IUserAuthRepository");
 
             return userRepo;

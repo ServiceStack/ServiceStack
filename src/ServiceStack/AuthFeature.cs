@@ -45,7 +45,7 @@ namespace ServiceStack
         /// Defaults to only creating Digest Auth when DigestAuthProvider is registered.
         /// </summary>
         public bool CreateDigestAuthHashes { get; set; }
-        
+
         /// <summary>
         /// Should UserName or Emails be saved in AuthRepository in LowerCase
         /// </summary>

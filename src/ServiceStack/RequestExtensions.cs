@@ -200,8 +200,7 @@ namespace ServiceStack
             if (typeof(T) == typeof(IResponse))
                 return (T)request.Response;
 
-            var hasResolver = request as IHasResolver;
-            return hasResolver != null 
+            return request is IHasResolver hasResolver 
                 ? hasResolver.Resolver.TryResolve<T>() 
                 : Service.GlobalResolver.TryResolve<T>();
         }
@@ -210,5 +209,12 @@ namespace ServiceStack
         public static IVirtualDirectory GetDirectory(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetDirectory() : null;
         public static bool IsFile(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsFile;
         public static bool IsDirectory(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsDirectory;
+
+        public static T GetRuntimeConfig<T>(this IRequest req, string name, T defaultValue)
+        {
+            return req != null 
+                ? HostContext.AppHost.GetRuntimeConfig(req, name, defaultValue)
+                : defaultValue;
+        }
     }
 }
