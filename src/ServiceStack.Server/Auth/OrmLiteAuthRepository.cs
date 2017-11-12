@@ -295,7 +295,7 @@ namespace ServiceStack.Auth
             
             TUserAuth userAuth = null;
 
-            // Usernames/Emails are saved in Lower Case so we can do an exact seeach using lowerUserName
+            // Usernames/Emails are saved in Lower Case so we can do an exact search using lowerUserName
             if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
             {
                 return isEmail

@@ -221,6 +221,12 @@ namespace ServiceStack
         IAppSettings AppSettings { get; }
 
         /// <summary>
+        /// Allow specific configuration to be overridden at runtime in multi-tenancy Applications
+        /// by overriding GetRuntimeConfig in your AppHost
+        /// </summary>
+        T GetRuntimeConfig<T>(IRequest req, string name, T defaultValue);
+
+        /// <summary>
         /// Register an Adhoc web service on Startup
         /// </summary>
         void RegisterService(Type serviceType, params string[] atRestPaths);
