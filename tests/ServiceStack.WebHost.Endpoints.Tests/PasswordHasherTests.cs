@@ -43,7 +43,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 var authRepo = container.Resolve<IAuthRepository>();
 
-                Config.UsePasswordHasher = !UsePasswordHasher;
+                Config.UseSaltedHash = UsePasswordHasher;
 
                 authRepo.CreateUserAuth(new UserAuth
                 {
@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     LastName = "User",
                 }, "oldpass");
 
-                Config.UsePasswordHasher = UsePasswordHasher;
+                Config.UseSaltedHash = !UsePasswordHasher;
 
                 authRepo.CreateUserAuth(new UserAuth
                 {

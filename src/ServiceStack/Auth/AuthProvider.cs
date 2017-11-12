@@ -484,7 +484,7 @@ namespace ServiceStack.Auth
 
             if (password != null)
             {
-                var passwordHasher = HostContext.Config.UsePasswordHasher
+                var passwordHasher = !HostContext.Config.UseSaltedHash
                     ? HostContext.TryResolve<IPasswordHasher>()
                     : null;
 
@@ -548,7 +548,7 @@ namespace ServiceStack.Auth
                 var oldSaltedHashProvider = HostContext.Resolve<IHashProvider>();
                 if (oldSaltedHashProvider.VerifyHashString(providedPassword, userAuth.PasswordHash, userAuth.Salt))
                 {
-                    needsRehash = HostContext.Config.UsePasswordHasher;
+                    needsRehash = !HostContext.Config.UseSaltedHash;
                     return true;
                 }
 
@@ -565,7 +565,7 @@ namespace ServiceStack.Auth
 
             if (passwordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out needsRehash))
             {
-                needsRehash = !HostContext.Config.UsePasswordHasher;
+                needsRehash = HostContext.Config.UseSaltedHash;
                 return true;
             }
 

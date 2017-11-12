@@ -120,7 +120,7 @@ namespace ServiceStack
                     RouteNamingConvention.WithMatchingPropertyNames
                 },
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
-                UsePasswordHasher = true,
+                UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
                 OnlySendSessionCookiesSecurely = false,
                 AllowSessionIdsInHttpParams = false,
@@ -224,7 +224,7 @@ namespace ServiceStack
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RouteNamingConventions = instance.RouteNamingConventions;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
-            this.UsePasswordHasher = instance.UsePasswordHasher;
+            this.UseSaltedHash = instance.UseSaltedHash;
             this.FallbackPasswordHashers = instance.FallbackPasswordHashers;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
@@ -329,12 +329,13 @@ namespace ServiceStack
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
 
         /// <summary>
-        /// By default will persist password hashes using the more secure PBKDF2 with HMAC-SHA256 IPasswordHasher implementation, 
-        /// otherwise reverts to using the older SHA256 SaltedHash. 
+        /// If enabled reverts to persist password hashes using the original SHA256 SaltedHash implementation. 
+        /// By default ServiceStack uses the more secure ASP.NET Identity v3 PBKDF2 with HMAC-SHA256 implementation.
+        /// 
         /// New Users will have their passwords persisted with the specified implementation, likewise existing users will have their passwords re-hased
         /// to use the current registered IPasswordHasher.
         /// </summary>
-        public bool UsePasswordHasher { get; set; }
+        public bool UseSaltedHash { get; set; }
 
         /// <summary>
         /// Older Password Hashers that were previously used to hash passwords. Failed password matches check to see if the password was hashed with 
