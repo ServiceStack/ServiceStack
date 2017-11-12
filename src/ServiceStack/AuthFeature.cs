@@ -41,7 +41,7 @@ namespace ServiceStack
         public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
         
         /// <summary>
-        /// Create Digest Auth MD5 Hash when Creating/Updating Users.
+        /// Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
         /// Defaults to only creating Digest Auth when DigestAuthProvider is registered.
         /// </summary>
         public bool CreateDigestAuthHashes { get; set; }
@@ -93,7 +93,7 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            Func<string, string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
+            string localize(string s) => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]

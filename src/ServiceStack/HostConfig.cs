@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
+using ServiceStack.Auth;
 using ServiceStack.Host;
 using ServiceStack.Logging;
 using ServiceStack.Metadata;
@@ -119,6 +120,8 @@ namespace ServiceStack
                     RouteNamingConvention.WithMatchingPropertyNames
                 },
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
+                UsePasswordHasher = true,
+                FallbackPasswordHashers = new List<IPasswordHasher>(),
                 OnlySendSessionCookiesSecurely = false,
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
@@ -221,6 +224,8 @@ namespace ServiceStack
             this.AppendUtf8CharsetOnContentTypes = instance.AppendUtf8CharsetOnContentTypes;
             this.RouteNamingConventions = instance.RouteNamingConventions;
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
+            this.UsePasswordHasher = instance.UsePasswordHasher;
+            this.FallbackPasswordHashers = instance.FallbackPasswordHashers;
             this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
             this.AllowSessionCookies = instance.AllowSessionCookies;
@@ -322,6 +327,21 @@ namespace ServiceStack
         public List<RouteNamingConventionDelegate> RouteNamingConventions { get; set; }
 
         public Dictionary<Type, int> MapExceptionToStatusCode { get; set; }
+
+        /// <summary>
+        /// By default will persist password hashes using the more secure PBKDF2 with HMAC-SHA256 IPasswordHasher implementation, 
+        /// otherwise reverts to using the older SHA256 SaltedHash. 
+        /// New Users will have their passwords persisted with the specified implementation, likewise existing users will have their passwords re-hased
+        /// to use the current registered IPasswordHasher.
+        /// </summary>
+        public bool UsePasswordHasher { get; set; }
+
+        /// <summary>
+        /// Older Password Hashers that were previously used to hash passwords. Failed password matches check to see if the password was hashed with 
+        /// any of the registered FallbackPasswordHashers, if true the password attempt will succeed and password will get re-hashed with 
+        /// the current registered IPasswordHasher.
+        /// </summary>
+        public List<IPasswordHasher> FallbackPasswordHashers { get; private set; }
 
         public bool OnlySendSessionCookiesSecurely { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }

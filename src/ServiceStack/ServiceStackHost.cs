@@ -518,6 +518,7 @@ namespace ServiceStack
         public virtual void OnBeforeInit()
         {
             Container.Register<IHashProvider>(c => new SaltedHash()).ReusedWithin(ReuseScope.None);
+            Container.Register<IPasswordHasher>(c => new PasswordHasher());
         }
 
         //After configure called

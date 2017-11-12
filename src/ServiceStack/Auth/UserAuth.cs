@@ -195,8 +195,7 @@ namespace ServiceStack.Auth
             if (!other.Email.IsNullOrEmpty() && (overwriteReserved || instance.Email.IsNullOrEmpty()))
                 instance.Email = other.Email;
 
-            var userAuth = instance as IUserAuth;
-            if (userAuth != null)
+            if (instance is IUserAuth userAuth)
             {
                 if (!other.Email.IsNullOrEmpty() && (overwriteReserved || userAuth.PrimaryEmail.IsNullOrEmpty()))
                     userAuth.PrimaryEmail = other.Email;
@@ -319,18 +318,22 @@ namespace ServiceStack.Auth
         
         public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth, bool rehashPassword, string password)
         {
-            var feature = HostContext.GetPlugin<AuthFeature>();
-            if (feature?.MaxLoginAttempts == null) return;
-
-            userAuth.InvalidLoginAttempts = 0;
-            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            var recordLoginAttempts = HostContext.GetPlugin<AuthFeature>()?.MaxLoginAttempts != null;
+            if (recordLoginAttempts)
+            {
+                userAuth.InvalidLoginAttempts = 0;
+                userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            }
 
             if (rehashPassword)
             {
                 userAuth.PopulatePasswordHashes(password);
             }
-            
-            repo.SaveUserAuth(userAuth);
+
+            if (recordLoginAttempts || rehashPassword)
+            {
+                repo.SaveUserAuth(userAuth);
+            }
         }
 
         public static void RecordInvalidLoginAttempt(this IUserAuthRepository repo, IUserAuth userAuth)

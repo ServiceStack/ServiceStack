@@ -431,6 +431,8 @@ namespace ServiceStack.Auth
 
     public static class AuthExtensions
     {
+        private static ILog Log = LogManager.GetLogger(typeof(AuthExtensions));
+
         public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
         {
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
@@ -482,8 +484,20 @@ namespace ServiceStack.Auth
 
             if (password != null)
             {
-                var hashProvider = HostContext.Resolve<IHashProvider>();
-                hashProvider.GetHashAndSaltString(password, out hash, out salt);
+                var passwordHasher = HostContext.Config.UsePasswordHasher
+                    ? HostContext.TryResolve<IPasswordHasher>()
+                    : null;
+
+                if (passwordHasher != null)
+                {
+                    salt = null; // IPasswordHasher stores its Salt in PasswordHash
+                    hash = passwordHasher.HashPassword(password);
+                }
+                else
+                {
+                    var hashProvider = HostContext.Resolve<IHashProvider>();
+                    hashProvider.GetHashAndSaltString(password, out hash, out salt);
+                }
             }
 
             newUser.PasswordHash = hash;
@@ -494,7 +508,8 @@ namespace ServiceStack.Auth
 
         private static void PopulateDigestAuthHash(this IUserAuth newUser, string password, IUserAuth existingUser = null)
         {
-            if (HostContext.GetPlugin<AuthFeature>()?.CreateDigestAuthHashes == true)
+            var createDigestAuthHashes = HostContext.GetPlugin<AuthFeature>()?.CreateDigestAuthHashes;
+            if (createDigestAuthHashes == true)
             {
                 if (existingUser == null)
                 {
@@ -510,16 +525,77 @@ namespace ServiceStack.Auth
                         newUser.DigestHa1Hash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
                 }
             }
+            else if (createDigestAuthHashes == false)
+            {
+                newUser.DigestHa1Hash = null;
+            }
         }
 
-        public static bool VerifyPassword(this IUserAuth userAuth, string password, out bool needsRehash)
+        public static bool VerifyPassword(this IUserAuth userAuth, string providedPassword, out bool needsRehash)
         {
             needsRehash = false;
             if (userAuth == null)
                 throw new ArgumentNullException(nameof(userAuth));
-            
-            var hashProvider = HostContext.Resolve<IHashProvider>();
-            return hashProvider.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt);
+
+            if (userAuth.PasswordHash == null)
+                return false;
+
+            var passwordHasher = HostContext.TryResolve<IPasswordHasher>();
+
+            var usedOriginalSaltedHash = userAuth.Salt != null;
+            if (usedOriginalSaltedHash)
+            {
+                var oldSaltedHashProvider = HostContext.Resolve<IHashProvider>();
+                if (oldSaltedHashProvider.VerifyHashString(providedPassword, userAuth.PasswordHash, userAuth.Salt))
+                {
+                    needsRehash = HostContext.Config.UsePasswordHasher;
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (passwordHasher == null)
+            {
+                if (Log.IsDebugEnabled)
+                    Log.Debug("Found newer PasswordHash without Salt but no registered IPasswordHasher to verify it");
+
+                return false;
+            }
+
+            if (passwordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out needsRehash))
+            {
+                needsRehash = !HostContext.Config.UsePasswordHasher;
+                return true;
+            }
+
+            if (HostContext.Config.FallbackPasswordHashers.Count > 0)
+            {
+                var decodedHashedPassword = Convert.FromBase64String(userAuth.PasswordHash);
+                if (decodedHashedPassword.Length == 0)
+                {
+                    if (Log.IsDebugEnabled)
+                        Log.Debug("userAuth.PasswordHash is empty");
+
+                    return false;
+                }
+
+                var formatMarker = decodedHashedPassword[0];
+
+                foreach (var oldPasswordHasher in HostContext.Config.FallbackPasswordHashers)
+                {
+                    if (oldPasswordHasher.Version == formatMarker)
+                    {
+                        if (oldPasswordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out _))
+                        {
+                            needsRehash = true;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         public static bool VerifyDigestAuth(this IUserAuth userAuth, Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence)
