@@ -1051,7 +1051,7 @@ namespace ServiceStack
             if (options == null) return null;
 
             var match = options.IgnoreProperties == null || !options.IgnoreProperties.Contains(name)
-                ? q.FirstMatchingField(name) ?? (name.EndsWith(Pluralized) ? q.FirstMatchingField(name.TrimEnd('s')) : null)
+                ? q.FirstMatchingField(name) ?? (name.EndsWith(Pluralized) ? q.FirstMatchingField(name.Substring(0, name.Length - 1)) : null)
                 : null;
 
             if (match == null)
@@ -1061,7 +1061,7 @@ namespace ServiceStack
                     if (name.Length <= startsWith.Key.Length || !name.StartsWith(startsWith.Key)) continue;
 
                     var field = name.Substring(startsWith.Key.Length);
-                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.TrimEnd('s')) : null);
+                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.Substring(0, field.Length - 1)) : null);
                     if (match != null)
                         return new MatchQuery(match, startsWith.Value);
                 }
@@ -1073,7 +1073,7 @@ namespace ServiceStack
                     if (name.Length <= endsWith.Key.Length || !name.EndsWith(endsWith.Key)) continue;
 
                     var field = name.Substring(0, name.Length - endsWith.Key.Length);
-                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.TrimEnd('s')) : null);
+                    match = q.FirstMatchingField(field) ?? (field.EndsWith(Pluralized) ? q.FirstMatchingField(field.Substring(0, field.Length - 1)) : null);
                     if (match != null)
                         return new MatchQuery(match, endsWith.Value);
                 }
