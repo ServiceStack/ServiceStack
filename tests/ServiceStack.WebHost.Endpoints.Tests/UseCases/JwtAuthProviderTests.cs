@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 {
@@ -208,16 +209,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             }
 
             var client = GetClient();
-            var serviceClient = client as JsonServiceClient;
-            if (serviceClient != null)
+            if (client is JsonServiceClient serviceClient)
             {
                 serviceClient.BearerToken = accessToken;
                 serviceClient.RefreshToken = refreshToken;
                 return serviceClient;
             }
 
-            var httpClient = client as JsonHttpClient;
-            if (httpClient != null)
+            if (client is JsonHttpClient httpClient)
             {
                 httpClient.BearerToken = accessToken;
                 httpClient.RefreshToken = refreshToken;

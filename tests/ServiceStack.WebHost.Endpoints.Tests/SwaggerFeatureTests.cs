@@ -328,7 +328,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //new XmlServiceClient(ServiceClientBaseUri),
         };
 
-        [Test, Explicit]
+        [Test, Ignore("Debug Test")]
         public void RunFor5Mins()
         {
             appHost.LoadPlugin(new CorsFeature("http://localhost:50000"));

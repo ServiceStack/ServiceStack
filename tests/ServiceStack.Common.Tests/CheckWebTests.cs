@@ -40,7 +40,7 @@ namespace ServiceStack.Common.Tests
         public string Sentence { get; set; }
     }
 
-    [Explicit]
+    [Ignore("Integration Test")]
     public class CheckWebTests
     {
         private const string BaseUri = "http://localhost:55799/";

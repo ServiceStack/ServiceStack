@@ -467,14 +467,14 @@ namespace RazorRockstars.Console.Files
             appHost.Dispose();
         }
 
-        [Explicit("Debug Run")]
+        [Ignore("Debug Run")]
         [Test]
         public void RunFor10Mins()
         {
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
-        [Explicit("Concurrent Run")]
+        [Ignore("Concurrent Run")]
         [Test]
         public void Concurrent_GetReqstar_JSON()
         {
@@ -508,7 +508,7 @@ namespace RazorRockstars.Console.Files
         }
 
 
-        [Explicit("Concurrent Run")]
+        [Ignore("Concurrent Run")]
         [Test]
         public void Concurrent_GetReqstar_Razor()
         {

@@ -11,7 +11,7 @@ using RedisMessageQueueClient = ServiceStack.Messaging.RedisMessageQueueClient;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
-    [Explicit("Simulating error conditions")]
+    [Ignore("Simulating error conditions")]
     [TestFixture]
     public class RedisFailoverTests
     {

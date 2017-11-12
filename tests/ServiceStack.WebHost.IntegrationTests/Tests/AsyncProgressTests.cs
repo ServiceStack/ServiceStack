@@ -53,21 +53,21 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test]
-        [Explicit("Setting Content-Length requires IIS integrated pipeline mode")]
+        [Ignore("Setting Content-Length requires IIS integrated pipeline mode")]
         public async Task Can_report_progress_when_downloading_async_with_Post_bytes()
         {
             await AsyncDownloadWithProgress(new TestProgressBytes());
         }
 
         [Test]
-        [Explicit("Setting Content-Length requires IIS integrated pipeline mode")]
+        [Ignore("Setting Content-Length requires IIS integrated pipeline mode")]
         public async Task Can_report_progress_when_downloading_async_with_Post_File_bytes()
         {
             await AsyncDownloadWithProgress(new TestProgressBinaryFile());
         }
 
         [Test]
-        [Explicit("Setting Content-Length requires IIS integrated pipeline mode")]
+        [Ignore("Setting Content-Length requires IIS integrated pipeline mode")]
         public async Task Can_report_progress_when_downloading_async_with_Post_File_text()
         {
             await AsyncDownloadWithProgress(new TestProgressTextFile());

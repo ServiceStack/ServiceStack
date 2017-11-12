@@ -69,21 +69,21 @@ namespace ServiceStack.Server.Tests.Messaging
             RunFor(TimeSpan.FromSeconds(1));
         }
 
-        [Explicit]
+        [Ignore("Debug Test")]
         [Test]
         public void Run_for_5_seconds()
         {
             RunFor(TimeSpan.FromSeconds(5));
         }
 
-        [Explicit]
+        [Ignore("Debug Test")]
         [Test]
         public void Run_for_10_seconds()
         {
             RunFor(TimeSpan.FromSeconds(10));
         }
 
-        [Explicit]
+        [Ignore("Debug Test")]
         [Test]
         public void Run_for_30_seconds()
         {

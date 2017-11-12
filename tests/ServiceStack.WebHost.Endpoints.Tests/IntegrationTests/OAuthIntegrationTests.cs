@@ -7,7 +7,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
-    [Explicit]
+    [Ignore("Integration Test")]
     public class OAuthIntegrationTests
     {
         private Dictionary<string,string> AccessTokens { get; set; }

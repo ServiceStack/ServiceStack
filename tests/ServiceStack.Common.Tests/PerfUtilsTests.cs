@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
-    [TestFixture,Explicit]
+    [TestFixture, Ignore("Benchmark")]
     public class PerfUtilsTests
     {
         Random rand = new Random();

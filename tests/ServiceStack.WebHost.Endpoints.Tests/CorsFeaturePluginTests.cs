@@ -18,7 +18,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    //[Explicit]
     [TestFixture]
     public class CorsFeaturePluginTests
     {

@@ -429,7 +429,7 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
-    [Explicit("These Flaky tests pass when run manually")]
+    [Ignore("These Flaky tests pass when run manually")]
     [TestFixture, Category("Integration")]
     public class RabbitMqServerFragileTests
     {

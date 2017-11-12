@@ -17,7 +17,7 @@ namespace ServiceStack.Common.Tests.Messaging
         public string Name { get; set; }
     }
 
-    [TestFixture, Explicit]
+    [TestFixture, Ignore("Integration Test")]
     public class RabbitMqTests
     {
         private readonly ConnectionFactory mqFactory = new ConnectionFactory { HostName = "localhost" };

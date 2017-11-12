@@ -273,7 +273,7 @@ namespace RazorRockstars.Web.Tests
             AssertStatus(Host + "/fallback/extrapath", HttpStatusCode.NotFound);
         }
 
-	    [Explicit,Test]
+	    [Ignore("Load Test"), Test]
 	    public void Test_multithread_errors()
 	    {
 	        var times = 1000;
