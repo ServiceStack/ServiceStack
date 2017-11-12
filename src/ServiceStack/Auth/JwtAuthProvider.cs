@@ -56,32 +56,36 @@ namespace ServiceStack.Auth
                         perms = authRepo.GetPermissions(session.UserAuthId);
                     }
 
-                    authContext.AuthResponse.BearerToken = CreateJwtBearerToken(session, roles, perms);
+                    authContext.AuthResponse.BearerToken = CreateJwtBearerToken(authContext.AuthService.Request, session, roles, perms);
                     authContext.AuthResponse.RefreshToken = EnableRefreshToken()
-                        ? CreateJwtRefreshToken(session.UserAuthId)
+                        ? CreateJwtRefreshToken(authService.Request, session.UserAuthId, ExpireRefreshTokensIn)
                         : null;
                 }
             }
         }
 
-        public Func<byte[], byte[]> GetHashAlgorithm()
+        public Func<byte[], byte[]> GetHashAlgorithm() => GetHashAlgorithm(null);
+
+        public Func<byte[], byte[]> GetHashAlgorithm(IRequest req)
         {
             Func<byte[], byte[]> hashAlgoritm = null;
 
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out var hmac))
             {
-                if (AuthKey == null)
+                var authKey = GetAuthKey(req);
+                if (authKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => hmac(AuthKey, data);
+                hashAlgoritm = data => hmac(authKey, data);
             }
 
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out var rsa))
             {
-                if (PrivateKey == null)
+                var privateKey = GetPrivateKey(req);
+                if (privateKey == null)
                     throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => rsa(PrivateKey.Value, data);
+                hashAlgoritm = data => rsa(privateKey.Value, data);
             }
 
             if (hashAlgoritm == null)
@@ -90,33 +94,33 @@ namespace ServiceStack.Auth
             return hashAlgoritm;
         }
 
-        public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
+        public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null) =>
+            CreateJwtBearerToken(null, session, roles, perms);
+
+        public string CreateJwtBearerToken(IRequest req, IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
             var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
             CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
             {
-                if (PrivateKey == null || PublicKey == null)
-                    throw new NotSupportedException("PrivateKey is required to EncryptPayload");
+                var publicKey = GetPublicKey(req);
+                if (publicKey == null)
+                    throw new NotSupportedException("PublicKey is required to EncryptPayload");
 
-                return CreateEncryptedJweToken(jwtPayload, PublicKey.Value);
+                return CreateEncryptedJweToken(jwtPayload, publicKey.Value);
             }
 
-            var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId());
+            var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId(req));
             CreateHeaderFilter?.Invoke(jwtHeader, session);
 
-            var hashAlgoritm = GetHashAlgorithm();
+            var hashAlgoritm = GetHashAlgorithm(req);
             var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
             return bearerToken;
         }
 
-        public string CreateJwtRefreshToken(string userId)
-        {
-            return CreateJwtRefreshToken(userId, ExpireRefreshTokensIn);
-        }
-
-        public string CreateJwtRefreshToken(string userId, TimeSpan expireRefreshTokenIn)
+        public string CreateJwtRefreshToken(string userId, TimeSpan expireRefreshTokenIn) => CreateJwtRefreshToken(null, userId, expireRefreshTokenIn);
+        public string CreateJwtRefreshToken(IRequest req, string userId, TimeSpan expireRefreshTokenIn)
         {
             var jwtHeader = new JsonObject
             {
@@ -124,7 +128,7 @@ namespace ServiceStack.Auth
                 {"alg", HashAlgorithm}
             };
 
-            var keyId = GetKeyId();
+            var keyId = GetKeyId(req);
             if (keyId != null)
                 jwtHeader["kid"] = keyId;
 
@@ -139,7 +143,7 @@ namespace ServiceStack.Auth
             if (Audience != null)
                 jwtPayload["aud"] = Audience;
 
-            var hashAlgoritm = GetHashAlgorithm();
+            var hashAlgoritm = GetHashAlgorithm(req);
             var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
             return refreshToken;
         }
@@ -334,7 +338,7 @@ namespace ServiceStack.Auth
             if (session.FromToken)
                 return new ConvertSessionToTokenResponse();
 
-            var token = jwtAuthProvider.CreateJwtBearerToken(session);
+            var token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
             if (!request.PreserveSession)
                 Request.RemoveSession(session.Id);
@@ -372,7 +376,7 @@ namespace ServiceStack.Auth
             JsonObject jwtPayload;
             try
             {
-                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(request.RefreshToken.Split('.'));
+                jwtPayload = jwtAuthProvider.GetVerifiedJwtPayload(Request, request.RefreshToken.Split('.'));
             }
             catch (ArgumentException)
             {
@@ -407,7 +411,7 @@ namespace ServiceStack.Auth
                 perms = manageRoles.GetPermissions(session.UserAuthId);
             }
 
-            var accessToken = jwtAuthProvider.CreateJwtBearerToken(session, roles, perms);
+            var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, session, roles, perms);
 
             return new GetAccessTokenResponse
             {

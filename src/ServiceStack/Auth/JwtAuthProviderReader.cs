@@ -110,26 +110,32 @@ namespace ServiceStack.Auth
         public byte[] AuthKey { get; set; }
         public string AuthKeyBase64
         {
-            set { AuthKey = Convert.FromBase64String(value); }
+            set => AuthKey = Convert.FromBase64String(value);
         }
+
+        public byte[] GetAuthKey(IRequest req = null) => req.GetRuntimeConfig(nameof(AuthKey), AuthKey);
 
         /// <summary>
         /// Allow verification using multiple Auth keys
         /// </summary>
         public List<byte[]> FallbackAuthKeys { get; set; }
 
+        public List<byte[]> GetFallbackAuthKeys(IRequest req = null) => req.GetRuntimeConfig(nameof(FallbackAuthKeys), FallbackAuthKeys);
+
+        public RSAParameters? GetPrivateKey(IRequest req = null) => req.GetRuntimeConfig(nameof(PrivateKey), PrivateKey);
+
         /// <summary>
         /// The RSA Private Key used to Sign the JWT Token when RSA is used
         /// </summary>
-        public RSAParameters? privateKey;
+        private RSAParameters? _privateKey;
         public RSAParameters? PrivateKey
         {
-            get { return privateKey; }
+            get => _privateKey;
             set
             {
-                privateKey = value;
-                if (privateKey != null)
-                    PublicKey = privateKey.Value.ToPublicRsaParameters();
+                _privateKey = value;
+                if (_privateKey != null)
+                    PublicKey = _privateKey.Value.ToPublicRsaParameters();
             }
         }
 
@@ -138,9 +144,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PrivateKeyXml
         {
-            get { return PrivateKey?.FromPrivateRSAParameters(); }
-            set { PrivateKey = value?.ToPrivateRSAParameters(); }
+            get => PrivateKey?.FromPrivateRSAParameters();
+            set => PrivateKey = value?.ToPrivateRSAParameters();
         }
+
+        public RSAParameters? GetPublicKey(IRequest req = null) => req.GetRuntimeConfig(nameof(PublicKey), PublicKey);
 
         /// <summary>
         /// The RSA Public Key used to Verify the JWT Token when RSA is used
@@ -152,14 +160,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public string PublicKeyXml
         {
-            get { return PublicKey?.FromPublicRSAParameters(); }
-            set { PublicKey = value?.ToPublicRSAParameters(); }
+            get => PublicKey?.FromPublicRSAParameters();
+            set => PublicKey = value?.ToPublicRSAParameters();
         }
 
         /// <summary>
         /// Allow verification using multiple public keys
         /// </summary>
         public List<RSAParameters> FallbackPublicKeys { get; set; }
+
+        public List<RSAParameters> GetFallbackPublicKeys(IRequest req = null) => req.GetRuntimeConfig(nameof(FallbackPublicKeys), FallbackPublicKeys);
 
         /// <summary>
         /// How long should JWT Tokens be valid for. (default 14 days)
@@ -289,15 +299,19 @@ namespace ServiceStack.Auth
             }
         }
 
-        public virtual string GetKeyId()
+        public virtual string GetKeyId(IRequest req)
         {
             if (KeyId != null)
                 return KeyId;
 
-            if (HmacAlgorithms.ContainsKey(HashAlgorithm) && AuthKey != null)
-                return Convert.ToBase64String(AuthKey).Substring(0, 3);
-            if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && PublicKey != null)
-                return Convert.ToBase64String(PublicKey.Value.Modulus).Substring(0, 3);
+            var authKey = GetAuthKey(req);
+            if (HmacAlgorithms.ContainsKey(HashAlgorithm) && authKey != null)
+                return Convert.ToBase64String(authKey).Substring(0, 3);
+
+
+            var publicKey = GetPublicKey(req);
+            if (RsaSignAlgorithms.ContainsKey(HashAlgorithm) && publicKey != null)
+                return Convert.ToBase64String(publicKey.Value.Modulus).Substring(0, 3);
 
             return null;
         }
@@ -327,7 +341,7 @@ namespace ServiceStack.Auth
                     if (RequireSecureConnection && !req.IsSecureConnection)
                         throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
-                    var jwtPayload = GetVerifiedJwtPayload(parts);
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
                     if (jwtPayload == null) //not verified
                         return;
 
@@ -345,10 +359,7 @@ namespace ServiceStack.Auth
                     if (RequireSecureConnection && !req.IsSecureConnection)
                         throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
-                    if (PrivateKey == null || PublicKey == null)
-                        throw new NotSupportedException("PrivateKey is required to DecryptPayload");
-
-                    var jwtPayload = GetVerifiedJwtPayload(parts);
+                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
                     if (jwtPayload == null) //not verified
                         return;
 
@@ -364,7 +375,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public JsonObject GetVerifiedJwtPayload(string[] parts)
+        public JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
             if (parts.Length == 3)
             {
@@ -385,7 +396,7 @@ namespace ServiceStack.Auth
                 if (RequireHashAlgorithm && algorithm != HashAlgorithm)
                     throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
 
-                if (!VerifyPayload(algorithm, bytesToSign, signatureBytes))
+                if (!VerifyPayload(req, algorithm, bytesToSign, signatureBytes))
                     return null;
 
                 var payloadJson = payloadBytes.FromUtf8Bytes();
@@ -405,8 +416,12 @@ namespace ServiceStack.Auth
                 var iv = ivBase64Url.FromBase64UrlSafe();
                 var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
 
+                var privateKey = GetPrivateKey(req);
+                if (privateKey == null)
+                    throw new Exception("PrivateKey required to decrypt JWE Token");
+
                 var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
-                var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, PrivateKey.Value, UseRsaKeyLength);
+                var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, privateKey.Value, UseRsaKeyLength);
 
                 var authKey = new byte[128 / 8];
                 var cryptKey = new byte[128 / 8];
@@ -453,7 +468,7 @@ namespace ServiceStack.Auth
             if (jwt == null)
                 throw new ArgumentNullException(nameof(jwt));
 
-            var jwtPayload = GetVerifiedJwtPayload(jwt.Split('.'));
+            var jwtPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
             if (jwtPayload == null) //not verified
                 return null;
 
@@ -511,15 +526,14 @@ namespace ServiceStack.Auth
                     throw new TokenException(ErrorMessages.TokenInvalidated);
             }
 
-            string audience;
-            if (jwtPayload.TryGetValue("aud", out audience))
+            if (jwtPayload.TryGetValue("aud", out var audience))
             {
                 if (audience != Audience)
                     throw new TokenException("Invalid Audience: " + audience);
             }
         }
 
-        public bool VerifyPayload(string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
+        public bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
         {
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
@@ -528,28 +542,30 @@ namespace ServiceStack.Auth
 
             if (isHmac)
             {
-                if (AuthKey == null)
+                var authKey = GetAuthKey(req);
+                if (authKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                var authKeys = new List<byte[]> { AuthKey };
-                authKeys.AddRange(FallbackAuthKeys);
-                foreach (var authKey in authKeys)
+                var allAuthKeys = new List<byte[]> { authKey };
+                allAuthKeys.AddRange(GetFallbackAuthKeys(req));
+                foreach (var key in allAuthKeys)
                 {
-                    var calcSignatureBytes = HmacAlgorithms[algorithm](authKey, bytesToSign);
+                    var calcSignatureBytes = HmacAlgorithms[algorithm](key, bytesToSign);
                     if (calcSignatureBytes.EquivalentTo(sentSignatureBytes))
                         return true;
                 }
             }
             else
             {
-                if (PublicKey == null)
+                var publicKey = GetPublicKey(req);
+                if (publicKey == null)
                     throw new NotSupportedException("PublicKey required to use: " + HashAlgorithm);
 
-                var publicKeys = new List<RSAParameters> { PublicKey.Value };
-                publicKeys.AddRange(FallbackPublicKeys);
-                foreach (var publicKey in publicKeys)
+                var allPublicKeys = new List<RSAParameters> { publicKey.Value };
+                allPublicKeys.AddRange(GetFallbackPublicKeys(req));
+                foreach (var key in allPublicKeys)
                 {
-                    var verified = RsaVerifyAlgorithms[algorithm](publicKey, bytesToSign, sentSignatureBytes);
+                    var verified = RsaVerifyAlgorithms[algorithm](key, bytesToSign, sentSignatureBytes);
                     if (verified)
                         return true;
                 }
@@ -560,8 +576,7 @@ namespace ServiceStack.Auth
 
         static int? GetUnixTime(Dictionary<string, string> jwtPayload, string key)
         {
-            string value;
-            if (jwtPayload.TryGetValue(key, out value) && !string.IsNullOrEmpty(value))
+            if (jwtPayload.TryGetValue(key, out var value) && !string.IsNullOrEmpty(value))
             {
                 try
                 {
@@ -588,7 +603,7 @@ namespace ServiceStack.Auth
                 throw new ArgumentNullException("PrivateKey", "PrivateKey is Required to use JWT with " + HashAlgorithm);
 
             if (KeyId == null)
-                KeyId = GetKeyId();
+                KeyId = GetKeyId(null);
                 
             if (ServiceRoutes != null) 
             {
