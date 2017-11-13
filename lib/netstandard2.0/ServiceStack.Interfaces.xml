@@ -129,6 +129,34 @@
             Open API schema definition type for response
             </summary>
         </member>
+        <member name="T:ServiceStack.Auth.IPasswordHasher">
+            <summary>
+            The Password Hasher provider used to hash users passwords, by default uses the same algorithm used by ASP.NET Identity v3:
+            PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.IPasswordHasher.Version">
+            <summary>
+            The first byte marker used to specify the format used. The default implementation uses the following format:
+            { 0x01, prf (UInt32), iter count (UInt32), salt length (UInt32), salt, subkey }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.IPasswordHasher.VerifyPassword(System.String,System.String,System.Boolean@)">
+            <summary>
+            Returns a boolean indicating whether the <paramref name="providedPassword"/> matches the <paramref name="hashedPassword"/>.
+            The <paramref name="needsRehash"/> out parameter indicates whether the password should be re-hashed.
+            </summary>
+            <param name="hashedPassword">The hash value for a user's stored password.</param>
+            <param name="providedPassword">The password supplied for comparison.</param>
+            <remarks>Implementations of this method should be time consistent.</remarks>
+        </member>
+        <member name="M:ServiceStack.Auth.IPasswordHasher.HashPassword(System.String)">
+            <summary>
+            Returns a hashed representation of the supplied <paramref name="password"/>.
+            </summary>
+            <param name="password">The password to hash.</param>
+            <returns>A hashed representation of the supplied <paramref name="password"/>.</returns>
+        </member>
         <member name="T:ServiceStack.Caching.ICacheClient">
             <summary>
             A common interface implementation that is implemented by most cache providers

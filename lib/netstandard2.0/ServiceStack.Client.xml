@@ -61,17 +61,6 @@
             https://msdn.microsoft.com/en-us/library/system.security.cryptography.rsacryptoserviceprovider(v=vs.110).aspx
             </summary>
         </member>
-        <member name="T:ServiceStack.GenericProxy`1">
-            <summary>
-            Generic Proxy for service calls.
-            </summary>
-            <typeparam name="T">The service Contract</typeparam>
-        </member>
-        <member name="P:ServiceStack.GenericProxy`1.Proxy">
-            <summary>
-            Returns the transparent proxy for the service call
-            </summary>
-        </member>
         <member name="M:ServiceStack.Messaging.MessageQueueClientFactory.GetMessageAsync(System.String)">
             <summary>
             Returns the next message from queueName or null if no message
@@ -160,11 +149,6 @@
         <member name="P:ServiceStack.ServiceClientBase.BearerToken">
             <summary>
             The Authorization Bearer Token to send with this request
-            </summary>
-        </member>
-        <member name="P:ServiceStack.ServiceClientBase.CaptureSynchronizationContext">
-            <summary>
-            Whether to execute async callbacks on the same Synchronization Context it was called from.
             </summary>
         </member>
         <member name="P:ServiceStack.ServiceClientBase.Credentials">

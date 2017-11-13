@@ -7,12 +7,6 @@ namespace ServiceStack.Auth
 {
     public class UserAuth : IUserAuth
     {
-        public UserAuth()
-        {
-            Roles = new List<string>();
-            Permissions = new List<string>();
-        }
-
         [AutoIncrement]
         public virtual int Id { get; set; }
 
@@ -45,8 +39,8 @@ namespace ServiceStack.Auth
         public virtual string Salt { get; set; }
         public virtual string PasswordHash { get; set; }
         public virtual string DigestHa1Hash { get; set; }
-        public virtual List<string> Roles { get; set; }
-        public virtual List<string> Permissions { get; set; }
+        public virtual List<string> Roles { get; set; } = new List<string>();
+        public virtual List<string> Permissions { get; set; } = new List<string>();
         public virtual DateTime CreatedDate { get; set; }
         public virtual DateTime ModifiedDate { get; set; }
         public virtual int InvalidLoginAttempts { get; set; }
@@ -62,8 +56,6 @@ namespace ServiceStack.Auth
 
     public class UserAuthDetails : IUserAuthDetails
     {
-        public UserAuthDetails() { Items = new Dictionary<string, string>(); }
-
         [AutoIncrement]
         public virtual int Id { get; set; }
 
@@ -98,7 +90,7 @@ namespace ServiceStack.Auth
         public virtual DateTime? RefreshTokenExpiry { get; set; }
         public virtual string RequestToken { get; set; }
         public virtual string RequestTokenSecret { get; set; }
-        public virtual Dictionary<string, string> Items { get; set; }
+        public virtual Dictionary<string, string> Items { get; set; } = new Dictionary<string, string>();
         public virtual string AccessToken { get; set; }
         public virtual string AccessTokenSecret { get; set; }
         public virtual DateTime CreatedDate { get; set; }
