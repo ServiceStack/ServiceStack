@@ -232,8 +232,7 @@ namespace ServiceStack
             foreach (var op in metadataTypes.Operations)
             {
                 if (op.Request.Inherits != null 
-                    && (op.Request.Inherits.Name.StartsWith("QueryBase`") ||
-                        op.Request.Inherits.Name.StartsWith("QueryDb`") || 
+                    && (op.Request.Inherits.Name.StartsWith("QueryDb`") || 
                         op.Request.Inherits.Name.StartsWith("QueryData`"))
                     )
                 {
