@@ -11,9 +11,7 @@ namespace ServiceStack.Configuration
     public class AppSettingsBase : IAppSettings, ISettingsWriter
     {
         protected ISettings settings;
-        protected ISettingsWriter settingsWriter; 
-
-        protected const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
+        protected ISettingsWriter settingsWriter;
 
         public string Tier { get; set; }
 
@@ -80,7 +78,7 @@ namespace ServiceStack.Configuration
         {
             var value = GetNullableString(name);
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorAppsettingNotFound, name));
+                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
 
             return value;
         }
@@ -157,6 +155,30 @@ namespace ServiceStack.Configuration
             return lines.Length > 1 
                 ? string.Join("", lines.Select(x => x.Trim())) 
                 : originalSetting;
+        }
+    }
+
+    public static class AppSettingsUtils
+    {
+        public static string GetRequiredString(this IAppSettings settings, string name)
+        {
+            if (settings is AppSettingsBase appSettings)
+                return appSettings.GetRequiredString(name);
+
+            var value = settings.GetString(name);
+            if (value == null)
+                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, name));
+
+            return value;
+        }
+
+        public static string GetNullableString(this IAppSettings settings, string name)
+        {
+            if (settings is AppSettingsBase appSettings)
+                return appSettings.GetNullableString(name);
+
+            var value = settings.GetString(name);
+            return value;
         }
     }
 }

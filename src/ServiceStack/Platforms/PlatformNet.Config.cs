@@ -1,15 +1,10 @@
 ﻿#if !NETSTANDARD2_0
-using System;
 using System.Configuration;
-using System.Reflection;
-using ServiceStack.Configuration;
 
 namespace ServiceStack.Platforms
 {
     public partial class PlatformNet : Platform
     {
-        const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
-        const string ErrorConnectionStringNotFound = "Unable to find Connection String: {0}";
         public const string ConfigNullValue = "{null}";
 
         /// <summary>
@@ -30,7 +25,7 @@ namespace ServiceStack.Platforms
             string value = ConfigurationManager.AppSettings[key];
 
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorAppsettingNotFound, key));
+                throw new ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, key));
 
             return value;
         }
@@ -65,7 +60,7 @@ namespace ServiceStack.Platforms
         {
             var value = ConfigurationManager.ConnectionStrings[key];
             if (value == null)
-                throw new ConfigurationErrorsException(string.Format(ErrorConnectionStringNotFound, key));
+                throw new ConfigurationErrorsException(string.Format(ErrorMessages.ConnectionStringNotFound, key));
 
             return value;
         }

@@ -14,7 +14,6 @@ namespace ServiceStack.Platforms
         
         public static ServiceStackHost HostInstance { get; set; }
 
-        const string ErrorAppsettingNotFound = "Unable to find App Setting: {0}";
         public const string ConfigNullValue = "{null}";
         
         public static readonly List<string> AppConfigPaths = new List<string> {
@@ -82,7 +81,7 @@ namespace ServiceStack.Platforms
             string value = GetNullableAppSetting(key);
 
             if (value == null)
-                throw new System.Configuration.ConfigurationErrorsException(string.Format(ErrorAppsettingNotFound, key));
+                throw new System.Configuration.ConfigurationErrorsException(string.Format(ErrorMessages.AppsettingNotFound, key));
 
             return value;
         }

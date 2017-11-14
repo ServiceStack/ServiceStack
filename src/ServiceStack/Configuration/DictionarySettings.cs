@@ -18,8 +18,7 @@ namespace ServiceStack.Configuration
 
             public string Get(string key)
             {
-                string value;
-                return Map.TryGetValue(key, out value) ? value : null;
+                return Map.TryGetValue(key, out var value) ? value : null;
             }
 
             public List<string> GetAllKeys()

@@ -103,6 +103,10 @@
         
         //Request
         public static string ContentTypeNotSupported = "ContentType not supported '{0}'";
+
+        //Configuration
+        public static string AppsettingNotFound = "Unable to find App Setting: {0}";
+        public static string ConnectionStringNotFound = "Unable to find Connection String: {0}";
     }
 
     public static class HelpMessages
