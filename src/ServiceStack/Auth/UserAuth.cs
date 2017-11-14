@@ -414,9 +414,11 @@ namespace ServiceStack.Auth
                     case "FacebookUserName":
                         authSession.FacebookUserName = entry.Value;
                         break;
+                    case "given_name":
                     case "FirstName":
                         session.FirstName = entry.Value;
                         break;
+                    case "family_name":
                     case "LastName":
                         session.LastName = entry.Value;
                         break;
