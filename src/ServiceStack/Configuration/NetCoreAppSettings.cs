@@ -57,13 +57,13 @@ namespace ServiceStack.Configuration
                 if (child.Value == null)
                     continue;
 
-                var key = child.Path;
+                var key = child.Key;
                 to[key] = child.Value;
             }
             return to;
         }
 
-        public List<string> GetAllKeys() => Configuration.GetChildren().Select(child => child.Path).ToList();
+        public List<string> GetAllKeys() => Configuration.GetChildren().Select(child => child.Key).ToList();
 
         public bool Exists(string key) => Configuration.GetChildren().Any(x => x.Key == key);
 
