@@ -548,7 +548,7 @@ namespace ServiceStack
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
             session.LastModified = DateTime.UtcNow;
-            this.GetCacheClient().CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
+            this.GetCacheClient(httpReq).CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
 
             httpReq.Items[Keywords.Session] = session;
         }
@@ -634,6 +634,11 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// If they don't have an ICacheClient configured use an In Memory one.
+        /// </summary>
+        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
+
+        /// <summary>
         /// Tries to resolve <see cref="IRedisClient"></see> through Ioc container.
         /// If not registered, it falls back to <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
@@ -642,7 +647,15 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual ICacheClient GetCacheClient(IRequest req)
         {
-            return this.GetCacheClient();
+            var cache = req.TryResolve<ICacheClient>();
+            if (cache != null)
+                return cache;
+
+            var redisManager = req.TryResolve<IRedisClientsManager>();
+            if (redisManager != null)
+                return redisManager.GetCacheClient();
+
+            return DefaultCache;
         }
 
         /// <summary>

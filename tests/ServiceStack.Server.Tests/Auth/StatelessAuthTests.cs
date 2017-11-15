@@ -1136,7 +1136,7 @@ namespace ServiceStack.Server.Tests.Auth
                 Assert.That(webEx.StatusCode, Is.EqualTo((int)HttpStatusCode.Unauthorized));
             }
 
-            var cachedSession = appHost.GetCacheClient().Get<IAuthSession>(ApiKeyAuthProvider.GetSessionKey(ApiKey));
+            var cachedSession = appHost.GetCacheClient(null).Get<IAuthSession>(ApiKeyAuthProvider.GetSessionKey(ApiKey));
             Assert.That(cachedSession.IsAuthenticated);
 
             //Can call multiple times using cached UserSession

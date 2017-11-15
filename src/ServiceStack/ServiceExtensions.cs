@@ -54,23 +54,7 @@ namespace ServiceStack
             return sessionId;
         }
 
-        /// <summary>
-        /// If they don't have an ICacheClient configured use an In Memory one.
-        /// </summary>
-        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
-
-        public static ICacheClient GetCacheClient(this IResolver service)
-        {
-            var cache = service.TryResolve<ICacheClient>();
-            if (cache != null)
-                return cache;
-
-            var redisManager = service.TryResolve<IRedisClientsManager>();
-            if (redisManager != null)
-                return redisManager.GetCacheClient();
-
-            return DefaultCache;
-        }
+        public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost.GetCacheClient(request);
 
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {

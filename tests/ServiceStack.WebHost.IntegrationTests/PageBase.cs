@@ -29,41 +29,20 @@ namespace ServiceStack.WebHost.IntegrationTests
         /// Typed UserSession
         /// </summary>
         private object userSession;
-        protected virtual TUserSession SessionAs<TUserSession>()
-        {
-            return (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
-        }
+        protected virtual TUserSession SessionAs<TUserSession>() => (TUserSession)(userSession ?? (userSession = Cache.SessionAs<TUserSession>()));
 
-        protected CustomUserSession UserSession
-        {
-            get
-            {
-                return SessionAs<CustomUserSession>();
-            }
-        }
+        protected CustomUserSession UserSession => SessionAs<CustomUserSession>();
 
-        public new ICacheClient Cache
-        {
-            get { return HostContext.AppHost.GetCacheClient(); }
-        }
+        public new ICacheClient Cache => HostContext.AppHost.GetCacheClient(null);
 
         private ISessionFactory sessionFactory;
-        public virtual ISessionFactory SessionFactory
-        {
-            get { return sessionFactory ?? (sessionFactory = HostContext.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache); }
-        }
+        public virtual ISessionFactory SessionFactory => sessionFactory ?? (sessionFactory = HostContext.Resolve<ISessionFactory>()) ?? new SessionFactory(Cache);
 
         /// <summary>
         /// Dynamic Session Bag
         /// </summary>
         private ISession session;
-        public new ISession Session
-        {
-            get
-            {
-                return session ?? (session = SessionFactory.GetOrCreateSession());
-            }
-        }
+        public new ISession Session => session ?? (session = SessionFactory.GetOrCreateSession());
 
         public void ClearSession()
         {
