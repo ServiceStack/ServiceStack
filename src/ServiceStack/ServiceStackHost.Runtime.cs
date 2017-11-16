@@ -16,6 +16,7 @@ using System.Web;
 using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
@@ -647,11 +648,12 @@ namespace ServiceStack
         /// <returns></returns>
         public virtual ICacheClient GetCacheClient(IRequest req)
         {
-            var cache = req.TryResolve<ICacheClient>();
+            var resolver = req ?? (IResolver) this;
+            var cache = resolver.TryResolve<ICacheClient>();
             if (cache != null)
                 return cache;
 
-            var redisManager = req.TryResolve<IRedisClientsManager>();
+            var redisManager = resolver.TryResolve<IRedisClientsManager>();
             if (redisManager != null)
                 return redisManager.GetCacheClient();
 
