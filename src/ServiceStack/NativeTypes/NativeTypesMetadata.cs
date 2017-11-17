@@ -693,7 +693,7 @@ namespace ServiceStack.NativeTypes
                 .OnlySerializableProperties(type)
                 .Where(t => 
                     t.GetIndexParameters().Length == 0 && // ignore indexed properties
-                    !t.HasAttribute<ExcludeMetadata>())
+                    !t.HasAttribute<ExcludeMetadataAttribute>())
                 .ToArray();
         }
     }
