@@ -128,6 +128,11 @@ namespace ServiceStack.Web
         /// The Remote Ip as reported by X-Forwarded-For, X-Real-IP or Request.UserHostAddress
         /// </summary>
         string RemoteIp { get; }
+        
+        /// <summary>
+        /// The Remote Ip as reported by CF-Connecting-IP
+        /// </summary>
+        string CloudflareIp { get { return Headers["CF-Connecting-IP"]; } }
 
         /// <summary>
         /// The value of the Authorization Header used to send the Api Key, null if not available
