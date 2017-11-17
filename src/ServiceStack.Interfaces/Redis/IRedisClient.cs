@@ -38,6 +38,9 @@ namespace ServiceStack.Redis
         string Password { get; set; }
         bool HadExceptions { get; }
 
+        bool Ping();
+        string Echo(string text);
+
         RedisText Custom(params object[] cmdWithArgs);
 
         void Save();
