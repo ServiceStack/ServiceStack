@@ -88,11 +88,16 @@ namespace ServiceStack.Validation
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
             var baseType = validator.BaseType;
-            if (validator.IsInterface || baseType == null) return;
-            while (!baseType.IsGenericType)
+            if (validator.IsInterface || baseType == null)
+                return;
+
+            while (baseType != null && !baseType.IsGenericType)
             {
                 baseType = baseType.BaseType;
             }
+
+            if (baseType == null)
+                return;
 
             var dtoType = baseType.GetGenericArguments()[0];
             var validatorType = typeof(IValidator<>).GetCachedGenericType(dtoType);
@@ -102,8 +107,7 @@ namespace ServiceStack.Validation
 
         public static bool HasAsyncValidators(this IValidator validator, string ruleSet=null)
         {
-            var rules = validator as IEnumerable<IValidationRule>;
-            if (rules != null)
+            if (validator is IEnumerable<IValidationRule> rules)
             {
                 foreach (var rule in rules)
                 {
