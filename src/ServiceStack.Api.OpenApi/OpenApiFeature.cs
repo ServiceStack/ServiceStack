@@ -81,7 +81,6 @@ namespace ServiceStack.Api.OpenApi
                     IVirtualFile patchFile = null;
                     switch (pathInfo)
                     {
-                        case "/swagger-ui":
                         case "/swagger-ui/":
                         case "/swagger-ui/default.html":
                             indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
@@ -117,7 +116,9 @@ namespace ServiceStack.Api.OpenApi
                             return html;
                         });
                     }
-                    return pathInfo.StartsWith("/swagger-ui") ? new StaticFileHandler() : null;
+                    return pathInfo.StartsWith("/swagger-ui/") 
+                        ? new StaticFileHandler() 
+                        : null;
                 });
             }
         }

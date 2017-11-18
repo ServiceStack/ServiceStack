@@ -980,14 +980,9 @@ namespace ServiceStack
             return relativePath.MapProjectPath();
         }
 
-        public virtual string ResolvePathInfo(IRequest request, string originalPathInfo, out bool isDirectory)
+        public virtual string ResolvePathInfo(IRequest request, string originalPathInfo)
         {
-            var pathInfo = NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);
-            isDirectory = VirtualFileSources.DirectoryExists(pathInfo);
-            
-            if (!isDirectory && pathInfo.Length > 1 && pathInfo[pathInfo.Length - 1] == '/')
-                pathInfo = pathInfo.TrimEnd('/');
-            
+            var pathInfo = NormalizePathInfo(originalPathInfo, Config.HandlerFactoryPath);            
             return pathInfo;
         }
 

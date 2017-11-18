@@ -124,6 +124,11 @@ namespace ServiceStack
             {
                 if (page.File.Name.StartsWith("_"))
                     return new ForbiddenHttpHandler();
+
+                //If it's a dir index page and doesn't have a trailing '/' let it pass through to RedirectDirectoriesToTrailingSlashes
+                if (pathInfo[pathInfo.Length - 1] != '/' && pathInfo.Substring(1) == page.File.Directory?.VirtualPath)
+                    return null;
+
                 return new TemplatePageHandler(page);
             }
 

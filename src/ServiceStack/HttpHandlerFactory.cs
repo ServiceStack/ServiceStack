@@ -253,12 +253,6 @@ namespace ServiceStack
             var appHost = HostContext.AppHost;
 
             var pathInfo = httpReq.PathInfo;
-            var isFile = httpReq.IsFile();
-            var isDirectory = httpReq.IsDirectory();
-
-            if (!isFile && !isDirectory && Env.IsMono)
-                isDirectory = StaticFileHandler.MonoDirectoryExists(filePath, filePath.Substring(0, filePath.Length - pathInfo.Length));
-
             var httpMethod = httpReq.Verb;
             
             var pathParts = pathInfo.TrimStart('/').Split('/');
@@ -268,15 +262,21 @@ namespace ServiceStack
             if (restPath != null)
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
+            var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
+            if (catchAllHandler != null)
+                return catchAllHandler;
+
+            var isFile = httpReq.IsFile();
+            var isDirectory = httpReq.IsDirectory();
+
+            if (!isFile && !isDirectory && Env.IsMono)
+                isDirectory = StaticFileHandler.MonoDirectoryExists(filePath, filePath.Substring(0, filePath.Length - pathInfo.Length));
+
             if (isFile || isDirectory)
             {
                 //If pathInfo is for Directory try again with redirect including '/' suffix
                 if (appHost.Config.RedirectDirectoriesToTrailingSlashes && isDirectory && !httpReq.OriginalPathInfo.EndsWith("/"))
                     return new RedirectHttpHandler { RelativeUrl = pathInfo + "/" };
-
-                var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
-                if (catchAllHandler != null) 
-                    return catchAllHandler;
 
                 if (isDirectory)
                     return StaticFilesHandler;
@@ -285,9 +285,6 @@ namespace ServiceStack
                     ? StaticFilesHandler
                     : ForbiddenHttpHandler;
             }
-
-            var handler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
-            if (handler != null) return handler;
 
             if (appHost.Config.FallbackRestPath != null)
             {

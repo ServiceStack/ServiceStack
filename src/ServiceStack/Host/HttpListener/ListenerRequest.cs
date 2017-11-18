@@ -37,9 +37,7 @@ namespace ServiceStack.Host.HttpListener
 
             this.RequestPreferences = new RequestPreferences(this);
             this.PathInfo = this.OriginalPathInfo = GetPathInfo();
-            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo, out bool isDirectory);
-            this.IsDirectory = isDirectory;
-            this.IsFile = !isDirectory && HostContext.VirtualFileSources.FileExists(PathInfo);
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo);
         }
 
         private string GetPathInfo()
@@ -307,13 +305,41 @@ namespace ServiceStack.Host.HttpListener
             return pathInfo;
         }
 
-        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+        private IVirtualFile file;
+        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
 
-        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+        private IVirtualDirectory dir;
+        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
 
-        public bool IsDirectory { get; }
+        private bool? isDirectory;
+        public bool IsDirectory
+        {
+            get
+            {
+                if (isDirectory == null)
+                {
+                    isDirectory = dir != null || HostContext.VirtualFileSources.DirectoryExists(PathInfo);
+                    if (isDirectory == true)
+                        isFile = false;
+                }
+                return isDirectory.Value;
+            }
+        }
 
-        public bool IsFile { get; }
+        private bool? isFile;
+        public bool IsFile
+        {
+            get
+            {
+                if (isFile == null)
+                {
+                    isFile = GetFile() != null;
+                    if (isFile == true)
+                        isDirectory = false;                    
+                }
+                return isFile.Value;
+            }
+        }
     }
 
 }

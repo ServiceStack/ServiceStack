@@ -64,8 +64,8 @@ namespace CheckHttpListener
             });
         }
 
-        public override string ResolvePathInfo(IRequest request, string originalPathInfo, out bool isDirectory) =>
-            base.ResolvePathInfo(request, originalPathInfo.Replace("/testsite", "/TestSite"), out isDirectory);
+        public override string ResolvePathInfo(IRequest request, string originalPathInfo) =>
+            base.ResolvePathInfo(request, originalPathInfo.Replace("/testsite", "/TestSite"));
 
 //        public override RouteAttribute[] GetRouteAttributes(Type requestType)
 //        {
