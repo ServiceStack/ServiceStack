@@ -85,9 +85,18 @@ namespace ServiceStack
                 LicenseUtils.RegisterLicense(licenceKeyText);
             }
         }
+        
+        public Func<HttpContext, Task<bool>> NetCoreHandler { get; set; }
 
         public virtual async Task ProcessRequest(HttpContext context, Func<Task> next)
         {
+            if (NetCoreHandler != null)
+            {
+                var handled = await NetCoreHandler(context);
+                if (handled)
+                    return;
+            }
+            
             //Keep in sync with Kestrel/AppSelfHostBase.cs
             var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
             var pathInfo = context.Request.Path.HasValue
@@ -116,6 +125,7 @@ namespace ServiceStack
             {
                 httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo); 
                 httpReq.RequestAttributes = httpReq.GetAttributes();
+                
                 httpRes = httpReq.Response;
                 handler = HttpHandlerFactory.GetHandler(httpReq);
             } 
