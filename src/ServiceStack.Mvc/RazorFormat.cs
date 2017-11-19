@@ -312,17 +312,17 @@ namespace ServiceStack.Mvc
                 {
                     viewData[cookie.Key] = cookie.Value.Value;
                 }
-                foreach (string header in req.Headers)
+                foreach (var header in req.Headers.AllKeys)
                 {
                     viewData[header] = req.Headers[header];
                 }
-                foreach (string key in req.QueryString)
+                foreach (var key in req.QueryString.AllKeys)
                 {
                     viewData[key] = req.QueryString[key];
                 }
-                foreach (string key in req.FormData)
+                foreach (var key in req.FormData.AllKeys)
                 {
-                    viewData[key] = req.QueryString[key];
+                    viewData[key] = req.FormData[key];
                 }
                 foreach (var entry in req.Items)
                 {
@@ -483,7 +483,7 @@ namespace ServiceStack.Mvc
             return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
         }
 
-        public virtual T GetPlugin<T>() where T : class, IPlugin => HostContext.AppHost.GetPlugin<T>();
+        public virtual TPlugin GetPlugin<TPlugin>() where TPlugin : class, IPlugin => HostContext.AppHost.GetPlugin<TPlugin>();
 
         private IServiceStackProvider provider;
         public virtual IServiceStackProvider ServiceStackProvider => provider ?? (provider = new ServiceStackProvider(Request));
@@ -518,9 +518,9 @@ namespace ServiceStack.Mvc
 
         protected virtual void ClearSession() => ServiceStackProvider.ClearSession();
 
-        protected virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
+        protected virtual TDependency TryResolve<TDependency>() => ServiceStackProvider.TryResolve<TDependency>();
 
-        protected virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+        protected virtual TService ResolveService<TService>() => ServiceStackProvider.ResolveService<TService>();
 
         protected virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 
