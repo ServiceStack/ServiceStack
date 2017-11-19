@@ -296,8 +296,7 @@ namespace ServiceStack.Common.Tests
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
             {
                 var response = (TResponse)typeof(TResponse).CreateInstance();
-                var hasResponseStatus = response as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                if (response is IHasResponseStatus hasResponseStatus)
                 {
                     hasResponseStatus.ResponseStatus = new ResponseStatus {
                         ErrorCode = exception.GetType().Name,
@@ -306,7 +305,7 @@ namespace ServiceStack.Common.Tests
                     };
                 }
                 var webServiceEx = new WebServiceException(exception.Message, exception);
-                if (onError != null) onError(response, webServiceEx);
+                onError?.Invoke(response, webServiceEx);
             }
 
             public void SetCredentials(string userName, string password)
@@ -493,8 +492,7 @@ namespace ServiceStack.Common.Tests
             {
                 var message = MessageFactory.Create(request);
                 var response = ServiceManager.ExecuteMessage(message);
-                var httpResult = response as IHttpResult;
-                if (httpResult != null)
+                if (response is IHttpResult httpResult)
                 {
                     if (httpResult.StatusCode >= HttpStatusCode.BadRequest)
                     {
@@ -509,7 +507,7 @@ namespace ServiceStack.Common.Tests
                 }
 
                 var responseStatus = response.GetResponseStatus();
-                var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                var isError = responseStatus?.ErrorCode != null;
                 if (isError)
                 {
                     var webEx = new WebServiceException(responseStatus.Message)

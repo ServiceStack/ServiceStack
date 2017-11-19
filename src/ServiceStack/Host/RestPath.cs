@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading;
 using ServiceStack.Serialization;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -17,7 +16,7 @@ namespace ServiceStack.Host
         private const char WildCardChar = '*';
         private const string PathSeparator = "/";
         private const char PathSeparatorChar = '/';
-        private static readonly char[] PathSeparatorCharArray = new char[] {'/'};
+        private static readonly char[] PathSeparatorCharArray = {'/'};
         private const char ComponentSeparator = '.';
         private const string VariablePrefix = "{";
 
@@ -92,7 +91,7 @@ namespace ServiceStack.Host
             //and 20 times faster than simple string concatenation
             return pathPartsForMatching.Length < prefixesLookup.Length 
                 ? prefixesLookup[pathPartsForMatching.Length]
-                : pathPartsForMatching.Length.ToString() + PathSeparator;
+                : pathPartsForMatching.Length + PathSeparator;
         }
 
         public static IEnumerable<string> GetFirstMatchHashKeys(string[] pathPartsForMatching)

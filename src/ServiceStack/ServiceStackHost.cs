@@ -639,7 +639,7 @@ namespace ServiceStack
             var specifiedContentType = config.DefaultContentType; //Before plugins loaded
 
             var plugins = Plugins.ToArray();
-            delayLoadPlugin = true;
+            delayedLoadPlugin = true;
             LoadPluginsInternal(plugins);
 
             AfterPluginsLoaded(specifiedContentType);
@@ -887,13 +887,14 @@ namespace ServiceStack
             return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
         }
 
-        private bool delayLoadPlugin;
+        private bool delayedLoadPlugin;
         public virtual void LoadPlugin(params IPlugin[] plugins)
         {
-            if (delayLoadPlugin)
+            if (delayedLoadPlugin)
             {
                 LoadPluginsInternal(plugins);
                 Plugins.AddRange(plugins);
+                PopulateArrayFilters();
             }
             else
             {
