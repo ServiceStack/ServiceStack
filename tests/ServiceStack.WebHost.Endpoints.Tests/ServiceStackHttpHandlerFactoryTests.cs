@@ -24,11 +24,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     host.Plugins.Add(new PredefinedRoutesFeature());
                     host.Plugins.Add(new SoapFormat());
+                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+                    host.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
                 }
 #endif
             }.Init();
-            HostContext.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-            HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
 
         [OneTimeTearDown]

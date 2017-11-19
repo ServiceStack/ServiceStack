@@ -36,9 +36,9 @@ namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
-        public virtual async Task<object> ApplyRequestConvertersAsync(IRequest req, object requestDto)
+        public async Task<object> ApplyRequestConvertersAsync(IRequest req, object requestDto)
         {
-            foreach (var converter in RequestConverters)
+            foreach (var converter in RequestConvertersArray)
             {
                 requestDto = await converter(req, requestDto) ?? requestDto;
                 if (req.Response.IsClosed)
@@ -48,9 +48,9 @@ namespace ServiceStack
             return requestDto;
         }
 
-        public virtual async Task<object> ApplyResponseConvertersAsync(IRequest req, object responseDto)
+        public async Task<object> ApplyResponseConvertersAsync(IRequest req, object responseDto)
         {
-            foreach (var converter in ResponseConverters)
+            foreach (var converter in ResponseConvertersArray)
             {
                 responseDto = await converter(req, responseDto) ?? responseDto;
                 if (req.Response.IsClosed)
@@ -63,7 +63,7 @@ namespace ServiceStack
         /// <summary>
         /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
         /// </summary>
-        public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
+        public bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return ApplyPreRequestFilters(httpReq, httpRes);
         }
@@ -85,14 +85,14 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
+        public bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
-            if (PreRequestFilters.Count == 0)
+            if (PreRequestFiltersArray.Length == 0)
                 return false;
 
             using (Profiler.Current.Step("Executing Pre RequestFilters"))
             {
-                foreach (var requestFilter in PreRequestFilters)
+                foreach (var requestFilter in PreRequestFiltersArray)
                 {
                     requestFilter(httpReq, httpRes);
                     if (httpRes.IsClosed) break;
@@ -103,7 +103,7 @@ namespace ServiceStack
         }
 
         [Obsolete("Use ApplyRequestFiltersAsync")]
-        public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        public bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
         {
             ApplyRequestFiltersAsync(req, res, requestDto).Wait();
             return res.IsClosed;
@@ -114,7 +114,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual async Task ApplyRequestFiltersAsync(IRequest req, IResponse res, object requestDto)
+        public async Task ApplyRequestFiltersAsync(IRequest req, IResponse res, object requestDto)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (res == null) throw new ArgumentNullException(nameof(res));
@@ -140,7 +140,7 @@ namespace ServiceStack
             }
         }
 
-        protected virtual async Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
+        protected async Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
         {
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
@@ -164,14 +164,14 @@ namespace ServiceStack
                 return;
 
             //Exec global filters
-            foreach (var requestFilter in GlobalRequestFilters)
+            foreach (var requestFilter in GlobalRequestFiltersArray)
             {
                 requestFilter(req, res, requestDto);
                 if (res.IsClosed) 
                     return;
             }
             
-            foreach (var requestFilter in GlobalRequestFiltersAsync)
+            foreach (var requestFilter in GlobalRequestFiltersAsyncArray)
             {
                 await requestFilter(req, res, requestDto);
                 if (res.IsClosed) 
@@ -196,7 +196,7 @@ namespace ServiceStack
         }
 
         [Obsolete("Use ApplyResponseFiltersAsync")]
-        public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object response)
+        public bool ApplyResponseFilters(IRequest req, IResponse res, object response)
         {
             ApplyResponseFiltersAsync(req, res, response).Wait();
             return res.IsClosed;
@@ -207,7 +207,7 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual async Task ApplyResponseFiltersAsync(IRequest req, IResponse res, object response)
+        public async Task ApplyResponseFiltersAsync(IRequest req, IResponse res, object response)
         {
             if (req == null) throw new ArgumentNullException(nameof(req));
             if (res == null) throw new ArgumentNullException(nameof(res));
@@ -233,7 +233,7 @@ namespace ServiceStack
             }
         }
 
-        protected virtual async Task ApplyResponseFiltersSingleAsync(IRequest req, IResponse res, object response)
+        protected async Task ApplyResponseFiltersSingleAsync(IRequest req, IResponse res, object response)
         {
             var attributes = req.Dto != null
                 ? FilterAttributeCache.GetResponseFilterAttributes(req.Dto.GetType())
@@ -267,14 +267,14 @@ namespace ServiceStack
             }
 
             //Exec global filters
-            foreach (var responseFilter in GlobalResponseFilters)
+            foreach (var responseFilter in GlobalResponseFiltersArray)
             {
                 responseFilter(req, res, response);
                 if (res.IsClosed) 
                     return;
             }
 
-            foreach (var responseFilter in GlobalResponseFiltersAsync)
+            foreach (var responseFilter in GlobalResponseFiltersAsyncArray)
             {
                 await responseFilter(req, res, response);
                 if (res.IsClosed) 
@@ -301,19 +301,19 @@ namespace ServiceStack
             }
         }
 
-        public virtual bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
+        public bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
         {
             ExecTypedFilters(GlobalTypedMessageRequestFilters, req, res, requestDto);
             if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
-            foreach (var requestFilter in GlobalMessageRequestFilters)
+            foreach (var requestFilter in GlobalMessageRequestFiltersArray)
             {
                 requestFilter(req, res, requestDto);
                 if (res.IsClosed) return res.IsClosed;
             }
 
-            foreach (var requestFilter in GlobalMessageRequestFiltersAsync)
+            foreach (var requestFilter in GlobalMessageRequestFiltersAsyncArray)
             {
                 requestFilter(req, res, requestDto).Wait();
                 if (res.IsClosed) return res.IsClosed;
@@ -322,13 +322,13 @@ namespace ServiceStack
             return res.IsClosed;
         }
 
-        public virtual bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
+        public bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
         {
             ExecTypedFilters(GlobalTypedMessageResponseFilters, req, res, response);
             if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
-            foreach (var responseFilter in GlobalMessageResponseFilters)
+            foreach (var responseFilter in GlobalMessageResponseFiltersArray)
             {
                 responseFilter(req, res, response);
                 if (res.IsClosed) return res.IsClosed;
@@ -337,7 +337,7 @@ namespace ServiceStack
             return res.IsClosed;
         }
 
-        public virtual void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters,
+        public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters,
             IRequest req, IResponse res, object dto)
         {
             if (typedFilters.Count == 0) return;
@@ -518,8 +518,7 @@ namespace ServiceStack
             }
 
             var serializationEx = ex as SerializationException;
-            var errors = serializationEx?.Data["errors"] as List<RequestBindingError>;
-            if (errors != null)
+            if (serializationEx?.Data["errors"] is List<RequestBindingError> errors)
             {
                 if (responseStatus.Errors == null)
                     responseStatus.Errors = new List<ResponseError>();

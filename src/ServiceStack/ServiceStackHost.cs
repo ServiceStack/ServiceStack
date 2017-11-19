@@ -224,11 +224,33 @@ namespace ServiceStack
 
             OnAfterInit();
 
+            PopulateArrayFilters();
+
             LogInitComplete();
 
             HttpHandlerFactory.Init();
 
             return this;
+        }
+
+        protected void PopulateArrayFilters()
+        {
+            PreRequestFiltersArray = PreRequestFilters.ToArray();
+            RequestConvertersArray = RequestConverters.ToArray();
+            ResponseConvertersArray = ResponseConverters.ToArray();
+            GlobalRequestFiltersArray = GlobalRequestFilters.ToArray();
+            GlobalRequestFiltersAsyncArray = GlobalRequestFiltersAsync.ToArray();
+            GlobalResponseFiltersArray = GlobalResponseFilters.ToArray();
+            GlobalResponseFiltersAsyncArray = GlobalResponseFiltersAsync.ToArray();
+            GlobalMessageRequestFiltersArray = GlobalMessageRequestFilters.ToArray();
+            GlobalMessageRequestFiltersAsyncArray = GlobalMessageRequestFiltersAsync.ToArray();
+            GlobalMessageResponseFiltersArray = GlobalMessageResponseFilters.ToArray();
+            RawHttpHandlersArray = RawHttpHandlers.ToArray();
+            CatchAllHandlersArray = CatchAllHandlers.ToArray();
+            GatewayRequestFiltersArray = GatewayRequestFilters.ToArray();
+            GatewayRequestFiltersAsyncArray = GatewayRequestFiltersAsync.ToArray();
+            GatewayResponseFiltersArray = GatewayResponseFilters.ToArray();
+            GatewayResponseFiltersAsyncArray = GatewayResponseFiltersAsync.ToArray();
         }
 
         private void LogInitComplete()
@@ -332,6 +354,7 @@ namespace ServiceStack
         /// called in <see cref="ApplyPreRequestFilters"/>.
         /// </summary>
         public List<Action<IRequest, IResponse>> PreRequestFilters { get; set; }
+        internal Action<IRequest, IResponse>[] PreRequestFiltersArray;
 
         /// <summary>
         /// Collection of RequestConverters.
@@ -343,6 +366,7 @@ namespace ServiceStack
         /// Note one converter could influence the input for the next converter!
         /// </summary>
         public List<Func<IRequest, object, Task<object>>> RequestConverters { get; set; }
+        internal Func<IRequest, object, Task<object>>[] RequestConvertersArray;
 
         /// <summary>
         /// Collection of ResponseConverters.
@@ -351,26 +375,34 @@ namespace ServiceStack
         /// Called directly after response is handled, even before <see cref="ApplyResponseFiltersAsync"></see>!
         /// </summary>
         public List<Func<IRequest, object, Task<object>>> ResponseConverters { get; set; }
+        internal Func<IRequest, object, Task<object>>[] ResponseConvertersArray;
 
         public List<Action<IRequest, IResponse, object>> GlobalRequestFilters { get; set; }
+        internal Action<IRequest, IResponse, object>[] GlobalRequestFiltersArray;
 
         public List<Func<IRequest, IResponse, object, Task>> GlobalRequestFiltersAsync { get; set; }
+        internal Func<IRequest, IResponse, object, Task>[] GlobalRequestFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedRequestFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalResponseFilters { get; set; }
+        internal Action<IRequest, IResponse, object>[] GlobalResponseFiltersArray;
 
         public List<Func<IRequest, IResponse, object, Task>> GlobalResponseFiltersAsync { get; set; }
+        internal Func<IRequest, IResponse, object, Task>[] GlobalResponseFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedResponseFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters { get; }
+        internal Action<IRequest, IResponse, object>[] GlobalMessageRequestFiltersArray;
 
         public List<Func<IRequest, IResponse, object, Task>> GlobalMessageRequestFiltersAsync { get; }
+        internal Func<IRequest, IResponse, object, Task>[] GlobalMessageRequestFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageRequestFilters { get; set; }
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
+        internal Action<IRequest, IResponse, object>[] GlobalMessageResponseFiltersArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
 
@@ -395,8 +427,10 @@ namespace ServiceStack
         public List<Action<IRequest>> OnEndRequestCallbacks { get; set; }
 
         public List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers { get; set; }
+        internal Func<IHttpRequest, IHttpHandler>[] RawHttpHandlersArray;
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
+        internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
 
         public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
 
@@ -420,12 +454,16 @@ namespace ServiceStack
         public List<IVirtualPathProvider> AddVirtualFileSources { get; set; }
 
         public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
+        internal Action<IRequest, object>[] GatewayRequestFiltersArray;
 
         public List<Func<IRequest, object, Task>> GatewayRequestFiltersAsync { get; set; }
+        internal Func<IRequest, object, Task>[] GatewayRequestFiltersAsyncArray;
 
         public List<Action<IRequest, object>> GatewayResponseFilters { get; set; }
+        internal Action<IRequest, object>[] GatewayResponseFiltersArray;
 
         public List<Func<IRequest, object, Task>> GatewayResponseFiltersAsync { get; set; }
+        internal Func<IRequest, object, Task>[] GatewayResponseFiltersAsyncArray;
 
         /// <summary>
         /// Executed immediately before a Service is executed. Use return to change the request DTO used, must be of the same type.

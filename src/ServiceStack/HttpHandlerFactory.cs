@@ -127,7 +127,7 @@ namespace ServiceStack
             DebugLastHandlerArgs = requestType + "|" + url + "|" + pathTranslated;
             var httpReq = new Host.AspNet.AspNetRequest(ctx.Request.RequestContext.HttpContext, url.SanitizedVirtualPath());
 
-            foreach (var rawHttpHandler in appHost.RawHttpHandlers)
+            foreach (var rawHttpHandler in appHost.RawHttpHandlersArray)
             {
                 var handler = rawHttpHandler(httpReq);
                 if (handler != null) 
@@ -153,7 +153,7 @@ namespace ServiceStack
                 }
 
                 //e.g. CatchAllHandler to Process Markdown files
-                var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
                 if (mode == null)
@@ -179,7 +179,7 @@ namespace ServiceStack
         {
             var appHost = HostContext.AppHost;
 
-            foreach (var rawHttpHandler in appHost.RawHttpHandlers)
+            foreach (var rawHttpHandler in appHost.RawHttpHandlersArray)
             {
                 var handler = rawHttpHandler(httpReq);
                 if (handler != null) 
@@ -201,7 +201,7 @@ namespace ServiceStack
                 }
 
                 //e.g. CatchAllHandler to Process Markdown files
-                var catchAllHandler = GetCatchAllHandlerIfAny(httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
                 if (mode == null)
@@ -262,7 +262,7 @@ namespace ServiceStack
             if (restPath != null)
                 return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
 
-            var catchAllHandler = GetCatchAllHandlerIfAny(httpMethod, pathInfo, filePath);
+            var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpMethod, pathInfo, filePath);
             if (catchAllHandler != null)
                 return catchAllHandler;
 
@@ -296,9 +296,9 @@ namespace ServiceStack
             return null;
         }
 
-        private static IHttpHandler GetCatchAllHandlerIfAny(string httpMethod, string pathInfo, string filePath)
+        private static IHttpHandler GetCatchAllHandlerIfAny(ServiceStackHost appHost, string httpMethod, string pathInfo, string filePath)
         {
-            foreach (var httpHandlerResolver in HostContext.CatchAllHandlers)
+            foreach (var httpHandlerResolver in appHost.CatchAllHandlersArray)
             {
                 var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
                 if (httpHandler != null)

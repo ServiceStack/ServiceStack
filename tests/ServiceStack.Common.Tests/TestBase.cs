@@ -33,7 +33,14 @@ namespace ServiceStack.Common.Tests
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;
 
-            this.AppHost = new BasicAppHost(serviceAssemblies).Init();
+            this.AppHost = new BasicAppHost(serviceAssemblies)
+            {
+                ConfigureAppHost = host =>
+                {
+                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+                    host.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+                }
+            }.Init();
         }
 
         [OneTimeTearDown]

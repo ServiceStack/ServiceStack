@@ -74,18 +74,6 @@ namespace ServiceStack
             set => ServiceStackHost.Instance.TestMode = value;
         }
 
-        public static List<HttpHandlerResolverDelegate> CatchAllHandlers => AssertAppHost().CatchAllHandlers;
-
-        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers => AssertAppHost().RawHttpHandlers;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalRequestFilters => AssertAppHost().GlobalRequestFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalResponseFilters => AssertAppHost().GlobalResponseFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters => AssertAppHost().GlobalMessageRequestFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters => AssertAppHost().GlobalMessageResponseFilters;
-
         public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return AssertAppHost().ApplyCustomHandlerRequestFilters(httpReq, httpRes);

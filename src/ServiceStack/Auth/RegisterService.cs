@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.FluentValidation;
@@ -106,8 +107,7 @@ namespace ServiceStack.Auth
                 var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
                 registerNewUser = existingUser == null;
 
-                if (HostContext.GlobalRequestFilters == null
-                    || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
+                if (!HostContext.AppHost.GlobalRequestFiltersArray.Contains(ValidationFilters.RequestFilter)) //Already gets run
                 {
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
@@ -201,8 +201,7 @@ namespace ServiceStack.Auth
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
-            if (HostContext.GlobalRequestFilters == null
-                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (!HostContext.AppHost.GlobalRequestFiltersArray.Contains(ValidationFilters.RequestFilter)) //Already gets run
             {
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }

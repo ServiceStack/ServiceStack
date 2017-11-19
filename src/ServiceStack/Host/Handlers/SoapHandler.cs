@@ -120,7 +120,8 @@ namespace ServiceStack.Host.Handlers
 
                 httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
 
-                var hasRequestFilters = HostContext.GlobalRequestFilters.Count > 0
+                var hasRequestFilters = HostContext.AppHost.GlobalRequestFiltersArray.Length > 0
+                    || HostContext.AppHost.GlobalRequestFiltersAsyncArray.Length > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
                 if (hasRequestFilters)

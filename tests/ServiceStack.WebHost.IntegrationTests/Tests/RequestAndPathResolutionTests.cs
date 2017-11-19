@@ -19,13 +19,6 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void OnBeforeTest()
         {
             base.OnBeforeEachTest();
-            RegisterConfig();
-        }
-
-        private void RegisterConfig()
-        {
-            HostContext.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
-            HostContext.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
         }
 
         [Test]
