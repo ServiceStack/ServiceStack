@@ -35,11 +35,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
             Assert.That(response, Does.StartWith("<!doctype html>"));
+        }
+
+        [Test]
+        public void Can_download_original_route_with_Accept_json()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
+                .GetStringFromUrl(
+                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    responseFilter: httpRes =>
+                    {
+                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    });
+
+            Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
+        }
+
+        [Test]
+        public void Can_download_original_route_with_trailing_slash_and_Accept_json()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo/")
+                .GetStringFromUrl(
+                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    responseFilter: httpRes =>
+                    {
+                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    });
+
+            Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
         }
 
         [Test]
@@ -48,7 +75,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.json")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
                 });
 
@@ -63,7 +89,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     contentType:MimeTypes.PlainText,
                     responseFilter: httpRes => 
                     {
-                        httpRes.ContentType.Print();
                         Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
                     });
 
@@ -76,7 +101,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.xml")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Xml));
                 });
 
@@ -89,7 +113,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.html")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
@@ -102,7 +125,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.csv")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
                 });
 
