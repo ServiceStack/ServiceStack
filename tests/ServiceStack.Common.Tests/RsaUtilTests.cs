@@ -52,7 +52,7 @@ sO2GRzjw6Kx9d2+RzsaH+vWINhuB6+zIQ2KKH39ZvV19AMvxmhRyqyYoTYjm7v7P0vNlpqeYYPqDx2sb
             var pk1 = PlatformRsaUtils.ExtractFromXml(PrivateKeyXml);
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(PrivateKeyXml);
+                rsa.FromXml(PrivateKeyXml);
 
                 var pk2 = rsa.ExportParameters(includePrivateParameters: true);
 
@@ -76,7 +76,7 @@ sO2GRzjw6Kx9d2+RzsaH+vWINhuB6+zIQ2KKH39ZvV19AMvxmhRyqyYoTYjm7v7P0vNlpqeYYPqDx2sb
             var pk1 = PlatformRsaUtils.ExtractFromXml(PublicKeyXml);
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(PublicKeyXml);
+                rsa.FromXml(PublicKeyXml);
 
                 var pk2 = rsa.ExportParameters(includePrivateParameters: false);
 

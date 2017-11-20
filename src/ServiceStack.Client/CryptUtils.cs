@@ -46,8 +46,8 @@ namespace ServiceStack
             {
                 return new RsaKeyPair
                 {
-                    PrivateKey = rsa.ToXmlString(includePrivateParameters: true),
-                    PublicKey = rsa.ToXmlString(includePrivateParameters: false),
+                    PrivateKey = rsa.ToXml(includePrivateParameters: true),
+                    PublicKey = rsa.ToXml(includePrivateParameters: false),
                 };
             }
         }
@@ -65,7 +65,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(privateKey);
-                return rsa.ToXmlString(includePrivateParameters: true);
+                return rsa.ToXml(includePrivateParameters: true);
             }
         }
 
@@ -74,7 +74,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(publicKey);
-                return rsa.ToXmlString(includePrivateParameters: false);
+                return rsa.ToXml(includePrivateParameters: false);
             }
         }
 
@@ -82,7 +82,7 @@ namespace ServiceStack
         {
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(privateKeyXml);
+                rsa.FromXml(privateKeyXml);
                 return rsa.ExportParameters(includePrivateParameters: true);
             }
         }
@@ -91,7 +91,7 @@ namespace ServiceStack
         {
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(publicKeyXml);
+                rsa.FromXml(publicKeyXml);
                 return rsa.ExportParameters(includePrivateParameters: false);
             }
         }
@@ -101,7 +101,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(publicKey);
-                return rsa.ToXmlString(includePrivateParameters: false);
+                return rsa.ToXml(includePrivateParameters: false);
             }
         }
 
@@ -119,7 +119,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(privateKey);
-                return rsa.ToXmlString(includePrivateParameters: true);
+                return rsa.ToXml(includePrivateParameters: true);
             }
         }
 
@@ -159,7 +159,7 @@ namespace ServiceStack
         {
             using (var rsa = CreateRsa(rsaKeyLength))
             {
-                rsa.FromXmlString(publicKeyXml);
+                rsa.FromXml(publicKeyXml);
                 return rsa.Encrypt(bytes);
             }
         }
@@ -193,7 +193,7 @@ namespace ServiceStack
         {
             using (var rsa = CreateRsa(rsaKeyLength))
             {
-                rsa.FromXmlString(privateKeyXml);
+                rsa.FromXml(privateKeyXml);
                 byte[] bytes = rsa.Decrypt(encryptedBytes);
                 return bytes;
             }
@@ -450,18 +450,28 @@ namespace ServiceStack
 
     public static class PlatformRsaUtils
     {
-#if NETSTANDARD2_0
-        public static void FromXmlString(this RSA rsa, string xml)
+        public static void FromXml(this RSA rsa, string xml)
         {
+#if !NETSTANDARD2_0
+            rsa.FromXmlString(xml);
+#else
+            //Throws PlatformNotSupportedException
             var csp = ExtractFromXml(xml);
             rsa.ImportParameters(csp);
+#endif
         }
 
-        public static string ToXmlString(this RSA rsa, bool includePrivateParameters)
+        public static string ToXml(this RSA rsa, bool includePrivateParameters)
         {
+#if !NETSTANDARD2_0
+            return rsa.ToXmlString(includePrivateParameters: includePrivateParameters);
+#else 
+            //Throws PlatformNotSupportedException
             return ExportToXml(rsa.ExportParameters(includePrivateParameters), includePrivateParameters);
+#endif
         }
 
+#if NETSTANDARD2_0
         public static HashAlgorithmName ToHashAlgorithmName(string hashAlgorithm)
         {
             switch (hashAlgorithm.ToUpper())
