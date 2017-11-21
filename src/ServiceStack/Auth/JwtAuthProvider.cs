@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
@@ -370,9 +371,6 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
 
-            if (!(AuthRepository is IUserAuthRepository userRepo))
-                throw new NotSupportedException("JWT Refresh Tokens requires a registered IUserAuthRepository");
-
             JsonObject jwtPayload;
             try
             {
@@ -394,22 +392,41 @@ namespace ServiceStack.Auth
 
             var userId = jwtPayload["sub"];
 
-            var userAuth = userRepo.GetUserAuth(userId);
-            if (userAuth == null)
-                throw HttpError.NotFound(ErrorMessages.UserNotExists);
-
-            if (jwtAuthProvider.IsAccountLocked(userRepo, userAuth))
-                throw new AuthenticationException(ErrorMessages.UserAccountLocked);
-
-            var session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
-            jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
-
+            IAuthSession session;
             IEnumerable<string> roles = null, perms = null;
-            if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
+
+            var userSessionSource = TryResolve<IUserSessionSource>() 
+                ?? AuthenticateService.GetAuthProviders().FirstOrDefault(x => x is IUserSessionSource) as IUserSessionSource;
+
+            if (userSessionSource != null)
             {
-                roles = manageRoles.GetRoles(session.UserAuthId);
-                perms = manageRoles.GetPermissions(session.UserAuthId);
+                session = userSessionSource.GetUserSession(userId);
+                if (session == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+
+                roles = session.Roles;
+                perms = session.Permissions;
             }
+            else if (AuthRepository is IUserAuthRepository userRepo)
+            {
+                var userAuth = userRepo.GetUserAuth(userId);
+                if (userAuth == null)
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+
+                if (jwtAuthProvider.IsAccountLocked(userRepo, userAuth))
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+
+                session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
+                jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
+
+                if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
+                {
+                    roles = manageRoles.GetRoles(session.UserAuthId);
+                    perms = manageRoles.GetPermissions(session.UserAuthId);
+                }
+            }
+            else
+                throw new NotSupportedException("JWT RefreshTokens requires a registered IUserAuthRepository or an AuthProvider implementing IUserSessionSource");
 
             var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, session, roles, perms);
 

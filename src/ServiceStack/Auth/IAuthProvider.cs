@@ -48,6 +48,11 @@ namespace ServiceStack.Auth
         void Execute(AuthFilterContext authContext);
     }
 
+    public interface IUserSessionSource
+    {
+        IAuthSession GetUserSession(string userAuthId);
+    }
+
     public class AuthFilterContext
     {
         public AuthenticateService AuthService { get; internal set; }
