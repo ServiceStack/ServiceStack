@@ -47,6 +47,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Byte[]", "Uint8Array"},
             {"Stream", "Blob"},
             {"HttpWebResponse", "Blob"},
+            {"IDictionary", "any"},
         };
         private static string declaredEmptyString = "\"\"";
         private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>

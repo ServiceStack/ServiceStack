@@ -1,5 +1,5 @@
 /* Options:
-Date: 2017-11-07 22:43:17
+Date: 2017-11-22 18:12:01
 Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
@@ -44,7 +44,7 @@ namespace Check.ServiceInterface
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
     public partial class ACSProfile
-        : IReturn<acsprofileResponse>
+        : IReturn<acsprofileResponse>, IHasVersion, IHasSessionId
     {
         public virtual string profileId { get; set; }
         [Required]
@@ -310,27 +310,27 @@ namespace Check.ServiceInterface
 
     [AutoQueryViewer(Description="Use this option to search for Rockstars!", Title="Search for Rockstars")]
     public partial class QueryCustomRockstars
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryCustomRockstarsFilter
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/querydata/rockstars")]
     public partial class QueryDataRockstars
-        : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/query-custom/rockstars")]
     public partial class QueryFieldRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryFieldRockstars()
         {
@@ -351,13 +351,13 @@ namespace Check.ServiceInterface
     }
 
     public partial class QueryFieldRockstarsDynamic
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryGetRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryGetRockstars()
         {
@@ -374,13 +374,13 @@ namespace Check.ServiceInterface
     }
 
     public partial class QueryGetRockstarsDynamic
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
     }
 
     [Route("/movies")]
     public partial class QueryMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         public QueryMovies()
         {
@@ -396,34 +396,34 @@ namespace Check.ServiceInterface
 
     [Route("/OrRockstars")]
     public partial class QueryOrRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string FirstName { get; set; }
     }
 
     public partial class QueryOverridedCustomRockstars
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryOverridedRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/pgsql/pgrockstars")]
     public partial class QueryPostgresPgRockstars
-        : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>
+        : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/pgsql/rockstars")]
     public partial class QueryPostgresRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
@@ -431,7 +431,7 @@ namespace Check.ServiceInterface
     [Route("/query/requestlogs")]
     [Route("/query/requestlogs/{Date}")]
     public partial class QueryRequestLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
         public virtual DateTime? Date { get; set; }
         public virtual bool ViewErrors { get; set; }
@@ -439,19 +439,19 @@ namespace Check.ServiceInterface
 
     [Route("/customrockstars")]
     public partial class QueryRockstarAlbums
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string RockstarAlbumName { get; set; }
     }
 
     public partial class QueryRockstarAlbumsImplicit
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
     }
 
     public partial class QueryRockstarAlbumsLeftJoin
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string AlbumName { get; set; }
@@ -459,13 +459,13 @@ namespace Check.ServiceInterface
 
     [Route("/query/rockstars")]
     public partial class QueryRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsConventions
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryRockstarsConventions()
         {
@@ -486,26 +486,26 @@ namespace Check.ServiceInterface
     }
 
     public partial class QueryRockstarsFilter
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsIFilter
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IFilterRockstars
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta, IFilterRockstars
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/query/rockstar-references")]
     public partial class QueryRockstarsWithReferences
-        : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
+        : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryUnknownRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int UnknownInt { get; set; }
         public virtual string UnknownProperty { get; set; }
@@ -539,12 +539,12 @@ namespace Check.ServiceInterface
 
     [Route("/movies/search")]
     public partial class SearchMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
     }
 
     public partial class StreamMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         public StreamMovies()
         {
@@ -575,22 +575,22 @@ namespace Check.ServiceInterface
     }
 
     public partial class TodayErrorLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     public partial class TodayLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     public partial class YesterdayErrorLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     public partial class YesterdayLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 }
@@ -782,13 +782,13 @@ namespace Check.ServiceModel
     }
 
     public partial class QueryPocoBase
-        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
     public partial class QueryPocoIntoBase
-        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>, IMeta
     {
         public virtual int Id { get; set; }
     }
@@ -1401,6 +1401,23 @@ namespace Check.ServiceModel.Types
         public virtual int Id { get; set; }
     }
 
+    public partial class HelloAuthenticated
+        : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        public virtual string SessionId { get; set; }
+        public virtual int Version { get; set; }
+    }
+
+    public partial class HelloAuthenticatedResponse
+    {
+        public virtual int Version { get; set; }
+        public virtual string SessionId { get; set; }
+        public virtual string UserName { get; set; }
+        public virtual string Email { get; set; }
+        public virtual bool IsAuthenticated { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
     public partial class HelloBase
     {
         public virtual int Id { get; set; }
@@ -1756,7 +1773,7 @@ namespace CheckWeb
 
     [Route("/query/alltypes")]
     public partial class QueryAllTypes
-        : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>
+        : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>, IMeta
     {
     }
 

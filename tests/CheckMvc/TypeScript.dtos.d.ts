@@ -1,14 +1,15 @@
 /* Options:
-Date: 2015-11-23 10:40:47
-Version: 4.00
+Date: 2017-11-22 18:17:56
+Version: 5.00
+Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
 
 GlobalNamespace: dtos
-//ExportAsTypes: False
 //MakePropertiesOptional: True
 //AddServiceStackTypes: True
 //AddResponseStatus: False
 //AddImplicitVersion: 
+//AddDescriptionAsComments: True
 //IncludeTypes: 
 //ExcludeTypes: 
 //DefaultImports: 
@@ -18,24 +19,118 @@ GlobalNamespace: dtos
 declare module dtos
 {
 
-    interface IReturnVoid
-    {
-    }
-
     interface IReturn<T>
     {
     }
 
-    interface QueryBase_1<T> extends QueryBase
+    interface IReturnVoid
     {
     }
 
-    interface Rockstar
+    interface IMeta
+    {
+        meta?: { [index:string]: string; };
+    }
+
+    interface IGet
+    {
+    }
+
+    interface IPost
+    {
+    }
+
+    interface IPut
+    {
+    }
+
+    interface IDelete
+    {
+    }
+
+    interface IPatch
+    {
+    }
+
+    interface IHasSessionId
+    {
+        sessionId?: string;
+    }
+
+    interface IHasVersion
+    {
+        version?: number;
+    }
+
+    interface QueryBase
+    {
+        // @DataMember(Order=1)
+        skip?: number;
+
+        // @DataMember(Order=2)
+        take?: number;
+
+        // @DataMember(Order=3)
+        orderBy?: string;
+
+        // @DataMember(Order=4)
+        orderByDesc?: string;
+
+        // @DataMember(Order=5)
+        include?: string;
+
+        // @DataMember(Order=6)
+        fields?: string;
+
+        // @DataMember(Order=7)
+        meta?: { [index:string]: string; };
+    }
+
+    interface QueryData<T> extends QueryBase
+    {
+    }
+
+    interface RequestLogEntry
     {
         id?: number;
-        firstName?: string;
-        lastName?: string;
-        age?: number;
+        dateTime?: string;
+        statusCode?: number;
+        statusDescription?: string;
+        httpMethod?: string;
+        absoluteUri?: string;
+        pathInfo?: string;
+        requestBody?: string;
+        requestDto?: Object;
+        userAuthId?: string;
+        sessionId?: string;
+        ipAddress?: string;
+        forwardedFor?: string;
+        referer?: string;
+        headers?: { [index:string]: string; };
+        formData?: { [index:string]: string; };
+        items?: { [index:string]: string; };
+        session?: Object;
+        responseDto?: Object;
+        errorResponse?: Object;
+        exceptionSource?: string;
+        exceptionData?: any;
+        requestDuration?: string;
+    }
+
+    // @DataContract
+    interface ResponseError
+    {
+        // @DataMember(Order=1, EmitDefaultValue=false)
+        errorCode?: string;
+
+        // @DataMember(Order=2, EmitDefaultValue=false)
+        fieldName?: string;
+
+        // @DataMember(Order=3, EmitDefaultValue=false)
+        message?: string;
+
+        // @DataMember(Order=4, EmitDefaultValue=false)
+        meta?: { [index:string]: string; };
     }
 
     // @DataContract
@@ -57,10 +152,60 @@ declare module dtos
         meta?: { [index:string]: string; };
     }
 
+    interface QueryDb_1<T> extends QueryBase
+    {
+    }
+
+    interface Rockstar
+    {
+        /**
+        * Идентификатор
+        */
+        id?: number;
+        /**
+        * Фамилия
+        */
+        firstName?: string;
+        /**
+        * Имя
+        */
+        lastName?: string;
+        /**
+        * Возраст
+        */
+        age?: number;
+    }
+
+    interface ObjectDesign
+    {
+        id?: number;
+    }
+
+    interface MetadataTestNestedChild
+    {
+        name?: string;
+    }
+
     interface MetadataTestChild
     {
         name?: string;
         results?: MetadataTestNestedChild[];
+    }
+
+    interface MenuItemExampleItem
+    {
+        // @DataMember(Order=1)
+        // @ApiMember()
+        name1?: string;
+    }
+
+    interface MenuItemExample
+    {
+        // @DataMember(Order=1)
+        // @ApiMember()
+        name1?: string;
+
+        menuItemExampleItem?: MenuItemExampleItem;
     }
 
     // @DataContract
@@ -69,6 +214,64 @@ declare module dtos
         // @DataMember(Order=1)
         // @ApiMember()
         menuItemExample1?: MenuItemExample;
+    }
+
+    interface MetadataTypeName
+    {
+        name?: string;
+        namespace?: string;
+        genericArgs?: string[];
+    }
+
+    interface MetadataRoute
+    {
+        path?: string;
+        verbs?: string;
+        notes?: string;
+        summary?: string;
+    }
+
+    interface MetadataDataContract
+    {
+        name?: string;
+        namespace?: string;
+    }
+
+    interface MetadataDataMember
+    {
+        name?: string;
+        order?: number;
+        isRequired?: boolean;
+        emitDefaultValue?: boolean;
+    }
+
+    interface MetadataAttribute
+    {
+        name?: string;
+        constructorArgs?: MetadataPropertyType[];
+        args?: MetadataPropertyType[];
+    }
+
+    interface MetadataPropertyType
+    {
+        name?: string;
+        type?: string;
+        isValueType?: boolean;
+        isSystemType?: boolean;
+        isEnum?: boolean;
+        typeNamespace?: string;
+        genericArgs?: string[];
+        value?: string;
+        description?: string;
+        dataMember?: MetadataDataMember;
+        readOnly?: boolean;
+        paramType?: string;
+        displayType?: string;
+        isRequired?: boolean;
+        allowableValues?: string[];
+        allowableMin?: number;
+        allowableMax?: number;
+        attributes?: MetadataAttribute[];
     }
 
     interface MetadataType
@@ -83,6 +286,7 @@ declare module dtos
         returnVoidMarker?: boolean;
         isNested?: boolean;
         isEnum?: boolean;
+        isEnumInt?: boolean;
         isInterface?: boolean;
         isAbstract?: boolean;
         returnMarkerTypeName?: MetadataTypeName;
@@ -93,6 +297,14 @@ declare module dtos
         innerTypes?: MetadataTypeName[];
         enumNames?: string[];
         enumValues?: string[];
+        meta?: { [index:string]: string; };
+    }
+
+    interface AutoQueryConvention
+    {
+        name?: string;
+        value?: string;
+        types?: string;
     }
 
     interface AutoQueryViewerConfig
@@ -101,9 +313,11 @@ declare module dtos
         serviceName?: string;
         serviceDescription?: string;
         serviceIconUrl?: string;
+        formats?: string[];
+        maxLimit?: number;
         isPublic?: boolean;
         onlyShowAnnotatedServices?: boolean;
-        implicitConventions?: Property[];
+        implicitConventions?: AutoQueryConvention[];
         defaultSearchField?: string;
         defaultSearchType?: string;
         defaultSearchText?: string;
@@ -114,6 +328,14 @@ declare module dtos
         backgroundColor?: string;
         backgroundImageUrl?: string;
         iconUrl?: string;
+        meta?: { [index:string]: string; };
+    }
+
+    interface AutoQueryViewerUserInfo
+    {
+        isAuthenticated?: boolean;
+        queryCount?: number;
+        meta?: { [index:string]: string; };
     }
 
     interface AutoQueryOperation
@@ -121,11 +343,7 @@ declare module dtos
         request?: string;
         from?: string;
         to?: string;
-    }
-
-    interface Issue221Base<T>
-    {
-        id?: T;
+        meta?: { [index:string]: string; };
     }
 
     interface NativeTypesTestService
@@ -152,24 +370,21 @@ declare module dtos
         result?: string;
     }
 
-    enum EnumType
-    {
-        value1,
-        value2,
-    }
+    type EnumType = "Value1" | "Value2";
 
-    enum EnumWithValues
-    {
-        value1 = 1,
-        value2 = 2,
-    }
+    type EnumWithValues = "Value1" | "Value2";
 
     // @Flags()
     enum EnumFlags
     {
-        value1 = 1,
-        value2 = 2,
-        value3 = 4,
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 4,
+    }
+
+    interface Poco
+    {
+        name?: string;
     }
 
     interface AllCollectionTypes
@@ -180,8 +395,18 @@ declare module dtos
         stringList?: string[];
         pocoArray?: Poco[];
         pocoList?: Poco[];
+        nullableByteArray?: Uint8Array;
+        nullableByteList?: number[];
+        nullableDateTimeArray?: string[];
+        nullableDateTimeList?: string[];
         pocoLookup?: { [index:string]: Poco[]; };
         pocoLookupMap?: { [index:string]: { [index:string]: Poco; }[]; };
+    }
+
+    interface KeyValuePair<TKey, TValue>
+    {
+        key?: TKey;
+        value?: TValue;
     }
 
     interface SubType
@@ -198,11 +423,6 @@ declare module dtos
     interface HelloResponseBase
     {
         refId?: number;
-    }
-
-    interface Poco
-    {
-        name?: string;
     }
 
     interface HelloBase_1<T>
@@ -229,6 +449,19 @@ declare module dtos
     interface HelloType
     {
         result?: string;
+    }
+
+    interface IAuthTokens
+    {
+        provider?: string;
+        userId?: string;
+        accessToken?: string;
+        accessTokenSecret?: string;
+        refreshToken?: string;
+        refreshTokenExpiry?: string;
+        requestToken?: string;
+        requestTokenSecret?: string;
+        items?: { [index:string]: string; };
     }
 
     // @DataContract
@@ -346,13 +579,25 @@ declare module dtos
         isAuthenticated?: boolean;
 
         // @DataMember(Order=38)
-        sequence?: string;
+        fromToken?: boolean;
 
         // @DataMember(Order=39)
-        tag?: number;
+        profileUrl?: string;
 
         // @DataMember(Order=40)
+        sequence?: string;
+
+        // @DataMember(Order=41)
+        tag?: number;
+
+        // @DataMember(Order=42)
+        authProvider?: string;
+
+        // @DataMember(Order=43)
         providerOAuthAccess?: IAuthTokens[];
+
+        // @DataMember(Order=44)
+        meta?: { [index:string]: string; };
     }
 
     interface IPoco
@@ -368,6 +613,16 @@ declare module dtos
     {
     }
 
+    interface ImplementsPoco
+    {
+        name?: string;
+    }
+
+    interface TypeB
+    {
+        foo?: string;
+    }
+
     interface TypeA
     {
         bar?: TypeB[];
@@ -379,45 +634,89 @@ declare module dtos
         name?: string;
     }
 
-    enum InnerEnum
+    type InnerEnum = "Foo" | "Bar" | "Baz";
+
+    interface InnerTypeItem
     {
-        foo,
-        bar,
-        baz,
+        id?: number;
+        name?: string;
     }
 
-    interface IAuthTokens
-    {
-        provider?: string;
-        userId?: string;
-        accessToken?: string;
-        accessTokenSecret?: string;
-        refreshToken?: string;
-        refreshTokenExpiry?: string;
-        requestToken?: string;
-        requestTokenSecret?: string;
-        items?: { [index:string]: string; };
-    }
-
-    enum DayOfWeek
-    {
-        sunday,
-        monday,
-        tuesday,
-        wednesday,
-        thursday,
-        friday,
-        saturday,
-    }
+    type DayOfWeek = "Sunday" | "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday";
 
     // @DataContract
-    enum ScopeType
+    type ScopeType = "Global" | "Sale";
+
+    interface Tuple_2<T1, T2>
     {
-        global = 1,
-        sale = 2,
+        item1?: T1;
+        item2?: T2;
     }
 
-    interface QueryBase_2<From, Into> extends QueryBase
+    interface Tuple_3<T1, T2, T3>
+    {
+        item1?: T1;
+        item2?: T2;
+        item3?: T3;
+    }
+
+    interface IEcho
+    {
+        sentence?: string;
+    }
+
+    type MyColor = "Red" | "Green" | "Blue";
+
+    interface SwaggerNestedModel
+    {
+        /**
+        * NestedProperty description
+        */
+        // @ApiMember(Description="NestedProperty description")
+        nestedProperty?: boolean;
+    }
+
+    interface SwaggerNestedModel2
+    {
+        /**
+        * NestedProperty2 description
+        */
+        // @ApiMember(Description="NestedProperty2 description")
+        nestedProperty2?: boolean;
+
+        /**
+        * MultipleValues description
+        */
+        // @ApiMember(Description="MultipleValues description")
+        multipleValues?: string;
+
+        /**
+        * TestRange description
+        */
+        // @ApiMember(Description="TestRange description")
+        testRange?: number;
+    }
+
+    type MyEnum = "A" | "B" | "C";
+
+    // @DataContract
+    interface UserApiKey
+    {
+        // @DataMember(Order=1)
+        key?: string;
+
+        // @DataMember(Order=2)
+        keyType?: string;
+
+        // @DataMember(Order=3)
+        expiryDate?: string;
+    }
+
+    interface PgRockstar extends Rockstar
+    {
+    }
+
+    interface QueryDb_2<From, Into> extends QueryBase
     {
     }
 
@@ -437,6 +736,10 @@ declare module dtos
         rockstarGenreName?: string;
     }
 
+    interface IFilterRockstars
+    {
+    }
+
     interface Movie
     {
         id?: number;
@@ -448,6 +751,13 @@ declare module dtos
         releaseDate?: string;
         tagLine?: string;
         genres?: string[];
+    }
+
+    interface RockstarAlbum
+    {
+        id?: number;
+        rockstarId?: number;
+        name?: string;
     }
 
     interface RockstarReference
@@ -477,144 +787,8 @@ declare module dtos
         name?: string;
     }
 
-    interface QueryBase
-    {
-        // @DataMember(Order=1)
-        skip?: number;
-
-        // @DataMember(Order=2)
-        take?: number;
-
-        // @DataMember(Order=3)
-        orderBy?: string;
-
-        // @DataMember(Order=4)
-        orderByDesc?: string;
-
-        // @DataMember(Order=5)
-        include?: string;
-
-        // @DataMember(Order=6)
-        meta?: { [index:string]: string; };
-    }
-
-    // @DataContract
-    interface ResponseError
-    {
-        // @DataMember(Order=1, EmitDefaultValue=false)
-        errorCode?: string;
-
-        // @DataMember(Order=2, EmitDefaultValue=false)
-        fieldName?: string;
-
-        // @DataMember(Order=3, EmitDefaultValue=false)
-        message?: string;
-
-        // @DataMember(Order=4, EmitDefaultValue=false)
-        meta?: { [index:string]: string; };
-    }
-
-    interface MetadataTestNestedChild
-    {
-        name?: string;
-    }
-
-    interface MenuItemExample
-    {
-        // @DataMember(Order=1)
-        // @ApiMember()
-        name1?: string;
-
-        menuItemExampleItem?: MenuItemExampleItem;
-    }
-
-    interface MetadataTypeName
-    {
-        name?: string;
-        namespace?: string;
-        genericArgs?: string[];
-    }
-
-    interface MetadataRoute
-    {
-        path?: string;
-        verbs?: string;
-        notes?: string;
-        summary?: string;
-    }
-
-    interface MetadataDataContract
-    {
-        name?: string;
-        namespace?: string;
-    }
-
-    interface MetadataPropertyType
-    {
-        name?: string;
-        type?: string;
-        isValueType?: boolean;
-        typeNamespace?: string;
-        genericArgs?: string[];
-        value?: string;
-        description?: string;
-        dataMember?: MetadataDataMember;
-        readOnly?: boolean;
-        paramType?: string;
-        displayType?: string;
-        isRequired?: boolean;
-        allowableValues?: string[];
-        allowableMin?: number;
-        allowableMax?: number;
-        attributes?: MetadataAttribute[];
-    }
-
-    interface MetadataAttribute
-    {
-        name?: string;
-        constructorArgs?: MetadataPropertyType[];
-        args?: MetadataPropertyType[];
-    }
-
-    // @DataContract
-    interface Property
-    {
-        // @DataMember
-        name?: string;
-
-        // @DataMember
-        value?: string;
-    }
-
-    interface TypeB
-    {
-        foo?: string;
-    }
-
     interface TypesGroup
     {
-    }
-
-    interface RockstarAlbum
-    {
-        id?: number;
-        rockstarId?: number;
-        name?: string;
-    }
-
-    interface MenuItemExampleItem
-    {
-        // @DataMember(Order=1)
-        // @ApiMember()
-        name1?: string;
-    }
-
-    interface MetadataDataMember
-    {
-        name?: string;
-        order?: number;
-        isRequired?: boolean;
-        emitDefaultValue?: boolean;
     }
 
     // @DataContract
@@ -636,6 +810,13 @@ declare module dtos
         responseStatus?: ResponseStatus;
     }
 
+    // @DataContract
+    interface UpdateEventSubscriberResponse
+    {
+        // @DataMember(Order=1)
+        responseStatus?: ResponseStatus;
+    }
+
     interface ChangeRequestResponse
     {
         contentType?: string;
@@ -649,6 +830,21 @@ declare module dtos
     {
         custom?: string;
         responseStatus?: ResponseStatus;
+    }
+
+    // @Route("/alwaysthrows")
+    interface AlwaysThrows extends IReturn<AlwaysThrows>
+    {
+    }
+
+    // @Route("/alwaysthrowsfilterattribute")
+    interface AlwaysThrowsFilterAttribute extends IReturn<AlwaysThrowsFilterAttribute>
+    {
+    }
+
+    // @Route("/alwaysthrowsglobalfilter")
+    interface AlwaysThrowsGlobalFilter extends IReturn<AlwaysThrowsGlobalFilter>
+    {
     }
 
     interface CustomFieldHttpErrorResponse
@@ -666,6 +862,11 @@ declare module dtos
     {
         result?: string;
         responseStatus?: ResponseStatus;
+    }
+
+    interface ObjectDesignResponse
+    {
+        data?: ObjectDesign;
     }
 
     interface MetadataTestResponse
@@ -688,9 +889,28 @@ declare module dtos
     interface AutoQueryMetadataResponse
     {
         config?: AutoQueryViewerConfig;
+        userInfo?: AutoQueryViewerUserInfo;
         operations?: AutoQueryOperation[];
         types?: MetadataType[];
         responseStatus?: ResponseStatus;
+        meta?: { [index:string]: string; };
+    }
+
+    // @DataContract
+    interface HelloACodeGenTestResponse
+    {
+        /**
+        * Description for FirstResult
+        */
+        // @DataMember
+        firstResult?: number;
+
+        /**
+        * Description for SecondResult
+        */
+        // @DataMember
+        // @ApiMember(Description="Description for SecondResult")
+        secondResult?: number;
     }
 
     interface HelloResponse
@@ -708,6 +928,16 @@ declare module dtos
         result?: string;
     }
 
+    interface HelloList extends IReturn<Array<ListResult>>
+    {
+        names?: string[];
+    }
+
+    interface HelloArray extends IReturn<Array<ArrayResult>>
+    {
+        names?: string[];
+    }
+
     interface HelloExistingResponse
     {
         helloList?: HelloList;
@@ -716,14 +946,7 @@ declare module dtos
         listResults?: ListResult[];
     }
 
-    interface HelloAllTypesResponse
-    {
-        result?: string;
-        allTypes?: AllTypes;
-        allCollectionTypes?: AllCollectionTypes;
-    }
-
-    interface AllTypes
+    interface AllTypes extends IReturn<AllTypes>
     {
         id?: number;
         nullableId?: number;
@@ -743,6 +966,7 @@ declare module dtos
         dateTimeOffset?: string;
         guid?: string;
         char?: string;
+        keyValuePair?: KeyValuePair<string, string>;
         nullableDateTime?: string;
         nullableTimeSpan?: string;
         stringList?: string[];
@@ -750,8 +974,16 @@ declare module dtos
         stringMap?: { [index:string]: string; };
         intStringMap?: { [index:number]: string; };
         subType?: SubType;
+        point?: string;
         // @DataMember(Name="aliasedName")
         originalName?: string;
+    }
+
+    interface HelloAllTypesResponse
+    {
+        result?: string;
+        allTypes?: AllTypes;
+        allCollectionTypes?: AllCollectionTypes;
     }
 
     // @DataContract
@@ -789,9 +1021,20 @@ declare module dtos
         result?: HelloType;
     }
 
+    interface HelloStruct extends IReturn<HelloStruct>
+    {
+        point?: string;
+        nullablePoint?: string;
+    }
+
     interface HelloSessionResponse
     {
         result?: AuthUserSession;
+    }
+
+    interface HelloImplementsInterface extends IReturn<HelloImplementsInterface>, ImplementsPoco
+    {
+        name?: string;
     }
 
     interface Request1Response
@@ -808,6 +1051,7 @@ declare module dtos
     {
         innerType?: InnerType;
         innerEnum?: InnerEnum;
+        innerList?: InnerTypeItem[];
     }
 
     interface CustomUserSession extends AuthUserSession
@@ -853,6 +1097,34 @@ declare module dtos
         id?: number;
     }
 
+    interface RestrictLocalhost extends IReturn<RestrictLocalhost>
+    {
+        id?: number;
+    }
+
+    interface RestrictInternal extends IReturn<RestrictInternal>
+    {
+        id?: number;
+    }
+
+    interface HelloTuple extends IReturn<HelloTuple>
+    {
+        tuple2?: Tuple_2<string, number>;
+        tuple3?: Tuple_3<string, number, boolean>;
+        tuples2?: Tuple_2<string,number>[];
+        tuples3?: Tuple_3<string,number,boolean>[];
+    }
+
+    interface HelloAuthenticatedResponse
+    {
+        version?: number;
+        sessionId?: string;
+        userName?: string;
+        email?: string;
+        isAuthenticated?: boolean;
+        responseStatus?: ResponseStatus;
+    }
+
     interface Echo
     {
         sentence?: string;
@@ -867,9 +1139,215 @@ declare module dtos
         responseStatus?: ResponseStatus;
     }
 
+    interface ThrowValidationResponse
+    {
+        age?: number;
+        required?: string;
+        email?: string;
+        responseStatus?: ResponseStatus;
+    }
+
     interface acsprofileResponse
     {
         profileId?: string;
+    }
+
+    interface ReturnedDto
+    {
+        id?: number;
+    }
+
+    // @Route("/matchroute/html")
+    interface MatchesHtml extends IReturn<MatchesHtml>
+    {
+        name?: string;
+    }
+
+    // @Route("/matchroute/json")
+    interface MatchesJson extends IReturn<MatchesJson>
+    {
+        name?: string;
+    }
+
+    interface TimestampData
+    {
+        timestamp?: number;
+    }
+
+    // @Route("/test/html")
+    interface TestHtml extends IReturn<TestHtml>
+    {
+        name?: string;
+    }
+
+    interface SwaggerComplexResponse
+    {
+        // @DataMember
+        // @ApiMember()
+        isRequired?: boolean;
+
+        // @DataMember
+        // @ApiMember(IsRequired=true)
+        arrayString?: string[];
+
+        // @DataMember
+        // @ApiMember()
+        arrayInt?: number[];
+
+        // @DataMember
+        // @ApiMember()
+        listString?: string[];
+
+        // @DataMember
+        // @ApiMember()
+        listInt?: number[];
+
+        // @DataMember
+        // @ApiMember()
+        dictionaryString?: { [index:string]: string; };
+    }
+
+    /**
+    * Api GET All
+    */
+    // @Route("/swaggerexamples", "GET")
+    // @Api(Description="Api GET All")
+    interface GetSwaggerExamples extends IReturn<GetSwaggerExamples>
+    {
+        get?: string;
+    }
+
+    /**
+    * Api GET Id
+    */
+    // @Route("/swaggerexamples/{Id}", "GET")
+    // @Api(Description="Api GET Id")
+    interface GetSwaggerExample extends IReturn<GetSwaggerExample>
+    {
+        id?: number;
+        get?: string;
+    }
+
+    /**
+    * Api POST
+    */
+    // @Route("/swaggerexamples", "POST")
+    // @Api(Description="Api POST")
+    interface PostSwaggerExamples extends IReturn<PostSwaggerExamples>
+    {
+        post?: string;
+    }
+
+    /**
+    * Api PUT Id
+    */
+    // @Route("/swaggerexamples/{Id}", "PUT")
+    // @Api(Description="Api PUT Id")
+    interface PutSwaggerExample extends IReturn<PutSwaggerExample>
+    {
+        id?: number;
+        get?: string;
+    }
+
+    // @Route("/lists", "GET")
+    interface GetLists extends IReturn<GetLists>
+    {
+        id?: string;
+    }
+
+    // @DataContract
+    interface AuthenticateResponse
+    {
+        // @DataMember(Order=1)
+        userId?: string;
+
+        // @DataMember(Order=2)
+        sessionId?: string;
+
+        // @DataMember(Order=3)
+        userName?: string;
+
+        // @DataMember(Order=4)
+        displayName?: string;
+
+        // @DataMember(Order=5)
+        referrerUrl?: string;
+
+        // @DataMember(Order=6)
+        bearerToken?: string;
+
+        // @DataMember(Order=7)
+        refreshToken?: string;
+
+        // @DataMember(Order=8)
+        responseStatus?: ResponseStatus;
+
+        // @DataMember(Order=9)
+        meta?: { [index:string]: string; };
+    }
+
+    // @DataContract
+    interface AssignRolesResponse
+    {
+        // @DataMember(Order=1)
+        allRoles?: string[];
+
+        // @DataMember(Order=2)
+        allPermissions?: string[];
+
+        // @DataMember(Order=3)
+        responseStatus?: ResponseStatus;
+    }
+
+    // @DataContract
+    interface UnAssignRolesResponse
+    {
+        // @DataMember(Order=1)
+        allRoles?: string[];
+
+        // @DataMember(Order=2)
+        allPermissions?: string[];
+
+        // @DataMember(Order=3)
+        responseStatus?: ResponseStatus;
+    }
+
+    // @DataContract
+    interface GetApiKeysResponse
+    {
+        // @DataMember(Order=1)
+        results?: UserApiKey[];
+
+        // @DataMember(Order=2)
+        responseStatus?: ResponseStatus;
+    }
+
+    // @DataContract
+    interface RegisterResponse
+    {
+        // @DataMember(Order=1)
+        userId?: string;
+
+        // @DataMember(Order=2)
+        sessionId?: string;
+
+        // @DataMember(Order=3)
+        userName?: string;
+
+        // @DataMember(Order=4)
+        referrerUrl?: string;
+
+        // @DataMember(Order=5)
+        bearerToken?: string;
+
+        // @DataMember(Order=6)
+        refreshToken?: string;
+
+        // @DataMember(Order=7)
+        responseStatus?: ResponseStatus;
+
+        // @DataMember(Order=8)
+        meta?: { [index:string]: string; };
     }
 
     // @Route("/anontype")
@@ -877,16 +1355,65 @@ declare module dtos
     {
     }
 
+    // @Route("/query/requestlogs")
+    // @Route("/query/requestlogs/{Date}")
+    interface QueryRequestLogs extends QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
+    {
+        date?: string;
+        viewErrors?: boolean;
+    }
+
+    interface TodayLogs extends QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
+    {
+    }
+
+    interface TodayErrorLogs extends QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
+    {
+    }
+
+    interface YesterdayLogs extends QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
+    {
+    }
+
+    interface YesterdayErrorLogs extends QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
+    {
+    }
+
     // @Route("/query/rockstars")
-    interface QueryRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         age?: number;
+    }
+
+    interface GetEventSubscribers extends IReturn<any>, IGet
+    {
+        channels?: string[];
+    }
+
+    // @Route("/event-subscribers/{Id}", "POST")
+    // @DataContract
+    interface UpdateEventSubscriber extends IReturn<UpdateEventSubscriberResponse>, IPost
+    {
+        // @DataMember(Order=1)
+        id?: string;
+
+        // @DataMember(Order=2)
+        subscribeChannels?: string[];
+
+        // @DataMember(Order=3)
+        unsubscribeChannels?: string[];
     }
 
     // @Route("/changerequest/{Id}")
     interface ChangeRequest extends IReturn<ChangeRequestResponse>
     {
         id?: string;
+    }
+
+    // @Route("/compress/{Path*}")
+    interface CompressFile
+    {
+        path?: string;
     }
 
     // @Route("/Routing/LeadPost.aspx")
@@ -912,7 +1439,6 @@ declare module dtos
     {
     }
 
-    // @Route("{PathInfo*}")
     interface FallbackRoute
     {
         pathInfo?: string;
@@ -935,6 +1461,12 @@ declare module dtos
         name?: string;
     }
 
+    // @Route("/code/object", "GET")
+    interface ObjectId extends IReturn<ObjectDesignResponse>
+    {
+        objectName?: string;
+    }
+
     interface MetadataTest extends IReturn<MetadataTestResponse>
     {
         id?: number;
@@ -951,14 +1483,27 @@ declare module dtos
         metadataType?: MetadataType;
     }
 
+    interface ExcludeMetadataProperty
+    {
+        id?: number;
+    }
+
     // @Route("/namedconnection")
     interface NamedConnection
     {
         emailAddresses?: string;
     }
 
-    interface Issue221Long extends Issue221Base<number>
+    /**
+    * Description for HelloACodeGenTest
+    */
+    interface HelloACodeGenTest extends IReturn<HelloACodeGenTestResponse>
     {
+        /**
+        * Description for FirstField
+        */
+        firstField?: number;
+        secondFields?: string[];
     }
 
     interface HelloInService extends IReturn<HelloResponse>
@@ -992,17 +1537,7 @@ declare module dtos
         nestedClassProp?: NestedClass;
     }
 
-    interface HelloList extends IReturn<Array<ListResult>>
-    {
-        names?: string[];
-    }
-
     interface HelloReturnList extends IReturn<Array<OnlyInReturnListArg>>
-    {
-        names?: string[];
-    }
-
-    interface HelloArray extends IReturn<Array<ArrayResult>>
     {
         names?: string[];
     }
@@ -1031,22 +1566,32 @@ declare module dtos
     * AllowedAttributes Description
     */
     // @Route("/allowed-attributes", "GET")
-    // @Api("AllowedAttributes Description")
-    // @ApiResponse(400, "Your request was not understood")
+    // @Api(Description="AllowedAttributes Description")
+    // @ApiResponse(Description="Your request was not understood", StatusCode=400)
     // @DataContract
     interface AllowedAttributes
     {
+        // @DataMember
+        // @Required()
+        id: number;
+
+        /**
+        * Range Description
+        */
         // @DataMember(Name="Aliased")
-        // @ApiMember(Description="Range Description", ParameterType="path", DataType="double", IsRequired=true)
+        // @ApiMember(DataType="double", Description="Range Description", IsRequired=true, ParameterType="path")
         range?: number;
     }
 
     /**
     * Multi Line Class
     */
-    // @Api("Multi Line Class")
+    // @Api(Description="Multi Line Class")
     interface HelloMultiline
     {
+        /**
+        * Multi Line Property
+        */
         // @ApiMember(Description="Multi Line Property")
         overflow?: string;
     }
@@ -1177,26 +1722,26 @@ declare module dtos
         dayOfWeek?: DayOfWeek;
     }
 
-    interface HelloGet extends IReturn<HelloVerbResponse>
+    interface HelloGet extends IReturn<HelloVerbResponse>, IGet
     {
         id?: number;
     }
 
-    interface HelloPost extends HelloBase, IReturn<HelloVerbResponse>
+    interface HelloPost extends HelloBase, IReturn<HelloVerbResponse>, IPost
     {
     }
 
-    interface HelloPut extends IReturn<HelloVerbResponse>
-    {
-        id?: number;
-    }
-
-    interface HelloDelete extends IReturn<HelloVerbResponse>
+    interface HelloPut extends IReturn<HelloVerbResponse>, IPut
     {
         id?: number;
     }
 
-    interface HelloPatch extends IReturn<HelloVerbResponse>
+    interface HelloDelete extends IReturn<HelloVerbResponse>, IDelete
+    {
+        id?: number;
+    }
+
+    interface HelloPatch extends IReturn<HelloVerbResponse>, IPatch
     {
         id?: number;
     }
@@ -1206,7 +1751,7 @@ declare module dtos
         id?: number;
     }
 
-    interface EnumRequest extends IReturn<EnumResponse>
+    interface EnumRequest extends IReturn<EnumResponse>, IPut
     {
         operator?: ScopeType;
     }
@@ -1220,18 +1765,27 @@ declare module dtos
         excludeTestNested?: ExcludeTestNested;
     }
 
+    interface HelloAuthenticated extends IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        sessionId?: string;
+        version?: number;
+    }
+
     /**
     * Echoes a sentence
     */
     // @Route("/echoes", "POST")
-    // @Api("Echoes a sentence")
+    // @Api(Description="Echoes a sentence")
     interface Echoes extends IReturn<Echo>
     {
-        // @ApiMember(Description="The sentence to echo.", ParameterType="form", DataType="string", IsRequired=true, Name="Sentence")
+        /**
+        * The sentence to echo.
+        */
+        // @ApiMember(DataType="string", Description="The sentence to echo.", IsRequired=true, Name="Sentence", ParameterType="form")
         sentence?: string;
     }
 
-    interface CachedEcho
+    interface CachedEcho extends IReturn<Echo>
     {
         reload?: boolean;
         sentence?: string;
@@ -1272,9 +1826,17 @@ declare module dtos
         message?: string;
     }
 
+    // @Route("/throwvalidation")
+    interface ThrowValidation extends IReturn<ThrowValidationResponse>
+    {
+        age?: number;
+        required?: string;
+        email?: string;
+    }
+
     // @Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")
     // @Route("/api/acsprofiles/{profileId}")
-    interface ACSProfile extends IReturn<acsprofileResponse>
+    interface ACSProfile extends IReturn<acsprofileResponse>, IHasVersion, IHasSessionId
     {
         profileId?: string;
         // @Required()
@@ -1299,6 +1861,75 @@ declare module dtos
         sessionId?: string;
     }
 
+    // @Route("/return/string")
+    interface ReturnString extends IReturn<string>
+    {
+        data?: string;
+    }
+
+    // @Route("/return/bytes")
+    interface ReturnBytes extends IReturn<Uint8Array>
+    {
+        data?: Uint8Array;
+    }
+
+    // @Route("/return/stream")
+    interface ReturnStream extends IReturn<Blob>
+    {
+        data?: Uint8Array;
+    }
+
+    // @Route("/Request1/", "GET")
+    interface GetRequest1 extends IReturn<Array<ReturnedDto>>, IGet
+    {
+    }
+
+    // @Route("/Request3", "GET")
+    interface GetRequest2 extends IReturn<ReturnedDto>, IGet
+    {
+    }
+
+    // @Route("/matchlast/{Id}")
+    interface MatchesLastInt
+    {
+        id?: number;
+    }
+
+    // @Route("/matchlast/{Slug}")
+    interface MatchesNotLastInt
+    {
+        slug?: string;
+    }
+
+    // @Route("/matchregex/{Id}")
+    interface MatchesId
+    {
+        id?: number;
+    }
+
+    // @Route("/matchregex/{Slug}")
+    interface MatchesSlug
+    {
+        slug?: string;
+    }
+
+    // @Route("/{Version}/userdata", "GET")
+    interface SwaggerVersionTest
+    {
+        version?: string;
+    }
+
+    // @Route("/test/errorview")
+    interface TestErrorView
+    {
+        id?: string;
+    }
+
+    // @Route("/timestamp", "GET")
+    interface GetTimestamp extends IReturn<TimestampData>
+    {
+    }
+
     interface TestMiniverView
     {
     }
@@ -1308,7 +1939,333 @@ declare module dtos
     {
     }
 
-    interface QueryRockstarsConventions extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    // @Route("/files/{Path*}")
+    interface GetFile
+    {
+        path?: string;
+    }
+
+    // @Route("/test/html2")
+    interface TestHtml2
+    {
+        name?: string;
+    }
+
+    // @Route("/views/request")
+    interface ViewRequest
+    {
+        name?: string;
+    }
+
+    // @Route("/index")
+    interface IndexPage
+    {
+        pathInfo?: string;
+    }
+
+    // @Route("/return/text")
+    interface ReturnText
+    {
+        text?: string;
+    }
+
+    /**
+    * SwaggerTest Service Description
+    */
+    // @Route("/swagger", "GET")
+    // @Route("/swagger/{Name}", "GET")
+    // @Route("/swagger/{Name}", "POST")
+    // @Api(Description="SwaggerTest Service Description")
+    // @ApiResponse(Description="Your request was not understood", StatusCode=400)
+    // @ApiResponse(Description="Oops, something broke", StatusCode=500)
+    // @DataContract
+    interface SwaggerTest
+    {
+        /**
+        * Color Description
+        */
+        // @DataMember
+        // @ApiMember(DataType="string", Description="Color Description", IsRequired=true, ParameterType="path")
+        name?: string;
+
+        // @DataMember
+        // @ApiMember()
+        color?: MyColor;
+
+        /**
+        * Aliased Description
+        */
+        // @DataMember(Name="Aliased")
+        // @ApiMember(DataType="string", Description="Aliased Description", IsRequired=true)
+        original?: string;
+
+        /**
+        * Not Aliased Description
+        */
+        // @DataMember
+        // @ApiMember(DataType="string", Description="Not Aliased Description", IsRequired=true)
+        notAliased?: string;
+
+        /**
+        * Format as password
+        */
+        // @DataMember
+        // @ApiMember(DataType="password", Description="Format as password")
+        password?: string;
+
+        // @DataMember
+        // @ApiMember(AllowMultiple=true)
+        myDateBetween?: string[];
+
+        /**
+        * Nested model 1
+        */
+        // @DataMember
+        // @ApiMember(DataType="SwaggerNestedModel", Description="Nested model 1")
+        nestedModel1?: SwaggerNestedModel;
+
+        /**
+        * Nested model 2
+        */
+        // @DataMember
+        // @ApiMember(DataType="SwaggerNestedModel2", Description="Nested model 2")
+        nestedModel2?: SwaggerNestedModel2;
+    }
+
+    // @Route("/swaggertest2", "POST")
+    interface SwaggerTest2
+    {
+        // @ApiMember()
+        myEnumProperty?: MyEnum;
+
+        // @ApiMember(DataType="string", IsRequired=true, Name="Token", ParameterType="header")
+        token?: string;
+    }
+
+    // @Route("/swagger-complex", "POST")
+    interface SwaggerComplex extends IReturn<SwaggerComplexResponse>
+    {
+        // @DataMember
+        // @ApiMember()
+        isRequired?: boolean;
+
+        // @DataMember
+        // @ApiMember(IsRequired=true)
+        arrayString?: string[];
+
+        // @DataMember
+        // @ApiMember()
+        arrayInt?: number[];
+
+        // @DataMember
+        // @ApiMember()
+        listString?: string[];
+
+        // @DataMember
+        // @ApiMember()
+        listInt?: number[];
+
+        // @DataMember
+        // @ApiMember()
+        dictionaryString?: { [index:string]: string; };
+    }
+
+    // @Route("/swaggerpost/{Required1}", "GET")
+    // @Route("/swaggerpost/{Required1}/{Optional1}", "GET")
+    // @Route("/swaggerpost", "POST")
+    interface SwaggerPostTest extends IReturn<HelloResponse>
+    {
+        // @ApiMember(Verb="POST")
+        // @ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}", Verb="GET")
+        // @ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}/{Optional1}", Verb="GET")
+        required1?: string;
+
+        // @ApiMember(Verb="POST")
+        // @ApiMember(ParameterType="path", Route="/swaggerpost/{Required1}/{Optional1}", Verb="GET")
+        optional1?: string;
+    }
+
+    // @Route("/swaggerpost2/{Required1}/{Required2}", "GET")
+    // @Route("/swaggerpost2/{Required1}/{Required2}/{Optional1}", "GET")
+    // @Route("/swaggerpost2", "POST")
+    interface SwaggerPostTest2 extends IReturn<HelloResponse>
+    {
+        // @ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}", Verb="GET")
+        // @ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")
+        required1?: string;
+
+        // @ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}", Verb="GET")
+        // @ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")
+        required2?: string;
+
+        // @ApiMember(ParameterType="path", Route="/swaggerpost2/{Required1}/{Required2}/{Optional1}", Verb="GET")
+        optional1?: string;
+    }
+
+    // @Route("/swagger/multiattrtest", "POST")
+    // @ApiResponse(Description="Code 1", StatusCode=400)
+    // @ApiResponse(Description="Code 2", StatusCode=402)
+    // @ApiResponse(Description="Code 3", StatusCode=401)
+    interface SwaggerMultiApiResponseTest extends IReturnVoid
+    {
+    }
+
+    // @Route("/dynamically/registered/{Name}")
+    interface DynamicallyRegistered
+    {
+        name?: string;
+    }
+
+    // @Route("/auth")
+    // @Route("/auth/{provider}")
+    // @Route("/authenticate")
+    // @Route("/authenticate/{provider}")
+    // @DataContract
+    interface Authenticate extends IReturn<AuthenticateResponse>, IPost, IMeta
+    {
+        // @DataMember(Order=1)
+        provider?: string;
+
+        // @DataMember(Order=2)
+        state?: string;
+
+        // @DataMember(Order=3)
+        oauth_token?: string;
+
+        // @DataMember(Order=4)
+        oauth_verifier?: string;
+
+        // @DataMember(Order=5)
+        userName?: string;
+
+        // @DataMember(Order=6)
+        password?: string;
+
+        // @DataMember(Order=7)
+        rememberMe?: boolean;
+
+        // @DataMember(Order=8)
+        continue?: string;
+
+        // @DataMember(Order=9)
+        nonce?: string;
+
+        // @DataMember(Order=10)
+        uri?: string;
+
+        // @DataMember(Order=11)
+        response?: string;
+
+        // @DataMember(Order=12)
+        qop?: string;
+
+        // @DataMember(Order=13)
+        nc?: string;
+
+        // @DataMember(Order=14)
+        cnonce?: string;
+
+        // @DataMember(Order=15)
+        useTokenCookie?: boolean;
+
+        // @DataMember(Order=16)
+        accessToken?: string;
+
+        // @DataMember(Order=17)
+        accessTokenSecret?: string;
+
+        // @DataMember(Order=18)
+        meta?: { [index:string]: string; };
+    }
+
+    // @Route("/assignroles")
+    // @DataContract
+    interface AssignRoles extends IReturn<AssignRolesResponse>, IPost
+    {
+        // @DataMember(Order=1)
+        userName?: string;
+
+        // @DataMember(Order=2)
+        permissions?: string[];
+
+        // @DataMember(Order=3)
+        roles?: string[];
+    }
+
+    // @Route("/unassignroles")
+    // @DataContract
+    interface UnAssignRoles extends IReturn<UnAssignRolesResponse>, IPost
+    {
+        // @DataMember(Order=1)
+        userName?: string;
+
+        // @DataMember(Order=2)
+        permissions?: string[];
+
+        // @DataMember(Order=3)
+        roles?: string[];
+    }
+
+    // @Route("/apikeys")
+    // @Route("/apikeys/{Environment}")
+    // @DataContract
+    interface GetApiKeys extends IReturn<GetApiKeysResponse>, IGet
+    {
+        // @DataMember(Order=1)
+        environment?: string;
+    }
+
+    // @Route("/apikeys/regenerate")
+    // @Route("/apikeys/regenerate/{Environment}")
+    // @DataContract
+    interface RegenerateApiKeys extends IReturn<GetApiKeysResponse>, IPost
+    {
+        // @DataMember(Order=1)
+        environment?: string;
+    }
+
+    // @Route("/register")
+    // @DataContract
+    interface Register extends IReturn<RegisterResponse>, IPost
+    {
+        // @DataMember(Order=1)
+        userName?: string;
+
+        // @DataMember(Order=2)
+        firstName?: string;
+
+        // @DataMember(Order=3)
+        lastName?: string;
+
+        // @DataMember(Order=4)
+        displayName?: string;
+
+        // @DataMember(Order=5)
+        email?: string;
+
+        // @DataMember(Order=6)
+        password?: string;
+
+        // @DataMember(Order=7)
+        autoLogin?: boolean;
+
+        // @DataMember(Order=8)
+        continue?: string;
+    }
+
+    // @Route("/pgsql/rockstars")
+    interface QueryPostgresRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
+    {
+        age?: number;
+    }
+
+    // @Route("/pgsql/pgrockstars")
+    interface QueryPostgresPgRockstars extends QueryDb_1<PgRockstar>, IReturn<QueryResponse<PgRockstar>>, IMeta
+    {
+        age?: number;
+    }
+
+    interface QueryRockstarsConventions extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         ids?: number[];
         ageOlderThan?: number;
@@ -1323,40 +2280,41 @@ declare module dtos
         rockstarIdOnOrAfter?: number;
     }
 
-    // @AutoQueryViewer(Title="Search for Rockstars", Description="Use this option to search for Rockstars!")
-    interface QueryCustomRockstars extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    // @AutoQueryViewer(Description="Use this option to search for Rockstars!", Title="Search for Rockstars")
+    interface QueryCustomRockstars extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         age?: number;
     }
 
     // @Route("/customrockstars")
-    interface QueryRockstarAlbums extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    interface QueryRockstarAlbums extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         age?: number;
         rockstarAlbumName?: string;
     }
 
-    interface QueryRockstarAlbumsImplicit extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    interface QueryRockstarAlbumsImplicit extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
     }
 
-    interface QueryRockstarAlbumsLeftJoin extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    interface QueryRockstarAlbumsLeftJoin extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         age?: number;
         albumName?: string;
     }
 
-    interface QueryOverridedRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryOverridedRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryOverridedCustomRockstars extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    interface QueryOverridedCustomRockstars extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryFieldRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    // @Route("/query-custom/rockstars")
+    interface QueryFieldRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         firstName?: string;
         firstNames?: string[];
@@ -1366,36 +2324,37 @@ declare module dtos
         lastNameEndsWith?: string;
         firstNameBetween?: string[];
         orLastName?: string;
+        firstNameContainsMulti?: string[];
     }
 
-    interface QueryFieldRockstarsDynamic extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryFieldRockstarsDynamic extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryRockstarsFilter extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryRockstarsFilter extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryCustomRockstarsFilter extends QueryBase_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+    interface QueryCustomRockstarsFilter extends QueryDb_2<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryRockstarsIFilter extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryRockstarsIFilter extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta, IFilterRockstars
     {
         age?: number;
     }
 
     // @Route("/OrRockstars")
-    interface QueryOrRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryOrRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         age?: number;
         firstName?: string;
     }
 
-    interface QueryGetRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryGetRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         ids?: number[];
         ages?: number[];
@@ -1403,48 +2362,59 @@ declare module dtos
         idsBetween?: number[];
     }
 
-    interface QueryGetRockstarsDynamic extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryGetRockstarsDynamic extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
     }
 
     // @Route("/movies/search")
-    interface SearchMovies extends QueryBase_1<Movie>, IReturn<QueryResponse<Movie>>
+    interface SearchMovies extends QueryDb_1<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
     }
 
     // @Route("/movies")
-    interface QueryMovies extends QueryBase_1<Movie>, IReturn<QueryResponse<Movie>>
+    interface QueryMovies extends QueryDb_1<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         ids?: number[];
         imdbIds?: string[];
         ratings?: string[];
     }
 
-    interface StreamMovies extends QueryBase_1<Movie>, IReturn<QueryResponse<Movie>>
+    interface StreamMovies extends QueryDb_1<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         ratings?: string[];
     }
 
-    interface QueryUnknownRockstars extends QueryBase_1<Rockstar>, IReturn<QueryResponse<Rockstar>>
+    interface QueryUnknownRockstars extends QueryDb_1<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         unknownInt?: number;
         unknownProperty?: string;
     }
 
     // @Route("/query/rockstar-references")
-    interface QueryRockstarsWithReferences extends QueryBase_1<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
+    interface QueryRockstarsWithReferences extends QueryDb_1<RockstarReference>, IReturn<QueryResponse<RockstarReference>>, IMeta
     {
         age?: number;
     }
 
-    interface QueryPocoBase extends QueryBase_1<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+    interface QueryPocoBase extends QueryDb_1<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>, IMeta
     {
         id?: number;
     }
 
-    interface QueryPocoIntoBase extends QueryBase_2<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+    interface QueryPocoIntoBase extends QueryDb_2<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>, IMeta
     {
         id?: number;
+    }
+
+    // @Route("/query/alltypes")
+    interface QueryAllTypes extends QueryDb_1<AllTypes>, IReturn<QueryResponse<AllTypes>>, IMeta
+    {
+    }
+
+    // @Route("/querydata/rockstars")
+    interface QueryDataRockstars extends QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
+    {
+        age?: number;
     }
 
 }
