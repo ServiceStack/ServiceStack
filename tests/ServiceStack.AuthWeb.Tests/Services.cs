@@ -80,7 +80,7 @@ namespace ServiceStack.AuthWeb.Tests
 
             var referrer = Request.UrlReferrer != null
                 ? Request.UrlReferrer.AbsoluteUri
-                : HttpHandlerFactory.GetBaseUrl();
+                : HostContext.Config.WebHostUrl;
 
             return HttpResult.Redirect(referrer);
         }

@@ -52,7 +52,7 @@ namespace ServiceStack
         public override string GetBaseUrl(IRequest httpReq)
         {
             var useHttps = UseHttps(httpReq);
-            var baseUrl = HttpHandlerFactory.GetBaseUrl();
+            var baseUrl = Config.WebHostUrl;
             if (baseUrl != null)
                 return baseUrl.NormalizeScheme(useHttps);
 

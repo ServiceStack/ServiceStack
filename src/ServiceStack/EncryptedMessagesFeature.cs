@@ -159,7 +159,7 @@ namespace ServiceStack
 
                     var requestType = appHost.Metadata.GetOperationType(operationName);
                     if (requestType == null)
-                        throw new ArgumentNullException("Unknown Operation: " + operationName);
+                        throw new ArgumentException("Unknown Operation: " + operationName);
 
                     var request = JsonSerializer.DeserializeFromString(requestJson, requestType);
 

@@ -866,7 +866,7 @@ namespace ServiceStack
         public virtual string GetBaseUrl(IRequest httpReq)
         {
             var useHttps = UseHttps(httpReq);
-            var baseUrl = HttpHandlerFactory.GetBaseUrl();
+            var baseUrl = HostContext.Config.WebHostUrl;
             if (baseUrl != null)
                 return baseUrl.NormalizeScheme(useHttps);
 

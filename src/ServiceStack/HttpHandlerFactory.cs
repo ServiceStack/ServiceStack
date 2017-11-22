@@ -169,10 +169,6 @@ namespace ServiceStack
                ?? NotFoundHttpHandler;
         }
 #endif
-        public static string GetBaseUrl()
-        {
-            return HostContext.Config.WebHostUrl;
-        }
 
         // Entry point for HttpListener and .NET Core
         public static IHttpHandler GetHandler(IHttpRequest httpReq)
