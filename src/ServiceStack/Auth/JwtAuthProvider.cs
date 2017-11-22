@@ -151,6 +151,10 @@ namespace ServiceStack.Auth
 
         protected virtual bool EnableRefreshToken()
         {
+            var userSessionSource = AuthenticateService.GetUserSessionSource();
+            if (userSessionSource != null)
+                return true;
+
             var authRepo = HostContext.AppHost?.TryResolve<IAuthRepository>();
             if (authRepo == null)
                 return false;
@@ -395,9 +399,7 @@ namespace ServiceStack.Auth
             IAuthSession session;
             IEnumerable<string> roles = null, perms = null;
 
-            var userSessionSource = TryResolve<IUserSessionSource>() 
-                ?? AuthenticateService.GetAuthProviders().FirstOrDefault(x => x is IUserSessionSource) as IUserSessionSource;
-
+            var userSessionSource = AuthenticateService.GetUserSessionSource();
             if (userSessionSource != null)
             {
                 session = userSessionSource.GetUserSession(userId);
