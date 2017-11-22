@@ -699,6 +699,22 @@ namespace Check.ServiceModel.Types
         public List<Tuple<string, long>> Tuples2 { get; set; }
         public List<Tuple<string, long, bool>> Tuples3 { get; set; }
     }
+
+    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        public string SessionId { get; set; }
+        public int Version { get; set; }
+    }
+
+    public class HelloAuthenticatedResponse
+    {
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public bool IsAuthenticated { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }
 
 

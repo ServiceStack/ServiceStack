@@ -294,6 +294,21 @@ namespace Check.ServiceInterface
         }
 
         public object Any(HelloTuple request) => request;
+
+        [Authenticate]
+        public object Any(HelloAuthenticated request)
+        {
+            var session = GetSession();
+
+            return new HelloAuthenticatedResponse
+            {
+                Version = request.Version,
+                SessionId = session.Id,
+                UserName = session.UserName,
+                Email = session.Email,
+                IsAuthenticated = session.IsAuthenticated,
+            };
+        }
     }
 
     public class GetUserSession : IReturn<CustomUserSession>

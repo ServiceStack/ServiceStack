@@ -40,6 +40,9 @@ namespace ServiceStack
                     typeof(IPut),                    
                     typeof(IDelete),                    
                     typeof(IPatch),
+                    typeof(IMeta),
+                    typeof(IHasSessionId),
+                    typeof(IHasVersion)
                 },
                 IgnoreTypes = new HashSet<Type>
                 {

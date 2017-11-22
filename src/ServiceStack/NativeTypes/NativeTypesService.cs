@@ -227,6 +227,9 @@ namespace ServiceStack.NativeTypes
                     typeof(IDelete),
                     typeof(IPatch),
                     typeof(IOptions),
+                    typeof(IMeta),
+                    typeof(IHasSessionId),
+                    typeof(IHasVersion),
                 };
                 
                 foreach (var op in metadataTypes.Operations)

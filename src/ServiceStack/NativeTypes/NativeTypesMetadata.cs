@@ -553,8 +553,7 @@ namespace ServiceStack.NativeTypes
             {
                 foreach (var arg in metaAttr.ConstructorArgs)
                 {
-                    string value;
-                    if (argValues.TryGetValue(arg.Name, out value))
+                    if (argValues.TryGetValue(arg.Name, out var value))
                     {
                         arg.Value = value;
                     }
