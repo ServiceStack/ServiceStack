@@ -4,14 +4,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Formats;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -25,7 +23,7 @@ namespace ServiceStack
 {
     public class TemplatePagesFeature : TemplateContext, IPlugin, IViewEngine
     {
-        public bool DisableHotReload { get; set; }
+        public bool? EnableHotReload { get; set; }
 
         public bool EnableDebugTemplate { get; set; }
         public bool EnableDebugTemplateToAll { get; set; }
@@ -79,9 +77,15 @@ namespace ServiceStack
             
             InitViewPages(appHost);
 
-            if (!DisableHotReload)
+            if (EnableHotReload.GetValueOrDefault(DebugMode))
             {
                 appHost.RegisterService(typeof(TemplateHotReloadService));
+
+                // Also enable hot-fileloader.js for hot reloading when static files changed in /wwwroot
+                if (!appHost.Plugins.Any(x => x is HotReloadFeature)) 
+                {
+                    appHost.RegisterService(typeof(HotReloadFilesService));
+                }
             }
             
             if (!string.IsNullOrEmpty(ApiPath))
@@ -288,9 +292,6 @@ namespace ServiceStack
 
         public async Task<HotReloadPageResponse> Any(HotReloadPage request)
         {
-            if (!HostContext.DebugMode)
-                throw new NotImplementedException("set 'debug true' in web.settings to enable this service");
-
             var page = Pages.GetPage(request.Path ?? "/");
             if (page == null)
                 throw HttpError.NotFound("Page not found: " + request.Path);

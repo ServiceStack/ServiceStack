@@ -4,6 +4,9 @@ using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
+    /// <summary>
+    /// Back-end Service used by /js/hot-fileloader.js to detect file changes in /wwwroot and auto reload page.
+    /// </summary>
     public class HotReloadFeature : IPlugin
     {
         public void Register(IAppHost appHost)
