@@ -392,6 +392,9 @@ namespace ServiceStack.Razor
 
         public object ModelError { get; set; }
 
+        public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
+        public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
+
         private ICacheClient cache;
         public ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
 

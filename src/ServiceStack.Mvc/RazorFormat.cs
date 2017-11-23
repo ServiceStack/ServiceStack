@@ -205,6 +205,12 @@ namespace ServiceStack.Mvc
                     if (viewData == null)
                         viewData = CreateViewData((object)null);
 
+                    if (layout == null)
+                        layout = "_Layout";
+
+                    if (razorView != null)
+                        razorView.RazorPage.Layout = layout;
+
                     viewData["Layout"] = layout;
 
                     viewData[Keywords.IRequest] = req;
@@ -410,8 +416,7 @@ namespace ServiceStack.Mvc
 
         public static string ResolveLayout(this IHtmlHelper htmlHelper, string defaultLayout)
         {
-            var layout = htmlHelper.ViewData["Layout"] as string;
-            if (layout != null)
+            if (htmlHelper.ViewData["Layout"] is string layout)
                 return layout;
 
             var template = htmlHelper.GetRequest()?.GetTemplate();
@@ -421,6 +426,14 @@ namespace ServiceStack.Mvc
         public static string GetQueryString(this IHtmlHelper htmlHelper, string paramName)
         {
             return htmlHelper.GetRequest().QueryString[paramName];
+        }
+
+        public static HtmlString IncludeFile(this IHtmlHelper htmlHelper, string virtualPath)
+        {
+            var file = HostContext.VirtualFileSources.GetFile(virtualPath);
+            return file != null
+                ? new HtmlString(file.ReadAllText())
+                : HtmlString.Empty;
         }
     }
 
@@ -482,6 +495,9 @@ namespace ServiceStack.Mvc
         {
             return new HtmlString(RazorViewExtensions.GetErrorHtml(GetErrorStatus()) ?? "");
         }
+
+        public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
+        public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
 
         public IAppHost AppHost => ServiceStackHost.Instance;
 
