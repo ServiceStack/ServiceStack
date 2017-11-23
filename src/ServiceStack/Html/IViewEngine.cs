@@ -15,13 +15,12 @@ namespace ServiceStack.Html
         string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null, IHtmlContext htmlHelper = null);
         Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream);
     }
-    
 
     public static class HtmlContextExtensions
     {
         public static IRequest GetHttpRequest(this IHtmlContext html)
         {
-            return html != null ? html.HttpRequest : null;
+            return html?.HttpRequest;
         }
     }
 }

@@ -102,8 +102,8 @@ namespace ServiceStack.Html
         public void Init(IHttpRequest httpReq, IHttpResponse httpRes, IViewEngine viewEngine, ViewDataDictionary viewData, HtmlHelper htmlHelper)
 		{
             this.RenderHtml = true;
-            this.HttpRequest = httpReq ?? (htmlHelper != null ? htmlHelper.HttpRequest : null);
-            this.HttpResponse = httpRes ?? (htmlHelper != null ? htmlHelper.HttpResponse : null);
+            this.HttpRequest = httpReq ?? htmlHelper?.HttpRequest;
+            this.HttpResponse = httpRes ?? htmlHelper?.HttpResponse;
             this.ViewEngine = viewEngine;
 			this.ViewData = viewData;
 			this.ViewData.PopulateModelState();
@@ -158,26 +158,21 @@ namespace ServiceStack.Html
 
         public string Debug(object model)
         {
-            if (model != null)
-            {
-                return model.Dump();
-            }
-
-            return null;
+            return model?.Dump();
         }
 
         public static bool ClientValidationEnabled
         {
-            get { return ViewContext.GetClientValidationEnabled(); }
-            set { ViewContext.SetClientValidationEnabled(value); }
+            get => ViewContext.GetClientValidationEnabled();
+            set => ViewContext.SetClientValidationEnabled(value);
         }
 
         internal Func<string, ModelMetadata, IEnumerable<ModelClientValidationRule>> ClientValidationRuleFactory { get; set; }
 
         public static bool UnobtrusiveJavaScriptEnabled
         {
-            get { return ViewContext.GetUnobtrusiveJavaScriptEnabled(); }
-            set { ViewContext.SetUnobtrusiveJavaScriptEnabled(value); }
+            get => ViewContext.GetUnobtrusiveJavaScriptEnabled();
+            set => ViewContext.SetUnobtrusiveJavaScriptEnabled(value);
         }
 
         public dynamic ViewBag
@@ -189,8 +184,8 @@ namespace ServiceStack.Html
 
 	    public ViewDataDictionary ViewData
 	    {
-	        get { return viewData ?? (viewData = new ViewDataDictionary()); }
-	        protected set { viewData = value; }
+	        get => viewData ?? (viewData = new ViewDataDictionary());
+	        protected set => viewData = value;
 	    }
 
         public void SetModel(object model)
@@ -324,11 +319,11 @@ namespace ServiceStack.Html
         public static string GenerateIdFromName(string name, string idAttributeDotReplacement)
         {
             if (name == null) {
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
             }
 
             if (idAttributeDotReplacement == null) {
-                throw new ArgumentNullException("idAttributeDotReplacement");
+                throw new ArgumentNullException(nameof(idAttributeDotReplacement));
             }
 
             // TagBuilder.CreateSanitizedId returns null for empty strings, return String.Empty instead to avoid breaking change
@@ -442,7 +437,7 @@ namespace ServiceStack.Html
                     httpMethod = "OPTIONS";
                     break;
                 default:
-                    throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpVerb, "httpVerb");
+                    throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpVerb, nameof(httpVerb));
             }
 
             return HttpMethodOverride(httpMethod);
@@ -452,12 +447,12 @@ namespace ServiceStack.Html
 		{
 			if (String.IsNullOrEmpty(httpMethod))
 			{
-				throw new ArgumentException(MvcResources.Common_NullOrEmpty, "httpMethod");
+				throw new ArgumentException(MvcResources.Common_NullOrEmpty, nameof(httpMethod));
 			}
 			if (String.Equals(httpMethod, "GET", StringComparison.OrdinalIgnoreCase) ||
 				String.Equals(httpMethod, "POST", StringComparison.OrdinalIgnoreCase))
 			{
-				throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpMethod, "httpMethod");
+				throw new ArgumentException(MvcResources.HtmlHelper_InvalidHttpMethod, nameof(httpMethod));
 			}
 
 			TagBuilder tagBuilder = new TagBuilder("input");

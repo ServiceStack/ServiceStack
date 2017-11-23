@@ -12,6 +12,7 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
@@ -115,18 +116,12 @@ namespace ServiceStack.Razor
 
         public virtual void WriteTo(TextWriter writer, HelperResult value)
         {
-            if (value != null)
-            {
-                value.WriteTo(writer);
-            }
+            value?.WriteTo(writer);
         }
 
         public virtual void WriteLiteralTo(TextWriter writer, HelperResult value)
         {
-            if (value != null)
-            {
-                value.WriteTo(writer);
-            }
+            value?.WriteTo(writer);
         }
 
         public void WriteLiteralTo(TextWriter writer, string literal)
@@ -144,9 +139,7 @@ namespace ServiceStack.Razor
                 return null;
             }
 
-            var str = value as System.Web.IHtmlString;
-
-            return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
+            return value is System.Web.IHtmlString str ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
         }
 
         public virtual void WriteAttribute(string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values)
@@ -203,8 +196,7 @@ namespace ServiceStack.Razor
                 return (string)value.Value.Item1;
             }
 
-            var htmlString = value.Value.Item1 as IHtmlString;
-            if (htmlString != null)
+            if (value.Value.Item1 is IHtmlString htmlString)
                 return htmlString.ToHtmlString();
 
             //if (value.Value.Item1 is DynamicDictionaryValue) {
@@ -251,8 +243,7 @@ namespace ServiceStack.Razor
 
         public virtual bool IsSectionDefined(string sectionName)
         {
-            var parentPage = ParentPage as RenderingPage;
-            return parentPage != null
+            return ParentPage is RenderingPage parentPage
                 ? parentPage.IsChildSectionDefined(sectionName)
                 : IsChildSectionDefined(sectionName);
         }
@@ -262,8 +253,7 @@ namespace ServiceStack.Razor
             var hasChildSection = this.childSections.ContainsKey(sectionName);
             if (hasChildSection) return true;
 
-            var childPage = ChildPage as RenderingPage;
-            return childPage != null && childPage.IsSectionDefined(sectionName);
+            return ChildPage is RenderingPage childPage && childPage.IsSectionDefined(sectionName);
         }
 
         public virtual void DefineSection(string sectionName, Action action)
@@ -281,23 +271,20 @@ namespace ServiceStack.Razor
 
         public object RenderSection(string sectionName)
         {
-            var parentPage = ParentPage as RenderingPage;
-            return parentPage != null
+            return ParentPage is RenderingPage parentPage
                 ? parentPage.RenderChildSection(sectionName)
                 : RenderChildSection(sectionName);
         }
 
         internal object RenderChildSection(string sectionName)
         {
-            Action section;
-            if (childSections.TryGetValue(sectionName, out section))
+            if (childSections.TryGetValue(sectionName, out var section))
             {
                 section();
                 return null;
             }
 
-            var childPage = ChildPage as RenderingPage;
-            if (childPage != null)
+            if (ChildPage is RenderingPage childPage)
             {
                 childPage.RenderChildSection(sectionName, Output);
             }
@@ -306,8 +293,7 @@ namespace ServiceStack.Razor
 
         public void RenderChildSection(string sectionName, StreamWriter writer)
         {
-            Action section;
-            if (childSections.TryGetValue(sectionName, out section))
+            if (childSections.TryGetValue(sectionName, out var section))
             {
                 var hold = Output;
                 try
