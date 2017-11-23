@@ -17,7 +17,7 @@ var __qs = (function (qs) {
             uri.replace(re, strip ? '' : '$1' + key + "=" + value + '$2') :
             strip ? uri : uri + (uri.indexOf('?') !== -1 ? "&" : "?") + key + "=" + value
     }
-    fetch("/templates/hotreload/files.json?pattern=" + encodeURIComponent(__qs.pattern || '') + "&eTag=" + __lastFileEtag)
+    fetch("/hotreload/files.json?pattern=" + encodeURIComponent(__qs.pattern || '') + "&eTag=" + __lastFileEtag)
         .then(function(res){
             if (res.status !== 200) {
                 console.log("hotreload failed: " + res.status)
