@@ -1,18 +1,18 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
 // http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
@@ -23,8 +23,8 @@ namespace ServiceStack.FluentValidation
 	using System.Collections.Generic;
 	using System.Linq;
 	using System.Reflection;
+    using Internal;
 
-#if (!PORTABLE && !PORTABLE40)
 	/// <summary>
 	/// Class that can be used to find all the validators from a collection of types.
 	/// </summary>
@@ -48,6 +48,17 @@ namespace ServiceStack.FluentValidation
 			return new AssemblyScanner(assembly.GetExportedTypes());
 #endif
 		}
+		/// <summary>
+		/// Finds all the validators in the specified assemblies
+		/// </summary>
+		public static AssemblyScanner FindValidatorsInAssemblies(IEnumerable<Assembly> assemblies) {
+#if NETSTANDARD2_0
+			var types = assemblies.SelectMany(x => x.ExportedTypes.Distinct());
+#else
+			var types = assemblies.SelectMany(x => x.GetExportedTypes().Distinct());
+#endif
+			return new AssemblyScanner(types);
+		}
 
 		/// <summary>
 		/// Finds all the validators in the assembly containing the specified type.
@@ -61,6 +72,7 @@ namespace ServiceStack.FluentValidation
 
 #if NETSTANDARD2_0
 			var query = from type in types
+						where !type.GetTypeInfo().IsAbstract && !type.GetTypeInfo().IsGenericTypeDefinition
 						let interfaces = type.GetTypeInfo().ImplementedInterfaces
 						let genericInterfaces = interfaces.Where(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == openGenericType)
 						let matchingInterface = genericInterfaces.FirstOrDefault()
@@ -68,6 +80,7 @@ namespace ServiceStack.FluentValidation
 						select new AssemblyScanResult(matchingInterface, type);
 #else
 			var query = from type in types
+						where !type.IsAbstract && !type.IsGenericTypeDefinition
 						let interfaces = type.GetInterfaces()
 						let genericInterfaces = interfaces.Where(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == openGenericType)
 						let matchingInterface = genericInterfaces.FirstOrDefault()
@@ -124,5 +137,4 @@ namespace ServiceStack.FluentValidation
 		}
 
 	}
-#endif
-		}
+}

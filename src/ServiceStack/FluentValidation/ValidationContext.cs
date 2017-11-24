@@ -1,39 +1,36 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using ServiceStack.Web;
-
-namespace ServiceStack.FluentValidation
-{
+namespace ServiceStack.FluentValidation {
 	using System.Collections.Generic;
 	using Internal;
 
-    /// <summary>
+	/// <summary>
 	/// Validation context
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	public class ValidationContext<T> : ValidationContext {
+	public partial class ValidationContext<T> : ValidationContext {
 		/// <summary>
 		/// Creates a new validation context
 		/// </summary>
 		/// <param name="instanceToValidate"></param>
 		public ValidationContext(T instanceToValidate) : this(instanceToValidate, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory()) {
-
+			
 		}
 
 		/// <summary>
@@ -57,7 +54,7 @@ namespace ServiceStack.FluentValidation
 	/// <summary>
 	/// Validation context
 	/// </summary>
-	public class ValidationContext {
+	public partial class ValidationContext {
 
 		public Dictionary<string, object> RootContextData { get; internal set; } = new Dictionary<string, object>();
 
@@ -67,8 +64,8 @@ namespace ServiceStack.FluentValidation
 		/// <param name="instanceToValidate"></param>
 		public ValidationContext(object instanceToValidate)
 		 : this (instanceToValidate, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory()){
-
-        }
+			
+		}
 
 		/// <summary>
 		/// Creates a new validation context with a property chain and validation selector
@@ -99,19 +96,21 @@ namespace ServiceStack.FluentValidation
 		/// </summary>
 		public virtual bool IsChildContext { get; internal set; }
 
-        public IRequest Request { get; internal set; }
+		/// <summary>
+		/// Whether this is a child collection context.
+		/// </summary>
+		public virtual bool IsChildCollectionContext { get; internal set; }
 
-        /// <summary>
-        /// Creates a new ValidationContext based on this one
-        /// </summary>
-        /// <param name="chain"></param>
-        /// <param name="instanceToValidate"></param>
-        /// <param name="selector"></param>
-        /// <returns></returns>
-        public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
+		/// <summary>
+		/// Creates a new ValidationContext based on this one
+		/// </summary>
+		/// <param name="chain"></param>
+		/// <param name="instanceToValidate"></param>
+		/// <param name="selector"></param>
+		/// <returns></returns>
+		public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
 			return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector) {
-				RootContextData = RootContextData,
-                Request = Request
+				RootContextData = RootContextData
 			};
 		}
 
@@ -125,7 +124,22 @@ namespace ServiceStack.FluentValidation
 				IsChildContext = true,
 				RootContextData = RootContextData,
                 Request = Request
+            };
+		}
+
+		/// <summary>
+		/// Creates a new validation context for use with a child collection validator
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		/// <returns></returns>
+		public ValidationContext CloneForChildCollectionValidator(object instanceToValidate) {
+			return new ValidationContext(instanceToValidate, null, Selector) {
+				IsChildContext = true,
+				IsChildCollectionContext = true,
+			    RootContextData = RootContextData,
+			    Request = Request
 			};
 		}
+
 	}
 }

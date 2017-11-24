@@ -1,24 +1,24 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation
-{
+namespace ServiceStack.FluentValidation {
 	using System;
+	using System.Collections.Generic;
 	using System.Linq;
 	using System.Linq.Expressions;
 	using System.Threading.Tasks;
@@ -32,7 +32,7 @@ namespace ServiceStack.FluentValidation
 	public static class DefaultValidatorOptions {
 
 		/// <summary>
-		/// Specifies the cascade mode for failures.
+		/// Specifies the cascade mode for failures. 
 		/// If set to 'Stop' then execution of the rule will stop once the first validator in the chain fails.
 		/// If set to 'Continue' then all validators in the chain will execute regardless of failures.
 		/// </summary>
@@ -42,16 +42,15 @@ namespace ServiceStack.FluentValidation
 			});
 		}
 
-
 		/// <summary>
-		/// Specifies a custom action to be invoked when the validator fails.
+		/// Specifies a custom action to be invoked when the validator fails. 
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
 		/// <typeparam name="TProperty"></typeparam>
 		/// <param name="rule"></param>
 		/// <param name="onFailure"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> OnAnyFailure<T, TProperty>(this IRuleBuilderOptions<T,TProperty> rule, Action<T> onFailure) {
+		public static IRuleBuilderOptions<T, TProperty> OnAnyFailure<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Action<T> onFailure) {
 			return rule.Configure(config => {
 				config.OnFailure = onFailure.CoerceToNonGeneric();
 			});
@@ -64,55 +63,9 @@ namespace ServiceStack.FluentValidation
 		/// <param name="errorMessage">The error message to use</param>
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage) {
-			return rule.WithMessage(errorMessage, null as object[]);
-		}
-
-		/// <summary>
-		/// Specifies a custom error message to use if validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="errorMessage">The error message to use</param>
-		/// <param name="formatArgs">Additional arguments to be specified when formatting the custom error message.</param>
-		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage, params object[] formatArgs) {
-			var funcs = ConvertArrayOfObjectsToArrayOfDelegates<T>(formatArgs);
-			return rule.WithMessage(errorMessage, funcs);
-		}
-
-		/// <summary>
-		/// Specifies a custom error message to use if validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="errorMessage">The error message to use</param>
-		/// <param name="funcs">Additional property values to be included when formatting the custom error message.</param>
-		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage, params Func<T, object>[] funcs) {
 			errorMessage.Guard("A message must be specified when calling WithMessage.");
-
 			return rule.Configure(config => {
 				config.CurrentValidator.ErrorMessageSource = new StaticStringSource(errorMessage);
-
-				funcs.Select(func => new Func<object, object, object>((instance, value) => func((T) instance)))
-					.ForEach(config.CurrentValidator.CustomMessageFormatArguments.Add);
-			});
-		}
-
-	/// <summary>
-		/// Specifies a custom error message to use if validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="errorMessage">The error message to use</param>
-		/// <param name="funcs">Additional property values to use when formatting the custom error message.</param>
-		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage, params Func<T, TProperty, object>[] funcs) {
-			errorMessage.Guard("A message must be specified when calling WithMessage.");
-
-			return rule.Configure(config => {
-				config.CurrentValidator.ErrorMessageSource = new StaticStringSource(errorMessage);
-
-				funcs
-					.Select(func => new Func<object, object, object>((instance, value) => func((T)instance, (TProperty)value)))
-					.ForEach(config.CurrentValidator.CustomMessageFormatArguments.Add);
 			});
 		}
 
@@ -127,6 +80,26 @@ namespace ServiceStack.FluentValidation
 			Func<object, string> newFunc = x => messageProvider((T)x);
 			return rule.Configure(config => {
 				config.CurrentValidator.ErrorMessageSource = new LazyStringSource(newFunc);
+			});
+		}
+
+		/// <summary>
+		/// Specifies a custom error message to use when validation fails.
+		/// </summary>
+		/// <param name="rule">The current rule</param>
+		/// <param name="messageProvider">Delegate that will be invoked to retrieve the localized message. </param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Func<T, TProperty, string> messageProvider) {
+			messageProvider.Guard("A messageProvider must be provided.");
+
+			return rule.Configure(config => {
+
+				Func<PropertyValidatorContext, string> newFunc = context => {
+					return messageProvider((T)context.Instance, (TProperty)context.PropertyValue);
+				};
+
+
+				config.CurrentValidator.ErrorMessageSource = new ContextAwareLazyStringSource(newFunc);
 			});
 		}
 
@@ -148,102 +121,6 @@ namespace ServiceStack.FluentValidation
 		/// Specifies a custom error message resource to use when validation fails.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <returns></returns>
-		[Obsolete("Use WithLocalizedMessage(Type resourceType, string resourceName) instead.")]
-		public static IRuleBuilderOptions<T,TProperty> WithLocalizedMessage<T,TProperty>(this IRuleBuilderOptions<T,TProperty> rule, Expression<Func<string>> resourceSelector) {
-			// We use the StaticResourceAccessorBuilder here because we don't want calls to WithLocalizedMessage to be overriden by the ResourceProviderType.
-			return rule.WithLocalizedMessage(resourceSelector, new StaticResourceAccessorBuilder());
-		}
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <param name="formatArgs">Custom message format args</param>
-		/// <returns></returns>
-		[Obsolete("Use WithLocalizedMessage(Type resourceType, string resourceName, params object[] formatArgs) instead.")]
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector, params object[] formatArgs) {
-			var funcs = ConvertArrayOfObjectsToArrayOfDelegates<T>(formatArgs);
-			return rule.WithLocalizedMessage(resourceSelector, funcs);
-		}
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <param name="formatArgs">Custom message format args</param>
-		/// <returns></returns>
-		[Obsolete("Use WithLocalizedMessage(Type resourceType, string resourceName, params Func<T, object>[] formatArgs) instead.")]
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector, params Func<T, object>[] formatArgs) {
-			// We use the StaticResourceAccessorBuilder here because we don't want calls to WithLocalizedMessage to be overriden by the ResourceProviderType.
-			return rule.WithLocalizedMessage(resourceSelector, new StaticResourceAccessorBuilder())
-				.Configure(cfg => {
-					formatArgs
-						.Select(func => new Func<object, object, object>((instance, value) => func((T)instance)))
-						.ForEach(cfg.CurrentValidator.CustomMessageFormatArguments.Add);
-				});
-
-		}
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <param name="resourceAccessorBuilder">The resource accessor builder to use. </param>
-		/// <returns></returns>
-		[Obsolete("Use WithLocalizedMessage(Type resourceType, string resourceName, IResourceAccessorBuilder instead) instead.")]
-		public static IRuleBuilderOptions<T,TProperty> WithLocalizedMessage<T,TProperty>(this IRuleBuilderOptions<T,TProperty> rule, Expression<Func<string>> resourceSelector, IResourceAccessorBuilder resourceAccessorBuilder) {
-			resourceSelector.Guard("An expression must be specified when calling WithLocalizedMessage, eg .WithLocalizedMessage(() => Messages.MyResource)");
-
-			return rule.Configure(config => {
-				config.CurrentValidator.ErrorMessageSource = LocalizedStringSource.CreateFromExpression(resourceSelector, resourceAccessorBuilder);
-			});
-		}
-
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <param name="resourceName">Name of resource</param>
-		/// <param name="formatArgs">Custom message format args</param>
-		/// <param name="resourceType">Type of resource representing a resx file</param>
-		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Type resourceType, string resourceName, params object[] formatArgs)
-		{
-			var funcs = ConvertArrayOfObjectsToArrayOfDelegates<T>(formatArgs);
-			return rule.WithLocalizedMessage(resourceType, resourceName, funcs);
-		}
-
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceName">Resource name</param>
-		/// <param name="formatArgs">Custom message format args</param>
-		/// <param name="resourceType">Resource type representing a resx file</param>
-		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Type resourceType, string resourceName, params Func<T, object>[] formatArgs)
-		{
-			// We use the StaticResourceAccessorBuilder here because we don't want calls to WithLocalizedMessage to be overriden by the ResourceProviderType.
-			return rule.WithLocalizedMessage(resourceType, resourceName)
-				.Configure(cfg => {
-					formatArgs
-						.Select(func => new Func<object, object, object>((instance, value) => func((T)instance)))
-						.ForEach(cfg.CurrentValidator.CustomMessageFormatArguments.Add);
-				});
-		}
-
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
 		/// <param name="resourceType">Resource type representing a resx file</param>
 		/// <param name="resourceName">Name of resource</param>
 		/// <returns></returns>
@@ -252,12 +129,12 @@ namespace ServiceStack.FluentValidation
 			resourceName.Guard("A resource name must be provided.");
 
 			return rule.Configure(config => {
-				config.CurrentValidator.ErrorMessageSource = new LocalizedStringSource(resourceType, resourceName, new StaticResourceAccessorBuilder());
+				config.CurrentValidator.ErrorMessageSource = new LocalizedStringSource(resourceType, resourceName);
 			});
 		}
 
 		/// <summary>
-		/// Specifies a condition limiting when the validator should run.
+		/// Specifies a condition limiting when the validator should run. 
 		/// The validator will only be executed if the result of the lambda returns true.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
@@ -273,7 +150,7 @@ namespace ServiceStack.FluentValidation
 		}
 
 		/// <summary>
-		/// Specifies a condition limiting when the validator should not run.
+		/// Specifies a condition limiting when the validator should not run. 
 		/// The validator will only be executed if the result of the lambda returns false.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
@@ -286,7 +163,7 @@ namespace ServiceStack.FluentValidation
 		}
 
 		/// <summary>
-		/// Specifies an asynchronous condition limiting when the validator should run.
+		/// Specifies an asynchronous condition limiting when the validator should run. 
 		/// The validator will only be executed if the result of the lambda returns true.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
@@ -303,7 +180,7 @@ namespace ServiceStack.FluentValidation
 		}
 
 		/// <summary>
-		/// Specifies an asynchronous condition limiting when the validator should not run.
+		/// Specifies an asynchronous condition limiting when the validator should not run. 
 		/// The validator will only be executed if the result of the lambda returns false.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
@@ -316,9 +193,8 @@ namespace ServiceStack.FluentValidation
 			return rule.WhenAsync(x => predicate(x).Then(y => !y), applyConditionTo);
 		}
 
-
 		/// <summary>
-		/// Triggers an action when the rule passes. Typically used to configure dependent rules. This applies to all preceding rules in the chain.
+		/// Triggers an action when the rule passes. Typically used to configure dependent rules. This applies to all preceding rules in the chain. 
 		/// </summary>
 		/// <param name="rule">The current rule</param>
 		/// <param name="action">An action to be invoked if the rule is valid</param>
@@ -352,23 +228,23 @@ namespace ServiceStack.FluentValidation
 		public static IRuleBuilderOptions<T, TProperty> WithName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string overridePropertyName) {
 			overridePropertyName.Guard("A property name must be specified when calling WithName.");
 			return rule.Configure(config => {
-				config.DisplayName = new StaticStringSource(overridePropertyName);
+				config.DisplayName = new StaticStringSource(overridePropertyName);	
 			});
 		}
 
 		/// <summary>
-		/// Specifies a localized name for the error message.
+		/// Specifies a custom property name to use within the error message.
 		/// </summary>
 		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <param name="resourceAccessorBuilder">Resource accessor builder to use</param>
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedName<T,TProperty>(this IRuleBuilderOptions<T,TProperty> rule, Expression<Func<string>> resourceSelector, IResourceAccessorBuilder resourceAccessorBuilder = null) {
-			resourceSelector.Guard("A resource selector must be specified.");
-			// default to the static resource accessor builder - explicit resources configured with WithLocalizedName should take precedence over ResourceProviderType.
-			resourceAccessorBuilder = resourceAccessorBuilder ?? new StaticResourceAccessorBuilder();
+		/// <param name="nameProvider">Func used to retrieve the property's display name</param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty> WithName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Func<T, string> nameProvider) {
+			nameProvider.Guard("A nameProvider WithName.");
+
+			Func<object, string> newFunc = x => nameProvider((T)x);
 
 			return rule.Configure(config => {
-				config.DisplayName = LocalizedStringSource.CreateFromExpression(resourceSelector, resourceAccessorBuilder);
+				config.DisplayName = new LazyStringSource(newFunc);
 			});
 		}
 
@@ -380,20 +256,9 @@ namespace ServiceStack.FluentValidation
 		/// <param name="propertyName">The property name to use</param>
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, TProperty> OverridePropertyName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string propertyName) {
-			propertyName.Guard("A property name must be specified when calling WithNamePropertyName.");
+			// Allow string.Empty as this could be a model-level rule. 
+			if (propertyName == null) throw new ArgumentNullException(nameof(propertyName), "A property name must be specified when calling OverridePropertyName."); 
 			return rule.Configure(config => config.PropertyName = propertyName);
-		}
-
-		/// <summary>
-		/// Overrides the name of the property associated with this rule.
-		/// NOTE: This is a considered to be an advanced feature. 99% of the time that you use this, you actually meant to use WithName.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="propertyName">The property name to use</param>
-		/// <returns></returns>
-		[Obsolete("WithPropertyName has been deprecated. If you wish to set the name of the property within the error message, use 'WithName'. If you actually intended to change which property this rule was declared against, use 'OverridePropertyName' instead.")]
-		public static IRuleBuilderOptions<T, TProperty> WithPropertyName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string propertyName) {
-			return rule.OverridePropertyName(propertyName);
 		}
 
 		/// <summary>
@@ -406,10 +271,29 @@ namespace ServiceStack.FluentValidation
 		/// <returns></returns>
 		public static IRuleBuilderOptions<T, TProperty> WithState<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Func<T, object> stateProvider) {
 			stateProvider.Guard("A lambda expression must be passed to WithState");
-			return rule.Configure(config => config.CurrentValidator.CustomStateProvider = stateProvider.CoerceToNonGeneric());
+			var wrapper = new Func<PropertyValidatorContext, object>(ctx => stateProvider((T) ctx.Instance));
+			return rule.Configure(config => config.CurrentValidator.CustomStateProvider = wrapper);
 		}
 
 		/// <summary>
+		/// Specifies custom state that should be stored alongside the validation message when validation fails for this rule.
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <typeparam name="TProperty"></typeparam>
+		/// <param name="rule"></param>
+		/// <param name="stateProvider"></param>
+		/// <returns></returns>
+		public static IRuleBuilderOptions<T, TProperty> WithState<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Func<T, TProperty, object> stateProvider) {
+			stateProvider.Guard("A lambda expression must be passed to WithState");
+
+			var wrapper = new Func<PropertyValidatorContext, object>(ctx => {
+				return stateProvider((T) ctx.Instance, (TProperty) ctx.PropertyValue);
+			});
+
+			return rule.Configure(config => config.CurrentValidator.CustomStateProvider = wrapper);
+		}
+
+		///<summary>
 		/// Specifies custom severity that should be stored alongside the validation message when validation fails for this rule.
 		/// </summary>
 		/// <typeparam name="T"></typeparam>
@@ -417,16 +301,24 @@ namespace ServiceStack.FluentValidation
 		/// <param name="rule"></param>
 		/// <param name="severity"></param>
 		/// <returns></returns>
-		public static IRuleBuilderOptions<T, TProperty> WithSeverity<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Severity severity)
-        {
+		public static IRuleBuilderOptions<T, TProperty> WithSeverity<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Severity severity) {
 			return rule.Configure(config => config.CurrentValidator.Severity = severity);
 		}
 
-		static Func<T, object>[] ConvertArrayOfObjectsToArrayOfDelegates<T>(object[] objects) {
+		/// <summary>
+		/// Gets the default message for a property validato
+		/// </summary>
+		/// <typeparam name="T">The validator type</typeparam>
+		/// <returns>The translated string</returns>
+		public static string GetStringForValidator<T>(this ILanguageManager languageManager) {
+			return languageManager.GetString(typeof(T).Name);
+		}
+
+		internal static Func<T, object>[] ConvertArrayOfObjectsToArrayOfDelegates<T>(object[] objects) {
 			if(objects == null || objects.Length == 0) {
 				return new Func<T, object>[0];
 			}
 			return objects.Select(obj => new Func<T, object>(x => obj)).ToArray();
-		}
+		} 
 	}
 }

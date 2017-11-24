@@ -16,13 +16,13 @@
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
+namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Linq.Expressions;
 	using System.Reflection;
 	using Attributes;
 	using Internal;
+	using Resources;
 	using Results;
 
 	/// <summary>
@@ -35,20 +35,18 @@ namespace ServiceStack.FluentValidation.Validators
 		/// <summary>
 		/// </summary>
 		/// <param name="value"></param>
-		/// <param name="resourceName"></param>
-		/// <param name="resourceType"></param>
-		protected AbstractComparisonValidator(IComparable value, string resourceName, Type resourceType) : base(resourceName, resourceType) {
+		/// <param name="errorSource"></param>
+		protected AbstractComparisonValidator(IComparable value, IStringSource errorSource) : base(errorSource) {
 			value.Guard("value must not be null.");
 			ValueToCompare = value;
 		}
+
 		/// <summary>
 		/// </summary>
 		/// <param name="valueToCompareFunc"></param>
 		/// <param name="member"></param>
-		/// <param name="resourceName"></param>
-		/// <param name="resourceType"></param>
-		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, string resourceName, Type resourceType)
-			: base(resourceName, resourceType) {
+		/// <param name="errorSource"></param>
+		protected AbstractComparisonValidator(Func<object, object> valueToCompareFunc, MemberInfo member, IStringSource errorSource) : base(errorSource) { 
 			this.valueToCompareFunc = valueToCompareFunc;
 			this.MemberToCompare = member;
 		}

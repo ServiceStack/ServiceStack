@@ -20,15 +20,14 @@ namespace ServiceStack.FluentValidation.Results {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
-	using ServiceStack.Web;
 
-    /// <summary>
-    /// The result of running a validator
-    /// </summary>
-#if !PORTABLE && !PORTABLE40 && !NETSTANDARD2_0
-    [Serializable]
+	/// <summary>
+	/// The result of running a validator
+	/// </summary>
+#if !NETSTANDARD2_0
+	[Serializable]
 #endif
-	public class ValidationResult {
+	public partial class ValidationResult {
 		private readonly IList<ValidationFailure> errors;
 
 		/// <summary>
@@ -41,12 +40,10 @@ namespace ServiceStack.FluentValidation.Results {
 		/// </summary>
 		public IList<ValidationFailure> Errors => errors;
 
-        public IRequest Request { get; set; }
-
-        /// <summary>
-        /// Creates a new validationResult
-        /// </summary>
-        public ValidationResult() {
+		/// <summary>
+		/// Creates a new validationResult
+		/// </summary>
+		public ValidationResult() {
 			this.errors = new List<ValidationFailure>();
 		}
 

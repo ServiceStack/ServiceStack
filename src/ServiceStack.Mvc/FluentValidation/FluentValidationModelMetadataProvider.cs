@@ -164,6 +164,8 @@ namespace FluentValidation.Mvc {
         }
 
         public bool IsAsync { get; }
+
+        Func<PropertyValidatorContext, object> IPropertyValidator.CustomStateProvider { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
     }
 }
 

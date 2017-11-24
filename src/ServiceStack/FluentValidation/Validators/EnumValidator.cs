@@ -1,18 +1,18 @@
 ﻿#region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
@@ -20,14 +20,14 @@ namespace ServiceStack.FluentValidation.Validators
 {
 	using System;
 	using System.Reflection;
+	using FluentValidation.Internal;
 	using Resources;
 
 	public class EnumValidator : PropertyValidator
 	{
 		private readonly Type enumType;
 
-		public EnumValidator(Type enumType) : base(nameof(Messages.enum_error), typeof(Messages)) {
-		    ErrorCodeSource = new StaticStringSource(ValidationErrors.Enum);
+		public EnumValidator(Type enumType) : base(new LanguageStringSource(nameof(EnumValidator))) {
 			this.enumType = enumType;
 		}
 
@@ -61,48 +61,28 @@ namespace ServiceStack.FluentValidation.Validators
 					{
 						var typedValue = (short)value;
 
-						if (typedValue < 0)
-						{
-							return false;
-						}
-
-						return EvaluateFlagEnumValues(Convert.ToUInt64(typedValue), enumType);
+						return EvaluateFlagEnumValues(typedValue, enumType);
 					}
 
 				case "Int32":
 					{
 						var typedValue = (int)value;
 
-						if (typedValue < 0)
-						{
-							return false;
-						}
-
-						return EvaluateFlagEnumValues(Convert.ToUInt64(typedValue), enumType);
+						return EvaluateFlagEnumValues(typedValue, enumType);
 					}
 
 				case "Int64":
 					{
 						var typedValue = (long)value;
 
-						if (typedValue < 0)
-						{
-							return false;
-						}
-
-						return EvaluateFlagEnumValues(Convert.ToUInt64(typedValue), enumType);
+						return EvaluateFlagEnumValues(typedValue, enumType);
 					}
 
 				case "SByte":
 					{
 						var typedValue = (sbyte)value;
 
-						if (typedValue < 0)
-						{
-							return false;
-						}
-
-						return EvaluateFlagEnumValues(Convert.ToUInt64(typedValue), enumType);
+						return EvaluateFlagEnumValues(Convert.ToInt64(typedValue), enumType);
 					}
 
 				case "UInt16":
@@ -120,7 +100,7 @@ namespace ServiceStack.FluentValidation.Validators
 				case "UInt64":
 					{
 						var typedValue = (ulong)value;
-						return EvaluateFlagEnumValues(typedValue, enumType);
+						return EvaluateFlagEnumValues((long)typedValue, enumType);
 					}
 
 				default:
@@ -129,15 +109,17 @@ namespace ServiceStack.FluentValidation.Validators
 			}
 		}
 
-		private static bool EvaluateFlagEnumValues(ulong value, Type enumType) {
-			ulong mask = 0;
-
+		private static bool EvaluateFlagEnumValues(long value, Type enumType) {
+			long mask = 0;
 			foreach (var enumValue in Enum.GetValues(enumType)) {
-				var enumValueAsUInt64 = Convert.ToUInt64(enumValue);
-				mask = mask | enumValueAsUInt64;
+				var enumValueAsInt64 = Convert.ToInt64(enumValue);
+				if ((enumValueAsInt64 & value) == enumValueAsInt64) {
+					mask |= enumValueAsInt64;
+					if (mask == value)
+						return true;
+				}
 			}
-
-			return (mask & value) == value;
+			return false;
 		}
-	}
+ 	}
 }

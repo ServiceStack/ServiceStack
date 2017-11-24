@@ -1,7 +1,8 @@
-namespace ServiceStack.FluentValidation.Internal
-{
+namespace ServiceStack.FluentValidation.Internal {
 	using System;
 	using System.Linq;
+	using System.Linq.Expressions;
+	using Validators;
 
 	/// <summary>
 	/// Selects validators that belong to the specified rulesets.
@@ -12,9 +13,7 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <summary>
 		/// Rule sets
 		/// </summary>
-		public string[] RuleSets {
-			get {  return rulesetsToExecute; }
-		}
+		public string[] RuleSets => rulesetsToExecute;
 
 		/// <summary>
 		/// Creates a new instance of the RulesetValidatorSelector.

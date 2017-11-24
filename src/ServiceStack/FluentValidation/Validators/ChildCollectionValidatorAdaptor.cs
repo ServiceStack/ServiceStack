@@ -16,8 +16,7 @@
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
+namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Collections;
 	using System.Collections.Generic;
@@ -25,7 +24,7 @@ namespace ServiceStack.FluentValidation.Validators
 	using System.Linq.Expressions;
 	using System.Threading;
 	using System.Threading.Tasks;
-	using ServiceStack.FluentValidation.Results;
+	using FluentValidation.Results;
 
 	public class ChildCollectionValidatorAdaptor : NoopPropertyValidator {
 		static readonly IEnumerable<ValidationFailure> EmptyResult = Enumerable.Empty<ValidationFailure>();

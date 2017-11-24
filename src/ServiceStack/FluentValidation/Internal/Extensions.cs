@@ -16,8 +16,7 @@
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Internal
-{
+namespace ServiceStack.FluentValidation.Internal {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq.Expressions;
@@ -36,8 +35,12 @@ namespace ServiceStack.FluentValidation.Internal
 		}
 
 		internal static void Guard(this string str, string message) {
-			if (string.IsNullOrEmpty(str)) {
+			if (str == null) {
 				throw new ArgumentNullException(message);
+			}
+
+			if (string.IsNullOrEmpty(str)) {
+				throw new ArgumentException(message);
 			}
 		}
 
@@ -54,7 +57,7 @@ namespace ServiceStack.FluentValidation.Internal
 		/// Gets a MemberInfo from a member expression.
 		/// </summary>
 		public static MemberInfo GetMember(this LambdaExpression expression) {
-			var memberExp = RemoveUnary(expression.Body);
+			var memberExp = RemoveUnary(expression.Body) as MemberExpression;
 
 			if (memberExp == null) {
 				return null;
@@ -67,45 +70,60 @@ namespace ServiceStack.FluentValidation.Internal
 		/// Gets a MemberInfo from a member expression.
 		/// </summary>
 		public static MemberInfo GetMember<T, TProperty>(this Expression<Func<T, TProperty>> expression) {
-			var memberExp = RemoveUnary(expression.Body);
+			var memberExp = RemoveUnary(expression.Body) as MemberExpression;
 
 			if (memberExp == null) {
 				return null;
 			}
 
+			Expression currentExpr = memberExp.Expression;
+
+			// Unwind the expression to get the root object that the expression acts upon. 
+			while (true) {
+				currentExpr = RemoveUnary(currentExpr);
+
+				if (currentExpr != null && currentExpr.NodeType == ExpressionType.MemberAccess) {
+					currentExpr = ((MemberExpression) currentExpr).Expression;
+				}
+				else {
+					break;
+				}
+			}
+
+			if (currentExpr == null || currentExpr.NodeType != ExpressionType.Parameter) {
+				return null; // We don't care if we're not acting upon the model instance. 
+			}
+
 			return memberExp.Member;
 		}
 
-		private static MemberExpression RemoveUnary(Expression toUnwrap) {
+
+		private static Expression RemoveUnary(Expression toUnwrap) {
 			if (toUnwrap is UnaryExpression) {
-				return ((UnaryExpression)toUnwrap).Operand as MemberExpression;
+				return ((UnaryExpression)toUnwrap).Operand;
 			}
 
-			return toUnwrap as MemberExpression;
+			return toUnwrap;
 		}
 
 		/// <summary>
 		/// Splits pascal case, so "FooBar" would become "Foo Bar"
 		/// </summary>
-		public static string SplitPascalCase(this string input)
-		{
-			if (string.IsNullOrEmpty(input)) {
+		public static string SplitPascalCase(this string input) {
+			if (string.IsNullOrEmpty(input))
 				return input;
-			}
 
 			var retVal = new StringBuilder(input.Length + 5);
 
-			foreach (var currentChar in input)
-			{
-				if (char.IsUpper(currentChar))
-				{
-					retVal.Append(' ');
-					retVal.Append(currentChar);				
+			for (int i = 0; i < input.Length; ++i) {
+				var currentChar = input[i];
+				if (char.IsUpper(currentChar)) {
+					if ((i > 1 && !char.IsUpper(input[i - 1]))
+							|| (i + 1 < input.Length && !char.IsUpper(input[i + 1])))
+						retVal.Append(' ');
 				}
-				else
-				{
-					retVal.Append(currentChar);
-				}
+
+				retVal.Append(currentChar);
 			}
 
 			return retVal.ToString().Trim();
@@ -126,11 +144,11 @@ namespace ServiceStack.FluentValidation.Internal
 
 		internal static void ForEach<T>(this IEnumerable<T> source, Action<T> action) {
 			foreach(var item in source) {
-				action(item);
+				action(item);	
 			}
 		}
 
-#pragma warning disable 1591
+#pragma warning disable 1591 
 		public static Func<object, object> CoerceToNonGeneric<T, TProperty>(this Func<T, TProperty> func) {
 			return x => func((T)x);
 		} 
@@ -168,5 +186,6 @@ namespace ServiceStack.FluentValidation.Internal
 			return x => action((T)x);
 		}
 #pragma warning restore 1591
+
 	}
 }

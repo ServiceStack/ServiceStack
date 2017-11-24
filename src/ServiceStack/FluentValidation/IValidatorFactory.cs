@@ -16,8 +16,7 @@
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation
-{
+namespace ServiceStack.FluentValidation {
 	using System;
 
 	/// <summary>

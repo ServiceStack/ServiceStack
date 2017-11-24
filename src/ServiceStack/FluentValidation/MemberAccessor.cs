@@ -10,7 +10,7 @@ namespace ServiceStack.FluentValidation.Internal
 	public static class MemberAccessor<TObject> {
 		public static MemberAccessor<TObject, TValue> From<TValue>(Expression<Func<TObject, TValue>> getExpression) {
 			return new MemberAccessor<TObject, TValue>(getExpression);
-		}
+		} 
 	}
 
 	public class MemberAccessor<TObject, TValue> {

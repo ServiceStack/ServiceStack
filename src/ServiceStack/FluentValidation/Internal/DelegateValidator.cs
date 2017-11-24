@@ -1,23 +1,22 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Internal
-{
+namespace ServiceStack.FluentValidation.Internal {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -30,6 +29,7 @@ namespace ServiceStack.FluentValidation.Internal
 	/// Custom IValidationRule for performing custom logic.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
+	[Obsolete("Use RuleFor(x => x).Custom((x,ctx) => ...) instead")]
 	public class DelegateValidator<T> : IValidationRule {
 		private readonly Func<T, ValidationContext<T>, IEnumerable<ValidationFailure>> func;
 		private readonly Func<T, ValidationContext<T>, CancellationToken, Task<IEnumerable<ValidationFailure>>> asyncFunc;
@@ -55,8 +55,8 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <summary>
 		/// Creates a new DelegateValidator using the specified function to perform validation.
 		/// </summary>
-		public DelegateValidator(Func<T, IEnumerable<ValidationFailure>> func) :
-            this((x, ctx) => func(x)) {
+		public DelegateValidator(Func<T, IEnumerable<ValidationFailure>> func)
+			: this((x, ctx) => func(x)) {
 		}
 
 		/// <summary>
@@ -130,7 +130,7 @@ namespace ServiceStack.FluentValidation.Internal
 
 			return asyncCondition == null
 				? ValidateAsyncInternal(context, cancellation)
-				: asyncCondition(context.InstanceToValidate).Then(shouldValidate =>
+				: asyncCondition(context.InstanceToValidate).Then(shouldValidate => 
 					shouldValidate
 						? ValidateAsyncInternal(context, cancellation)
 						: TaskHelpers.FromResult(Enumerable.Empty<ValidationFailure>()),

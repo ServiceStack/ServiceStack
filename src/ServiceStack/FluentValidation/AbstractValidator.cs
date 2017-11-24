@@ -1,22 +1,20 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
-
-using ServiceStack.Web;
 
 namespace ServiceStack.FluentValidation
 {
@@ -36,13 +34,8 @@ namespace ServiceStack.FluentValidation
 	/// Base class for entity validator classes.
 	/// </summary>
 	/// <typeparam name="T">The type of the object being validated</typeparam>
-	public abstract class AbstractValidator<T> : IValidator<T>, IEnumerable<IValidationRule>, IRequiresRequest
-    {
-        public virtual IRequest Request { get; set; }
-
-        public virtual IServiceGateway Gateway => HostContext.AppHost.GetServiceGateway(Request);
-
-        readonly TrackingCollection<IValidationRule> nestedValidators = new TrackingCollection<IValidationRule>();
+	public abstract partial class AbstractValidator<T> : IValidator<T>, IEnumerable<IValidationRule> {
+		readonly TrackingCollection<IValidationRule> nestedValidators = new TrackingCollection<IValidationRule>();
 
 		// Work-around for reflection bug in .NET 4.5
 		static Func<CascadeMode> s_cascadeMode = () => ValidatorOptions.CascadeMode;
@@ -52,23 +45,23 @@ namespace ServiceStack.FluentValidation
 		/// Sets the cascade mode for all rules within this validator.
 		/// </summary>
 		public CascadeMode CascadeMode {
-			get { return cascadeMode(); }
-			set { cascadeMode = () => value; }
+			get => cascadeMode();
+			set => cascadeMode = () => value;
 		}
 
 		ValidationResult IValidator.Validate(object instance) {
 			instance.Guard("Cannot pass null to Validate.");
 			if(! ((IValidator)this).CanValidateInstancesOfType(instance.GetType())) {
-				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().GetOperationName(), typeof(T).GetOperationName()));
+				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().Name, typeof(T).Name));
 			}
-
+			
 			return Validate((T)instance);
 		}
 
 		Task<ValidationResult> IValidator.ValidateAsync(object instance, CancellationToken cancellation) {
 			instance.Guard("Cannot pass null to Validate.");
 			if (!((IValidator) this).CanValidateInstancesOfType(instance.GetType())) {
-				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().GetOperationName(), typeof (T).GetOperationName()));
+				throw new InvalidOperationException(string.Format("Cannot validate instances of type '{0}'. This validator can only validate instances of type '{1}'.", instance.GetType().Name, typeof (T).Name));
 			}
 
 			return ValidateAsync((T) instance, cancellation);
@@ -78,7 +71,7 @@ namespace ServiceStack.FluentValidation
 			context.Guard("Cannot pass null to Validate");
 
             if (Request == null)
-                Request = context.Request;
+		        Request = context.Request;
 
             var newContext = new ValidationContext<T>((T)context.InstanceToValidate, context.PropertyChain, context.Selector) {
 				IsChildContext = context.IsChildContext,
@@ -92,8 +85,8 @@ namespace ServiceStack.FluentValidation
 		Task<ValidationResult> IValidator.ValidateAsync(ValidationContext context, CancellationToken cancellation) {
 			context.Guard("Cannot pass null to Validate");
 
-            if (Request == null)
-                Request = context.Request;
+		    if (Request == null)
+		        Request = context.Request;
 
             var newContext = new ValidationContext<T>((T) context.InstanceToValidate, context.PropertyChain, context.Selector) {
 				IsChildContext = context.IsChildContext,
@@ -109,11 +102,11 @@ namespace ServiceStack.FluentValidation
 		/// </summary>
 		/// <param name="instance">The object to validate</param>
 		/// <returns>A ValidationResult object containing any validation failures</returns>
-		public virtual ValidationResult Validate(T instance) {
+		public ValidationResult Validate(T instance) {
 			return Validate(new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory())
 			{
-                Request = Request
-            });
+			    Request = Request
+			});
 		}
 
 		/// <summary>
@@ -122,17 +115,13 @@ namespace ServiceStack.FluentValidation
 		/// <param name="instance">The object to validate</param>
 		/// <param name="cancellation">Cancellation token</param>
 		/// <returns>A ValidationResult object containing any validation failures</returns>
-		public Task<ValidationResult> ValidateAsync(T instance, CancellationToken cancellation = new CancellationToken())
-		{
-		    return
-		        ValidateAsync(
-		            new ValidationContext<T>(instance, new PropertyChain(),
-		                ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory())
-		            {
-		                Request = Request
-		            }, cancellation);
+		public Task<ValidationResult> ValidateAsync(T instance, CancellationToken cancellation = new CancellationToken()) {
+			return ValidateAsync(new ValidationContext<T>(instance, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory())
+			{
+			    Request = Request
+			}, cancellation);
 		}
-
+		
 		/// <summary>
 		/// Validates the specified instance.
 		/// </summary>
@@ -140,13 +129,13 @@ namespace ServiceStack.FluentValidation
 		/// <returns>A ValidationResult object containing any validation failures.</returns>
 		public virtual ValidationResult Validate(ValidationContext<T> context) {
 			context.Guard("Cannot pass null to Validate.");
-			context.InstanceToValidate.Guard("Cannot a pass null model to Validate.");
-			var failures = nestedValidators.SelectMany(x => x.Validate(context)).ToList();
+			EnsureInstanceNotNull(context.InstanceToValidate);
+			var failures = nestedValidators.SelectMany(x => x.Validate(context));
 
-            if (Request == null)
-                    Request = context.Request;
+		    if (Request == null)
+		        Request = context.Request;
 
-            return new ValidationResult(failures){ Request = Request };
+            return new ValidationResult(failures) { Request = Request };
 		}
 
 		/// <summary>
@@ -157,19 +146,19 @@ namespace ServiceStack.FluentValidation
 		/// <returns>A ValidationResult object containing any validation failures.</returns>
 		public virtual Task<ValidationResult> ValidateAsync(ValidationContext<T> context, CancellationToken cancellation = new CancellationToken()) {
 			context.Guard("Cannot pass null to Validate");
-			context.InstanceToValidate.Guard("Cannot pass null model to ValidateAsync.");
+			EnsureInstanceNotNull(context.InstanceToValidate);
 
-            if (Request == null)
-                Request = context.Request;
+		    if (Request == null)
+		        Request = context.Request;
 
-            var failures = new List<ValidationFailure>();
-
+			var failures = new List<ValidationFailure>();
+			
 			return TaskHelpers.Iterate(
 				nestedValidators
 				.Select(v => v.ValidateAsync(context, cancellation).Then(fs => failures.AddRange(fs), runSynchronously: true))
 			).Then(
 				() => new ValidationResult(failures) { Request = Request }
-			);
+            );
 		}
 
 		/// <summary>
@@ -220,7 +209,7 @@ namespace ServiceStack.FluentValidation
 			AddRule(rule);
 			var ruleBuilder = new RuleBuilder<T, TProperty>(rule);
 			return ruleBuilder;
-		}
+		} 
 
 		/// <summary>
 		/// Defines a custom validation rule using a lambda expression.
@@ -228,6 +217,7 @@ namespace ServiceStack.FluentValidation
 		/// If the validation rule succeeds, it should return null.
 		/// </summary>
 		/// <param name="customValidator">A lambda that executes custom validation rules.</param>
+		[Obsolete("Use model-level RuleFor(x => x).Custom((x, context) => {}) instead")]
 		public void Custom(Func<T, ValidationFailure> customValidator) {
 			customValidator.Guard("Cannot pass null to Custom");
 			AddRule(new DelegateValidator<T>(x => new[] { customValidator(x) }));
@@ -239,6 +229,7 @@ namespace ServiceStack.FluentValidation
 		/// If the validation rule succeeds, it should return null.
 		/// </summary>
 		/// <param name="customValidator">A lambda that executes custom validation rules</param>
+		[Obsolete("Use model-level RuleFor(x => x).Custom((x, context) => {}) instead")]
 		public void Custom(Func<T, ValidationContext<T>, ValidationFailure> customValidator) {
 			customValidator.Guard("Cannot pass null to Custom");
 			AddRule(new DelegateValidator<T>((x, ctx) => new[] { customValidator(x, ctx) }));
@@ -250,6 +241,7 @@ namespace ServiceStack.FluentValidation
 		/// If the validation rule succeeds, it should return null.
 		/// </summary>
 		/// <param name="customValidator">A lambda that executes custom validation rules.</param>
+		[Obsolete("Use model-level RuleFor(x => x).CustomAsync(await (x,context,cancellation) => {}) instead")]
 		public void CustomAsync(Func<T, Task<ValidationFailure>> customValidator) {
 			customValidator.Guard("Cannot pass null to Custom");
 			AddRule(new DelegateValidator<T>(x => customValidator(x).Then(f => new[] {f}.AsEnumerable(), runSynchronously: true)));
@@ -261,6 +253,7 @@ namespace ServiceStack.FluentValidation
 		/// If the validation rule succeeds, it should return null.
 		/// </summary>
 		/// <param name="customValidator">A lambda that executes custom validation rules</param>
+		[Obsolete("Use model-level RuleFor(x => x).CustomAsync(await (x,context,cancellation) => {}) instead")]
 		public void CustomAsync(Func<T, ValidationContext<T>, CancellationToken, Task<ValidationFailure>> customValidator) {
 			customValidator.Guard("Cannot pass null to Custom");
 			AddRule(new DelegateValidator<T>((x, ctx, cancel) => customValidator(x, ctx, cancel).Then(f => new[] {f}.AsEnumerable(), runSynchronously: true)));
@@ -280,35 +273,19 @@ namespace ServiceStack.FluentValidation
 			}
 		}
 
-        /// <summary>
-        /// Defines a RuleSet that can be used to provide specific validation rules for specific HTTP methods (GET, POST...)
-        /// </summary>
-        /// <param name="appliesTo">The HTTP methods where this rule set should be used.</param>
-        /// <param name="action">Action that encapuslates the rules in the ruleset.</param>
-        public void RuleSet(ApplyTo appliesTo, Action action)
-        {
-            var httpMethods = appliesTo.ToString().Split(',')
-                .Map(x => x.Trim().ToUpper());
-
-            foreach (var httpMethod in httpMethods)
-            {
-                RuleSet(httpMethod, action);
-            }
-        }
-
-        /// <summary>
-        /// Defines a condition that applies to several rules
-        /// </summary>
-        /// <param name="predicate">The condition that should apply to multiple rules</param>
-        /// <param name="action">Action that encapsulates the rules.</param>
-        /// <returns></returns>
-        public void When(Func<T, bool> predicate, Action action) {
+		/// <summary>
+		/// Defines a condition that applies to several rules
+		/// </summary>
+		/// <param name="predicate">The condition that should apply to multiple rules</param>
+		/// <param name="action">Action that encapsulates the rules.</param>
+		/// <returns></returns>
+		public void When(Func<T, bool> predicate, Action action) {
 			var propertyRules = new List<IValidationRule>();
 
 			Action<IValidationRule> onRuleAdded = propertyRules.Add;
 
 			using(nestedValidators.OnItemAdded(onRuleAdded)) {
-				action();
+				action(); 
 			}
 
 			// Must apply the predicate after the rule has been fully created to ensure any rules-specific conditions have already been applied.
@@ -324,36 +301,33 @@ namespace ServiceStack.FluentValidation
 			When(x => !predicate(x), action);
 		}
 
-        /// <summary>
-        /// Defines an asynchronous condition that applies to several rules
-        /// </summary>
-        /// <param name="predicate">The asynchronous condition that should apply to multiple rules</param>
-        /// <param name="action">Action that encapsulates the rules.</param>
-        /// <returns></returns>
-        public void WhenAsync(Func<T, Task<bool>> predicate, Action action)
-        {
-            var propertyRules = new List<IValidationRule>();
+		/// <summary>
+		/// Defines an asynchronous condition that applies to several rules
+		/// </summary>
+		/// <param name="predicate">The asynchronous condition that should apply to multiple rules</param>
+		/// <param name="action">Action that encapsulates the rules.</param>
+		/// <returns></returns>
+		public void WhenAsync(Func<T, Task<bool>> predicate, Action action) {
+			var propertyRules = new List<IValidationRule>();
 
-            Action<IValidationRule> onRuleAdded = propertyRules.Add;
+			Action<IValidationRule> onRuleAdded = propertyRules.Add;
 
-            using (nestedValidators.OnItemAdded(onRuleAdded))
-            {
-                action();
-            }
+			using (nestedValidators.OnItemAdded(onRuleAdded)) {
+				action();
+			}
 
-            // Must apply the predicate after the rule has been fully created to ensure any rules-specific conditions have already been applied.
-            propertyRules.ForEach(x => x.ApplyAsyncCondition(predicate.CoerceToNonGeneric()));
-        }
+			// Must apply the predicate after the rule has been fully created to ensure any rules-specific conditions have already been applied.
+			propertyRules.ForEach(x => x.ApplyAsyncCondition(predicate.CoerceToNonGeneric()));
+		}
 
-        /// <summary>
-        /// Defines an inverse asynchronous condition that applies to several rules
-        /// </summary>
-        /// <param name="predicate">The asynchronous condition that should be applied to multiple rules</param>
-        /// <param name="action">Action that encapsulates the rules</param>
-        public void UnlessAsync(Func<T, Task<bool>> predicate, Action action)
-        {
-            WhenAsync(x => predicate(x).Then(y => !y), action);
-        }
+		/// <summary>
+		/// Defines an inverse asynchronous condition that applies to several rules
+		/// </summary>
+		/// <param name="predicate">The asynchronous condition that should be applied to multiple rules</param>
+		/// <param name="action">Action that encapsulates the rules</param>
+		public void UnlessAsync(Func<T, Task<bool>> predicate, Action action) {
+			WhenAsync(x => predicate(x).Then(y => !y), action);
+		}
 
 		/// <summary>
 		/// Includes the rules from the specified validator
@@ -377,6 +351,14 @@ namespace ServiceStack.FluentValidation
 
 		IEnumerator IEnumerable.GetEnumerator() {
 			return GetEnumerator();
+		}
+
+		/// <summary>
+		/// Throws an exception if the instance being validated is null.
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		protected virtual void EnsureInstanceNotNull(object instanceToValidate) {
+			instanceToValidate.Guard("Cannot pass null model to Validate.");
 		}
 	}
 

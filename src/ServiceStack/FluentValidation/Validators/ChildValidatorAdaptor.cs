@@ -1,5 +1,4 @@
-namespace ServiceStack.FluentValidation.Validators
-{
+namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;
@@ -33,7 +32,7 @@ namespace ServiceStack.FluentValidation.Validators
 
 		public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
 			return ValidateInternal(
-				context,
+				context, 
 				(ctx, v) => v.Validate(ctx).Errors,
 				EmptyResult
 			);
@@ -41,7 +40,7 @@ namespace ServiceStack.FluentValidation.Validators
 
 		public override Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
 			return ValidateInternal(
-				context,
+				context, 
 				(ctx, v) => v.ValidateAsync(ctx).Then(r => r.Errors.AsEnumerable(), runSynchronously:true),
 				AsyncEmptyResult
 			);
@@ -72,7 +71,9 @@ namespace ServiceStack.FluentValidation.Validators
 
 		protected ValidationContext CreateNewValidationContextForChildValidator(object instanceToValidate, PropertyValidatorContext context) {
 			var newContext = context.ParentContext.CloneForChildValidator(instanceToValidate);
-			newContext.PropertyChain.Add(context.Rule.PropertyName);
+			if(!context.ParentContext.IsChildCollectionContext)
+				newContext.PropertyChain.Add(context.Rule.PropertyName);
+
 			return newContext;
 		}
 	}

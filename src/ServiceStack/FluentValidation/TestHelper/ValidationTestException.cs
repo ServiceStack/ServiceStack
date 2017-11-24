@@ -17,8 +17,7 @@
 #endregion
 
 #pragma warning disable 1591
-namespace ServiceStack.FluentValidation.TestHelper
-{
+namespace ServiceStack.FluentValidation.TestHelper {
 	using System;
 
 	public class ValidationTestException : Exception {

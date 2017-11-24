@@ -3,8 +3,8 @@ namespace ServiceStack.FluentValidation.Validators
 	using System;
 	using System.Threading;
 	using System.Threading.Tasks;
-	using ServiceStack.FluentValidation.Internal;
-	using ServiceStack.FluentValidation.Resources;
+	using FluentValidation.Internal;
+	using FluentValidation.Resources;
 
 	/// <summary>
 	/// Asynchronous custom validator
@@ -17,8 +17,7 @@ namespace ServiceStack.FluentValidation.Validators
 		/// Creates a new ASyncPredicateValidator
 		/// </summary>
 		/// <param name="predicate"></param>
-		public AsyncPredicateValidator(Func<object, object, PropertyValidatorContext, CancellationToken, Task<bool>> predicate)
-			: base(nameof(Messages.predicate_error), typeof(Messages))
+		public AsyncPredicateValidator(Func<object, object, PropertyValidatorContext, CancellationToken, Task<bool>> predicate) : base(new LanguageStringSource(nameof(AsyncPredicateValidator)))
 		{
 			predicate.Guard("A predicate must be specified.");
 			this.predicate = predicate;

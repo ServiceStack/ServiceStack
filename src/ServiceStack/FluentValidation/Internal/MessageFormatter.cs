@@ -1,14 +1,13 @@
-namespace ServiceStack.FluentValidation.Internal
-{
+namespace ServiceStack.FluentValidation.Internal {
 	using System.Collections.Generic;
 
 	/// <summary>
 	/// Assists in the construction of validation messages.
 	/// </summary>
 	public class MessageFormatter {
-		readonly Dictionary<string, object> placeholderValues = new Dictionary<string, object>(2);
-		object[] additionalArguments = new object[0];
-		private bool shouldUseAdditionalArgs;
+		readonly Dictionary<string, object> _placeholderValues = new Dictionary<string, object>(2);
+		object[] _additionalArguments = new object[0];
+		private bool _shouldUseAdditionalArgs;
 
 		/// <summary>
 		/// Default Property Name placeholder.
@@ -20,6 +19,10 @@ namespace ServiceStack.FluentValidation.Internal
 		/// </summary>
 		public const string PropertyValue = "PropertyValue";
 
+		public MessageFormatter() {
+			
+		}
+
 		/// <summary>
 		/// Adds a value for a validation message placeholder.
 		/// </summary>
@@ -27,7 +30,7 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <param name="value"></param>
 		/// <returns></returns>
 		public MessageFormatter AppendArgument(string name, object value) {
-			placeholderValues[name] = value;
+			_placeholderValues[name] = value;
 			return this;
 		}
 
@@ -56,26 +59,26 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <param name="additionalArgs">Additional arguments</param>
 		/// <returns></returns>
 		public MessageFormatter AppendAdditionalArguments(params object[] additionalArgs) {
-			this.additionalArguments = additionalArgs;
-			this.shouldUseAdditionalArgs = this.additionalArguments != null && this.additionalArguments.Length > 0;
+			_additionalArguments = additionalArgs;
+			_shouldUseAdditionalArgs = _additionalArguments != null && _additionalArguments.Length > 0;
 			return this;
 		}
 
 		/// <summary>
-		/// Constructs the final message from the specified template.
+		/// Constructs the final message from the specified template. 
 		/// </summary>
 		/// <param name="messageTemplate">Message template</param>
 		/// <returns>The message with placeholders replaced with their appropriate values</returns>
-		public string BuildMessage(string messageTemplate) {
+		public virtual string BuildMessage(string messageTemplate) {
 
 			string result = messageTemplate;
 
-			foreach(var pair in placeholderValues) {
+			foreach(var pair in _placeholderValues) {
 				result = ReplacePlaceholderWithValue(result, pair.Key, pair.Value);
 			}
 
-			if(shouldUseAdditionalArgs) {
-				return string.Format(result, additionalArguments);
+			if(_shouldUseAdditionalArgs) {
+				return string.Format(result, _additionalArguments);
 			}
 			return result;
 		}
@@ -83,23 +86,19 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <summary>
 		/// Additional arguments to use
 		/// </summary>
-		public object[] AdditionalArguments {
-			get { return this.additionalArguments; }
-		}
+		public object[] AdditionalArguments => _additionalArguments;
 
 		/// <summary>
 		/// Additional placeholder values
 		/// </summary>
-		public Dictionary<string, object> PlaceholderValues {
-			get { return this.placeholderValues; }
-		}
+		public Dictionary<string, object> PlaceholderValues => _placeholderValues;
 
-		static string ReplacePlaceholderWithValue(string template, string key, object value) {
+		protected virtual string ReplacePlaceholderWithValue(string template, string key, object value) {
 			string placeholder =  GetPlaceholder(key);
-			return template.Replace(placeholder, value == null ? null : value.ToString());
+			return template.Replace(placeholder, value?.ToString());
 		}
 
-		static string GetPlaceholder(string key) {
+		protected string GetPlaceholder(string key) {
 			// Performance: String concat causes much overhead when not needed. Concatting constants results in constants being compiled.
 			switch (key) {
 				case PropertyName:

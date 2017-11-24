@@ -1,18 +1,18 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
@@ -23,33 +23,19 @@ namespace ServiceStack.FluentValidation.Validators
     using Resources;
 
     /// <summary>
-    /// Allows a decimal to be validated for scale and precision.
-    /// Scale would be the number of digits to the right of the decimal point.
-    /// Precision would be the number of digits.
-    ///
-    /// It can be configured to use the effective scale and precision
+    /// Allows a decimal to be validated for scale and precision.  
+    /// Scale would be the number of digits to the right of the decimal point.  
+    /// Precision would be the number of digits.  
+    /// 
+    /// It can be configured to use the effective scale and precision 
     /// (i.e. ignore trailing zeros) if required.
-    ///
+    /// 
     /// 123.4500 has an scale of 4 and a precision of 7, but an effective scale
     /// and precision of 2 and 5 respectively.
     /// </summary>
     public class ScalePrecisionValidator : PropertyValidator
     {
-        public ScalePrecisionValidator(int scale, int precision)
-            : this(scale, precision, nameof(Messages.scale_precision_error), typeof(Messages))
-        {
-            Init(scale, precision);
-        }
-
-        public ScalePrecisionValidator(
-            int scale, int precision, string errorMessageResourceName, Type errorMessageResourceType)
-            : base(errorMessageResourceName, errorMessageResourceType)
-        {
-            Init(scale, precision);
-        }
-
-        public ScalePrecisionValidator(int scale, int precision, string errorMessage)
-            : base(errorMessage)
+        public ScalePrecisionValidator(int scale, int precision) : base(new LanguageStringSource(nameof(ScalePrecisionValidator)))
         {
             Init(scale, precision);
         }
@@ -85,7 +71,6 @@ namespace ServiceStack.FluentValidation.Validators
 
         private void Init(int scale, int precision)
         {
-            ErrorCodeSource = new StaticStringSource(ValidationErrors.ScalePrecision);
             Scale = scale;
             Precision = precision;
 
@@ -144,7 +129,7 @@ namespace ServiceStack.FluentValidation.Validators
 
         private int GetPrecision(decimal Decimal)
         {
-            // Precision: number of times we can divide by 10 before we get to 0
+            // Precision: number of times we can divide by 10 before we get to 0        
             uint precision = 0;
             if (Decimal != 0m)
             {

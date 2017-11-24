@@ -1,25 +1,25 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
+// 
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at 
+// 
+// http://www.apache.org/licenses/LICENSE-2.0 
+// 
+// Unless required by applicable law or agreed to in writing, software 
+// distributed under the License is distributed on an "AS IS" BASIS, 
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+// See the License for the specific language governing permissions and 
 // limitations under the License.
-//
+// 
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Internal
-{
+namespace ServiceStack.FluentValidation.Internal {
 	using System;
 	using System.Collections.Generic;
+	using System.Globalization;
 	using System.Linq;
 	using System.Linq.Expressions;
 	using System.Reflection;
@@ -41,7 +41,7 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <summary>
 		/// Property associated with this rule.
 		/// </summary>
-		public MemberInfo Member { get; private set; }
+		public MemberInfo Member { get; }
 
 		/// <summary>
 		/// Function that can be invoked to retrieve the value of the property.
@@ -89,9 +89,7 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <summary>
 		/// Validators associated with this rule.
 		/// </summary>
-		public IEnumerable<IPropertyValidator> Validators {
-			get { return validators; }
-		}
+		public IEnumerable<IPropertyValidator> Validators => validators;
 
 		/// <summary>
 		/// Creates a new property rule.
@@ -109,7 +107,7 @@ namespace ServiceStack.FluentValidation.Internal
 			OnFailure = x => { };
 			TypeToValidate = typeToValidate;
 			this.cascadeModeThunk = cascadeModeThunk;
-
+			
 			DependentRules = new List<IValidationRule>();
 			PropertyName = ValidatorOptions.PropertyNameResolver(containerType, member, expression);
 			DisplayName = new LazyStringSource(x => ValidatorOptions.DisplayNameResolver(containerType, member, expression));
@@ -129,9 +127,9 @@ namespace ServiceStack.FluentValidation.Internal
 			var member = expression.GetMember();
 			// We can't use the expression tree as a key in the cache, as it doesn't implement GetHashCode/Equals in a useful way.
 			// Instead we'll use the MemberInfo as the key, but this only works for member expressions.
-			// If this is not a member expression (eg, a RuleFor(x => x) or a RuleFor(x => x.Foo())) then we won't cache the result.
-			// We could probably make the cache more robust in future.
-			var compiled = member == null ? expression.Compile() : AccessorCache<T>.GetCachedAccessor(member, expression);
+			// If this is not a member expression (eg, a RuleFor(x => x) or a RuleFor(x => x.Foo())) then we won't cache the result. 
+			// We could probably make the cache more robust in future. 
+			var compiled = member == null || ValidatorOptions.DisableAccessorCache ? expression.Compile() : AccessorCache<T>.GetCachedAccessor(member, expression);
 
 			return new PropertyRule(member, compiled.CoerceToNonGeneric(), expression, cascadeModeThunk, typeof(TProperty), typeof(T));
 		}
@@ -201,7 +199,7 @@ namespace ServiceStack.FluentValidation.Internal
 		public List<IValidationRule> DependentRules { get; private set; }
 
 		/// <summary>
-		/// Display name for the property.
+		/// Display name for the property. 
 		/// </summary>
 		public string GetDisplayName() {
 			string result = null;
@@ -218,22 +216,39 @@ namespace ServiceStack.FluentValidation.Internal
 		}
 
 		/// <summary>
+		/// Display name for the property. 
+		/// </summary>
+		public string GetDisplayName(object model) {
+			string result = null;
+
+			if (DisplayName != null) {
+				result = DisplayName.GetString(model);
+			}
+
+			if (result == null) {
+				result = propertyDisplayName;
+			}
+
+			return result;
+		}
+
+		/// <summary>
 		/// Performs validation using a validation context and returns a collection of Validation Failures.
 		/// </summary>
 		/// <param name="context">Validation Context</param>
 		/// <returns>A collection of validation failures</returns>
 		public virtual IEnumerable<ValidationFailure> Validate(ValidationContext context) {
-			string displayName = GetDisplayName();
+			string displayName = GetDisplayName(context.InstanceToValidate);
 
 			if (PropertyName == null && displayName == null) {
-				//No name has been specified. Assume this is a model-level rule, so we should use empty string instead.
+				//No name has been specified. Assume this is a model-level rule, so we should use empty string instead. 
 				displayName = string.Empty;
 			}
 
 			// Construct the full name of the property, taking into account overriden property names and the chain (if we're in a nested validator)
 			string propertyName = context.PropertyChain.BuildPropertyName(PropertyName ?? displayName);
 
-			// Ensure that this rule is allowed to run.
+			// Ensure that this rule is allowed to run. 
 			// The validatselector has the opportunity to veto this before any of the validators execute.
 			if (!context.Selector.CanExecute(this, propertyName, context)) {
 				yield break;
@@ -282,18 +297,18 @@ namespace ServiceStack.FluentValidation.Internal
 		/// <returns>A collection of validation failures</returns>
 		public Task<IEnumerable<ValidationFailure>> ValidateAsync(ValidationContext context, CancellationToken cancellation) {
 			try {
-				var displayName = GetDisplayName();
+				var displayName = GetDisplayName(context.InstanceToValidate);
 
 				if (PropertyName == null && displayName == null)
 				{
-					//No name has been specified. Assume this is a model-level rule, so we should use empty string instead.
+					//No name has been specified. Assume this is a model-level rule, so we should use empty string instead. 
 					displayName = string.Empty;
 				}
 
 				// Construct the full name of the property, taking into account overriden property names and the chain (if we're in a nested validator)
 				var propertyName = context.PropertyChain.BuildPropertyName(PropertyName ?? displayName);
 
-				// Ensure that this rule is allowed to run.
+				// Ensure that this rule is allowed to run. 
 				// The validatselector has the opportunity to veto this before any of the validators execute.
 				if (!context.Selector.CanExecute(this, propertyName, context)) {
 					return TaskHelpers.FromResult(Enumerable.Empty<ValidationFailure>());
@@ -331,7 +346,7 @@ namespace ServiceStack.FluentValidation.Internal
 				}
 
 				var asyncValidators = validators.Where(v => v.IsAsync).ToList();
-
+                
 				// if there's no async validators then we exit
 				if (asyncValidators.Count == 0) {
 					if (failures.Count > 0) {
@@ -340,7 +355,8 @@ namespace ServiceStack.FluentValidation.Internal
 					}
 					else
 					{
-						RunDependentRulesAsync(failures, context, cancellation);
+						return RunDependentRulesAsync(failures, context, cancellation)
+							.Then(() => failures.AsEnumerable(), cancellationToken: cancellation);
 					}
 
 					return TaskHelpers.FromResult(failures.AsEnumerable());
@@ -360,13 +376,13 @@ namespace ServiceStack.FluentValidation.Internal
 						validations,
 						breakCondition: _ => cascade == CascadeMode.StopOnFirstFailure && failures.Count > 0,
 						cancellationToken: cancellation
-					).Then(() => {
+					).Then(async () => {
 						if (failures.Count > 0) {
 							OnFailure(context.InstanceToValidate);
 						}
 						else
 						{
-							RunDependentRulesAsync(failures, context, cancellation);
+							await RunDependentRulesAsync(failures, context, cancellation);
 						}
 
 						return failures.AsEnumerable();
@@ -379,16 +395,13 @@ namespace ServiceStack.FluentValidation.Internal
 			}
 		}
 
-		private void RunDependentRulesAsync(List<ValidationFailure> failures, ValidationContext context, CancellationToken cancellation)
-		{
-			foreach (var dependentRule in DependentRules)
-			{
-				dependentRule.ValidateAsync(context, cancellation).Then(x => { failures.AddRange(x); }, cancellation, true);
-			}
+		private Task RunDependentRulesAsync(List<ValidationFailure> failures, ValidationContext context, CancellationToken cancellation) {
+			var validations = DependentRules.Select(v => v.ValidateAsync(context, cancellation).Then(fs => failures.AddRange(fs), runSynchronously: true));
+			return TaskHelpers.Iterate(validations, cancellationToken: cancellation);
 		}
 
 		/// <summary>
-		/// Invokes the validator asynchronously
+		/// Invokes the validator asynchronously 
 		/// </summary>
 		/// <param name="context"></param>
 		/// <param name="validator"></param>
