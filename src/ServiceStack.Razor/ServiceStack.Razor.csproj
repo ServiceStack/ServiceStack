@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">

@@ -13,9 +13,9 @@ using System.Web.Razor.Parser;
 using System.Web.Razor.Parser.SyntaxTree;
 using System.Web.Razor.Text;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
-using ServiceStack.MiniProfiler;
 using ServiceStack.Text;
 
 namespace ServiceStack.Razor.Compilation

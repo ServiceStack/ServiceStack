@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace ServiceStack.MiniProfiler
+namespace ServiceStack.Html
 {
 	public class HelperResult : IHtmlString, System.Web.IHtmlString
 	{

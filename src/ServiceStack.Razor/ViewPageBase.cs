@@ -14,7 +14,6 @@ using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
-using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;

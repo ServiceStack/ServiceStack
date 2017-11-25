@@ -1,6 +1,6 @@
 ﻿using System.Web;
 
-namespace ServiceStack.MiniProfiler
+namespace ServiceStack.Html
 {
     // Dummy class to satisfy linked files from SS.Razor project
     public class HelperResult : IHtmlString
