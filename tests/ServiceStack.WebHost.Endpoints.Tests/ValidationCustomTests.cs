@@ -31,11 +31,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             RuleFor(request => request.Name).NotEmpty();
             RuleFor(request => request)
                 .Custom((request, contex) => {
-                    if (!request.Name.StartsWith("A"))
+                    if (!request?.Name?.StartsWith("A") ?? true)
                     {
                         var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0");
                         var errorMessage = $"Incorrect prefix.";
-                        var failure = new ValidationFailure(propertyName, errorMessage, request.Name)
+                        var failure = new ValidationFailure(propertyName, errorMessage)
                         {
                             ErrorCode = "NotFound"
                         };
@@ -46,9 +46,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var lastLetter = request.Name?.Substring(nameLength - 1, 1) ?? "";
                     if (firstLetter != lastLetter)
                     {
-                        var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0:1 <> Name:{nameLength - 1}:{nameLength}");
+                        var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0:1 Name:{nameLength - 1}:{nameLength}");
                         var errorMessage = $"Name inconsistency: {firstLetter} <> {lastLetter}";
-                        var failure = new ValidationFailure(propertyName, errorMessage, request.Name)
+                        var failure = new ValidationFailure(propertyName, errorMessage)
                         {
                             ErrorCode = "Inconsistency"
                         };
