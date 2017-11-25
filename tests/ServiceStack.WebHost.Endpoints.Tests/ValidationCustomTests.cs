@@ -118,5 +118,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
+        [Test]
+        public void Does_execute_custom_validators_combined()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn);
+
+            try
+            {
+                var response = client.Get(new CustomValidation());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                var status = ex.GetResponseStatus();
+
+                Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Message, Is.EqualTo("'Name' should not be empty."));
+                Assert.That(status.Errors.Count, Is.EqualTo(2));
+
+                Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(status.Errors[0].FieldName, Is.EqualTo("Name"));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Name' should not be empty."));
+
+                Assert.That(status.Errors[1].ErrorCode, Is.EqualTo("NotFound"));
+                Assert.That(status.Errors[1].FieldName, Is.EqualTo("Name:0"));
+                Assert.That(status.Errors[1].Message, Is.EqualTo("Incorrect prefix."));
+            }
+        }
+
     }
 }
