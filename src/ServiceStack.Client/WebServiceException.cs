@@ -36,8 +36,7 @@ namespace ServiceStack
 
         private void ParseResponseDto()
         {
-            string responseStatus;
-            if (!TryGetResponseStatusFromResponseDto(out responseStatus))
+            if (!TryGetResponseStatusFromResponseDto(out var responseStatus))
             {
                 if (!TryGetResponseStatusFromResponseBody(out responseStatus))
                 {
@@ -135,8 +134,7 @@ namespace ServiceStack
                 if (this.ResponseDto == null)
                     return null;
 
-                var hasResponseStatus = this.ResponseDto as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                if (this.ResponseDto is IHasResponseStatus hasResponseStatus)
                     return hasResponseStatus.ResponseStatus;
 
                 var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");

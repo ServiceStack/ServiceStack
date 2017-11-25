@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class CustomValidationService : Service
+    public class CustomValidationErrorService : Service
     {
         public object Get(CustomError request)
         {
