@@ -504,7 +504,7 @@ namespace ServiceStack.Html
                 : new MvcHtmlString(MarkdownConfig.Transform(markdown));
         }
 
-        public static MvcHtmlString IncludeFile(string virtualPath)
+        public MvcHtmlString IncludeFile(string virtualPath)
         {
             var file = HostContext.VirtualFileSources.GetFile(virtualPath);
             return file != null
