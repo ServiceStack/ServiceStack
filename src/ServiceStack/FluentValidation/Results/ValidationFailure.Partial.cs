@@ -5,6 +5,15 @@ namespace ServiceStack.FluentValidation.Results
 {
 	public partial class ValidationFailure
     {
+        /// <summary>
+        /// Creates a new ValidationFailure with ErrorCode.
+        /// </summary>
+        public ValidationFailure(string propertyName, string error, object attemptedValue, string errorCode)
+            : this(propertyName, error, attemptedValue, errorCode)
+        {
+            this.ErrorCode = errorCode;
+        }
+
         public static Func<string, string> ErrorCodeResolver { get; set; } = ServiceStackErrorCodeResolver;
 
         public static Dictionary<string, string> ErrorCodeAliases = new Dictionary<string, string>
