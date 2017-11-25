@@ -9,7 +9,7 @@ namespace ServiceStack.FluentValidation.Results
         /// Creates a new ValidationFailure with ErrorCode.
         /// </summary>
         public ValidationFailure(string propertyName, string error, object attemptedValue, string errorCode)
-            : this(propertyName, error, attemptedValue, errorCode)
+            : this(propertyName, error, attemptedValue)
         {
             this.ErrorCode = errorCode;
         }
