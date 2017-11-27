@@ -1,13 +1,14 @@
 ﻿#if NETSTANDARD2_0
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using Microsoft.Extensions.Configuration;
+using ServiceStack.Configuration;
 using ServiceStack.Text;
 
-using Microsoft.Extensions.Configuration;
-
-namespace ServiceStack.Configuration
+namespace ServiceStack
 {
     public class NetCoreAppSettings : IAppSettings
     {
