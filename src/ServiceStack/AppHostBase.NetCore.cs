@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_0
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using ServiceStack.Web;
@@ -188,6 +189,10 @@ namespace ServiceStack
 
         public override string MapProjectPath(string relativePath)
         {
+            var env = app?.ApplicationServices.GetService<IHostingEnvironment>();
+            if (env?.ContentRootPath != null && relativePath?.StartsWith("~") == true)
+                return Path.GetFullPath(env.ContentRootPath.CombineWith(relativePath.Substring(1)));
+
             return relativePath.MapHostAbsolutePath();
         }
 
