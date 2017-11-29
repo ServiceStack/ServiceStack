@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -27,10 +27,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec = ..\NuGet\ServiceStack.Authentication.OpenId\servicestack.authentication.openid.nuspec
 		..\NuGet\ServiceStack.Authentication.RavenDb\servicestack.authentication.ravendb.nuspec = ..\NuGet\ServiceStack.Authentication.RavenDb\servicestack.authentication.ravendb.nuspec
 		..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec = ..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec
+		..\NuGet\ServiceStack.Client.Core\servicestack.client.core.nuspec = ..\NuGet\ServiceStack.Client.Core\servicestack.client.core.nuspec
 		..\NuGet\ServiceStack.Client\servicestack.client.nuspec = ..\NuGet\ServiceStack.Client\servicestack.client.nuspec
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
 		..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec = ..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec
+		..\NuGet\ServiceStack.HttpClient.Core\servicestack.httpclient.core.nuspec = ..\NuGet\ServiceStack.HttpClient.Core\servicestack.httpclient.core.nuspec
 		..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec = ..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec
+		..\NuGet\ServiceStack.Interfaces.Core\servicestack.interfaces.core.nuspec = ..\NuGet\ServiceStack.Interfaces.Core\servicestack.interfaces.core.nuspec
 		..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec = ..\NuGet\ServiceStack.Interfaces\servicestack.interfaces.nuspec
 		..\NuGet\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec = ..\NuGet\ServiceStack.Kestrel\ServiceStack.Kestrel.nuspec
 		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec

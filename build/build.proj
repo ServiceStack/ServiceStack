@@ -161,6 +161,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces/servicestack.interfaces.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.Interfaces.Core -->
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(InterfaceCoreLibFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Interfaces.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Interfaces.Core/servicestack.interfaces.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Api.Swagger -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Api.Swagger/ServiceStack.Api.Swagger.csproj"
@@ -479,6 +486,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.Client.Core -->
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client.Core/servicestack.client.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.HttpClient -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
@@ -493,6 +507,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient/servicestack.httpclient.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.HttpClient.Core -->
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(HttpClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.HttpClient.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.HttpClient.Core/servicestack.httpclient.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Common -->
 
