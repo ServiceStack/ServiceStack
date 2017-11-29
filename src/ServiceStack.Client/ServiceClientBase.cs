@@ -5,25 +5,15 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using System.Reflection;
 using System.Threading;
-using ServiceStack.Auth;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
-
-#if !(__IOS__ || SL5)
-#endif
-
-#if SL5SendOneWay
-using ServiceStack.Text;
-#endif
 
 namespace ServiceStack
 {
@@ -505,19 +495,17 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
+                var webResponse = client.GetResponse();
                 return HandleResponse<List<TResponse>>(webResponse);
             }
             catch (Exception ex)
             {
-                List<TResponse> response;
-
                 if (!HandleResponseException(ex,
                     requests,
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, requests),
-                    c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    c => c.GetResponse(),
+                    out List<TResponse> response))
                 {
                     throw;
                 }
@@ -561,7 +549,7 @@ namespace ServiceStack
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
+                var webResponse = client.GetResponse();
                 ApplyWebResponseFilters(webResponse);
 
                 var response = GetResponse<TResponse>(webResponse);
@@ -573,14 +561,12 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                TResponse response;
-
                 if (!HandleResponseException(ex,
                     request,
                     requestUri,
                     () => SendRequest(HttpMethods.Post, requestUri, request),
-                    c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    c => c.GetResponse(),
+                    out TResponse response))
                 {
                     throw;
                 }
@@ -734,8 +720,7 @@ namespace ServiceStack
         protected void ThrowResponseTypeException<TResponse>(object request, Exception ex, string requestUri)
         {
             var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
-            Action<Exception, string> responseHandler;
-            if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
+            if (!ResponseHandlers.TryGetValue(responseType, out var responseHandler))
             {
                 var mi = GetType().GetInstanceMethod("ThrowWebServiceException")
                     .MakeGenericMethod(new[] { responseType });
@@ -812,8 +797,7 @@ namespace ServiceStack
             if (webEx != null)
                 throw webEx;
 
-            var authEx = ex as AuthenticationException;
-            if (authEx != null)
+            if (ex is AuthenticationException authEx)
             {
                 throw WebRequestUtils.CreateCustomException(requestUri, authEx);
             }
@@ -849,7 +833,6 @@ namespace ServiceStack
             }
             else
             {
-#if !SL5
                 if (RequestCompressionType == CompressionTypes.Deflate)
                 {
                     requestStream = new System.IO.Compression.DeflateStream(requestStream, System.IO.Compression.CompressionMode.Compress);
@@ -858,7 +841,6 @@ namespace ServiceStack
                 {
                     requestStream = new System.IO.Compression.GZipStream(requestStream, System.IO.Compression.CompressionMode.Compress);
                 }
-#endif
                 SerializeToStream(null, request, requestStream);
 
                 if (!keepOpen)
@@ -893,9 +875,7 @@ namespace ServiceStack
                 client.Method = httpMethod;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
-#if !SL5
                 if (Proxy != null) client.Proxy = Proxy;
-#endif
                 PclExport.Instance.Config(client,
                     allowAutoRedirect: AllowAutoRedirect,
                     timeout: this.Timeout,
@@ -957,7 +937,7 @@ namespace ServiceStack
         private byte[] DownloadBytes(string httpMethod, string requestUri, object request)
         {
             var webRequest = SendRequest(httpMethod, requestUri, request);
-            using (var response = PclExport.Instance.GetResponse(webRequest))
+            using (var response = webRequest.GetResponse())
             {
                 ApplyWebResponseFilters(response);
                 using (var stream = response.GetResponseStream())
@@ -1047,15 +1027,13 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                HttpWebResponse response;
-
                 if (!HandleResponseException(
                     ex,
                     requestDto,
                     requestUri,
                     () => SendRequest(httpMethod, requestUri, requestDto),
-                    c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    c => c.GetResponse(),
+                    out HttpWebResponse response))
                 {
                     throw;
                 }
@@ -1263,15 +1241,15 @@ namespace ServiceStack
             if (ResultsFilter != null)
             {
                 var response = ResultsFilter(typeof(TResponse), httpMethod, requestUri, request);
-                if (response is TResponse)
-                    return (TResponse)response;
+                if (response is TResponse typedResponse)
+                    return typedResponse;
             }
 
             var client = SendRequest(httpMethod, requestUri, request);
 
             try
             {
-                var webResponse = PclExport.Instance.GetResponse(client);
+                var webResponse = client.GetResponse();
                 ApplyWebResponseFilters(webResponse);
 
                 var response = GetResponse<TResponse>(webResponse);
@@ -1283,15 +1261,13 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                TResponse response;
-
                 if (!HandleResponseException(
                     ex,
                     request,
                     requestUri,
                     () => SendRequest(httpMethod, requestUri, request),
-                    c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    c => c.GetResponse(),
+                    out TResponse response))
                 {
                     throw;
                 }
@@ -1613,20 +1589,18 @@ namespace ServiceStack
             try
             {
                 var webRequest = createWebRequest();
-                var webResponse = PclExport.Instance.GetResponse(webRequest);
+                var webResponse = webRequest.GetResponse();
                 return HandleResponse<TResponse>(webResponse);
             }
             catch (Exception ex)
             {
-                TResponse response;
-
                 // restore original position before retry
                 files[fileCount - 1].Stream.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
                     ex, request, requestUri, createWebRequest,
                     c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    out TResponse response))
                 {
                     throw;
                 }
@@ -1645,7 +1619,7 @@ namespace ServiceStack
             var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
             var currentStreamPosition = fileToUpload.Position;
 
-            Func<WebRequest> createWebRequest = () =>
+            WebRequest createWebRequest()
             {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
@@ -1686,7 +1660,7 @@ namespace ServiceStack
                 }
 
                 return webRequest;
-            };
+            }
 
             try
             {
@@ -1696,15 +1670,13 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                TResponse response;
-
                 // restore original position before retry
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
                 if (!HandleResponseException(
                     ex, request, requestUri, createWebRequest,
                     c => PclExport.Instance.GetResponse(c),
-                    out response))
+                    out TResponse response))
                 {
                     throw;
                 }
@@ -1718,7 +1690,7 @@ namespace ServiceStack
         {
             var currentStreamPosition = fileToUpload.Position;
             var requestUri = ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl);
-            Func<WebRequest> createWebRequest = () => PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
+            WebRequest createWebRequest() => PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
             try
             {
@@ -1729,8 +1701,6 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
-                TResponse response;
-
                 // restore original position before retry
                 fileToUpload.Seek(currentStreamPosition, SeekOrigin.Begin);
 
@@ -1743,7 +1713,7 @@ namespace ServiceStack
                         c.UploadFile(fileToUpload, fileName, mimeType);
                         return PclExport.Instance.GetResponse(c);
                     },
-                    out response))
+                    out TResponse response))
                 {
                     throw;
                 }
@@ -1848,15 +1818,12 @@ namespace ServiceStack
         {
             if (client.SessionId != null)
             {
-                var hasSession = request as IHasSessionId;
-                if (hasSession != null && hasSession.SessionId == null)
+                if (request is IHasSessionId hasSession && hasSession.SessionId == null)
                     hasSession.SessionId = client.SessionId;
             }
-            var clientVersion = client as IHasVersion;
-            if (clientVersion != null && clientVersion.Version > 0)
+            if (client is IHasVersion clientVersion && clientVersion.Version > 0)
             {
-                var hasVersion = request as IHasVersion;
-                if (hasVersion != null && hasVersion.Version <= 0)
+                if (request is IHasVersion hasVersion && hasVersion.Version <= 0)
                     hasVersion.Version = clientVersion.Version;
             }
         }
@@ -1878,8 +1845,7 @@ namespace ServiceStack
             DateTime? expiresAt = null, string path = "/",
             bool? httpOnly = null, bool? secure = null)
         {
-            var hasCookies = client as IHasCookieContainer;
-            if (hasCookies == null)
+            if (!(client is IHasCookieContainer hasCookies))
                 throw new NotSupportedException("Client does not implement IHasCookieContainer");
 
             hasCookies.CookieContainer.SetCookie(baseUri, name, value, expiresAt, path, httpOnly, secure);
@@ -1958,15 +1924,13 @@ namespace ServiceStack
 
         public static string GetSessionId(this IServiceClient client)
         {
-            string sessionId;
-            client.GetCookieValues().TryGetValue("ss-id", out sessionId);
+            client.GetCookieValues().TryGetValue("ss-id", out var sessionId);
             return sessionId;
         }
 
         public static string GetPermanentSessionId(this IServiceClient client)
         {
-            string sessionId;
-            client.GetCookieValues().TryGetValue("ss-pid", out sessionId);
+            client.GetCookieValues().TryGetValue("ss-pid", out var sessionId);
             return sessionId;
         }
 
@@ -1988,15 +1952,13 @@ namespace ServiceStack
 
         public static string GetTokenCookie(this IServiceClient client)
         {
-            string token;
-            client.GetCookieValues().TryGetValue("ss-tok", out token);
+            client.GetCookieValues().TryGetValue("ss-tok", out var token);
             return token;
         }
 
         public static string GetTokenCookie(this CookieContainer cookies, string baseUri)
         {
-            string token;
-            cookies.ToDictionary(baseUri).TryGetValue("ss-tok", out token);
+            cookies.ToDictionary(baseUri).TryGetValue("ss-tok", out var token);
             return token;
         }
 

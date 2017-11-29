@@ -11,10 +11,6 @@ using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-#if NETFX_CORE
-using Windows.System.Threading;
-#endif
-
 namespace ServiceStack
 {
     /**
