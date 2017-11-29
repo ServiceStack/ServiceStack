@@ -215,6 +215,7 @@
         </li>
         <li style="background:none; padding: 0 0 0 5px;">
             <button data-click="paintGreen" data-focusout="paintRed">Paint</button>
+            <button data-click="reconnect">Reconnect</button>
         </li>
     </ul>
 </div>
@@ -259,7 +260,7 @@
         dataType: 'json',
     });
 
-    var source = new EventSource('/event-stream?channel=@channel&t=' + new Date().getTime()); //disable cache
+    var source = new EventSource('/event-stream?channel=@channel&ss-id=@(base.GetSession().Id)&t=' + new Date().getTime()); //disable cache
     source.addEventListener('error', function (e) { addEntry({ msg: "ERROR!", cls: "error" }); }, false);
 
     var $txtMsg = $("#txtMsg").focus(), usersMap = {}, refCounter = {}, activeSub = null;
@@ -302,6 +303,10 @@
             paintRed: function () {
                 console.log("paintRed", this, arguments);
                 $(this).css("background", "red");
+            },
+            reconnect: function () {
+                $.ss.updateChannels(["home","work"]);
+                $.ss.reconnectServerEvents()
             }
         },
         receivers: {

@@ -74,6 +74,26 @@
         }
         return map;
     };
+    $.ss.toUrl = function (url, args) {
+        for (var k in args) {
+            url += url.indexOf('?') >= 0 ? '&' : '?';
+            url += k + "=" + $.ss.encodeValue(args[k]);
+        }
+        return url;
+    };
+    $.ss.encodeValue = function (o) {
+        if (o == null) return "";
+        if ($.isArray(o)) {
+            var s = "";
+            for (var i = 0; i < o.length; i++) {
+                if (s.length > 0)
+                    s += ',';
+                s += $.ss.encodeValue(o[i]);
+            }
+            return s;
+        }
+        return encodeURIComponent(o);
+    };
     $.ss.bindAll = function (o) {
         for (var k in o) {
             if (typeof o[k] == 'function')
@@ -105,11 +125,7 @@
     };
     $.ss.createUrl = function(route, args) {
         var url = $.ss.createPath(route, args);
-        for (var k in args) {
-            url += url.indexOf('?') >= 0 ? '&' : '?';
-            url += k + "=" + encodeURIComponent(args[k]);
-        }
-        return url;
+        return $.ss.toUrl(url, args);
     };
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
@@ -406,7 +422,10 @@
         $.ss.eventChannels = channels;
         if (!$.ss.eventSource) return;
         var url = $.ss.eventSource.url;
-        $.ss.eventSourceUrl = url.substring(0, Math.min(url.indexOf('?'), url.length)) + "?channels=" + channels.join(',');
+        var qs = $.ss.queryString(url);
+        qs['channels'] = channels;
+        delete qs['channel'];
+        $.ss.eventSourceUrl = $.ss.toUrl(url.substring(0, Math.min(url.indexOf('?'), url.length)), qs);
     };
     $.ss.updateSubscriberInfo = function (subscribe, unsubscribe) {
         var sub = typeof subscribe == "string" ? subscribe.split(',') : subscribe;
