@@ -334,11 +334,16 @@ namespace ServiceStack
                 if (res.IsClosed) return res.IsClosed;
             }
 
+            foreach (var requestFilter in GlobalMessageResponseFiltersAsyncArray)
+            {
+                requestFilter(req, res, response).Wait();
+                if (res.IsClosed) return res.IsClosed;
+            }
+
             return res.IsClosed;
         }
 
-        public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters,
-            IRequest req, IResponse res, object dto)
+        public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters, IRequest req, IResponse res, object dto)
         {
             if (typedFilters.Count == 0) return;
 

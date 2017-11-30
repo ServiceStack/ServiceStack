@@ -104,6 +104,7 @@ namespace ServiceStack
             GlobalMessageRequestFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedMessageRequestFilters = new Dictionary<Type, ITypedFilter>();
             GlobalMessageResponseFilters = new List<Action<IRequest, IResponse, object>>();
+            GlobalMessageResponseFiltersAsync = new List<Func<IRequest, IResponse, object, Task>>();
             GlobalTypedMessageResponseFilters = new Dictionary<Type, ITypedFilter>();
             GatewayRequestFilters = new List<Action<IRequest, object>>();
             GatewayRequestFiltersAsync = new List<Func<IRequest, object, Task>>();
@@ -245,6 +246,7 @@ namespace ServiceStack
             GlobalMessageRequestFiltersArray = GlobalMessageRequestFilters.ToArray();
             GlobalMessageRequestFiltersAsyncArray = GlobalMessageRequestFiltersAsync.ToArray();
             GlobalMessageResponseFiltersArray = GlobalMessageResponseFilters.ToArray();
+            GlobalMessageResponseFiltersAsyncArray = GlobalMessageResponseFiltersAsync.ToArray();
             RawHttpHandlersArray = RawHttpHandlers.ToArray();
             CatchAllHandlersArray = CatchAllHandlers.ToArray();
             GatewayRequestFiltersArray = GatewayRequestFilters.ToArray();
@@ -403,6 +405,9 @@ namespace ServiceStack
 
         public List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
         internal Action<IRequest, IResponse, object>[] GlobalMessageResponseFiltersArray;
+
+        public List<Func<IRequest, IResponse, object, Task>> GlobalMessageResponseFiltersAsync { get; }
+        internal Func<IRequest, IResponse, object, Task>[] GlobalMessageResponseFiltersAsyncArray;
 
         public Dictionary<Type, ITypedFilter> GlobalTypedMessageResponseFilters { get; set; }
 
