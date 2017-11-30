@@ -16,10 +16,10 @@ namespace ServiceStack
             set => RegisterService.ValidateFn = value;
         }
 
-        public bool DisableUpdates
+        public bool AllowUpdates
         {
-            get => RegisterService.DisableUpdates; 
-            set => RegisterService.DisableUpdates = value;
+            get => RegisterService.AllowUpdates; 
+            set => RegisterService.AllowUpdates = value;
         }
 
         public RegistrationFeature()

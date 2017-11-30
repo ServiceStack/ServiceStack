@@ -75,7 +75,7 @@
         public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
         public static string UsernameAlreadyExists = "Username already exists";
         public static string EmailAlreadyExists = "Email already exists";
-        public static string RegisterUpdatesDisabled = "Updating User Info is not allowed";
+        public static string RegisterUpdatesDisabled = "Updating User Info is not enabled";
 
         //AuthRepo
         public static string UserAlreadyExistsTemplate1 = "User '{0}' already exists";

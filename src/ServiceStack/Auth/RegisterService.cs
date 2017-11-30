@@ -64,7 +64,7 @@ namespace ServiceStack.Auth
     {
         public static ValidateFn ValidateFn { get; set; }
         
-        public static bool DisableUpdates { get; set; }
+        public static bool AllowUpdates { get; set; }
 
         public IValidator<Register> RegistrationValidator { get; set; }
 
@@ -112,7 +112,7 @@ namespace ServiceStack.Auth
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
                 
-                if (!registerNewUser && DisableUpdates)
+                if (!registerNewUser && !AllowUpdates)
                     throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled);
 
                 user = registerNewUser
