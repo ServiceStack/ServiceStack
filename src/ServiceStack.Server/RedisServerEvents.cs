@@ -372,7 +372,7 @@ namespace ServiceStack
                 var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
                 foreach (var channelSetKey in channelSetKeys)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channelSetKey));
+                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
                     foreach (var channelId in channelIds)
                     {
                         ids.Add(channelId);
@@ -396,7 +396,7 @@ namespace ServiceStack
                 var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
                 foreach (var channelSetKey in channelSetKeys)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channelSetKey));
+                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
                     foreach (var channelId in channelIds)
                     {
                         ids.Add(channelId);
