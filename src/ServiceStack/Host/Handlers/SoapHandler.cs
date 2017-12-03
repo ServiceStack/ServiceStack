@@ -255,11 +255,9 @@ namespace ServiceStack.Host.Handlers
         private static void SerializeSoapToStream(IRequest req, object response, MessageVersion defaultMsgVersion, Stream stream)
         {
             var requestMsg = req.GetItem(Keywords.SoapMessage) as Message;
-            var msgVersion = requestMsg != null
-                ? requestMsg.Version
-                : defaultMsgVersion;
+            var msgVersion = requestMsg?.Version ?? defaultMsgVersion;
 
-            var noMsgVersion = requestMsg == null || requestMsg.Headers.Action == null;
+            var noMsgVersion = requestMsg?.Headers.Action == null;
 
             var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
             SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);

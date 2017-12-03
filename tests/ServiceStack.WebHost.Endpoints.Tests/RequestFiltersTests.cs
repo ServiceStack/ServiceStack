@@ -171,10 +171,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         req.Response.UseBufferedStream = true;
                     }
                 });
-                this.ServiceExceptionHandlers.Add((req, dto, ex) => 
-                    dto is SoapDeserializationException
-                        ? new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" }
-                        : null);
+#if !NETCORE
+                this.ServiceExceptionHandlers.Add((req, dto, ex) =>
+                {
+                    if (dto is SoapDeserializationException)
+                        return new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" };
+
+                    return null;
+                });
+#endif
             }
         }
 
@@ -566,7 +571,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-#if !(IOS || NETCORE)
+#if !NETCORE
 
         [TestFixture]
         public class Soap11IntegrationTests : RequestFiltersTests
