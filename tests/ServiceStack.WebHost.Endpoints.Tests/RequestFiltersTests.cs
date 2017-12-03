@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Threading.Tasks;
 using Funq;
@@ -79,11 +80,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapFaultTest : IReturn<SoapFaultTestResponse> { }
+
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapFaultTestResponse
+    {
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class SoapServices : Service
     {
         public object Any(SoapDeserializationException request)
         {
             return new SoapDeserializationExceptionResponse();
+        }
+
+        public object Any(SoapFaultTest request)
+        {
+            throw new Exception("Test SOAP Fault");
         }
     }
 
@@ -176,6 +192,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     if (dto is SoapDeserializationException)
                         return new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" };
+
+                    if (dto is SoapFaultTest)
+                    {
+                        if (req.GetItem(Keywords.SoapMessage) is System.ServiceModel.Channels.Message requestMsg)
+                        {
+                            var msgVersion = requestMsg.Version;
+                            using (var response = System.Xml.XmlWriter.Create(req.Response.OutputStream))
+                            {
+                                var message = System.ServiceModel.Channels.Message.CreateMessage(
+                                    msgVersion, new System.ServiceModel.FaultCode("Receiver"), ex.Message, null);
+                                message.WriteMessage(response);
+                            }
+                            req.Response.End();
+                        }
+                    }
 
                     return null;
                 });
@@ -607,6 +638,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Send(new SoapDeserializationException());
                 Assert.That(response.RequiredProperty, Is.EqualTo("ServiceExceptionHandlers"));
             }
+
+            [Test]
+            public void Does_return_Custom_SoapFault()
+            {
+                var responseSoap = ServiceClientBaseUri.CombineWith("/Soap12")
+                    .SendStringToUrl(method: "POST", 
+                        requestBody: @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
+                            <s:Header>
+                                <a:Action s:mustUnderstand=""1"">SoapFaultTest</a:Action>
+                                <a:MessageID>urn:uuid:84d9f946-d3c3-4252-84ff-0b306ce53386</a:MessageID>
+                                <a:ReplyTo><a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+                                </a:ReplyTo>
+                                <a:To s:mustUnderstand=""1"">http://localhost:20000/Soap12</a:To>
+                            </s:Header>
+                            <s:Body>
+                                <SoapFaultTest xmlns=""http://schemas.servicestack.net/types"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                            </s:Body>
+                        </s:Envelope>", 
+                        contentType: "application/soap+xml; charset=utf-8",
+                        responseFilter: res => { });
+
+                Assert.That(responseSoap, Is.EqualTo(
+                    @"<?xml version=""1.0"" encoding=""utf-8""?><s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope""><s:Body><s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang=""en-US"">Test SOAP Fault</s:Text></s:Reason></s:Fault></s:Body></s:Envelope>"));
+            }
+
         }
 
 #endif
