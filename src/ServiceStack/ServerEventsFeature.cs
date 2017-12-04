@@ -571,8 +571,8 @@ namespace ServiceStack
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
         public static bool FlushNopOnSubscription = true;
 
-        public TimeSpan IdleTimeout { get; set; }
-        public TimeSpan HouseKeepingInterval { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan HouseKeepingInterval { get; set; } = TimeSpan.FromSeconds(5);
 
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
