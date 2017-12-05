@@ -333,6 +333,19 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
         }
 
         [Test]
+        public void Can_Get_List_From_Setting_using_generics()
+        {
+            var appSettings = GetAppSettings();
+            var value = appSettings.Get<List<string>>("ListKey");
+
+            Assert.That(value, Has.Count.EqualTo(5));
+            Assert.That(value, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
+
+            var valueWithDefault = appSettings.Get("ListKey", new List<string>());
+            Assert.That(valueWithDefault, Is.EquivalentTo(valueWithDefault));
+        }
+
+        [Test]
         public void GetList_Parses_List_From_Setting()
         {
             var appSettings = GetAppSettings();
@@ -405,6 +418,9 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
         }
 
         [Test]
+#if NETCORE
+        [Ignore("Attribute value already has its new lines collapsed")]
+#endif
         public void Get_Returns_ObjectWithLineFeed()
         {
             if (!(GetAppSettings() is AppSettingsBase appSettings)) return;

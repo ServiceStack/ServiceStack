@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             RuleFor(request => request.Name).NotEmpty();
             RuleFor(request => request)
                 .Custom((request, contex) => {
-                    if (!request?.Name?.StartsWith("A") ?? true)
+                    if (request.Name?.StartsWith("A") != true)
                     {
                         var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0");
                         var errorMessage = $"Incorrect prefix.";
