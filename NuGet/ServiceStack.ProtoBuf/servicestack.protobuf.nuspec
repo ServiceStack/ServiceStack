@@ -18,11 +18,11 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework="net45">
-        <dependency id="protobuf-net" version="[2.3.2, )" />
+        <dependency id="protobuf-net" version="[2.3.3, )" />
         <dependency id="ServiceStack" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
-        <dependency id="protobuf-net" version="[2.3.2, )" />
+        <dependency id="protobuf-net" version="[2.3.3, )" />
         <dependency id="ServiceStack" version="5.0.0" />
       </group>
     </dependencies>
