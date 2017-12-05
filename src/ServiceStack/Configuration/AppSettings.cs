@@ -17,8 +17,7 @@ namespace ServiceStack.Configuration
                 return ConfigurationManager.AppSettings[key];
 #else
                 var appSettings = ConfigUtils.GetAppSettingsMap();
-                string value;
-                return appSettings.TryGetValue(key, out value)
+                return appSettings.TryGetValue(key, out var value)
                     ? value
                     : null;
 #endif
