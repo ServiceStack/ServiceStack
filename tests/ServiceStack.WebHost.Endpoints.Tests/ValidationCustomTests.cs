@@ -30,29 +30,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             RuleFor(request => request.Name).NotEmpty();
             RuleFor(request => request)
-                .Custom((request, contex) => {
+                .Custom((request, context) => {
                     if (request.Name?.StartsWith("A") != true)
                     {
-                        var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0");
-                        var errorMessage = $"Incorrect prefix.";
+                        var propertyName = context.ParentContext.PropertyChain.BuildPropertyName("Name:0");
+                        var errorMessage = "Incorrect prefix.";
                         var failure = new ValidationFailure(propertyName, errorMessage)
                         {
                             ErrorCode = "NotFound"
                         };
-                        contex.AddFailure(failure);
+                        context.AddFailure(failure);
                     }
                     var nameLength = request.Name?.Length ?? 0;
                     var firstLetter = request.Name?.Substring(0, 1) ?? "";
                     var lastLetter = request.Name?.Substring(nameLength - 1, 1) ?? "";
                     if (firstLetter != lastLetter)
                     {
-                        var propertyName = contex.ParentContext.PropertyChain.BuildPropertyName($"Name:0:1 <> Name:{nameLength - 1}:{nameLength}");
+                        var propertyName = context.ParentContext.PropertyChain.BuildPropertyName($"Name:0:1 <> Name:{nameLength - 1}:{nameLength}");
                         var errorMessage = $"Name inconsistency: {firstLetter} <> {lastLetter}";
                         var failure = new ValidationFailure(propertyName, errorMessage)
                         {
                             ErrorCode = "Inconsistency"
                         };
-                        contex.AddFailure(failure);
+                        context.AddFailure(failure);
                     }
                 });
         }
