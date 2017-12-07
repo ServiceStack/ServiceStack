@@ -65,6 +65,7 @@
     <Compile Include="ErrorServices.cs" />
     <Compile Include="FallbackRouteService.cs" />
     <Compile Include="IssueServices.cs" />
+    <Compile Include="JwtServices.cs" />
     <Compile Include="MetadataTestService.cs" />
     <Compile Include="NamedConnectionService.cs" />
     <Compile Include="NativeTypeIssuesService.cs" />
