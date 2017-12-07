@@ -339,14 +339,18 @@ namespace ServiceStack.Auth
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
 
-            var session = Request.GetSession();
-            if (session.FromToken)
-                return new ConvertSessionToTokenResponse();
+            if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
+                Request.ResponseContentType = MimeTypes.Json;
 
-            var token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
+            var token = Request.GetJwtToken();
+            if (string.IsNullOrEmpty(token))
+            {
+                var session = Request.GetSession();
+                token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
-            if (!request.PreserveSession)
-                Request.RemoveSession(session.Id);
+                if (!request.PreserveSession)
+                    Request.RemoveSession(session.Id);
+            }
 
             return new HttpResult(new ConvertSessionToTokenResponse())
             {
