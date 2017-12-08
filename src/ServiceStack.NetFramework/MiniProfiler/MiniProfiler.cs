@@ -26,7 +26,8 @@ namespace ServiceStack.MiniProfiler
         public IHtmlString RenderIncludes(RenderPosition? position = null, bool? showTrivial = null, bool? showTimeWithChildren = null,
             int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
         {
-            return Current?.RenderIncludes(position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls);
+            var result = Current?.RenderIncludes(position, showTrivial, showTimeWithChildren, maxTracesToShow, xhtml, showControls);
+            return result ?? HtmlString.Empty;
         }
     }
     

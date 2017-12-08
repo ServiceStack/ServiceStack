@@ -25,7 +25,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 var QueryBase = /** @class */ (function () {
     function QueryBase() {
     }
@@ -2105,4 +2105,3 @@ var QueryDataRockstars = /** @class */ (function (_super) {
     return QueryDataRockstars;
 }(QueryData));
 exports.QueryDataRockstars = QueryDataRockstars;
-//# sourceMappingURL=TypeScript.dtos.js.map

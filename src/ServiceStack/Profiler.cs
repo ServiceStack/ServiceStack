@@ -40,7 +40,7 @@ namespace ServiceStack.MiniProfiler
             bool? showTimeWithChildren = null,
             int? maxTracesToShow = null, bool xhtml = false, bool? showControls = null)
         {
-            return new HtmlString(string.Empty);
+            return HtmlString.Empty;
         }
     }
 
@@ -64,6 +64,8 @@ namespace ServiceStack.MiniProfiler
 
     public class HtmlString : IHtmlString, System.Web.IHtmlString
     {
+        public static HtmlString Empty = new HtmlString(string.Empty);
+
         private readonly string value;
 
         public HtmlString(string value)

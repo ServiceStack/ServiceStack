@@ -170,8 +170,7 @@ namespace ServiceStack.Auth
             if (LogoutAction.EqualsIgnoreCase(request.provider))
                 return authProvider.Logout(this, request);
 
-            var authWithRequest = authProvider as IAuthWithRequest;
-            if (authWithRequest != null && !base.Request.IsInProcessRequest())
+            if (authProvider is IAuthWithRequest && !base.Request.IsInProcessRequest())
             {
                 //IAuthWithRequest normally doesn't call Authenticate directly, but they can to return Auth Info
                 //But as AuthenticateService doesn't have [Authenticate] we need to call it manually
