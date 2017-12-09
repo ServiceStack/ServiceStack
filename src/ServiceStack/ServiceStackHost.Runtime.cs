@@ -709,7 +709,14 @@ namespace ServiceStack
                 && (Config.CompressFilesLargerThanBytes == null || file.Length > Config.CompressFilesLargerThanBytes);
         }
 
-        public virtual T GetRuntimeConfig<T>(IRequest req, string name, T defaultValue) => defaultValue;
+        public virtual T GetRuntimeConfig<T>(IRequest req, string name, T defaultValue)
+        {
+            var runtimeAppSettings = TryResolve<IRuntimeAppSettings>();
+            if (runtimeAppSettings != null)
+                return runtimeAppSettings.Get(req, name, defaultValue);
+
+            return defaultValue;
+        }
     }
 
 }

@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
+using ServiceStack.Web;
 
 namespace ServiceStack.Configuration
 {
@@ -51,6 +53,19 @@ namespace ServiceStack.Configuration
         public override string GetString(string name) //Keeping backwards compatible
         {
             return base.GetNullableString(name); 
+        }
+    }
+
+    public class RuntimeAppSettings : IRuntimeAppSettings
+    {
+        public Dictionary<string, Func<IRequest, object>> Settings { get; set; } = new Dictionary<string, Func<IRequest, object>>();
+
+        public T Get<T>(IRequest request, string name, T defaultValue)
+        {
+            if (Settings.TryGetValue(name, out var fn))
+                return (T)fn(request);
+
+            return defaultValue;
         }
     }
 }
