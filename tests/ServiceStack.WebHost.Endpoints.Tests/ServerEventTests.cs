@@ -1300,7 +1300,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 {
                     ThreadPool.QueueUserWorkItem(_ => client.Start());
                 });
-                Thread.Sleep(100);
+
+                //.NET Core can have long delay
+                var wait = 10;
+                while (wait++ < 50)
+                {
+                    if (client.TimesStarted == 3)
+                        break;
+                    Thread.Sleep(100);
+                }
+
                 Assert.That(client.TimesStarted, Is.EqualTo(3));
             }
         }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -173,14 +174,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             return new ActionError();
         }
 
-        public string Any(EchoCustomResponse request)
+        public async Task<string> Any(EchoCustomResponse request)
         {
             base.Response.StatusCode = request.StatusCode;
             base.Response.StatusDescription = request.StatusDescription;
             base.Response.ContentType = request.ContentType ?? MimeTypes.PlainText;
 
             if (request.Body != null)
-                base.Response.WriteAsync(request.Body).Wait();
+                await base.Response.WriteAsync(request.Body);
 
             base.Response.EndRequest(skipHeaders:true);
 

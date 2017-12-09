@@ -39,8 +39,7 @@ namespace ServiceStack.Host.NetCore
         {
             try
             {
-                StringValues values;
-                if (response.Headers.TryGetValue(name, out values))
+                if (response.Headers.TryGetValue(name, out var values))
                 {
                     string[] existingValues = values.ToArray();
                     if (!existingValues.Contains(value))
@@ -109,7 +108,7 @@ namespace ServiceStack.Host.NetCore
 
         public void SetContentLength(long contentLength)
         {
-            if (Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true && contentLength >= 0)
+            if (request.HttpMethod == HttpMethods.Head || Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true && contentLength >= 0)
                 response.ContentLength = contentLength;
             
             if (contentLength > 0)
@@ -147,6 +146,8 @@ namespace ServiceStack.Host.NetCore
         public bool IsClosed => closed; 
 
         public bool KeepAlive { get; set; }
+
+        public bool HasStarted => response.HasStarted;
 
         public Dictionary<string, object> Items { get; set; }
 

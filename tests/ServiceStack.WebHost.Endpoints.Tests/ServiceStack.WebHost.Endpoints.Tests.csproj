@@ -39,7 +39,7 @@
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.106" />
-    <PackageReference Include="Mysql.Data" Version="6.9.9" />
+    <PackageReference Include="Mysql.Data" Version="6.9.10" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
@@ -84,6 +84,11 @@
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.SqlServer.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.MySql.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="App_Data\customers.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Update="TestExistingDir\default.html">

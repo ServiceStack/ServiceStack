@@ -52,6 +52,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
+                SetConfig(new HostConfig
+                {
+                    UseCamelCase = false, //normalize with .NET Core
+                });
+
                 Plugins.Add(new TemplatePagesFeature
                 {
                     Args =

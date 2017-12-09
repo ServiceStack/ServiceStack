@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -138,7 +139,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 if (customers != null)
                     return customers;
 
-                var path = "~/../App_Data/customers.json".MapProjectPath();
+                var path = "~/App_Data/customers.json".MapAbsolutePath();
                 var json = File.ReadAllText(path);
                 customers = json.FromJson<List<Customer>>();
                 return customers;

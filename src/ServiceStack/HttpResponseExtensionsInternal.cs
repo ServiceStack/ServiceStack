@@ -140,6 +140,8 @@ namespace ServiceStack
             using (Profiler.Current.Step("Writing to Response"))
             {
                 var defaultContentType = request.ResponseContentType;
+                var disposableResult = result as IDisposable; 
+
                 try
                 {
                     if (result == null)
@@ -179,19 +181,23 @@ namespace ServiceStack
 
                         response.Dto = response.Dto ?? httpResult.GetDto();
 
-                        response.StatusCode = httpResult.Status;
-                        response.StatusDescription = (httpResult.StatusDescription ?? httpResult.StatusCode.ToString()).Localize(request);
-                        if (string.IsNullOrEmpty(httpResult.ContentType))
+                        if (!response.HasStarted)
                         {
-                            httpResult.ContentType = defaultContentType;
-                        }
-                        response.ContentType = httpResult.ContentType;
+                            response.StatusCode = httpResult.Status;
+                            response.StatusDescription = (httpResult.StatusDescription ?? httpResult.StatusCode.ToString()).Localize(request);
 
-                        if (httpResult.Cookies != null)
-                        {
-                            foreach (var cookie in httpResult.Cookies)
+                            if (string.IsNullOrEmpty(httpResult.ContentType))
                             {
-                                response.SetCookie(cookie);
+                                httpResult.ContentType = defaultContentType;
+                            }
+                            response.ContentType = httpResult.ContentType;
+
+                            if (httpResult.Cookies != null)
+                            {
+                                foreach (var cookie in httpResult.Cookies)
+                                {
+                                    response.SetCookie(cookie);
+                                }
                             }
                         }
                     }
@@ -200,65 +206,65 @@ namespace ServiceStack
                         response.Dto = result;
                     }
 
-                    /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
-                    if (result is IHasOptions responseOptions)
+                    if (!response.HasStarted)
                     {
-                        //Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
-                        const string reservedOptions = ".";
-
-                        foreach (var responseHeaders in responseOptions.Options)
+                        /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
+                        if (result is IHasOptions responseOptions)
                         {
-                            if (responseHeaders.Key.Contains(reservedOptions)) continue;
-                            if (responseHeaders.Key == HttpHeaders.ContentLength)
+                            //Reserving options with keys in the format 'xx.xxx' (No Http headers contain a '.' so its a safe restriction)
+                            const string reservedOptions = ".";
+
+                            foreach (var responseHeaders in responseOptions.Options)
                             {
-                                response.SetContentLength(long.Parse(responseHeaders.Value));
-                                continue;
+                                if (responseHeaders.Key.Contains(reservedOptions)) continue;
+                                if (responseHeaders.Key == HttpHeaders.ContentLength)
+                                {
+                                    response.SetContentLength(long.Parse(responseHeaders.Value));
+                                    continue;
+                                }
+
+                                if (responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
+                                {
+                                    response.ContentType = responseHeaders.Value;
+                                    continue;
+                                }
+
+                                if (Log.IsDebugEnabled)
+                                    Log.Debug($"Setting Custom HTTP Header: {responseHeaders.Key}: {responseHeaders.Value}");
+
+                                response.AddHeader(responseHeaders.Key, responseHeaders.Value);
                             }
-
-                            if (responseHeaders.Key.EqualsIgnoreCase(HttpHeaders.ContentType))
-                            {
-                                response.ContentType = responseHeaders.Value;
-                                continue;
-                            }
-
-                            if (Log.IsDebugEnabled)
-                                Log.Debug($"Setting Custom HTTP Header: {responseHeaders.Key}: {responseHeaders.Value}");
-
-                            response.AddHeader(responseHeaders.Key, responseHeaders.Value);
                         }
-                    }
 
-                    //ContentType='text/html' is the default for a HttpResponse
-                    //Do not override if another has been set
-                    if (response.ContentType == null || response.ContentType == MimeTypes.Html)
-                    {
-                        response.ContentType = defaultContentType;
-                    }
-                    if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        response.ContentType = MimeTypes.JavaScript;
-                    }
+                        //ContentType='text/html' is the default for a HttpResponse
+                        //Do not override if another has been set
+                        if (response.ContentType == null || response.ContentType == MimeTypes.Html)
+                        {
+                            response.ContentType = defaultContentType;
+                        }
+                        if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            response.ContentType = MimeTypes.JavaScript;
+                        }
 
-                    if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
-                    {
-                        response.ContentType += ContentFormat.Utf8Suffix;
+                        if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
+                        {
+                            response.ContentType += ContentFormat.Utf8Suffix;
+                        }
                     }
 
                     using (resultScope)
                     using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
                     {
-                        var disposableResult = result as IDisposable;
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                         {
                             response.Flush(); //required for Compression
-                            disposableResult?.Dispose();
                             return true;
                         }
 
                         if (await WriteToOutputStreamAsync(response, result, bodyPrefix, bodySuffix, token))
                         {
                             await response.FlushAsync(token);
-                            disposableResult?.Dispose();
                             return true;
                         }
 
@@ -306,18 +312,24 @@ namespace ServiceStack
 
                         if (bodySuffix != null)
                             await response.OutputStream.WriteAsync(bodySuffix, token);
-
-                        disposableResult?.Dispose();
                     }
 
                     return false;
                 }
                 catch (Exception originalEx)
                 {
+                    //.NET Core prohibuts some status codes from having a body
+                    if (originalEx is InvalidOperationException invalidEx)
+                    {
+                        Log.Error(invalidEx.Message, invalidEx);
+                        await response.OutputStream.FlushAsync(token); // Prevent hanging clients
+                    }
+
                     return await HandleResponseWriteException(originalEx, request, response, defaultContentType);
                 }
                 finally
                 {
+                    disposableResult?.Dispose();
                     await response.EndRequestAsync(skipHeaders: true);
                 }
             }

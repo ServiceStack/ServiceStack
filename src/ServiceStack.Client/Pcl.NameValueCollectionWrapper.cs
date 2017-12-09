@@ -190,7 +190,7 @@ namespace ServiceStack
         public static string ToFormUrlEncoded(this NameValueCollection queryParams)
         {
             var sb = StringBuilderCache.Allocate();
-            foreach (string key in queryParams)
+            foreach (string key in queryParams.AllKeys)
             {
                 var values = queryParams.GetValues(key);
                 AppendKeyValue(sb, key, values);
