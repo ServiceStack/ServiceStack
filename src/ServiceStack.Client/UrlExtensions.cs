@@ -252,20 +252,6 @@ namespace ServiceStack
             return urlFilter == null ? url : urlFilter.ToUrl(url);
         }
 
-        public static bool HasRequestBody(this string httpMethod)
-        {
-            switch (httpMethod)
-            {
-                case HttpMethods.Get:
-                case HttpMethods.Delete:
-                case HttpMethods.Head:
-                case HttpMethods.Options:
-                    return false;
-            }
-
-            return true;
-        }
-
         private static List<RestRoute> GetRoutesForType(Type requestType)
         {
             var restRoutes = requestType.AllAttributes<RouteAttribute>()
