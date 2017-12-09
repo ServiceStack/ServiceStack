@@ -333,8 +333,7 @@ namespace ServiceStack.Auth
     {
         public object Any(ConvertSessionToToken request)
         {
-            if (!(AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) is JwtAuthProvider jwtAuthProvider))
-                throw new NotSupportedException("JwtAuthProvider is not registered");
+            var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
@@ -370,8 +369,7 @@ namespace ServiceStack.Auth
     {
         public object Any(GetAccessToken request)
         {
-            if (!(AuthenticateService.GetAuthProvider(JwtAuthProvider.Name) is JwtAuthProvider jwtAuthProvider))
-                throw new NotSupportedException("JwtAuthProvider is not registered");
+            var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);

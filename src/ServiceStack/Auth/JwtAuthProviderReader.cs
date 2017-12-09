@@ -500,8 +500,7 @@ namespace ServiceStack.Auth
 
         public static IAuthSession CreateSessionFromJwt(IRequest req)
         {
-            if (!(AuthenticateService.GetAuthProvider(Name) is JwtAuthProviderReader jwtProvider))
-                throw new Exception("JwtAuthProvider or JwtAuthProviderReader is not registered");
+            var jwtProvider = AuthenticateService.GetRequiredJwtAuthProvider();
 
             var jwtToken = req.GetJwtToken();
             var session = jwtProvider.ConvertJwtToSession(req, jwtToken);
