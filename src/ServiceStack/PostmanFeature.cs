@@ -215,11 +215,11 @@ namespace ServiceStack
                             url = Request.GetBaseUrl().CombineWith(restRoute.Path.ToPostmanPathVariables()),
                             name = GetName(feature, request, op.RequestType, restRoute.Path),
                             description = op.RequestType.GetDescription(),
-                            pathVariables = !verb.HasRequestBody()
+                            pathVariables = !HttpUtils.HasRequestBody(verb)
                                 ? restRoute.Variables.Concat(routeData.Select(x => x.key))
                                     .ApplyPropertyTypes(propertyTypes)
                                 : null,
-                            data = verb.HasRequestBody()
+                            data = HttpUtils.HasRequestBody(verb)
                                 ? routeData
                                 : null,
                             dataMode = "params",
@@ -248,13 +248,13 @@ namespace ServiceStack
                         id = SessionExtensions.CreateRandomSessionId(),
                         method = verb,
                         url = Request.GetBaseUrl().CombineWith(virtualPath),
-                        pathVariables = !verb.HasRequestBody()
+                        pathVariables = !HttpUtils.HasRequestBody(verb)
                             ? requestParams.Select(x => x.key)
                                 .ApplyPropertyTypes(propertyTypes)
                             : null,
                         name = GetName(feature, request, op.RequestType, virtualPath),
                         description = op.RequestType.GetDescription(),
-                        data = verb.HasRequestBody()
+                        data = HttpUtils.HasRequestBody(verb)
                             ? requestParams
                             : null,
                         dataMode = "params",

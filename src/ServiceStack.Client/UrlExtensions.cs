@@ -240,7 +240,7 @@ namespace ServiceStack
             }
 
             var url = matchingRoute.Uri;
-            if (!httpMethod.HasRequestBody())
+            if (!HttpUtils.HasRequestBody(httpMethod))
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
                 if (!IsNullOrEmpty(queryParams))

@@ -214,7 +214,7 @@ namespace ServiceStack
         {
             var client = GetHttpClient();
 
-            if (!httpMethod.HasRequestBody() && request != null)
+            if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -318,10 +318,9 @@ namespace ServiceStack
             }
             httpReq.Headers.Add(HttpHeaders.Accept, ContentType);
 
-            if (httpMethod.HasRequestBody() && request != null)
+            if (HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
-                var httpContent = request as HttpContent;
-                if (httpContent != null)
+                if (request is HttpContent httpContent)
                 {
                     httpReq.Content = httpContent;
                 }
@@ -769,7 +768,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
@@ -778,7 +777,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
@@ -787,7 +786,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
@@ -796,7 +795,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
             return SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody);
         }
 

@@ -857,7 +857,7 @@ namespace ServiceStack
 
             this.PopulateRequestMetadata(request);
 
-            if (!httpMethod.HasRequestBody() && request != null)
+            if (!HttpUtils.HasRequestBody(httpMethod) && request != null)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
                 if (!string.IsNullOrEmpty(queryString))
@@ -903,7 +903,7 @@ namespace ServiceStack
 
                 ApplyWebRequestFilters(client);
 
-                if (httpMethod.HasRequestBody())
+                if (HttpUtils.HasRequestBody(httpMethod))
                 {
                     client.ContentType = ContentType;
 
@@ -1221,7 +1221,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? request : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
             return asyncClient.SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody);
         }
 
@@ -1230,7 +1230,7 @@ namespace ServiceStack
             if (!HttpMethods.HasVerb(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return asyncClient.SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
@@ -1472,7 +1472,7 @@ namespace ServiceStack
 
         public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)
         {
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return Send<HttpWebResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
@@ -1486,13 +1486,13 @@ namespace ServiceStack
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return Send<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
         public virtual TResponse CustomMethod<TResponse>(string httpVerb, object requestDto)
         {
-            var requestBody = httpVerb.HasRequestBody() ? requestDto : null;
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return CustomMethod<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
