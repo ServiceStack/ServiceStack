@@ -222,6 +222,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public bool KeepAlive { get; set; }
 
+            public bool HasStarted { get; set; }
+
             public Dictionary<string, object> Items { get; private set; }
 
             public void SetCookie(Cookie cookie)

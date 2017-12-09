@@ -119,6 +119,11 @@ namespace ServiceStack.Web
         /// </summary>
         bool KeepAlive { get; set; }
 
+        /// <summary>
+        /// Whether the HTTP Response Headers have already been written.
+        /// </summary>
+        bool HasStarted { get; }
+
         //Add Metadata to Response
         Dictionary<string, object> Items { get; }
     }

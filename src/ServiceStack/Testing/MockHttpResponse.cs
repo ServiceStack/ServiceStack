@@ -101,6 +101,8 @@ namespace ServiceStack.Testing
 
         public bool KeepAlive { get; set; }
 
+        public bool HasStarted { get; set; }
+
         public Dictionary<string, object> Items { get; }
 
         public void SetCookie(Cookie cookie)

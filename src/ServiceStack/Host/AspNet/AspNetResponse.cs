@@ -163,6 +163,11 @@ namespace ServiceStack.Host.AspNet
         //Benign, see how to enable in ASP.NET: http://technet.microsoft.com/en-us/library/cc772183(v=ws.10).aspx
         public bool KeepAlive { get; set; }
 
+        /// <summary>
+        /// Can ignore as doesn't throw if HTTP Headers already written
+        /// </summary>
+        public bool HasStarted => false;
+
         public Dictionary<string, object> Items { get; }
 
         public ICookies Cookies { get; set; }

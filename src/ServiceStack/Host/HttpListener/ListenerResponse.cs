@@ -171,6 +171,11 @@ namespace ServiceStack.Host.HttpListener
             set => response.KeepAlive = true;
         }
 
+        /// <summary>
+        /// Can ignore as doesn't throw if HTTP Headers already written
+        /// </summary>
+        public bool HasStarted => false;
+
         public Dictionary<string, object> Items { get; private set; }
 
         public ICookies Cookies { get; set; }
