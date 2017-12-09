@@ -765,7 +765,7 @@ namespace ServiceStack
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
+            if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
@@ -774,7 +774,7 @@ namespace ServiceStack
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
+            if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
@@ -783,7 +783,7 @@ namespace ServiceStack
 
         public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
+            if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
@@ -792,7 +792,7 @@ namespace ServiceStack
 
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
         {
-            if (!HttpMethods.HasVerb(httpVerb))
+            if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
