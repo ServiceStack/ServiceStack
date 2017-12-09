@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -79,6 +80,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             {
                 AuthKey = AuthKey,
                 RequireSecureConnection = false,
+                AllowInQueryString = true,
+                AllowInFormData = true,
             };
         }
 
@@ -118,6 +121,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             client.SetTokenCookie(jwtToken);
             var response = client.Send(new HelloJwt { Name = "from Custom JWT" });
             Assert.That(response.Result, Is.EqualTo("Hello, from Custom JWT"));
+        }
+
+        [Test]
+        public void Can_authenticate_using_JWT_with_QueryString()
+        {
+            var client = GetClientWithBasicAuthCredentials();
+
+            var authResponse = client.Post(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var request = new Secured { Name = "test" };
+            var url = Config.ListeningOn.CombineWith(request.ToGetUrl())
+                .AddQueryParam(Keywords.TokenCookie, authResponse.BearerToken);
+
+            var response = url.PostToUrl(null, accept: MimeTypes.Json)
+                .FromJson<SecuredResponse>();
+
+            Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_authenticate_using_JWT_with_FormData()
+        {
+            var client = GetClientWithBasicAuthCredentials();
+
+            var authResponse = client.Post(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var request = new Secured { Name = "test" };
+            var url = Config.ListeningOn.CombineWith(request.ToGetUrl());
+
+            var response = url.PostToUrl(new Dictionary<string,string> {
+                    { Keywords.TokenCookie, authResponse.BearerToken }
+                }, accept: MimeTypes.Json)
+                .FromJson<SecuredResponse>();
+
+            Assert.That(response.Result, Is.EqualTo(request.Name));
         }
     }
 
@@ -501,5 +541,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.BearerToken, Is.Null);
             Assert.That(response.RefreshToken, Is.Null);
         }
+
     }
 }

@@ -213,6 +213,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
+        /// <summary>
+        /// Allow JWT in ?ss-tok=jwt QueryString. (default false)
+        /// </summary>
+        public bool AllowInQueryString { get; set; }
+
+        /// <summary>
+        /// Allow JWT in ss-tok=jwt HTML POST FormData. (default false)
+        /// </summary>
+        public bool AllowInFormData { get; set; }
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -242,6 +252,8 @@ namespace ServiceStack.Auth
                 RequireSecureConnection = appSettings.Get("jwt.RequireSecureConnection", RequireSecureConnection);
                 RequireHashAlgorithm = appSettings.Get("jwt.RequireHashAlgorithm", RequireHashAlgorithm);
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
+                AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
+                AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 Audience = appSettings.GetString("jwt.Audience");
@@ -637,8 +649,28 @@ namespace ServiceStack.Auth
 
     public static class JwtExtensions
     {
-        public static string GetJwtToken(this IRequest req) =>
-            req.GetBearerToken() ?? 
-            req.GetCookieValue(Keywords.TokenCookie);
+        public static string GetJwtToken(this IRequest req)
+        {
+            var jwtAuthProvider = AuthenticateService.GetJwtAuthProvider();
+            if (jwtAuthProvider != null)
+            {
+                if (jwtAuthProvider.AllowInFormData)
+                {
+                    var jwt = req.FormData[Keywords.TokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+
+                if (jwtAuthProvider.AllowInQueryString)
+                {
+                    var jwt = req.QueryString[Keywords.TokenCookie];
+                    if (!string.IsNullOrEmpty(jwt))
+                        return jwt;
+                }
+            }
+
+            return req.GetBearerToken() ??
+                   req.GetCookieValue(Keywords.TokenCookie);
+        }
     }
 }
