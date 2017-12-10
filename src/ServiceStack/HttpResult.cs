@@ -320,7 +320,7 @@ namespace ServiceStack
 
             RequestContext.SetItem("HttpResult", this);
 
-            if (Response != null)
+            if (Response != null || View != null || Template != null) //allow new HttpResult { View = "/default.cshtml" }
             {
                 await ResponseFilter.SerializeToStreamAsync(this.RequestContext, this.Response, responseStream);
             }

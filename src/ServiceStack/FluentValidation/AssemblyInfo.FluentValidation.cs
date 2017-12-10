@@ -1,3 +1,4 @@
 ﻿using System;
 
-[assembly: CLSCompliant(true)]
+//applies to entire .dll
+//[assembly: CLSCompliant(true)]
