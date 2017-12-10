@@ -2240,6 +2240,11 @@
             Whether the underlying TCP Connection for this Response should remain open
             </summary>
         </member>
+        <member name="P:ServiceStack.Web.IResponse.HasStarted">
+            <summary>
+            Whether the HTTP Response Headers have already been written.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Web.IServiceController">
             <summary>
             Responsible for executing the operation within the specified context.

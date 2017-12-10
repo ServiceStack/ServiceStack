@@ -33,6 +33,60 @@
             <param name="enum"></param>
             <returns></returns>
         </member>
+        <member name="P:ServiceStack.ExecUtils.BaseDelayMs">
+            <summary>
+            Default base sleep time (milliseconds).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ExecUtils.MaxBackOffMs">
+            <summary>
+            Default maximum back-off time before retrying a request
+            </summary>
+        </member>
+        <member name="P:ServiceStack.ExecUtils.MaxRetries">
+            <summary>
+            Maximum retry limit. Avoids integer overflow issues.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ExecUtils.SleepBackOffMultiplier(System.Int32)">
+            <summary>
+            How long to sleep before next retry using Exponential BackOff delay with Full Jitter.
+            </summary>
+            <param name="retriesAttempted"></param>
+        </member>
+        <member name="M:ServiceStack.ExecUtils.CalculateFullJitterBackOffDelay(System.Int32)">
+            <summary>
+            Exponential BackOff Delay with Full Jitter
+            </summary>
+            <param name="retriesAttempted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ExecUtils.CalculateFullJitterBackOffDelay(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Exponential BackOff Delay with Full Jitter from:
+            https://github.com/aws/aws-sdk-java/blob/master/aws-java-sdk-core/src/main/java/com/amazonaws/retry/PredefinedBackoffStrategies.java
+            </summary>
+            <param name="retriesAttempted"></param>
+            <param name="baseDelay"></param>
+            <param name="maxBackOffMs"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ExecUtils.CalculateExponentialDelay(System.Int32)">
+            <summary>
+            Calculate exponential retry back-off.
+            </summary>
+            <param name="retriesAttempted"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.ExecUtils.CalculateExponentialDelay(System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Calculate exponential retry back-off.
+            </summary>
+            <param name="retriesAttempted"></param>
+            <param name="baseDelay"></param>
+            <param name="maxBackOffMs"></param>
+            <returns></returns>
+        </member>
         <member name="M:ServiceStack.FuncUtils.TryExec(System.Action)">
             <summary>
             Invokes the action provided and returns true if no excpetion was thrown.
@@ -320,56 +374,6 @@
             <param name="teardown"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedGetPropertyFn``1">
-            <summary>
-            Func to get the Strongly-typed field
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.ValueTypedGetPropertyFn``1">
-            <summary>
-            Required to cast the return ValueType to an object for caching
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.TypedSetPropertyFn``1">
-            <summary>
-            Func to set the Strongly-typed field
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.ValueTypesSetPropertyFn``1">
-            <summary>
-            Required to cast the ValueType to an object for caching
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.PropertyAccessor`1.UnTypedSetPropertyFn``1">
-            <summary>
-            Required to cast the ValueType to an object for caching
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.StaticAccessors`1.TypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
-            <summary>
-            Func to get the Strongly-typed field
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.StaticAccessors`1.ValueUnTypedGetPropertyFn``1(System.Reflection.PropertyInfo)">
-            <summary>
-            Required to cast the return ValueType to an object for caching
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.StaticAccessors`1.TypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
-            <summary>
-            Func to set the Strongly-typed field
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.StaticAccessors`1.ValueUnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
-            <summary>
-            Required to cast the ValueType to an object for caching
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Reflection.StaticAccessors`1.UnTypedSetPropertyFn``1(System.Reflection.PropertyInfo)">
-            <summary>
-            Required to cast the ValueType to an object for caching
-            </summary>
-        </member>
         <member name="M:ServiceStack.StringUtils.SafeInput(System.String)">
             <summary>
             Protect against XSS by cleaning non-standared User Input
@@ -532,11 +536,6 @@
             	- urn:{TypeName}:{IdFieldValue}						e.g. urn:UserSession:1
             	- urn:{TypeName}:{IdFieldName}:{IdFieldValue}		e.g. urn:UserSession:UserId:1			
             
-            </summary>
-        </member>
-        <member name="T:ServiceStack.VirtualPath.InMemoryVirtualPathProvider">
-            <summary>
-            In Memory Virtual Path Provider.
             </summary>
         </member>
     </members>

@@ -392,5 +392,12 @@
             Must be thread-safe.
             </summary>
         </member>
+        <member name="M:ServiceStack.Aws.Support.AwsClientUtils.SleepBackOffMultiplier(System.Int32)">
+            <summary>
+            Sleep using AWS's recommended Exponential BackOff with Full Jitter from:
+            https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+            </summary>
+            <param name="retriesAttempted"></param>
+        </member>
     </members>
 </doc>

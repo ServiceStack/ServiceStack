@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "a61677171d5569bb0f9fcc7762cc7d502b55470b"
+    "signature": "76f3527a423ba4ac744165729c394b3e9f1c2533"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,7 +9,7 @@
     ".NETStandard,Version=v2.0/": {
       "ServiceStack.OrmLite.MySql/1.0.0": {
         "dependencies": {
-          "MySql.Data": "8.0.8-dmr",
+          "MySql.Data": "8.0.9-dmr",
           "NETStandard.Library": "2.0.0",
           "ServiceStack.OrmLite": "1.0.0",
           "ServiceStack.Common": "5.0.0.0",
@@ -161,7 +161,7 @@
           "lib/netstandard2.0/Microsoft.Win32.Registry.dll": {}
         }
       },
-      "MySql.Data/8.0.8-dmr": {
+      "MySql.Data/8.0.9-dmr": {
         "dependencies": {
           "Google.Protobuf": "3.3.0",
           "Microsoft.Extensions.Configuration.Json": "1.1.2",
@@ -1078,6 +1078,9 @@
           "System.Security.Cryptography.Primitives": "4.3.0",
           "System.Text.Encoding": "4.3.0",
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.6/System.Security.Cryptography.OpenSsl.dll": {}
         }
       },
       "System.Security.Cryptography.Primitives/4.3.0": {
@@ -1422,12 +1425,12 @@
       "path": "microsoft.win32.registry/4.4.0",
       "hashPath": "microsoft.win32.registry.4.4.0.nupkg.sha512"
     },
-    "MySql.Data/8.0.8-dmr": {
+    "MySql.Data/8.0.9-dmr": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-9ur96IO10ntp53nrLSJTcHxhwaFKp05XWZO1YPKF2cLZc23hwMVl++AAPrPr1/KYNlWUQHEP6jZQWXzSS4NMJQ==",
-      "path": "mysql.data/8.0.8-dmr",
-      "hashPath": "mysql.data.8.0.8-dmr.nupkg.sha512"
+      "sha512": "sha512-SpVb+r2fAU5r/suAKuHrrXvQEawlxQQ2hkRJgw3BETPpI5OLYfKmF7/SxYke2AKSxkBkd8I/fn8jkZarrGYWlQ==",
+      "path": "mysql.data/8.0.9-dmr",
+      "hashPath": "mysql.data.8.0.9-dmr.nupkg.sha512"
     },
     "NETStandard.Library/2.0.0": {
       "type": "package",
@@ -1635,7 +1638,7 @@
     "System.ComponentModel.Annotations/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SY2RLItHt43rd8J9D8M8e8NM4m+9WLN2uUd9G0n1I4hj/7w+v3pzK6ZBjexlG1/2xvLKQsqir3UGVSyBTXMLWA==",
+      "sha512": "sha512-M7YzYBWLhimNxpLzpUrvQWYUGhFy484PFbd81XwYKqFI7ktOX95QJjaXbC/U1Z+d+EA8PVlC9TvqpXJ7BWBtHw==",
       "path": "system.componentmodel.annotations/4.3.0",
       "hashPath": "system.componentmodel.annotations.4.3.0.nupkg.sha512"
     },
@@ -1705,7 +1708,7 @@
     "System.Diagnostics.TraceSource/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VnYp1NxGx8Ww731y2LJ1vpfb/DKVNKEZ8Jsh5SgQTZREL/YpWRArgh9pI8CDLmgHspZmLL697CaLvH85qQpRiw==",
+      "sha512": "sha512-VBG6mhJiNYAxn29yMnqzdMCYSvzMXVNmTLwRsN4lSNzrDT8152LL7vtgU2pIIHRRTwwOmFJyNRP6q1sORgL8Ow==",
       "path": "system.diagnostics.tracesource/4.3.0",
       "hashPath": "system.diagnostics.tracesource.4.3.0.nupkg.sha512"
     },
@@ -1775,7 +1778,7 @@
     "System.IO.FileSystem.Watcher/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-37IDFU2w6LJ4FrohcVlV1EXviUmAOJIbejVgOUtNaPQyeZW2D/0QSkH8ykehoOd19bWfxp3RRd0xj+yRRIqLhw==",
+      "sha512": "sha512-jxfYXRjclp+rpIa5EjcsVQ0pq9gRXCtbY0ujTODXAUXCFMjPq9mTTdmu0XZt/CDNSqnqSULRleOUwuGxoxVzpA==",
       "path": "system.io.filesystem.watcher/4.3.0",
       "hashPath": "system.io.filesystem.watcher.4.3.0.nupkg.sha512"
     },
@@ -1957,7 +1960,7 @@
     "System.Runtime.Serialization.Formatters/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-XVhF/+KGTN+kzA2WhnDH1Oh+yD2ThKNCxucH0ob3FwbiIYK/U1rhtupu3fRgGiQwrzUgKXmRVYV6SPPjEAdyLw==",
+      "sha512": "sha512-KT591AkTNFOTbhZlaeMVvfax3RqhH1EJlcwF50Wm7sfnBLuHiOeZRRKrr1ns3NESkM20KPZ5Ol/ueMq5vg4QoQ==",
       "path": "system.runtime.serialization.formatters/4.3.0",
       "hashPath": "system.runtime.serialization.formatters.4.3.0.nupkg.sha512"
     },
@@ -2083,7 +2086,7 @@
     "System.Threading.Overlapped/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-m3HQ2dPiX/DSTpf+yJt8B0c+SRvzfqAJKx+QDWi+VLhz8svLT23MVjEOHPF/KiSLeArKU/iHescrbLd3yVgyNg==",
+      "sha512": "sha512-LRcp7Ir4HQ3I7uIhUb8ypaMDw23W1t3GMCA2+yUxTL3HG9ZrVJtLufoK/mF9zfCG2bxuRBf1Bj8FC9mOPddhIg==",
       "path": "system.threading.overlapped/4.3.0",
       "hashPath": "system.threading.overlapped.4.3.0.nupkg.sha512"
     },

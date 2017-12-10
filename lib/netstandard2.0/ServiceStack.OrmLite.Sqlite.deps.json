@@ -642,7 +642,7 @@
     "System.ComponentModel.Annotations/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SY2RLItHt43rd8J9D8M8e8NM4m+9WLN2uUd9G0n1I4hj/7w+v3pzK6ZBjexlG1/2xvLKQsqir3UGVSyBTXMLWA==",
+      "sha512": "sha512-M7YzYBWLhimNxpLzpUrvQWYUGhFy484PFbd81XwYKqFI7ktOX95QJjaXbC/U1Z+d+EA8PVlC9TvqpXJ7BWBtHw==",
       "path": "system.componentmodel.annotations/4.3.0",
       "hashPath": "system.componentmodel.annotations.4.3.0.nupkg.sha512"
     },

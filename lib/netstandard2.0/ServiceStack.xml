@@ -48,6 +48,12 @@
             Enable the authentication feature and configure the AuthService.
             </summary>
         </member>
+        <member name="P:ServiceStack.AuthFeature.CreateDigestAuthHashes">
+            <summary>
+            Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
+            Defaults to only creating Digest Auth when DigestAuthProvider is registered.
+            </summary>
+        </member>
         <member name="P:ServiceStack.AuthFeature.SaveUserNamesInLowerCase">
             <summary>
             Should UserName or Emails be saved in AuthRepository in LowerCase
@@ -135,6 +141,21 @@
             <param name="requestDto"></param>
             <returns>Response DTO; non-null will short-circuit execution and return that response</returns>
         </member>
+        <member name="M:ServiceStack.Auth.AuthenticateService.GetAuthProviders(System.String)">
+            <summary>
+            Get AuthProviders Registered in AuthFeature Plugin.
+            </summary>
+            <param name="provider">specific provider, or null for all providers</param>
+            <returns></returns>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:ServiceStack.Auth.AuthenticateService.GetAuthProvider(System.String)">
+            <summary>
+            Get specific AuthProvider
+            </summary>
+            <param name="provider"></param>
+            <returns></returns>
+        </member>
         <member name="M:ServiceStack.Auth.AuthenticateService.Authenticate(ServiceStack.Authenticate)">
             <summary>
             Public API entry point to authenticate via code
@@ -171,12 +192,6 @@
             <param name="service"></param>
             <param name="request"></param>
             <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Auth.AuthProvider.SaveUserAuth(ServiceStack.IServiceBase,ServiceStack.Auth.IAuthSession,ServiceStack.Auth.IAuthRepository,ServiceStack.Auth.IAuthTokens)">
-            <summary>
-            Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
-            Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
-            </summary>
         </member>
         <member name="T:ServiceStack.Auth.FacebookAuthProvider">
             <summary>
@@ -325,7 +340,7 @@
             Allow verification using multiple Auth keys
             </summary>
         </member>
-        <member name="F:ServiceStack.Auth.JwtAuthProviderReader.privateKey">
+        <member name="F:ServiceStack.Auth.JwtAuthProviderReader._privateKey">
             <summary>
             The RSA Private Key used to Sign the JWT Token when RSA is used
             </summary>
@@ -385,6 +400,16 @@
             Modify the registration of ConvertSessionToToken Service
             </summary>
         </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.AllowInQueryString">
+            <summary>
+            Allow JWT in ?ss-tok=jwt QueryString. (default false)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.AllowInFormData">
+            <summary>
+            Allow JWT in ss-tok=jwt HTML POST FormData. (default false)
+            </summary>
+        </member>
         <member name="M:ServiceStack.Auth.OAuthProvider.Authenticate(ServiceStack.IServiceBase,ServiceStack.Auth.IAuthSession,ServiceStack.Authenticate)">
             <summary>
             The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
@@ -412,6 +437,45 @@
               NB: They claim they use OAuth 2.0, but they in fact don't. 
               http://apiok.ru/wiki/display/api/Authorization+OAuth+2.0
             </summary>
+        </member>
+        <member name="T:ServiceStack.Auth.Pbkdf2Provider">
+            <summary>
+            Allow utilizing an alternative PBKDF2 implementation.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.Pbkdf2Provider.DeriveKey">
+            <summary>
+            The PBKDF2 strategy PasswordHasher implementation that's used for hashing PBKDF2 passwords.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Auth.PasswordHasher">
+            <summary>
+            The Password Hasher provider used to hash users passwords which uses the same algorithm used by ASP.NET Identity v3:
+            PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.PasswordHasher.IterationCount">
+            <summary>
+            Gets the number of iterations used when hashing passwords using PBKDF2. Default is 10,000.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.PasswordHasher.#ctor(System.Int32)">
+            <summary>
+            The number of iterations used when hashing passwords using PBKDF2. Default is 10,000.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.PasswordHasher.Version">
+            <summary>
+            The Format Version specifier for this PasswordHasher embedded as the first byte in password hashes.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.PasswordHasher.HashPassword(System.String)">
+            <summary>
+            Returns a hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.
+            </summary>
+            <param name="user">The user whose password is to be hashed.</param>
+            <param name="password">The password to hash.</param>
+            <returns>A hashed representation of the supplied <paramref name="password"/> for the specified <paramref name="user"/>.</returns>
         </member>
         <member name="M:ServiceStack.Auth.RegisterService.Put(ServiceStack.Register)">
             <summary>
@@ -1202,6 +1266,10 @@
             Base class for entity validator classes.
             </summary>
             <typeparam name="T">The type of the object being validated</typeparam>
+            <summary>
+            Base class for entity validator classes.
+            </summary>
+            <typeparam name="T">The type of the object being validated</typeparam>
         </member>
         <member name="P:ServiceStack.FluentValidation.AbstractValidator`1.CascadeMode">
             <summary>
@@ -1307,13 +1375,6 @@
             <param name="ruleSetName">The name of the ruleset.</param>
             <param name="action">Action that encapsulates the rules in the ruleset.</param>
         </member>
-        <member name="M:ServiceStack.FluentValidation.AbstractValidator`1.RuleSet(ServiceStack.ApplyTo,System.Action)">
-            <summary>
-            Defines a RuleSet that can be used to provide specific validation rules for specific HTTP methods (GET, POST...)
-            </summary>
-            <param name="appliesTo">The HTTP methods where this rule set should be used.</param>
-            <param name="action">Action that encapuslates the rules in the ruleset.</param>
-        </member>
         <member name="M:ServiceStack.FluentValidation.AbstractValidator`1.When(System.Func{`0,System.Boolean},System.Action)">
             <summary>
             Defines a condition that applies to several rules
@@ -1358,6 +1419,19 @@
             </returns>
             <filterpriority>1</filterpriority>
         </member>
+        <member name="M:ServiceStack.FluentValidation.AbstractValidator`1.EnsureInstanceNotNull(System.Object)">
+            <summary>
+            Throws an exception if the instance being validated is null.
+            </summary>
+            <param name="instanceToValidate"></param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.AbstractValidator`1.RuleSet(ServiceStack.ApplyTo,System.Action)">
+            <summary>
+            Defines a RuleSet that can be used to provide specific validation rules for specific HTTP methods (GET, POST...)
+            </summary>
+            <param name="appliesTo">The HTTP methods where this rule set should be used.</param>
+            <param name="action">Action that encapuslates the rules in the ruleset.</param>
+        </member>
         <member name="T:ServiceStack.FluentValidation.DependentRules`1">
             <summary>
             Container class for dependent rule definitions
@@ -1377,6 +1451,11 @@
         <member name="M:ServiceStack.FluentValidation.AssemblyScanner.FindValidatorsInAssembly(System.Reflection.Assembly)">
             <summary>
             Finds all the validators in the specified assembly.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.AssemblyScanner.FindValidatorsInAssemblies(System.Collections.Generic.IEnumerable{System.Reflection.Assembly})">
+            <summary>
+            Finds all the validators in the specified assemblies
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.AssemblyScanner.FindValidatorsInAssemblyContaining``1">
@@ -1459,7 +1538,7 @@
         </member>
         <member name="T:ServiceStack.FluentValidation.Attributes.ValidatorAttribute">
             <summary>
-            Validator attribute to define the class that will describe the Validation rules
+            Validator attribute to define the class that will describe the Validation rules.
             </summary>
         </member>
         <member name="P:ServiceStack.FluentValidation.Attributes.ValidatorAttribute.ValidatorType">
@@ -1472,9 +1551,432 @@
             Creates an instance of <see cref="T:ServiceStack.FluentValidation.Attributes.ValidatorAttribute"/> allowing a validator type to be specified.
             </summary>
         </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithPropertyName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String)">
+            <summary>
+            Overrides the name of the property associated with this rule.
+            NOTE: This is a considered to be an advanced feature. 99% of the time that you use this, you actually meant to use WithName.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="propertyName">The property name to use</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
+            <summary>
+            Specifies a localized name for the error message. 
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
+            <param name="resourceAccessorBuilder">Resource accessor builder to use</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}})">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},System.Object[])">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
+            <param name="formatArgs">Custom message format args</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
+            <param name="resourceAccessorBuilder">The resource accessor builder to use. </param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},System.Func{``0,System.Object}[])">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
+            <param name="formatArgs">Custom message format args</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String)">
+            <summary>
+            Specifies a localized name for the error message. 
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceType">The type of the generated resource file</param>
+            <param name="resourceName">The name of the resource to use</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Object[])">
+            <summary>
+            Specifies a custom error message to use if validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="errorMessage">The error message to use</param>
+            <param name="formatArgs">Additional arguments to be specified when formatting the custom error message.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Func{``0,System.Object}[])">
+            <summary>
+            Specifies a custom error message to use if validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="errorMessage">The error message to use</param>
+            <param name="funcs">Additional property values to be included when formatting the custom error message.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Func{``0,``1,System.Object}[])">
+            <summary>
+            Specifies a custom error message to use if validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="errorMessage">The error message to use</param>
+            <param name="funcs">Additional property values to use when formatting the custom error message.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String,System.Object[])">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceName">Name of resource</param>
+            <param name="formatArgs">Custom message format args</param>
+            <param name="resourceType">Type of resource representing a resx file</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String,System.Func{``0,System.Object}[])">
+            <summary>
+            Specifies a custom error message resource to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="resourceName">Resource name</param>
+            <param name="formatArgs">Custom message format args</param>
+            <param name="resourceType">Resource type representing a resx file</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.ReplaceRule``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}},ServiceStack.FluentValidation.Validators.IPropertyValidator)">
+            <summary>
+            Replace the first validator of this type and remove all the others.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.RemoveRule``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Type)">
+            <summary>
+            Remove all validators of the specified type.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.BackwardsCompatibilityExtensions.ClearRules``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
+            <summary>
+            Remove all validators for the given property.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder">
+            <summary>
+            Builds a delegate for retrieving a localised resource from a resource type and property name.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder.GetResourceAccessor(System.Type,System.String)">
+            <summary>
+            Gets a function that can be used to retrieve a message from a resource type and resource name.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.ILanguageManager">
+            <summary>
+            Allows the default error message translations to be managed. 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ILanguageManager.Enabled">
+            <summary>
+            Whether localization is enabled.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ILanguageManager.Culture">
+            <summary>
+            Default culture to use for all requests to the LanguageManager. If not specified, uses the current UI culture. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.ILanguageManager.GetString(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Gets a translated string based on its key. If the culture is specific and it isn't registered, we try the neutral culture instead.
+            If no matching culture is found  to be registered we use English.
+            </summary>
+            <param name="key">The key</param>
+            <param name="culture">The culture to translate into</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.IStringSource">
+            <summary>
+            Provides error message templates
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.IStringSource.GetString(System.Object)">
+            <summary>
+            Construct the error message template
+            </summary>
+            <returns>Error message template</returns>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.IStringSource.ResourceName">
+            <summary>
+            The name of the resource if localized.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.IStringSource.ResourceType">
+            <summary>
+            The type of the resource provider if localized.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.IContextAwareStringSource">
+            <summary>
+            Marker interface that indicates a PropertyValidatorContext should be passed to GetString
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.Language">
+            <summary>
+            Base class for lanaguages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.Language.Name">
+            <summary>
+            Name of language (culture code)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.Language.Translate(System.String,System.String)">
+            <summary>
+            Adds a translation
+            </summary>
+            <param name="key"></param>
+            <param name="message"></param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.Language.Translate``1(System.String)">
+            <summary>
+            Adds a translation for a type
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="message"></param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.Language.GetTranslation(System.String)">
+            <summary>
+            Gets the localized version of a string with a specific key.
+            </summary>
+            <param name="key"></param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.LanguageManager">
+            <summary>
+            Allows the default error message translations to be managed.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LanguageManager.#ctor">
+            <summary>
+            Creates a new instance of the LanguageManager class.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LanguageManager.Enabled">
+            <summary>
+            Whether localization is enabled.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LanguageManager.Culture">
+            <summary>
+            Default culture to use for all requests to the LanguageManager. If not specified, uses the current UI culture.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LanguageManager.GetSupportedLanguages">
+            <summary>
+            Provides a collection of all supported languages.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LanguageManager.Clear">
+            <summary>
+            Removes all languages except the default.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LanguageManager.GetString(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Gets a translated string based on its key. If the culture is specific and it isn't registered, we try the neutral culture instead.
+            If no matching culture is found  to be registered we use English.
+            </summary>
+            <param name="key">The key</param>
+            <param name="culture">The culture to translate into</param>
+            <returns></returns>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.LanguageStringSource">
+            <summary>
+            IStringSource implementation that uses the default language manager.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.LazyStringSource">
+            <summary>
+            Lazily loads the string
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LazyStringSource.#ctor(System.Func{System.Object,System.String})">
+            <summary>
+            Creates a LazyStringSource
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LazyStringSource.GetString(System.Object)">
+            <summary>
+            Gets the value
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LazyStringSource.ResourceName">
+            <summary>
+            Resource type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LazyStringSource.ResourceType">
+            <summary>
+            Resource name
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.ContextAwareLazyStringSource.#ctor(System.Func{ServiceStack.FluentValidation.Validators.PropertyValidatorContext,System.String})">
+            <summary>
+            Creates a LazyStringSource
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.ContextAwareLazyStringSource.GetString(System.Object)">
+            <summary>
+            Gets the value
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ContextAwareLazyStringSource.ResourceName">
+            <summary>
+            Resource type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ContextAwareLazyStringSource.ResourceType">
+            <summary>
+            Resource name
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.LocalizedStringSource">
+            <summary>
+            Represents a localized string.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.#ctor(System.Type,System.String)">
+            <summary>
+            Creates a new instance of the LocalizedErrorMessageSource class using the specified resource name and resource type.
+            </summary>
+            <param name="resourceType">The resource type</param>
+            <param name="resourceName">The resource name</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.#ctor(System.Type,System.String,ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
+            <summary>
+            Creates a new instance of the LocalizedErrorMessageSource class using the specified resource name and resource type.
+            </summary>
+            <param name="resourceType">The resource type</param>
+            <param name="resourceName">The resource name</param>
+            <param name="resourceAccessorBuilder">Strategy used to construct the resource accessor</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.CreateFromExpression(System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
+            <summary>
+            Creates a LocalizedStringSource from an expression: () => MyResources.SomeResourceName
+            </summary>
+            <param name="expression">The expression </param>
+            <param name="resourceProviderSelectionStrategy">Strategy used to construct the resource accessor</param>
+            <returns>Error message source</returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.GetString(System.Object)">
+            <summary>
+            Construct the error message template
+            </summary>
+            <returns>Error message template</returns>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LocalizedStringSource.ResourceName">
+            <summary>
+            The name of the resource if localized.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.LocalizedStringSource.ResourceType">
+            <summary>
+            The type of the resource provider if localized.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.GetResourceProperty(System.Type@,System.String@)">
+            <summary>
+            Gets the PropertyInfo for a resource.
+            ResourceType and ResourceName are ref parameters to allow derived types
+            to replace the type/name of the resource before the delegate is constructed.
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.OverridableLocalizedStringSource">
+            <summary>
+            Version of LocalizedStringSource that allows the specified ResourceType to be replaced by the default resource type specified in ValidatorOptions.ResourceProviderType.
+            This is typically only used by the default validator types built into FV, or if you're building a library of validators. Don't use it in rule definitions. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.OverridableLocalizedStringSource.GetResourceProperty(System.Type@,System.String@)">
+            <summary>
+            Gets the PropertyInfo for a resource.
+            ResourceType and ResourceName are ref parameters to allow derived types
+            to replace the type/name of the resource before the delegate is constructed.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.OverridableLocalizedStringSource.CreateFromExpression(System.Linq.Expressions.Expression{System.Func{System.String}})">
+            <summary>
+            Creates a OverridableLocalizedStringSource from an expression: () => MyResources.SomeResourceName
+            </summary>
+            <param name="expression">The expression </param>
+            <returns>Error message source</returns>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.ResourceAccessor">
+            <summary>
+            Defines an accessor for localization resources
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.Accessor">
+            <summary>
+            Function that can be used to retrieve the resource
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.ResourceType">
+            <summary>
+            Resource type
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.ResourceName">
+            <summary>
+            Resource name
+            </summary>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Resources.StaticStringSource">
+            <summary>
+            Represents a static string.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.StaticStringSource.#ctor(System.String)">
+            <summary>
+            Creates a new StringErrorMessageSource using the specified error message as the error template.
+            </summary>
+            <param name="message">The error message template.</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Resources.StaticStringSource.GetString(System.Object)">
+            <summary>
+            Construct the error message template
+            </summary>
+            <returns>Error message template</returns>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.StaticStringSource.ResourceName">
+            <summary>
+            The name of the resource if localized.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.Resources.StaticStringSource.ResourceType">
+            <summary>
+            The type of the resource provider if localized.
+            </summary>
+        </member>
         <member name="T:ServiceStack.FluentValidation.CollectionValidatorExtensions">
             <summary>
-            Extension methods for collection validation rules
+            Extension methods for collection validation rules 
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.CollectionValidatorExtensions.SetCollectionValidator``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Collections.Generic.IEnumerable{``1}},ServiceStack.FluentValidation.IValidator{``1})">
@@ -1516,7 +2018,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.NotNull``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1})">
             <summary>
-            Defines a 'not null' validator on the current rule builder.
+            Defines a 'not null' validator on the current rule builder. 
             Validation will fail if the property is null.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1526,7 +2028,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Null``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1})">
             <summary>
-            Defines a 'null' validator on the current rule builder.
+            Defines a 'null' validator on the current rule builder. 
             Validation will fail if the property is not null.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1557,7 +2059,7 @@
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Length``1(ServiceStack.FluentValidation.IRuleBuilder{``0,System.String},System.Int32,System.Int32)">
             <summary>
             Defines a length validator on the current rule builder, but only for string properties.
-            Validation will fail if the length of the string is outside of the specifed range. The range is inclusive.
+            Validation will fail if the length of the string is outside of the specified range. The range is inclusive.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
             <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
@@ -1568,7 +2070,7 @@
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Length``1(ServiceStack.FluentValidation.IRuleBuilder{``0,System.String},System.Func{``0,System.Int32},System.Func{``0,System.Int32})">
             <summary>
             Defines a length validator on the current rule builder, but only for string properties.
-            Validation will fail if the length of the string is outside of the specifed range. The range is inclusive.
+            Validation will fail if the length of the string is outside of the specified range. The range is inclusive.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
             <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
@@ -1604,6 +2106,26 @@
             <typeparam name="T">Type of object being validated</typeparam>
             <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
             <param name="expression">The regular expression to check the value against.</param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.MaximumLength``1(ServiceStack.FluentValidation.IRuleBuilder{``0,System.String},System.Int32)">
+            <summary>
+            Defines a length validator on the current rule builder, but only for string properties.
+            Validation will fail if the length of the string is larger than the length specified.
+            </summary>
+            <typeparam name="T">Type of object being validated</typeparam>
+            <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+            <param name="maximumLength"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.MinimumLength``1(ServiceStack.FluentValidation.IRuleBuilder{``0,System.String},System.Int32)">
+            <summary>
+            Defines a length validator on the current rule builder, but only for string properties.
+            Validation will fail if the length of the string is less than the length specified.
+            </summary>
+            <typeparam name="T">Type of object being validated</typeparam>
+            <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
+            <param name="minimumLength"></param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Matches``1(ServiceStack.FluentValidation.IRuleBuilder{``0,System.String},System.Func{``0,System.String})">
@@ -1693,7 +2215,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Equal``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},``1,System.Collections.IEqualityComparer)">
             <summary>
-            Defines an 'equals' validator on the current rule builder.
+            Defines an 'equals' validator on the current rule builder. 
             Validation will fail if the specified value is not equal to the value of the property.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1719,7 +2241,7 @@
             <summary>
             Defines a predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
             <typeparam name="TProperty">Type of property being validated</typeparam>
@@ -1731,7 +2253,7 @@
             <summary>
             Defines a predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             This overload accepts the object being validated in addition to the property being validated.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1744,7 +2266,7 @@
             <summary>
             Defines a predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             This overload accepts the object being validated in addition to the property being validated.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1757,7 +2279,7 @@
             <summary>
             Defines an asynchronous predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
             <typeparam name="TProperty">Type of property being validated</typeparam>
@@ -1769,7 +2291,7 @@
             <summary>
             Defines an asynchronous predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             This overload accepts the object being validated in addition to the property being validated.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1782,7 +2304,7 @@
             <summary>
             Defines an asynchronous predicate validator on the current rule builder using a lambda expression to specify the predicate.
             Validation will fail if the specified lambda returns false.
-            Validation will succeed if the specifed lambda returns true.
+            Validation will succeed if the specified lambda returns true.
             This overload accepts the object being validated in addition to the property being validated.
             </summary>
             <typeparam name="T">Type of object being validated</typeparam>
@@ -1793,7 +2315,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},``1)">
             <summary>
-            Defines a 'less than' validator on the current rule builder.
+            Defines a 'less than' validator on the current rule builder. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1805,7 +2327,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},``1)">
             <summary>
-            Defines a 'less than' validator on the current rule builder.
+            Defines a 'less than' validator on the current rule builder. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1817,7 +2339,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},``1)">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder.
+            Defines a 'less than or equal' validator on the current rule builder. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1829,7 +2351,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},``1)">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder.
+            Defines a 'less than or equal' validator on the current rule builder. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1841,7 +2363,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},``1)">
             <summary>
-            Defines a 'greater than' validator on the current rule builder.
+            Defines a 'greater than' validator on the current rule builder. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -1853,7 +2375,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},``1)">
             <summary>
-            Defines a 'greater than' validator on the current rule builder.
+            Defines a 'greater than' validator on the current rule builder. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -1865,7 +2387,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},``1)">
             <summary>
-            Defines a 'greater than or equal' validator on the current rule builder.
+            Defines a 'greater than or equal' validator on the current rule builder. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -1877,7 +2399,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},``1)">
             <summary>
-            Defines a 'greater than or equal' validator on the current rule builder.
+            Defines a 'greater than or equal' validator on the current rule builder. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -1889,7 +2411,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1901,7 +2423,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1913,7 +2435,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1925,7 +2447,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than the specified value.
             The validation will fail if the property value is greater than or equal to the specified value.
             </summary>
@@ -1937,7 +2459,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
+            Defines a 'less than or equal' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1949,7 +2471,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
+            Defines a 'less than or equal' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1961,7 +2483,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
+            Defines a 'less than or equal' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1973,7 +2495,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.LessThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than or equal' validator on the current rule builder using a lambda expression.
+            Defines a 'less than or equal' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is less than or equal to the specified value.
             The validation will fail if the property value is greater than the specified value.
             </summary>
@@ -1985,7 +2507,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -1997,7 +2519,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -2009,7 +2531,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -2021,7 +2543,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThan``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'less than' validator on the current rule builder using a lambda expression.
+            Defines a 'less than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than the specified value.
             The validation will fail if the property value is less than or equal to the specified value.
             </summary>
@@ -2033,7 +2555,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'greater than' validator on the current rule builder using a lambda expression.
+            Defines a 'greater than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -2045,7 +2567,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'greater than' validator on the current rule builder using a lambda expression.
+            Defines a 'greater than' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -2057,7 +2579,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,System.Nullable{``1}}})">
             <summary>
-            Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
+            Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -2069,7 +2591,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.GreaterThanOrEqualTo``2(ServiceStack.FluentValidation.IRuleBuilder{``0,System.Nullable{``1}},System.Linq.Expressions.Expression{System.Func{``0,``1}})">
             <summary>
-            Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression.
+            Defines a 'greater than or equal to' validator on the current rule builder using a lambda expression. 
             The validation will succeed if the property value is greater than or equal the specified value.
             The validation will fail if the property value is less than the specified value.
             </summary>
@@ -2092,8 +2614,8 @@
             <summary>
             Validates certain properties of the specified instance.
             </summary>
-            <param name="validator">The validator this method is extending.</param>
-            <param name="instance">The instance of the type we are validating.</param>
+            <param name="validator"></param>
+            <param name="instance">The object to validate</param>
             <param name="properties">The names of the properties to validate.</param>
             <returns>A ValidationResult object containing any validation failures.</returns>
         </member>
@@ -2101,11 +2623,12 @@
             <summary>
             Validates an object using either a custom validator selector or a ruleset.
             </summary>
-            <param name="validator">The validator this method is extending.</param>
-            <param name="instance">The instance of the type we are validating.</param>
-            <param name="selector">Optional: The selector to use. Selector and ruleset cannot both be specified.</param>
-            <param name="ruleSet">Optional: The ruleset to validate against. Selector and ruleset cannot both be specified.</param>
-            <returns>A ValidationResult object containing any validation failures</returns>
+            <typeparam name="T"></typeparam>
+            <param name="validator"></param>
+            <param name="instance"></param>
+            <param name="selector"></param>
+            <param name="ruleSet"></param>
+            <returns></returns>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAsync``1(ServiceStack.FluentValidation.IValidator{``0},``0,System.Linq.Expressions.Expression{System.Func{``0,System.Object}}[])">
             <summary>
@@ -2120,27 +2643,21 @@
             <summary>
             Validates certain properties of the specified instance asynchronously.
             </summary>
-            <param name="validator">The validator this method is extending.</param>
+            <param name="validator"></param>
             <param name="instance">The object to validate</param>
             <param name="properties">The names of the properties to validate.</param>
             <returns>A ValidationResult object containing any validation failures.</returns>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAsync``1(ServiceStack.FluentValidation.IValidator{``0},``0,ServiceStack.FluentValidation.Internal.IValidatorSelector,System.String)">
             <summary>
-            Validates an object asynchronously using a custom validator selector or a ruleset
+            Validates an object asynchronously using a custom valdiator selector or a ruleset
             </summary>
-            <param name="validator">The validator this method is extending.</param>
-            <param name="instance">The instance of the type we are validating.</param>
-            <param name="selector">Optional: The selector to use. Selector and ruleset cannot both be specified.</param>
-            <param name="ruleSet">Optional: The ruleset to validate against. Selector and ruleset cannot both be specified.</param>
-            <returns>A Task for a ValidationResult object containing any validation failures.</returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAndThrow``1(ServiceStack.FluentValidation.IValidator{``0},``0)">
-            <summary>
-            Performs validation and then throws an exception if validation fails.
-            </summary>
-            <param name="validator">The validator this method is extending.</param>
-            <param name="instance">The instance of the type we are validating.</param>
+            <typeparam name="T"></typeparam>
+            <param name="validator"></param>
+            <param name="instance"></param>
+            <param name="selector"></param>
+            <param name="ruleSet"></param>
+            <returns></returns>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAndThrow``1(ServiceStack.FluentValidation.IValidator{``0},``0,System.String)">
             <summary>
@@ -2148,15 +2665,7 @@
             </summary>
             <param name="validator">The validator this method is extending.</param>
             <param name="instance">The instance of the type we are validating.</param>
-            <param name="ruleSet">The ruleset to validate against.</param>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAndThrow``1(ServiceStack.FluentValidation.IValidator{``0},``0,ServiceStack.ApplyTo)">
-            <summary>
-            Performs validation and then throws an exception if validation fails.
-            </summary>
-            <param name="validator">The validator this method is extending.</param>
-            <param name="instance">The instance of the type we are validating.</param>
-            <param name="ruleSet">The ruleset to validate against.</param>
+            <param name="ruleSet">Optional: a ruleset when need to validate against.</param>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.ValidateAndThrowAsync``1(ServiceStack.FluentValidation.IValidator{``0},``0,System.String)">
             <summary>
@@ -2228,6 +2737,42 @@
             <param name="ruleBuilder">The rule builder on which the validator should be defined</param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.Custom``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Action{``1,ServiceStack.FluentValidation.Validators.CustomContext})">
+            <summary>
+            Defines a custom validation rule
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="TProperty"></typeparam>
+            <param name="ruleBuilder"></param>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensions.CustomAsync``2(ServiceStack.FluentValidation.IRuleBuilder{``0,``1},System.Func{``1,ServiceStack.FluentValidation.Validators.CustomContext,System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Defines a custom validation rule
+            </summary>
+            <typeparam name="T"></typeparam>
+            <typeparam name="TProperty"></typeparam>
+            <param name="ruleBuilder"></param>
+            <param name="action"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensionsServiceStack.ValidateAndThrow``1(ServiceStack.FluentValidation.IValidator{``0},``0,ServiceStack.ApplyTo)">
+            <summary>
+            Performs validation and then throws an exception if validation fails.
+            </summary>
+            <param name="validator">The validator this method is extending.</param>
+            <param name="instance">The instance of the type we are validating.</param>
+            <param name="ruleSet">The ruleset to validate against.</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorExtensionsServiceStack.ValidateAndThrowAsync``1(ServiceStack.FluentValidation.IValidator{``0},``0,ServiceStack.ApplyTo)">
+            <summary>
+            Performs validation asynchronously and then throws an exception if validation fails.
+            </summary>
+            <param name="validator">The validator this method is extending.</param>
+            <param name="instance">The instance of the type we are validating.</param>
+            <param name="ruleSet">Optional: a ruleset when need to validate against.</param>
+        </member>
         <member name="T:ServiceStack.FluentValidation.DefaultValidatorOptions">
             <summary>
             Default options that can be used to configure a validator.
@@ -2235,14 +2780,14 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.Cascade``2(ServiceStack.FluentValidation.IRuleBuilderInitial{``0,``1},ServiceStack.FluentValidation.CascadeMode)">
             <summary>
-            Specifies the cascade mode for failures.
+            Specifies the cascade mode for failures. 
             If set to 'Stop' then execution of the rule will stop once the first validator in the chain fails.
             If set to 'Continue' then all validators in the chain will execute regardless of failures.
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.OnAnyFailure``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Action{``0})">
             <summary>
-            Specifies a custom action to be invoked when the validator fails.
+            Specifies a custom action to be invoked when the validator fails. 
             </summary>
             <typeparam name="T"></typeparam>
             <typeparam name="TProperty"></typeparam>
@@ -2258,34 +2803,15 @@
             <param name="errorMessage">The error message to use</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Object[])">
-            <summary>
-            Specifies a custom error message to use if validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="errorMessage">The error message to use</param>
-            <param name="formatArgs">Additional arguments to be specified when formatting the custom error message.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Func{``0,System.Object}[])">
-            <summary>
-            Specifies a custom error message to use if validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="errorMessage">The error message to use</param>
-            <param name="funcs">Additional property values to be included when formatting the custom error message.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String,System.Func{``0,``1,System.Object}[])">
-            <summary>
-            Specifies a custom error message to use if validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="errorMessage">The error message to use</param>
-            <param name="funcs">Additional property values to use when formatting the custom error message.</param>
-            <returns></returns>
-        </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.String})">
+            <summary>
+            Specifies a custom error message to use when validation fails.
+            </summary>
+            <param name="rule">The current rule</param>
+            <param name="messageProvider">Delegate that will be invoked to retrieve the localized message. </param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,``1,System.String})">
             <summary>
             Specifies a custom error message to use when validation fails.
             </summary>
@@ -2301,62 +2827,6 @@
             <param name="errorCode">The error code to use</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}})">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},System.Object[])">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <param name="formatArgs">Custom message format args</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},System.Func{``0,System.Object}[])">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <param name="formatArgs">Custom message format args</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <param name="resourceAccessorBuilder">The resource accessor builder to use. </param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String,System.Object[])">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <param name="resourceName">Name of resource</param>
-            <param name="formatArgs">Custom message format args</param>
-            <param name="resourceType">Type of resource representing a resx file</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String,System.Func{``0,System.Object}[])">
-            <summary>
-            Specifies a custom error message resource to use when validation fails.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="resourceName">Resource name</param>
-            <param name="formatArgs">Custom message format args</param>
-            <param name="resourceType">Resource type representing a resx file</param>
-            <returns></returns>
-        </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedMessage``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Type,System.String)">
             <summary>
             Specifies a custom error message resource to use when validation fails.
@@ -2368,7 +2838,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.When``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.Boolean},ServiceStack.FluentValidation.ApplyConditionTo)">
             <summary>
-            Specifies a condition limiting when the validator should run.
+            Specifies a condition limiting when the validator should run. 
             The validator will only be executed if the result of the lambda returns true.
             </summary>
             <param name="rule">The current rule</param>
@@ -2378,7 +2848,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.Unless``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.Boolean},ServiceStack.FluentValidation.ApplyConditionTo)">
             <summary>
-            Specifies a condition limiting when the validator should not run.
+            Specifies a condition limiting when the validator should not run. 
             The validator will only be executed if the result of the lambda returns false.
             </summary>
             <param name="rule">The current rule</param>
@@ -2388,7 +2858,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WhenAsync``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.Threading.Tasks.Task{System.Boolean}},ServiceStack.FluentValidation.ApplyConditionTo)">
             <summary>
-            Specifies an asynchronous condition limiting when the validator should run.
+            Specifies an asynchronous condition limiting when the validator should run. 
             The validator will only be executed if the result of the lambda returns true.
             </summary>
             <param name="rule">The current rule</param>
@@ -2398,7 +2868,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.UnlessAsync``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.Threading.Tasks.Task{System.Boolean}},ServiceStack.FluentValidation.ApplyConditionTo)">
             <summary>
-            Specifies an asynchronous condition limiting when the validator should not run.
+            Specifies an asynchronous condition limiting when the validator should not run. 
             The validator will only be executed if the result of the lambda returns false.
             </summary>
             <param name="rule">The current rule</param>
@@ -2408,7 +2878,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.DependentRules``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Action{ServiceStack.FluentValidation.DependentRules{``0}})">
             <summary>
-            Triggers an action when the rule passes. Typically used to configure dependent rules. This applies to all preceding rules in the chain.
+            Triggers an action when the rule passes. Typically used to configure dependent rules. This applies to all preceding rules in the chain. 
             </summary>
             <param name="rule">The current rule</param>
             <param name="action">An action to be invoked if the rule is valid</param>
@@ -2422,24 +2892,15 @@
             <param name="overridePropertyName">The property name to use</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithLocalizedName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,System.String})">
             <summary>
-            Specifies a localized name for the error message.
+            Specifies a custom property name to use within the error message.
             </summary>
             <param name="rule">The current rule</param>
-            <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-            <param name="resourceAccessorBuilder">Resource accessor builder to use</param>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.OverridePropertyName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String)">
-            <summary>
-            Overrides the name of the property associated with this rule.
-            NOTE: This is a considered to be an advanced feature. 99% of the time that you use this, you actually meant to use WithName.
-            </summary>
-            <param name="rule">The current rule</param>
-            <param name="propertyName">The property name to use</param>
+            <param name="nameProvider">Func used to retrieve the property's display name</param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithPropertyName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String)">
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.OverridePropertyName``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.String)">
             <summary>
             Overrides the name of the property associated with this rule.
             NOTE: This is a considered to be an advanced feature. 99% of the time that you use this, you actually meant to use WithName.
@@ -2458,15 +2919,32 @@
             <param name="stateProvider"></param>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithSeverity``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},ServiceStack.FluentValidation.Severity)">
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithState``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},System.Func{``0,``1,System.Object})">
             <summary>
-            Specifies custom severity that should be stored alongside the validation message when validation fails for this rule.
+            Specifies custom state that should be stored alongside the validation message when validation fails for this rule.
             </summary>
             <typeparam name="T"></typeparam>
             <typeparam name="TProperty"></typeparam>
             <param name="rule"></param>
-            <param name="severity"></param>
+            <param name="stateProvider"></param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.WithSeverity``2(ServiceStack.FluentValidation.IRuleBuilderOptions{``0,``1},ServiceStack.FluentValidation.Severity)">
+            <summary>
+             Specifies custom severity that should be stored alongside the validation message when validation fails for this rule.
+             </summary>
+             <typeparam name="T"></typeparam>
+             <typeparam name="TProperty"></typeparam>
+             <param name="rule"></param>
+             <param name="severity"></param>
+             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.DefaultValidatorOptions.GetStringForValidator``1(ServiceStack.FluentValidation.Resources.ILanguageManager)">
+            <summary>
+            Gets the default message for a property validato
+            </summary>
+            <typeparam name="T">The validator type</typeparam>
+            <returns>The translated string</returns>
         </member>
         <member name="T:ServiceStack.FluentValidation.CascadeMode">
             <summary>
@@ -2500,27 +2978,42 @@
         </member>
         <member name="T:ServiceStack.FluentValidation.Severity">
             <summary>
-            Specifies the severity of a rule.
+            Specifies the severity of a rule. 
+            </summary>
+        </member>
+        <member name="F:ServiceStack.FluentValidation.Severity.Error">
+            <summary>
+            Error
+            </summary>
+        </member>
+        <member name="F:ServiceStack.FluentValidation.Severity.Warning">
+            <summary>
+            Warning
+            </summary>
+        </member>
+        <member name="F:ServiceStack.FluentValidation.Severity.Info">
+            <summary>
+            Info
             </summary>
         </member>
         <member name="T:ServiceStack.FluentValidation.InlineValidator`1">
-             <summary>
-             Validator implementation that allows rules to be defined without inheriting from AbstractValidator.
-             </summary>
-             <example>
-             <code>
-             public class Customer {
-               public int Id { get; set; }
-               public string Name { get; set; }
+            <summary>
+            Validator implementation that allows rules to be defined without inheriting from AbstractValidator.
+            </summary>
+            <example>
+            <code>
+            public class Customer {
+              public int Id { get; set; }
+              public string Name { get; set; }
             
-               public static readonly InlineValidator&lt;Customer&gt; Validator = new InlineValidator&lt;Customer&gt; {
-                 v =&gt; v.RuleFor(x =&gt; x.Name).NotNull(),
-                 v =&gt; v.RuleFor(x =&gt; x.Id).NotEqual(0),
-               }
-             }
-             </code>
-             </example>
-             <typeparam name="T"></typeparam>
+              public static readonly InlineValidator&lt;Customer&gt; Validator = new InlineValidator&lt;Customer&gt; {
+                v =&gt; v.RuleFor(x =&gt; x.Name).NotNull(),
+                v =&gt; v.RuleFor(x =&gt; x.Id).NotEqual(0),
+              }
+            }
+            </code>
+            </example>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="T:ServiceStack.FluentValidation.InlineValidator`1.InlineRuleCreator`1">
             <summary>
@@ -2590,8 +3083,8 @@
         <member name="M:ServiceStack.FluentValidation.Internal.Comparer.Compare(System.IComparable,System.IComparable,System.Int32@)">
             <summary>
             Tries to do a proper comparison but may fail.
-            First it tries the default comparison, if this fails, it will see
-            if the values are fractions. If they are, then it does a double
+            First it tries the default comparison, if this fails, it will see 
+            if the values are fractions. If they are, then it does a double 
             comparison, otherwise it does a long comparison.
             </summary>
         </member>
@@ -2810,6 +3303,11 @@
             Creates a new instance of MemberNameValidatorSelector.
             </summary>
         </member>
+        <member name="P:ServiceStack.FluentValidation.Internal.MemberNameValidatorSelector.MemberNames">
+            <summary>
+            Member names that are validated.
+            </summary>
+        </member>
         <member name="M:ServiceStack.FluentValidation.Internal.MemberNameValidatorSelector.CanExecute(ServiceStack.FluentValidation.IValidationRule,System.String,ServiceStack.FluentValidation.ValidationContext)">
             <summary>
             Determines whether or not a rule should execute.
@@ -2878,7 +3376,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.MessageFormatter.BuildMessage(System.String)">
             <summary>
-            Constructs the final message from the specified template.
+            Constructs the final message from the specified template. 
             </summary>
             <param name="messageTemplate">Message template</param>
             <returns>The message with placeholders replaced with their appropriate values</returns>
@@ -2935,7 +3433,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.PropertyChain.AddIndexer(System.Object)">
             <summary>
-            Adds an indexer to the property chain. For example, if the following chain has been constructed:
+            Adds an indexer to the property chain. For example, if the following chain has been constructed: 
             Parent.Child
             then calling AddIndexer(0) would convert this to:
             Parent.Child[0]
@@ -3080,7 +3578,12 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.PropertyRule.GetDisplayName">
             <summary>
-            Display name for the property.
+            Display name for the property. 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Internal.PropertyRule.GetDisplayName(System.Object)">
+            <summary>
+            Display name for the property. 
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.PropertyRule.Validate(ServiceStack.FluentValidation.ValidationContext)">
@@ -3100,7 +3603,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.Internal.PropertyRule.InvokePropertyValidatorAsync(ServiceStack.FluentValidation.ValidationContext,ServiceStack.FluentValidation.Validators.IPropertyValidator,System.String,System.Threading.CancellationToken)">
             <summary>
-            Invokes the validator asynchronously
+            Invokes the validator asynchronously 
             </summary>
             <param name="context"></param>
             <param name="validator"></param>
@@ -3276,7 +3779,7 @@
         </member>
         <member name="T:ServiceStack.FluentValidation.IValidator`1">
             <summary>
-            Defines a validator for a particualr type.
+            Defines a validator for a particular type.
             </summary>
             <typeparam name="T"></typeparam>
         </member>
@@ -3333,7 +3836,7 @@
             </summary>
             <param name="context">A ValidationContext</param>
             <param name="cancellation">Cancellation token</param>
-            <returns>A ValidationResult object containy any validation failures.</returns>
+            <returns>A ValidationResult object containy any validation failures.</returns>		
         </member>
         <member name="M:ServiceStack.FluentValidation.IValidator.CreateDescriptor">
             <summary>
@@ -3353,7 +3856,7 @@
         </member>
         <member name="M:ServiceStack.FluentValidation.IValidatorDescriptor.GetName(System.String)">
             <summary>
-            Gets the name display name for a property.
+            Gets the name display name for a property. 
             </summary>
         </member>
         <member name="M:ServiceStack.FluentValidation.IValidatorDescriptor.GetMembersWithValidators">
@@ -3386,318 +3889,6 @@
             Gets the validator for the specified type.
             </summary>
         </member>
-        <member name="T:ServiceStack.FluentValidation.PropertyRuleValidatorExtensions">
-            <summary>
-            Extensions for property rules
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.PropertyRuleValidatorExtensions.ReplaceRule``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}},ServiceStack.FluentValidation.Validators.IPropertyValidator)">
-            <summary>
-            Replace the first validator of this type and remove all the others.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.PropertyRuleValidatorExtensions.RemoveRule``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}},System.Type)">
-            <summary>
-            Remove all validators of the specifed type.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.PropertyRuleValidatorExtensions.ClearRules``1(ServiceStack.FluentValidation.IValidator{``0},System.Linq.Expressions.Expression{System.Func{``0,System.Object}})">
-            <summary>
-            Remove all validators for the given property.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.ResourceAccessor">
-            <summary>
-            Defines an accessor for localization resources
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.Accessor">
-            <summary>
-            Function that can be used to retrieve the resource
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.ResourceType">
-            <summary>
-            Resource type
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.ResourceAccessor.ResourceName">
-            <summary>
-            Resource name
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder">
-            <summary>
-            Builds a delegate for retrieving a localised resource from a resource type and property name.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder.GetResourceAccessor(System.Type,System.String)">
-            <summary>
-            Gets a function that can be used to retrieve a message from a resource type and resource name.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.StaticResourceAccessorBuilder">
-            <summary>
-            Builds a delegate for retrieving a localised resource from a resource type and property name.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.StaticResourceAccessorBuilder.GetResourceAccessor(System.Type,System.String)">
-            <summary>
-            Builds a function used to retrieve the resource.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.StaticResourceAccessorBuilder.GetResourceProperty(System.Type@,System.String@)">
-            <summary>
-            Gets the PropertyInfo for a resource.
-            ResourceType and ResourceName are ref parameters to allow derived types
-            to replace the type/name of the resource before the delegate is constructed.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.FallbackAwareResourceAccessorBuilder">
-            <summary>
-            Implemenetation of IResourceAccessorBuilder that can fall back to the default resource provider.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.FallbackAwareResourceAccessorBuilder.GetResourceProperty(System.Type@,System.String@)">
-            <summary>
-            Gets the PropertyInfo for a resource.
-            ResourceType and ResourceName are ref parameters to allow derived types
-            to replace the type/name of the resource before the delegate is constructed.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.IStringSource">
-            <summary>
-            Provides error message templates
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.IStringSource.GetString(System.Object)">
-            <summary>
-            Construct the error message template
-            </summary>
-            <returns>Error message template</returns>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.IStringSource.ResourceName">
-            <summary>
-            The name of the resource if localized.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.IStringSource.ResourceType">
-            <summary>
-            The type of the resource provider if localized.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.LazyStringSource">
-            <summary>
-            Lazily loads the string
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LazyStringSource.#ctor(System.Func{System.String})">
-            <summary>
-            Creates a new LazyStringSource
-            </summary>
-            <param name="stringProvider"></param>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LazyStringSource.#ctor(System.Func{System.Object,System.String})">
-            <summary>
-            Creates a LazyStringSource
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LazyStringSource.GetString(System.Object)">
-            <summary>
-            Gets the value
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.LazyStringSource.ResourceName">
-            <summary>
-            Resource type
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.LazyStringSource.ResourceType">
-            <summary>
-            Resource name
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.LocalizedStringSource">
-            <summary>
-            Represents a localized string.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.#ctor(System.Type,System.String,ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
-            <summary>
-            Creates a new instance of the LocalizedErrorMessageSource class using the specified resource name and resource type.
-            </summary>
-            <param name="resourceType">The resource type</param>
-            <param name="resourceName">The resource name</param>
-            <param name="resourceAccessorBuilder">Strategy used to construct the resource accessor</param>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.CreateFromExpression(System.Linq.Expressions.Expression{System.Func{System.String}},ServiceStack.FluentValidation.Resources.IResourceAccessorBuilder)">
-            <summary>
-            Creates an IErrorMessageSource from an expression: () => MyResources.SomeResourceName
-            </summary>
-            <param name="expression">The expression </param>
-            <param name="resourceProviderSelectionStrategy">Strategy used to construct the resource accessor</param>
-            <returns>Error message source</returns>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.LocalizedStringSource.GetString(System.Object)">
-            <summary>
-            Construct the error message template
-            </summary>
-            <returns>Error message template</returns>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.LocalizedStringSource.ResourceName">
-            <summary>
-            The name of the resource if localized.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.LocalizedStringSource.ResourceType">
-            <summary>
-            The type of the resource provider if localized.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.Messages">
-            <summary>
-              A strongly-typed resource class, for looking up localized strings, etc.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.ResourceManager">
-            <summary>
-              Returns the cached ResourceManager instance used by this class.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.Culture">
-            <summary>
-              Overrides the current thread's CurrentUICulture property for all
-              resource lookups using this strongly typed resource class.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.CreditCardError">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; is not a valid credit card number..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.email_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; is not a valid email address..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.empty_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; should be empty..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.enum_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; has a range of values which does not include &apos;{PropertyValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.equal_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; should be equal to &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.exact_length_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be {MaxLength} characters in length. You entered {TotalLength} characters..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.exclusivebetween_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be between {From} and {To} (exclusive). You entered {Value}..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.greaterthan_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be greater than &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.greaterthanorequal_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be greater than or equal to &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.inclusivebetween_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be between {From} and {To}. You entered {Value}..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.length_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be between {MinLength} and {MaxLength} characters. You entered {TotalLength} characters..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.lessthan_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be less than &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.lessthanorequal_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be less than or equal to &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.notempty_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; should not be empty..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.notequal_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; should not be equal to &apos;{ComparisonValue}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.notnull_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must not be empty..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.null_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; must be empty..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.predicate_error">
-            <summary>
-              Looks up a localized string similar to The specified condition was not met for &apos;{PropertyName}&apos;..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.regex_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; is not in the correct format..
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.Messages.scale_precision_error">
-            <summary>
-              Looks up a localized string similar to &apos;{PropertyName}&apos; may not be more than {expectedPrecision} digits in total, with allowance for {expectedScale} decimals. {digits} digits and {actualScale} decimals were found..
-            </summary>
-        </member>
-        <member name="T:ServiceStack.FluentValidation.Resources.StaticStringSource">
-            <summary>
-            Represents a static string.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.StaticStringSource.#ctor(System.String)">
-            <summary>
-            Creates a new StringErrorMessageSource using the specified error message as the error template.
-            </summary>
-            <param name="message">The error message template.</param>
-        </member>
-        <member name="M:ServiceStack.FluentValidation.Resources.StaticStringSource.GetString(System.Object)">
-            <summary>
-            Construct the error message template
-            </summary>
-            <returns>Error message template</returns>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.StaticStringSource.ResourceName">
-            <summary>
-            The name of the resource if localized.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Resources.StaticStringSource.ResourceType">
-            <summary>
-            The type of the resource provider if localized.
-            </summary>
-        </member>
         <member name="T:ServiceStack.FluentValidation.Results.ValidationFailure">
             <summary>
             Defines a validation failure
@@ -3721,11 +3912,6 @@
         <member name="P:ServiceStack.FluentValidation.Results.ValidationFailure.ErrorMessage">
             <summary>
             The error message
-            </summary>
-        </member>
-        <member name="P:ServiceStack.FluentValidation.Results.ValidationFailure.ErrorCode">
-            <summary>
-            Gets or sets the error code.
             </summary>
         </member>
         <member name="P:ServiceStack.FluentValidation.Results.ValidationFailure.AttemptedValue">
@@ -3754,7 +3940,6 @@
         <member name="P:ServiceStack.FluentValidation.Results.ValidationFailure.FormattedMessagePlaceholderValues">
             <summary>
             Gets or sets the formatted message placeholder values.
-            Similar placeholders are defined in fluent validation library (check documentation)
             </summary>
         </member>
         <member name="P:ServiceStack.FluentValidation.Results.ValidationFailure.ResourceName">
@@ -3765,6 +3950,16 @@
         <member name="M:ServiceStack.FluentValidation.Results.ValidationFailure.ToString">
             <summary>
             Creates a textual representation of the failure.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Results.ValidationFailure.#ctor(System.String,System.String,System.Object,System.String)">
+            <summary>
+            Creates a new ValidationFailure with ErrorCode.
+            </summary>
+        </member>
+        <member name="F:ServiceStack.FluentValidation.Results.ValidationFailure.errorCode">
+            <summary>
+            Gets or sets the error code.
             </summary>
         </member>
         <member name="T:ServiceStack.FluentValidation.Results.ValidationResult">
@@ -3805,7 +4000,7 @@
         </member>
         <member name="T:ServiceStack.FluentValidation.IRuleBuilder`2">
             <summary>
-            Rule builder
+            Rule builder 
             </summary>
             <typeparam name="T"></typeparam>
             <typeparam name="TProperty"></typeparam>
@@ -3841,6 +4036,10 @@
             Validation context
             </summary>
             <typeparam name="T"></typeparam>
+            <summary>
+            Validation context
+            </summary>
+            <typeparam name="T"></typeparam>
         </member>
         <member name="M:ServiceStack.FluentValidation.ValidationContext`1.#ctor(`0)">
             <summary>
@@ -3862,6 +4061,9 @@
             </summary>
         </member>
         <member name="T:ServiceStack.FluentValidation.ValidationContext">
+            <summary>
+            Validation context
+            </summary>
             <summary>
             Validation context
             </summary>
@@ -3900,6 +4102,11 @@
             Whether this is a child context
             </summary>
         </member>
+        <member name="P:ServiceStack.FluentValidation.ValidationContext.IsChildCollectionContext">
+            <summary>
+            Whether this is a child collection context.
+            </summary>
+        </member>
         <member name="M:ServiceStack.FluentValidation.ValidationContext.Clone(ServiceStack.FluentValidation.Internal.PropertyChain,System.Object,ServiceStack.FluentValidation.Internal.IValidatorSelector)">
             <summary>
             Creates a new ValidationContext based on this one
@@ -3916,7 +4123,17 @@
             <param name="instanceToValidate"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.FluentValidation.ValidationContext.CloneForChildCollectionValidator(System.Object)">
+            <summary>
+            Creates a new validation context for use with a child collection validator
+            </summary>
+            <param name="instanceToValidate"></param>
+            <returns></returns>
+        </member>
         <member name="T:ServiceStack.FluentValidation.ValidationException">
+            <summary>
+            An exception that represents failed validation
+            </summary>
             <summary>
             An exception that represents failed validation
             </summary>
@@ -4077,9 +4294,19 @@
             Default resource provider
             </summary>
         </member>
+        <member name="P:ServiceStack.FluentValidation.ValidatorOptions.LanguageManager">
+            <summary>
+            Default language manager 
+            </summary>
+        </member>
         <member name="P:ServiceStack.FluentValidation.ValidatorOptions.ValidatorSelectors">
             <summary>
             Customizations of validator selector
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.ValidatorOptions.MessageFormatterFactory">
+            <summary>
+            Specifies a factory for creating MessageFormatter instances.
             </summary>
         </member>
         <member name="P:ServiceStack.FluentValidation.ValidatorOptions.PropertyNameResolver">
@@ -4090,6 +4317,11 @@
         <member name="P:ServiceStack.FluentValidation.ValidatorOptions.DisplayNameResolver">
             <summary>
             Pluggable logic for resolving display names
+            </summary>
+        </member>
+        <member name="P:ServiceStack.FluentValidation.ValidatorOptions.DisableAccessorCache">
+            <summary>
+            Disables the expression accessor cache. Not recommended.
             </summary>
         </member>
         <member name="T:ServiceStack.FluentValidation.ValidatorSelectorOptions">
@@ -4117,20 +4349,18 @@
             Base class for all comparison validators
             </summary>
         </member>
-        <member name="M:ServiceStack.FluentValidation.Validators.AbstractComparisonValidator.#ctor(System.IComparable,System.String,System.Type)">
+        <member name="M:ServiceStack.FluentValidation.Validators.AbstractComparisonValidator.#ctor(System.IComparable,ServiceStack.FluentValidation.Resources.IStringSource)">
             <summary>
             </summary>
             <param name="value"></param>
-            <param name="resourceName"></param>
-            <param name="resourceType"></param>
+            <param name="errorSource"></param>
         </member>
-        <member name="M:ServiceStack.FluentValidation.Validators.AbstractComparisonValidator.#ctor(System.Func{System.Object,System.Object},System.Reflection.MemberInfo,System.String,System.Type)">
+        <member name="M:ServiceStack.FluentValidation.Validators.AbstractComparisonValidator.#ctor(System.Func{System.Object,System.Object},System.Reflection.MemberInfo,ServiceStack.FluentValidation.Resources.IStringSource)">
             <summary>
             </summary>
             <param name="valueToCompareFunc"></param>
             <param name="member"></param>
-            <param name="resourceName"></param>
-            <param name="resourceType"></param>
+            <param name="errorSource"></param>
         </member>
         <member name="M:ServiceStack.FluentValidation.Validators.AbstractComparisonValidator.IsValid(ServiceStack.FluentValidation.Validators.PropertyValidatorContext)">
             <summary>
@@ -4206,6 +4436,54 @@
             Ensures that the property value is a valid credit card number.
             </summary>
         </member>
+        <member name="T:ServiceStack.FluentValidation.Validators.CustomValidator`1">
+            <summary>
+            Custom validator that allows for manual/direct creation of ValidationFailure instances. 
+            </summary>
+            <typeparam name="T"></typeparam>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomValidator`1.#ctor(System.Action{`0,ServiceStack.FluentValidation.Validators.CustomContext})">
+            <summary>
+            Creates a new instance of the CustomValidator
+            </summary>
+            <param name="action"></param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomValidator`1.#ctor(System.Func{`0,ServiceStack.FluentValidation.Validators.CustomContext,System.Threading.CancellationToken,System.Threading.Tasks.Task})">
+            <summary>
+            Creates a new isntance of the CutomValidator.
+            </summary>
+            <param name="asyncAction"></param>
+        </member>
+        <member name="T:ServiceStack.FluentValidation.Validators.CustomContext">
+            <summary>
+            Custom validation context
+            </summary>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomContext.#ctor(ServiceStack.FluentValidation.Validators.PropertyValidatorContext)">
+            <summary>
+            Creates a new CustomContext
+            </summary>
+            <param name="context">The parent PropertyValidatorContext that represents this execution</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomContext.AddFailure(System.String,System.String)">
+            <summary>
+            Adds a new validation failure. 
+            </summary>
+            <param name="propertyName">The property name</param>
+            <param name="errorMessage">The error mesage</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomContext.AddFailure(System.String)">
+            <summary>
+            Adds a new validation failure (the property name is inferred) 
+            </summary>
+            <param name="errorMessage">The error message</param>
+        </member>
+        <member name="M:ServiceStack.FluentValidation.Validators.CustomContext.AddFailure(ServiceStack.FluentValidation.Results.ValidationFailure)">
+            <summary>
+            Adss a new validation failure
+            </summary>
+            <param name="failure">The failure to add</param>
+        </member>
         <member name="T:ServiceStack.FluentValidation.Validators.IPropertyValidator">
             <summary>
             A custom property validator.
@@ -4213,16 +4491,9 @@
             Please inherit from <see cref="T:ServiceStack.FluentValidation.Validators.PropertyValidator">PropertyValidator</see> instead.
             </summary>
         </member>
-        <member name="P:ServiceStack.FluentValidation.Validators.IPropertyValidator.CustomMessageFormatArguments">
-            <summary>
-            Custom message arguments.
-            Arg 1: Instance being validated
-            Arg 2: Property value
-            </summary>
-        </member>
         <member name="M:ServiceStack.FluentValidation.Validators.PropertyValidator.PrepareMessageFormatterForValidationError(ServiceStack.FluentValidation.Validators.PropertyValidatorContext)">
             <summary>
-            Prepares the <see cref="!:MessageFormatter"/> of <paramref name="context"/> for an upcoming <see cref="T:ServiceStack.FluentValidation.Results.ValidationFailure"/>.
+            Prepares the <see cref="T:ServiceStack.FluentValidation.Internal.MessageFormatter"/> of <paramref name="context"/> for an upcoming <see cref="T:ServiceStack.FluentValidation.Results.ValidationFailure"/>.
             </summary>
             <param name="context">The validator context</param>
         </member>
@@ -4234,21 +4505,32 @@
             <returns>Returns an error validation result.</returns>
         </member>
         <member name="T:ServiceStack.FluentValidation.Validators.ScalePrecisionValidator">
-             <summary>
-             Allows a decimal to be validated for scale and precision.
-             Scale would be the number of digits to the right of the decimal point.
-             Precision would be the number of digits.
-            
-             It can be configured to use the effective scale and precision
-             (i.e. ignore trailing zeros) if required.
-            
-             123.4500 has an scale of 4 and a precision of 7, but an effective scale
-             and precision of 2 and 5 respectively.
-             </summary>
-        </member>
-        <member name="M:ServiceStack.Formats.MarkdownFormat.SerializeToStreamAsync(ServiceStack.Web.IRequest,System.Object,System.IO.Stream)">
             <summary>
-            Render Markdown for text/markdown and text/plain ContentTypes
+            Allows a decimal to be validated for scale and precision.  
+            Scale would be the number of digits to the right of the decimal point.  
+            Precision would be the number of digits.  
+            
+            It can be configured to use the effective scale and precision 
+            (i.e. ignore trailing zeros) if required.
+            
+            123.4500 has an scale of 4 and a precision of 7, but an effective scale
+            and precision of 2 and 5 respectively.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.HostConfig.UseSaltedHash">
+            <summary>
+            If enabled reverts to persist password hashes using the original SHA256 SaltedHash implementation. 
+            By default ServiceStack uses the more secure ASP.NET Identity v3 PBKDF2 with HMAC-SHA256 implementation.
+            
+            New Users will have their passwords persisted with the specified implementation, likewise existing users will have their passwords re-hased
+            to use the current registered IPasswordHasher.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.HostConfig.FallbackPasswordHashers">
+            <summary>
+            Older Password Hashers that were previously used to hash passwords. Failed password matches check to see if the password was hashed with 
+            any of the registered FallbackPasswordHashers, if true the password attempt will succeed and password will get re-hashed with 
+            the current registered IPasswordHasher.
             </summary>
         </member>
         <member name="P:ServiceStack.HostContext.VirtualFiles">
@@ -4337,13 +4619,11 @@
             Provide for quick lookups based on hashes that can be determined from a request url
             </summary>
         </member>
-        <member name="M:ServiceStack.Host.RestPath.IsMatch(System.String,System.String[])">
+        <member name="M:ServiceStack.Host.RestPath.IsMatch(ServiceStack.Web.IHttpRequest)">
             <summary>
             For performance withPathInfoParts should already be a lower case string
             to minimize redundant matching operations.
             </summary>
-            <param name="httpMethod"></param>
-            <param name="withPathInfoParts"></param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.Host.RestPath.IsMatch(System.String,System.String[],System.Int32@)">
@@ -4354,6 +4634,15 @@
             <param name="httpMethod"></param>
             <param name="withPathInfoParts"></param>
             <param name="wildcardMatchCount"></param>
+            <returns></returns>
+        </member>
+        <member name="M:ServiceStack.Host.ServiceController.GetRestPathForRequest(System.String,System.String,ServiceStack.Web.IHttpRequest)">
+            <summary>
+            Get Best Matching Route. 
+            </summary>
+            <param name="httpMethod"></param>
+            <param name="pathInfo"></param>
+            <param name="httpReq">If not null, ensures any Route matches any [Route(Matches)]</param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.Host.ServiceController.ExecuteMessage(ServiceStack.Messaging.IMessage)">
@@ -4390,6 +4679,11 @@
             </summary>
             <param name="type">The type.</param>
             <returns></returns>
+        </member>
+        <member name="T:ServiceStack.HotReloadFeature">
+            <summary>
+            Back-end Service used by /js/hot-fileloader.js to detect file changes in /wwwroot and auto reload page.
+            </summary>
         </member>
         <!-- Badly formed XML comment ignored for member "T:ServiceStack.Html.HtmlCompressor" -->
         <member name="F:ServiceStack.Html.HtmlCompressor.PHP_TAG_PATTERN">
@@ -4561,24 +4855,6 @@
             Returns total size of inline event handlers (<code>onclick</code>, etc)
             
             @return total size of inline event handlers, in bytes
-        </member>
-        <member name="M:ServiceStack.Html.ScopeStorageDictionary.#ctor(System.Collections.Generic.IDictionary{System.Object,System.Object},System.Collections.Generic.IDictionary{System.Object,System.Object})">
-            <summary>
-            Initializes a new instance of the <see cref="T:ServiceStack.Html.ScopeStorageDictionary"/> class.
-            </summary>
-            <param name="baseScope">The base scope.</param>
-            <param name="backingStore">
-            The dictionary to use as a storage. Since the dictionary would be used as-is, we expect the implementer to 
-            use the same key-value comparison logic as we do here.
-            </param>
-        </member>
-        <member name="T:ServiceStack.Html.ScopeStorageComparer">
-            <summary>
-            Custom comparer for the context dictionaries
-            The comparer treats strings as a special case, performing case insesitive comparison. 
-            This guaratees that we remain consistent throughout the chain of contexts since PageData dictionary 
-            behaves in this manner.
-            </summary>
         </member>
         <member name="M:ServiceStack.HttpExtensions.EndRequest(ServiceStack.Web.IResponse,System.Boolean)">
             <summary>
@@ -4972,6 +5248,12 @@
             The AppHost AppSettings. Defaults to App or Web.config appSettings.
             </summary>
         </member>
+        <member name="M:ServiceStack.IAppHost.GetRuntimeConfig``1(ServiceStack.Web.IRequest,System.String,``0)">
+            <summary>
+            Allow specific configuration to be overridden at runtime in multi-tenancy Applications
+            by overriding GetRuntimeConfig in your AppHost
+            </summary>
+        </member>
         <member name="M:ServiceStack.IAppHost.RegisterService(System.Type,System.String[])">
             <summary>
             Register an Adhoc web service on Startup
@@ -5077,83 +5359,6 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.ViewEngine">
-            <summary>
-            Reference to MarkdownViewEngine
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.AppHost">
-            <summary>
-            The AppHost so you can access configuration and resolve dependencies, etc.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.MarkdownPage">
-            <summary>
-            This precompiled Markdown page with Metadata
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Html">
-            <summary>
-            ASP.NET MVC's HtmlHelper
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.ScopeArgs">
-            <summary>
-            All variables passed to and created by your page. 
-            The Response DTO is stored and accessible via the 'Model' variable.
-             
-            All variables and outputs created are stored in ScopeArgs which is what's available
-            to your website template. The Generated page is stored in the 'Body' variable.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.RenderHtml">
-            <summary>
-            Whether HTML or Markdown output is requested
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Markdown.MarkdownViewBase.Model">
-            <summary>
-            The Response DTO
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.GetHtmlHelper">
-            <summary>
-            Ensure the same instance is used for subclasses
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.InitHelpers">
-            <summary>
-            Called before page is executed
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.OnLoad">
-            <summary>
-            Called after page is executed but before it's merged with the 
-            website template if any.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Raw(System.String)">
-            <summary>
-            Don't HTML encode safe output
-            </summary>
-            <param name="content"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Partial(System.String,System.Object)">
-            <summary>
-            Return the output of a different view with the specified name 
-            using the supplied model
-            </summary>
-            <param name="viewName"></param>
-            <param name="model"></param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Markdown.MarkdownViewBase.Get``1">
-            <summary>
-            Resolve registered Assemblies
-            </summary>
-            <returns></returns>
-        </member>
         <member name="T:ServiceStack.Messaging.IMessageHandlerFactory">
             <summary>
             Encapsulates creating a new message handler
@@ -5170,151 +5375,6 @@
             <summary>
             Changes the links for the servicestack/metadata page
             </summary>
-        </member>
-        <member name="T:ServiceStack.MiniProfiler.Helpers.ExtensionMethods">
-            <summary>
-            Common extension methods to use only in this project
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.IsNullOrWhiteSpace(System.String)">
-            <summary>
-            Answers true if this String is either null or empty.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.HasValue(System.String)">
-            <summary>
-            Answers true if this String is neither null or empty.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.EnsureTrailingSlash(System.String)">
-            <summary>
-            Removes trailing / characters from a path and leaves just one
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.RemoveLeadingSlash(System.String)">
-            <summary>
-            Removes any leading / characters from a path
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.RemoveTrailingSlash(System.String)">
-            <summary>
-            Removes any leading / characters from a path
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Helpers.ExtensionMethods.ToJson(System.Object)">
-            <summary>
-            Serializes <paramref name="o"/> to a json string.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.MiniProfiler.SqlTimingParameter">
-            <summary>
-            Information about a DbParameter used in the sql statement profiled by SqlTiming.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.SqlTimingParameter.ParentSqlTimingId">
-            <summary>
-            Which SqlTiming this Parameter was executed with.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.SqlTimingParameter.Name">
-            <summary>
-            Parameter name, e.g. "@routeName"
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.SqlTimingParameter.Value">
-            <summary>
-            The value submitted to the database.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.SqlTimingParameter.DbType">
-            <summary>
-            System.Data.DbType, e.g. "String", "Bit"
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.SqlTimingParameter.Size">
-            <summary>
-            How large the type is, e.g. for string, size could be 4000
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.SqlTimingParameter.Equals(System.Object)">
-            <summary>
-            Returns true if this has the same parent <see cref="!:SqlTiming.Id"/>, <see cref="P:ServiceStack.MiniProfiler.SqlTimingParameter.Name"/> and <see cref="P:ServiceStack.MiniProfiler.SqlTimingParameter.Value"/> as <paramref name="obj"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.SqlTimingParameter.GetHashCode">
-            <summary>
-            Returns the XOR of certain properties.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase">
-            <summary>
-            Understands how to save MiniProfiler results to a MSSQL database, allowing more permanent storage and
-            querying of slow results.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.ConnectionString">
-            <summary>
-            How we connect to the database used to save/load MiniProfiler results.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.#ctor(System.String)">
-            <summary>
-            Returns a new SqlServerDatabaseStorage object that will insert into the database identified by connectionString.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.Save(ServiceStack.MiniProfiler.Profiler)">
-            <summary>
-            Saves 'profiler' to a database under its <see cref="!:Profiler.Id"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.Load(System.Guid)">
-            <summary>
-            Returns the MiniProfiler identified by 'id' from the database or null when no MiniProfiler exists under that 'id'.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.GetUnviewedIds(System.String)">
-            <summary>
-            Returns a list of <see cref="!:Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
-            </summary>
-            <param name="user">User identified by the current <see cref="!:Profiler.Settings.UserProvider"/>.</param>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.GetConnection">
-            <summary>
-            Returns a DbConnection for your specific provider.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.DatabaseStorageBase.GetOpenConnection">
-            <summary>
-            Returns a DbConnection already opened for execution.
-            </summary>
-        </member>
-        <member name="T:ServiceStack.MiniProfiler.Storage.IStorage">
-            <summary>
-            Provides saving and loading <see cref="T:ServiceStack.MiniProfiler.Profiler"/>s to a storage medium.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.IStorage.Save(ServiceStack.MiniProfiler.Profiler)">
-            <summary>
-            Stores <paramref name="profiler"/> under its <see cref="!:Profiler.Id"/>.
-            </summary>
-            <param name="profiler">The results of a profiling session.</param>
-            <remarks>
-            Should also ensure the profiler is stored as being unviewed by its profiling <see cref="!:Profiler.User"/>.
-            </remarks>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.IStorage.Load(System.Guid)">
-            <summary>
-            Returns a <see cref="T:ServiceStack.MiniProfiler.Profiler"/> from storage based on <paramref name="id"/>, which should map to <see cref="!:Profiler.Id"/>.
-            </summary>
-            <remarks>
-            Should also update that the resulting profiler has been marked as viewed by its profiling <see cref="!:Profiler.User"/>.
-            </remarks>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.IStorage.GetUnviewedIds(System.String)">
-            <summary>
-            Returns a list of <see cref="!:Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
-            </summary>
-            <param name="user">User identified by the current <see cref="!:Profiler.Settings.UserProvider"/>.</param>
         </member>
         <member name="M:ServiceStack.Platform.GetParseMethod(System.Type)">
             <summary>
@@ -5744,11 +5804,6 @@
             (warning, manualy triggering this might lead to unwanted disposing of all request related objects and services.)
             </summary>
         </member>
-        <member name="F:ServiceStack.ServiceExtensions.DefaultCache">
-            <summary>
-            If they don't have an ICacheClient configured use an In Memory one.
-            </summary>
-        </member>
         <member name="M:ServiceStack.ServiceRoutesExtensions.AddFromAssembly(ServiceStack.Web.IServiceRoutes,System.Reflection.Assembly[])">
              <summary>
                  Scans the supplied Assemblies to infer REST paths and HTTP verbs.
@@ -5957,7 +6012,7 @@
         <member name="M:ServiceStack.ServiceStackHost.GetDbConnection(ServiceStack.Web.IRequest)">
             <summary>
             Gets IDbConnection Checks if DbInfo is seat in RequestContext.
-            See multitenancy: https://github.com/ServiceStack/ServiceStack/wiki/Multitenancy
+            See multitenancy: http://docs.servicestack.net/multitenancy
             Called by itself, <see cref="T:ServiceStack.Service"></see> and <see cref="!:ServiceStack.Razor.ViewPageBase"></see>
             </summary>
             <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
@@ -5970,6 +6025,11 @@
             </summary>
             <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
             <returns></returns>
+        </member>
+        <member name="F:ServiceStack.ServiceStackHost.DefaultCache">
+            <summary>
+            If they don't have an ICacheClient configured use an In Memory one.
+            </summary>
         </member>
         <member name="M:ServiceStack.ServiceStackHost.GetCacheClient(ServiceStack.Web.IRequest)">
             <summary>
@@ -6765,352 +6825,6 @@
             <summary>
             Specifies the owner of instances created from this registration. Default 
             owner is <see cref="F:Funq.Owner.Container"/>.
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.AutoHyperlink">
-            <summary>
-            when true, (most) bare plain URLs are auto-hyperlinked  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.AutoNewlines">
-            <summary>
-            when true, RETURN becomes a literal newline  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.EmptyElementSuffix">
-            <summary>
-            use ">" for HTML output, or " />" for XHTML output
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.EncodeProblemUrlCharacters">
-            <summary>
-            when true, problematic URL characters like [, ], (, and so forth will be encoded 
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.LinkEmails">
-            <summary>
-            when false, email addresses will never be auto-linked  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.MarkdownOptions.StrictBoldItalic">
-            <summary>
-            when true, bold and italic require non-word characters on either side  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="T:MarkdownSharp.Markdown">
-            <summary>
-            Markdown is a text-to-HTML conversion tool for web writers. 
-            Markdown allows you to write using an easy-to-read, easy-to-write plain text format, 
-            then convert it to structurally valid XHTML (or HTML).
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.#ctor">
-            <summary>
-            Create a new Markdown instance using default options
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.#ctor(System.Boolean)">
-            <summary>
-            Create a new Markdown instance and optionally load options from a configuration
-            file. There they should be stored in the appSettings section, available options are:
-            
-                Markdown.StrictBoldItalic (true/false)
-                Markdown.EmptyElementSuffix (">" or " />" without the quotes)
-                Markdown.LinkEmails (true/false)
-                Markdown.AutoNewLines (true/false)
-                Markdown.AutoHyperlink (true/false)
-                Markdown.EncodeProblemUrlCharacters (true/false) 
-                
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.#ctor(MarkdownSharp.MarkdownOptions)">
-            <summary>
-            Create a new Markdown instance and set the options from the MarkdownOptions object.
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.EmptyElementSuffix">
-            <summary>
-            use ">" for HTML output, or " />" for XHTML output
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.LinkEmails">
-            <summary>
-            when false, email addresses will never be auto-linked  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.StrictBoldItalic">
-            <summary>
-            when true, bold and italic require non-word characters on either side  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.AutoNewLines">
-            <summary>
-            when true, RETURN becomes a literal newline  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.AutoHyperlink">
-            <summary>
-            when true, (most) bare plain URLs are auto-hyperlinked  
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.EncodeProblemUrlCharacters">
-            <summary>
-            when true, problematic URL characters like [, ], (, and so forth will be encoded 
-            WARNING: this is a significant deviation from the markdown spec
-            </summary>
-        </member>
-        <member name="F:MarkdownSharp.Markdown._nestDepth">
-            <summary>
-            maximum nested depth of [] and () supported by the transform; implementation detail
-            </summary>
-        </member>
-        <member name="F:MarkdownSharp.Markdown._tabWidth">
-            <summary>
-            Tabs are automatically converted to spaces as part of the transform  
-            this constant determines how "wide" those tabs become in spaces  
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.#cctor">
-            <summary>
-            In the static constuctor we'll initialize what stays the same across all transforms.
-            </summary>
-        </member>
-        <member name="P:MarkdownSharp.Markdown.Version">
-            <summary>
-            current version of MarkdownSharp;  
-            see http://code.google.com/p/markdownsharp/ for the latest code or to contribute
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.Transform(System.String)">
-            <summary>
-            Transforms the provided Markdown-formatted text to HTML;  
-            see http://en.wikipedia.org/wiki/Markdown
-            </summary>
-            <remarks>
-            The order in which other subs are called here is
-            essential. Link and image substitutions need to happen before
-            EscapeSpecialChars(), so that any *'s or _'s in the a
-            and img tags get encoded.
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.RunBlockGamut(System.String,System.Boolean)">
-            <summary>
-            Perform transformations that form block-level tags like paragraphs, headers, and list items.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.RunSpanGamut(System.String)">
-            <summary>
-            Perform transformations that occur *within* block-level tags like paragraphs, headers, and list items.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.FormParagraphs(System.String,System.Boolean)">
-            <summary>
-            splits on two or more newlines, to form "paragraphs";    
-            each paragraph is then unhashed (if it is a hash and unhashing isn't turned off) or wrapped in HTML p tag
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.GetNestedBracketsPattern">
-            <summary>
-            Reusable pattern to match balanced [brackets]. See Friedl's 
-            "Mastering Regular Expressions", 2nd Ed., pp. 328-331.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.GetNestedParensPattern">
-            <summary>
-            Reusable pattern to match balanced (parens). See Friedl's 
-            "Mastering Regular Expressions", 2nd Ed., pp. 328-331.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.StripLinkDefinitions(System.String)">
-            <summary>
-            Strips link definitions from text, stores the URLs and titles in hash references.
-            </summary>
-            <remarks>
-            ^[id]: url "optional title"
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.GetBlockPattern">
-            <summary>
-            derived pretty much verbatim from PHP Markdown
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.HashHTMLBlocks(System.String)">
-            <summary>
-            replaces any block-level HTML blocks with hash entries
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.TokenizeHTML(System.String)">
-            <summary>
-            returns an array of HTML tokens comprising the input string. Each token is 
-            either a tag (possibly with nested, tags contained therein, such 
-            as &lt;a href="&lt;MTFoo&gt;"&gt;, or a run of text between tags. Each element of the 
-            array is a two-element array; the first is either 'tag' or 'text'; the second is 
-            the actual value.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoAnchors(System.String)">
-            <summary>
-            Turn Markdown link shortcuts into HTML anchor tags
-            </summary>
-            <remarks>
-            [link text](url "title") 
-            [link text][id] 
-            [id] 
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoImages(System.String)">
-            <summary>
-            Turn Markdown image shortcuts into HTML img tags. 
-            </summary>
-            <remarks>
-            ![alt text][id]
-            ![alt text](url "optional title")
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoHeaders(System.String)">
-            <summary>
-            Turn Markdown headers into HTML header tags
-            </summary>
-            <remarks>
-            Header 1  
-            ========  
-            
-            Header 2  
-            --------  
-            
-            # Header 1  
-            ## Header 2  
-            ## Header 2 with closing hashes ##  
-            ...  
-            ###### Header 6  
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoHorizontalRules(System.String)">
-            <summary>
-            Turn Markdown horizontal rules into HTML hr tags
-            </summary>
-            <remarks>
-            ***  
-            * * *  
-            ---
-            - - -
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoLists(System.String)">
-            <summary>
-            Turn Markdown lists into HTML ul and ol and li tags
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.ProcessListItems(System.String,System.String)">
-            <summary>
-            Process the contents of a single ordered or unordered list, splitting it
-            into individual list items.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoCodeBlocks(System.String)">
-            <summary>
-            /// Turn Markdown 4-space indented code into HTML pre code blocks
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoCodeSpans(System.String)">
-            <summary>
-            Turn Markdown `code spans` into HTML code tags
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoItalicsAndBold(System.String)">
-            <summary>
-            Turn Markdown *italics* and **bold** into HTML strong and em tags
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoHardBreaks(System.String)">
-            <summary>
-            Turn markdown line breaks (two space at end of line) into HTML break tags
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoBlockQuotes(System.String)">
-            <summary>
-            Turn Markdown > quoted blocks into HTML blockquote blocks
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.DoAutoLinks(System.String)">
-            <summary>
-            Turn angle-delimited URLs into HTML anchor tags
-            </summary>
-            <remarks>
-            &lt;http://www.example.com&gt;
-            </remarks>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.Outdent(System.String)">
-            <summary>
-            Remove one level of line-leading spaces
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EncodeEmailAddress(System.String)">
-            <summary>
-            encodes email address randomly  
-            roughly 10% raw, 45% hex, 45% dec 
-            note that @ is always encoded and : never is
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EncodeCode(System.String)">
-            <summary>
-            Encode/escape certain Markdown characters inside code blocks and spans where they are literals
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EncodeAmpsAndAngles(System.String)">
-            <summary>
-            Encode any ampersands (that aren't part of an HTML entity) and left or right angle brackets
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EscapeBackslashes(System.String)">
-            <summary>
-            Encodes any escaped characters such as \`, \*, \[ etc
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.Unescape(System.String)">
-            <summary>
-            swap back in all the special characters we've hidden
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EscapeBoldItalic(System.String)">
-            <summary>
-            escapes Bold [ * ] and Italic [ _ ] characters
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EncodeProblemUrlChars(System.String)">
-            <summary>
-            hex-encodes some unusual "problem" chars in URLs to avoid URL detection problems 
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.EscapeSpecialCharsWithinTagAttributes(System.String)">
-            <summary>
-            Within tags -- meaning between &lt; and &gt; -- encode [\ ` * _] so they 
-            don't conflict with their use in Markdown for code, italics and strong. 
-            We're replacing each such character with its corresponding hash 
-            value; this is likely overkill, but it should prevent us from colliding 
-            with the escape values by accident.
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.Normalize(System.String)">
-            <summary>
-            convert all tabs to _tabWidth spaces; 
-            standardizes line endings from DOS (CR LF) or Mac (CR) to UNIX (LF); 
-            makes sure text ends with a couple of newlines; 
-            removes any blank lines (only spaces) in the text
-            </summary>
-        </member>
-        <member name="M:MarkdownSharp.Markdown.RepeatString(System.String,System.Int32)">
-            <summary>
-            this is to emulate what's evailable in PHP
             </summary>
         </member>
     </members>

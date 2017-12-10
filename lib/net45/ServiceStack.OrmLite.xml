@@ -2199,6 +2199,11 @@
             Clear InsertFields list ( all fields will be inserted)
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.ToMergedParamsSelectStatement">
+            <summary>
+            Merge params into an encapsulated SQL Statement with embedded param values
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.IsBooleanComparison(System.Linq.Expressions.Expression)">
             <summary>
             Determines whether the expression is the parameter inside MemberExpression which should be compared with TrueExpression.
@@ -2283,6 +2288,11 @@
         <member name="T:ServiceStack.OrmLite.NativeValueOrmLiteConverter">
             <summary>
             For Types that are natively supported by RDBMS's and shouldn't be quoted
+            </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.IOrmLiteDialectProvider.OnOpenConnection">
+            <summary>
+            Invoked when a DB Connection is opened
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.GetConverter(System.Type)">
@@ -2700,7 +2710,22 @@
             Alias for OpenDbConnection
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.OpenAsync(ServiceStack.Data.IDbConnectionFactory,System.Threading.CancellationToken)">
+            <summary>
+            Alias for OpenDbConnectionAsync
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.Open(ServiceStack.Data.IDbConnectionFactory,System.String)">
+            <summary>
+            Alias for OpenDbConnection
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.OpenDbConnection(ServiceStack.Data.IDbConnectionFactory,System.String)">
+            <summary>
+            Alias for OpenDbConnection
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.OpenDbConnectionString(ServiceStack.Data.IDbConnectionFactory,System.String)">
             <summary>
             Alias for OpenDbConnection
             </summary>

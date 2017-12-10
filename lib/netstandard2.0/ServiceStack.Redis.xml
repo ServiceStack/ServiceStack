@@ -495,6 +495,11 @@
             reset buffer index in send buffer
             </summary>
         </member>
+        <member name="P:ServiceStack.Redis.RedisPubSubServer.OnMessage">
+            <summary>
+            Callback fired on each message received, handle with (channel, msg) => ... 
+            </summary>
+        </member>
         <member name="P:ServiceStack.Redis.RedisSentinel.RedisManagerFactory">
             <summary>
             Change to use a different IRedisClientsManager 

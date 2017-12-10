@@ -301,45 +301,5 @@
             processed after which time it will shutdown all processing until Start() is called again.
             </summary>
         </member>
-        <member name="T:ServiceStack.MiniProfiler.Storage.SqlServerStorage">
-            <summary>
-            Understands how to store a <see cref="T:ServiceStack.MiniProfiler.Profiler"/> to a MSSQL database.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.#ctor(System.String)">
-            <summary>
-            Returns a new <see cref="T:ServiceStack.MiniProfiler.Storage.SqlServerStorage"/>.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.Save(ServiceStack.MiniProfiler.Profiler)">
-            <summary>
-            Stores <param name="profiler"/> to dbo.MiniProfilers under its <see cref="P:ServiceStack.MiniProfiler.Profiler.Id"/>; 
-            stores all child Timings and SqlTimings to their respective tables.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.Load(System.Guid)">
-            <summary>
-            Loads the MiniProfiler identifed by 'id' from the database.
-            </summary>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.GetUnviewedIds(System.String)">
-            <summary>
-            Returns a list of <see cref="P:ServiceStack.MiniProfiler.Profiler.Id"/>s that haven't been seen by <paramref name="user"/>.
-            </summary>
-            <param name="user">User identified by the current <see cref="!:Profiler.Settings.UserProvider"/>.</param>
-        </member>
-        <member name="M:ServiceStack.MiniProfiler.Storage.SqlServerStorage.GetConnection">
-            <summary>
-            Returns a connection to Sql Server.
-            </summary>
-        </member>
-        <member name="F:ServiceStack.MiniProfiler.Storage.SqlServerStorage.TableCreationScript">
-            <summary>
-            Creates needed tables. Run this once on your database.
-            </summary>
-            <remarks>
-            Works in sql server and sqlite (with documented removals).
-            </remarks>
-        </member>
     </members>
 </doc>
