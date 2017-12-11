@@ -98,19 +98,16 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\NLog.4.4.4\lib\net45\NLog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\src\packages\NLog.4.4.12\lib\net45\NLog.dll</HintPath>
     </Reference>
-    <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+      <HintPath>..\..\src\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="Rhino.Mocks, Version=3.6.0.0, Culture=neutral, PublicKeyToken=0b3305902db7183f, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\RhinoMocks.3.6.1\lib\net\Rhino.Mocks.dll</HintPath>
     </Reference>
     <Reference Include="Serilog, Version=2.0.0.0, Culture=neutral, PublicKeyToken=24c2f752a8e58a10, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\Serilog.2.4.0\lib\net45\Serilog.dll</HintPath>
-      <Private>True</Private>
+      <HintPath>..\..\src\packages\Serilog.2.6.0\lib\net45\Serilog.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
       <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
@@ -137,7 +134,9 @@
     <Compile Include="UnitTests\NLogTests.cs" />
     <Compile Include="UnitTests\SerilogFactoryTests.cs" />
     <Compile Include="UnitTests\SerilogLoggerTests.cs" />
+    <Compile Include="UnitTests\SlackLogFactoryTests.cs" />
     <Compile Include="UnitTests\UnitTestBase.cs" />
+    <Compile Include="UseCases\UseCaseSlack.cs" />
     <Compile Include="UseCases\UsingSerilog.cs" />
     <Compile Include="UseCases\UsingEntLib5.cs" />
     <Compile Include="UseCases\UsingEventLog.cs" />
@@ -203,6 +202,10 @@
     <ProjectReference Include="..\..\src\ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj">
       <Project>{D13C55F2-2688-41E1-B4D1-6B6609851844}</Project>
       <Name>ServiceStack.Logging.Serilog</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Logging.Slack\ServiceStack.Logging.Slack.csproj">
+      <Project>{11e70c3d-d27a-4370-98d7-fe4f69f3c70a}</Project>
+      <Name>ServiceStack.Logging.Slack</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

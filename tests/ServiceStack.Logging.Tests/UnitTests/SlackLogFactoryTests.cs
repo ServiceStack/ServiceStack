@@ -1,4 +1,6 @@
-﻿using System;
+﻿//Requires ServiceStack deps
+#if FALSE 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -232,3 +234,4 @@ namespace ServiceStack.Logging.Tests.UnitTests
         }
     }
 }
+#endif
