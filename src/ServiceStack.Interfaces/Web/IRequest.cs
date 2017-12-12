@@ -85,17 +85,17 @@ namespace ServiceStack.Web
         Dictionary<string, object> Items { get; }
 
         /// <summary>
-        /// The HTTP Headers in an NameValueCollection
+        /// The HTTP Headers in a NameValueCollection
         /// </summary>
         NameValueCollection Headers { get; }
 
         /// <summary>
-        /// The ?query=string in an NameValueCollection
+        /// The ?query=string in a NameValueCollection
         /// </summary>
         NameValueCollection QueryString { get; }
 
         /// <summary>
-        /// The HTTP POST'ed Form Data in an NameValueCollection
+        /// The HTTP POST'ed Form Data in a NameValueCollection
         /// </summary>
         NameValueCollection FormData { get; }
         /// <summary>
