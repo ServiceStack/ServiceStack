@@ -687,12 +687,12 @@ namespace ServiceStack.Host
                         if (ret == null)
                             ret = (object[])Array.CreateInstance(tResult.GetType(), tasks.Length);
 
-                        ret[i] = await ApplyResponseFiltersAsync(tResult, req);
+                        ret[i] = applyFilters ? await ApplyResponseFiltersAsync(tResult, req) : tResult;
                     }
                     return ret;
                 }
 
-                return await ApplyResponseFiltersAsync(response, req);
+                return applyFilters ? await ApplyResponseFiltersAsync(response, req) : response;
             }
 
             return applyFilters
