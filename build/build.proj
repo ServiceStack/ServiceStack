@@ -19,6 +19,7 @@
 
   <PropertyGroup>
     <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
       BuildSolutions
     </DoBuildSolutionsDependsOn>
   </PropertyGroup>
@@ -32,6 +33,11 @@
   <Target Name="TeamCityBuild">
     <CallTarget Targets="UpdateVersion" />
     <CallTarget Targets="Default" />
+  </Target>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <CallTarget Targets="UpdateVersion" />
   </Target>
 
   <Target Name="BuildSolutions">
@@ -99,12 +105,6 @@
 
       <HttpClientFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/net45/ServiceStack.HttpClient.*"></HttpClientFiles>
       <HttpClientCoreFiles Include="$(SrcDir)/ServiceStack.HttpClient/bin/$(Configuration)/netstandard2.0/ServiceStack.HttpClient.*"></HttpClientCoreFiles>
-
-      <!--<Net45Files Include="$(SrcDir)/ServiceStack.Pcl.Net45/bin/$(Configuration)/net45/ServiceStack.Pcl.Net45.*"></Net45Files>-->
-      <!--<WinStoreFiles Include="$(SrcDir)/ServiceStack.Pcl.WinStore/bin/$(Configuration)/ServiceStack.Pcl.WinStore.*"></WinStoreFiles>-->
-      <!--<AndroidFiles Include="$(SrcDir)/ServiceStack.Pcl.Android/bin/$(Configuration)/ServiceStack.Pcl.Android.*"></AndroidFiles>-->
-      <!--<Ios10Files Include="$(SrcDir)/ServiceStack.Pcl.iOS10/bin/iPhoneSimulator/$(Configuration)/ServiceStack.Pcl.iOS.*"></Ios10Files>-->
-      <!--<MacFiles Include="$(SrcDir)/ServiceStack.Pcl.Mac20/bin/$(Configuration)/ServiceStack.Pcl.Mac20.*"></MacFiles>-->
 
       <CommonFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/net45/ServiceStack.Common.*"></CommonFiles>
       <CommonCoreFiles Include="$(SrcDir)/ServiceStack.Common/bin/$(Configuration)/netstandard2.0/ServiceStack.Common.*"></CommonCoreFiles>
@@ -458,30 +458,6 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0')" />
     <Copy SourceFiles="%(ClientCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Client/lib/netstandard2.0" />
-
-    <!-- NET 4.5 pcl provider -->
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.Net45/ServiceStack.Pcl.Net45.csproj" Properties="Configuration=$(Configuration)"/>-->
-    <!--<Copy SourceFiles="%(Net45Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />-->
-
-    <!-- WinStore pcl provider -->
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.WinStore/ServiceStack.Pcl.WinStore.csproj" Properties="Configuration=$(Configuration)"/>-->
-    <!--<Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />-->
-    <!--<Copy SourceFiles="%(WinStoreFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/win" />-->
-
-    <!-- Android pcl provider -->
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.Android/ServiceStack.Pcl.Android.csproj" Properties="Configuration=$(Configuration)"/>-->
-    <!--<Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />-->
-    <!--<Copy SourceFiles="%(AndroidFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/MonoAndroid" />-->
-
-    <!-- iOS10 pcl provider -->
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.iOS10/ServiceStack.Pcl.iOS10.csproj" Properties="Configuration=$(Configuration)" />-->
-    <!--<Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />-->
-    <!--<Copy SourceFiles="%(Ios10Files.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.iOS10" />-->
-
-    <!-- Mac20 pcl provider -->
-    <!--<MSBuild Projects="../src/ServiceStack.Pcl.Mac20/ServiceStack.Pcl.Mac20.csproj" Properties="Configuration=$(Configuration)" />-->
-    <!--<Copy SourceFiles="%(MacFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/lib/net45" />-->
-    <!--<Copy SourceFiles="%(MacFiles.Identity)" DestinationFolder="$(BuildSolutionDir)/NuGet/ServiceStack.Client/lib/Xamarin.Mac20" />-->
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Client/servicestack.client.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
