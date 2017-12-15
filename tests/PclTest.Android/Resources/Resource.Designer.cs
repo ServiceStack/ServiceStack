@@ -26,8 +26,6 @@ namespace PclTest.Android
 		
 		public static void UpdateIdValues()
 		{
-			global::ServiceStack.Pcl.Android.Resource.String.ApplicationName = global::PclTest.Android.Resource.String.ApplicationName;
-			global::ServiceStack.Pcl.Android.Resource.String.Hello = global::PclTest.Android.Resource.String.Hello;
 		}
 		
 		public partial class Attribute
