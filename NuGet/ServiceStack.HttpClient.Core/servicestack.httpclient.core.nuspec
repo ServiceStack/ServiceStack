@@ -6,7 +6,7 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>.NET's Standard 2.0 version of ServiceStack.HttpClient</summary>
+    <summary>.NET Standard 2.0 version of ServiceStack.HttpClient</summary>
     <description>
       JSON ServiceClient implementation based on .NET's HttpClient
     </description>

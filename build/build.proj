@@ -385,6 +385,13 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.MsgPack/servicestack.msgpack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.MsgPack.Core -->
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(MsgPackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.MsgPack.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.MsgPack.Core/servicestack.msgpack.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.ProtoBuf -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.ProtoBuf/ServiceStack.ProtoBuf.csproj"
@@ -399,6 +406,13 @@
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf/servicestack.protobuf.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
+
+    <!-- ServiceStack.ProtoBuf.Core -->
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(ProtoBufCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.ProtoBuf.Core/servicestack.protobuf.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Wire -->
 
