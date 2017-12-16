@@ -171,9 +171,19 @@ namespace ServiceStack
         List<HandleServiceExceptionDelegate> ServiceExceptionHandlers { get; }
 
         /// <summary>
+        /// Provide an exception handler for unhandled exceptions (Async)
+        /// </summary>
+        List<HandleServiceExceptionAsyncDelegate> ServiceExceptionHandlersAsync { get; }
+
+        /// <summary>
         /// Provide an exception handler for un-caught exceptions
         /// </summary>
         List<HandleUncaughtExceptionDelegate> UncaughtExceptionHandlers { get; }
+
+        /// <summary>
+        /// Provide an exception handler for un-caught exceptions (Async)
+        /// </summary>
+        List<HandleUncaughtExceptionAsyncDelegate> UncaughtExceptionHandlersAsync { get; }
 
         /// <summary>
         /// Provide callbacks to be fired after the AppHost has finished initializing

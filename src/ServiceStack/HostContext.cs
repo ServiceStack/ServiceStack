@@ -212,24 +212,24 @@ namespace ServiceStack
             return null;
         }
 
-        public static object RaiseServiceException(IRequest httpReq, object request, Exception ex)
+        public static Task<object> RaiseServiceException(IRequest httpReq, object request, Exception ex)
         {
             return AssertAppHost().OnServiceException(httpReq, request, ex);
         }
 
-        public static void RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static Task RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            return AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-        public static void RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static async Task RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
 
             if (httpRes.IsClosed)
                 return;
 
-            AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
 #if !NETSTANDARD2_0

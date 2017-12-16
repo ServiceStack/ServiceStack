@@ -28,8 +28,8 @@ namespace ServiceStack.Host
 
         public string ContentType
         {
-            get { return requestContext.ResponseContentType; }
-            set { requestContext.ResponseContentType = value; }
+            get => requestContext.ResponseContentType;
+            set => requestContext.ResponseContentType = value;
         }
 
         public void AddHeader(string name, string value)

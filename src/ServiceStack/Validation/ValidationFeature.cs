@@ -22,15 +22,13 @@ namespace ServiceStack.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
-            if (!appHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (!appHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
             {
-                appHost.GlobalRequestFilters.Add(ValidationFilters.RequestFilter);
                 appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
             }
 
-            if (!appHost.GlobalMessageRequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (!appHost.GlobalMessageRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
             {
-                appHost.GlobalMessageRequestFilters.Add(ValidationFilters.RequestFilter);
                 appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
             }
 

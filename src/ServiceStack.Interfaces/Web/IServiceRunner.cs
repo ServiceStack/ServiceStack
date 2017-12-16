@@ -13,7 +13,11 @@ namespace ServiceStack.Web
     {
         void OnBeforeExecute(IRequest req, TRequest request);
         object OnAfterExecute(IRequest req, object response);
+
+        [Obsolete("Implement HandleExceptionAsync")]
         object HandleException(IRequest request, TRequest requestDto, Exception ex);
+
+        Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex);
 
         [Obsolete("Implement ExecuteAsync")]
         object Execute(IRequest req, object instance, TRequest requestDto);

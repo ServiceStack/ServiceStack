@@ -107,7 +107,7 @@ namespace ServiceStack.Auth
                 var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
                 registerNewUser = existingUser == null;
 
-                if (!HostContext.AppHost.GlobalRequestFiltersArray.Contains(ValidationFilters.RequestFilter)) //Already gets run
+                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
                 {
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
@@ -201,7 +201,7 @@ namespace ServiceStack.Auth
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
-            if (!HostContext.AppHost.GlobalRequestFiltersArray.Contains(ValidationFilters.RequestFilter)) //Already gets run
+            if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
             {
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }

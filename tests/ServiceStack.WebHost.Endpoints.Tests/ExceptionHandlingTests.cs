@@ -243,10 +243,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 base.OnExceptionTypeFilter(ex, responseStatus);
             }
 
-            public override void OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+            public override Task OnUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
             {
                 "In OnUncaughtException...".Print();
-                base.OnUncaughtException(httpReq, httpRes, operationName, ex);
+                return base.OnUncaughtException(httpReq, httpRes, operationName, ex);
             }
         }
 

@@ -160,9 +160,9 @@ namespace ServiceStack.Host.Handlers
             catch (Exception ex)
             {
                 if (httpReq.Dto != null)
-                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex);
+                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).Wait();
                 else
-                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex);
+                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
 
                 throw new SerializationException("3) Error trying to deserialize requestType: "
                     + requestType

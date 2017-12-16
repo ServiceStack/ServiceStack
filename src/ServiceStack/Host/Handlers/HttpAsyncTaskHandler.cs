@@ -165,22 +165,21 @@ namespace ServiceStack.Host.Handlers
 
         public virtual bool IsReusable => false;
 
-        protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        protected async Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             var errorMessage = $"Error occured while Processing Request: {ex.Message}";
             HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
 
             try
             {
-                HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
-                return TypeConstants.EmptyTask;
+                await HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
             }
             catch (Exception writeErrorEx)
             {
                 //Exception in writing to response should not hide the original exception
                 Log.Info("Failed to write error to response: {0}", writeErrorEx);
                 //rethrow the original exception
-                return ex.AsTaskException();
+                throw ex;
             }
             finally
             {

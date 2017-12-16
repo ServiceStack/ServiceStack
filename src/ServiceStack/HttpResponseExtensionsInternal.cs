@@ -325,7 +325,8 @@ namespace ServiceStack
                         await response.OutputStream.FlushAsync(token); // Prevent hanging clients
                     }
 
-                    return await HandleResponseWriteException(originalEx, request, response, defaultContentType);
+                    await HandleResponseWriteException(originalEx, request, response, defaultContentType);
+                    return true;
                 }
                 finally
                 {
@@ -335,12 +336,12 @@ namespace ServiceStack
             }
         }
 
-        internal static Task<bool> HandleResponseWriteException(this Exception originalEx, IRequest request, IResponse response, string defaultContentType)
+        internal static async Task HandleResponseWriteException(this Exception originalEx, IRequest request, IResponse response, string defaultContentType)
         {
-            HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
+            await HostContext.RaiseAndHandleUncaughtException(request, response, request.OperationName, originalEx);
 
             if (!HostContext.Config.WriteErrorsToResponse)
-                return originalEx.AsTaskException<bool>();
+                throw originalEx;
 
             var errorMessage = $"Error occured while Processing Request: [{originalEx.GetType().GetOperationName()}] {originalEx.Message}";
 
@@ -348,23 +349,21 @@ namespace ServiceStack
             {
                 if (!response.IsClosed)
                 {
-                    return response.WriteErrorToResponse(
+                    await response.WriteErrorToResponse(
                         request,
                         defaultContentType ?? request.ResponseContentType,
                         request.OperationName,
                         errorMessage,
                         originalEx,
-                        (int) HttpStatusCode.InternalServerError)
-                    .ContinueWith(x => true);
+                        (int) HttpStatusCode.InternalServerError);
                 }
             }
             catch (Exception writeErrorEx)
             {
                 //Exception in writing to response should not hide the original exception
                 Log.Info("Failed to write error to response: {0}", writeErrorEx);
-                return originalEx.AsTaskException<bool>();
+                throw originalEx;
             }
-            return TypeConstants.TrueTask;
         }
 
         public static async Task WriteBytesToResponse(this IResponse res, byte[] responseBytes, string contentType, CancellationToken token = default(CancellationToken))
@@ -461,7 +460,7 @@ namespace ServiceStack
 
             httpRes.ApplyGlobalResponseHeaders();
 
-            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
                 await serializer(httpReq, errorDto, httpRes.OutputStream);
 
