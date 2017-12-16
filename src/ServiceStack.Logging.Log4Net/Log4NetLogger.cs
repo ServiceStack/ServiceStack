@@ -7,11 +7,11 @@ namespace ServiceStack.Logging.Log4Net
     /// </summary>
 	public class Log4NetLogger : ILogWithContext
     {
-        private readonly log4net.ILog _log;
+        private readonly log4net.ILog log;
 
         public Log4NetLogger(string typeName)
         {
-            _log = log4net.LogManager.GetLogger(typeName);
+            log = log4net.LogManager.GetLogger(typeName);
         }
 
         /// <summary>
@@ -20,10 +20,10 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="type">The type.</param>
         public Log4NetLogger(Type type)
         {
-            _log = log4net.LogManager.GetLogger(type);
+            log = log4net.LogManager.GetLogger(type);
         }
 
-        public bool IsDebugEnabled { get { return _log.IsDebugEnabled; } }
+        public bool IsDebugEnabled => log.IsDebugEnabled;
 
         /// <summary>
         /// Logs a Debug message.
@@ -31,8 +31,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="message">The message.</param>
         public void Debug(object message)
         {
-            if (_log.IsDebugEnabled)
-                _log.Debug(message);
+            if (log.IsDebugEnabled)
+                log.Debug(message);
         }
 
         /// <summary>
@@ -42,8 +42,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="exception">The exception.</param>
         public void Debug(object message, Exception exception)
         {
-            if (_log.IsDebugEnabled)
-                _log.Debug(message, exception);
+            if (log.IsDebugEnabled)
+                log.Debug(message, exception);
         }
 
         /// <summary>
@@ -54,8 +54,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void Debug(Exception exception, string format, params object[] args)
         {
-            if (_log.IsDebugEnabled)
-                _log.Debug(string.Format(format, args), exception);
+            if (log.IsDebugEnabled)
+                log.Debug(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void DebugFormat(string format, params object[] args)
         {
-            if (_log.IsDebugEnabled)
-                _log.DebugFormat(format, args);
+            if (log.IsDebugEnabled)
+                log.DebugFormat(format, args);
         }
 
         /// <summary>
@@ -75,8 +75,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="message">The message.</param>
         public void Error(object message)
         {
-            if (_log.IsErrorEnabled)
-                _log.Error(message);
+            if (log.IsErrorEnabled)
+                log.Error(message);
         }
 
         /// <summary>
@@ -86,8 +86,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="exception">The exception.</param>
         public void Error(object message, Exception exception)
         {
-            if (_log.IsErrorEnabled)
-                _log.Error(message, exception);
+            if (log.IsErrorEnabled)
+                log.Error(message, exception);
         }
 
         /// <summary>
@@ -98,8 +98,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void Error(Exception exception, string format, params object[] args)
         {
-            if (_log.IsErrorEnabled)
-                _log.Error(string.Format(format, args), exception);
+            if (log.IsErrorEnabled)
+                log.Error(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -109,8 +109,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void ErrorFormat(string format, params object[] args)
         {
-            if (_log.IsErrorEnabled)
-                _log.ErrorFormat(format, args);
+            if (log.IsErrorEnabled)
+                log.ErrorFormat(format, args);
         }
 
         /// <summary>
@@ -119,8 +119,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="message">The message.</param>
         public void Fatal(object message)
         {
-            if (_log.IsFatalEnabled)
-                _log.Fatal(message);
+            if (log.IsFatalEnabled)
+                log.Fatal(message);
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="exception">The exception.</param>
         public void Fatal(object message, Exception exception)
         {
-            if (_log.IsFatalEnabled)
-                _log.Fatal(message, exception);
+            if (log.IsFatalEnabled)
+                log.Fatal(message, exception);
         }
 
         /// <summary>
@@ -142,8 +142,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void Fatal(Exception exception, string format, params object[] args)
         {
-            if (_log.IsFatalEnabled)
-                _log.Fatal(string.Format(format, args), exception);
+            if (log.IsFatalEnabled)
+                log.Fatal(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -153,8 +153,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void FatalFormat(string format, params object[] args)
         {
-            if (_log.IsFatalEnabled)
-                _log.FatalFormat(format, args);
+            if (log.IsFatalEnabled)
+                log.FatalFormat(format, args);
         }
 
         /// <summary>
@@ -163,8 +163,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="message">The message.</param>
         public void Info(object message)
         {
-            if (_log.IsInfoEnabled)
-                _log.Info(message);
+            if (log.IsInfoEnabled)
+                log.Info(message);
         }
 
         /// <summary>
@@ -174,8 +174,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="exception">The exception.</param>
         public void Info(object message, Exception exception)
         {
-            if (_log.IsInfoEnabled)
-                _log.Info(message, exception);
+            if (log.IsInfoEnabled)
+                log.Info(message, exception);
         }
 
         /// <summary>
@@ -186,8 +186,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void Info(Exception exception, string format, params object[] args)
         {
-            if (_log.IsInfoEnabled)
-                _log.Info(string.Format(format, args), exception);
+            if (log.IsInfoEnabled)
+                log.Info(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -197,8 +197,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void InfoFormat(string format, params object[] args)
         {
-            if (_log.IsInfoEnabled)
-                _log.InfoFormat(format, args);
+            if (log.IsInfoEnabled)
+                log.InfoFormat(format, args);
         }
 
         public IDisposable PushProperty(string key, object value)
@@ -213,8 +213,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="message">The message.</param>
         public void Warn(object message)
         {
-            if (_log.IsWarnEnabled)
-                _log.Warn(message);
+            if (log.IsWarnEnabled)
+                log.Warn(message);
         }
 
         /// <summary>
@@ -224,8 +224,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="exception">The exception.</param>
         public void Warn(object message, Exception exception)
         {
-            if (_log.IsWarnEnabled)
-                _log.Warn(message, exception);
+            if (log.IsWarnEnabled)
+                log.Warn(message, exception);
         }
 
         /// <summary>
@@ -236,8 +236,8 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void Warn(Exception exception, string format, params object[] args)
         {
-            if (_log.IsWarnEnabled)
-                _log.Warn(string.Format(format, args), exception);
+            if (log.IsWarnEnabled)
+                log.Warn(string.Format(format, args), exception);
         }
 
         /// <summary>
@@ -247,22 +247,22 @@ namespace ServiceStack.Logging.Log4Net
         /// <param name="args">The args.</param>
         public void WarnFormat(string format, params object[] args)
         {
-            if (_log.IsWarnEnabled)
-                _log.WarnFormat(format, args);
+            if (log.IsWarnEnabled)
+                log.WarnFormat(format, args);
         }
 
         private class RemovePropertyOnDispose : IDisposable
         {
-            private readonly string _removeKey;
+            private readonly string removeKey;
 
             public RemovePropertyOnDispose(string removeKey)
             {
-                _removeKey = removeKey;
+                this.removeKey = removeKey;
             }
 
             public void Dispose()
             {
-                log4net.LogicalThreadContext.Properties.Remove(_removeKey);
+                log4net.LogicalThreadContext.Properties.Remove(removeKey);
             }
         }
     }

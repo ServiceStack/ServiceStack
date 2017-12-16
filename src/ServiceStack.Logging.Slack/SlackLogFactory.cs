@@ -11,13 +11,7 @@ namespace ServiceStack.Logging.Slack
         /// <summary>
         /// Slack Incoming Webhook URL.
         /// </summary>
-        public string Url
-        {
-            get
-            {
-                return incomingWebHookUrl;
-            }
-        }
+        public string Url => incomingWebHookUrl;
 
         /// <summary>
         /// Default channel override.
@@ -108,7 +102,7 @@ namespace ServiceStack.Logging.Slack
         public SlackLogFactory(IAppSettings appSettings)
         {
             if (appSettings == null)
-                throw new ArgumentNullException("appSettings");
+                throw new ArgumentNullException(nameof(appSettings));
 
             if(incomingWebHookUrl == null)
                 incomingWebHookUrl = appSettings.GetString(ConfigKeyFmt.Fmt("Url"));

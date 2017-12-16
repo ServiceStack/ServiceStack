@@ -1,5 +1,4 @@
 using Elmah;
-using ServiceStack.Logging;
 using System;
 using System.Web;
 
@@ -23,11 +22,8 @@ namespace ServiceStack.Logging.Elmah
         /// <param name=application"> The application to signal with the errors </param>
         public ElmahInterceptingLogger(ILog log, HttpApplication application)
         {
-            if (null == log) { throw new ArgumentNullException("log"); }
-            if (null == application) { throw new ArgumentNullException("application"); }
-
-            this.log = log;
-            this.application = application;
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
+            this.application = application ?? throw new ArgumentNullException(nameof(application));
         }
 
         public void Debug(object message, Exception exception)
@@ -102,10 +98,7 @@ namespace ServiceStack.Logging.Elmah
             log.InfoFormat(format, args);
         }
 
-        public bool IsDebugEnabled
-        {
-            get { return log.IsDebugEnabled; }
-        }
+        public bool IsDebugEnabled => log.IsDebugEnabled;
 
         public void Warn(object message, Exception exception)
         {

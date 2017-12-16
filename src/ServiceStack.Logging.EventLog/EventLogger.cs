@@ -23,13 +23,11 @@ namespace ServiceStack.Logging.EventLog
         public EventLogger(string eventLogName, string eventLogSource)
         {
             if (string.IsNullOrEmpty(eventLogName))
-            {
-                throw new ArgumentNullException("eventLogName");
-            }
+                throw new ArgumentNullException(nameof(eventLogName));
+
             if (string.IsNullOrEmpty(eventLogSource))
-            {
-                throw new ArgumentNullException("eventLogSource");
-            }
+                throw new ArgumentNullException(nameof(eventLogSource));
+
             this.eventLogName = eventLogName;
             this.eventLogSource = eventLogSource;
         }
@@ -54,7 +52,7 @@ namespace ServiceStack.Logging.EventLog
         /// <param name="eventLogType">Type of the event log.</param>
         private void Write(object message, Exception exeception, EventLogEntryType eventLogType)
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             System.Diagnostics.EventLog eventLogger = new System.Diagnostics.EventLog();
             if (!System.Diagnostics.EventLog.SourceExists(eventLogSource))

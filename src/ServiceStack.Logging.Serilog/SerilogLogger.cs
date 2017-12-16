@@ -12,8 +12,8 @@ namespace ServiceStack.Logging.Serilog
     /// </summary>
     public class SerilogLogger : ILogWithContext
     {
-        private readonly ILogger _log;
-        private static Lazy<Func<string, object, bool, IDisposable>> _pushProperty = new Lazy<Func<string, object, bool, IDisposable>>(GetPushProperty);
+        private readonly ILogger log;
+        private static readonly Lazy<Func<string, object, bool, IDisposable>> pushProperty = new Lazy<Func<string, object, bool, IDisposable>>(GetPushProperty);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SerilogLogger"/> class.
@@ -21,38 +21,38 @@ namespace ServiceStack.Logging.Serilog
         /// <param name="type">The <see cref="Type"/>.</param>
         public SerilogLogger(Type type)
         {
-            _log = Log.ForContext(type);
+            log = Log.ForContext(type);
         }
 
         public SerilogLogger(ILogger log)
         {
-            _log = log;
+            this.log = log;
         }
 
         /// <summary>
         /// Gets a value indicating if Debug messages are enabled.
         /// </summary>
-        public bool IsDebugEnabled => _log.IsEnabled(LogEventLevel.Debug);
+        public bool IsDebugEnabled => log.IsEnabled(LogEventLevel.Debug);
 
         /// <summary>
         /// Gets a value indicating if Info messages are enabled.
         /// </summary>
-        public bool IsInfoEnabled => _log.IsEnabled(LogEventLevel.Information);
+        public bool IsInfoEnabled => log.IsEnabled(LogEventLevel.Information);
 
         /// <summary>
         /// Gets a value indicating if Warning messages are enabled.
         /// </summary>
-        public bool IsWarnEnabled => _log.IsEnabled(LogEventLevel.Warning);
+        public bool IsWarnEnabled => log.IsEnabled(LogEventLevel.Warning);
 
         /// <summary>
         /// Gets a value indicating if Error messages are enabled.
         /// </summary>
-        public bool IsErrorEnabled => _log.IsEnabled(LogEventLevel.Error);
+        public bool IsErrorEnabled => log.IsEnabled(LogEventLevel.Error);
 
         /// <summary>
         /// Gets a value indicating if Fatal messages are enabled.
         /// </summary>
-        public bool IsFatalEnabled => _log.IsEnabled(LogEventLevel.Fatal);
+        public bool IsFatalEnabled => log.IsEnabled(LogEventLevel.Fatal);
 
         /// <summary>
         /// Logs a Debug message.
@@ -241,7 +241,7 @@ namespace ServiceStack.Logging.Serilog
         /// </remarks>
         public IDisposable PushProperty(string key, object value)
         {
-            return _pushProperty.Value(key, value, false);
+            return pushProperty.Value(key, value, false);
         }
 
         private static Func<string, object, bool, IDisposable> GetPushProperty()
@@ -313,68 +313,65 @@ namespace ServiceStack.Logging.Serilog
 
         internal ILog ForContext(string propertyName, object value, bool destructureObjects = false)
         {
-            return new SerilogLogger(_log.ForContext(propertyName, value, destructureObjects));
+            return new SerilogLogger(log.ForContext(propertyName, value, destructureObjects));
         }
 
         internal ILog ForContext(ILogEventEnricher enricher)
         {
-            return new SerilogLogger(_log.ForContext(enricher));
+            return new SerilogLogger(log.ForContext(enricher));
         }
 
         internal ILog ForContext(IEnumerable<ILogEventEnricher> enrichers)
         {
-            return new SerilogLogger(_log.ForContext(enrichers));
+            return new SerilogLogger(log.ForContext(enrichers));
         }
 
         internal ILog ForContext(Type type)
         {
-            return new SerilogLogger(_log.ForContext(type));
+            return new SerilogLogger(log.ForContext(type));
         }
 
         internal ILog ForContext<T>()
         {
-            return new SerilogLogger(_log.ForContext<T>());
+            return new SerilogLogger(log.ForContext<T>());
         }
 
         private void Write(LogEventLevel level, object message)
         {
-            var messageTemplate = message as string;
-            if (messageTemplate != null)
+            if (message is string messageTemplate)
             {
-                _log.Write(level, messageTemplate);
+                log.Write(level, messageTemplate);
                 return;
             }
 
-            var exception = message as Exception;
-            if (exception != null)
+            if (message is Exception exception)
             {
-                _log.Write(level, exception, exception.GetType().Name);
+                log.Write(level, exception, exception.GetType().Name);
                 return;
             }
 
-            _log.Write(level, message.ToString());
+            log.Write(level, message.ToString());
         }
 
         private void Write(LogEventLevel level, object message, Exception exception)
         {
-            var messageTemplate = message as string;
-            if (messageTemplate != null)
+            if (message is string messageTemplate)
             {
-                _log.Write(level, exception, messageTemplate);
+                log.Write(level, exception, messageTemplate);
                 return;
             }
 
-            _log.Write(level, exception, message.ToString());
+            log.Write(level, exception, message.ToString());
         }
 
         private void Write(LogEventLevel level, string format, params object[] args)
         {
-            _log.Write(level, format, args);
+            log.Write(level, format, args);
         }
 
         private void Write(LogEventLevel level, Exception ex, string messageTemplate, params object[] propertyValues)
         {
-            _log.Write(level, ex, messageTemplate, propertyValues);
+            log.Write(level, ex, messageTemplate, propertyValues);
         }
     }
 }

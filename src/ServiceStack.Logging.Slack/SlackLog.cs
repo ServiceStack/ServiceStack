@@ -235,10 +235,7 @@ namespace ServiceStack.Logging.Slack
             Write(string.Format(format, args), exception, WarnChannel);
         }
 
-        public bool IsDebugEnabled
-        {
-            get { return debugEnabled; }
-        }
+        public bool IsDebugEnabled => debugEnabled;
     }
 
     class SlackLoggingData

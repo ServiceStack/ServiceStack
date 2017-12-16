@@ -26,19 +26,19 @@ namespace ServiceStack.Logging.NLogger
 
         public static bool UseFullTypeNames { get; set; }
 
-        public bool IsDebugEnabled { get { return log.IsDebugEnabled; } }
+        public bool IsDebugEnabled => log.IsDebugEnabled;
 
-        public bool IsInfoEnabled { get { return log.IsInfoEnabled; } }
+        public bool IsInfoEnabled => log.IsInfoEnabled;
 
-        public bool IsWarnEnabled { get { return log.IsWarnEnabled; } }
+        public bool IsWarnEnabled => log.IsWarnEnabled;
 
-        public bool IsErrorEnabled { get { return log.IsErrorEnabled; } }
+        public bool IsErrorEnabled => log.IsErrorEnabled;
 
-        public bool IsFatalEnabled { get { return log.IsFatalEnabled; } }
+        public bool IsFatalEnabled => log.IsFatalEnabled;
 
         private static string AsString(object message)
         {
-            return message != null ? message.ToString() : null;
+            return message?.ToString();
         }
 
         /// <summary>
