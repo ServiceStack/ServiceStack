@@ -126,8 +126,12 @@
       <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/net45/ServiceStack.Logging.EventLog.*"></EventLogFiles>
       <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/net45/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
       <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/net45/ServiceStack.Logging.NLog.*"></NLogFiles>
+
       <SerilogFiles Include="$(SrcDir)/ServiceStack.Logging.Serilog/bin/$(Configuration)/net45/ServiceStack.Logging.Serilog.*"></SerilogFiles>
+      <SerilogCoreFiles Include="$(SrcDir)/ServiceStack.Logging.Serilog/bin/$(Configuration)/netstandard2.0/ServiceStack.Logging.Serilog.*"></SerilogCoreFiles>
+
       <SlackFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/net45/ServiceStack.Logging.Slack.*"></SlackFiles>
+      <SlackCoreFiles Include="$(SrcDir)/ServiceStack.Logging.Slack/bin/$(Configuration)/netstandard2.0/ServiceStack.Logging.Slack.*"></SlackCoreFiles>
 
       <ProtoBufFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/net45/ServiceStack.ProtoBuf.*"></ProtoBufFiles>
       <ProtoBufCoreFiles Include="$(SrcDir)/ServiceStack.ProtoBuf/bin/$(Configuration)/netstandard2.0/ServiceStack.ProtoBuf.*"></ProtoBufCoreFiles>
@@ -340,6 +344,9 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45')" />
     <Copy SourceFiles="%(SerilogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/net45" />
 
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(SerilogCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Serilog/lib/netstandard2.0" />
+
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Serilog/servicestack.logging.serilog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
@@ -351,6 +358,9 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net45')" />
     <Copy SourceFiles="%(SlackFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/net45" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(SlackCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Slack/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Slack/servicestack.logging.slack.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
