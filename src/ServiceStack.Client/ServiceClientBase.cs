@@ -1996,11 +1996,17 @@ namespace ServiceStack
         string BaseUri { get; set; }
         string SyncReplyBaseUri { get; }
         string AsyncOneWayBaseUri { get; }
+
+        int Version { get; }
+        string SessionId { get; }
+
         string UserName { get; }
         string Password { get; }
         bool AlwaysSendBasicAuthHeader { get; }
-        int Version { get; }
-        string SessionId { get; }
+
+        string BearerToken { get; set; }
+        string RefreshToken { get; set; }
+        string RefreshTokenUri { get; set; }
 
         string ResolveTypedUrl(string httpMethod, object requestDto);
         string ResolveUrl(string httpMethod, string relativeOrAbsoluteUrl);
