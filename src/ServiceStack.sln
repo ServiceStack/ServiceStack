@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2003
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}"
 EndProject
@@ -25,7 +25,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec = ..\NuGet\ServiceStack.Caching.Memcached\servicestack.caching.memcached.nuspec
 		..\NuGet\ServiceStack.Client.Core\servicestack.client.core.nuspec = ..\NuGet\ServiceStack.Client.Core\servicestack.client.core.nuspec
 		..\NuGet\ServiceStack.Client\servicestack.client.nuspec = ..\NuGet\ServiceStack.Client\servicestack.client.nuspec
+		..\NuGet\ServiceStack.Common.Core\servicestack.common.core.nuspec = ..\NuGet\ServiceStack.Common.Core\servicestack.common.core.nuspec
 		..\NuGet\ServiceStack.Common\servicestack.common.nuspec = ..\NuGet\ServiceStack.Common\servicestack.common.nuspec
+		..\NuGet\ServiceStack.Core\servicestack.core.nuspec = ..\NuGet\ServiceStack.Core\servicestack.core.nuspec
 		..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec = ..\NuGet\ServiceStack.Gap\servicestack.gap.nuspec
 		..\NuGet\ServiceStack.HttpClient.Core\servicestack.httpclient.core.nuspec = ..\NuGet\ServiceStack.HttpClient.Core\servicestack.httpclient.core.nuspec
 		..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec = ..\NuGet\ServiceStack.HttpClient\servicestack.httpclient.nuspec
@@ -49,6 +51,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.RabbitMq\servicestack.rabbitmq.nuspec = ..\NuGet\ServiceStack.RabbitMq\servicestack.rabbitmq.nuspec
 		..\NuGet\ServiceStack.Razor.BuildTask\servicestack.razor.buildtask.nuspec = ..\NuGet\ServiceStack.Razor.BuildTask\servicestack.razor.buildtask.nuspec
 		..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec = ..\NuGet\ServiceStack.Razor\servicestack.razor.nuspec
+		..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec = ..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec
 		..\NuGet\ServiceStack.Server\servicestack.server.nuspec = ..\NuGet\ServiceStack.Server\servicestack.server.nuspec
 		..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec = ..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec
 	EndProjectSection

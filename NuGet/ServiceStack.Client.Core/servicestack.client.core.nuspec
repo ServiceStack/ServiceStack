@@ -6,9 +6,8 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>.NET Standard 2.0 version of ServiceStack.Client</summary>
     <description>
-      JSON, XML, JSV, SOAP and MQ Generic Service Clients.
+      .NET Standard 2.0 version of ServiceStack.Client
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
