@@ -41,6 +41,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Text { get; set; }
     }
 
+    [Route("/bytes-streams/{Text}")]
+    public class BytesAsStreams : IReturn<Stream>
+    {
+        public string Text { get; set; }
+    }
+
     [Route("/streams/{Text}")]
     public class Streams : IReturn<Stream>
     {
@@ -75,9 +81,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Guid(request.Text).ToByteArray();
         }
 
-        public byte[] Any(Streams request)
+        public byte[] Any(BytesAsStreams request)
         {
             return new Guid(request.Text).ToByteArray();
+        }
+
+        public Stream Any(Streams request)
+        {
+            var bytes = new Guid(request.Text).ToByteArray();
+            var ms = new MemoryStream();
+            ms.Write(bytes, 0, bytes.Length);
+            return ms;
         }
 
         public IStreamWriterAsync Any(StreamWriters request)
@@ -248,6 +262,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
+        public void Can_download_BytesAsStreams_response(IRestClient client)
+        {
+            var guid = Guid.NewGuid();
+            Stream response = client.Get(new BytesAsStreams { Text = guid.ToString() });
+            using (response)
+            {
+                var bytes = response.ReadFully();
+                Assert.That(new Guid(bytes), Is.EqualTo(guid));
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
         public void Can_download_Streams_response(IRestClient client)
         {
             var guid = Guid.NewGuid();
@@ -267,7 +293,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             byte[] bytes = null;
             var guid = Guid.NewGuid();
 
-            var stream = await client.GetAsync(new Streams { Text = guid.ToString() });
+            var stream = await client.GetAsync(new BytesAsStreams { Text = guid.ToString() });
 
             bytes = stream.ReadFully();
 
