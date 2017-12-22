@@ -130,6 +130,8 @@ namespace ServiceStack.Caching
         {
             return (cache as ICacheClientExtended)?.GetTimeToLive(key);
         }
+        
+        public string Prefix => prefix;
     }
 
     public static class CacheClientWithPrefixExtensions
