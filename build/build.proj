@@ -206,7 +206,7 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0')" />
     <Copy SourceFiles="%(OpenApiCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/lib/netstandard2.0" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi/servicestack.api.openapi.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Api.OpenApi.Core/servicestack.api.openapi.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
           LogStandardErrorAsError="true" />
 
     <!-- ServiceStack.Authentication.OpenId -->
@@ -592,7 +592,7 @@
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0')" />
     <Copy SourceFiles="%(RabbitMqCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/lib/netstandard2.0" />
 
-    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq/servicestack.rabbitmq.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.RabbitMq.Core/servicestack.rabbitmq.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
           LogStandardErrorAsError="true" />
 
     <!-- ServiceStack -->
