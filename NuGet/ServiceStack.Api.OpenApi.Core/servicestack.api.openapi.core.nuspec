@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Api.OpenApi.Core</id>
+    <title>ServiceStack.Api.OpenApi .NET Standard 2.0</title>
+    <version>5.0.0</version>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
+    <description>
+      .NET Standard 2.0 version of ServiceStack.Api.OpenApi
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>OpenAPI metadata Swagger API REST Docs ServiceStack</tags>
+    <language>en-US</language>
+    <copyright>ServiceStack and contributors</copyright>
+    <dependencies>
+      <group targetFramework=".netstandard2.0">
+        <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
+        <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="[4.3.0, )" />
+        <dependency id="System.Collections.Specialized" version="[4.3.0, )" />
+        <dependency id="ServiceStack.Core" version="5.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.html" target="src" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.js" target="src" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.css" target="src" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.png" target="src" />
+    <file src="..\..\src\ServiceStack.Api.OpenApi\**\*.gif" target="src" />
+  </files>
+</package>
