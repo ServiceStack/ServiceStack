@@ -1803,6 +1803,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_select_partial_list_of_fields_DISTINCT()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("Fields", "DISTINCT Age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.Count, Is.EqualTo(response.Results.Select(x => x.Age).ToHashSet().Count));
+            Assert.That(response.Results.All(x => x.Id == 0));
+            Assert.That(response.Results.All(x => x.FirstName == null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
+        }
+
+        [Test]
         public void Can_select_partial_list_of_fields_case_insensitive()
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
