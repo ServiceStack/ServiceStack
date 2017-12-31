@@ -710,8 +710,7 @@ namespace ServiceStack
 
         public ITypedQueryData GetTypedQuery(Type requestDtoType, Type fromType)
         {
-            ITypedQueryData defaultValue;
-            if (TypedQueries.TryGetValue(requestDtoType, out defaultValue)) return defaultValue;
+            if (TypedQueries.TryGetValue(requestDtoType, out var defaultValue)) return defaultValue;
 
             var genericType = typeof(TypedQueryData<,>).MakeGenericType(requestDtoType, fromType);
             defaultValue = genericType.CreateInstance<ITypedQueryData>();
@@ -733,8 +732,7 @@ namespace ServiceStack
             if (QueryFilters == null)
                 return (DataQuery<From>)q;
 
-            QueryDataFilterDelegate filterFn = null;
-            if (!QueryFilters.TryGetValue(dto.GetType(), out filterFn))
+            if (!QueryFilters.TryGetValue(dto.GetType(), out var filterFn))
             {
                 foreach (var type in dto.GetType().GetInterfaces())
                 {
@@ -753,8 +751,7 @@ namespace ServiceStack
             if (QueryFilters == null)
                 return q;
 
-            QueryDataFilterDelegate filterFn = null;
-            if (!QueryFilters.TryGetValue(dto.GetType(), out filterFn))
+            if (!QueryFilters.TryGetValue(dto.GetType(), out var filterFn))
             {
                 foreach (var type in dto.GetType().GetInterfaces())
                 {
@@ -803,8 +800,7 @@ namespace ServiceStack
                     responseFilter(ctx);
                 }
 
-                string total;
-                response.Total = response.Meta.TryGetValue("COUNT(*)", out total)
+                response.Total = response.Meta.TryGetValue("COUNT(*)", out var total)
                     ? total.ToInt()
                     : (int)Db.Count(expr); //fallback if it's not populated (i.e. if stripped by custom ResponseFilter)
 
@@ -1300,8 +1296,7 @@ namespace ServiceStack
             {
                 var name = entry.Key.LeftPart('#');
 
-                QueryDataField attr;
-                if (QueryFieldMap.TryGetValue(name, out attr))
+                if (QueryFieldMap.TryGetValue(name, out var attr))
                 {
                     if (attr.Field != null)
                         name = attr.Field;
