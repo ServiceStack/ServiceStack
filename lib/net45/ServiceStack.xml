@@ -5587,9 +5587,19 @@
             Provide an exception handler for unhandled exceptions
             </summary>
         </member>
+        <member name="P:ServiceStack.IAppHost.ServiceExceptionHandlersAsync">
+            <summary>
+            Provide an exception handler for unhandled exceptions (Async)
+            </summary>
+        </member>
         <member name="P:ServiceStack.IAppHost.UncaughtExceptionHandlers">
             <summary>
             Provide an exception handler for un-caught exceptions
+            </summary>
+        </member>
+        <member name="P:ServiceStack.IAppHost.UncaughtExceptionHandlersAsync">
+            <summary>
+            Provide an exception handler for un-caught exceptions (Async)
             </summary>
         </member>
         <member name="P:ServiceStack.IAppHost.AfterInitCallbacks">

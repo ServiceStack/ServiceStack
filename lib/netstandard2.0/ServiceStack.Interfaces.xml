@@ -1958,17 +1958,17 @@
         </member>
         <member name="P:ServiceStack.Web.IRequest.Headers">
             <summary>
-            The HTTP Headers in an INameValueCollection
+            The HTTP Headers in a NameValueCollection
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.QueryString">
             <summary>
-            The ?query=string in an INameValueCollection
+            The ?query=string in a NameValueCollection
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.FormData">
             <summary>
-            The HTTP POST'ed Form Data in an INameValueCollection
+            The HTTP POST'ed Form Data in a NameValueCollection
             </summary>
         </member>
         <member name="P:ServiceStack.Web.IRequest.UseBufferedStream">

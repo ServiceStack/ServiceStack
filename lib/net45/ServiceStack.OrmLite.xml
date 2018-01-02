@@ -2083,12 +2083,28 @@
             set the specified selectExpression.
             </summary>
             <param name='selectExpression'>
-            raw Select expression: "Select SomeField1, SomeField2 from SomeTable"
+            raw Select expression: "SomeField1, SomeField2 from SomeTable"
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.SelectDistinct(System.String)">
+            <summary>
+            set the specified DISTINCT selectExpression.
+            </summary>
+            <param name='selectExpression'>
+            raw Select expression: "SomeField1, SomeField2 from SomeTable"
             </param>
         </member>
         <member name="M:ServiceStack.OrmLite.SqlExpression`1.Select(System.String[])">
             <summary>
             Set the specified selectExpression using matching fields.
+            </summary>
+            <param name='fields'>
+            Matching Fields: "SomeField1, SomeField2"
+            </param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.SqlExpression`1.SelectDistinct(System.String[])">
+            <summary>
+            Set the specified DISTINCT selectExpression using matching fields.
             </summary>
             <param name='fields'>
             Matching Fields: "SomeField1, SomeField2"
@@ -3824,6 +3840,12 @@
             <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,``0,System.Action{System.Data.IDbCommand},System.Boolean)">
+            <summary>
+            Insert 1 POCO and modify populated IDbCommand with a commandFilter. E.g:
+            <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, dbCmd => applyFilter(dbCmd))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.InsertUsingDefaults``1(System.Data.IDbConnection,``0[])">
             <summary>
             Insert 1 or more POCOs in a transaction using Table default values when defined. E.g:
@@ -3837,10 +3859,25 @@
             <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.InsertAll``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Action{System.Data.IDbCommand})">
+            <summary>
+            Insert a collection of POCOs in a transaction and modify populated IDbCommand with a commandFilter. E.g:
+            <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } },</para>
+            <para>             dbCmd => applyFilter(dbCmd))</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,``0[])">
             <summary>
             Insert 1 or more POCOs in a transaction. E.g:
             <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Insert``1(System.Data.IDbConnection,System.Action{System.Data.IDbCommand},``0[])">
+            <summary>
+            Insert 1 or more POCOs in a transaction and modify populated IDbCommand with a commandFilter. E.g:
+            <para>db.Insert(dbCmd => applyFilter(dbCmd),</para>
+            <para>          new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
             <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
             </summary>
         </member>
@@ -4029,17 +4066,38 @@
             <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAsync``1(System.Data.IDbConnection,``0,System.Action{System.Data.IDbCommand},System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Insert 1 POCO, use selectIdentity to retrieve the last insert AutoIncrement id (if any). E.g:
+            <para>var id = db.Insert(new Person { Id = 1, FirstName = "Jimi }, selectIdentity:true)</para>
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
             <summary>
             Insert 1 or more POCOs in a transaction. E.g:
-            <para>db.Insert(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
-            <para>          new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            <para>db.InsertAsync(new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>               new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAsync``1(System.Data.IDbConnection,System.Action{System.Data.IDbCommand},System.Threading.CancellationToken,``0[])">
+            <summary>
+            Insert 1 or more POCOs in a transaction and modify populated IDbCommand with a commandFilter. E.g:
+            <para>db.InsertAsync(dbCmd => applyFilter(dbCmd), token, </para>
+            <para>               new Person { Id = 1, FirstName = "Tupac", LastName = "Shakur", Age = 25 },</para>
+            <para>               new Person { Id = 2, FirstName = "Biggie", LastName = "Smalls", Age = 24 })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Threading.CancellationToken)">
             <summary>
             Insert a collection of POCOs in a transaction. E.g:
-            <para>db.InsertAll(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
+            <para>db.InsertAllAsync(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } })</para>
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.InsertAllAsync``1(System.Data.IDbConnection,System.Collections.Generic.IEnumerable{``0},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
+            <summary>
+            Insert a collection of POCOs in a transaction and modify populated IDbCommand with a commandFilter. E.g:
+            <para>db.InsertAllAsync(new[] { new Person { Id = 9, FirstName = "Biggie", LastName = "Smalls", Age = 24 } },</para>
+            <para>                  dbCmd => applyFilter(dbCmd))</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.UpdateAsync``1(System.Data.IDbConnection,``0,System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
@@ -4063,34 +4121,34 @@
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,System.Object,System.Threading.CancellationToken)">
             <summary>
-            Delete rows using an anonymous type filter. E.g:
+            Delete rows using an anonymous type commandFilter. E.g:
             <para>db.Delete&lt;Person&gt;(new { FirstName = "Jimi", Age = 27 })</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
             <summary>
-            Delete 1 row using all fields in the filter. E.g:
+            Delete 1 row using all fields in the commandFilter. E.g:
             <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
             <summary>
-            Delete 1 or more rows in a transaction using all fields in the filter. E.g:
+            Delete 1 or more rows in a transaction using all fields in the commandFilter. E.g:
             <para>db.Delete(new Person { Id = 1, FirstName = "Jimi", LastName = "Hendrix", Age = 27 })</para>
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteNonDefaultsAsync``1(System.Data.IDbConnection,``0,System.Threading.CancellationToken)">
             <summary>
-            Delete 1 or more rows using only field with non-default values in the filter. E.g:
+            Delete 1 or more rows using only field with non-default values in the commandFilter. E.g:
             <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 })</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApiAsync.DeleteNonDefaultsAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,``0[])">
             <summary>
-            Delete 1 or more rows in a transaction using only field with non-default values in the filter. E.g:
+            Delete 1 or more rows in a transaction using only field with non-default values in the commandFilter. E.g:
             <para>db.DeleteNonDefaults(new Person { FirstName = "Jimi", Age = 27 }, 
             new Person { FirstName = "Janis", Age = 27 })</para>
             </summary>
