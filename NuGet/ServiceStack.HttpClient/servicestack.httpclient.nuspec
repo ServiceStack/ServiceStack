@@ -24,7 +24,7 @@
       </group>
       <group targetFramework=".netstandard2.0">
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
-        <dependency id="System.ServiceModel.Primitives" version="[4.3.0, )" />
+        <dependency id="System.ServiceModel.Primitives" version="[4.4.0, )" />
         <dependency id="System.Collections.Specialized" version="[4.3.0, )" />
         <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
         <dependency id="ServiceStack.Client" version="5.0.0" />
