@@ -73,10 +73,12 @@ namespace ServiceStack.Razor.Compilation
             var domain = AppDomain.CurrentDomain;
             var dlls = domain.GetAssemblies().ToList();
 
+#if !BUILD_TASK
             if (dlls.All(x => x != typeof(OrmLiteConfig).Assembly))
             {
                 dlls.Add(typeof(OrmLiteConfig).Assembly);
             }
+#endif
 
             return dlls;
         }
