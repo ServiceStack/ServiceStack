@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using NUnit.Framework;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -49,13 +49,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -67,7 +67,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             RazorFormat.Instance = null;
             base.RazorFormat = new RazorFormat
             {
-                VirtualFileSources = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                VirtualFileSources = new MemoryVirtualFiles(),
             }.Init();
         }
 
@@ -129,8 +129,7 @@ with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
 
 <p>And obviously I can have code in here too. Here is the
-current date/year: 2016</p>
-
+current date/year: 2018</p>
         </div>
     
     </body>
@@ -142,8 +141,7 @@ current date/year: 2016</p>
 
             var template = RazorFormat.RenderToHtml(dynamicPage);
 
-            template.Print();
-            Assert.That(template, Is.EqualTo(expectedHtml));
+            Assert.That(template.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
         [Test]
@@ -176,7 +174,6 @@ current date/year: 2016</p>
             RazorFormat.AddFileAndPage("/views/websiteTemplate1.cshtml", websiteTemplate1);
             var dynamicPage = RazorFormat.AddFileAndPage(@"/page.cshtml", pageTemplate);
             var template = RazorFormat.RenderToHtml(dynamicPage);
-            template.Print();
 
             Assert.That(template, Is.EqualTo(expectedHtml));
         }
@@ -264,7 +261,7 @@ with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
 
 <p>And obviously I can have code in here too. Here is the
-current date/year: 2016</p>
+current date/year: 2018</p>
 
 
 
@@ -286,7 +283,6 @@ current date/year: 2016</p>
 
             var html = RazorFormat.RenderToHtml(dynamicPage, layout: "websiteTemplate");
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -323,7 +319,6 @@ current date/year: 2016</p>
             var product = new Product { ProductID = 10 };
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, product);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -360,7 +355,6 @@ current date/year: 2016</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, model: products);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -386,7 +380,6 @@ current date/year: 2016</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(pageTemplate, new Product("Pen", 1.99m));
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 

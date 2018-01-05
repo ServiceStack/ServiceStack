@@ -219,8 +219,7 @@ namespace ServiceStack.Messaging
                         }
                         catch (Exception ex)
                         {
-                            Log.Error("Could not send response to '{0}' with client '{1}'"
-                                .Fmt(mqReplyTo, replyClient.GetType().GetOperationName()), ex);
+                            Log.Error($"Could not send response to '{mqReplyTo}' with client '{replyClient.GetType().GetOperationName()}'", ex);
 
                             // Leave as-is to work around a Mono 2.6.7 compiler bug
                             if (!responseType.IsUserType()) return;

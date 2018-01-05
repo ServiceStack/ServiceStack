@@ -36,6 +36,19 @@ namespace ServiceStack.Authentication.OAuth2
                     "https://www.googleapis.com/auth/userinfo.email"
                 };
             }
+
+            this.VerifyAccessToken = OnVerifyAccessToken;
+        }
+
+        public string VerifyAccessTokenUrl { get; set; } = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={0}";
+
+        public bool OnVerifyAccessToken(string accessToken)
+        {
+            var url = VerifyAccessTokenUrl.Fmt(accessToken);
+            var json = url.GetJsonFromUrl();
+            var obj = JsonObject.Parse(json);
+            var issuedTo = obj["issued_to"];
+            return issuedTo == ConsumerKey;
         }
 
         protected override Dictionary<string, string> CreateAuthInfo(string accessToken)

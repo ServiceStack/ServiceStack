@@ -1,10 +1,10 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
 using System;
 using System.Collections.Generic;
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
 using System.Threading.Tasks;
 #endif
 
@@ -61,7 +61,7 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
                 asyncResults.Add(Task.Run(() => actionFn(i)));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(i, null, null));
@@ -75,7 +75,7 @@ namespace ServiceStack
             var asyncResults = new List<IAsyncResult>(times);
             for (var i = 0; i < times; i++)
             {
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
                 asyncResults.Add(Task.Run(actionFn));
 #else                
                 asyncResults.Add(actionFn.BeginInvoke(null, null));

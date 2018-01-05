@@ -4,16 +4,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class HttpResult
-        : IHttpResult, IStreamWriter, IPartialWriter
+        : IHttpResult, IStreamWriterAsync, IPartialWriterAsync, IDisposable
     {
         public HttpResult()
             : this((object)null, null) { }
@@ -38,7 +41,7 @@ namespace ServiceStack
         {
             this.Headers = new Dictionary<string, string>();
             this.Cookies = new List<Cookie>();
-            this.ResponseFilter = ContentTypes.Instance;
+            this.ResponseFilter = HostContext.AppHost?.ContentTypes ?? ContentTypes.Instance;
 
             this.Response = response;
             this.ContentType = contentType;
@@ -52,20 +55,18 @@ namespace ServiceStack
         public HttpResult(FileInfo fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
-            this.FileInfo = fileResponse;
+            this.FileInfo = fileResponse ?? throw new ArgumentNullException(nameof(fileResponse));
+            this.LastModified = fileResponse.LastWriteTime;
             this.AllowsPartialResponse = true;
-            if (FileInfo != null && !FileInfo.Exists)
+            if (!FileInfo.Exists)
                 throw HttpError.NotFound($"{FileInfo.Name} was not found");
 
             if (!asAttachment) return;
 
-            var headerValue =
-                "attachment; " +
-                "filename=\"" + fileResponse.Name + "\"; " +
-                "size=" + fileResponse.Length + "; " +
-                "creation-date=" + fileResponse.CreationTimeUtc.ToString("R").Replace(",", "") + "; " +
-                "modification-date=" + fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "") + "; " +
-                "read-date=" + fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "");
+            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; " +
+                              $"creation-date={fileResponse.CreationTimeUtc.ToString("R").Replace(",", "")}; " +
+                              $"modification-date={fileResponse.LastWriteTimeUtc.ToString("R").Replace(",", "")}; " +
+                              $"read-date={fileResponse.LastAccessTimeUtc.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -80,16 +81,16 @@ namespace ServiceStack
         public HttpResult(IVirtualFile fileResponse, string contentType = null, bool asAttachment = false)
             : this(null, contentType ?? MimeTypes.GetMimeType(fileResponse.Name), HttpStatusCode.OK)
         {
+            if (fileResponse == null)
+                throw new ArgumentNullException(nameof(fileResponse));
+
             this.AllowsPartialResponse = true;
+            this.LastModified = fileResponse.LastModified;
             this.ResponseStream = fileResponse.OpenRead();
 
             if (!asAttachment) return;
 
-            var headerValue =
-                "attachment; " +
-                "filename=\"" + fileResponse.Name + "\"; " +
-                "size=" + fileResponse.Length + "; " +
-                "modification-date=" + fileResponse.LastModified.ToString("R").Replace(",", "");
+            var headerValue = $"attachment; filename=\"{fileResponse.Name}\"; size={fileResponse.Length}; modification-date={fileResponse.LastModified.ToString("R").Replace(",", "")}";
 
             this.Headers = new Dictionary<string, string>
             {
@@ -120,7 +121,7 @@ namespace ServiceStack
 
         public string ResponseText { get; }
 
-        public Stream ResponseStream { get; }
+        public Stream ResponseStream { get; private set; }
 
         public FileInfo FileInfo { get; }
 
@@ -199,7 +200,7 @@ namespace ServiceStack
         public void SetCookie(string name, string value, DateTime expiresAt, string path, bool secure = false, bool httpOnly = false)
         {
             path = path ?? "/";
-            var cookie = $"{name}={value};expires={expiresAt.ToString("R")};path={path}";
+            var cookie = $"{name}={value};expires={expiresAt:R};path={path}";
             if (secure)
                 cookie += ";Secure";
             if (httpOnly)
@@ -210,7 +211,7 @@ namespace ServiceStack
 
         public void DeleteCookie(string name)
         {
-            var cookie = $"{name}=;expires={DateTime.UtcNow.AddDays(-1).ToString("R")};path=/";
+            var cookie = $"{name}=;expires={DateTime.UtcNow.AddDays(-1):R};path=/";
             this.Headers[HttpHeaders.SetCookie] = cookie;
         }
 
@@ -238,12 +239,12 @@ namespace ServiceStack
 
         public int PaddingLength { get; set; }
 
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
             try
             {
-                WriteTo(responseStream, PaddingLength);
-                responseStream.Flush();
+                await WriteToAsync(responseStream, PaddingLength, token);
+                await responseStream.FlushAsync(token);
             }
             finally
             {
@@ -251,7 +252,7 @@ namespace ServiceStack
             }
         }
 
-        private void WriteTo(Stream responseStream, int paddingLength)
+        private async Task WriteToAsync(Stream responseStream, int paddingLength, CancellationToken token)
         {
             var response = RequestContext?.Response;
             if (this.FileInfo != null)
@@ -260,27 +261,33 @@ namespace ServiceStack
 
                 using (var fs = this.FileInfo.OpenRead())
                 {
-                    fs.WriteTo(responseStream);
+                    await fs.CopyToAsync(responseStream, token);
                     return;
                 }
             }
 
             if (this.ResponseStream != null)
             {
-                if (response != null)
+                try
                 {
-                    var ms = ResponseStream as MemoryStream;
-                    if (ms != null)
+                    if (response != null)
                     {
-                        var bytes = ms.ToArray();
-                        response.SetContentLength(bytes.Length + paddingLength);
+                        if (ResponseStream is MemoryStream ms)
+                        {
+                            var bytes = ms.ToArray();
+                            response.SetContentLength(bytes.Length + paddingLength);
 
-                        responseStream.Write(bytes, 0, bytes.Length);
-                        return;
+                            await responseStream.WriteAsync(bytes, 0, bytes.Length, token); //Write Sync to MemoryStream
+                            return;
+                        }
                     }
-                }
 
-                this.ResponseStream.WriteTo(responseStream);
+                    await ResponseStream.CopyToAsync(responseStream, token);
+                }
+                finally
+                {
+                    DisposeStream();
+                }
                 return;
             }
 
@@ -289,21 +296,20 @@ namespace ServiceStack
                 var bytes = Encoding.UTF8.GetBytes(this.ResponseText);
                 response?.SetContentLength(bytes.Length + paddingLength);
 
-                responseStream.Write(bytes, 0, bytes.Length);
+                await responseStream.WriteAsync(bytes, token);
                 return;
             }
 
             if (this.ResponseFilter == null)
-                throw new ArgumentNullException("ResponseFilter");
+                throw new ArgumentNullException(nameof(ResponseFilter));
             if (this.RequestContext == null)
-                throw new ArgumentNullException("RequestContext");
+                throw new ArgumentNullException(nameof(RequestContext));
 
-            var bytesResponse = this.Response as byte[];
-            if (bytesResponse != null)
+            if (this.Response is byte[] bytesResponse)
             {
                 response?.SetContentLength(bytesResponse.Length + paddingLength);
 
-                responseStream.Write(bytesResponse, 0, bytesResponse.Length);
+                await responseStream.WriteAsync(bytesResponse, token);
                 return;
             }
 
@@ -314,19 +320,21 @@ namespace ServiceStack
 
             RequestContext.SetItem("HttpResult", this);
 
-            ResponseFilter.SerializeToStream(this.RequestContext, this.Response, responseStream);
+            if (Response != null || View != null || Template != null) //allow new HttpResult { View = "/default.cshtml" }
+            {
+                await ResponseFilter.SerializeToStreamAsync(this.RequestContext, this.Response, responseStream);
+            }
         }
-
+        
         public bool IsPartialRequest => 
             AllowsPartialResponse && RequestContext.GetHeader(HttpHeaders.Range) != null && GetContentLength() != null;
 
-        public void WritePartialTo(IResponse response)
+        public async Task WritePartialToAsync(IResponse response, CancellationToken token = default(CancellationToken))
         {
             var contentLength = GetContentLength().GetValueOrDefault(int.MaxValue); //Safe as guarded by IsPartialRequest
             var rangeHeader = RequestContext.GetHeader(HttpHeaders.Range);
 
-            long rangeStart, rangeEnd;
-            rangeHeader.ExtractHttpRanges(contentLength, out rangeStart, out rangeEnd);
+            rangeHeader.ExtractHttpRanges(contentLength, out var rangeStart, out var rangeEnd);
 
             if (rangeEnd > contentLength - 1)
                 rangeEnd = contentLength - 1;
@@ -338,14 +346,14 @@ namespace ServiceStack
             {
                 using (var fs = FileInfo.OpenRead())
                 {
-                    fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
             }
             else if (ResponseStream != null)
             {
                 try
                 {
-                    ResponseStream.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    await ResponseStream.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
                 finally
                 {
@@ -356,7 +364,7 @@ namespace ServiceStack
             {
                 using (var ms = MemoryStreamFactory.GetStream(Encoding.UTF8.GetBytes(ResponseText)))
                 {
-                    ms.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                    await ms.WritePartialToAsync(outputStream, rangeStart, rangeEnd, token);
                 }
             }
             else
@@ -446,12 +454,17 @@ namespace ServiceStack
         {
             try
             {
-                if (ResponseStream != null)
-                {
-                    this.ResponseStream.Dispose();
-                }
+                if (ResponseStream == null) return;
+                this.ResponseStream.Dispose();
+                this.ResponseStream = null;
             }
             catch { /*ignore*/ }
+        }
+
+        public void Dispose()
+        {
+            DisposeStream();
+            using (Response as IDisposable) {}
         }
     }
 
@@ -468,7 +481,7 @@ namespace ServiceStack
         ProxyRevalidate = 1 << 6,
     }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
     public static class HttpResultExtensions
     {
         public static System.Net.Cookie ToCookie(this HttpCookie httpCookie)

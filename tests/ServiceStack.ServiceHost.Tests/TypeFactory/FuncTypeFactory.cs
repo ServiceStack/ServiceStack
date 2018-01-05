@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests.TypeFactory
             this.container = container;
         }
 
-        public object CreateInstance(Type type)
+        public object CreateInstance(IResolver resolver, Type type)
         {
             Func<object> resolveFn;
 

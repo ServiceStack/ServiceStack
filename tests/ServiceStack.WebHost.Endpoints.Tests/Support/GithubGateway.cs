@@ -240,12 +240,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         protected virtual void RequestFilter(HttpWebRequest req)
         {
-            req.UserAgent = UserAgent;
+            req.SetUserAgent(UserAgent);
 
             if (!string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))
             {
-                req.Headers.Add("Authorization", "Basic " +
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes(Username + ":" + Password)));
+                req.Headers["Authorization"] = "Basic " +
+                    Convert.ToBase64String(Encoding.ASCII.GetBytes(Username + ":" + Password));
             }
         }
 

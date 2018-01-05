@@ -1,4 +1,4 @@
-// Copyright (c) Service Stack LLC. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -6,15 +6,12 @@ using System.IO;
 using System.Text;
 using ServiceStack.Caching;
 using ServiceStack.Text;
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
 using System.Security.Cryptography;
-#endif
 
 namespace ServiceStack
 {
     public static class StreamExt
     {
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL)
         /// <summary>
         /// Compresses the specified text using the default compression method: Deflate
         /// </summary>
@@ -28,6 +25,17 @@ namespace ServiceStack
 
             if (compressionType == CompressionTypes.GZip)
                 return GZip(text);
+
+            throw new NotSupportedException(compressionType);
+        }
+
+        public static Stream CompressStream(this Stream stream, string compressionType)
+        {
+            if (compressionType == CompressionTypes.Deflate)
+                return DeflateProvider.DeflateStream(stream);
+
+            if (compressionType == CompressionTypes.GZip)
+                return GZipProvider.GZipStream(stream);
 
             throw new NotSupportedException(compressionType);
         }
@@ -68,6 +76,26 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Decompresses the specified gz buffer using inflate or gzip method
+        /// </summary>
+        /// <param name="gzStream">Compressed stream</param>
+        /// <param name="compressionType">Type of the compression. Can be "gzip" or "deflate"</param>
+        /// <returns>Decompressed stream</returns>
+        public static Stream Decompress(this Stream gzStream, string compressionType)
+        {
+            if (String.IsNullOrEmpty(compressionType))
+                return gzStream;
+
+            if (compressionType == CompressionTypes.Deflate)
+                return DeflateProvider.InflateStream(gzStream);
+
+            if (compressionType == CompressionTypes.GZip)
+                return GZipProvider.GUnzipStream(gzStream);
+
+            throw new NotSupportedException(compressionType);
+        }
+
+        /// <summary>
         /// Decompresses the specified gz buffer using the default compression method: Inflate
         /// </summary>
         public static byte[] DecompressBytes(this byte[] gzBuffer, string compressionType)
@@ -100,7 +128,6 @@ namespace ServiceStack
         {
             return GZipProvider.GUnzip(gzBuffer);
         }
-#endif
 
         public static string ToUtf8String(this Stream stream)
         {
@@ -126,29 +153,5 @@ namespace ServiceStack
             var bytes = Encoding.UTF8.GetBytes(text);
             stream.Write(bytes, 0, bytes.Length);
         }
-
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
-        public static string ToMd5Hash(this Stream stream)
-        {
-            var hash = MD5.Create().ComputeHash(stream);
-            var sb = StringBuilderCache.Allocate();
-            foreach (byte b in hash)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public static string ToMd5Hash(this byte[] bytes)
-        {
-            var hash = MD5.Create().ComputeHash(bytes);
-            var sb = StringBuilderCache.Allocate();
-            foreach (byte b in hash)
-            {
-                sb.Append(b.ToString("x2"));
-            }
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-#endif
     }
 }

@@ -342,6 +342,11 @@ namespace ServiceStack
             return client.PutAsync(requestDto);
         }
 
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAsync<TResponse>(httpMethod, absoluteUrl, request, token);
+        }
+
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             return client.CustomMethodAsync(httpVerb, requestDto);
@@ -505,6 +510,11 @@ namespace ServiceStack
         public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
         {
             return client.Patch<TResponse>(relativeOrAbsoluteUrl, requestDto);
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+        {
+            return client.Send<TResponse>(httpMethod, relativeOrAbsoluteUrl, request);
         }
 
         public void CustomMethod(string httpVerb, IReturnVoid requestDto)

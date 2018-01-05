@@ -1,4 +1,4 @@
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 
 using System;
 using System.IO;
@@ -19,12 +19,9 @@ namespace ServiceStack.Host.Handlers
 {
     public abstract class SoapHandler : ServiceStackHandlerBase, IOneWay, ISyncReply
     {
-        private readonly ServiceStackHost appHost;
-
         public SoapHandler(RequestAttributes soapType)
         {
             this.HandlerAttributes = soapType;
-            this.appHost = HostContext.AppHost;
         }
 
         public void SendOneWay(Message requestMsg)
@@ -106,16 +103,15 @@ namespace ServiceStack.Host.Handlers
             {
                 var useXmlSerializerRequest = requestType.HasAttribute<XmlSerializerFormatAttribute>();
 
-                var request = appHost.ApplyRequestConverters(httpReq, 
+                var request = appHost.ApplyRequestConvertersAsync(httpReq,
                     useXmlSerializerRequest
                         ? XmlSerializableSerializer.Instance.DeserializeFromString(requestXml, requestType)
                         : Serialization.DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType)
-                );
+                ).Result;
 
                 httpReq.Dto = request;
 
-                var requiresSoapMessage = request as IRequiresSoapMessage;
-                if (requiresSoapMessage != null)
+                if (request is IRequiresSoapMessage requiresSoapMessage)
                 {
                     requiresSoapMessage.Message = requestMsg;
                 }
@@ -124,25 +120,27 @@ namespace ServiceStack.Host.Handlers
 
                 httpRes.ContentType = GetSoapContentType(httpReq.ContentType);
 
-                var hasRequestFilters = HostContext.GlobalRequestFilters.Count > 0
+                var hasRequestFilters = HostContext.AppHost.GlobalRequestFiltersArray.Length > 0
+                    || HostContext.AppHost.GlobalRequestFiltersAsyncArray.Length > 0
                     || FilterAttributeCache.GetRequestFilterAttributes(request.GetType()).Any();
 
-                if (hasRequestFilters && HostContext.ApplyRequestFilters(httpReq, httpRes, request))
-                    return EmptyResponse(requestMsg, requestType);
+                if (hasRequestFilters)
+                {
+                    HostContext.ApplyRequestFiltersAsync(httpReq, httpRes, request).Wait();
+                    if (httpRes.IsClosed)
+                        return EmptyResponse(requestMsg, requestType);
+                }
 
                 httpReq.RequestAttributes |= requestAttributes;
                 var response = ExecuteService(request, httpReq);
 
-                var taskResponse = response as Task;
-                if (taskResponse != null)
-                {
-                    taskResponse.Wait();
-                    response = TypeAccessor.Create(taskResponse.GetType())[taskResponse, "Result"];
-                }
+                if (response is Task taskResponse)
+                    response = taskResponse.GetResult();
 
-                response = appHost.ApplyResponseConverters(httpReq, response);
+                response = appHost.ApplyResponseConvertersAsync(httpReq, response).Result;
 
-                if (appHost.ApplyResponseFilters(httpReq, httpRes, response))
+                appHost.ApplyResponseFiltersAsync(httpReq, httpRes, response).Wait();
+                if (httpRes.IsClosed)
                     return EmptyResponse(requestMsg, requestType);
 
                 var httpResult = response as IHttpResult;
@@ -162,9 +160,9 @@ namespace ServiceStack.Host.Handlers
             catch (Exception ex)
             {
                 if (httpReq.Dto != null)
-                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex);
+                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).Wait();
                 else
-                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex);
+                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
 
                 throw new SerializationException("3) Error trying to deserialize requestType: "
                     + requestType
@@ -257,11 +255,9 @@ namespace ServiceStack.Host.Handlers
         private static void SerializeSoapToStream(IRequest req, object response, MessageVersion defaultMsgVersion, Stream stream)
         {
             var requestMsg = req.GetItem(Keywords.SoapMessage) as Message;
-            var msgVersion = requestMsg != null
-                ? requestMsg.Version
-                : defaultMsgVersion;
+            var msgVersion = requestMsg?.Version ?? defaultMsgVersion;
 
-            var noMsgVersion = requestMsg == null || requestMsg.Headers.Action == null;
+            var noMsgVersion = requestMsg?.Headers.Action == null;
 
             var responseMsg = CreateResponseMessage(response, msgVersion, req.Dto.GetType(), noMsgVersion);
             SetErrorStatusIfAny(req.Response, responseMsg, req.Response.StatusCode);
@@ -375,16 +371,6 @@ namespace ServiceStack.Host.Handlers
             return requestOperationName != null
                     ? contentType.Replace(requestOperationName, requestOperationName + "Response")
                     : (this.HandlerAttributes == RequestAttributes.Soap11 ? MimeTypes.Soap11 : MimeTypes.Soap12);
-        }
-
-        public override object CreateRequest(IRequest request, string operationName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            throw new NotImplementedException();
         }
     }
 }

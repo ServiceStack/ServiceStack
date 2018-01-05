@@ -1,8 +1,9 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ServiceStack.Web;
@@ -29,11 +30,18 @@ namespace ServiceStack.Host
         {
             foreach (var mi in serviceType.GetMethods(BindingFlags.Public | BindingFlags.Instance))
             {
-                if (mi.GetParameters().Length != 1)
+                if (mi.IsGenericMethod || mi.GetParameters().Length != 1)
+                    continue;
+                
+                var paramType = mi.GetParameters()[0].ParameterType;
+                if (paramType.IsValueType || paramType == typeof(string))
                     continue;
 
                 var actionName = mi.Name.ToUpper();
-                if (!HttpMethods.AllVerbs.Contains(actionName) && actionName != ActionContext.AnyAction)
+                if (!HttpMethods.AllVerbs.Contains(actionName) && 
+                    actionName != ActionContext.AnyAction &&
+                    !HttpMethods.AllVerbs.Any(verb => ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(verb + format))) &&
+                    !ContentTypes.KnownFormats.Any(format => actionName.EqualsIgnoreCase(ActionContext.AnyAction + format)))
                     continue;
 
                 yield return mi;
@@ -73,16 +81,16 @@ namespace ServiceStack.Host
                 {
                     //Potential problems with MONO, using reflection for fallback
                     actionCtx.ServiceAction = (service, request) =>
-                                              mi.Invoke(service, new[] { request });
+                      mi.Invoke(service, new[] { request });
                 }
 
-                var reqFilters = new List<IHasRequestFilter>();
-                var resFilters = new List<IHasResponseFilter>();
+                var reqFilters = new List<IRequestFilterBase>();
+                var resFilters = new List<IResponseFilterBase>();
 
                 foreach (var attr in mi.GetCustomAttributes(true))
                 {
-                    var hasReqFilter = attr as IHasRequestFilter;
-                    var hasResFilter = attr as IHasResponseFilter;
+                    var hasReqFilter = attr as IRequestFilterBase;
+                    var hasResFilter = attr as IResponseFilterBase;
 
                     if (hasReqFilter != null)
                         reqFilters.Add(hasReqFilter);
@@ -115,7 +123,7 @@ namespace ServiceStack.Host
             var requestDtoStrong = Expression.Convert(requestDtoParam, requestType);
 
             Expression callExecute = Expression.Call(
-            serviceStrong, mi, requestDtoStrong);
+                serviceStrong, mi, requestDtoStrong);
 
             if (mi.ReturnType != typeof(void))
             {
@@ -139,13 +147,12 @@ namespace ServiceStack.Host
 
         private static IEnumerable<ActionContext> GetActionsFor<TRequest>()
         {
-            List<ActionContext> requestActions;
-            return actionMap.TryGetValue(typeof(TRequest), out requestActions)
-                   ? requestActions
-                   : new List<ActionContext>();
+            return actionMap.TryGetValue(typeof(TRequest), out List<ActionContext> requestActions)
+                ? requestActions
+                : new List<ActionContext>();
         }
 
-        public static void CreateServiceRunnersFor<TRequest>()
+        public static void CreateServiceRunnersFor<TRequest>() //used in ServiceController
         {
             foreach (var actionCtx in GetActionsFor<TRequest>())
             {
@@ -161,21 +168,23 @@ namespace ServiceStack.Host
             var actionName = request.Verb 
                 ?? HttpMethods.Post; //MQ Services
 
-            var overrideVerb = request.GetItem(Keywords.InvokeVerb) as string;
-            if (overrideVerb != null)
+            if (request.GetItem(Keywords.InvokeVerb) is string overrideVerb)
                 actionName = overrideVerb;
 
-            InstanceExecFn action;
-            if (execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action)
-                || execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
+            var format = request.ResponseContentType.ToContentFormat()?.ToUpper();
+
+            if (execMap.TryGetValue(ActionContext.Key(actionName + format, requestName), out var action) ||
+                execMap.TryGetValue(ActionContext.AnyFormatKey(format, requestName), out action) ||
+                execMap.TryGetValue(ActionContext.Key(actionName, requestName), out action) ||
+                execMap.TryGetValue(ActionContext.AnyKey(requestName), out action))
             {
                 return action(request, instance, requestDto);
             }
 
-            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLower();
+            var expectedMethodName = actionName.Substring(0, 1) + actionName.Substring(1).ToLowerInvariant();
             throw new NotImplementedException(
-                "Could not find method named {1}({0}) or Any({0}) on Service {2}"
-                .Fmt(requestDto.GetType().GetOperationName(), expectedMethodName, typeof(TService).GetOperationName()));
+                $"Could not find method named {expectedMethodName}({requestDto.GetType().GetOperationName()}) " +
+                $"or Any({requestDto.GetType().GetOperationName()}) on Service {typeof(TService).GetOperationName()}");
         }
     }
 }

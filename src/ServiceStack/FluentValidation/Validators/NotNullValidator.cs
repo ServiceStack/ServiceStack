@@ -13,25 +13,24 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using Resources;
+namespace ServiceStack.FluentValidation.Validators {
+	using Resources;
 
-    public class NotNullValidator : PropertyValidator, INotNullValidator {
-        public NotNullValidator() : base(() => Messages.notnull_error, ValidationErrors.NotNull) {
-        }
+	public class NotNullValidator : PropertyValidator, INotNullValidator {
+		public NotNullValidator() : base(new LanguageStringSource(nameof(NotNullValidator))) {
+			
+		}
+		protected override bool IsValid(PropertyValidatorContext context) {
+			if (context.PropertyValue == null) {
+				return false;
+			}
+			return true;
+		}
+	}
 
-        protected override bool IsValid(PropertyValidatorContext context) {
-            if (context.PropertyValue == null) {
-                return false;
-            }
-            return true;
-        }
-    }
-
-    public interface INotNullValidator : IPropertyValidator {
-    }
+	public interface INotNullValidator : IPropertyValidator {
+	}
 }

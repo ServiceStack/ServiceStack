@@ -1,4 +1,4 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -40,6 +40,11 @@ namespace ServiceStack
         /// For path, query, and header paramTypes, this field must be a primitive. For body, this can be a complex or container datatype.
         /// </summary>
         public string DataType { get; set; }
+
+        /// <summary>
+        /// Fine-tuned primitive type definition.  
+        /// </summary>
+        public string Format { get; set; }
 
         /// <summary>
         /// For path, this is always true. Otherwise, this field tells the client whether or not the field must be supplied.

@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD1_6
+﻿#if NETSTANDARD2_0
 
 using System.CodeDom.Compiler;
 using System.Collections;
@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using ServiceStack;
 
 namespace System.Web
@@ -22,6 +23,7 @@ namespace System.Web
     {
         //IAsyncResult BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData);
         //void EndProcessRequest(IAsyncResult result);
+        Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next); //.NET Core
     }
 
     public class HtmlString : IHtmlString
@@ -228,7 +230,7 @@ namespace System.Web.UI
                 property = ((DefaultMemberAttribute)atts[0]).MemberName;
 
             Type[] argTypes = new Type[] { (is_string) ? typeof(string) : typeof(int) };
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             PropertyInfo prop = t.GetProperty(property, argTypes);
 #else
             PropertyInfo prop = t.GetTypeInfo().GetProperty(property, argTypes);
@@ -258,10 +260,10 @@ namespace System.Web.UI
             if (propName == null || propName.Length == 0)
                 throw new ArgumentNullException("propName");
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             PropertyDescriptor prop = TypeDescriptor.GetProperties(container).Find(propName, true);
 #else
-            PropertyInfo prop = container.GetType().GetPropertyInfo(propName);            
+            PropertyInfo prop = container.GetType().GetProperty(propName);            
 #endif
             if (prop == null)
             {

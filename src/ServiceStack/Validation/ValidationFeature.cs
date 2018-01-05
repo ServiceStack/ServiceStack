@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Funq;
@@ -12,6 +13,8 @@ namespace ServiceStack.Validation
     {
         public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
+        public bool ScanAppHostAssemblies { get; set; } = true;
+
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -19,11 +22,20 @@ namespace ServiceStack.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
-            if (!appHost.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
-                appHost.GlobalRequestFilters.Add(ValidationFilters.RequestFilter);
+            if (!appHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+            {
+                appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+            }
 
-            if (!appHost.GlobalMessageRequestFilters.Contains(ValidationFilters.RequestFilter))
-                appHost.GlobalMessageRequestFilters.Add(ValidationFilters.RequestFilter);
+            if (!appHost.GlobalMessageRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+            {
+                appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+            }
+
+            if (ScanAppHostAssemblies)
+            {
+                appHost.GetContainer().RegisterValidators(((ServiceStackHost)appHost).ServiceAssemblies.ToArray());
+            }
         }
        
         /// <summary>
@@ -73,17 +85,38 @@ namespace ServiceStack.Validation
 
         public static void RegisterValidator(this Container container, Type validator, ReuseScope scope=ReuseScope.None)
         {
-            var baseType = validator.BaseType();
-            if (validator.IsInterface() || baseType == null) return;
-            while (!baseType.IsGenericType())
+            var baseType = validator.BaseType;
+            if (validator.IsInterface || baseType == null)
+                return;
+
+            while (baseType != null && !baseType.IsGenericType)
             {
-                baseType = baseType.BaseType();
+                baseType = baseType.BaseType;
             }
+
+            if (baseType == null)
+                return;
 
             var dtoType = baseType.GetGenericArguments()[0];
             var validatorType = typeof(IValidator<>).GetCachedGenericType(dtoType);
 
             container.RegisterAutoWiredType(validator, validatorType, scope);
+        }
+
+        public static bool HasAsyncValidators(this IValidator validator, string ruleSet=null)
+        {
+            if (validator is IEnumerable<IValidationRule> rules)
+            {
+                foreach (var rule in rules)
+                {
+                    if (ruleSet != null && rule.RuleSet != null && rule.RuleSet != ruleSet)
+                        continue;
+
+                    if (rule.Validators.Any(x => x.IsAsync))
+                        return true;
+                }
+            }
+            return false;
         }
     }
 }

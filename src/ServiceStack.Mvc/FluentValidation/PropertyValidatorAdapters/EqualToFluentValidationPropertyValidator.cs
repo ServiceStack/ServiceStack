@@ -1,4 +1,5 @@
-﻿using ServiceStack.FluentValidation.Internal;
+﻿#if !NETSTANDARD2_0
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Validators;
 
 namespace FluentValidation.Mvc {
@@ -29,9 +30,10 @@ namespace FluentValidation.Mvc {
 					.AppendArgument("PropertyValue", propertyToCompare.Name);
 
 
-				string message = formatter.BuildMessage(EqualValidator.ErrorMessageSource.GetString());
+				string message = formatter.BuildMessage(EqualValidator.ErrorMessageSource.GetString(Metadata));
 				yield return new ModelClientValidationEqualToRule(message, CompareAttribute.FormatPropertyForClientValidation(propertyToCompare.Name)) ;
 			}
 		}
 	}
 }
+#endif

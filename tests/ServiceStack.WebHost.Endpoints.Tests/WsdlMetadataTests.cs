@@ -1,3 +1,4 @@
+#if !NETCORE
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Metadata;
@@ -53,3 +54,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 	}
 }
+#endif

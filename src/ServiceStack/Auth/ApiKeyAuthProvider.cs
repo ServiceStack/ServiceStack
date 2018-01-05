@@ -106,6 +106,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public Action<ApiKey> CreateApiKeyFilter { get; set; }
 
+        /// <summary>
+        /// Cache the User Session so it can be reused between subsequent API Key Requests
+        /// </summary>
+        public TimeSpan? SessionCacheDuration { get; set; }
+
+        /// <summary>
+        /// Whether to allow API Keys in 'apikey' QueryString or FormData
+        /// </summary>
+        public bool AllowInHttpParams { get; set; }
+
         public ApiKeyAuthProvider()
             : base(null, Realm, Name)
         {
@@ -144,9 +154,13 @@ namespace ServiceStack.Auth
                 if (keySize != null)
                     KeySizeBytes = int.Parse(keySize);
 
-                var timespan = appSettings.GetString("ExpireKeysAfter");
+                var timespan = appSettings.GetString("apikey.ExpireKeysAfter");
                 if (timespan != null)
                     ExpireKeysAfter = timespan.FromJsv<TimeSpan>();
+
+                timespan = appSettings.GetString("apikey.SessionCacheDuration");
+                if (timespan != null)
+                    SessionCacheDuration = timespan.FromJsv<TimeSpan>();
             }
 
             ServiceRoutes = new Dictionary<Type, string[]>
@@ -177,17 +191,8 @@ namespace ServiceStack.Auth
             var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
-                var apiRepo = (IManageApiKeys)authRepo;
-
-                var apiKey = apiRepo.GetApiKey(request.Password);
-                if (apiKey == null)
-                    throw HttpError.NotFound("ApiKey does not exist");
-
-                if (apiKey.CancelledDate != null)
-                    throw HttpError.Forbidden("ApiKey has been cancelled");
-
-                if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
-                    throw HttpError.Forbidden("ApiKey has expired");
+                var apiKey = GetApiKey(authService.Request, request.Password);
+                ValidateApiKey(apiKey);
 
                 var userAuth = authRepo.GetUserAuth(apiKey.UserAuthId);
                 if (userAuth == null)
@@ -226,32 +231,73 @@ namespace ServiceStack.Auth
             var userPass = req.GetBasicAuthUserAndPassword();
             if (userPass != null && string.IsNullOrEmpty(userPass.Value.Value))
             {
-                if (RequireSecureConnection && !req.IsSecureConnection)
-                    throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
-
-                var apiKey = userPass.Value.Key;
-
+                var apiKey = GetApiKey(req, userPass.Value.Key);
                 PreAuthenticateWithApiKey(req, res, apiKey);
             }
             var bearerToken = req.GetBearerToken();
             if (bearerToken != null)
             {
-                var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(req);
-                using (authRepo as IDisposable)
+                var apiKey = GetApiKey(req, bearerToken);
+                if (apiKey != null)
                 {
-                    if (authRepo.ApiKeyExists(bearerToken))
-                    {
-                        if (RequireSecureConnection && !req.IsSecureConnection)
-                            throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                    PreAuthenticateWithApiKey(req, res, apiKey);
+                }
+            }
 
-                        PreAuthenticateWithApiKey(req, res, bearerToken);
-                    }
+            if (AllowInHttpParams)
+            {
+                var apiKey = req.QueryString[Keywords.ApiKeyParam] ?? req.FormData[Keywords.ApiKeyParam];
+                if (apiKey != null)
+                {
+                    PreAuthenticateWithApiKey(req, res, GetApiKey(req, apiKey));
                 }
             }
         }
 
-        private static void PreAuthenticateWithApiKey(IRequest req, IResponse res, string apiKey)
+        protected virtual ApiKey GetApiKey(IRequest req, string apiKey)
         {
+            var authRepo = (IManageApiKeys)HostContext.AppHost.GetAuthRepository(req);
+            using (authRepo as IDisposable)
+            {
+                return authRepo.GetApiKey(apiKey);
+            }
+        }
+
+        protected virtual void ValidateApiKey(ApiKey apiKey)
+        {
+            if (apiKey == null)
+                throw HttpError.NotFound("ApiKey does not exist");
+
+            if (apiKey.CancelledDate != null)
+                throw HttpError.Forbidden("ApiKey has been cancelled");
+
+            if (apiKey.ExpiryDate != null && DateTime.UtcNow > apiKey.ExpiryDate.Value)
+                throw HttpError.Forbidden("ApiKey has expired");
+        }
+
+        private void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
+        {
+            if (RequireSecureConnection && !req.IsSecureConnection)
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+
+            ValidateApiKey(apiKey);
+
+            var apiSessionKey = GetSessionKey(apiKey.Id);
+            if (SessionCacheDuration != null)
+            {
+                var session = req.GetCacheClient().Get<IAuthSession>(apiSessionKey);
+
+                if (session != null)
+                    session = HostContext.AppHost.OnSessionFilter(session, session.Id);
+
+                if (session != null)
+                {
+                    req.Items[Keywords.ApiKey] = apiKey;
+                    req.Items[Keywords.Session] = session;
+                    return;
+                }
+            }
+
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)			
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
@@ -261,10 +307,18 @@ namespace ServiceStack.Auth
                 {
                     provider = Name,
                     UserName = "ApiKey",
-                    Password = apiKey,
+                    Password = apiKey.Id,
                 });
             }
+
+            if (SessionCacheDuration != null)
+            {
+                var session = req.GetSession();
+                req.GetCacheClient().Set(apiSessionKey, session, SessionCacheDuration);
+            }
         }
+
+        public static string GetSessionKey(string apiKey) => "key:sess:" + apiKey;
 
         public void Register(IAppHost appHost, AuthFeature feature)
         {

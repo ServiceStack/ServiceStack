@@ -52,7 +52,7 @@ namespace ServiceStack
         }
     }
 
-    public class AutoQueryViewerConfig
+    public class AutoQueryViewerConfig : IMeta
     {
         /// <summary>
         /// The BaseUrl of the ServiceStack instance (inferred)
@@ -132,13 +132,15 @@ namespace ServiceStack
         /// The default icon for each of your AutoQuery Services
         /// </summary>
         public string IconUrl { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     [Exclude(Feature.Soap)]
     [Route("/autoquery/metadata")]
     public class AutoQueryMetadata : IReturn<AutoQueryMetadataResponse> { }
 
-    public class AutoQueryViewerUserInfo
+    public class AutoQueryViewerUserInfo : IMeta
     {
         /// <summary>
         /// Returns true if the User Is Authenticated
@@ -149,6 +151,8 @@ namespace ServiceStack
         /// How many queries are available to this user
         /// </summary>
         public int QueryCount { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class AutoQueryConvention
@@ -158,14 +162,15 @@ namespace ServiceStack
         public string Types { get; set; }
     }
 
-    public class AutoQueryOperation
+    public class AutoQueryOperation : IMeta
     {
         public string Request { get; set; }
         public string From { get; set; }
         public string To { get; set; }
+        public Dictionary<string, string> Meta { get; set; }
     }
 
-    public class AutoQueryMetadataResponse
+    public class AutoQueryMetadataResponse : IMeta
     {
         public AutoQueryViewerConfig Config { get; set; }
 
@@ -176,6 +181,8 @@ namespace ServiceStack
         public List<MetadataType> Types { get; set; }
 
         public ResponseStatus ResponseStatus { get; set; }
+
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     [Restrict(VisibilityTo = RequestAttributes.None)]
@@ -225,8 +232,7 @@ namespace ServiceStack
             foreach (var op in metadataTypes.Operations)
             {
                 if (op.Request.Inherits != null 
-                    && (op.Request.Inherits.Name.StartsWith("QueryBase`") ||
-                        op.Request.Inherits.Name.StartsWith("QueryDb`") || 
+                    && (op.Request.Inherits.Name.StartsWith("QueryDb`") || 
                         op.Request.Inherits.Name.StartsWith("QueryData`"))
                     )
                 {

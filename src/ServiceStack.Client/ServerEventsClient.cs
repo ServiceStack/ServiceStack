@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
+using ServiceStack.Messaging;
 using ServiceStack.Text;
 
 namespace ServiceStack
@@ -36,6 +37,7 @@ namespace ServiceStack
         public string ProfileUrl { get; set; }
         public bool IsAuthenticated { get; set; }
         public string[] Channels { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 
     public class ServerEventMessage : IMeta
@@ -69,14 +71,19 @@ namespace ServiceStack
         public static int BufferSize = 1024 * 64;
         static int DefaultHeartbeatMs = 10 * 1000;
         static int DefaultIdleTimeoutMs = 30 * 1000;
-        private bool stopped = true;
-        public bool IsStopped
-        {
-            get { return stopped; }
-        }
+
+        private int status;
+        private int timesStarted = 0;
+        private int noOfContinuousErrors = 0;
+        private int noOfErrors = 0;
+        private string lastExMsg = null;
+
+        public bool IsStopped => Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Stopped;
+        public string Status => WorkerStatus.ToString(Interlocked.CompareExchange(ref status, 0, 0));
+        public int TimesStarted => Interlocked.CompareExchange(ref timesStarted, 0, 0);
 
         byte[] buffer;
-        Encoding encoding = new UTF8Encoding();
+        readonly Encoding encoding = Encoding.UTF8;
 
         HttpWebRequest httpReq;
         HttpWebResponse response;
@@ -85,15 +92,9 @@ namespace ServiceStack
 
         public ServerEventConnect ConnectionInfo { get; private set; }
 
-        public string SubscriptionId
-        {
-            get { return ConnectionInfo != null ? ConnectionInfo.Id : null; }
-        }
+        public string SubscriptionId => ConnectionInfo?.Id;
 
-        public string ConnectionDisplayName
-        {
-            get { return ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)"; }
-        }
+        public string ConnectionDisplayName => ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)";
 
         private string eventStreamPath;
         public string EventStreamUri { get; private set; }
@@ -103,7 +104,7 @@ namespace ServiceStack
             get
             {
                 var meta = this.ServiceClient as IServiceClientMeta;
-                return meta != null ? meta.BaseUri : null;
+                return meta?.BaseUri;
             }
             set
             {
@@ -140,13 +141,20 @@ namespace ServiceStack
         public DateTime LastPulseAt { get; set; }
 
         public Action<ServerEventConnect> OnConnect;
+        public Action<ServerEventJoin> OnJoin;
+        public Action<ServerEventLeave> OnLeave;
+        public Action<ServerEventUpdate> OnUpdate;
         public Action<ServerEventMessage> OnCommand;
         public Action<ServerEventMessage> OnMessage;
         public Action OnHeartbeat;
+        public Action OnReconnect;
         public Action<Exception> OnException;
 
         public Action<WebRequest> EventStreamRequestFilter { get; set; }
         public Action<WebRequest> HeartbeatRequestFilter { get; set; }
+
+        readonly Dictionary<string, List<Action<ServerEventMessage>>> listeners =
+            new Dictionary<string, List<Action<ServerEventMessage>>>();
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
@@ -166,36 +174,49 @@ namespace ServiceStack
             if (log.IsDebugEnabled)
                 log.DebugFormat("Start()");
 
-            stopped = false;
-            httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
-            //share auth cookies
-            httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
-            //httpReq.AllowReadStreamBuffering = false; //.NET v4.5
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+                throw new ObjectDisposedException(GetType().Name + " has been disposed");
 
-            if (EventStreamRequestFilter != null)
-                EventStreamRequestFilter(httpReq);
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Started)
+                return this;
 
-            response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
-            var stream = response.GetResponseStream();
+            if (Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopped) == WorkerStatus.Stopped ||
+                Interlocked.CompareExchange(ref status, WorkerStatus.Starting, WorkerStatus.Stopping) == WorkerStatus.Stopping)
+            {
+                Interlocked.Increment(ref timesStarted);
 
-            buffer = new byte[BufferSize];
-            cancel = new CancellationTokenSource();
+                httpReq = (HttpWebRequest)WebRequest.Create(EventStreamUri);
+                //share auth cookies
+                httpReq.CookieContainer = ((IHasCookieContainer)ServiceClient).CookieContainer;
+                httpReq.AllowReadStreamBuffering = false;
 
-            //maintain existing tcs so reconnecting is transparent
-            if (connectTcs == null || connectTcs.Task.IsCompleted)
-                connectTcs = new TaskCompletionSource<ServerEventConnect>();
-            if (commandTcs == null || commandTcs.Task.IsCompleted)
-                commandTcs = new TaskCompletionSource<ServerEventCommand>();
-            if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
-                heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
-            if (messageTcs == null || messageTcs.Task.IsCompleted)
-                messageTcs = new TaskCompletionSource<ServerEventMessage>();
+                EventStreamRequestFilter?.Invoke(httpReq);
 
-            LastPulseAt = DateTime.UtcNow;
-            if (log.IsDebugEnabled)
-                log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+                response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
+                var stream = response.GetResponseStream();
 
-            ProcessResponse(stream);
+                buffer = new byte[BufferSize];
+                cancel = new CancellationTokenSource();
+
+                //maintain existing tcs so reconnecting is transparent
+                if (connectTcs == null || connectTcs.Task.IsCompleted)
+                    connectTcs = new TaskCompletionSource<ServerEventConnect>();
+                if (commandTcs == null || commandTcs.Task.IsCompleted)
+                    commandTcs = new TaskCompletionSource<ServerEventCommand>();
+                if (heartbeatTcs == null || heartbeatTcs.Task.IsCompleted)
+                    heartbeatTcs = new TaskCompletionSource<ServerEventHeartbeat>();
+                if (messageTcs == null || messageTcs.Task.IsCompleted)
+                    messageTcs = new TaskCompletionSource<ServerEventMessage>();
+
+                LastPulseAt = DateTime.UtcNow;
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] LastPulseAt: " + DateTime.UtcNow.TimeOfDay);
+
+                if (Interlocked.CompareExchange(ref status, WorkerStatus.Started, WorkerStatus.Starting) != WorkerStatus.Starting)
+                    return this;
+
+                ProcessResponse(stream);
+            }
 
             return this;
         }
@@ -238,21 +259,19 @@ namespace ServiceStack
             var hold = connectTcs;
             connectTcs = new TaskCompletionSource<ServerEventConnect>();
 
-            if (OnConnect != null)
-                OnConnect(ConnectionInfo);
+            OnConnect?.Invoke(ConnectionInfo);
 
             hold.SetResult(ConnectionInfo); //needs to be at end or control yielded before Heartbeat can start
         }
 
         protected void StartNewHeartbeat()
         {
-            if (ConnectionInfo == null || string.IsNullOrEmpty(ConnectionInfo.HeartbeatUrl))
+            if (string.IsNullOrEmpty(ConnectionInfo?.HeartbeatUrl))
                 return;
 
-            if (heartbeatTimer != null)
-                heartbeatTimer.Cancel();
+            heartbeatTimer?.Cancel();
 
-#if !(NETSTANDARD1_1 || NETSTANDARD1_6)
+#if !NETSTANDARD1_1
             heartbeatTimer = PclExportClient.Instance.CreateTimer(Heartbeat,
                 TimeSpan.FromMilliseconds(ConnectionInfo.HeartbeatIntervalMs), this);
 #endif
@@ -261,12 +280,17 @@ namespace ServiceStack
         protected void Heartbeat(object state)
         {
             if (log.IsDebugEnabled)
-                log.DebugFormat("[SSE-CLIENT] Prep for Heartbeat...");
+                log.Debug("[SSE-CLIENT] Prep for Heartbeat...");
 
             if (cancel.IsCancellationRequested)
-                return;
+            {
+                if (log.IsDebugEnabled)
+                    log.Debug("[SSE-CLIENT] Heartbeat CancellationRequested");
 
-            if (ConnectionInfo == null)
+                return;
+            }
+
+            if (ConnectionInfo?.HeartbeatUrl == null)
                 return;
 
             var elapsedMs = (DateTime.UtcNow - LastPulseAt).TotalMilliseconds;
@@ -278,18 +302,25 @@ namespace ServiceStack
 
             EnsureSynchronizationContext();
 
-            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req =>
-            {
+            ConnectionInfo.HeartbeatUrl.GetStringFromUrlAsync(requestFilter: req => {
                     var hold = httpReq;
                     if (hold != null)
                         req.CookieContainer = hold.CookieContainer;
 
-                HeartbeatRequestFilter?.Invoke(req);
-            })
+                    HeartbeatRequestFilter?.Invoke(req);
+
+                    if (log.IsDebugEnabled)
+                        log.Debug("[SSE-CLIENT] Sending Heartbeat...");
+                })
                 .Success(t =>
                 {
                     if (cancel.IsCancellationRequested)
+                    {
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Heartbeat is cancelled.");
+
                         return;
+                    }
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Heartbeat sent to: " + ConnectionInfo.HeartbeatUrl);
@@ -299,7 +330,12 @@ namespace ServiceStack
                 .Error(ex =>
                 {
                     if (cancel.IsCancellationRequested)
+                    {
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Heartbeat error. Heartbeat is cancelled.");
+
                         return;
+                    }
 
                     if (log.IsDebugEnabled)
                         log.Debug("[SSE-CLIENT] Error from Heartbeat: " + ex.UnwrapIfSingleException().Message);
@@ -316,6 +352,30 @@ namespace ServiceStack
             //    log.DebugFormat("[SSE-CLIENT] SynchronizationContext.Current == null");
 
             SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        }
+
+        protected void OnJoinReceived(ServerEventJoin e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnJoinReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnJoin?.Invoke(e);
+        }
+
+        protected void OnLeaveReceived(ServerEventLeave e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnLeaveReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnLeave?.Invoke(e);
+        }
+
+        protected void OnUpdateReceived(ServerEventUpdate e)
+        {
+            if (log.IsDebugEnabled)
+                log.Debug($"[SSE-CLIENT] OnUpdateReceived: ({e.GetType().Name}) #{e.EventId} on #{ConnectionDisplayName} ({string.Join(", ", Channels)})");
+
+            OnUpdate?.Invoke(e);
         }
 
         protected void OnCommandReceived(ServerEventCommand e)
@@ -357,10 +417,10 @@ namespace ServiceStack
             hold.SetResult(e);
         }
 
-        private int errorsCount;
         protected void OnExceptionReceived(Exception ex)
         {
-            errorsCount++;
+            Interlocked.Increment(ref noOfErrors);
+            Interlocked.Increment(ref noOfContinuousErrors);
 
             ex = ex.UnwrapIfSingleException();
             log.Error($"[SSE-CLIENT] OnExceptionReceived: {ex.Message} on #{ConnectionDisplayName}", ex);
@@ -372,26 +432,35 @@ namespace ServiceStack
 
         public void Restart()
         {
+            if (Interlocked.CompareExchange(ref status, 0, 0) == WorkerStatus.Disposed)
+                throw new ObjectDisposedException(GetType().Name + " has been disposed");
+
+            var statusSnapshot = Interlocked.CompareExchange(ref status, 0, 0);
+            if (statusSnapshot == WorkerStatus.Stopping || statusSnapshot == WorkerStatus.Stopped)
+                return;
+
             try
             {
-                InternalStop();
-
-                if (stopped)
-                    return;
-
-                SleepBackOffMultiplier(errorsCount)
-                    .ContinueWith(t =>
+                Interlocked.Exchange(ref status, WorkerStatus.Stopping);
+                InternalStop()
+                    .ContinueWith(task =>
                     {
-                        if (stopped)
-                            return;
-                        try
-                        {
-                            Start();
-                        }
-                        catch (Exception ex)
-                        {
-                            OnExceptionReceived(ex);
-                        }
+                        SleepBackOffMultiplier(Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0))
+                            .ContinueWith(t =>
+                            {
+                                t.ObserveTaskExceptions();
+                                if (IsStopped)
+                                    return;
+                                try
+                                {
+                                    Start();
+                                    OnReconnect?.Invoke();
+                                }
+                                catch (Exception ex)
+                                {
+                                    OnExceptionReceived(ex);
+                                }
+                            });
                     });
             }
             catch (Exception ex)
@@ -422,14 +491,19 @@ namespace ServiceStack
         private string overflowText = "";
         public void ProcessResponse(Stream stream)
         {
+            if (Interlocked.CompareExchange(ref status, 0, 0) != WorkerStatus.Started)
+                return;
+            
             if (!stream.CanRead) return;
 
             var task = stream.ReadAsync(buffer, 0, BufferSize, cancel.Token);
             task.ContinueWith(t =>
             {
+                t.ObserveTaskExceptions();
                 if (cancel.IsCancellationRequested || t.IsCanceled)
                 {
                     httpReq = null;
+
                     return;
                 }
 
@@ -440,7 +514,7 @@ namespace ServiceStack
                     return;
                 }
 
-                errorsCount = 0;
+                Interlocked.Exchange(ref noOfContinuousErrors, 0);
 
                 int len = task.Result;
                 if (len > 0)
@@ -452,7 +526,18 @@ namespace ServiceStack
                         if (pos == 0)
                         {
                             if (currentMsg != null)
-                                ProcessEventMessage(currentMsg);
+                            {
+                                try
+                                {
+                                    ProcessEventMessage(currentMsg);
+                                }
+                                catch (Exception ex)
+                                {
+                                    log.Error($"Unhandled Exception processing {currentMsg.Selector}: {ex.Message}");
+                                    OnException?.Invoke(ex);
+                                }
+                            }
+
                             currentMsg = null;
 
                             text = text.Substring(pos + 1);
@@ -564,6 +649,10 @@ namespace ServiceStack
                             break;
                     }
                 }
+                else if (e.Op == "trigger")
+                {
+                    RaiseEvent(e.Target, e);
+                }
 
                 ServerEventCallback receiver;
                 NamedReceivers.TryGetValue(e.Op, out receiver);
@@ -598,18 +687,21 @@ namespace ServiceStack
         private void ProcessOnJoinMessage(ServerEventMessage e)
         {
             var msg = new ServerEventJoin().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnJoinReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnLeaveMessage(ServerEventMessage e)
         {
             var msg = new ServerEventLeave().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnLeaveReceived(msg);
             OnCommandReceived(msg);
         }
 
         private void ProcessOnUpdateMessage(ServerEventMessage e)
         {
             var msg = new ServerEventUpdate().Populate(e, JsonServiceClient.ParseObject(e.Json));
+            OnUpdateReceived(msg);
             OnCommandReceived(msg);
         }
 
@@ -627,7 +719,7 @@ namespace ServiceStack
 
         public virtual Task Stop()
         {
-            stopped = true;
+            Interlocked.Exchange(ref status, WorkerStatus.Stopped);
             return InternalStop();
         }
 
@@ -642,8 +734,16 @@ namespace ServiceStack
             {
                 EnsureSynchronizationContext();
                 try {
-                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl();
-                } catch (Exception ignore) {}
+                    ConnectionInfo.UnRegisterUrl.GetStringFromUrl(requestFilter: req =>
+                    {
+                        var hold = httpReq;
+                        if (hold != null)
+                            req.CookieContainer = hold.CookieContainer;
+
+                        if (log.IsDebugEnabled)
+                            log.Debug("[SSE-CLIENT] Unregistering...");
+                    });
+                } catch (Exception) {}
             }
 
             using (response)
@@ -674,12 +774,82 @@ namespace ServiceStack
             this.Channels = snapshot.ToArray();
         }
 
+        public ServerEventsClient AddListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (!listeners.TryGetValue(eventName, out handlers))
+                {
+                    listeners[eventName] = handlers = new List<Action<ServerEventMessage>>();
+                }
+
+                handlers.Add(handler);
+            }
+
+            return this;
+        }
+
+        public ServerEventsClient RemoveListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    handlers.Remove(handler);
+                }
+            }
+
+            return this;
+        }
+
+        public void RaiseEvent(string eventName, ServerEventMessage message)
+        {
+            lock (listeners)
+            {
+                List<Action<ServerEventMessage>> handlers;
+                if (listeners.TryGetValue(eventName, out handlers))
+                {
+                    foreach (var handler in handlers)
+                    {
+                        try
+                        {
+                            handler(message);
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error($"Error whilst executing '{eventName}' handler", ex);
+                        }
+                    }
+                }
+            }
+        }
+
+        public virtual string GetStatsDescription()
+        {
+            lock (this)
+            {
+                var sb = StringBuilderCache.Allocate().Append(GetType().Name + " SERVER STATS:\n");
+                sb.AppendLine("===============");
+                sb.AppendLine("Current Status: " + Status);
+                sb.AppendLine("Listening On: " + EventStreamUri);
+                sb.AppendLine("Times Started: " + Interlocked.CompareExchange(ref timesStarted, 0, 0));
+                sb.AppendLine("Num of Errors: " + Interlocked.CompareExchange(ref noOfErrors, 0, 0));
+                sb.AppendLine("Num of Continuous Errors: " + Interlocked.CompareExchange(ref noOfContinuousErrors, 0, 0));
+                sb.AppendLine("Last ErrorMsg: " + lastExMsg);
+                sb.AppendLine("===============");
+                return StringBuilderCache.ReturnAndFree(sb);
+            }
+        }
+
         public void Dispose()
         {
             if (log.IsDebugEnabled)
                 log.Debug("Dispose()");
 
             Stop();
+            Interlocked.Exchange(ref status, WorkerStatus.Disposed);
         }
     }
 
@@ -815,6 +985,10 @@ namespace ServiceStack
                 cmd.DisplayName = msg.Get("displayName");
                 cmd.IsAuthenticated = msg.Get("isAuthenticated") == "true";
                 cmd.ProfileUrl = msg.Get("profileUrl");
+                if (long.TryParse(msg.Get("createdAt"), out long unixTimeMs))
+                {
+                    cmd.CreatedAt = unixTimeMs.FromUnixTimeMs();
+                }
 
                 var channels = msg.Get("channels");
                 if (!string.IsNullOrEmpty(channels))
@@ -829,6 +1003,13 @@ namespace ServiceStack
                 client.Handlers[entry.Key] = entry.Value;
             }
             return client;
+        }
+
+        internal static Task ObserveTaskExceptions(this Task t)
+        {
+            if (t.IsFaulted)
+                t.Exception.Handle(x => true);
+            return t;
         }
     }
 }

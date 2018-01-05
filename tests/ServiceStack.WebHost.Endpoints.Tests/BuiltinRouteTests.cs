@@ -33,7 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -51,14 +51,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_download_metadata_page()
         {
             var contents = "{0}/metadata".Fmt(Config.AbsoluteBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("The following operations are supported."));
+            Assert.That(contents, Does.Contain("The following operations are supported."));
         }
 
         [Test]
         public void Can_download_File_Template_OperationControl()
         {
             var contents = "{0}/json/metadata?op=Hello".Fmt(Config.AbsoluteBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("/hello/{Name}"));
+            Assert.That(contents, Does.Contain("/hello/{Name}"));
         }
     }
 }

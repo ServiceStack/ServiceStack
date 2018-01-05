@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,8 +17,8 @@ namespace ServiceStack.Host
         protected readonly IAppHost AppHost;
         protected readonly ActionContext ActionContext;
         protected readonly ActionInvokerFn ServiceAction;
-        protected readonly IHasRequestFilter[] RequestFilters;
-        protected readonly IHasResponseFilter[] ResponseFilters;
+        protected readonly IRequestFilterBase[] RequestFilters;
+        protected readonly IResponseFilterBase[] ResponseFilters;
 
         public ServiceRunner(IAppHost appHost, ActionContext actionContext)
         {
@@ -35,58 +36,50 @@ namespace ServiceStack.Host
         public T ResolveService<T>(IRequest requestContext)
         {
             var service = AppHost.TryResolve<T>();
-            var requiresContext = service as IRequiresRequest;
-            if (requiresContext != null)
+            if (service is IRequiresRequest requiresContext)
             {
                 requiresContext.Request = requestContext;
             }
             return service;
         }
 
-        public virtual void BeforeEachRequest(IRequest requestContext, TRequest request)
+        public virtual void BeforeEachRequest(IRequest req, TRequest request)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
             {
-                requestContext.SetItem("_requestDurationStopwatch", Stopwatch.StartNew());
+                req.SetItem(Keywords.RequestDuration, Stopwatch.StartNew());
             }
             
-            OnBeforeExecute(requestContext, request);
+            OnBeforeExecute(req, request);
         }
 
-        public virtual object AfterEachRequest(IRequest requestContext, TRequest request, object response)
+        public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
         {
-            var requestLogger = AppHost.TryResolve<IRequestLogger>();
-            if (requestLogger != null)
-            {
-                try
-                {
-                    var stopWatch = (Stopwatch)requestContext.GetItem("_requestDurationStopwatch");
-                    requestLogger.Log(requestContext, request, response, stopWatch.Elapsed);
-                }
-                catch (Exception ex)
-                {
-                    Log.Error("Error while logging request: " + request.Dump(), ex);
-                }
-            }
-
             //only call OnAfterExecute if no exception occured
-            return response.IsErrorResponse() ? response : OnAfterExecute(requestContext, response);
+            return response.IsErrorResponse() ? response : OnAfterExecute(req, response);
         }
 
-        public virtual void OnBeforeExecute(IRequest requestContext, TRequest request) { }
+        public virtual void OnBeforeExecute(IRequest req, TRequest request) { }
 
-        public virtual object OnAfterExecute(IRequest requestContext, object response)
+        public virtual object OnAfterExecute(IRequest req, object response)
         {
             return response;
         }
 
-        public virtual object Execute(IRequest request, object instance, TRequest requestDto)
+        [Obsolete("Override ExecuteAsync instead")]
+        public virtual object Execute(IRequest req, object instance, TRequest requestDto)
+        {
+            return ExecuteAsync(req, instance, requestDto);
+        }
+
+        public virtual async Task<object> ExecuteAsync(IRequest req, object instance, TRequest requestDto)
         {
             try
             {
-                BeforeEachRequest(request, requestDto);
+                BeforeEachRequest(req, requestDto);
 
+                var res = req.Response;
                 var container = HostContext.Container;
 
                 if (RequestFilters != null)
@@ -95,18 +88,43 @@ namespace ServiceStack.Host
                     {
                         var attrInstance = requestFilter.Copy();
                         container.AutoWire(attrInstance);
-                        attrInstance.RequestFilter(request, request.Response, requestDto);
+
+                        if (attrInstance is IHasRequestFilter filterSync)
+                            filterSync.RequestFilter(req, res, requestDto);
+                        else if (attrInstance is IHasRequestFilterAsync filterAsync)
+                            await filterAsync.RequestFilterAsync(req, res, requestDto);
+
                         AppHost.Release(attrInstance);
-                        if (request.Response.IsClosed) return null;
+                        if (res.IsClosed) 
+                            return null;
                     }
                 }
 
-                var response = AfterEachRequest(request, requestDto, ServiceAction(instance, requestDto));
-                var error = response as IHttpError;
-                if (error != null)
+                var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto));
+
+                if (HostContext.StrictMode)
+                {
+                    if (response != null && response.GetType().IsValueType)
+                        throw new StrictModeException(
+                            $"'{requestDto.GetType().Name}' Service cannot return Value Types for its Service Responses. " +
+                            $"You can embed its '{response.GetType().Name}' return value in a Response DTO or return as raw data in a string or byte[]",
+                            StrictModeCodes.ReturnsValueType);
+                }
+
+                if (response is Task taskResponse)
+                {
+                    if (taskResponse.Status == TaskStatus.Created)
+                        taskResponse.Start();
+
+                    await taskResponse;
+                    response = taskResponse.GetResult();
+                }
+                LogRequest(req, requestDto, response);
+
+                if (response is IHttpError error)
                 {
                     var ex = (Exception) error;
-                    var result = HandleException(request, requestDto, ex);
+                    var result = await HandleExceptionAsync(req, requestDto, ex);
 
                     if (result == null)
                         throw ex;
@@ -114,50 +132,6 @@ namespace ServiceStack.Host
                     return result;
                 }
 
-                var taskResponse = response as Task;
-                if (taskResponse != null)
-                {
-                    if (taskResponse.Status == TaskStatus.Created)
-                    {
-                        taskResponse.Start();
-                    }
-                    return taskResponse.ContinueWith(task =>
-                    {
-                        if (task.IsFaulted)
-                        {
-                            var ex = task.Exception.UnwrapIfSingleException();
-
-                            //Async Exception Handling
-                            var result = HandleException(request, requestDto, ex);
-
-                            if (result == null)
-                                return ex;
-
-                            return result;
-                        }
-
-                        response = task.GetResult();
-                        if (ResponseFilters != null)
-                        {
-                            //Async Exec ResponseFilters
-                            foreach (var responseFilter in ResponseFilters)
-                            {
-                                var attrInstance = responseFilter.Copy();
-                                container.AutoWire(attrInstance);
-
-                                attrInstance.ResponseFilter(request, request.Response, response);
-                                AppHost.Release(attrInstance);
-
-                                if (request.Response.IsClosed)
-                                    return null;
-                            }
-                        }
-
-                        return response;
-                    });
-                }
-
-                //Sync Exec ResponseFilters
                 if (ResponseFilters != null)
                 {
                     foreach (var responseFilter in ResponseFilters)
@@ -165,10 +139,15 @@ namespace ServiceStack.Host
                         var attrInstance = responseFilter.Copy();
                         container.AutoWire(attrInstance);
 
-                        attrInstance.ResponseFilter(request, request.Response, response);
+                        if (attrInstance is IHasResponseFilter filter)
+                            filter.ResponseFilter(req, res, response);
+                        else if (attrInstance is IHasResponseFilterAsync filterAsync)
+                            await filterAsync.ResponseFilterAsync(req, res, response);
+
                         AppHost.Release(attrInstance);
 
-                        if (request.Response.IsClosed) return null;
+                        if (res.IsClosed)
+                            return null;
                     }
                 }
 
@@ -177,22 +156,46 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 //Sync Exception Handling
-                var result = HandleException(request, requestDto, ex);
+                var result = await HandleExceptionAsync(req, requestDto, ex);
 
-                if (result == null) throw;
+                if (result == null)
+                    throw;
 
                 return result;
             }
         }
 
-        public virtual object Execute(IRequest requestContext, object instance, IMessage<TRequest> request)
+        private void LogRequest(IRequest req, object requestDto, object response)
         {
-            return Execute(requestContext, instance, request.GetBody());
+            var requestLogger = AppHost.TryResolve<IRequestLogger>();
+            if (requestLogger != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                try
+                {
+                    req.Items[Keywords.HasLogged] = true;
+                    var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
+                    requestLogger.Log(req, requestDto, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error while logging req: " + req.Dump(), ex);
+                }
+            }
         }
 
-        public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex)
+        public virtual object Execute(IRequest req, object instance, IMessage<TRequest> request)
         {
-            var errorResponse = HostContext.RaiseServiceException(request, requestDto, ex)
+            var task = ExecuteAsync(req, instance, request.GetBody());
+            return task.Result;
+        }
+
+        [Obsolete("Override HandleExceptionAsync instead")]
+        public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex) => null;
+
+        public virtual async Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex)
+        {
+            var errorResponse = HandleException(request, requestDto, ex)
+                ?? await HostContext.RaiseServiceException(request, requestDto, ex)
                 ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
             AfterEachRequest(request, requestDto, errorResponse ?? ex);
@@ -205,11 +208,12 @@ namespace ServiceStack.Host
             var msgFactory = AppHost.TryResolve<IMessageFactory>();
             if (msgFactory == null)
             {
-                return Execute(requestContext, instance, request);
+                var task = ExecuteAsync(requestContext, instance, request);
+                return task.Result;
             }
 
-            //Capture and persist this async request on this Services 'In Queue' 
-            //for execution after this request has been completed
+            //Capture and persist this async req on this Services 'In Queue' 
+            //for execution after this req has been completed
             using (var producer = msgFactory.CreateMessageProducer())
             {
                 producer.Publish(request);

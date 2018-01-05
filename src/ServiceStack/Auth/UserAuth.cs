@@ -7,17 +7,14 @@ namespace ServiceStack.Auth
 {
     public class UserAuth : IUserAuth
     {
-        public UserAuth()
-        {
-            Roles = new List<string>();
-            Permissions = new List<string>();
-        }
-
         [AutoIncrement]
         public virtual int Id { get; set; }
 
+        [Index]
         public virtual string UserName { get; set; }
+        [Index]
         public virtual string Email { get; set; }
+
         public virtual string PrimaryEmail { get; set; }
         public virtual string PhoneNumber { get; set; }
         public virtual string FirstName { get; set; }
@@ -42,8 +39,8 @@ namespace ServiceStack.Auth
         public virtual string Salt { get; set; }
         public virtual string PasswordHash { get; set; }
         public virtual string DigestHa1Hash { get; set; }
-        public virtual List<string> Roles { get; set; }
-        public virtual List<string> Permissions { get; set; }
+        public virtual List<string> Roles { get; set; } = new List<string>();
+        public virtual List<string> Permissions { get; set; } = new List<string>();
         public virtual DateTime CreatedDate { get; set; }
         public virtual DateTime ModifiedDate { get; set; }
         public virtual int InvalidLoginAttempts { get; set; }
@@ -59,8 +56,6 @@ namespace ServiceStack.Auth
 
     public class UserAuthDetails : IUserAuthDetails
     {
-        public UserAuthDetails() { Items = new Dictionary<string, string>(); }
-
         [AutoIncrement]
         public virtual int Id { get; set; }
 
@@ -95,7 +90,7 @@ namespace ServiceStack.Auth
         public virtual DateTime? RefreshTokenExpiry { get; set; }
         public virtual string RequestToken { get; set; }
         public virtual string RequestTokenSecret { get; set; }
-        public virtual Dictionary<string, string> Items { get; set; }
+        public virtual Dictionary<string, string> Items { get; set; } = new Dictionary<string, string>();
         public virtual string AccessToken { get; set; }
         public virtual string AccessTokenSecret { get; set; }
         public virtual DateTime CreatedDate { get; set; }
@@ -192,8 +187,7 @@ namespace ServiceStack.Auth
             if (!other.Email.IsNullOrEmpty() && (overwriteReserved || instance.Email.IsNullOrEmpty()))
                 instance.Email = other.Email;
 
-            var userAuth = instance as IUserAuth;
-            if (userAuth != null)
+            if (instance is IUserAuth userAuth)
             {
                 if (!other.Email.IsNullOrEmpty() && (overwriteReserved || userAuth.PrimaryEmail.IsNullOrEmpty()))
                     userAuth.PrimaryEmail = other.Email;
@@ -311,12 +305,27 @@ namespace ServiceStack.Auth
 
         public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth)
         {
-            var feature = HostContext.GetPlugin<AuthFeature>();
-            if (feature?.MaxLoginAttempts == null) return;
+            repo.RecordSuccessfulLogin(userAuth, rehashPassword:false, password:null);
+        }
+        
+        public static void RecordSuccessfulLogin(this IUserAuthRepository repo, IUserAuth userAuth, bool rehashPassword, string password)
+        {
+            var recordLoginAttempts = HostContext.GetPlugin<AuthFeature>()?.MaxLoginAttempts != null;
+            if (recordLoginAttempts)
+            {
+                userAuth.InvalidLoginAttempts = 0;
+                userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
+            }
 
-            userAuth.InvalidLoginAttempts = 0;
-            userAuth.LastLoginAttempt = userAuth.ModifiedDate = DateTime.UtcNow;
-            repo.SaveUserAuth(userAuth);
+            if (rehashPassword)
+            {
+                userAuth.PopulatePasswordHashes(password);
+            }
+
+            if (recordLoginAttempts || rehashPassword)
+            {
+                repo.SaveUserAuth(userAuth);
+            }
         }
 
         public static void RecordInvalidLoginAttempt(this IUserAuthRepository repo, IUserAuth userAuth)
@@ -405,9 +414,11 @@ namespace ServiceStack.Auth
                     case "FacebookUserName":
                         authSession.FacebookUserName = entry.Value;
                         break;
+                    case "given_name":
                     case "FirstName":
                         session.FirstName = entry.Value;
                         break;
+                    case "family_name":
                     case "LastName":
                         session.LastName = entry.Value;
                         break;

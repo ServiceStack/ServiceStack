@@ -1,16 +1,10 @@
-﻿@model CheckMvc.Controllers.HomeViewModel
+﻿@using ServiceStack.Html
+@model CheckMvc.Controllers.HomeViewModel
 
-<!DOCTYPE html>
+<div>
+    <h1>@Model.Name Page</h1>
 
-<html>
-<head>
-    <title>MVC Home Index</title>
-</head>
-<body>
-    <div>
-        <h1>@Model.Name Page</h1>
+    <h3>@Model.Name Counter: @Model.Counter</h3>
+</div>
 
-        <h3>@Model.Name Counter: @Model.Counter</h3>
-    </div>
-</body>
-</html>
+@ServiceStack.MiniProfiler.Profiler.RenderIncludes().AsRaw()

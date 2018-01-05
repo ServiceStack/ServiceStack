@@ -14,13 +14,13 @@ namespace RazorRockstars.Web.Tests
 	{
         Stopwatch startedAt;
 
-	    [TestFixtureSetUp]
+	    [OneTimeSetUp]
 	    public void TestFixtureSetUp()
 	    {
 	        startedAt = Stopwatch.StartNew();
 	    }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();
@@ -273,7 +273,7 @@ namespace RazorRockstars.Web.Tests
             AssertStatus(Host + "/fallback/extrapath", HttpStatusCode.NotFound);
         }
 
-	    [Explicit,Test]
+	    [Ignore("Load Test"), Test]
 	    public void Test_multithread_errors()
 	    {
 	        var times = 1000;

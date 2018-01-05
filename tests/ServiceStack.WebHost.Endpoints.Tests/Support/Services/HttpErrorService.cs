@@ -4,7 +4,6 @@ using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
 using ServiceStack.Model;
-using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
@@ -81,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
     public class Custom404Exception : Exception, IResponseStatusConvertible, IHasStatusCode
     {
-        public Custom404Exception(string message) : base(message) {}
+        public Custom404Exception(string message) : base(message) { }
 
         public ResponseStatus ToResponseStatus()
         {
@@ -136,7 +135,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 
         public object Any(Throw404Description request)
         {
-            throw new HttpError(HttpStatusCode.NotFound) {
+            throw new HttpError(HttpStatusCode.NotFound)
+            {
                 StatusDescription = "Custom Status Description"
             };
         }
@@ -161,7 +161,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
             throw new WebServiceException(request.Message ?? "Message")
             {
                 StatusCode = request.StatusCode ?? 500,
-                StatusDescription = request.StatusDescription ?? "StatusDescription",                
+                StatusDescription = request.StatusDescription ?? "StatusDescription",
                 ResponseDto = request,
             };
         }

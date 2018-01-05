@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -31,7 +32,7 @@ namespace ServiceStack
         public Action<IEventSubscription, Dictionary<string, string>> OnConnect { get; set; }
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
-        public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -47,8 +48,9 @@ namespace ServiceStack
 
             WriteEvent = (res, frame) =>
             {
-                res.OutputStream.Write(frame);
-                res.Flush();
+                var bytes = frame.ToUtf8Bytes();
+                res.OutputStream.WriteAsync(bytes, 0, bytes.Length)
+                    .Then(_ => res.OutputStream.FlushAsync());
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -176,9 +178,12 @@ namespace ServiceStack
                     { "isAuthenticated", session != null && session.IsAuthenticated ? "true": "false" },
                     { "displayName", displayName },
                     { "channels", string.Join(",", channels) },
+                    { "createdAt", now.ToUnixTimeMs().ToString() },
                     { AuthMetadataProvider.ProfileUrlKey, session.GetProfileUrl() ?? AuthMetadataProvider.DefaultNoProfileImgUrl },
-                }
+                },
+                ServerArgs = new Dictionary<string, string>(),
             };
+            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta);
 
             feature.OnCreated?.Invoke(subscription, req);
 
@@ -196,7 +201,7 @@ namespace ServiceStack
             heartbeatUrl = AddSessionParamsIfAny(heartbeatUrl, req);
             unRegisterUrl = AddSessionParamsIfAny(unRegisterUrl, req);
 
-            subscription.ConnectArgs = new Dictionary<string, string>(subscription.Meta) {
+            subscription.ConnectArgs = new Dictionary<string, string>(subscription.ConnectArgs) {
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
@@ -268,7 +273,7 @@ namespace ServiceStack
             if (subscription == null)
             {
                 res.StatusCode = 404;
-                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
                 res.EndHttpHandlerRequest(skipHeaders: true);
                 return TypeConstants.EmptyTask;
             }
@@ -284,7 +289,7 @@ namespace ServiceStack
             if (!serverEvents.Pulse(subscriptionId))
             {
                 res.StatusCode = 404;
-                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId);
+                res.StatusDescription = ErrorMessages.SubscriptionNotExistsFmt.Fmt(subscriptionId.SafeInput());
             }
             res.EndHttpHandlerRequest(skipHeaders: true);
             return TypeConstants.EmptyTask;
@@ -331,11 +336,11 @@ namespace ServiceStack
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
             if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id).SafeInput());
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (!feature.CanAccessSubscription(base.Request, subscription))
-                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
             ServerEvents.UnRegister(subscription.SubscriptionId);
 
@@ -347,11 +352,11 @@ namespace ServiceStack
             var subscription = ServerEvents.GetSubscriptionInfo(request.Id);
 
             if (subscription == null)
-                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id));
+                throw HttpError.NotFound(ErrorMessages.SubscriptionNotExistsFmt.Fmt(request.Id.SafeInput()));
 
             var feature = HostContext.GetPlugin<ServerEventsFeature>();
             if (!feature.CanAccessSubscription(base.Request, subscription))
-                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id));
+                throw HttpError.Forbidden(ErrorMessages.SubscriptionForbiddenFmt.Fmt(request.Id.SafeInput()));
 
             if (request.UnsubscribeChannels != null)
                 ServerEvents.UnsubscribeFromChannels(subscription.SubscriptionId, request.UnsubscribeChannels);
@@ -397,12 +402,19 @@ namespace ServiceStack
         private long LastPulseAtTicks = DateTime.UtcNow.Ticks;
         public DateTime LastPulseAt
         {
-            get { return new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc); }
-            set { Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks); }
+            get => new DateTime(Interlocked.Read(ref LastPulseAtTicks), DateTimeKind.Utc);
+            set => Interlocked.Exchange(ref LastPulseAtTicks, value.Ticks);
         }
+
+        private long subscribed = 1;
 
         private readonly IResponse response;
         private long msgId;
+
+        public IResponse Response => this.response;
+        public IRequest Request => this.response.Request;
+
+        public long LastMessageId => Interlocked.Read(ref msgId);
 
         public EventSubscription(IResponse response)
         {
@@ -419,7 +431,7 @@ namespace ServiceStack
 
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
-        public Action<IResponse, string> OnPublish { get; set; }
+        public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
@@ -440,18 +452,20 @@ namespace ServiceStack
 
         public void PublishRaw(string frame)
         {
+            if (response.IsClosed) return;
+
             try
             {
                 lock (response)
                 {
                     WriteEvent(response, frame);
 
-                    OnPublish?.Invoke(response, frame);
+                    OnPublish?.Invoke(this, response, frame);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error("Error publishing notification to: " + frame.SafeSubstring(0, 50), ex);
+                Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
                 OnError?.Invoke(this, ex);
 
                 // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
@@ -476,12 +490,19 @@ namespace ServiceStack
 
         public void Unsubscribe()
         {
-            OnUnsubscribe?.Invoke(this);
+            if (Interlocked.CompareExchange(ref subscribed, 0, 1) == 1)
+            {
+                var fn = OnUnsubscribe;
+                OnUnsubscribe = null;
+                fn?.Invoke(this);
+            }
+            Dispose();
         }
 
         public void Dispose()
         {
             OnUnsubscribe = null;
+            if (response.IsClosed) return;
             try
             {
                 lock (response)
@@ -502,6 +523,7 @@ namespace ServiceStack
     {
         DateTime CreatedAt { get; set; }
         DateTime LastPulseAt { get; set; }
+        long LastMessageId { get; }
 
         string[] Channels { get; }
         string UserId { get; }
@@ -521,6 +543,9 @@ namespace ServiceStack
         void Publish(string selector, string message);
         void PublishRaw(string frame);
         void Pulse();
+
+        Dictionary<string,string> ServerArgs { get; set; }
+        Dictionary<string,string> ConnectArgs { get; set; }
     }
 
     public class SubscriptionInfo
@@ -538,14 +563,16 @@ namespace ServiceStack
 
         public Dictionary<string, string> Meta { get; set; }
         public Dictionary<string, string> ConnectArgs { get; set; }
+        public Dictionary<string, string> ServerArgs { get; set; }
     }
 
     public class MemoryServerEvents : IServerEvents
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(MemoryServerEvents));
+        public static bool FlushNopOnSubscription = true;
 
-        public TimeSpan IdleTimeout { get; set; }
-        public TimeSpan HouseKeepingInterval { get; set; }
+        public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromSeconds(30);
+        public TimeSpan HouseKeepingInterval { get; set; } = TimeSpan.FromSeconds(5);
 
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
@@ -556,7 +583,6 @@ namespace ServiceStack
         public Action<IEventSubscription> NotifyHeartbeat { get; set; }
         public Func<object, string> Serialize { get; set; }
 
-
         public bool NotifyChannelOfSubscriptions { get; set; }
 
         public ConcurrentDictionary<string, IEventSubscription> Subcriptions;
@@ -566,6 +592,8 @@ namespace ServiceStack
         public ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> SessionSubcriptions;
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
+
+        private bool isDisposed;
 
         public MemoryServerEvents()
         {
@@ -609,6 +637,8 @@ namespace ServiceStack
 
         public void NotifyAll(string selector, object message)
         {
+            if (isDisposed) return;
+
             foreach (var sub in Subcriptions.ValuesWithoutLock())
             {
                 sub.Publish(selector, Serialize(message));
@@ -622,6 +652,8 @@ namespace ServiceStack
 
         public void NotifyChannels(string[] channels, string selector, Dictionary<string, string> meta)
         {
+            if (isDisposed) return;
+
             foreach (var channel in channels)
             {
                 NotifyChannel(channel, selector, meta);
@@ -651,6 +683,8 @@ namespace ServiceStack
         protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
             string key, string selector, object message, string channel = null)
         {
+            if (isDisposed) return;
+
             var subs = map.TryGet(key);
             if (subs == null)
                 return;
@@ -669,6 +703,7 @@ namespace ServiceStack
                                 string.Join(", ", sub.Channels));
 
                         expired.Add(sub);
+	                    continue;
                     }
 
                     if (Log.IsDebugEnabled)
@@ -716,6 +751,8 @@ namespace ServiceStack
         protected void Notify(ConcurrentDictionary<string, IEventSubscription> map, string key, string selector,
             object message, string channel = null)
         {
+            if (isDisposed) return;
+
             var sub = map.TryGet(key);
             if (sub == null || !sub.HasChannel(channel))
                 return;
@@ -740,6 +777,8 @@ namespace ServiceStack
 
         public bool Pulse(string id)
         {
+            if (isDisposed) return false;
+
             var sub = GetSubscription(id);
             if (sub == null)
                 return false;
@@ -795,8 +834,8 @@ namespace ServiceStack
         private long lastCleanAtTicks = DateTime.UtcNow.Ticks;
         private DateTime LastCleanAt
         {
-            get { return new DateTime(Interlocked.Read(ref lastCleanAtTicks), DateTimeKind.Utc); }
-            set { Interlocked.Exchange(ref lastCleanAtTicks, value.Ticks); }
+            get => new DateTime(Interlocked.Read(ref lastCleanAtTicks), DateTimeKind.Utc);
+            set => Interlocked.Exchange(ref lastCleanAtTicks, value.Ticks);
         }
 
         public int RemoveExpiredSubscriptions()
@@ -825,6 +864,8 @@ namespace ServiceStack
 
         public void SubscribeToChannels(string subscriptionId, string[] channels)
         {
+            if (isDisposed) return;
+
             if (subscriptionId == null)
                 throw new ArgumentNullException(nameof(subscriptionId));
             if (channels == null)
@@ -855,6 +896,8 @@ namespace ServiceStack
 
         public void UnsubscribeFromChannels(string subscriptionId, string[] channels)
         {
+            if (isDisposed) return;
+
             if (subscriptionId == null)
                 throw new ArgumentNullException(nameof(subscriptionId));
             if (channels == null)
@@ -918,8 +961,20 @@ namespace ServiceStack
             return ret;
         }
 
+        public List<SubscriptionInfo> GetAllSubscriptionInfos()
+        {
+            var ret = new List<SubscriptionInfo>();
+            foreach (var sub in Subcriptions.ValuesWithoutLock())
+            {
+                ret.Add(sub.GetInfo());
+            }
+            return ret;
+        }
+
         public void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null)
         {
+            if (isDisposed) return;
+
             try
             {
                 lock (subscription)
@@ -941,7 +996,7 @@ namespace ServiceStack
 
                     if (NotifyChannelOfSubscriptions && subscription.Channels != null && NotifyJoin != null)
                         NotifyJoin(subscription);
-                    else
+                    else if (FlushNopOnSubscription)
                         FlushNopToChannels(subscription.Channels);
                 }
             }
@@ -956,6 +1011,8 @@ namespace ServiceStack
 
         public void FlushNopToChannels(string[] channels)
         {
+            if (isDisposed) return;
+
             //For some yet-to-be-determined reason we need to send something to all channels to determine
             //which subscriptions are no longer connected so we can dispose of them right then and there.
             //Failing to do this for 10 simultaneous requests on Local IIS will hang the entire Website instance
@@ -1029,6 +1086,8 @@ namespace ServiceStack
 
         void HandleUnsubscription(IEventSubscription subscription)
         {
+            if (isDisposed) return;
+
             lock (subscription)
             {
                 foreach (var channel in subscription.Channels ?? EventSubscription.UnknownChannel)
@@ -1051,6 +1110,8 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            if (isDisposed) return;
+            isDisposed = true;
             Reset();
         }
     }
@@ -1073,6 +1134,8 @@ namespace ServiceStack
         SubscriptionInfo GetSubscriptionInfo(string id);
 
         List<SubscriptionInfo> GetSubscriptionInfosByUserId(string userId);
+
+        List<SubscriptionInfo> GetAllSubscriptionInfos();
 
         // Admin API's
         void Register(IEventSubscription subscription, Dictionary<string, string> connectArgs = null);
@@ -1126,6 +1189,8 @@ namespace ServiceStack
                 UserAddress = sub.UserAddress,
                 IsAuthenticated = sub.IsAuthenticated,
                 Meta = sub.Meta,
+                ConnectArgs = sub.ConnectArgs,
+                ServerArgs = sub.ServerArgs,
             };
         }
 

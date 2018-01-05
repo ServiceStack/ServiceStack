@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Host;
 using ServiceStack.Web;
 
@@ -13,10 +16,10 @@ namespace ServiceStack.Testing
         public MockHttpResponse(IRequest request = null)
         {
             this.Request = request;
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = new NameValueCollection();
             this.OutputStream = new MemoryStream();
             this.TextWritten = new StringBuilder();
-            this.Cookies = new Cookies(this);
+            this.Cookies = HostContext.AssertAppHost().GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
 
@@ -28,13 +31,18 @@ namespace ServiceStack.Testing
 
         public StringBuilder TextWritten { get; set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
         public ICookies Cookies { get; set; }
 
         public void AddHeader(string name, string value)
         {
             this.Headers.Add(name, value);
+        }
+
+        public void RemoveHeader(string name)
+        {
+            Headers.Remove(name);
         }
 
         public string GetHeader(string name)
@@ -50,11 +58,6 @@ namespace ServiceStack.Testing
         public Stream OutputStream { get; }
 
         public object Dto { get; set; }
-
-        public void Write(string text)
-        {
-            this.TextWritten.Append(text);
-        }
 
         public bool UseBufferedStream { get; set; }
 
@@ -72,6 +75,8 @@ namespace ServiceStack.Testing
         {
             OutputStream.Flush();
         }
+
+        public Task FlushAsync(CancellationToken token = default(CancellationToken)) => OutputStream.FlushAsync(token);
 
         public string ReadAsString()
         {
@@ -95,6 +100,8 @@ namespace ServiceStack.Testing
         }
 
         public bool KeepAlive { get; set; }
+
+        public bool HasStarted { get; set; }
 
         public Dictionary<string, object> Items { get; }
 

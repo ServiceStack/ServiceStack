@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.OrmLite.PostgreSQL</name>
+    </assembly>
+    <members>
+        <member name="M:ServiceStack.OrmLite.PostgreSQL.Converters.PostgreSqlConverterExtensions.ToBinary(ServiceStack.OrmLite.IOrmLiteConverter,System.Object)">
+            <summary>
+            based on Npgsql2's source: Npgsql2\src\NpgsqlTypes\NpgsqlTypeConverters.cs
+            </summary>
+        </member>
+    </members>
+</doc>

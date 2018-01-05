@@ -1,0 +1,19 @@
+﻿@{
+    var title = ((string) ViewBag.Title).ToLowerInvariant();
+    var links = new Dictionary<string, string> {
+        {"/stars/alive/grohl","Dave Grohl"},
+        {"/stars/alive/vedder/","Eddie Vedder"},
+        {"/stars/alive/springsteen/","Bruce Springsteen"},
+        {"/stars/alive/love/","Courtney Love"},
+    };
+}
+<div class="menu">
+    <ul>
+        <li class="label"><b>Living Rockstars:</b></li>
+        @foreach(var link in links)
+        {
+            var active = link.Value.ToLowerInvariant() == title ? "active" : "";
+            <li class="@active"><a href="@link.Key">@link.Value</a></li>
+        }
+    </ul>                
+</div>

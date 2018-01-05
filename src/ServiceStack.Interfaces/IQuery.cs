@@ -7,11 +7,34 @@ namespace ServiceStack
     //Interfaces and DTO's used in AutoQuery
     public interface IQuery : IMeta
     {
+        /// <summary>
+        /// How many results to skip
+        /// </summary>
         int? Skip { get; set; }
+
+        /// <summary>
+        /// How many results to return
+        /// </summary>
         int? Take { get; set; }
+
+        /// <summary>
+        /// List of fields to sort by, can order by multiple fields and inverse order, e.g: Id,-Amount
+        /// </summary>
         string OrderBy { get; set; }
+
+        /// <summary>
+        /// List of fields to sort by descending, can order by multiple fields and inverse order, e.g: -Id,Amount
+        /// </summary>
         string OrderByDesc { get; set; }
+
+        /// <summary>
+        /// Include aggregate data like Total, COUNT(*), COUNT(DISTINCT Field), Sum(Amount), etc
+        /// </summary>
         string Include { get; set; }
+
+        /// <summary>
+        /// The fields to return
+        /// </summary>
         string Fields { get; set; }
     }
 
@@ -118,27 +141,6 @@ namespace ServiceStack
         public virtual Dictionary<string, string> Meta { get; set; }
     }
 
-
-    [Obsolete("Use [QueryDb]")]
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class QueryAttribute : AttributeBase { }
-
-    [Obsolete("Use [QueryDbField]")]
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-    public class QueryFieldAttribute : AttributeBase { }
-
-    [Obsolete("Use QueryDb")]
-    public abstract class QueryBase<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
-
-    [Obsolete("Use QueryDb")]
-    public abstract class QueryBase<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
-
-    [Obsolete("Use IQueryDb<From>")]
-    public interface IQuery<From> : IQueryDb { }
-    [Obsolete("Use IQueryDb<From,Into>")]
-    public interface IQuery<From, Into> : IQueryDb { }
-
-
     public abstract class QueryDb<T> : QueryBase, IQueryDb<T>, IReturn<QueryResponse<T>> { }
     public abstract class QueryDb<From, Into> : QueryBase, IQueryDb<From, Into>, IReturn<QueryResponse<Into>> { }
 
@@ -157,6 +159,9 @@ namespace ServiceStack
         [DataMember(Order = 1)]
         public virtual int Offset { get; set; }
 
+        /// <summary>
+        /// Populate with Include=Total or if registered with: AutoQueryFeature { IncludeTotal = true }
+        /// </summary>
         [DataMember(Order = 2)]
         public virtual int Total { get; set; }
 

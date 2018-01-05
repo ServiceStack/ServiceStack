@@ -13,14 +13,14 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
     {
         protected Register register;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             Tracer.Instance = new Tracer.ConsoleTracer();
             register = CreateAdminUser();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             Tracer.Instance = new Tracer.NullTracer();

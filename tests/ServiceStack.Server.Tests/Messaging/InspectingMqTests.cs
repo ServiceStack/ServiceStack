@@ -36,7 +36,7 @@ namespace ServiceStack.Server.Tests.Messaging
 		IMessageService mqService;
 		IRedisClientsManager redisManager;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void TestFixtureSetUp()
 		{
 			redisManager = new BasicRedisClientManager();
@@ -56,7 +56,7 @@ namespace ServiceStack.Server.Tests.Messaging
 			}
 		}
 		
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void TestFixtureTearDown()
 		{
 			mqService.Dispose();

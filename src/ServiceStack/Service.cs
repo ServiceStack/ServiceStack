@@ -39,12 +39,6 @@ namespace ServiceStack
             return HostContext.ResolveService(this.Request, service);
         }
 
-        [Obsolete("Use Gateway")]
-        public object ExecuteRequest(object requestDto)
-        {
-            return HostContext.ServiceController.Execute(requestDto, Request);
-        }
-
         public IRequest Request { get; set; }
 
         protected virtual IResponse Response => Request?.Response;
@@ -53,6 +47,9 @@ namespace ServiceStack
         public virtual ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
 
         private MemoryCacheClient localCache;
+        /// <summary>
+        /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
+        /// </summary>
         public virtual MemoryCacheClient LocalCache => localCache ?? (localCache = HostContext.AppHost.GetMemoryCacheClient(Request));
 
         private IDbConnection db;
@@ -69,7 +66,6 @@ namespace ServiceStack
 
         private IAuthRepository authRepository;
         public virtual IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
-
 
         private IServiceGateway gateway;
         public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
@@ -119,8 +115,14 @@ namespace ServiceStack
             return SessionFeature.GetOrCreateSession<TUserSession>(Cache, Request, Response);
         }
 
+        /// <summary>
+        /// If user found in session for this request is authenticated.
+        /// </summary>
         public virtual bool IsAuthenticated => this.GetSession().IsAuthenticated;
 
+        /// <summary>
+        /// Publish a MQ message over the <see cref="IMessageProducer"></see> implementation.
+        /// </summary>
         public virtual void PublishMessage<T>(T message)
         {
             if (MessageProducer == null)
@@ -129,6 +131,11 @@ namespace ServiceStack
             MessageProducer.Publish(message);
         }
 
+        /// <summary>
+        /// Disposes all created disposable properties of this service
+        /// and executes disposing of all request <see cref="IDposable"></see>s 
+        /// (warning, manualy triggering this might lead to unwanted disposing of all request related objects and services.)
+        /// </summary>
         public virtual void Dispose()
         {
             db?.Dispose();

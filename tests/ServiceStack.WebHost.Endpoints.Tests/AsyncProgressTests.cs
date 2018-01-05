@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -17,15 +17,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         ExampleAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ExampleAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);
+#if NETCORE            
+            appHost.Config.DisableChunkedEncoding = true;
+#endif
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

@@ -1,8 +1,10 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using ServiceStack.DataAnnotations;
 
 namespace ServiceStack
 {
@@ -11,8 +13,11 @@ namespace ServiceStack
     /// </summary>
     public class RequestLogEntry
     {
+        [AutoIncrement]
         public long Id { get; set; }
         public DateTime DateTime { get; set; }
+        public int StatusCode { get; set; }
+        public string StatusDescription { get; set; }
         public string HttpMethod { get; set; }
         public string AbsoluteUri { get; set; }
         public string PathInfo { get; set; }
@@ -29,6 +34,8 @@ namespace ServiceStack
         public object Session { get; set; }
         public object ResponseDto { get; set; }
         public object ErrorResponse { get; set; }
+        public string ExceptionSource { get; set; }
+        public IDictionary ExceptionData { get; set; }
         public TimeSpan RequestDuration { get; set; }
     }
 }

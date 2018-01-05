@@ -54,12 +54,22 @@ namespace ServiceStack.RabbitMq
             channel.RegisterDlq(queueNames.Dlq);
         }
 
+        private static RabbitMqServer GetRabbitMqServer()
+        {
+            if (HostContext.AppHost == null)
+                return null;
+
+            return HostContext.TryResolve<IMessageService>() as RabbitMqServer;
+        }
+
         public static void RegisterQueue(this IModel channel, string queueName)
         {
             var args = new Dictionary<string, object> {
                 {"x-dead-letter-exchange", QueueNames.ExchangeDlq },
                 {"x-dead-letter-routing-key", queueName.Replace(".inq",".dlq").Replace(".priorityq",".dlq") },
             };
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
 
             if (!QueueNames.IsTempQueue(queueName)) //Already declared in GetTempQueueName()
             {
@@ -71,13 +81,21 @@ namespace ServiceStack.RabbitMq
 
         public static void RegisterDlq(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+
+            GetRabbitMqServer()?.CreateQueueFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeDlq, routingKey: queueName);
         }
 
         public static void RegisterTopic(this IModel channel, string queueName)
         {
-            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
+            var args = new Dictionary<string, object>();
+
+            GetRabbitMqServer()?.CreateTopicFilter?.Invoke(queueName, args);
+
+            channel.QueueDeclare(queueName, durable: false, exclusive: false, autoDelete: false, arguments: args);
             channel.QueueBind(queueName, QueueNames.ExchangeTopic, routingKey: queueName);
         }
 
@@ -196,8 +214,23 @@ namespace ServiceStack.RabbitMq
                 return null;
 
             var props = msgResult.BasicProperties;
-            var json = msgResult.Body.FromUtf8Bytes();
-            var body = json.FromJson<T>();
+            T body;
+
+            if (string.IsNullOrEmpty(props.ContentType) || props.ContentType.MatchesContentType(MimeTypes.Json))
+            {
+                var json = msgResult.Body.FromUtf8Bytes();
+                body = json.FromJson<T>();
+            }
+            else
+            {
+                var deserializer = HostContext.ContentTypes.GetStreamDeserializer(props.ContentType);
+                if (deserializer == null)
+                    throw new NotSupportedException("Unknown Content-Type: " + props.ContentType);
+            
+                var ms = MemoryStreamFactory.GetStream(msgResult.Body);
+                body = (T)deserializer(typeof(T), ms);
+                ms.Dispose();
+            }
 
             var message = new Message<T>(body)
             {
@@ -238,7 +271,7 @@ namespace ServiceStack.RabbitMq
                         var bytes = entry.Value as byte[];
                         var value = bytes != null
                             ? bytes.FromUtf8Bytes()
-                            : entry.Value.ToString();
+                            : entry.Value?.ToString();
 
                         message.Meta[entry.Key] = value;
                     }

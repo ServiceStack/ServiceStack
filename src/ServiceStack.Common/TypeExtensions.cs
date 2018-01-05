@@ -8,6 +8,8 @@ namespace ServiceStack
 {
     public delegate object ObjectActivator(params object[] args);
 
+    public delegate object MethodInvoker(object instance, params object[] args);
+
     public static class TypeExtensions
     {
         public static Type[] GetReferencedTypes(this Type type)
@@ -21,17 +23,17 @@ namespace ServiceStack
 
         public static void AddReferencedTypes(Type type, HashSet<Type> refTypes)
         {
-            if (type.BaseType() != null)
+            if (type.BaseType != null)
             {
-                if (!refTypes.Contains(type.BaseType()))
+                if (!refTypes.Contains(type.BaseType))
                 {
-                    refTypes.Add(type.BaseType());
-                    AddReferencedTypes(type.BaseType(), refTypes);
+                    refTypes.Add(type.BaseType);
+                    AddReferencedTypes(type.BaseType, refTypes);
                 }
 
-                if (!type.BaseType().GetGenericArguments().IsEmpty())
+                if (!type.BaseType.GetGenericArguments().IsEmpty())
                 {
-                    foreach (var arg in type.BaseType().GetGenericArguments())
+                    foreach (var arg in type.BaseType.GetGenericArguments())
                     {
                         if (!refTypes.Contains(arg))
                         {
@@ -42,7 +44,7 @@ namespace ServiceStack
                 }
             }
 
-            var properties = type.GetPropertyInfos();
+            var properties = type.GetProperties();
             if (!properties.IsEmpty())
             {
                 foreach (var p in properties)
@@ -100,13 +102,12 @@ namespace ServiceStack
             return ctorFn;
         }
 
-        static Dictionary<ConstructorInfo, ObjectActivator> ActivatorCache =
+        static Dictionary<ConstructorInfo, ObjectActivator> activatorCache =
             new Dictionary<ConstructorInfo, ObjectActivator>();
 
         public static ObjectActivator GetActivator(this ConstructorInfo ctor)
         {
-            ObjectActivator fn;
-            if (ActivatorCache.TryGetValue(ctor, out fn))
+            if (activatorCache.TryGetValue(ctor, out var fn))
                 return fn;
 
             fn = GetActivatorToCache(ctor);
@@ -114,15 +115,87 @@ namespace ServiceStack
             Dictionary<ConstructorInfo, ObjectActivator> snapshot, newCache;
             do
             {
-                snapshot = ActivatorCache;
-                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(ActivatorCache) { [ctor] = fn };
+                snapshot = activatorCache;
+                newCache = new Dictionary<ConstructorInfo, ObjectActivator>(activatorCache) { [ctor] = fn };
 
             } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref ActivatorCache, newCache, snapshot), snapshot));
+                Interlocked.CompareExchange(ref activatorCache, newCache, snapshot), snapshot));
 
             return fn;
         }
 
+        public static MethodInvoker GetInvokerToCache(MethodInfo method)
+        {
+            var pi = method.GetParameters();
+            var paramInstance = Expression.Parameter(typeof(object), "instance");
+            var paramArgs = Expression.Parameter(typeof(object[]), "args");
+
+            var convertFromMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertFromObject));
+
+            var exprArgs = new Expression[pi.Length];
+            for (int i = 0; i < pi.Length; i++)
+            {
+                var index = Expression.Constant(i);
+                var paramType = pi[i].ParameterType;
+                var paramAccessorExp = Expression.ArrayIndex(paramArgs, index);
+                var convertParam = convertFromMethod.MakeGenericMethod(paramType);
+                exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
+            }
+            
+            var methodCall = Expression.Call(Expression.TypeAs(paramInstance, method.DeclaringType), method, exprArgs);
+
+            var convertToMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertToObject));
+            var convertReturn = convertToMethod.MakeGenericMethod(method.ReturnType);
+            
+            var lambda = Expression.Lambda(typeof(MethodInvoker), 
+                Expression.Call(convertReturn, methodCall), 
+                paramInstance, 
+                paramArgs);
+
+            var fn = (MethodInvoker)lambda.Compile();
+            return fn;
+        }
+        
+        static Dictionary<MethodInfo, MethodInvoker> invokerCache =
+            new Dictionary<MethodInfo, MethodInvoker>();
+
+        public static MethodInvoker GetInvoker(this MethodInfo method)
+        {
+            if (invokerCache.TryGetValue(method, out var fn))
+                return fn;
+
+            fn = GetInvokerToCache(method);
+
+            Dictionary<MethodInfo, MethodInvoker> snapshot, newCache;
+            do
+            {
+                snapshot = invokerCache;
+                newCache = new Dictionary<MethodInfo, MethodInvoker>(invokerCache) { [method] = fn };
+
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref invokerCache, newCache, snapshot), snapshot));
+
+            return fn;
+        }
+
+        public static T ConvertFromObject<T>(object value)
+        {
+            if (value == null)
+                return default(T);
+            
+            if (value is T variable)
+                return variable;
+
+            if (typeof(T) == typeof(string) && value is IRawString rs)
+                return (T)(object)rs.ToRawString();
+
+            return value.ConvertTo<T>();
+        }
+
+        public static object ConvertToObject<T>(T value)
+        {
+            return value;
+        }
     }
 
 }

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Razor;
 using ServiceStack.Razor.Managers;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {

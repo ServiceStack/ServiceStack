@@ -99,6 +99,9 @@ namespace ServiceStack.Auth
 
         public bool ValidateResponse(Dictionary<string, string> digestInfo, string PrivateKey, int NonceTimeOut, string DigestHA1, string sequence)
         {
+            if (string.IsNullOrEmpty(DigestHA1))
+                return false;
+            
             var noncevalid = ValidateNonce(digestInfo["nonce"], digestInfo["userhostaddress"], PrivateKey);
             var noncestale = StaleNonce(digestInfo["nonce"], NonceTimeOut);
             var uservalid = CreateAuthResponse(digestInfo, DigestHA1) == digestInfo["response"];

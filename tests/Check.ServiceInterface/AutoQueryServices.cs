@@ -83,6 +83,7 @@ namespace Check.ServiceInterface
         public int? Age { get; set; }
     }
 
+    [Route("/query-custom/rockstars")]
     public class QueryFieldRockstars : QueryDb<Rockstar>
     {
         public string FirstName { get; set; } //default to 'AND FirstName = {Value}'
@@ -106,6 +107,9 @@ namespace Check.ServiceInterface
 
         [QueryDbField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
+
+        [QueryDbField(Template = "{Field} LIKE {Value1} OR {Field} LIKE {Value2}", Field = "FirstName", ValueFormat = "%{0}%")]
+        public string[] FirstNameContainsMulti { get; set; }
     }
 
     public class QueryFieldRockstarsDynamic : QueryDb<Rockstar>

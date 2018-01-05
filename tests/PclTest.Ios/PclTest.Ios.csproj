@@ -76,7 +76,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\pcl\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Net" />
@@ -84,7 +84,7 @@
     <Reference Include="System.Core" />
     <Reference Include="monotouch" />
     <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Interfaces.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,10 +110,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.PCL.csproj">
       <Project>{42E1C8C0-A163-44CC-92B1-8F416F2C0B01}</Project>
       <Name>ServiceStack.Client.PCL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Pcl.iOS\ServiceStack.Pcl.iOS.csproj">
-      <Project>{F2A56C90-22D5-40CE-929B-38E04A708A1B}</Project>
-      <Name>ServiceStack.Pcl.iOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\PclTest.ServiceModel\PclTest.ServiceModel.csproj">
       <Project>{891D214F-C5B2-46B7-B648-FB735612C1C9}</Project>

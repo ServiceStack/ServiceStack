@@ -18,6 +18,7 @@
         public static string DbInfo = "__dbinfo";
         public static string CacheInfo = "__cacheinfo";
         public static string ApiKey = "__apikey";
+        public static string ApiKeyParam = "apikey";
         public static string Session = "__session";
         public static string JsConfig = "jsconfig";
         public static string SessionId = "ss-id";
@@ -25,6 +26,13 @@
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
         public static string HasPreAuthenticated = "__haspreauth";
+        public static string HasLogged = "_logged";
+        public static string DidAuthenticate = "__didauth";
+        public static string IRequest = "__irequest";
+        public static string RequestDuration = "_requestDurationStopwatch";
+        public static string Code = "code";
+        public static string View = "View";
+        public static string Template = "Template";
     }
 
     public static class LocalizedStrings
@@ -56,6 +64,8 @@
         public static string InvalidSignature = "Invalid Signature";
         public static string TokenInvalidated = "Token has been invalidated";
         public static string TokenExpired = "Token has expired";
+        public static string TokenInvalid = "Token is invalid";
+        public static string RefreshTokenInvalid = "RefreshToken is Invalid";
 
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
@@ -65,6 +75,7 @@
         public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
         public static string UsernameAlreadyExists = "Username already exists";
         public static string EmailAlreadyExists = "Email already exists";
+        public static string RegisterUpdatesDisabled = "Updating User Info is not enabled";
 
         //AuthRepo
         public static string UserAlreadyExistsTemplate1 = "User '{0}' already exists";
@@ -89,11 +100,24 @@
         public static string ConstructorNotFoundForType = "Constructor not found for Type '{0}'";
         public static string ServiceNotFoundForType = "Service not found for Type '{0}'";
         public static string CacheFeatureMustBeEnabled = "HttpCacheFeature Plugin must be registered to use {0}";
+        
+        //Request
+        public static string ContentTypeNotSupported = "ContentType not supported '{0}'";
+
+        //Configuration
+        public static string AppsettingNotFound = "Unable to find App Setting: {0}";
+        public static string ConnectionStringNotFound = "Unable to find Connection String: {0}";
     }
 
     public static class HelpMessages
     {
         public static string NativeTypesDtoOptionsTip =
             "To override a DTO option, remove \"{0}\" prefix before updating";
+    }
+
+    public static class StrictModeCodes
+    {
+        public const string CyclicalUserSession = nameof(CyclicalUserSession);
+        public const string ReturnsValueType = nameof(ReturnsValueType);
     }
 }

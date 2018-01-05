@@ -1,6 +1,6 @@
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -25,7 +27,7 @@ namespace ServiceStack.Host.AspNet
             this.response = response;
             this.Request = request;
             this.response.TrySkipIisCustomErrors = true;
-            this.Cookies = new Cookies(this);
+            this.Cookies = HostContext.AppHost.GetCookies(this);
             this.Items = new Dictionary<string, object>();
         }
 
@@ -37,25 +39,30 @@ namespace ServiceStack.Host.AspNet
 
         public int StatusCode
         {
-            get { return this.response.StatusCode; }
-            set { this.response.StatusCode = value; }
+            get => this.response.StatusCode;
+            set => this.response.StatusCode = value;
         }
 
         public string StatusDescription
         {
-            get { return this.response.StatusDescription; }
-            set { this.response.StatusDescription = value; }
+            get => this.response.StatusDescription;
+            set => this.response.StatusDescription = value;
         }
 
         public string ContentType
         {
-            get { return response.ContentType; }
-            set { response.ContentType = value; }
+            get => response.ContentType;
+            set => response.ContentType = value;
         }
 
         public void AddHeader(string name, string value)
         {
             response.AddHeader(name, value);
+        }
+
+        public void RemoveHeader(string name)
+        {
+            response.Headers.Remove(name);
         }
 
         public string GetHeader(string name)
@@ -101,11 +108,6 @@ namespace ServiceStack.Host.AspNet
 
         public object Dto { get; set; }
 
-        public void Write(string text)
-        {
-            response.Write(text);
-        }
-
         public void Close()
         {
             this.IsClosed = true;
@@ -135,6 +137,13 @@ namespace ServiceStack.Host.AspNet
             response.Flush();
         }
 
+        public Task FlushAsync(CancellationToken token = default(CancellationToken))
+        {
+            Flush(); //FlushAsync() only added in .NET 4.6
+
+            return TypeConstants.EmptyTask;
+        }
+
         public bool IsClosed
         {
             get;
@@ -145,13 +154,19 @@ namespace ServiceStack.Host.AspNet
         {
             try
             {
-                response.Headers["Content-Length"] = contentLength.ToString(CultureInfo.InvariantCulture);
+                if (contentLength >= 0)
+                    response.Headers["Content-Length"] = contentLength.ToString(CultureInfo.InvariantCulture);
             }
             catch (PlatformNotSupportedException /*ignore*/) { } //This operation requires IIS integrated pipeline mode.
         }
 
         //Benign, see how to enable in ASP.NET: http://technet.microsoft.com/en-us/library/cc772183(v=ws.10).aspx
         public bool KeepAlive { get; set; }
+
+        /// <summary>
+        /// Can ignore as doesn't throw if HTTP Headers already written
+        /// </summary>
+        public bool HasStarted => false;
 
         public Dictionary<string, object> Items { get; }
 

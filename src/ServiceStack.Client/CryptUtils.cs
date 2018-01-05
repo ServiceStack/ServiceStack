@@ -1,7 +1,5 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
-#if !(PCL || SL5 || NETSTANDARD1_1) || __IOS__ || ANDROID
 
 using System;
 using System.IO;
@@ -48,8 +46,8 @@ namespace ServiceStack
             {
                 return new RsaKeyPair
                 {
-                    PrivateKey = rsa.ToXmlString(includePrivateParameters: true),
-                    PublicKey = rsa.ToXmlString(includePrivateParameters: false),
+                    PrivateKey = rsa.ToXml(includePrivateParameters: true),
+                    PublicKey = rsa.ToXml(includePrivateParameters: false),
                 };
             }
         }
@@ -67,7 +65,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(privateKey);
-                return rsa.ToXmlString(includePrivateParameters: true);
+                return rsa.ToXml(includePrivateParameters: true);
             }
         }
 
@@ -76,7 +74,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(publicKey);
-                return rsa.ToXmlString(includePrivateParameters: false);
+                return rsa.ToXml(includePrivateParameters: false);
             }
         }
 
@@ -84,7 +82,7 @@ namespace ServiceStack
         {
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(privateKeyXml);
+                rsa.FromXml(privateKeyXml);
                 return rsa.ExportParameters(includePrivateParameters: true);
             }
         }
@@ -93,7 +91,7 @@ namespace ServiceStack
         {
             using (var rsa = RSA.Create())
             {
-                rsa.FromXmlString(publicKeyXml);
+                rsa.FromXml(publicKeyXml);
                 return rsa.ExportParameters(includePrivateParameters: false);
             }
         }
@@ -103,7 +101,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(publicKey);
-                return rsa.ToXmlString(includePrivateParameters: false);
+                return rsa.ToXml(includePrivateParameters: false);
             }
         }
 
@@ -121,7 +119,7 @@ namespace ServiceStack
             using (var rsa = RSA.Create())
             {
                 rsa.ImportParameters(privateKey);
-                return rsa.ToXmlString(includePrivateParameters: true);
+                return rsa.ToXml(includePrivateParameters: true);
             }
         }
 
@@ -161,7 +159,7 @@ namespace ServiceStack
         {
             using (var rsa = CreateRsa(rsaKeyLength))
             {
-                rsa.FromXmlString(publicKeyXml);
+                rsa.FromXml(publicKeyXml);
                 return rsa.Encrypt(bytes);
             }
         }
@@ -195,7 +193,7 @@ namespace ServiceStack
         {
             using (var rsa = CreateRsa(rsaKeyLength))
             {
-                rsa.FromXmlString(privateKeyXml);
+                rsa.FromXml(privateKeyXml);
                 byte[] bytes = rsa.Decrypt(encryptedBytes);
                 return bytes;
             }
@@ -317,7 +315,7 @@ namespace ServiceStack
         {
             using (var aes = CreateSymmetricAlgorithm())
             using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
-            using (var cipherStream = MemoryStreamFactory.GetStream())
+            using (var cipherStream = new MemoryStream())
             {
                 using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
                 using (var binaryWriter = new BinaryWriter(cryptoStream))
@@ -366,7 +364,7 @@ namespace ServiceStack
         public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
         {
             using (var hmac = CreateHashAlgorithm(authKey))
-            using (var ms = MemoryStreamFactory.GetStream())
+            using (var ms = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(ms))
                 {
@@ -432,7 +430,7 @@ namespace ServiceStack
             using (var aes = AesUtils.CreateSymmetricAlgorithm())
             {
                 using (var decrypter = aes.CreateDecryptor(cryptKey, iv))
-                using (var decryptedStream = MemoryStreamFactory.GetStream())
+                using (var decryptedStream = new MemoryStream())
                 {
                     using (var decrypterStream = new CryptoStream(decryptedStream, decrypter, CryptoStreamMode.Write))
                     using (var writer = new BinaryWriter(decrypterStream))
@@ -450,39 +448,30 @@ namespace ServiceStack
         }
     }
 
-    [Obsolete("Use RsaUtils.* static class")]
-    public class CryptUtils
-    {
-        public static string Encrypt(string publicKeyXml, string data, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.Encrypt(data, publicKeyXml, rsaKeyLength);
-        }
-
-        public static string Decrypt(string privateKeyXml, string encryptedData, RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.Encrypt(encryptedData, privateKeyXml, rsaKeyLength);
-        }
-
-        public static RsaKeyPair CreatePublicAndPrivateKeyPair(RsaKeyLengths rsaKeyLength = RsaKeyLengths.Bit2048)
-        {
-            return RsaUtils.CreatePublicAndPrivateKeyPair(rsaKeyLength);
-        }
-    }
-
     public static class PlatformRsaUtils
     {
-#if NETSTANDARD1_6
-        public static void FromXmlString(this RSA rsa, string xml)
+        public static void FromXml(this RSA rsa, string xml)
         {
+#if !NETSTANDARD2_0
+            rsa.FromXmlString(xml);
+#else
+            //Throws PlatformNotSupportedException
             var csp = ExtractFromXml(xml);
             rsa.ImportParameters(csp);
+#endif
         }
 
-        public static string ToXmlString(this RSA rsa, bool includePrivateParameters)
+        public static string ToXml(this RSA rsa, bool includePrivateParameters)
         {
+#if !NETSTANDARD2_0
+            return rsa.ToXmlString(includePrivateParameters: includePrivateParameters);
+#else 
+            //Throws PlatformNotSupportedException
             return ExportToXml(rsa.ExportParameters(includePrivateParameters), includePrivateParameters);
+#endif
         }
 
+#if NETSTANDARD2_0
         public static HashAlgorithmName ToHashAlgorithmName(string hashAlgorithm)
         {
             switch (hashAlgorithm.ToUpper())
@@ -505,7 +494,7 @@ namespace ServiceStack
 
         public static byte[] Encrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Encrypt(bytes, RsaUtils.DoOAEPPadding);
 #else
             return rsa.Encrypt(bytes, RSAEncryptionPadding.OaepSHA1);
@@ -514,7 +503,7 @@ namespace ServiceStack
 
         public static byte[] Decrypt(this RSA rsa, byte[] bytes)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).Decrypt(bytes, RsaUtils.DoOAEPPadding);
 #else
             return rsa.Decrypt(bytes, RSAEncryptionPadding.OaepSHA1);
@@ -523,7 +512,7 @@ namespace ServiceStack
 
         public static byte[] SignData(this RSA rsa, byte[] bytes, string hashAlgorithm)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).SignData(bytes, hashAlgorithm);
 #else
             return rsa.SignData(bytes, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
@@ -532,7 +521,7 @@ namespace ServiceStack
 
         public static bool VerifyData(this RSA rsa, byte[] bytes, byte[] signature, string hashAlgorithm)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             return ((RSACryptoServiceProvider)rsa).VerifyData(bytes, hashAlgorithm, signature);
 #else
             return rsa.VerifyData(bytes, signature, ToHashAlgorithmName(hashAlgorithm), RSASignaturePadding.Pkcs1);
@@ -608,8 +597,8 @@ namespace ServiceStack
                 sb.Append("<Q>").Append(Convert.ToBase64String(csp.Q)).Append("</Q>");
                 sb.Append("<DP>").Append(Convert.ToBase64String(csp.DP)).Append("</DP>");
                 sb.Append("<DQ>").Append(Convert.ToBase64String(csp.DQ)).Append("</DQ>");
-                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.Modulus)).Append("</InverseQ>");
-                sb.Append("<D>").Append(Convert.ToBase64String(csp.Modulus)).Append("</D>");
+                sb.Append("<InverseQ>").Append(Convert.ToBase64String(csp.InverseQ)).Append("</InverseQ>");
+                sb.Append("<D>").Append(Convert.ToBase64String(csp.D)).Append("</D>");
             }
 
             sb.Append("</RSAKeyValue>");
@@ -618,4 +607,3 @@ namespace ServiceStack
         }
     }
 }
-#endif

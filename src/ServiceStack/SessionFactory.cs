@@ -1,6 +1,4 @@
-﻿using System;
-using System.Web;
-using ServiceStack.Caching;
+﻿using ServiceStack.Caching;
 using ServiceStack.Text.Common;
 using ServiceStack.Web;
 
@@ -41,7 +39,11 @@ namespace ServiceStack
 
             public void Set<T>(string key, T value)
             {
-                cacheClient.Set(this.prefixNs + key, value);
+                var expiry = HostContext.GetPlugin<SessionFeature>()?.SessionBagExpiry;
+                if (expiry != null)
+                    cacheClient.Set(this.prefixNs + key, value, expiry.Value);
+                else
+                    cacheClient.Set(this.prefixNs + key, value);
             }
 
             public T Get<T>(string key)

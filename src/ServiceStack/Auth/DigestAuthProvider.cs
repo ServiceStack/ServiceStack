@@ -37,8 +37,7 @@ namespace ServiceStack.Auth
             {
                 var session = authService.GetSession();
                 var digestInfo = authService.Request.GetDigestAuth();
-                IUserAuth userAuth;
-                if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out userAuth))
+                if (authRepo.TryAuthenticate(digestInfo, PrivateKey, NonceTimeOut, session.Sequence, out var userAuth))
                 {
 
                     var holdSessionId = session.Id;
@@ -107,8 +106,8 @@ namespace ServiceStack.Auth
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            var userSession = session as AuthUserSession;
-            if (userSession != null)
+            session.AuthProvider = Name;
+            if (session is AuthUserSession userSession)
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
@@ -147,6 +146,7 @@ namespace ServiceStack.Auth
             finally
             {
                 this.SaveSession(authService, session, SessionExpiry);
+                authService.Request.Items[Keywords.DidAuthenticate] = true;
             }
 
             return null;

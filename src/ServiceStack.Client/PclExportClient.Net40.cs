@@ -1,7 +1,7 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
-#if !(XBOX || SL5 || NETFX_CORE || WP || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
+#if NET45
 using System;
 using System.Collections.Specialized;
 using System.IO;
@@ -13,7 +13,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-#if !(ANDROID || __IOS__ || __MAC__)
     using System.Web;
 
     public class Net40PclExportClient : PclExportClient
@@ -27,14 +26,9 @@ namespace ServiceStack
             return Provider;
         }
 
-        public override INameValueCollection NewNameValueCollection()
+        public override NameValueCollection ParseQueryString(string query)
         {
-            return new NameValueCollectionWrapper(new NameValueCollection());
-        }
-
-        public override INameValueCollection ParseQueryString(string query)
-        {
-            return HttpUtility.ParseQueryString(query).InWrapper();
+            return HttpUtility.ParseQueryString(query);
         }
 
         public override string UrlEncode(string url)
@@ -60,7 +54,7 @@ namespace ServiceStack
         public override string GetHeader(WebHeaderCollection headers, string name, Func<string, bool> valuePredicate)
         {
             var values = headers.GetValues(name);
-            return values == null ? null : values.FirstOrDefault(valuePredicate);
+            return values?.FirstOrDefault(valuePredicate);
         }
 
         public override ITimer CreateTimer(TimerCallback cb, TimeSpan timeOut, object state)
@@ -80,8 +74,6 @@ namespace ServiceStack
                 && webEx.Status == WebExceptionStatus.ProtocolError;
         }
     }
-#endif
-
     public class AsyncTimer : ITimer
     {
         public System.Threading.Timer Timer;

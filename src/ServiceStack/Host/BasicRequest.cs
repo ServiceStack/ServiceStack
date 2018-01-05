@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
 {
-    public class BasicRequest : IRequest
+    public class BasicRequest : IRequest, IHasResolver, IHasVirtualFiles
     {
         public object Dto { get; set; }
         public IMessage Message { get; set; }
@@ -19,8 +21,8 @@ namespace ServiceStack.Host
         private IResolver resolver;
         public IResolver Resolver
         {
-            get { return resolver ?? Service.GlobalResolver; }
-            set { resolver = value; }
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
         }
 
         public BasicRequest(object requestDto, 
@@ -32,13 +34,13 @@ namespace ServiceStack.Host
         {
             Message = message ?? new Message();
             ContentType = this.ResponseContentType = MimeTypes.Json;
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
+            this.Headers = new NameValueCollection();
 
             if (Message.Body != null)
             {
                 PathInfo = "/json/oneway/" + OperationName;
                 RawUrl = AbsoluteUri = "mq://" + PathInfo;
-                Headers = new NameValueCollectionWrapper(Message.ToHeaders().ToNameValueCollection());
+                Headers = Message.ToHeaders().ToNameValueCollection();
             }
 
             this.IsLocal = true;
@@ -48,21 +50,21 @@ namespace ServiceStack.Host
             this.Verb = HttpMethods.Post;
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
-            this.FormData = PclExportClient.Instance.NewNameValueCollection();
+            this.QueryString = new NameValueCollection();
+            this.FormData = new NameValueCollection();
             this.Files = TypeConstants<IHttpFile>.EmptyArray;
         }
 
         private string operationName;
         public string OperationName
         {
-            get { return operationName ?? (operationName = Message.Body?.GetType().GetOperationName()); }
-            set { operationName = value; }
+            get => operationName ?? (operationName = Message.Body?.GetType().GetOperationName());
+            set => operationName = value;
         }
 
         public T TryResolve<T>()
         {
-            return Resolver.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string UserHostAddress { get; set; }
@@ -101,15 +103,17 @@ namespace ServiceStack.Host
 
         public string PathInfo { get; set; }
 
+        public string OriginalPathInfo => PathInfo;
+
         public IHttpFile[] Files { get; set; }
         
         public Uri UrlReferrer { get; set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
-        public INameValueCollection QueryString { get; set; }
+        public NameValueCollection QueryString { get; set; }
 
-        public INameValueCollection FormData { get; set; }
+        public NameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 
@@ -145,5 +149,13 @@ namespace ServiceStack.Host
             this.AcceptTypes = request.AcceptTypes;
             return this;
         }
-    }
+
+        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+
+        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+        
+        public bool IsFile { get; set; }
+        
+        public bool IsDirectory { get; set; }
+   }
 }

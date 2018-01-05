@@ -90,14 +90,7 @@ namespace ServiceStack.Authentication.MongoDb
 
             AssertNoExistingUser(mongoDatabase, newUser);
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            string salt;
-            string hash;
-            saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            var digestHelper = new DigestAuthFunctions();
-            newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -129,7 +122,7 @@ namespace ServiceStack.Authentication.MongoDb
             var countersCollection = mongoDatabase.GetCollection<Counters>(CountersCol);
             var update = Builders<Counters>.Update.Inc(counterName, 1);
             var updatedCounters = countersCollection.FindOneAndUpdate(new BsonDocument(), update, 
-                new FindOneAndUpdateOptions<Counters>() { IsUpsert = true, ReturnDocument = ReturnDocument.After});
+                new FindOneAndUpdateOptions<Counters> { IsUpsert = true, ReturnDocument = ReturnDocument.After});
             return updatedCounters;
         }
 
@@ -140,14 +133,14 @@ namespace ServiceStack.Authentication.MongoDb
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(mongoDatabase, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
             }
         }
 
@@ -157,24 +150,8 @@ namespace ServiceStack.Authentication.MongoDb
 
             AssertNoExistingUser(mongoDatabase, newUser, existingUser);
 
-            var hash = existingUser.PasswordHash;
-            var salt = existingUser.Salt;
-            if (password != null)
-            {
-                var saltedHash = HostContext.Resolve<IHashProvider>();
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            }
-            // If either one changes the digest hash has to be recalculated
-            var digestHash = existingUser.DigestHa1Hash;
-            if (password != null || existingUser.UserName != newUser.UserName)
-            {
-                var digestHelper = new DigestAuthFunctions();
-                digestHash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-            }
             newUser.Id = existingUser.Id;
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
-            newUser.DigestHa1Hash = digestHash;
+            newUser.PopulatePasswordHashes(password, existingUser);
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
             SaveUser(newUser);
@@ -227,10 +204,9 @@ namespace ServiceStack.Authentication.MongoDb
             if (userAuth == null)
                 return false;
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                this.RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth, needsRehash, password);
 
                 return true;
             }
@@ -248,8 +224,7 @@ namespace ServiceStack.Authentication.MongoDb
             if (userAuth == null)
                 return false;
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
 

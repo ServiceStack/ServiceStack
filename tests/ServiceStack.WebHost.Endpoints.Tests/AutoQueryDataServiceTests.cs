@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_call_overidden_AutoQueryData_Service_with_custom_MemorySource()
         {
-            var response = client.Get(new GetAllRockstarGenresData());
+            var response = client.Get(new GetAllRockstarGenresData { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
             Assert.That(response.Results.Count, Is.EqualTo(AutoQueryDataAppHost.SeedGenres.Length));
 
@@ -72,7 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryServiceStackContributors
             {
                 Repo = "ServiceStack",
-                Take = 20
+                Take = 20,
+                Include = "Total"
             });
             Assert.That(response.Total, Is.GreaterThan(20));
             Assert.That(response.Results.Count, Is.EqualTo(20));
@@ -132,7 +133,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             feature.AddDataSource(ctx => ctx.MemorySource(
                 () => "https://api.github.com/repos/ServiceStack/{0}/contributors"
                          .Fmt(ctx.Request.GetParam("repo"))
-                    .GetJsonFromUrl(req => req.UserAgent="AutoQuery").FromJson<List<GithubContributor>>(),
+                    .GetJsonFromUrl(req => req.SetUserAgent("AutoQuery")).FromJson<List<GithubContributor>>(),
                 HostContext.LocalCache, TimeSpan.FromMinutes(1)));
         }
     }
@@ -255,7 +256,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Interlocked.Increment(ref GetGithubRepos.ApiCalls);
 
-            return url.GetJsonFromUrl(requestFilter:req => req.UserAgent = GetType().Name)
+            return url.GetJsonFromUrl(requestFilter:req => req.SetUserAgent(GetType().Name))
                 .FromJson<List<GithubRepo>>();
         }
     }

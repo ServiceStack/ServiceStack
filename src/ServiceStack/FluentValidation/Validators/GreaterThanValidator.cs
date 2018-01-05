@@ -13,31 +13,33 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Reflection;
-    using Attributes;
-    using Internal;
-    using Resources;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Reflection;
+	using Attributes;
+	using Internal;
+	using Resources;
 
-    public class GreaterThanValidator : AbstractComparisonValidator {
-        public GreaterThanValidator(IComparable value) : base(value, () => Messages.greaterthan_error, ValidationErrors.GreaterThan) {
-        }
+	public class GreaterThanValidator : AbstractComparisonValidator {
+		public GreaterThanValidator(IComparable value) : base(value, new LanguageStringSource(nameof(GreaterThanValidator))) {
+		}
 
-        public GreaterThanValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
-            : base(valueToCompareFunc, member, () => Messages.greaterthan_error, ValidationErrors.GreaterThan) {
-        }
+		public GreaterThanValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
+			: base(valueToCompareFunc, member, new LanguageStringSource(nameof(GreaterThanValidator))) {
+		}
 
-        public override bool IsValid(IComparable value, IComparable valueToCompare) {
-            return value.CompareTo(valueToCompare) > 0;
-        }
+		public override bool IsValid(IComparable value, IComparable valueToCompare) {
+			if (valueToCompare == null)
+				return false;
 
-        public override Comparison Comparison {
-            get { return Validators.Comparison.GreaterThan; }
-        }
-    }
+			return Comparer.GetComparisonResult(value, valueToCompare) > 0;
+		}
+
+		public override Comparison Comparison {
+			get { return Validators.Comparison.GreaterThan; }
+		}
+	}
 }

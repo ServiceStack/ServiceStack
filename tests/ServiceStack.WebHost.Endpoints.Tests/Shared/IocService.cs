@@ -385,10 +385,7 @@ namespace ServiceStack.Shared.Tests
         {
         }
 
-        public IHasRequestFilter Copy()
-        {
-            return (IHasRequestFilter)this.MemberwiseClone();
-        }
+        public IRequestFilterBase Copy() => (IRequestFilterBase)this.MemberwiseClone();
     }
 
     [IocRequestFilter]

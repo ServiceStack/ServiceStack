@@ -1,0 +1,79 @@
+﻿@{
+    Layout = "Empty";
+    var search = (@Request.PathInfo ?? "").SplitOnLast("/").Last().Trim();
+}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Page Not Found</title>
+        <style>
+        BODY {
+            background-color:white;
+            color:#000000;
+            font-family:Verdana;
+            margin: 0;            
+        }
+        H1 {
+            background-color: #c30;
+            color: #FFF;
+            font-family: Tahoma; 
+            font-size: 26px;
+            font-weight: normal;
+            margin: 0;
+            padding: 10px 0 3px 15px;
+        }
+        #content {
+            padding: 15px;
+        }
+        input {
+            padding: 5px 8px;
+        }
+        #preview {
+            background: #fff;
+            box-shadow: 0 3px 8px rgba(100, 100, 100, 0.3);
+            font-size: 74%;
+            padding: 10px 40px 20px 40px;
+	        margin: auto;
+            max-width: 960px;
+        }       
+        #preview {
+            margin: 40px auto;   
+        }
+        #preview h3 a {
+            color: green;
+        }
+        #preview h3 b 
+        {
+            display: inline-block;
+            width: 100px;
+        }
+        
+        </style>
+    </head>
+    <body>        
+        <h1>Page Not Found</h1>
+        
+        <div id="content">
+            <p>
+                We're sorry <b>@Request.PathInfo</b> is no longer here.
+            </p> 
+            @if (!string.IsNullOrEmpty(search))
+            {
+                <p> 
+                    Maybe Google has it?
+                </p>
+                <form action="https://www.google.com/search" method="GET">
+                    <input type="search" name="q" value="@search"/>
+                    <input type="submit" value="Search"/>
+                </form>
+            }
+        </div>
+    
+        <div id="preview">
+            <h2>Implemenation</h2>
+            <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/NotFound.cshtml">/NotFound.cshtml</a></h3>
+            <script src="https://gist.github.com/3618038.js"></script>
+        </div>    
+        
+    </body>
+</html>

@@ -18,5 +18,8 @@ namespace ServiceStack.DataAnnotations
             Expression = expression;
         }
     }
+    
+    [AttributeUsage(AttributeTargets.Property)]
+    public class ComputedAttribute : AttributeBase {}
 }
 

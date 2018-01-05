@@ -1,4 +1,4 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -116,6 +116,12 @@ namespace ServiceStack
         /// i.e. Priorities below 0 are auto-generated have less precedence.
         /// </summary>
         public int Priority { get; set; }
+
+        /// <summary>
+        /// Must match rule defined in Config.RequestRules or Regex expression with format: 
+        /// "{IHttpRequest.Field} =~ {pattern}", e.g "PathInfo =~ \/[0-9]+$"
+        /// </summary>
+        public string Matches { get; set; }
 
         protected bool Equals(RouteAttribute other)
         {

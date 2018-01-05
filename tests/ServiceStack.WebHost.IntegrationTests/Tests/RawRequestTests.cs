@@ -66,6 +66,16 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
 
         [Test]
+        public void Can_POST_raw_request_to_predefined_route()
+        {
+            var rawData = "{\"raw\":\"json\"}";
+            var requestUrl = Config.ServiceStackBaseUri + "/json/reply/RawRequest";
+            var json = requestUrl.PostJsonToUrl(rawData);
+            var response = json.FromJson<RawRequestResponse>();
+            Assert.That(response.Result, Is.EqualTo(rawData));
+        }
+
+        [Test]
         public void Can_POST_raw_request_with_params()
         {
             var rawData = "<<(( 'RAW_DATA' ))>>";

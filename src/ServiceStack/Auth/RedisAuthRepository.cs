@@ -13,7 +13,7 @@ namespace ServiceStack.Auth
         public RedisAuthRepository(IRedisClientManagerFacade factory) : base(factory) { }
     }
 
-    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys
+    public class RedisAuthRepository<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -45,14 +45,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(redis, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(redis, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
             }
         }
 
@@ -64,16 +64,8 @@ namespace ServiceStack.Auth
             {
                 AssertNoExistingUser(redis, newUser);
 
-                var saltedHash = HostContext.Resolve<IHashProvider>();
-                string salt;
-                string hash;
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
-
                 newUser.Id = redis.As<IUserAuth>().GetNextSequence();
-                newUser.PasswordHash = hash;
-                newUser.Salt = salt;
-                var digestHelper = new DigestAuthFunctions();
-                newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                newUser.PopulatePasswordHashes(password);
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -110,23 +102,8 @@ namespace ServiceStack.Auth
                     redis.RemoveEntryFromHash(IndexEmailToUserId, existingUser.Email);
                 }
 
-                var hash = existingUser.PasswordHash;
-                var salt = existingUser.Salt;
-                if (password != null)
-                {
-                    var saltedHash = HostContext.Resolve<IHashProvider>();
-                    saltedHash.GetHashAndSaltString(password, out hash, out salt);
-                }
-
-                // If either one changes the digest hash has to be recalculated
-                var digestHash = existingUser.DigestHa1Hash;
-                if (password != null || existingUser.UserName != newUser.UserName)
-                    digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-
                 newUser.Id = existingUser.Id;
-                newUser.PasswordHash = hash;
-                newUser.Salt = salt;
-                newUser.DigestHa1Hash = digestHash;
+                newUser.PopulatePasswordHashes(password, existingUser);
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -198,10 +175,9 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return false;
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            if (saltedHash.VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                this.RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth, needsRehash, password);
                 return true;
             }
 
@@ -217,7 +193,7 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return false;
 
-            if (new DigestAuthFunctions().ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
                 return true;
@@ -480,5 +456,15 @@ namespace ServiceStack.Auth
         }
 
         public void Clear() { factory.Clear(); }
+
+        public IUserAuth CreateUserAuth()
+        {
+            return (IUserAuth)typeof(TUserAuth).CreateInstance();
+        }
+
+        public IUserAuthDetails CreateUserAuthDetails()
+        {
+            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
+        }
     }
 }

@@ -74,6 +74,26 @@
         }
         return map;
     };
+    $.ss.toUrl = function (url, args) {
+        for (var k in args) {
+            url += url.indexOf('?') >= 0 ? '&' : '?';
+            url += k + "=" + $.ss.encodeValue(args[k]);
+        }
+        return url;
+    };
+    $.ss.encodeValue = function (o) {
+        if (o == null) return "";
+        if ($.isArray(o)) {
+            var s = "";
+            for (var i = 0; i < o.length; i++) {
+                if (s.length > 0)
+                    s += ',';
+                s += $.ss.encodeValue(o[i]);
+            }
+            return s;
+        }
+        return encodeURIComponent(o);
+    };
     $.ss.bindAll = function (o) {
         for (var k in o) {
             if (typeof o[k] == 'function')
@@ -101,15 +121,11 @@
             if (url.length > 0) url += '/';
             url += p;
         }
-        return url;
+        return route[0] === '/' ? '/' + url : url;
     };
     $.ss.createUrl = function(route, args) {
         var url = $.ss.createPath(route, args);
-        for (var k in args) {
-            url += url.indexOf('?') >= 0 ? '&' : '?';
-            url += k + "=" + encodeURIComponent(args[k]);
-        }
-        return url;
+        return $.ss.toUrl(url, args);
     };
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
@@ -406,7 +422,10 @@
         $.ss.eventChannels = channels;
         if (!$.ss.eventSource) return;
         var url = $.ss.eventSource.url;
-        $.ss.eventSourceUrl = url.substring(0, Math.min(url.indexOf('?'), url.length)) + "?channels=" + channels.join(',');
+        var qs = $.ss.queryString(url);
+        qs['channels'] = channels;
+        delete qs['channel'];
+        $.ss.eventSourceUrl = $.ss.toUrl(url.substring(0, Math.min(url.indexOf('?'), url.length)), qs);
     };
     $.ss.updateSubscriberInfo = function (subscribe, unsubscribe) {
         var sub = typeof subscribe == "string" ? subscribe.split(',') : subscribe;
@@ -481,7 +500,7 @@
         $.ss.eventSource = this[0];
         $.ss.eventOptions = opt = opt || {};
         if (opt.handlers) {
-            $.extend($.ss.handlers, opt.handlers);
+            $.extend($.ss.handlers, opt.handlers || {});
         }
         function onMessage(e) {
             var parts = $.ss.splitOnFirst(e.data, ' ');
@@ -507,15 +526,17 @@
             var tokens = $.ss.splitOnFirst(target, '$'),
                 cmd = tokens[0], cssSel = tokens[1],
                 $els = cssSel && $(cssSel), el = $els && $els[0];
-            if (op == "cmd") {
-                if (cmd == "onConnect") {
+
+            $.extend(e, { cmd: cmd, op: op, selector: selector, "$target": target, cssSelector: cssSel, json: json }); //target is readonly field
+            if (op === "cmd") {
+                if (cmd === "onConnect") {
                     $.extend(opt, msg);
                     if (opt.heartbeatUrl) {
                         if (opt.heartbeat) {
                             window.clearInterval(opt.heartbeat);
                         }
                         opt.heartbeat = window.setInterval(function () {
-                            if ($.ss.eventSource.readyState == 2) //CLOSED
+                            if ($.ss.eventSource.readyState === 2) //CLOSED
                             {
                                 window.clearInterval(opt.heartbeat);
                                 var stopFn = $.ss.handlers["onStop"];
@@ -549,10 +570,10 @@
                     fn.call(el || document.body, msg, e);
                 }
             }
-            else if (op == "trigger") {
+            else if (op === "trigger") {
                 $(el || document).trigger(cmd, [msg, e]);
             }
-            else if (op == "css") {
+            else if (op === "css") {
                 $($els || document.body).css(cmd, msg, e);
             }
             else {
@@ -560,10 +581,22 @@
                 $.ss.invokeReceiver(r, cmd, el, msg, e, op);
             }
 
-            if (opt.success) {
-                opt.success(selector, msg, e);
-            }
+            var fn = $.ss.handlers["onMessage"];
+            if (fn) fn.call(el || document.body, msg, e);
+
+            if (opt.success) opt.success(selector, msg, e); //deprecated
         }
+
         $.ss.eventSource.onmessage = onMessage;
+
+        var hold = $.ss.eventSource.onerror;
+        $.ss.eventSource.onerror = function () {
+            var args = arguments;
+            window.setTimeout(function () {
+                $.ss.reconnectServerEvents({ errorArgs: args });
+                if (hold)
+                    hold.apply(args);
+            }, 10000);
+        };
     };
 });

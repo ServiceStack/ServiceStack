@@ -1,7 +1,6 @@
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
 using System;
 using System.Collections.Generic;
-using ServiceStack.Web;
+using System.Collections.Specialized;
 
 namespace ServiceStack.Serialization
 {
@@ -9,15 +8,22 @@ namespace ServiceStack.Serialization
     {
         public static KeyValueDataContractDeserializer Instance = new KeyValueDataContractDeserializer();
 
-        public object Parse(INameValueCollection nameValues, Type returnType)
-        {
-            return Parse(nameValues.ToDictionary(), returnType);
-        }
-
         readonly Dictionary<Type, StringMapTypeDeserializer> typeStringMapSerializerMap
             = new Dictionary<Type, StringMapTypeDeserializer>();
 
         public object Parse(IDictionary<string, string> keyValuePairs, Type returnType)
+        {
+            return GetOrAddStringMapTypeDeserializer(returnType)
+                .CreateFromMap(keyValuePairs);
+        }
+
+        public object Parse(NameValueCollection nameValues, Type returnType)
+        {
+            return GetOrAddStringMapTypeDeserializer(returnType)
+                .CreateFromMap(nameValues);
+        }
+
+        private StringMapTypeDeserializer GetOrAddStringMapTypeDeserializer(Type returnType)
         {
             StringMapTypeDeserializer stringMapTypeDeserializer;
             lock (typeStringMapSerializerMap)
@@ -29,7 +35,7 @@ namespace ServiceStack.Serialization
                 }
             }
 
-            return stringMapTypeDeserializer.CreateFromMap(keyValuePairs);
+            return stringMapTypeDeserializer;
         }
 
         public To Parse<To>(IDictionary<string, string> keyValuePairs)
@@ -38,4 +44,3 @@ namespace ServiceStack.Serialization
         }
     }
 }
-#endif

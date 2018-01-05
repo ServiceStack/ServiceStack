@@ -130,7 +130,7 @@ namespace ServiceStack.Caching
                 }
                 catch (Exception ex)
                 {
-                    ExecExtensions.LogError(client.GetType(), "Get", ex);
+                    ExecUtils.LogError(client.GetType(), "Get", ex);
                 }
             }
 

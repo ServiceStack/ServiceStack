@@ -1,4 +1,3 @@
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL)
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -44,6 +43,10 @@ namespace ServiceStack.Support
         {
             return new GZipStream(outputStream, CompressionMode.Compress);
         }
+
+        public Stream GUnzipStream(Stream gzStream)
+        {
+            return new GZipStream(gzStream, CompressionMode.Decompress);
+        }
     }
 }
-#endif

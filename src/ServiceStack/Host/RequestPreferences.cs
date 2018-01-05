@@ -9,7 +9,7 @@ namespace ServiceStack.Host
     {
         private string acceptEncoding;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         private readonly HttpContextBase httpContext;
 
         public RequestPreferences(HttpContextBase httpContext)
@@ -55,7 +55,7 @@ namespace ServiceStack.Host
         public RequestPreferences(IRequest httpRequest)
         {
             this.acceptEncoding = httpRequest.Headers[HttpHeaders.AcceptEncoding];
-            if (this.acceptEncoding.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(this.acceptEncoding))
             {
                 this.acceptEncoding = "none";
                 return;

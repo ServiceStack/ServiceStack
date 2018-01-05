@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_6
+﻿#if NET45
 
 using System;
 using System.Collections.Specialized;
@@ -14,108 +14,69 @@ namespace ServiceStack.Host
         public RequestBaseWrapper(IHttpRequest request)
         {
             this.request = request;
+            Original = (HttpRequestBase)this.request.OriginalRequest;
+            ContentEncoding = Original.ContentEncoding;
         }
 
-        private HttpRequestBase original;
-        public HttpRequestBase Original => original ?? (HttpRequestBase) request.OriginalRequest;
+        public HttpRequestBase Original { get; set; }
 
-        private Uri url;
-        public override Uri Url => url ?? new Uri(request.AbsoluteUri);
+        public override Uri Url => new Uri(request.AbsoluteUri);
 
-        public string rawUrl;
-        public override string RawUrl => rawUrl ?? request.RawUrl;
+        public override string RawUrl => request.RawUrl;
 
-        public string contentType;
-        public override string ContentType => contentType ?? request.ContentType;
+        public override string ContentType => request.ContentType;
 
-        public string httpMethod;
-        public override string HttpMethod => httpMethod ?? request.HttpMethod;
+        public override string HttpMethod => request.HttpMethod;
 
-        public string applicationPath;
-        public override string ApplicationPath => applicationPath ?? Original.ApplicationPath;
+        public override string ApplicationPath => Original.ApplicationPath;
 
-        public string pathInfo;
-        public override string PathInfo => pathInfo ?? request.PathInfo;
+        public override string PathInfo => request.PathInfo;
 
-        public string path;
-        public override string Path => path ?? Original.Path;
+        public override string Path => Original.Path;
 
-        public int? contentLength;
-        public override int ContentLength => (int) (contentLength ?? request.ContentLength);
+        public override int ContentLength => (int)request.ContentLength;
 
-        public string requestType;
-        public override string RequestType => requestType ?? Original.RequestType;
+        public override string RequestType => Original.RequestType;
 
-        public bool? isAuthenticated;
-        public override bool IsAuthenticated => isAuthenticated ?? Original.IsAuthenticated;
+        public override bool IsAuthenticated => Original.IsAuthenticated;
 
-        public string physicalApplicationPath;
-        public override string PhysicalApplicationPath => physicalApplicationPath ?? Original.PhysicalApplicationPath;
+        public override string PhysicalApplicationPath => Original.PhysicalApplicationPath;
 
-        public string physicalPath;
-        public override string PhysicalPath => physicalPath ?? Original.PhysicalPath;
+        public override string PhysicalPath => Original.PhysicalPath;
 
-        public string filePath;
-        public override string FilePath => filePath ?? Original.FilePath;
+        public override string FilePath => Original.FilePath;
 
-        public string currentExecutionFilePath;
-        public override string CurrentExecutionFilePath => currentExecutionFilePath ?? Original.CurrentExecutionFilePath;
+        public override string CurrentExecutionFilePath => Original.CurrentExecutionFilePath;
 
-        public bool? isLocal;
-        public override bool IsLocal => isLocal ?? request.IsLocal;
+        public override bool IsLocal => request.IsLocal;
 
-        public bool? isSecureConnection;
-        public override bool IsSecureConnection => isSecureConnection ?? request.IsSecureConnection;
+        public override bool IsSecureConnection => request.IsSecureConnection;
 
-        public Uri urlReferrer;
-        public override Uri UrlReferrer => urlReferrer ?? request.UrlReferrer;
+        public override Uri UrlReferrer => request.UrlReferrer;
 
-        public string userAgent;
-        public override string UserAgent => userAgent ?? request.UserAgent;
+        public override string UserAgent => request.UserAgent;
 
-        public string userHostAddress;
-        public override string UserHostAddress => userHostAddress ?? request.UserHostAddress;
+        public override string UserHostAddress => request.UserHostAddress;
 
-        public string userHostName;
-        public override string UserHostName => userHostName ?? Original.UserHostName;
+        public override string UserHostName => Original.UserHostName;
 
-        public System.Text.Encoding contentEncoding;
-        public override System.Text.Encoding ContentEncoding
-        {
-            get
-            {
-                return contentEncoding ?? Original.ContentEncoding;
-            }
-            set
-            {
-                contentEncoding = value;
-            }
-        }
+        public override System.Text.Encoding ContentEncoding { get; set; }
 
-        public System.Security.Principal.WindowsIdentity logonUserIdentity;
-        public override System.Security.Principal.WindowsIdentity LogonUserIdentity => 
-            logonUserIdentity ?? Original.LogonUserIdentity;
+        public override System.Security.Principal.WindowsIdentity LogonUserIdentity => Original.LogonUserIdentity;
 
-        public string[] userLanguages;
-        public override string[] UserLanguages => userLanguages ?? Original.UserLanguages;
+        public override string[] UserLanguages => Original.UserLanguages;
 
-        public HttpCookieCollection cookies;
-        public override HttpCookieCollection Cookies => cookies ?? Original.Cookies;
+        public override HttpCookieCollection Cookies => Original.Cookies;
 
-        public NameValueCollection @params;
-        public override NameValueCollection Params => @params ?? (@params = Original.Params);
+        public override NameValueCollection Params => Original.Params;
 
-        public NameValueCollection queryString;
-        public override NameValueCollection QueryString => queryString ?? request.QueryString.ToNameValueCollection();
+        public override NameValueCollection QueryString => request.QueryString;
 
-        public NameValueCollection formData;
-        public override NameValueCollection Form => formData ?? request.FormData.ToNameValueCollection();
+        public override NameValueCollection Form => request.FormData;
 
-        public NameValueCollection headers;
-        public override NameValueCollection Headers => headers ?? request.Headers.ToNameValueCollection();
+        public override NameValueCollection Headers => request.Headers;
 
-        public NameValueCollection serverVariables;
-        public override NameValueCollection ServerVariables => serverVariables ?? Original.ServerVariables;
+        public override NameValueCollection ServerVariables => Original.ServerVariables;
     }
 }
 

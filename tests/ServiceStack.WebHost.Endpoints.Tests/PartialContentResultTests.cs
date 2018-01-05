@@ -32,7 +32,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (request.RelativePath.IsNullOrEmpty())
                 throw new ArgumentNullException("RelativePath");
 
-            string filePath = "~/{0}".Fmt(request.RelativePath).MapProjectPath();
+            string filePath = "~/{0}".Fmt(request.RelativePath).MapProjectPlatformPath();
             if (!File.Exists(filePath))
                 throw new FileNotFoundException(request.RelativePath);
 
@@ -67,34 +67,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class PartialContentResultTests
     {
-        public const string BaseUri = Config.ServiceStackBaseUri;
-        public const string ListeningOn = Config.AbsoluteBaseUri;
+        string BaseUri = Config.ServiceStackBaseUri;
+        string ListeningOn = Config.AbsoluteBaseUri;
 
-        private PartialContentAppHost appHost;
+        private ServiceStackHost appHost;
 
-        readonly FileInfo uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
-        readonly FileInfo uploadedTextFile = new FileInfo("~/TestExistingDir/textfile.txt".MapProjectPath());
+        readonly FileInfo uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
+        readonly FileInfo uploadedTextFile = new FileInfo("~/TestExistingDir/textfile.txt".MapProjectPlatformPath());
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TextFixtureSetUp()
         {
-            try
-            {
-                appHost = new PartialContentAppHost();
-                appHost.Init();
-                appHost.Start(ListeningOn);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            appHost = new PartialContentAppHost()
+                .Init()
+                .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
-        public void TestFixtureTearDown()
-        {
-            if (appHost != null) appHost.Dispose();
-        }
+        [OneTimeTearDown]
+        public void TestFixtureTearDown() => appHost?.Dispose();
 
         [Test]
         public void Can_StaticFile_GET_200_OK_response_for_file_with_no_range_header()
@@ -366,7 +356,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        [Explicit("Helps debugging when you need to find out WTF is going on")]
+        [Ignore("Helps debugging when you need to find out WTF is going on")]
         public void Run_for_30secs()
         {
             Thread.Sleep(30000);

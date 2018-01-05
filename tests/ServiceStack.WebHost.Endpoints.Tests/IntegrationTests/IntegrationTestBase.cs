@@ -22,7 +22,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             appHost.Start(BaseUrl);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -41,6 +41,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 
             public override void Configure(Container container)
             {
+#if !NETCORE
+                Plugins.Add(new SoapFormat());
+#endif
                 container.Register<IAppSettings>(new AppSettings());
 
                 container.Register(c => new ExampleConfig(c.Resolve<IAppSettings>()));

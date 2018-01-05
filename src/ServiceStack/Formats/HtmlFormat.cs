@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Serialization;
 using ServiceStack.Templates;
 using ServiceStack.Web;
@@ -25,18 +27,18 @@ namespace ServiceStack.Formats
         {
             AppHost = appHost;
             //Register this in ServiceStack with the custom formats
-            appHost.ContentTypes.Register(MimeTypes.Html, SerializeToStream, null);
-            appHost.ContentTypes.Register(MimeTypes.JsonReport, SerializeToStream, null);
+            appHost.ContentTypes.RegisterAsync(MimeTypes.Html, SerializeToStreamAsync, null);
+            appHost.ContentTypes.RegisterAsync(MimeTypes.JsonReport, SerializeToStreamAsync, null);
 
             appHost.Config.DefaultContentType = MimeTypes.Html;
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.Html.ToContentFormat());
             appHost.Config.IgnoreFormatsInMetadata.Add(MimeTypes.JsonReport.ToContentFormat());
         }
 
-        public void SerializeToStream(IRequest req, object response, IResponse res)
+        public async Task SerializeToStreamAsync(IRequest req, object response, Stream outputStream)
         {
-            var httpResult = req.GetItem("HttpResult") as IHttpResult;
-            if (httpResult != null && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
+            var res = req.Response;
+            if (req.GetItem("HttpResult") is IHttpResult httpResult && httpResult.Headers.ContainsKey(HttpHeaders.Location) 
                 && httpResult.StatusCode != System.Net.HttpStatusCode.Created)  
                 return;
 
@@ -51,16 +53,17 @@ namespace ServiceStack.Formats
                 if (response is CompressedResult)
                 {
                     if (res.Dto != null)
-                    {
                         response = res.Dto;
-                    }
-                    else
-                    {
+                    else 
                         throw new ArgumentException("Cannot use Cached Result as ViewModel");
-                    }
                 }
 
-                if (AppHost.ViewEngines.Any(x => x.ProcessRequest(req, res, response))) return;
+                foreach (var viewEngine in AppHost.ViewEngines)
+                {
+                    var handled = await viewEngine.ProcessRequestAsync(req, response, outputStream);
+                    if (handled)
+                        return;
+                }
             }
             catch (Exception ex)
             {
@@ -79,18 +82,17 @@ namespace ServiceStack.Formats
                 res.ContentType = MimeTypes.Html;
             }
 
-            if (req.ResponseContentType != MimeTypes.Html
-                && req.ResponseContentType != MimeTypes.JsonReport) return;
+            if (req.ResponseContentType != MimeTypes.Html && req.ResponseContentType != MimeTypes.JsonReport) 
+                return;
 
             var dto = response.GetDto();
-            var html = dto as string;
-            if (html == null)
+            if (!(dto is string html))
             {
                 // Serialize then escape any potential script tags to avoid XSS when displaying as HTML
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
                 json = json.Replace("<", "&lt;").Replace(">", "&gt;");
 
-                var url = req.AbsoluteUri
+                var url = req.ResolveAbsoluteUrl()
                     .Replace("format=html", "")
                     .Replace("format=shtm", "")
                     .TrimEnd('?', '&');
@@ -110,8 +112,7 @@ namespace ServiceStack.Formats
             }
 
             var utf8Bytes = html.ToUtf8Bytes();
-            res.OutputStream.Write(utf8Bytes, 0, utf8Bytes.Length);
+            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
         }
     }
-
 }

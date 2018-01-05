@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using ServiceStack.Web;
 
@@ -23,7 +24,11 @@ namespace ServiceStack.Host
 
         public bool EnableErrorTracking { get; set; }
 
+        public bool LimitToServiceRequests { get; set; }
+
         public string[] RequiredRoles { get; set; }
+
+        public Func<IRequest, bool> SkipLogging { get; set; }
 
         public Type[] ExcludeRequestDtoTypes { get; set; }
 
@@ -36,12 +41,23 @@ namespace ServiceStack.Host
             this.capacity = capacity.GetValueOrDefault(DefaultCapacity);
         }
 
+        public virtual bool ShouldSkip(IRequest req, object requestDto)
+        {
+            var dto = requestDto ?? req.Dto;
+            if (LimitToServiceRequests && dto == null)
+                return true;
+
+            var requestType = dto?.GetType();
+
+            return ExcludeRequestType(requestType) || SkipLogging?.Invoke(req) == true;
+        }
+
         public virtual void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto?.GetType();
-
-            if (ExcludeRequestType(requestType)) 
+            if (ShouldSkip(request, requestDto))
                 return;
+
+            var requestType = requestDto?.GetType();
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
 
@@ -70,27 +86,33 @@ namespace ServiceStack.Host
                 entry.ForwardedFor = request.Headers[HttpHeaders.XForwardedFor];
                 entry.Referer = request.Headers[HttpHeaders.Referer];
                 entry.Headers = request.Headers.ToDictionary();
-                entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
-                entry.SessionId = request.GetSessionId();
+                entry.UserAuthId = request.GetItemStringValue(HttpHeaders.XUserAuthId);
                 entry.Items = SerializableItems(request.Items);
                 entry.Session = EnableSessionTracking ? request.GetSession() : null;
-            }
+                entry.StatusCode = request.Response.StatusCode;
+                entry.StatusDescription = request.Response.StatusDescription;
 
-            if (HideRequestBodyForRequestDtoTypes != null
-                && requestType != null
-                && !HideRequestBodyForRequestDtoTypes.Contains(requestType))
-            {
-                entry.RequestDto = requestDto;
-                if (request != null)
+                var isClosed = request.Response.IsClosed;
+                if (!isClosed)
                 {
-                    entry.FormData = request.FormData.ToDictionary();
+                    entry.UserAuthId = request.GetItemOrCookie(HttpHeaders.XUserAuthId);
+                    entry.SessionId = request.GetSessionId();
+                }
+
+                if (HideRequestBodyForRequestDtoTypes != null
+                    && requestType != null
+                    && !HideRequestBodyForRequestDtoTypes.Contains(requestType))
+                {
+                    entry.RequestDto = requestDto;
+
+                    if (!isClosed)
+                        entry.FormData = request.FormData.ToDictionary();
 
                     if (EnableRequestBodyTracking)
-                    {
                         entry.RequestBody = request.GetRawBody();
-                    }
                 }
             }
+
             if (!response.IsErrorResponse())
             {
                 if (EnableResponseTracking)
@@ -99,7 +121,24 @@ namespace ServiceStack.Host
             else
             {
                 if (EnableErrorTracking)
+                {
                     entry.ErrorResponse = ToSerializableErrorResponse(response);
+
+                    if (response is IHttpError httpError)
+                    {
+                        entry.StatusCode = (int)httpError.StatusCode;
+                        entry.StatusDescription = httpError.StatusDescription;
+                    }
+
+                    if (response is Exception exception)
+                    {
+                        if (exception.InnerException != null)
+                            exception = exception.InnerException;
+                        
+                        entry.ExceptionSource = exception.Source;
+                        entry.ExceptionData = exception.Data;
+                    }
+                }
             }
 
             return entry;
@@ -134,8 +173,7 @@ namespace ServiceStack.Host
 
         public static object ToSerializableErrorResponse(object response)
         {
-            var errorResult = response as IHttpResult;
-            if (errorResult != null)
+            if (response is IHttpResult errorResult)
                 return errorResult.Response;
 
             var ex = response as Exception;

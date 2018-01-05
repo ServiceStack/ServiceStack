@@ -6,15 +6,18 @@ using System.Net.Sockets;
 using System.Runtime.Serialization;
 using System.Web;
 using ServiceStack.Data;
+using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 using static System.String;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 using ServiceStack.Host.AspNet;
 using ServiceStack.Host.HttpListener;
 #endif
@@ -31,11 +34,11 @@ namespace ServiceStack
         /// <returns>string value or null if it doesn't exist</returns>
         public static string GetItemOrCookie(this IRequest httpReq, string name)
         {
-            object value;
-            if (httpReq.Items.TryGetValue(name, out value)) return value.ToString();
+            if (httpReq.Items.TryGetValue(name, out var value))
+                return value.ToString();
 
-            Cookie cookie;
-            if (httpReq.Cookies.TryGetValue(name, out cookie)) return cookie.Value;
+            if (httpReq.Cookies.TryGetValue(name, out var cookie))
+                return cookie.Value;
 
             return null;
         }
@@ -59,11 +62,9 @@ namespace ServiceStack
             //TryGetValue is not happy with null dictionary keys, so we should bail out here
             if (IsNullOrEmpty(name)) return null;
 
-            Cookie cookie;
-            if (httpReq.Cookies.TryGetValue(name, out cookie)) return cookie.Value;
+            if (httpReq.Cookies.TryGetValue(name, out var cookie)) return cookie.Value;
 
-            object oValue;
-            if (httpReq.Items.TryGetValue(name, out oValue)) return oValue.ToString();
+            if (httpReq.Items.TryGetValue(name, out var oValue)) return oValue.ToString();
 
             return null;
         }
@@ -114,7 +115,7 @@ namespace ServiceStack
 
         public static string GetUrlHostName(this IRequest httpReq)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
             if (aspNetReq != null)
             {
@@ -133,11 +134,14 @@ namespace ServiceStack
 
         public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
-        public static IVirtualFile GetVirtualFile(this IRequest httpReq) => HostContext.ResolveVirtualFile(httpReq.PathInfo, httpReq);
-
-        public static IVirtualDirectory GetVirtualDirectory(this IRequest httpReq) => HostContext.ResolveVirtualDirectory(httpReq.PathInfo, httpReq);
-
-        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => HostContext.ResolveVirtualNode(httpReq.PathInfo, httpReq);
+        public static IVirtualNode GetVirtualNode(this IRequest httpReq) => httpReq is IHasVirtualFiles vfsReq ?
+            (vfsReq.IsFile 
+                ? (IVirtualNode) vfsReq.GetFile()
+                : vfsReq.IsDirectory
+                    ? vfsReq.GetDirectory()
+                : null)
+            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests 
+              HostContext.VirtualFileSources.GetDirectory(httpReq.PathInfo);
 
         public static string GetDirectoryPath(this IRequest request)
         {
@@ -232,9 +236,8 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return httpReq?.QueryString[Keywords.Callback];
+            return httpReq?.QueryString[Keywords.Callback].SafeVarName();
         }
-
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
@@ -243,22 +246,25 @@ namespace ServiceStack
 
         public static int ToStatusCode(this Exception ex)
         {
-            var hasStatusCode = ex as IHasStatusCode;
-            if (hasStatusCode != null)
+            if (ex is IHasStatusCode hasStatusCode)
                 return hasStatusCode.StatusCode;
 
-            if (HostContext.Config != null)
+            if (ex is WebException webEx)
+                return (int) webEx.GetStatus().GetValueOrDefault(HttpStatusCode.InternalServerError);
+
+            if (HostContext.AppHost != null && HostContext.Config != null)
             {
                 var exType = ex.GetType();
                 foreach (var entry in HostContext.Config.MapExceptionToStatusCode)
                 {
-                    if (entry.Key.IsAssignableFromType(exType))
+                    if (entry.Key.IsAssignableFrom(exType))
                         return entry.Value;
                 }
             }
 
-            if (ex is HttpError) return ((HttpError)ex).Status;
+            if (ex is HttpError httpEx) return httpEx.Status;
             if (ex is NotImplementedException || ex is NotSupportedException) return (int)HttpStatusCode.MethodNotAllowed;
+            if (ex is FileNotFoundException) return (int)HttpStatusCode.NotFound;
             if (ex is ArgumentException || ex is SerializationException || ex is FormatException) return (int)HttpStatusCode.BadRequest;
             if (ex is AuthenticationException) return (int)HttpStatusCode.Unauthorized;
             if (ex is UnauthorizedAccessException) return (int)HttpStatusCode.Forbidden;
@@ -280,6 +286,27 @@ namespace ServiceStack
                 StatusCode = error.Status,
                 StatusDescription = error.StatusDescription,
                 ResponseDto = error.Response,
+            };
+
+            return to;
+        }
+
+        public static WebServiceException ToWebServiceException(this ValidationResult validationResult, object requestDto, ValidationFeature feature)
+        {
+            var validationError = validationResult.ToException();
+            var errorResponse = DtoUtils.CreateErrorResponse(requestDto, validationError);
+            if (feature?.ErrorResponseFilter != null)
+            {
+                errorResponse = feature.ErrorResponseFilter(validationResult, errorResponse);
+            }
+
+            var status = errorResponse.GetResponseStatus();
+            
+            var to = new WebServiceException(status.ErrorCode, validationError)
+            {
+                StatusCode = 400,
+                StatusDescription = status.ErrorCode,
+                ResponseDto = errorResponse,                
             };
 
             return to;
@@ -317,7 +344,7 @@ namespace ServiceStack
 
         private static readonly ILog Log = LogManager.GetLogger(typeof(HttpRequestExtensions));
 
-        private static readonly string WebHostDirectoryName = "";
+        internal static readonly string WebHostDirectoryName = "";
 
         static HttpRequestExtensions()
         {
@@ -344,7 +371,7 @@ namespace ServiceStack
             return pathInfo;
         }
 
-#if NETSTANDARD1_6
+#if NETSTANDARD2_0
         public static string GetLastPathInfo(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
             var rawUrl = Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request);
@@ -365,7 +392,7 @@ namespace ServiceStack
             return new Uri(request.AbsoluteUri).GetLeftAuthority() + endpointsPath;
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         //http://stackoverflow.com/a/757251/85785
         static readonly string[] VirtualPathPrefixes = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == null || System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath == "/"
             ? TypeConstants.EmptyStringArray
@@ -435,30 +462,18 @@ namespace ServiceStack
         {
             return GetLastPathInfoFromRawUrl(request.RawUrl);
         }
-
-        public static string GetPathInfo(this HttpRequestBase request)
-        {
-            if (!IsNullOrEmpty(request.PathInfo)) return request.PathInfo.TrimEnd('/');
-
-            var mode = HostContext.Config.HandlerFactoryPath;
-            var appPath = IsNullOrEmpty(request.ApplicationPath)
-                          ? WebHostDirectoryName
-                          : request.ApplicationPath.TrimStart('/');
-
-            //mod_mono: /CustomPath35/api//default.htm
-            var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
-            return GetPathInfo(path, mode, appPath);
-        }
 #endif
 
         public static string GetPathInfo(string fullPath, string mode, string appPath)
         {
             var pathInfo = ResolvePathInfoFromMappedPath(fullPath, mode);
-            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) 
+                return pathInfo;
 
             //Wildcard mode relies on this to work out the handlerPath
             pathInfo = ResolvePathInfoFromMappedPath(fullPath, appPath);
-            if (!IsNullOrEmpty(pathInfo)) return pathInfo;
+            if (!IsNullOrEmpty(pathInfo)) 
+                return pathInfo;
 
             return fullPath;
         }
@@ -495,7 +510,7 @@ namespace ServiceStack
             if (!pathRootFound) return null;
 
             var path = StringBuilderCache.ReturnAndFree(sbPathInfo);
-            return path.Length > 1 ? path.TrimEnd('/') : "/";
+            return path.Length > 1 ? path : "/";
         }
 
         public static bool IsContentType(this IRequest request, string contentType)
@@ -597,18 +612,47 @@ namespace ServiceStack
             var format = httpReq.QueryString[Keywords.Format];
             if (format == null)
             {
+                // 3 or 4 letters in URI between slashes `/[xml|json|html|jsv|csv]/[reply|oneway]/[servicename]`
+                //see http://docs.servicestack.net/formats#pre-defined-routes
                 const int formatMaxLength = 4;
-                var pi = httpReq.PathInfo;
-                if (pi == null || pi.Length <= formatMaxLength) return null;
-                if (pi[0] == '/') pi = pi.Substring(1);
-                format = pi.LeftPart('/');
-                if (format.Length > formatMaxLength) return null;
-            }
+                const int formatMinLength = 3;
+                int start = 0, end = -1;
 
-            format = format.LeftPart('.').ToLower();
-            if (format.Contains("json")) return MimeTypes.Json;
-            if (format.Contains("xml")) return MimeTypes.Xml;
-            if (format.Contains("jsv")) return MimeTypes.Jsv;
+                var pi = httpReq.PathInfo;
+                if (pi == null || pi.Length < formatMinLength) return null;
+
+                if (pi[0] == '/') start = 1;
+                end = pi.IndexOf('/', start, Math.Min(pi.Length - start, formatMaxLength));
+
+                if (end == -1) 
+                {
+                    if (pi.Length - start > formatMaxLength)
+                        return null;
+                    else
+                        end = pi.Length;
+                } else if (end - start > formatMaxLength) return null;
+
+                //check for xml or jsv content-type
+                if (end - start == 3)
+                {
+                    if (String.Compare(pi, start, "xml", 0, "xml".Length, StringComparison.OrdinalIgnoreCase) == 0)
+                         return MimeTypes.Xml;
+                    if (String.Compare(pi, start, "jsv", 0, "jsv".Length, StringComparison.OrdinalIgnoreCase) == 0)
+                         return MimeTypes.Jsv;
+                } else if (end - start == 4) //check for "json" content-type
+                {
+                    if (String.Compare(pi, start, "json", 0, "json".Length, StringComparison.OrdinalIgnoreCase) == 0)
+                         return MimeTypes.Json;
+                }
+
+                format = pi.Substring(start, end - start).ToLowerInvariant();
+            } else 
+            {
+                format = format.LeftPart('.').ToLowerInvariant();
+                if (format.Contains("json")) return MimeTypes.Json;
+                if (format.Contains("xml")) return MimeTypes.Xml;
+                if (format.Contains("jsv")) return MimeTypes.Jsv;
+            }
 
             string contentType;
             HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
@@ -727,9 +771,17 @@ namespace ServiceStack
             return httpReq.GetItem("Template") as string;
         }
 
-        public static string ResolveAbsoluteUrl(this IRequest httpReq, string url)
+        public static string ResolveAbsoluteUrl(this IRequest httpReq, string virtualPath=null)
         {
-            return HostContext.ResolveAbsoluteUrl(url, httpReq);
+            return HostContext.ResolveAbsoluteUrl(virtualPath ?? "~" + httpReq.GetRawUrl(), httpReq);
+        }
+
+        public static string GetRawUrl(this IRequest httpReq)
+        {
+            var handlerPath = HostContext.Config.HandlerFactoryPath;
+            return handlerPath != null
+                ? httpReq.RawUrl.IndexOf(handlerPath, StringComparison.OrdinalIgnoreCase) == 1 ? httpReq.RawUrl.Substring(1 + handlerPath.Length) : httpReq.RawUrl
+                : httpReq.RawUrl;
         }
 
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
@@ -864,7 +916,7 @@ namespace ServiceStack
                    : RequestAttributes.External;
         }
 
-        public static bool IsInLocalSubnet(IPAddress ipAddress)
+        public static bool IsInLocalSubnet(this IPAddress ipAddress)
         {
             var ipAddressBytes = ipAddress.GetAddressBytes();
             switch (ipAddress.AddressFamily)
@@ -893,7 +945,7 @@ namespace ServiceStack
             return false;
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static HttpContextBase ToHttpContextBase(this HttpRequestBase aspnetHttpReq)
         {
             return aspnetHttpReq.RequestContext.HttpContext;
@@ -953,28 +1005,16 @@ namespace ServiceStack
                 ? request.Url.PathAndQuery
                 : null;
         }
-#endif
-
-        public static void SetOperationName(this IRequest httpReq, string operationName)
+#else
+        public static string GetPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
-            if (httpReq.OperationName == null)
-            {
-#if !NETSTANDARD1_6
-                var aspReq = httpReq as AspNetRequest;
-                if (aspReq != null)
-                {
-                    aspReq.OperationName = operationName;
-                    return;
-                }
+            if (request == null)
+                return null;
 
-                var listenerReq = httpReq as ListenerRequest;
-                if (listenerReq != null)
-                {
-                    listenerReq.OperationName = operationName;
-                }
-#endif
-            }
+            var url = new Uri(Microsoft.AspNetCore.Http.Extensions.UriHelper.GetDisplayUrl(request));
+            return url.PathAndQuery;
         }
+#endif
 
         public static Type GetOperationType(this IRequest req)
         {
@@ -1014,6 +1054,55 @@ namespace ServiceStack
             object route;
             req.Items.TryGetValue(Keywords.Route, out route);
             return route as RestPath;
+        }
+
+        public static bool IsHtml(this IRequest req)
+        {
+            return req.ResponseContentType.MatchesContentType(MimeTypes.Html);
+        }
+
+        public static string GetRequestValue(this IHttpRequest req, string name)
+        {
+            switch (name)
+            {
+                case nameof(req.PathInfo):
+                    return req.PathInfo;
+                case nameof(req.HttpMethod):
+                case nameof(req.Verb):
+                    return req.HttpMethod;
+                case nameof(req.ContentType):
+                    return req.ContentType;
+                case nameof(req.RawUrl):
+                    return req.RawUrl;
+                case nameof(req.AbsoluteUri):
+                    return req.AbsoluteUri;
+                case nameof(req.UserAgent):
+                    return req.UserAgent;
+                case nameof(req.Accept):
+                    return req.Accept;
+                case nameof(req.IsLocal):
+                    return req.IsLocal.ToString();
+                case nameof(req.IsSecureConnection):
+                    return req.IsSecureConnection.ToString();
+                case nameof(req.UserHostAddress):
+                    return req.UserHostAddress;
+                case nameof(req.RemoteIp):
+                    return req.RemoteIp;
+                case nameof(req.XRealIp):
+                    return req.XRealIp;
+                case nameof(req.XForwardedFor):
+                    return req.XForwardedFor;
+                case nameof(req.XForwardedPort):
+                    return req.XForwardedPort.ToString();
+                case nameof(req.XForwardedProtocol):
+                    return req.XForwardedProtocol;
+                case nameof(req.UrlReferrer):
+                    return req.UrlReferrer.ToString();
+                case nameof(req.ContentLength):
+                    return req.ContentLength.ToString();
+                default:
+                    throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
+            }
         }
     }
 }

@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new CorsFeatureAppHostHttpListener()
@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -74,7 +74,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             new JsvServiceClient(Config.AbsoluteBaseUri)
         };
 
-        [Test, Explicit]
+        [Test, Ignore("Debug Only")]
         public void RunFor5Mins()
         {
             Thread.Sleep(TimeSpan.FromMinutes(5));
@@ -92,8 +92,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response[HttpHeaders.AllowCredentials], Is.EqualTo("true"));
         }
 
-        [Test, TestCaseSource("RestClients")]
-        public void GlobalCorsHasAccessControlHeaders(IRestClient client)
+        [Test]
+        public void GlobalCorsHasAccessControlHeaders()
         {
             appHost.LoadPlugin(new CorsFeature { AutoHandleOptionsRequests = false });
 

@@ -1,6 +1,6 @@
 using NUnit.Framework;
-using ServiceStack.ProtoBuf;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
+using ServiceStack.ProtoBuf;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -9,7 +9,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	{
         ExampleAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ExampleAppHostHttpListener();
@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

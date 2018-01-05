@@ -11,20 +11,22 @@ namespace ServiceStack.Logging
     public class StringBuilderLogFactory : ILogFactory
     {
         private StringBuilder sb;
+        private readonly bool debugEnabled;
 
-        public StringBuilderLogFactory()
+        public StringBuilderLogFactory(bool debugEnabled = true)
         {
             sb = new StringBuilder();
+            this.debugEnabled = debugEnabled;
         }
 
         public ILog GetLogger(Type type)
         {
-            return new StringBuilderLog(type, sb);
+            return new StringBuilderLog(type, sb) { IsDebugEnabled = debugEnabled };
         }
 
         public ILog GetLogger(string typeName)
         {
-            return new StringBuilderLog(typeName, sb);
+            return new StringBuilderLog(typeName, sb) { IsDebugEnabled = debugEnabled };
         }
 
         public string GetLogs()
@@ -59,7 +61,7 @@ namespace ServiceStack.Logging
             this.logs = logs;
         }
 
-        public bool IsDebugEnabled { get { return true; } }
+        public bool IsDebugEnabled { get; set; }
 
         /// <summary>
         /// Logs the specified message.

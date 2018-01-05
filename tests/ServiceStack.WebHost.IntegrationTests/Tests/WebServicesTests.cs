@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
 
     /// <summary>
-    /// Unit tests simulates an in-process ServiceStack host where all services 
+    /// Unit tests simulates an in-process ServiceStack host where all services
     /// are executed all in-memory so DTO's are not even serialized.
     /// </summary>
     public class UnitTests : WebServicesTests

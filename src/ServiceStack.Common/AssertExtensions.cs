@@ -25,23 +25,35 @@ namespace ServiceStack
                 throw new ArgumentNullException(varName ?? "object");
         }
 
-        public static void ThrowIfNullOrEmpty(this string strValue)
+        public static T ThrowIfNull<T>(this T obj, string varName)
         {
-            ThrowIfNullOrEmpty(strValue, null);
+            if (obj == null)
+                throw new ArgumentNullException(varName ?? "object");
+
+            return obj;
         }
 
-        public static void ThrowIfNullOrEmpty(this string strValue, string varName)
+        public static string ThrowIfNullOrEmpty(this string strValue)
+        {
+            return ThrowIfNullOrEmpty(strValue, null);
+        }
+
+        public static string ThrowIfNullOrEmpty(this string strValue, string varName)
         {
             if (string.IsNullOrEmpty(strValue))
                 throw new ArgumentNullException(varName ?? "string");
+
+            return strValue;
         }
 
-        public static void ThrowIfNullOrEmpty(this ICollection collection)
+        public static ICollection ThrowIfNullOrEmpty(this ICollection collection)
         {
             ThrowIfNullOrEmpty(collection, null);
+
+            return collection;
         }
 
-        public static void ThrowIfNullOrEmpty(this ICollection collection, string varName)
+        public static ICollection ThrowIfNullOrEmpty(this ICollection collection, string varName)
         {
             var fieldName = varName ?? "collection";
 
@@ -50,14 +62,18 @@ namespace ServiceStack
 
             if (collection.Count == 0)
                 throw new ArgumentException(fieldName + " is empty");
+
+            return collection;
         }
 
-        public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection)
+        public static ICollection<T> ThrowIfNullOrEmpty<T>(this ICollection<T> collection)
         {
             ThrowIfNullOrEmpty(collection, null);
+
+            return collection;
         }
 
-        public static void ThrowIfNullOrEmpty<T>(this ICollection<T> collection, string varName)
+        public static ICollection<T> ThrowIfNullOrEmpty<T>(this ICollection<T> collection, string varName)
         {
             var fieldName = varName ?? "collection";
 
@@ -66,8 +82,8 @@ namespace ServiceStack
 
             if (collection.Count == 0)
                 throw new ArgumentException(fieldName + " is empty");
-        }
 
+            return collection;
+        }
     }
-
 }

@@ -181,6 +181,8 @@ namespace Check.ServiceInterface
         {
             return request;
         }
+
+        public object Any(HelloImplementsInterface request) => request;
     
         public object Get(Request1 request)
         {
@@ -289,6 +291,23 @@ namespace Check.ServiceInterface
         public object Any(IgnoreInMetadataConfig request)
         {
             return request;
+        }
+
+        public object Any(HelloTuple request) => request;
+
+        [Authenticate]
+        public object Any(HelloAuthenticated request)
+        {
+            var session = GetSession();
+
+            return new HelloAuthenticatedResponse
+            {
+                Version = request.Version,
+                SessionId = session.Id,
+                UserName = session.UserName,
+                Email = session.Email,
+                IsAuthenticated = session.IsAuthenticated,
+            };
         }
     }
 

@@ -84,7 +84,7 @@ namespace ServiceStack.ServiceHost.Tests
                 var requestType = typeof(GenericService<>).GetGenericArguments()[0];
                 var exception = Assert.Throws<NotImplementedException>(() => appHost.ServiceController.GetService(requestType));
 
-                Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+                Assert.That(exception.Message, Does.Contain("Unable to resolve service"));
             }
         }
 
@@ -103,7 +103,7 @@ namespace ServiceStack.ServiceHost.Tests
                 var exception = Assert.Throws<System.NotImplementedException>(() =>
                     appHost.ServiceController.GetService(typeof(Generic3<>)));
 
-                Assert.That(exception.Message, Is.StringContaining("Unable to resolve service"));
+                Assert.That(exception.Message, Does.Contain("Unable to resolve service"));
             }
         }
 
@@ -139,6 +139,7 @@ namespace ServiceStack.ServiceHost.Tests
         public void Service_with_generic_IGet_marker_interface_can_be_registered_without_DefaultRequestAttribute()
         {
             var appHost = new AppHost();
+            appHost.ServiceController = new ServiceController(appHost);
 
             Assert.That(appHost.RestPaths.Count, Is.EqualTo(0));
 

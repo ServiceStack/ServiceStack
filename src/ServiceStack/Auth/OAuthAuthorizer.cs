@@ -35,6 +35,7 @@ using System.Text;
 using System.Net;
 using System.Web;
 using System.Security.Cryptography;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -65,6 +66,7 @@ namespace ServiceStack.Auth
     //
     public class OAuthAuthorizer
     {
+        private static ILog log = LogManager.GetLogger(typeof(OAuthAuthorizer)); 
         // Settable by the user
         public string xAuthUsername, xAuthPassword;
 
@@ -107,9 +109,14 @@ namespace ServiceStack.Auth
         // Makes an OAuth signature out of the HTTP method, the base URI and the headers
         static string MakeSignature(string method, string base_uri, Dictionary<string, string> headers)
         {
-            var items = from k in headers.Keys
-                        orderby k
-                        select k + "%3D" + OAuthUtils.PercentEncode(headers[k]);
+            var emptyHeaders = headers.Keys.Where(k => string.IsNullOrEmpty(headers[k])).ToArray();
+            if (emptyHeaders.Length > 0)
+            {
+                log.Warn("Empty Headers: " + string.Join(", ", emptyHeaders));
+            }
+                
+            var items = headers.Keys.OrderBy(k => k)                
+                .Select(k => k + "%3D" + OAuthUtils.PercentEncode(headers[k]));
 
             return method + "&" + OAuthUtils.PercentEncode(base_uri) + "&" +
                 string.Join("%26", items.ToArray());
@@ -157,10 +164,11 @@ namespace ServiceStack.Auth
             string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, null);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
+            headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
+
             try
             {
                 var strResponse = provider.RequestTokenUrl.PostStringToUrl("", requestFilter: req => {
-                    req.Headers["oauth_signature"] = OAuthUtils.PercentEncode(oauth_signature);
                     req.Headers[HttpRequestHeader.Authorization] = HeadersToOAuth(headers);
                 });
                 var result = PclExportClient.Instance.ParseQueryString(strResponse);
@@ -250,14 +258,18 @@ namespace ServiceStack.Auth
             return false;
         }
 
-        // 
+        public static string AuthorizeRequest(OAuthProvider provider, string oauthToken, string oauthTokenSecret,
+            string method, Uri uri, string data)
+        {
+            return AuthorizeRequest(provider.ConsumerKey, provider.ConsumerSecret, oauthToken, oauthTokenSecret, method, uri, data);
+        }
+
         // Assign the result to the Authorization header, like this:
         // request.Headers [HttpRequestHeader.Authorization] = AuthorizeRequest (...)
-        //
-        public static string AuthorizeRequest(OAuthProvider provider, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
+        public static string AuthorizeRequest(string consumerKey, string consumerSecret, string oauthToken, string oauthTokenSecret, string method, Uri uri, string data)
         {
-            var headers = new Dictionary<string, string>() {
-                { "oauth_consumer_key", provider.ConsumerKey },
+            var headers = new Dictionary<string, string> {
+                { "oauth_consumer_key", consumerKey },
                 { "oauth_nonce", MakeNonce () },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", MakeTimestamp () },
@@ -283,7 +295,7 @@ namespace ServiceStack.Auth
             }
 
             string signature = MakeSignature(method, uri.AbsoluteUri.LeftPart('?'), signatureHeaders);
-            string compositeSigningKey = MakeSigningKey(provider.ConsumerSecret, oauthTokenSecret);
+            string compositeSigningKey = MakeSigningKey(consumerSecret, oauthTokenSecret);
             string oauth_signature = MakeOAuthSignature(compositeSigningKey, signature);
 
             headers.Add("oauth_signature", OAuthUtils.PercentEncode(oauth_signature));
@@ -331,6 +343,9 @@ namespace ServiceStack.Auth
         //
         public static string PercentEncode(string s)
         {
+            if (string.IsNullOrEmpty(s))
+                return s;
+            
             var sb = StringBuilderCache.Allocate();
 
             foreach (byte c in Encoding.UTF8.GetBytes(s))

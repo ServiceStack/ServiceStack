@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using ServiceStack;
-using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace Funq
@@ -13,7 +12,7 @@ namespace Funq
     }
 
     /// <include file='Container.xdoc' path='docs/doc[@for="Container"]/*'/>
-    public sealed partial class Container : IDisposable
+    public partial class Container : IDisposable
     {
         Dictionary<ServiceKey, ServiceEntry> services = new Dictionary<ServiceKey, ServiceEntry>();
         Dictionary<ServiceKey, ServiceEntry> servicesReadOnlyCopy;
@@ -52,14 +51,26 @@ namespace Funq
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.CreateChildContainer"]/*'/>
         public Container CreateChildContainer()
         {
-            var child = new Container { parent = this };
+            var child = InstantiateChildContainer();
             lock (childContainers) childContainers.Push(child);
             return child;
         }
 
-        /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
-        public void Dispose()
+        protected virtual Container InstantiateChildContainer()
         {
+            return new Container { parent = this };
+        }
+
+        private bool hasDisposed = false;
+
+        /// <include file='Container.xdoc' path='docs/doc[@for="Container.Dispose"]/*'/>
+        public virtual void Dispose()
+        {
+            if (hasDisposed)
+                return;
+
+            hasDisposed = true;
+            
             lock (disposables)
             {
                 while (disposables.Count > 0)
@@ -81,12 +92,13 @@ namespace Funq
 
             foreach (var serviceEntry in services.Values)
             {
-                var disposable = serviceEntry.GetInstance() as IDisposable;
-                if (disposable != null && !(disposable is Container))
+                if (serviceEntry.GetInstance() is IDisposable disposable && !(disposable is Container))
                 {
                     disposable.Dispose();
                 }
             }
+            
+            using (Adapter as IDisposable){}
         }
 
         /// <include file='Container.xdoc' path='docs/doc[@for="Container.Register(instance)"]/*'/>
@@ -109,7 +121,7 @@ namespace Funq
         private ServiceEntry<TService, TFunc> RegisterImpl<TService, TFunc>(string name, TFunc factory)
         {
             if (typeof(TService) == typeof(Container))
-                throw new ArgumentException(ServiceStack.Properties.Resources.Registration_CantRegisterContainer);
+                throw new ArgumentException(ServiceStack.ResourceDesigner.Resources.Registration_CantRegisterContainer);
 
             var entry = new ServiceEntry<TService, TFunc>(factory)
             {
@@ -369,7 +381,7 @@ namespace Funq
 
         public bool CheckAdapterFirst { get; set; }
 
-        private ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
+        protected virtual ServiceEntry<TService, TFunc> GetEntry<TService, TFunc>(string serviceName, bool throwIfMissing)
         {
             try
             {
@@ -407,7 +419,7 @@ namespace Funq
                 var genericDef = typeof(TService).FirstGenericTypeDefinition();
                 if (genericDef != null && genericDef.Name.StartsWith("Func`")) //Lazy Dependencies
                 {
-                    var argTypes = typeof(TService).GetTypeGenericArguments();
+                    var argTypes = typeof(TService).GetGenericArguments();
                     var lazyResolver = GetLazyResolver(argTypes);
 
                     return new ServiceEntry<TService, TFunc>(

@@ -13,57 +13,135 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Linq.Expressions;
-    using Attributes;
-    using Resources;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Linq.Expressions;
+	using Attributes;
+	using Resources;
 
-    public class LengthValidator : PropertyValidator, ILengthValidator {
-        public int Min { get; private set; }
-        public int Max { get; private set; }
+	public class LengthValidator : PropertyValidator, ILengthValidator {
+		public int Min { get; private set; }
+		public int Max { get; private set; }
 
-        public LengthValidator(int min, int max) : this(min, max, () => Messages.length_error) {
-        }
+		public Func<object, int> MinFunc { get; set; }
+		public Func<object, int> MaxFunc { get; set; }
 
-        public LengthValidator(int min, int max, Expression<Func<string>> errorMessageResourceSelector) : base(errorMessageResourceSelector, ValidationErrors.Length) {
-            Max = max;
-            Min = min;
+		public LengthValidator(int min, int max) : base(new LanguageStringSource(nameof(LengthValidator))) {
+			Max = max;
+			Min = min;
 
-            if (max < min) {
-                throw new ArgumentOutOfRangeException("max", "Max should be larger than min.");
-            }
+			if (max != -1 && max < min) {
+				throw new ArgumentOutOfRangeException("max", "Max should be larger than min.");
+			}
+		}
 
-        }
 
-        protected override bool IsValid(PropertyValidatorContext context) {
-            int length = context.PropertyValue == null ? 0 : context.PropertyValue.ToString().Length;
+		public LengthValidator(Func<object, int> min, Func<object, int> max) : base(new LanguageStringSource(nameof(LengthValidator))) {
+			MaxFunc = max;
+			MinFunc = min;
+		}
 
-            if (length < Min || length > Max) {
-                context.MessageFormatter
-                    .AppendArgument("MinLength", Min)
-                    .AppendArgument("MaxLength", Max)
-                    .AppendArgument("TotalLength", length);
+		internal LengthValidator(int min, int max, IStringSource errorSource) : base(errorSource) {
+			Max = max;
+			Min = min;
 
-                return false;
-            }
+			if (max != -1 && max < min) {
+				throw new ArgumentOutOfRangeException("max", "Max should be larger than min.");
+			}
+		}
 
-            return true;
-        }
-    }
 
-    public class ExactLengthValidator : LengthValidator {
-        public ExactLengthValidator(int length) : base(length,length, () => Messages.exact_length_error) {
-            
-        }
-    }
+		internal LengthValidator(Func<object, int> min, Func<object, int> max, IStringSource errorSource) : base(errorSource) {
+			MaxFunc = max;
+			MinFunc = min;
+		}
 
-    public interface ILengthValidator : IPropertyValidator {
-        int Min { get; }
-        int Max { get; }
-    }
+		protected override bool IsValid(PropertyValidatorContext context) {
+			if (context.PropertyValue == null) return true;
+
+			var min = Min;
+			var max = Max;
+
+			if (MaxFunc != null && MinFunc != null)
+			{
+				max = MaxFunc(context.Instance);
+				min = MinFunc(context.Instance);
+			}
+
+			int length = context.PropertyValue.ToString().Length;
+
+			if (length < min || (length > max && max != -1)) {
+				context.MessageFormatter
+					.AppendArgument("MinLength", min)
+					.AppendArgument("MaxLength", max)
+					.AppendArgument("TotalLength", length);
+
+				return false;
+			}
+
+			return true;
+		}
+	}
+
+	public class ExactLengthValidator : LengthValidator {
+		public ExactLengthValidator(int length) : base(length,length,new LanguageStringSource(nameof(ExactLengthValidator))) {
+			
+		}
+
+		public ExactLengthValidator(Func<object, int> length)
+			: base(length, length, new LanguageStringSource(nameof(ExactLengthValidator))) {
+
+		}
+	}
+
+	public class MaximumLengthValidator : LengthValidator {
+		public MaximumLengthValidator(int max)
+			: base(0, max, new LanguageStringSource(nameof(MaximumLengthValidator))) {
+
+		}
+
+		public MaximumLengthValidator(Func<object, int> max)
+			: base(obj => 0, max, new LanguageStringSource(nameof(MaximumLengthValidator))) {
+
+		}
+
+		protected override bool IsValid(PropertyValidatorContext context) {
+			var result = base.IsValid(context);
+			if (!result) {
+				var currentMax = (int)context.MessageFormatter.PlaceholderValues["MaxLength"];
+				context.MessageFormatter.PlaceholderValues["MaxLength"] = currentMax + 1;
+			}
+			return result;
+		}
+	}
+
+	public class MinimumLengthValidator : LengthValidator {
+
+		public MinimumLengthValidator(int min) 
+			: base(min, -1, new LanguageStringSource(nameof(MinimumLengthValidator))) {
+
+		}
+
+		public MinimumLengthValidator(Func<object, int> min)
+			: base(min, obj => -1, new LanguageStringSource(nameof(MinimumLengthValidator))) {
+
+		}
+
+		protected override bool IsValid(PropertyValidatorContext context) {
+			var result = base.IsValid(context);
+			if (!result) {
+				var currentMin = (int)context.MessageFormatter.PlaceholderValues["MinLength"];
+				context.MessageFormatter.PlaceholderValues["MinLength"] = currentMin - 1;
+			}
+			return result;
+		}
+	}
+
+	public interface ILengthValidator : IPropertyValidator {
+		int Min { get; }
+		int Max { get; }
+	}
 }

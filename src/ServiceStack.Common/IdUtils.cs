@@ -9,13 +9,13 @@ namespace ServiceStack
 {
     public static class IdUtils<T>
     {
-        internal static Func<T, object> CanGetId;
+        internal static GetMemberDelegate<T> CanGetId;
 
         static IdUtils()
         {
 
 #if !SL5 && !IOS && !XBOX
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
             var hasIdInterfaces = typeof(T).GetTypeInfo().ImplementedInterfaces.Where(t => t.GetTypeInfo().IsGenericType 
                 && t.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHasId<>)).ToArray();
 #else
@@ -29,18 +29,18 @@ namespace ServiceStack
             }
 #endif
 
-            if (typeof(T).IsClass() || typeof(T).IsInterface())
+            if (typeof(T).IsClass || typeof(T).IsInterface)
             {
                 foreach (var pi in typeof(T).GetPublicProperties()
                     .Where(pi => pi.AllAttributes<Attribute>()
                              .Any(attr => attr.GetType().Name == "PrimaryKeyAttribute")))
                 {
-                    CanGetId = StaticAccessors<T>.ValueUnTypedGetPropertyTypeFn(pi);
+                    CanGetId = pi.CreateGetter<T>();
                     return;
                 }
 
                 var piId = typeof(T).GetIdProperty();
-                if (piId?.GetMethodInfo() != null)
+                if (piId?.GetGetMethod(nonPublic:true) != null)
                 {
                     CanGetId = HasPropertyId<T>.GetId;
                     return;
@@ -52,7 +52,7 @@ namespace ServiceStack
                 CanGetId = x =>
                 {
                     var piId = x.GetType().GetIdProperty();
-                    if (piId?.GetMethodInfo() != null)
+                    if (piId?.GetGetMethod(nonPublic:true) != null)
                         return x.GetObjectId();
 
                     return x.GetHashCode();
@@ -71,12 +71,12 @@ namespace ServiceStack
 
     internal static class HasPropertyId<TEntity>
     {
-        private static readonly Func<TEntity, object> GetIdFn;
+        private static readonly GetMemberDelegate<TEntity> GetIdFn;
 
         static HasPropertyId()
         {
             var pi = typeof(TEntity).GetIdProperty();
-            GetIdFn = StaticAccessors<TEntity>.ValueUnTypedGetPropertyTypeFn(pi);
+            GetIdFn = pi.CreateGetter<TEntity>();
         }
 
         public static object GetId(TEntity entity)
@@ -95,7 +95,7 @@ namespace ServiceStack
 #if IOS || SL5
             GetIdFn = HasPropertyId<TEntity>.GetId;
 #else
-#if NETSTANDARD1_3
+#if NETSTANDARD2_0
             var hasIdInterfaces = typeof(TEntity).GetTypeInfo().ImplementedInterfaces.Where(t => t.GetTypeInfo().IsGenericType 
                 && t.GetTypeInfo().GetGenericTypeDefinition() == typeof(IHasId<>)).ToArray();
 #else
@@ -142,7 +142,7 @@ namespace ServiceStack
 
         public static object GetObjectId(this object entity)
         {
-            return entity.GetType().GetIdProperty().GetMethodInfo().Invoke(entity, TypeConstants.EmptyObjectArray);
+            return entity.GetType().GetIdProperty().GetGetMethod(nonPublic:true).Invoke(entity, TypeConstants.EmptyObjectArray);
         }
 
         public static object ToId<T>(this T entity)
@@ -205,7 +205,7 @@ namespace ServiceStack
 
         public static PropertyInfo GetIdProperty(this Type type)
         {
-            foreach (var pi in type.GetPropertyInfos())
+            foreach (var pi in type.GetProperties())
             {
                 if (string.Equals(IdField, pi.Name, StringComparison.OrdinalIgnoreCase))
                 {

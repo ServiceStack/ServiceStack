@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -10,32 +10,37 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public abstract partial class ServiceStackHost
     {
-        public virtual object ApplyRequestConverters(IRequest req, object requestDto)
+        public async Task<object> ApplyRequestConvertersAsync(IRequest req, object requestDto)
         {
-            foreach (var converter in RequestConverters)
+            foreach (var converter in RequestConvertersArray)
             {
-                requestDto = converter(req, requestDto) ?? requestDto;
+                requestDto = await converter(req, requestDto) ?? requestDto;
                 if (req.Response.IsClosed)
                     return requestDto;
             }
@@ -43,11 +48,11 @@ namespace ServiceStack
             return requestDto;
         }
 
-        public virtual object ApplyResponseConverters(IRequest req, object responseDto)
+        public async Task<object> ApplyResponseConvertersAsync(IRequest req, object responseDto)
         {
-            foreach (var converter in ResponseConverters)
+            foreach (var converter in ResponseConvertersArray)
             {
-                responseDto = converter(req, responseDto) ?? responseDto;
+                responseDto = await converter(req, responseDto) ?? responseDto;
                 if (req.Response.IsClosed)
                     return responseDto;
             }
@@ -58,7 +63,7 @@ namespace ServiceStack
         /// <summary>
         /// Apply PreRequest Filters for participating Custom Handlers, e.g. RazorFormat, MarkdownFormat, etc
         /// </summary>
-        public virtual bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
+        public bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
             return ApplyPreRequestFilters(httpReq, httpRes);
         }
@@ -80,14 +85,14 @@ namespace ServiceStack
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
+        public bool ApplyPreRequestFilters(IRequest httpReq, IResponse httpRes)
         {
-            if (PreRequestFilters.Count == 0)
+            if (PreRequestFiltersArray.Length == 0)
                 return false;
 
             using (Profiler.Current.Step("Executing Pre RequestFilters"))
             {
-                foreach (var requestFilter in PreRequestFilters)
+                foreach (var requestFilter in PreRequestFiltersArray)
                 {
                     requestFilter(httpReq, httpRes);
                     if (httpRes.IsClosed) break;
@@ -97,35 +102,45 @@ namespace ServiceStack
             }
         }
 
+        [Obsolete("Use ApplyRequestFiltersAsync")]
+        public bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        {
+            ApplyRequestFiltersAsync(req, res, requestDto).Wait();
+            return res.IsClosed;
+        }
+
         /// <summary>
         /// Applies the request filters. Returns whether or not the request has been handled 
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyRequestFilters(IRequest req, IResponse res, object requestDto)
+        public async Task ApplyRequestFiltersAsync(IRequest req, IResponse res, object requestDto)
         {
-            req.ThrowIfNull("req");
-            res.ThrowIfNull("res");
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (res == null) throw new ArgumentNullException(nameof(res));
 
             if (res.IsClosed)
-                return true;
+                return;
 
-            using (Profiler.Current.Step("Executing Request Filters"))
+            using (Profiler.Current.Step("Executing Request Filters Async"))
             {
                 if (!req.IsMultiRequest())
-                    return ApplyRequestFiltersSingle(req, res, requestDto);
+                {
+                    await ApplyRequestFiltersSingleAsync(req, res, requestDto);
+                    return;
+                }
 
                 var dtos = (IEnumerable)requestDto;
                 foreach (var dto in dtos)
                 {
-                    if (ApplyRequestFiltersSingle(req, res, dto))
-                        return true;
+                    await ApplyRequestFiltersSingleAsync(req, res, dto);
+                    if (res.IsClosed)
+                        return;
                 }
-                return false;
             }
         }
 
-        protected virtual bool ApplyRequestFiltersSingle(IRequest req, IResponse res, object requestDto)
+        protected async Task ApplyRequestFiltersSingleAsync(IRequest req, IResponse res, object requestDto)
         {
             //Exec all RequestFilter attributes with Priority < 0
             var attributes = FilterAttributeCache.GetRequestFilterAttributes(requestDto.GetType());
@@ -134,19 +149,33 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
-                attribute.RequestFilter(req, res, requestDto);
+                if (attribute is IHasRequestFilter filterSync)
+                    filterSync.RequestFilter(req, res, requestDto);
+                else if (attribute is IHasRequestFilterAsync filterAsync)
+                    await filterAsync.RequestFilterAsync(req, res, requestDto);
+
                 Release(attribute);
-                if (res.IsClosed) return res.IsClosed;
+                if (res.IsClosed) 
+                    return;
             }
 
             ExecTypedFilters(GlobalTypedRequestFilters, req, res, requestDto);
-            if (res.IsClosed) return res.IsClosed;
+            if (res.IsClosed) 
+                return;
 
             //Exec global filters
-            foreach (var requestFilter in GlobalRequestFilters)
+            foreach (var requestFilter in GlobalRequestFiltersArray)
             {
                 requestFilter(req, res, requestDto);
-                if (res.IsClosed) return res.IsClosed;
+                if (res.IsClosed) 
+                    return;
+            }
+            
+            foreach (var requestFilter in GlobalRequestFiltersAsyncArray)
+            {
+                await requestFilter(req, res, requestDto);
+                if (res.IsClosed) 
+                    return;
             }
 
             //Exec remaining RequestFilter attributes with Priority >= 0
@@ -154,46 +183,60 @@ namespace ServiceStack
             {
                 var attribute = attributes[i];
                 Container.AutoWire(attribute);
-                attribute.RequestFilter(req, res, requestDto);
-                Release(attribute);
-                if (res.IsClosed) return res.IsClosed;
-            }
+                
+                if (attribute is IHasRequestFilter filterSync)
+                    filterSync.RequestFilter(req, res, requestDto);
+                else if (attribute is IHasRequestFilterAsync filterAsync)
+                    await filterAsync.RequestFilterAsync(req, res, requestDto);
 
-            return res.IsClosed;
+                Release(attribute);
+                if (res.IsClosed) 
+                    return;
+            }
         }
 
+        [Obsolete("Use ApplyResponseFiltersAsync")]
+        public bool ApplyResponseFilters(IRequest req, IResponse res, object response)
+        {
+            ApplyResponseFiltersAsync(req, res, response).Wait();
+            return res.IsClosed;
+        }
+        
         /// <summary>
         /// Applies the response filters. Returns whether or not the request has been handled 
         /// and no more processing should be done.
         /// </summary>
         /// <returns></returns>
-        public virtual bool ApplyResponseFilters(IRequest req, IResponse res, object response)
+        public async Task ApplyResponseFiltersAsync(IRequest req, IResponse res, object response)
         {
-            req.ThrowIfNull("req");
-            res.ThrowIfNull("res");
+            if (req == null) throw new ArgumentNullException(nameof(req));
+            if (res == null) throw new ArgumentNullException(nameof(res));
 
             if (res.IsClosed)
-                return true;
-            using (Profiler.Current.Step("Executing Response Filters"))
+                return;
+
+            using (Profiler.Current.Step("Executing Request Filters Async"))
             {
                 var batchResponse = req.IsMultiRequest() ? response as IEnumerable : null;
                 if (batchResponse == null)
-                    return ApplyResponseFiltersSingle(req, res, response);
+                {
+                    await ApplyResponseFiltersSingleAsync(req, res, response);
+                    return;
+                }
 
                 foreach (var dto in batchResponse)
                 {
-                    if (ApplyResponseFiltersSingle(req, res, dto))
-                        return true;
+                    await ApplyResponseFiltersSingleAsync(req, res, dto);
+                    if (res.IsClosed)
+                        return;
                 }
-                return false;
             }
         }
 
-        protected virtual bool ApplyResponseFiltersSingle(IRequest req, IResponse res, object response)
+        protected async Task ApplyResponseFiltersSingleAsync(IRequest req, IResponse res, object response)
         {
-            var responseDto = response.GetResponseDto();
-            var attributes = responseDto != null
-                ? FilterAttributeCache.GetResponseFilterAttributes(responseDto.GetType())
+            var attributes = req.Dto != null
+                ? FilterAttributeCache.GetResponseFilterAttributes(req.Dto.GetType())
                 : null;
 
             //Exec all ResponseFilter attributes with Priority < 0
@@ -204,23 +247,38 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.ResponseFilter(req, res, response);
+                    
+                    if (attribute is IHasResponseFilter filterSync)
+                        filterSync.ResponseFilter(req, res, response);
+                    else if (attribute is IHasResponseFilterAsync filterAsync)
+                        await filterAsync.ResponseFilterAsync(req, res, response);
+
                     Release(attribute);
-                    if (res.IsClosed) return res.IsClosed;
+                    if (res.IsClosed) 
+                        return;
                 }
             }
 
             if (response != null)
             {
                 ExecTypedFilters(GlobalTypedResponseFilters, req, res, response);
-                if (res.IsClosed) return res.IsClosed;
+                if (res.IsClosed) 
+                    return;
             }
 
             //Exec global filters
-            foreach (var responseFilter in GlobalResponseFilters)
+            foreach (var responseFilter in GlobalResponseFiltersArray)
             {
                 responseFilter(req, res, response);
-                if (res.IsClosed) return res.IsClosed;
+                if (res.IsClosed) 
+                    return;
+            }
+
+            foreach (var responseFilter in GlobalResponseFiltersAsyncArray)
+            {
+                await responseFilter(req, res, response);
+                if (res.IsClosed) 
+                    return;
             }
 
             //Exec remaining RequestFilter attributes with Priority >= 0
@@ -230,60 +288,74 @@ namespace ServiceStack
                 {
                     var attribute = attributes[i];
                     Container.AutoWire(attribute);
-                    attribute.ResponseFilter(req, res, response);
+                    
+                    if (attribute is IHasResponseFilter filterSync)
+                        filterSync.ResponseFilter(req, res, response);
+                    else if (attribute is IHasResponseFilterAsync filterAsync)
+                        await filterAsync.ResponseFilterAsync(req, res, response);
+
                     Release(attribute);
-                    if (res.IsClosed) return res.IsClosed;
+                    if (res.IsClosed) 
+                        return;
                 }
             }
-
-            return res.IsClosed;
         }
 
-        public virtual bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
+        public bool ApplyMessageRequestFilters(IRequest req, IResponse res, object requestDto)
         {
             ExecTypedFilters(GlobalTypedMessageRequestFilters, req, res, requestDto);
             if (res.IsClosed) return res.IsClosed;
 
             //Exec global filters
-            foreach (var requestFilter in GlobalMessageRequestFilters)
+            foreach (var requestFilter in GlobalMessageRequestFiltersArray)
             {
                 requestFilter(req, res, requestDto);
                 if (res.IsClosed) return res.IsClosed;
             }
 
-            return res.IsClosed;
-        }
-
-        public virtual bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
-        {
-            ExecTypedFilters(GlobalTypedMessageResponseFilters, req, res, response);
-            if (res.IsClosed) return res.IsClosed;
-
-            //Exec global filters
-            foreach (var responseFilter in GlobalMessageResponseFilters)
+            foreach (var requestFilter in GlobalMessageRequestFiltersAsyncArray)
             {
-                responseFilter(req, res, response);
+                requestFilter(req, res, requestDto).Wait();
                 if (res.IsClosed) return res.IsClosed;
             }
 
             return res.IsClosed;
         }
 
-        public virtual void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters,
-            IRequest req, IResponse res, object dto)
+        public bool ApplyMessageResponseFilters(IRequest req, IResponse res, object response)
+        {
+            ExecTypedFilters(GlobalTypedMessageResponseFilters, req, res, response);
+            if (res.IsClosed) return res.IsClosed;
+
+            //Exec global filters
+            foreach (var responseFilter in GlobalMessageResponseFiltersArray)
+            {
+                responseFilter(req, res, response);
+                if (res.IsClosed) return res.IsClosed;
+            }
+
+            foreach (var requestFilter in GlobalMessageResponseFiltersAsyncArray)
+            {
+                requestFilter(req, res, response).Wait();
+                if (res.IsClosed) return res.IsClosed;
+            }
+
+            return res.IsClosed;
+        }
+
+        public void ExecTypedFilters(Dictionary<Type, ITypedFilter> typedFilters, IRequest req, IResponse res, object dto)
         {
             if (typedFilters.Count == 0) return;
 
-            ITypedFilter typedFilter;
             var dtoType = dto.GetType();
-            typedFilters.TryGetValue(dtoType, out typedFilter);
+            typedFilters.TryGetValue(dtoType, out var typedFilter);
             if (typedFilter != null)
             {
                 typedFilter.Invoke(req, res, dto);
                 if (res.IsClosed) return;
             }
 
-            var dtoInterfaces = dtoType.GetTypeInterfaces();
+            var dtoInterfaces = dtoType.GetInterfaces();
             foreach (var dtoInterface in dtoInterfaces)
             {
                 typedFilters.TryGetValue(dtoInterface, out typedFilter);
@@ -369,7 +441,7 @@ namespace ServiceStack
                 ?? GlobalHtmlErrorHttpHandler
                 ?? GetNotFoundHandler();
 
-            handler.ProcessRequest(httpReq, httpRes, httpReq.OperationName);
+            handler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
         }
 
         public IServiceStackHandler GetCustomErrorHandler(int errorStatusCode)
@@ -387,10 +459,7 @@ namespace ServiceStack
         public IServiceStackHandler GetCustomErrorHandler(HttpStatusCode errorStatus)
         {
             IServiceStackHandler httpHandler = null;
-            if (CustomErrorHttpHandlers != null)
-            {
-                CustomErrorHttpHandlers.TryGetValue(errorStatus, out httpHandler);
-            }
+            CustomErrorHttpHandlers?.TryGetValue(errorStatus, out httpHandler);
 
             return httpHandler;
         }
@@ -398,10 +467,7 @@ namespace ServiceStack
         public IServiceStackHandler GetNotFoundHandler()
         {
             IServiceStackHandler httpHandler = null;
-            if (CustomErrorHttpHandlers != null)
-            {
-                CustomErrorHttpHandlers.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
-            }
+            CustomErrorHttpHandlers?.TryGetValue(HttpStatusCode.NotFound, out httpHandler);
 
             return httpHandler ?? new NotFoundHttpHandler();
         }
@@ -428,7 +494,7 @@ namespace ServiceStack
 
         public virtual Exception ResolveResponseException(Exception ex)
         {
-            return Config.ReturnsInnerException && ex.InnerException != null && !(ex is IHttpError)
+            return Config?.ReturnsInnerException == true && ex.InnerException != null && !(ex is IHttpError)
                 ? ex.InnerException
                 : ex;
         }
@@ -457,8 +523,7 @@ namespace ServiceStack
             }
 
             var serializationEx = ex as SerializationException;
-            var errors = serializationEx?.Data["errors"] as List<RequestBindingError>;
-            if (errors != null)
+            if (serializationEx?.Data["errors"] is List<RequestBindingError> errors)
             {
                 if (responseStatus.Errors == null)
                     responseStatus.Errors = new List<ResponseError>();
@@ -488,7 +553,7 @@ namespace ServiceStack
 
             var sessionKey = SessionFeature.GetSessionKey(session.Id ?? httpReq.GetOrCreateSessionId());
             session.LastModified = DateTime.UtcNow;
-            this.GetCacheClient().CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
+            this.GetCacheClient(httpReq).CacheSet(sessionKey, session, expiresIn ?? GetDefaultSessionExpiry(httpReq));
 
             httpReq.Items[Keywords.Session] = session;
         }
@@ -497,27 +562,15 @@ namespace ServiceStack
         /// Inspect or modify ever new UserSession created or resolved from cache. 
         /// return null if Session is invalid to create new Session.
         /// </summary>
-        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId)
-        {
-            if (session == null || !SessionFeature.VerifyCachedSessionId)
-                return session;
-
-            if (session.Id == withSessionId)
-                return session;
-
-            if (Log.IsDebugEnabled)
-            {
-                Log.Debug($"ignoring cached sessionId '{session.Id}' which is different to request '{withSessionId}'");
-            }
-            return null;
-        }
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
 
         public virtual bool AllowSetCookie(IRequest req, string cookieName)
         {
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
                     && cookieName != SessionFeature.PermanentSessionId
-                    && cookieName != SessionFeature.SessionOptionsKey;
+                    && cookieName != SessionFeature.SessionOptionsKey
+                    && cookieName != SessionFeature.XUserAuthId;
 
             return true;
         }
@@ -544,23 +597,13 @@ namespace ServiceStack
             return typesConfig;
         }
 
-        public virtual List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
-        {
-            var types = operationTypes
-                .Where(x => !x.AllAttributes<ExcludeAttribute>()
-                            .Any(attr => attr.Feature.Has(Feature.Soap)))
-                .Where(x => !x.IsGenericTypeDefinition())
-                .ToList();
-            return types;
-        }
-
-        public virtual bool ExportSoapType(Type type)
-        {
-            return !type.IsGenericTypeDefinition() &&
-                   !type.AllAttributes<ExcludeAttribute>()
-                        .Any(attr => attr.Feature.Has(Feature.Soap));
-        }
-
+        /// <summary>
+        /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
+        /// See multitenancy: http://docs.servicestack.net/multitenancy
+        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// </summary>
+        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <returns></returns>
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
             var dbFactory = Container.TryResolve<IDbConnectionFactory>();
@@ -568,8 +611,7 @@ namespace ServiceStack
             ConnectionInfo connInfo;
             if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
             {
-                var dbFactoryExtended = dbFactory as IDbConnectionFactoryExtended;
-                if (dbFactoryExtended == null)
+                if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
                     throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
                 if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
@@ -585,21 +627,60 @@ namespace ServiceStack
             return dbFactory.OpenDbConnection();
         }
 
+        /// <summary>
+        /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
+        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// </summary>
+        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <returns></returns>
         public virtual IRedisClient GetRedisClient(IRequest req = null)
         {
             return Container.TryResolve<IRedisClientsManager>().GetClient();
         }
 
+        /// <summary>
+        /// If they don't have an ICacheClient configured use an In Memory one.
+        /// </summary>
+        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
+
+        /// <summary>
+        /// Tries to resolve <see cref="IRedisClient"></see> through Ioc container.
+        /// If not registered, it falls back to <see cref="IRedisClientsManager"></see>.GetClient();
+        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// </summary>
+        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <returns></returns>
         public virtual ICacheClient GetCacheClient(IRequest req)
         {
-            return this.GetCacheClient();
+            var resolver = req ?? (IResolver) this;
+            var cache = resolver.TryResolve<ICacheClient>();
+            if (cache != null)
+                return cache;
+
+            var redisManager = resolver.TryResolve<IRedisClientsManager>();
+            if (redisManager != null)
+                return redisManager.GetCacheClient();
+
+            return DefaultCache;
         }
 
+        /// <summary>
+        /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
+        /// Called by <see cref="Service"></see>.MemoryCacheClient
+        /// </summary>
+        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <returns>Nullable MemoryCacheClient</returns>
         public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req)
         {
             return Container.TryResolve<MemoryCacheClient>();
         }
 
+        /// <summary>
+        /// Returns <see cref="IMessageProducer"></see> from the IOC container.
+        /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
+        /// </summary>
+        /// <param name="req">Provided by services and PageViewBase, can be helpfull when overriding this method</param>
+        /// <returns></returns>
         public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
             return (Container.TryResolve<IMessageFactory>()
@@ -617,6 +698,24 @@ namespace ServiceStack
         public virtual IAuthRepository GetAuthRepository(IRequest req = null)
         {
             return TryResolve<IAuthRepository>();
+        }
+
+        public virtual ICookies GetCookies(IHttpResponse res) => new Cookies(res);
+
+        public virtual bool ShouldCompressFile(IVirtualFile file)
+        {
+            return !string.IsNullOrEmpty(file.Extension) 
+                && Config.CompressFilesWithExtensions.Contains(file.Extension)
+                && (Config.CompressFilesLargerThanBytes == null || file.Length > Config.CompressFilesLargerThanBytes);
+        }
+
+        public virtual T GetRuntimeConfig<T>(IRequest req, string name, T defaultValue)
+        {
+            var runtimeAppSettings = TryResolve<IRuntimeAppSettings>();
+            if (runtimeAppSettings != null)
+                return runtimeAppSettings.Get(req, name, defaultValue);
+
+            return defaultValue;
         }
     }
 

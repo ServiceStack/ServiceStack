@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace ServiceStack
 {
@@ -16,12 +17,11 @@ namespace ServiceStack
 
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
-        public static bool AddUserIdHttpHeader = true;
-
         private readonly Func<IAuthSession> sessionFactory;
         private readonly IAuthProvider[] authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
+
         public List<IPlugin> RegisterPlugins { get; set; }
 
         public List<IAuthEvents> AuthEvents { get; set; }
@@ -39,13 +39,25 @@ namespace ServiceStack
         public bool DeleteSessionCookiesOnLogout { get; set; }
 
         public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+        
+        /// <summary>
+        /// Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
+        /// Defaults to only creating Digest Auth when DigestAuthProvider is registered.
+        /// </summary>
+        public bool CreateDigestAuthHashes { get; set; }
+
+        /// <summary>
+        /// Should UserName or Emails be saved in AuthRepository in LowerCase
+        /// </summary>
+        public bool SaveUserNamesInLowerCase { get; set; }
 
         public TimeSpan? SessionExpiry { get; set; }
+
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
 
-        public Func<IServiceBase, Authenticate, AuthenticateResponse, object> AuthResponseDecorator { get; set; }
+        public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
         public bool IncludeAssignRoleServices
         {
@@ -81,7 +93,7 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            Func<string, string> localize = s => HostContext.AppHost.ResolveLocalizedString(s, null);
+            string localize(string s) => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
@@ -106,6 +118,7 @@ namespace ServiceStack
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
             this.GenerateNewSessionCookiesOnAuthentication = true;
+            this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
         public void Register(IAppHost appHost)
@@ -114,6 +127,14 @@ namespace ServiceStack
 
             var unitTest = appHost == null;
             if (unitTest) return;
+
+            if (HostContext.StrictMode)
+            {
+                var sessionInstance = sessionFactory();
+                if (TypeSerializer.HasCircularReferences(sessionInstance))
+                    throw new StrictModeException($"User Session {sessionInstance.GetType().Name} cannot have circular dependencies", "sessionFactory",
+                        StrictModeCodes.CyclicalUserSession);
+            }
 
             foreach (var registerService in ServiceRoutes)
             {

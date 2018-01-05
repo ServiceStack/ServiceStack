@@ -38,6 +38,13 @@ namespace ServiceStack.Common.Tests
         {
             using (var appHost = new BasicAppHost
             {
+                ConfigureAppHost = host =>
+                {
+                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new []{ new BasicAuthProvider() })
+                    {
+                        IncludeRegistrationService = true,
+                    });
+                },
                 ConfigureContainer = container =>
                 {
                     container.Register<IDbConnectionFactory>(c =>
@@ -53,8 +60,10 @@ namespace ServiceStack.Common.Tests
                 using (var db = appHost.Container.Resolve<IDbConnectionFactory>().Open())
                 {
                     var register = CreateNewUserRegistration();
-                    var req = new BasicRequest(register);
-                    req.QueryString["authSecret"] = appHost.Config.AdminAuthSecret = "allow";
+                    var req = new BasicRequest(register)
+                    {
+                        QueryString = { ["authSecret"] = appHost.Config.AdminAuthSecret = "allow" }
+                    };
 
                     var response = (RegisterResponse)appHost.ExecuteService(register, req);
                     var userAuth = db.SingleById<UserAuth>(response.UserId);
@@ -91,6 +100,13 @@ namespace ServiceStack.Common.Tests
         {
             using (var appHost = new BasicAppHost
             {
+                ConfigureAppHost = host =>
+                {
+                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new[] { new BasicAuthProvider() })
+                    {
+                        IncludeRegistrationService = true,
+                    });
+                },
                 ConfigureContainer = container =>
                 {
                     container.Register<IDbConnectionFactory>(c =>
@@ -148,6 +164,13 @@ namespace ServiceStack.Common.Tests
         {
             using (var appHost = new BasicAppHost
             {
+                ConfigureAppHost = host =>
+                {
+                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new[] { new BasicAuthProvider() })
+                    {
+                        IncludeRegistrationService = true,
+                    });
+                },
                 ConfigureContainer = container =>
                 {
                     container.Register<IPocoDynamo>(c => new PocoDynamo(DynamoConfig.CreateDynamoDBClient()));

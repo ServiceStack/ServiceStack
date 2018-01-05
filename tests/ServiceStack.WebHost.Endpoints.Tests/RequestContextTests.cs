@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 		HeadersAppHostHttpListener appHost;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureSetUp()
 		{
 			appHost = new HeadersAppHostHttpListener();
@@ -61,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Start(ListeningOn);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var map = new Dictionary<string, string>();
 			for (var i = 0; i < webResponse.Headers.Count; i++)
 			{
-				var header = webResponse.Headers.Keys[i];
+				var header = webResponse.Headers.AllKeys[i];
 				map[header] = webResponse.Headers[header];
 			}
 

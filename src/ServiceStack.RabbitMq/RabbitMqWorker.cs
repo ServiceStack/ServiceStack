@@ -138,12 +138,14 @@ namespace ServiceStack.RabbitMq
             }
             catch (Exception ex)
             {
+#if !NETSTANDARD2_0
                 //Ignore handling rare, but expected exceptions from KillBgThreadIfExists()
                 if (ex is ThreadInterruptedException || ex is ThreadAbortException)
                 {
                     Log.Warn("Received {0} in Worker: {1}".Fmt(ex.GetType().Name, QueueName));
                     return;
                 }
+#endif
 
                 Stop();
 
@@ -285,7 +287,7 @@ namespace ServiceStack.RabbitMq
         {
             var channel = GetChannel();
             var consumer = new RabbitMqBasicConsumer(channel);
-            channel.BasicConsume(QueueName, noAck: false, consumer: consumer);
+            channel.BasicConsume(QueueName, autoAck: false, consumer: consumer);
             return consumer;
         }
 

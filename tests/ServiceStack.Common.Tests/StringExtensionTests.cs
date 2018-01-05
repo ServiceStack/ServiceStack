@@ -168,6 +168,7 @@ namespace ServiceStack.Common.Tests
         public void Can_parse_commands()
         {
             Assert.That("COUNT".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:]" }));
+            Assert.That("COUNT()".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:]" }));
             Assert.That("COUNT(*)".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:*]" }));
             Assert.That("COUNT(DISTINCT Name)".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:DISTINCT Name]" }));
             Assert.That("COUNT('Name')".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] { "[COUNT:'Name']" }));
@@ -192,6 +193,63 @@ namespace ServiceStack.Common.Tests
             Assert.That("Count(*) count, Min(Age) min, Max(Age) max, Sum(Id) sum".ParseCommands().Map(x => x.ToDebugString()), Is.EquivalentTo(new[] {
                 "[Count:*] count", "[Min:Age] min", "[Max:Age] max", "[Sum:Id] sum"
             }));
+        }
+
+        [Test]
+        public void Does_clean_input()
+        {
+            Assert.That("a.b+c@<d>&.com=|".SafeInput(), Is.EqualTo("a.b+c@d.com"));
+            Assert.That("/a/b.c".SafeInput(), Is.EqualTo("/a/b.c"));
+            Assert.That("1,000.00".SafeInput(), Is.EqualTo("1,000.00"));
+            Assert.That("a b c".SafeInput(), Is.EqualTo("a b c"));
+        }
+
+        [Test]
+        public void Does_parse_complex_arguments()
+        {
+            Assert.That("add(1,add(2,3))".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(2,3)]" }));
+            Assert.That(" add ( 1, add(2,3) ) ".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(2,3)]" }));
+            Assert.That("cat('1',cat(\"2\",'3'))".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[cat:'1'|cat(\"2\",'3')]" }));
+            
+            Assert.That(" add ( 1, add(add(2,3),4) ) ".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[add:1|add(add(2,3),4)]" }));
+        }
+
+        [Test]
+        public void Does_preserve_js_literal_string()
+        {
+            Assert.That("li({ id:'id-{name}', className:'cls'})".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[li:{ id:'id-{name}', className:'cls'}]" }));
+        }
+
+        [Test]
+        public void Does_preserve_ternary_expression()
+        {
+            Assert.That("filter( true ? 'Y' : 'N' )".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[filter:true ? 'Y' : 'N']" }));
+        }
+
+        [Test]
+        public void Does_parse_binding_expressions()
+        {
+            Assert.That("var".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var:]" }));
+            Assert.That("var2".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var2:]" }));
+            Assert.That("var.prop".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop:]" }));
+            Assert.That("var.prop.p2.p3".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop.p2.p3:]" }));
+            Assert.That("var.prop[key]".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop[key]:]" }));
+            Assert.That("var.prop['key']".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop['key']:]" }));
+            Assert.That("var.prop[\"key\"]".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[var.prop[\"key\"]:]" }));
+            
+            Assert.That("fn(var)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var]" }));
+            Assert.That("fn(var.prop)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop]" }));
+            Assert.That("fn(var.prop.p2.p3)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop.p2.p3]" }));
+            Assert.That("fn(var.prop[key])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop[key]]" }));
+            Assert.That("fn(var.prop['key'])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop['key']]" }));
+            Assert.That("fn(var.prop[\"key\"])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop[\"key\"]]" }));
+            
+            Assert.That("fn(var,var)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var|var]" }));
+            Assert.That("fn(var.prop,var.prop)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop|var.prop]" }));
+            Assert.That("fn(var.prop.p2.p3,var.prop.p2.p3)".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop.p2.p3|var.prop.p2.p3]" }));
+            Assert.That("fn(var.prop[key],var.prop[key])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop[key]|var.prop[key]]" }));
+            Assert.That("fn(var.prop['key'],var.prop['key'])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop['key']|var.prop['key']]" }));
+            Assert.That("fn(var.prop[\"key\"],var.prop[\"key\"])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop[\"key\"]|var.prop[\"key\"]]" }));
         }
     }
 }

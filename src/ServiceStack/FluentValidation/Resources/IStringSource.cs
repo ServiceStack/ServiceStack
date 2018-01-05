@@ -13,32 +13,36 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Resources
-{
+namespace ServiceStack.FluentValidation.Resources {
 
-    using System;
+	using System;
 
-    /// <summary>
-    /// Provides error message templates
-    /// </summary>
-    public interface IStringSource {
-        /// <summary>
-        /// Construct the error message template
-        /// </summary>
-        /// <returns>Error message template</returns>
-        string GetString();
+	/// <summary>
+	/// Provides error message templates
+	/// </summary>
+	public interface IStringSource {
+		/// <summary>
+		/// Construct the error message template
+		/// </summary>
+		/// <returns>Error message template</returns>
+		string GetString(object context);
 
-        /// <summary>
-        /// The name of the resource if localized.
-        /// </summary>
-        string ResourceName { get; }
+		/// <summary>
+		/// The name of the resource if localized.
+		/// </summary>
+		string ResourceName { get; }
 
-        /// <summary>
-        /// The type of the resource provider if localized.
-        /// </summary>
-        Type ResourceType { get; }
-    }
+		/// <summary>
+		/// The type of the resource provider if localized.
+		/// </summary>
+		Type ResourceType { get; }
+	}
+
+	/// <summary>
+	/// Marker interface that indicates a PropertyValidatorContext should be passed to GetString
+	/// </summary>
+	internal interface IContextAwareStringSource {  }
 }

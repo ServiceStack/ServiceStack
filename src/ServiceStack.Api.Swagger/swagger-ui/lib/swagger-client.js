@@ -1595,7 +1595,7 @@ Property.prototype.isArray = function () {
 };
 
 Property.prototype.sampleValue = function(isArray, ignoredModels, representations) {
-  isArray = (isArray || this.isArray());
+  isArray = (isArray || this.IsArray);
   ignoredModels = (ignoredModels || {});
   // representations = (representations || {});
 

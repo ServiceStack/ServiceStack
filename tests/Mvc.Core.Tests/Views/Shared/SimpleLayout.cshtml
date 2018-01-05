@@ -1,0 +1,72 @@
+﻿<!DOCTYPE HTML>
+<html>
+    <head>
+        <title>Simple Layout</title>
+        <style>
+        BODY {
+            background-color:white;
+            color:#000000;
+            font-family:Verdana;
+            margin: 0;            
+        }
+        H1 {
+            background-color: #036;
+            color: #FFF;
+            font-family: Tahoma;
+            font-size: 26px;
+            font-weight: normal;
+            margin: 0;
+            padding: 10px 0 3px 15px;
+        }
+        #content {
+            padding: 15px;
+        }
+        #content-page {
+            max-width: 1100px;
+        }
+        #sidebar {
+            float:right;
+        }
+        a {
+            color: #070;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .rzr, .home  
+        {
+            padding: 0 0 0 22px;
+            display: block;
+            line-height: 20px;
+            font-size: 14px;
+            height: 20px;
+            background: url(/img/page-icon.png) no-repeat;
+        }
+        .home {
+            background: url(/stars/home-icon.jpg) no-repeat;
+        }
+
+        #swap-templates { margin: 5px 0 0 15px; }
+        #swap-templates a { display:block; line-height:20px; }
+        #preview { clear: both; padding: 20px 0 0 0; }
+        #preview h1 { background: green; }
+
+        /*AngularJS*/
+        .alive-true { background: #CFC; }
+        .alive-false { background: #FCC; }
+        #app { width: 400px; margin: auto; }
+        #app img { margin: 20px 0; }
+        #app table { margin: auto; }
+        #app h3 { margin: 30px 0 15px 0; text-align: center; }
+        #app form { padding: 20px; }        
+        </style>
+    </head>
+    <body>        
+        <h1>@ViewBag.Title</h1>
+        
+        <div id="content">
+            @RenderBody()
+        </div>
+    </body>
+</html>

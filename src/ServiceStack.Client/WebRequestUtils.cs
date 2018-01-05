@@ -56,7 +56,7 @@ namespace ServiceStack
             if (pos < 0)
                 throw new AuthenticationException($"Authentication header not supported: {authHeader}");
 
-            method = authHeader.Substring(0, pos).ToLower();
+            method = authHeader.Substring(0, pos).ToLowerInvariant();
             string remainder = authHeader.Substring(pos + 1);
 
             // split the rest by comma, then =
@@ -165,19 +165,7 @@ namespace ServiceStack
             client.Headers[HttpHeaders.Authorization] = "Bearer " + bearerToken;
         }
 
-#if NETFX_CORE
-        internal static string CalculateMD5Hash(string input)
-        {
-            var alg = HashAlgorithmProvider.OpenAlgorithm("MD5");
-            IBuffer buff = CryptographicBuffer.ConvertStringToBinary(input, BinaryStringEncoding.Utf8);
-            var hashed = alg.HashData(buff);
-            var res = CryptographicBuffer.EncodeToHexString(hashed);
-            return res.ToLower();
-        }
-#endif
-
-#if !(NETFX_CORE || SL5 || PCL || NETSTANDARD1_1)
-        internal static string CalculateMD5Hash(string input)
+        public static string CalculateMD5Hash(string input)
         {
             // copied/pasted by adamfowleruk
             // step 1, calculate MD5 hash from input
@@ -193,7 +181,6 @@ namespace ServiceStack
             }
             return StringBuilderCache.ReturnAndFree(sb).ToLower(); // The RFC requires the hex values are lowercase
         }
-#endif
 
         internal static string padNC(int num)
         {
@@ -223,9 +210,6 @@ namespace ServiceStack
 
         internal static void AddDigestAuth(this WebRequest client, string userName, string password, AuthenticationInfo authInfo)
         {
-            //Silverlight MD5 impl at: http://archive.msdn.microsoft.com/SilverlightMD5
-
-#if !(SL5 || PCL || NETSTANDARD1_1)
             // by adamfowleruk
             // See Client Request at http://en.wikipedia.org/wiki/Digest_access_authentication
 
@@ -244,14 +228,10 @@ namespace ServiceStack
 
             string header =
                 "Digest username=\"" + userName + "\", realm=\"" + authInfo.realm + "\", nonce=\"" + authInfo.nonce + "\", uri=\"" +
-                    client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response +
-                    "\", opaque=\"" + authInfo.opaque + "\"";
+                client.RequestUri.PathAndQuery + "\", cnonce=\"" + authInfo.cnonce + "\", nc=" + ncUse + ", qop=\"" + authInfo.qop + "\", response=\"" + response +
+                "\", opaque=\"" + authInfo.opaque + "\"";
 
             client.Headers[HttpHeaders.Authorization] = header;
-
-#else 
-            throw new NotImplementedException();
-#endif
         }
 
         /// <summary>
@@ -261,17 +241,20 @@ namespace ServiceStack
 
         public static string GetResponseDtoName(Type requestType)
         {
+#if NETSTANDARD2_0
+            return requestType.FullName + ResponseDtoSuffix + "," + requestType.Assembly.GetName().Name;
+#else        
             return requestType.FullName + ResponseDtoSuffix;
+#endif
         }
 
         public static Type GetErrorResponseDtoType<TResponse>(object request)
         {
-            var batchRequest = request as object[];
-            if (batchRequest != null && batchRequest.Length > 0)
+            if (request is object[] batchRequest && batchRequest.Length > 0)
                 request = batchRequest[0]; 
 
-            var hasResponseStatus = typeof(TResponse) is IHasResponseStatus
-                || typeof(TResponse).GetPropertyInfo("ResponseStatus") != null;
+            var hasResponseStatus = typeof(TResponse).HasInterface(typeof(IHasResponseStatus))
+                || typeof(TResponse).GetProperty("ResponseStatus") != null;
 
             return hasResponseStatus ? typeof(TResponse) : GetErrorResponseDtoType(request);
         }
@@ -289,15 +272,19 @@ namespace ServiceStack
                 return typeof (ErrorResponse);
 
             //If a conventionally-named Response type exists use that regardless if it has ResponseStatus or not
+#if NETSTANDARD2_0
+            var responseDtoType = Type.GetType(GetResponseDtoName(requestType));
+#else                        
             var responseDtoType = AssemblyUtils.FindType(GetResponseDtoName(requestType));
+#endif
             if (responseDtoType == null)
             {
                 var genericDef = requestType.GetTypeWithGenericTypeDefinitionOf(typeof(IReturn<>));
                 if (genericDef != null)
                 {
-                    var returnDtoType = genericDef.GenericTypeArguments()[0];
-                    var hasResponseStatus = returnDtoType is IHasResponseStatus
-                        || returnDtoType.GetPropertyInfo("ResponseStatus") != null;
+                    var returnDtoType = genericDef.GetGenericArguments()[0];
+                    var hasResponseStatus = returnDtoType.HasInterface(typeof(IHasResponseStatus))
+                        || returnDtoType.GetProperty("ResponseStatus") != null;
 
                     //Only use the specified Return type if it has a ResponseStatus property
                     if (hasResponseStatus)
@@ -320,15 +307,13 @@ namespace ServiceStack
             if (response == null)
                 return null;
 
-            var status = response as ResponseStatus;
-            if (status != null)
+            if (response is ResponseStatus status)
                 return status;
 
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
+            if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
 
             return propertyInfo?.GetProperty(response) as ResponseStatus;
         }

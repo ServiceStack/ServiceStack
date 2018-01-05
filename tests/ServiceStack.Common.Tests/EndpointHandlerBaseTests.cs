@@ -3,11 +3,9 @@ using System;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Auth;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Testing;
-using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests
@@ -53,7 +51,7 @@ namespace ServiceStack.Common.Tests
         {
             using (new BasicAppHost
             {
-                ConfigureAppHost = host => host.VirtualFiles = new InMemoryVirtualPathProvider(host),
+                ConfigureAppHost = host => host.VirtualFiles = new MemoryVirtualFiles(),
             }.Init())
             {
                 var ms = new MemoryStream("mocked".ToUtf8Bytes());

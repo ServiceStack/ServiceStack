@@ -1,4 +1,5 @@
-﻿using ServiceStack.FluentValidation.Internal;
+﻿#if !NETSTANDARD2_0
+using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Validators;
 
 namespace FluentValidation.Mvc {
@@ -17,7 +18,7 @@ namespace FluentValidation.Mvc {
 			if (!ShouldGenerateClientSideRules()) yield break;
 
 			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			var message = formatter.BuildMessage(Validator.ErrorMessageSource.GetString());
+			var message = formatter.BuildMessage(Validator.ErrorMessageSource.GetString(Metadata));
 			yield return new ModelClientValidationRequiredRule(message);
 		}
 
@@ -26,3 +27,4 @@ namespace FluentValidation.Mvc {
 		}
 	}
 }
+#endif

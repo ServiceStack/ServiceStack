@@ -48,8 +48,7 @@ namespace ServiceStack.Auth
             using (authRepo as IDisposable)
             {
                 var session = authService.GetSession();
-                IUserAuth userAuth;
-                if (authRepo.TryAuthenticate(userName, password, out userAuth))
+                if (authRepo.TryAuthenticate(userName, password, out var userAuth))
                 {
                     if (IsAccountLocked(authRepo, userAuth))
                         throw new AuthenticationException(ErrorMessages.UserAccountLocked);
@@ -93,14 +92,20 @@ namespace ServiceStack.Auth
             return Authenticate(authService, session, userName, password, string.Empty);
         }
 
-        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        protected virtual IAuthSession ResetSessionBeforeLogin(IServiceBase authService, IAuthSession session, string userName)
         {
             if (!LoginMatchesSession(session, userName))
             {
                 authService.RemoveSession();
-                session = authService.GetSession();
+                return authService.GetSession();
             }
+            return session;
+        }
 
+        protected object Authenticate(IServiceBase authService, IAuthSession session, string userName, string password, string referrerUrl)
+        {
+            session = ResetSessionBeforeLogin(authService, session, userName);
+            
             if (TryAuthenticate(authService, userName, password))
             {
                 session.IsAuthenticated = true;
@@ -163,8 +168,9 @@ namespace ServiceStack.Auth
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            var userSession = session as AuthUserSession;
-            if (userSession != null)
+            session.AuthProvider = Provider;
+
+            if (session is AuthUserSession userSession)
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
@@ -227,6 +233,7 @@ namespace ServiceStack.Auth
             finally
             {
                 this.SaveSession(authService, session, SessionExpiry);
+                authService.Request.Items[Keywords.DidAuthenticate] = true;
             }
 
             return null;

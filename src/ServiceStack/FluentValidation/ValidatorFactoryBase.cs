@@ -13,23 +13,39 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation
-{
-    using System;
+namespace ServiceStack.FluentValidation {
+	using System;
 
-    public abstract class ValidatorFactoryBase : IValidatorFactory {
-        public IValidator<T> GetValidator<T>() {
-            return (IValidator<T>)GetValidator(typeof(T));
-        }
+	/// <summary>
+	/// Factory for creating validators
+	/// </summary>
+	public abstract class ValidatorFactoryBase : IValidatorFactory {
+		/// <summary>
+		/// Gets a validator for a type
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <returns></returns>
+		public IValidator<T> GetValidator<T>() {
+			return (IValidator<T>)GetValidator(typeof(T));
+		}
+		/// <summary>
+		/// Gets a validator for a type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public IValidator GetValidator(Type type) {
+			var genericType = typeof(IValidator<>).MakeGenericType(type);
+			return CreateInstance(genericType);
+		}
 
-        public IValidator GetValidator(Type type) {
-            var genericType = typeof(IValidator<>).GetCachedGenericType(type);
-            return CreateInstance(genericType);
-        }
-
-        public abstract IValidator CreateInstance(Type validatorType);
-    }
+		/// <summary>
+		/// Instantiates the validator
+		/// </summary>
+		/// <param name="validatorType"></param>
+		/// <returns></returns>
+		public abstract IValidator CreateInstance(Type validatorType);
+	}
 }

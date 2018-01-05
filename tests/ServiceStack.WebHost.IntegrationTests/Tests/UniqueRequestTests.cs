@@ -36,7 +36,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         private const string BaseUri = Config.ServiceStackBaseUri;
 
         [Test]
-        [Explicit("ASP.NET does not allow invalid chars see http://stackoverflow.com/questions/13691829/path-parameters-w-url-unfriendly-characters")]
+        [Ignore("ASP.NET does not allow invalid chars see http://stackoverflow.com/questions/13691829/path-parameters-w-url-unfriendly-characters")]
         public void Can_handle_encoded_chars()
         {
             var response = BaseUri.CombineWith("request/123%20456").GetStringFromUrl();

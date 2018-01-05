@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Web;
 
@@ -51,7 +53,12 @@ namespace ServiceStack
             httpRes.EndHttpHandlerRequest(skipHeaders: skipHeaders);
         }
 
-#if !NETSTANDARD1_6
+        public static Task EndRequestAsync(this IResponse httpRes, bool skipHeaders = false)
+        {
+            return httpRes.EndHttpHandlerRequestAsync(skipHeaders: skipHeaders);
+        }
+        
+#if !NETSTANDARD2_0
         /// <summary>
         /// End a ServiceStack Request
         /// </summary>
@@ -86,9 +93,40 @@ namespace ServiceStack
         public static void EndHttpHandlerRequest(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Action<IResponse> afterHeaders = null)
         {
             if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+
             afterHeaders?.Invoke(httpRes);
+
+            var req = httpRes.Request;
+            if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                HostContext.TryResolve<IRequestLogger>()?
+                    .Log(req, req.Dto, null, TimeSpan.Zero);
+            }
+
             if (!skipClose && !httpRes.IsClosed) httpRes.Close();
-            HostContext.CompleteRequest(httpRes.Request);
+
+            HostContext.CompleteRequest(req);
+        }
+
+        public static async Task EndHttpHandlerRequestAsync(this IResponse httpRes, bool skipHeaders = false, bool skipClose = false, Func<IResponse,Task> afterHeaders = null)
+        {
+            if (!skipHeaders) httpRes.ApplyGlobalResponseHeaders();
+
+            if (afterHeaders != null)
+            {
+                await afterHeaders(httpRes);
+            }
+
+            var req = httpRes.Request;
+            if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            {
+                HostContext.TryResolve<IRequestLogger>()?
+                    .Log(req, req.Dto, null, TimeSpan.Zero);
+            }
+
+            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+
+            HostContext.CompleteRequest(req);
         }
 
         /// <summary>
@@ -105,15 +143,20 @@ namespace ServiceStack
         /// </summary>
         public static void EndRequestWithNoContent(this IResponse httpRes)
         {
-            if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)
+            var headOrOptions = httpRes.Request.Verb == HttpMethods.Head || httpRes.Request.Verb == HttpMethods.Options;
+            if (!headOrOptions)
             {
-                if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                if (HostContext.Config == null || HostContext.Config.Return204NoContentForEmptyResponse)
                 {
-                    httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    if (httpRes.StatusCode == (int)HttpStatusCode.OK)
+                    {
+                        httpRes.StatusCode = (int)HttpStatusCode.NoContent;
+                    }
                 }
-            }
 
-            httpRes.SetContentLength(0);
+                httpRes.SetContentLength(0);
+            }
+            
             httpRes.EndRequest();
         }
     }

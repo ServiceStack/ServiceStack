@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Web;
+using System.Text;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -9,87 +10,52 @@ namespace ServiceStack.Host.Handlers
     {
         public ForbiddenHttpHandler()
         {
-            this.RequestName = GetType().Name;
+            this.RequestName = nameof(ForbiddenHttpHandler);
         }
 
-        public bool? IsIntegratedPipeline { get; set; }
         public string WebHostPhysicalPath { get; set; }
-        public List<string> WebHostRootFileNames { get; set; }
         public string WebHostUrl { get; set; }
         public string DefaultRootFileName { get; set; }
         public string DefaultHandler { get; set; }
 
-        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        public override Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
         {
-            response.ContentType = "text/plain";
             response.StatusCode = 403;
+            response.ContentType = "text/plain";
 
-            response.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
+            return response.EndHttpHandlerRequestAsync(skipClose: true, afterHeaders: r =>
             {
-                r.Write("Forbidden\n\n");
+                var sb = StringBuilderCache.Allocate()
+                    .Append($@"Forbidden
 
-                r.Write("\nRequest.HttpMethod: " + request.Verb);
-                r.Write("\nRequest.PathInfo: " + request.PathInfo);
-                r.Write("\nRequest.QueryString: " + request.QueryString);
+Request.HttpMethod: {request.Verb}
+Request.PathInfo: {request.PathInfo}
+Request.QueryString: {request.QueryString}
 
+");
+                
                 if (HostContext.Config.DebugMode)
                 {
-                    r.Write("\nRequest.RawUrl: " + request.RawUrl);
+                    sb.AppendLine($"Request.RawUrl: {request.RawUrl}");
 
-                    if (IsIntegratedPipeline.HasValue)
-                        r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
                     if (!WebHostPhysicalPath.IsNullOrEmpty())
-                        r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-                    if (!WebHostRootFileNames.IsEmpty())
-                        r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
+                        sb.AppendLine($"App.WebHostPhysicalPath: {WebHostPhysicalPath}");
                     if (!WebHostUrl.IsNullOrEmpty())
-                        r.Write("\nApp.WebHostUrl: " + WebHostUrl);
+                        sb.AppendLine($"App.WebHostUrl: {WebHostUrl}");
                     if (!DefaultRootFileName.IsNullOrEmpty())
-                        r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
+                        sb.AppendLine($"App.DefaultRootFileName: {DefaultRootFileName}");
                     if (!DefaultHandler.IsNullOrEmpty())
-                        r.Write("\nApp.DefaultHandler: " + DefaultHandler);
+                        sb.AppendLine($"App.DefaultHandler: {DefaultHandler}");
                     if (!HttpHandlerFactory.DebugLastHandlerArgs.IsNullOrEmpty())
-                        r.Write("\nApp.DebugLastHandlerArgs: " + HttpHandlerFactory.DebugLastHandlerArgs);
+                        sb.AppendLine($"App.DebugLastHandlerArgs: {HttpHandlerFactory.DebugLastHandlerArgs}");
                 }
+                
+                return response.OutputStream.WriteAsync(StringBuilderCache.ReturnAndFree(sb));
             });
         }
-
-#if !NETSTANDARD1_6
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var request = context.Request;
-            var response = context.Response;
-
-            response.ContentType = "text/plain";
-            response.StatusCode = 403;
-
-            context.EndHttpHandlerRequest(skipClose: true, afterHeaders: r =>
-            {
-                r.Write("Forbidden\n\n");
-
-                r.Write("\nRequest.HttpMethod: " + request.HttpMethod);
-                r.Write("\nRequest.PathInfo: " + request.PathInfo);
-                r.Write("\nRequest.QueryString: " + request.QueryString);
-
-                if (HostContext.Config.DebugMode)
-                {
-                    r.Write("\nRequest.RawUrl: " + request.RawUrl);
-
-                    if (IsIntegratedPipeline.HasValue)
-                        r.Write("\nApp.IsIntegratedPipeline: " + IsIntegratedPipeline);
-                    if (!WebHostPhysicalPath.IsNullOrEmpty())
-                        r.Write("\nApp.WebHostPhysicalPath: " + WebHostPhysicalPath);
-                    if (!WebHostRootFileNames.IsEmpty())
-                        r.Write("\nApp.WebHostRootFileNames: " + TypeSerializer.SerializeToString(WebHostRootFileNames));
-                    if (!WebHostUrl.IsNullOrEmpty())
-                        r.Write("\nApp.ApplicationBaseUrl: " + WebHostUrl);
-                    if (!DefaultRootFileName.IsNullOrEmpty())
-                        r.Write("\nApp.DefaultRootFileName: " + DefaultRootFileName);
-                }
-            });
-        }
-#endif
 
         public override bool IsReusable => true;
+
+        public override bool RunAsAsync() => true;
     }
 }

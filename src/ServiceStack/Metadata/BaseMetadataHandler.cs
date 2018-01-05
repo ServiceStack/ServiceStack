@@ -2,39 +2,27 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Support.WebHost;
 using ServiceStack.Web;
 using System.Text;
 using System.Threading.Tasks;
+using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
 
 namespace ServiceStack.Metadata
 {
-    public abstract class BaseMetadataHandler : HttpHandlerBase
+    public abstract class BaseMetadataHandler : HttpAsyncTaskHandler
     {
         public abstract Format Format { get; }
 
         public string ContentType { get; set; }
         public string ContentFormat { get; set; }
 
-#if !NETSTANDARD1_6
-        public override void Execute(HttpContextBase context)
-        {
-            var writer = new HtmlTextWriter(context.Response.Output);
-            context.Response.ContentType = "text/html; charset=utf-8";
-
-            var request = context.ToRequest();
-            ProcessOperations(writer, request, request.Response);
-        }
-#endif
-
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
+                return TypeConstants.EmptyTask;
 
             using (var sw = new StreamWriter(httpRes.OutputStream))
             {
@@ -44,6 +32,8 @@ namespace ServiceStack.Metadata
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
+
+            return TypeConstants.EmptyTask;
         }
 
         public virtual string CreateResponse(Type type)
@@ -56,7 +46,7 @@ namespace ServiceStack.Metadata
                 return "(Stream)";
             if (type == typeof(HttpWebResponse))
                 return "(HttpWebResponse)";
-            if (type.IsGenericType() && type.GetGenericTypeDefinition() == typeof(Task<>))
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
                 type = type.GetGenericArguments()[0]; 
 
             return CreateMessage(type);
@@ -174,7 +164,7 @@ namespace ServiceStack.Metadata
                 sb.Append("</div>");
 
                 RenderOperation(writer, httpReq, operationName, requestMessage, responseMessage,
-                    StringBuilderCache.ReturnAndFree(sb));
+                    StringBuilderCache.ReturnAndFree(sb), op);
                 return;
             }
 
@@ -268,7 +258,7 @@ namespace ServiceStack.Metadata
         protected abstract string CreateMessage(Type dtoType);
 
         protected virtual void RenderOperation(HtmlTextWriter writer, IRequest httpReq, string operationName,
-            string requestMessage, string responseMessage, string metadataHtml)
+            string requestMessage, string responseMessage, string metadataHtml, Operation operation)
         {
             var operationControl = new OperationControl
             {
@@ -281,6 +271,7 @@ namespace ServiceStack.Metadata
                 RequestMessage = requestMessage,
                 ResponseMessage = responseMessage,
                 MetadataHtml = metadataHtml,
+                Operation = operation,
             };
             if (!this.ContentType.IsNullOrEmpty())
             {

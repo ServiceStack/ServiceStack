@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 #if !NETCORE_SUPPORT
@@ -15,16 +15,19 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost 
+            appHost = new BasicAppHost(typeof(OrmLiteUserAuthRepositoryTests).Assembly) 
             {
                 ConfigureAppHost = host =>
                 {
                     host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new IAuthProvider[] {
                         new CredentialsAuthProvider(), 
-                    }));
+                    })
+                    {
+                        IncludeRegistrationService = true,
+                    });
                 },
                 ConfigureContainer = container => 
                 {
@@ -39,7 +42,7 @@ namespace ServiceStack.Common.Tests.OAuth
             }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

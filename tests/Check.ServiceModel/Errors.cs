@@ -19,4 +19,13 @@ namespace Check.ServiceModel
         public string Custom { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Route("/alwaysthrows")]
+    public class AlwaysThrows : IReturn<AlwaysThrows> { }
+
+    [Route("/alwaysthrowsfilterattribute")]
+    public class AlwaysThrowsFilterAttribute : IReturn<AlwaysThrowsFilterAttribute> { }
+
+    [Route("/alwaysthrowsglobalfilter")]
+    public class AlwaysThrowsGlobalFilter : IReturn<AlwaysThrowsGlobalFilter> { }
 }

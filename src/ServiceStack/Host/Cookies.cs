@@ -3,13 +3,17 @@ using System.Net;
 using System.Web;
 using ServiceStack.Text;
 using ServiceStack.Web;
+#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace ServiceStack.Host
 {
     public class Cookies : ICookies
     {
-        readonly IHttpResponse httpRes;
         public const string RootPath = "/";
+
+        readonly IHttpResponse httpRes;
 
         public Cookies(IHttpResponse httpRes)
         {
@@ -50,7 +54,7 @@ namespace ServiceStack.Host
         /// </summary>
         public void DeleteCookie(string cookieName)
         {
-            var cookie = new Cookie(cookieName, string.Empty, "/")
+            var cookie = new Cookie(cookieName, string.Empty, RootPath)
             {
                 Expires = DateTime.UtcNow.AddDays(-1)
             };
@@ -62,7 +66,7 @@ namespace ServiceStack.Host
     {
         private static readonly DateTime Session = DateTime.MinValue;
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static HttpCookie ToHttpCookie(this Cookie cookie)
         {
             var httpCookie = new HttpCookie(cookie.Name, cookie.Value)
@@ -81,6 +85,29 @@ namespace ServiceStack.Host
                 httpCookie.Domain = HostContext.Config.RestrictAllCookiesToDomain;
             }
             return httpCookie;
+        }
+#endif
+
+#if NETSTANDARD2_0
+        public static CookieOptions ToCookieOptions(this Cookie cookie)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                Path = cookie.Path,
+                Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?)null : cookie.Expires,
+                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                Secure = cookie.Secure
+            };
+
+            if (!string.IsNullOrEmpty(cookie.Domain))
+            {
+                cookieOptions.Domain = cookie.Domain;
+            }
+            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
+            {
+                cookieOptions.Domain = HostContext.Config.RestrictAllCookiesToDomain;
+            }
+            return cookieOptions;
         }
 #endif
 
@@ -112,7 +139,7 @@ namespace ServiceStack.Host
             {
                 sb.Append(";Secure");
             }
-            if (cookie.HttpOnly)
+            if (!HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly)
             {
                 sb.Append(";HttpOnly");
             }

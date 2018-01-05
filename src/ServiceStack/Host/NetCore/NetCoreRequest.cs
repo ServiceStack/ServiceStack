@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD1_6
+﻿#if NETSTANDARD2_0
 
 using System;
 using System.Collections.Generic;
@@ -11,46 +11,75 @@ using ServiceStack.Logging;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.Extensions.Primitives;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.DependencyInjection;
+using ServiceStack.Configuration;
+using ServiceStack.IO;
+using ServiceStack.NetCore;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest
+    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 
-        private HttpContext context;
-        private HttpRequest request;
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
+        }
 
-        public NetCoreRequest(HttpContext context, string operationName, RequestAttributes attrs = RequestAttributes.None)
+        private readonly HttpContext context;
+        private readonly HttpRequest request;
+
+        public NetCoreRequest(HttpContext context, string operationName, RequestAttributes attrs = RequestAttributes.None, string pathInfo = null)
         {
             this.context = context;
             this.OperationName = operationName;
             this.request = context.Request;
             this.Items = new Dictionary<string, object>();
-            this.Response = new NetCoreResponse(this, context.Response);
-            this.RequestPreferences = new RequestPreferences(this);
             this.RequestAttributes = attrs;
+
+            //Kestrel does not decode '+' into space
+            this.PathInfo = this.OriginalPathInfo = (pathInfo ?? request.Path.Value).Replace("+", " ").Replace("%2f", "/");  
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, PathInfo);
         }
 
         public T TryResolve<T>()
         {
-            return HostContext.TryResolve<T>();
+            var instance = context.RequestServices.GetService<T>();
+            if (instance != null)
+                return instance;
+
+            return this.TryResolveInternal<T>();
         }
 
         public string GetRawBody()
         {
+            if (BufferedStream != null)
+            {
+                return BufferedStream.ToArray().FromUtf8Bytes();
+            }
+
             request.EnableRewind();
             return request.Body.ReadFully().FromUtf8Bytes();
         }
 
         public object OriginalRequest => request;
-        public IResponse Response { get; }
+
+        private IResponse response;
+        public IResponse Response =>
+            response ?? (response = new NetCoreResponse(this, context.Response));
+
         public string OperationName { get; set; }
-        public string Verb => request.Method;
+        public string Verb => HttpMethod;
         public RequestAttributes RequestAttributes { get; set; }
-        public IRequestPreferences RequestPreferences { get; }
+
+        private IRequestPreferences requestPreferences;
+        public IRequestPreferences RequestPreferences =>
+            requestPreferences ?? (requestPreferences = new RequestPreferences(this));
+
         public object Dto { get; set; }
         public string ContentType => request.ContentType;
 
@@ -74,14 +103,7 @@ namespace ServiceStack.Host.NetCore
         private string responseContentType;
         public string ResponseContentType
         {
-            get
-            {
-                if (responseContentType == null)
-                {
-                    responseContentType = this.GetResponseContentType();
-                }
-                return responseContentType;
-            }
+            get => responseContentType ?? (responseContentType = this.GetResponseContentType());
             set
             {
                 this.responseContentType = value;
@@ -125,42 +147,14 @@ namespace ServiceStack.Host.NetCore
 
         public Dictionary<string, object> Items { get; }
 
-        private INameValueCollection headers;
-        public INameValueCollection Headers
-        {
-            get
-            {
-                if (headers != null)
-                    return headers;
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = new NetCoreHeadersCollection(request.Headers));
 
-                var nvc = new NameValueCollection();
-                foreach (var header in request.Headers)
-                {
-                    nvc.Add(header.Key, header.Value);
-                }
-                return headers = new NameValueCollectionWrapper(nvc);
-            }
-        }
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = new NetCoreQueryStringCollection(request.Query));
 
-        private INameValueCollection queryString;
-        public INameValueCollection QueryString
-        {
-            get
-            {
-                if (queryString != null)
-                    return queryString;
-
-                var nvc = new NameValueCollection();
-                foreach (var query in request.Query)
-                {
-                    nvc.Add(query.Key, query.Value);
-                }
-                return queryString = new NameValueCollectionWrapper(nvc);
-            }
-        }
-
-        private INameValueCollection formData;
-        public INameValueCollection FormData
+        private NameValueCollection formData;
+        public NameValueCollection FormData
         {
             get
             {
@@ -175,29 +169,37 @@ namespace ServiceStack.Host.NetCore
                         nvc.Add(form.Key, form.Value);
                     }
                 }
-                return formData = new NameValueCollectionWrapper(nvc);
+                return formData = nvc;
             }
         }
 
-        public bool UseBufferedStream { get; set; }
+        public bool UseBufferedStream
+        {
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream(request.Body.ReadFully())
+                : null;
+        }
 
-        public string RawUrl => UriHelper.GetDisplayUrl(request);
+        public MemoryStream BufferedStream { get; set; }
 
-        public string AbsoluteUri => UriHelper.GetDisplayUrl(request);
+        public string RawUrl => request.Path.Value + request.QueryString;
+
+        public string AbsoluteUri => request.GetDisplayUrl();
 
         public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
 
-        public string RemoteIp => UserHostAddress;
-
         public string Authorization => request.Headers[HttpHeaders.Authorization];
 
-        public bool IsSecureConnection => request.IsHttps;
+        public bool IsSecureConnection => request.IsHttps || XForwardedProtocol == "https";
 
         public string[] AcceptTypes => request.Headers[HttpHeaders.Accept].ToArray();
 
-        public string PathInfo => WebUtility.UrlDecode(request.Path);
+        public string PathInfo { get; }
 
-        public Stream InputStream => request.Body;
+        public string OriginalPathInfo { get; }
+
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.Body);
 
         public long ContentLength => request.ContentLength.GetValueOrDefault();
 
@@ -271,6 +273,47 @@ namespace ServiceStack.Host.NetCore
             string.IsNullOrEmpty(request.Headers[HttpHeaders.Accept])
                 ? null
                 : request.Headers[HttpHeaders.Accept].ToString();
+
+        private string remoteIp;
+        public string RemoteIp => 
+            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? UserHostAddress));
+
+        
+        private IVirtualFile file;
+        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
+
+        private IVirtualDirectory dir;
+        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
+
+        private bool? isDirectory;
+        public bool IsDirectory
+        {
+            get
+            {
+                if (isDirectory == null)
+                {
+                    isDirectory = dir != null || HostContext.VirtualFileSources.DirectoryExists(PathInfo);
+                    if (isDirectory == true)
+                        isFile = false;
+                }
+                return isDirectory.Value;
+            }
+        }
+
+        private bool? isFile;
+        public bool IsFile
+        {
+            get
+            {
+                if (isFile == null)
+                {
+                    isFile = GetFile() != null;
+                    if (isFile == true)
+                        isDirectory = false;                    
+                }
+                return isFile.Value;
+            }
+        }
     }
 }
 

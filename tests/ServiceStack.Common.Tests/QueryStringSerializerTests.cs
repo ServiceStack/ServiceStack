@@ -27,7 +27,7 @@ namespace ServiceStack.Common.Tests
                 NameValueCollection queryString = HttpUtility.ParseQueryString(requestString);
                 var httpReq = new MockHttpRequest("service", "GET", "application/json", "service", queryString, new MemoryStream(), new NameValueCollection());
 
-                var request2 = (TestRequest)restHandler.CreateRequest(httpReq, "service");
+                var request2 = (TestRequest)restHandler.CreateRequestAsync(httpReq, "service").Result;
 
                 Assert.That(request2.ListOfA.Count, Is.EqualTo(1));
                 Assert.That(request2.ListOfA.First().ListOfB.Count, Is.EqualTo(2));

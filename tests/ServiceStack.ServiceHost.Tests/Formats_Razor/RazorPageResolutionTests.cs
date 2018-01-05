@@ -1,8 +1,8 @@
 ﻿using System;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Razor;
 using ServiceStack.Testing;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -17,13 +17,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -36,7 +36,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         {
             RazorFormat.Instance = null;
 
-            var fileSystem = new InMemoryVirtualPathProvider(new BasicAppHost());
+            var fileSystem = new MemoryVirtualFiles();
 
             RazorFormat = new RazorFormat
             {

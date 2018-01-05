@@ -13,13 +13,13 @@ namespace ServiceStack.ServiceHost.Tests
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -135,7 +135,7 @@ namespace ServiceStack.ServiceHost.Tests
             var restPath = new RestPath(typeof(BbcMusicRequest), definitionPath);
 
             var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
-            Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);
+            Assert.That(restPath.IsMatch("GET", reqestTestPath, out _), Is.True);
 
             Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
 
@@ -199,7 +199,7 @@ namespace ServiceStack.ServiceHost.Tests
             var restPath = new RestPath(typeof(RackSpaceRequest), definitionPath);
 
             var reqestTestPath = RestPath.GetPathPartsForMatching(requestPath);
-            Assert.That(restPath.IsMatch("GET", reqestTestPath), Is.True);
+            Assert.That(restPath.IsMatch("GET", reqestTestPath, out _), Is.True);
 
             Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
 
@@ -255,7 +255,7 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var restPath = new RestPath(typeof(SlugRequest), definitionPath);
             var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
-            Assert.That(restPath.IsMatch("GET", requestTestPath), Is.True);
+            Assert.That(restPath.IsMatch("GET", requestTestPath, out _), Is.True);
 
             Assert.That(firstMatchHashKey, Is.EqualTo(restPath.FirstMatchHashKey));
 
@@ -271,15 +271,16 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var restPath = new RestPath(typeof(SlugRequest), definitionPath);
             var requestTestPath = RestPath.GetPathPartsForMatching(requestPath);
-            Assert.That(restPath.IsMatch("GET", requestTestPath), Is.False);
+            Assert.That(restPath.IsMatch("GET", requestTestPath, out _), Is.False);
         }
 
         [Test]
-        [ExpectedException(typeof(ArgumentException))]
         public void Cannot_have_variable_after_wildcard()
         {
-            AssertMatch("/content/{Slug*}/{Version}",
-                "/content/wildcard/slug/path/1", "*/content", new SlugRequest(), -1);
+            Assert.Throws<ArgumentException>(() => {
+                AssertMatch("/content/{Slug*}/{Version}",
+                    "/content/wildcard/slug/path/1", "*/content", new SlugRequest(), -1);
+            });
         }
 
         [Test]
@@ -492,7 +493,7 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var restPath = new RestPath(typeof(ComplexType), "/Complex/{Id}/{Name}/Unique/{UniqueId}", "PUT");
             var withPathInfoParts = RestPath.GetPathPartsForMatching("/complex/5/Is Alive/unique/4583B364-BBDC-427F-A289-C2923DEBD547");
-            Assert.That(restPath.IsMatch("put", withPathInfoParts));
+            Assert.That(restPath.IsMatch("put", withPathInfoParts, out _));
         }
     }
 }

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
@@ -29,6 +31,9 @@ namespace ServiceStack.Host.Handlers
         public string HostType { get; set; }
 
         [DataMember]
+        public string StartedAt { get; set; }
+
+        [DataMember]
         public string Date { get; set; }
 
         [DataMember]
@@ -47,7 +52,7 @@ namespace ServiceStack.Host.Handlers
         public string PathInfo { get; set; }
 
         [DataMember]
-        public string ResolvedPathInfo { get; set; }
+        public string OriginalPathInfo { get; set; }
 
         [DataMember]
         public bool StripApplicationVirtualPath { get; set; }
@@ -195,12 +200,12 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestHandlerInfo LastRequestInfo;
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";
-#if !NETSTANDARD1_6
+#if NET45
             if (HttpContext.Current != null)
             {
                 response.DebugString += HttpContext.Current.Request.GetType().FullName
@@ -246,18 +251,11 @@ namespace ServiceStack.Host.Handlers
 
             var json = JsonSerializer.SerializeToString(response);
             httpRes.ContentType = MimeTypes.Json;
-            httpRes.Write(json);
-            httpRes.EndHttpHandlerRequest(skipHeaders:true);
+            return httpRes.WriteAsync(json)
+                .ContinueWith(t => httpRes.EndHttpHandlerRequest(skipHeaders: true));
         }
 
-#if !NETSTANDARD1_6
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var request = context.ToRequest(GetType().GetOperationName());
-            ProcessRequestAsync(request, request.Response, request.OperationName);
-        }
-#endif
-        public static Dictionary<string, string> ToDictionary(INameValueCollection nvc)
+        public static Dictionary<string, string> ToDictionary(NameValueCollection nvc)
         {
             var map = new Dictionary<string, string>();
             for (var i = 0; i < nvc.Count; i++)
@@ -267,7 +265,7 @@ namespace ServiceStack.Host.Handlers
             return map;
         }
 
-        public static string ToString(INameValueCollection nvc)
+        public static string ToString(NameValueCollection nvc)
         {
             var map = ToDictionary(nvc);
             return TypeSerializer.SerializeToString(map);
@@ -275,8 +273,7 @@ namespace ServiceStack.Host.Handlers
 
         public static RequestInfoResponse GetRequestInfo(IRequest httpReq)
         {
-            int virtualPathCount = 0;
-            int.TryParse(httpReq.QueryString["virtualPathCount"], out virtualPathCount);
+            int.TryParse(httpReq.QueryString["virtualPathCount"], out var virtualPathCount);
             var hostType = HostContext.AppHost.GetType();
 
             var ipv4Addr = "";
@@ -299,7 +296,8 @@ namespace ServiceStack.Host.Handlers
             {
                 Usage = "append '?debug=requestinfo' to any querystring. Optional params: virtualPathCount",
                 Host = HostContext.ServiceName + "_" + HostContext.Config.DebugHttpListenerHostEnvironment + "_" + Env.ServerUserAgent,
-                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType()?.Name ?? hostType.Name),
+                HostType = "{0} ({1})".Fmt(HostContext.IsAspNetHost ? "ASP.NET" : "SelfHost", hostType.BaseType?.Name ?? hostType.Name),
+                StartedAt = HostContext.AppHost.StartedAt.ToString("yyyy-MM-dd HH:mm:ss"),
                 Date = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"),
                 ServiceName = HostContext.ServiceName,
                 HandlerFactoryPath = HostContext.Config.HandlerFactoryPath,
@@ -313,7 +311,8 @@ namespace ServiceStack.Host.Handlers
                 StripApplicationVirtualPath = HostContext.Config.StripApplicationVirtualPath,
                 CurrentDirectory = Directory.GetCurrentDirectory(),
                 RawUrl = httpReq.RawUrl,
-                ResolvedPathInfo = httpReq.PathInfo,
+                PathInfo = httpReq.PathInfo,
+                OriginalPathInfo = httpReq.OriginalPathInfo,
                 ContentType = httpReq.ContentType,
                 Headers = ToDictionary(httpReq.Headers),
                 QueryString = ToDictionary(httpReq.QueryString),
@@ -331,12 +330,14 @@ namespace ServiceStack.Host.Handlers
                 LastRequestInfo = LastRequestInfo,
                 VirtualPathProviderFiles = HostContext.AppHost.VirtualFileSources.GetAllMatchingFiles("*").Take(virtualPathCount).Map(x => x.RealPath),
                 Stats = new Dictionary<string, string> {
-                    {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlers.Count.ToString() },
-                    {"PreRequestFilters", HostContext.AppHost.PreRequestFilters.Count.ToString() },
+                    {"RawHttpHandlers", HostContext.AppHost.RawHttpHandlersArray.Length.ToString() },
+                    {"PreRequestFilters", HostContext.AppHost.PreRequestFiltersArray.Length.ToString() },
                     {"RequestBinders", HostContext.AppHost.RequestBinders.Count.ToString() },
-                    {"GlobalRequestFilters", HostContext.AppHost.GlobalRequestFilters.Count.ToString() },
-                    {"GlobalResponseFilters", HostContext.AppHost.GlobalResponseFilters.Count.ToString() },
-                    {"CatchAllHandlers", HostContext.AppHost.CatchAllHandlers.Count.ToString() },
+                    {"GlobalRequestFilters", HostContext.AppHost.GlobalRequestFiltersArray.Length.ToString() },
+                    {"GlobalRequestFiltersAsync", HostContext.AppHost.GlobalRequestFiltersAsyncArray.Length.ToString() },
+                    {"GlobalResponseFilters", HostContext.AppHost.GlobalResponseFiltersArray.Length.ToString() },
+                    {"GlobalResponseFiltersAsync", HostContext.AppHost.GlobalResponseFiltersAsyncArray.Length.ToString() },
+                    {"CatchAllHandlers", HostContext.AppHost.CatchAllHandlersArray.Length.ToString() },
                     {"Plugins", HostContext.AppHost.Plugins.Count.ToString() },
                     {"ViewEngines", HostContext.AppHost.ViewEngines.Count.ToString() },
                     {"RequestTypes", HostContext.AppHost.Metadata.RequestTypes.Count.ToString() },

@@ -31,13 +31,15 @@ namespace ServiceStack
         {
             try
             {
-                task.Wait();
+                if (!task.IsCompleted)
+                    task.Wait();
 
                 var taskType = task.GetType();
-                if (!taskType.IsGenericType() || taskType.FullName.Contains("VoidTaskResult"))
+                if (!taskType.IsGenericType || taskType.FullName.Contains("VoidTaskResult"))
                     return null;
 
-                var fn = taskType.GetFastGetter("Result");
+                var props = TypeProperties.Get(taskType);
+                var fn = props.GetPublicGetter("Result");
                 return fn?.Invoke(task);
             }
             catch (TypeAccessException)
@@ -48,6 +50,11 @@ namespace ServiceStack
             {
                 throw ex.UnwrapIfSingleException();
             }
+        }
+
+        public static T GetResult<T>(this Task<T> task)
+        {
+            return (T)((Task)task).GetResult();
         }
     }
 

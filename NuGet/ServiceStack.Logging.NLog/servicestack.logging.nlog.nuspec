@@ -1,11 +1,11 @@
-<?xml version="1.0"?>
-<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
     <id>ServiceStack.Logging.NLog</id>
-    <version>4.5.0</version>
+    <version>5.0.0</version>
     <title>ServiceStack.Logging.NLog</title>
-    <authors>Service Stack</authors>
-    <owners>Service Stack</owners>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
     <summary>NLog logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
@@ -16,10 +16,12 @@
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>servicestack log logging nlog</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <dependencies>
-      <dependency id="NLog" version="4.3.7" />
-      <dependency id="ServiceStack.Interfaces" version="4.5" />
+      <group targetFramework="net45">
+        <dependency id="NLog" version="[4.4.12, )" />
+        <dependency id="ServiceStack.Interfaces" version="5.0.0" />
+      </group>
     </dependencies>
   </metadata>
   <files>

@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         string dynamicListPagePath;
         string dynamicListPageContent;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             dynamicListPagePath = "~/Views/Template/DynamicListTpl.md".MapProjectPath();

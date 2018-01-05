@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
 		public abstract AppHostHttpListenerBase CreateListener();
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public virtual void TestFixtureSetUp()
 		{
 			appHost = CreateListener();
@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 			appHost.Start(BaseUrl);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			Dispose();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
@@ -13,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [Route("/customresult")]
     public class CustomResult { }
 
-    public class CustomXmlResult : IStreamWriter, IHasOptions
+    public class CustomXmlResult : IStreamWriterAsync, IHasOptions
     {
         public IDictionary<string, string> Options { get; set; }
 
@@ -26,9 +27,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        public void WriteTo(Stream stream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            stream.Write("<Foo bar=\"baz\">quz</Foo>");
+            await responseStream.WriteAsync("<Foo bar=\"baz\">quz</Foo>", token);
         }
     }
 
@@ -54,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -71,11 +72,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
             }
 
+#if !NETCORE_SUPPORT
             protected override void OnBeginRequest(HttpListenerContext context)
             {
                 Interlocked.Increment(ref BeginRequestCount);
                 base.OnBeginRequest(context);
             }
+#endif
 
             public override void OnEndRequest(IRequest request = null)
             {
@@ -91,6 +94,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+#if NETCORE
+        [Ignore("NotFoundHttpHandler is not used in .NET Core and is skipped in AppSelfHostBase.ProcessRequest")]
+#endif
         public void Does_call_begin_and_end_on_Raw_HttpHandler_requests()
         {
             try
@@ -101,7 +107,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebException ex)
             {
-                Assert.That(ex.Message, Is.StringContaining("(404) Not Found"));
+                Assert.That(ex.Message, Does.Contain("(404) Not Found"));
 
                 Assert.That(BeginRequestCount, Is.EqualTo(1));
                 Thread.Sleep(1);

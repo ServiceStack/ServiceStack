@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         OneWayServiceAppHostHttpListener appHost;
         private IRestClient client;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new OneWayServiceAppHostHttpListener();
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             OneWayService.LastResult = null;
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -110,12 +110,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var webRequest = (HttpWebRequest)WebRequest.Create(url);
             webRequest.Method = "PUT";
             var formDataBytes = Encoding.UTF8.GetBytes(json);
-            webRequest.ContentLength = formDataBytes.Length;
+            webRequest.SetContentLength(formDataBytes.Length);
             webRequest.ContentType = "application/json";
-            webRequest.GetRequestStream().Write(formDataBytes, 0, formDataBytes.Length);
+            PclExport.Instance.GetRequestStream(webRequest).Write(formDataBytes, 0, formDataBytes.Length);
             var webResponse = webRequest.GetResponse();
             return new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
         }
-
     }
 }

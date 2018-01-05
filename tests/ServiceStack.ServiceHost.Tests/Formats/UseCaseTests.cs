@@ -68,7 +68,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     </body>
 </html>".NormalizeNewLines();
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             var jsonPages = File.ReadAllText("~/AppData/Pages.json".MapProjectPath());

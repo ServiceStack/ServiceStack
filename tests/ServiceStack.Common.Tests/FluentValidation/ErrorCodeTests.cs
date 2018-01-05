@@ -1,5 +1,4 @@
-﻿#if !NETCORE_SUPPORT
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -55,7 +54,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
 
         public ValidationResult Result { get; set; }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             var person = new Person()
@@ -124,7 +123,7 @@ namespace ServiceStack.Common.Tests.FluentValidation
         [Test]
         public void LengthContainsPlaceholders()
         {
-            Assert.IsTrue(Result.Errors.Where(f => f.ErrorCode == ValidationErrors.Length).Any(f => f.PlaceholderValues.ContainsKey("MinLength")));
+            Assert.IsTrue(Result.Errors.Where(f => f.ErrorCode == ValidationErrors.Length).Any(f => f.FormattedMessagePlaceholderValues.ContainsKey("MinLength")));
         }
 
         [Test]
@@ -176,4 +175,3 @@ namespace ServiceStack.Common.Tests.FluentValidation
         }
     }
 }
-#endif

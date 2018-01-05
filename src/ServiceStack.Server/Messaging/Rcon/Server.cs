@@ -1,4 +1,4 @@
-﻿#if !SL5
+﻿#if !NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -43,7 +43,17 @@ namespace ServiceStack.Messaging.Rcon
             RegisterHandler(processMessageFn, null);
         }
 
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads)
+        {
+            RegisterHandler(processMessageFn, null, noOfThreads: noOfThreads);
+        }
+
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
+        {
+            RegisterHandler(processMessageFn, processExceptionEx, noOfThreads: 1);
+        }
+
+        public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx, int noOfThreads)
         {
             if (handlerMap.ContainsKey(typeof(T)))
             {

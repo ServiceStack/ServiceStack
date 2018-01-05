@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -47,14 +47,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Throws_on_registration_of_11_operations()
         {
-            using (var appHost = new LicenseTestsAppHost(typeof(Services10), typeof(Service1)))
+            using (var appHost = new NoLicenseTestsAppHost(typeof(Services10), typeof(Service1)))
             {
-                Assert.Throws<LicenseException>(() =>
-                    appHost.Init());
+                Assert.Throws(Is.TypeOf<LicenseException>()
+                            .Or.TypeOf<TargetInvocationException>()
+                            .With.Property("InnerException").TypeOf<LicenseException>(),
+                () => {
+                    appHost.Init();
+                    appHost.Start(Config.ListeningOn);
+                });
             }
         }
 
-        [Ignore, Test]
+        [Ignore("TODO: Ingore reason"), Test]
         public void Allows_MegaDto_through_ServiceClient()
         {
             using (var appHost = new LicenseTestsAppHost(typeof(MegaDtoService)))
@@ -87,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Allows_MegaDto_through_RabbitMqClients()
         {
-            var mqFactory = new RabbitMqMessageFactory();
+            var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
 
             var request = MegaDto.Create();
 
@@ -271,6 +276,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Plugins.RemoveAll(x => x is NativeTypesFeature);
             }
+        }
+
+        protected class NoLicenseTestsAppHost : LicenseTestsAppHost
+        {
+            public NoLicenseTestsAppHost(params Type[] services)
+                : base(services) {}
+#if NETCORE            
+            public override void OnConfigLoad()
+            {
+                base.OnConfigLoad();
+                LicenseUtils.RemoveLicense();
+            }
+#endif
         }
     }
 }

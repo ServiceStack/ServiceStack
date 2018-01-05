@@ -1,7 +1,8 @@
-// Copyright (c) Service Stack LLC. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -9,10 +10,6 @@ using System.Threading.Tasks;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
-
-#if NETFX_CORE
-using Windows.System.Threading;
-#endif
 
 namespace ServiceStack
 {
@@ -47,6 +44,10 @@ namespace ServiceStack
         /// </summary>
         public Action OnAuthenticationRequired { get; set; }
 
+        public string RefreshToken { get; set; }
+
+        public string RefreshTokenUri { get; set; }
+
         public static int BufferSize = 8192;
 
         public ICredentials Credentials { get; set; }
@@ -55,7 +56,7 @@ namespace ServiceStack
 
         public bool StoreCookies { get; set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
         public CookieContainer CookieContainer { get; set; }
 
@@ -112,10 +113,6 @@ namespace ServiceStack
 
         public string UserAgent { get; set; }
 
-        public bool CaptureSynchronizationContext { get; set; }
-
-        public bool HandleCallbackOnUiThread { get; set; }
-
         public bool EmulateHttpViaPost { get; set; }
 
         public ProgressDelegate OnDownloadProgress { get; set; }
@@ -125,70 +122,32 @@ namespace ServiceStack
         public bool ShareCookiesWithBrowser { get; set; }
 
         public int Version { get; set; }
-        public string SessionId { get; set; }
 
-        internal Action CancelAsyncFn;
+        public string SessionId { get; set; }
 
         public static bool DisableTimer { get; set; }
 
-        public void CancelAsync()
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
         {
-            if (CancelAsyncFn != null)
-            {
-                // Request will be nulled after it throws an exception on its async methods
-                // See - http://msdn.microsoft.com/en-us/library/system.net.httpwebrequest.abort
-                CancelAsyncFn();
-                CancelAsyncFn = null;
-            }
-        }
-
-        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token=default(CancellationToken))
-        {
-            var tcs = new TaskCompletionSource<TResponse>();
-
             if (ResultsFilter != null)
             {
                 var response = ResultsFilter(typeof(TResponse), httpMethod, absoluteUrl, request);
-                if (response is TResponse)
-                {
-                    tcs.SetResult((TResponse)response);
-                    return tcs.Task;
-                }
+                if (response is TResponse typedResponse)
+                    return typedResponse.InTask();
             }
 
-            if (ResultsFilterResponse != null)
-            {
-                WebResponse webRes = null;
-
-                SendWebRequest<TResponse>(httpMethod, absoluteUrl, request, token,
-                    r => {
-                        ResultsFilterResponse(webRes, r, httpMethod, absoluteUrl, request);
-                        tcs.SetResult(r);
-                    },
-                    (response, exc) => tcs.SetException(exc),
-                    wr => webRes = wr
-                );
-            }
-            else
-            {
-                SendWebRequest<TResponse>(httpMethod, absoluteUrl, request, token,
-                    tcs.SetResult,
-                    (response, exc) => tcs.SetException(exc)
-                );
-            }
-
-            return tcs.Task;
+            return SendWebRequestAsync<TResponse>(httpMethod, absoluteUrl, request, token);
         }
 
-        private void SendWebRequest<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token, 
-            Action<TResponse> onSuccess, Action<object, Exception> onError, Action<WebResponse> onResponseInit = null)
+        private async Task<T> SendWebRequestAsync<T>(string httpMethod, string absoluteUrl, object request, CancellationToken token, bool recall = false)
         {
-            if (httpMethod == null) throw new ArgumentNullException(nameof(httpMethod));
+            if (httpMethod == null)
+                throw new ArgumentNullException(nameof(httpMethod));
 
             this.PopulateRequestMetadata(request);
 
             var requestUri = absoluteUrl;
-            var hasQueryString = request != null && !httpMethod.HasRequestBody();
+            var hasQueryString = request != null && !HttpUtils.HasRequestBody(httpMethod);
             if (hasQueryString)
             {
                 var queryString = QueryStringSerializer.SerializeToString(request);
@@ -198,257 +157,139 @@ namespace ServiceStack
                 }
             }
 
-            var webRequest = this.CreateHttpWebRequest(requestUri);
+            var webReq = this.CreateHttpWebRequest(requestUri);
 
-            var requestState = new AsyncState<TResponse>(BufferSize)
+            var timedOut = false;
+            ITimer timer = null;
+            timer = PclExportClient.Instance.CreateTimer(state =>
             {
-                HttpMethod = httpMethod,
-                Url = requestUri,
-                WebRequest = webRequest,
-                Request = request,
-                Token = token,
-                OnResponseInit = onResponseInit,
-                OnSuccess = onSuccess,
-                OnError = onError,
-                UseSynchronizationContext = CaptureSynchronizationContext ? SynchronizationContext.Current : null,
-                HandleCallbackOnUIThread = HandleCallbackOnUiThread,
-            };
-            if (!DisableTimer)
-                requestState.StartTimer(this.Timeout.GetValueOrDefault(DefaultTimeout));
+                timedOut = true;
+                webReq?.Abort();
+                webReq = null;
+                timer?.Cancel();
+                timer = null;
+            }, this.Timeout.GetValueOrDefault(DefaultTimeout), this);
 
-            SendWebRequestAsync(httpMethod, request, requestState, webRequest);
-        }
+            Exception ResolveException(Exception ex)
+            {
+                if (token.IsCancellationRequested)
+                    return new OperationCanceledException(token);
+                if (timedOut)
+                    return PclExportClient.Instance.CreateTimeoutException(ex, "The request timed out");
+                return ex;
+            }
 
-        private void SendWebRequestAsync<TResponse>(string httpMethod, object request,
-            AsyncState<TResponse> state, HttpWebRequest client)
-        {
-            client.Accept = ContentType;
+            bool returningWebResponse = false;
+            HttpWebResponse webRes = null;
+            T Complete(T response)
+            {
+                timer.Cancel();
+                PclExportClient.Instance.SynchronizeCookies(this);
+                ResultsFilterResponse?.Invoke(webRes, response, httpMethod, absoluteUrl, request);
+                return response;
+            }
+
+            webReq.Accept = ContentType;
 
             if (this.EmulateHttpViaPost)
             {
-                client.Method = "POST";
-                client.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
+                webReq.Method = "POST";
+                webReq.Headers[HttpHeaders.XHttpMethodOverride] = httpMethod;
             }
             else
             {
-                client.Method = httpMethod;
+                webReq.Method = httpMethod;
             }
 
-            PclExportClient.Instance.AddHeader(client, Headers);
-
-            //EmulateHttpViaPost is also forced for SL5 clients sending non GET/POST requests
-            PclExport.Instance.Config(client, userAgent: UserAgent);
+            PclExportClient.Instance.AddHeader(webReq, Headers);
+            PclExport.Instance.Config(webReq, userAgent: UserAgent);
 
             if (this.authInfo != null && !string.IsNullOrEmpty(this.UserName))
-                client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                webReq.AddAuthInfo(this.UserName, this.Password, authInfo);
             else if (this.BearerToken != null)
-                client.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
+                webReq.Headers[HttpHeaders.Authorization] = "Bearer " + this.BearerToken;
             else if (this.Credentials != null)
-                client.Credentials = this.Credentials;
+                webReq.Credentials = this.Credentials;
             else if (this.AlwaysSendBasicAuthHeader)
-                client.AddBasicAuth(this.UserName, this.Password);
+                webReq.AddBasicAuth(this.UserName, this.Password);
 
-            ApplyWebRequestFilters(client);
+            ApplyWebRequestFilters(webReq);
 
             try
             {
-                if (client.Method.HasRequestBody())
+                if (HttpUtils.HasRequestBody(webReq.Method))
                 {
-                    client.ContentType = ContentType;
-                    client.BeginGetRequestStream(RequestCallback<TResponse>, state);
-                }
-                else
-                {
-                    state.WebRequest.BeginGetResponse(ResponseCallback<TResponse>, state);
+                    webReq.ContentType = ContentType;
+
+                    using (var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false))
+                    {
+                        token.ThrowIfCancellationRequested();
+                        if (request != null)
+                        {
+                            StreamSerializer(null, request, requestStream);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
             {
-                // BeginGetRequestStream can throw if request was aborted
-                HandleResponseError(ex, state);
-            }
-        }
+                if (Log.IsDebugEnabled)
+                    Log.Debug($"Error Sending Request: {ex.Message}", ex);
 
-        private void RequestCallback<T>(IAsyncResult asyncResult)
-        {
-            var requestState = (AsyncState<T>)asyncResult.AsyncState;
+                throw HandleResponseError<T>(ResolveException(ex), requestUri, request);
+            }
+
             try
             {
-                requestState.Token.ThrowIfCancellationRequested();
-
-                var req = requestState.WebRequest;
-
-                var stream = req.EndGetRequestStream(asyncResult);
-
-                if (requestState.Request != null)
+                webRes = (HttpWebResponse) await webReq.GetResponseAsync().ConfigureAwait(false);
                 {
-                    StreamSerializer(null, requestState.Request, stream);
-                }
+                    token.ThrowIfCancellationRequested();
 
-                PclExportClient.Instance.CloseWriteStream(stream);
+                    ApplyWebResponseFilters(webRes);
 
-                requestState.WebRequest.BeginGetResponse(ResponseCallback<T>, requestState);
-            }
-            catch (Exception ex)
-            {
-                HandleResponseError(ex, requestState);
-            }
-        }
+                    returningWebResponse = typeof(T) == typeof(HttpWebResponse);
+                    if (returningWebResponse)
+                        return Complete((T) (object) webRes);
 
-        private void ResponseCallback<T>(IAsyncResult asyncResult)
-        {
-            var requestState = (AsyncState<T>)asyncResult.AsyncState;
-            try
-            {
-                requestState.Token.ThrowIfCancellationRequested();
+                    var responseStream = GetResponseStream(webRes);
 
-                var webRequest = requestState.WebRequest;
+                    var responseBodyLength = webRes.ContentLength;
+                    var bufferRead = new byte[BufferSize];
 
-                requestState.WebResponse = (HttpWebResponse)webRequest.EndGetResponse(asyncResult);
+                    var totalRead = 0;
+                    int read;
+                    var ms = MemoryStreamFactory.GetStream();
 
-                requestState.OnResponseInit?.Invoke(requestState.WebResponse);
+                    while ((read = await responseStream.ReadAsync(bufferRead, 0, bufferRead.Length, token).ConfigureAwait(false)) != 0)
+                    {
+                        ms.Write(bufferRead, 0, read);
+                        totalRead += read;
+                        OnDownloadProgress?.Invoke(totalRead, responseBodyLength);
+                    }
 
-                if (requestState.ResponseContentLength == default(long))
-                {
-                    requestState.ResponseContentLength = requestState.WebResponse.ContentLength;
-                }
-
-                ApplyWebResponseFilters(requestState.WebResponse);
-
-                if (typeof(T) == typeof(HttpWebResponse))
-                {
-                    requestState.HandleSuccess((T)(object)requestState.WebResponse);
-                    return;
-                }
-
-                // Read the response into a Stream object.
-                var responseStream = requestState.WebResponse.GetResponseStream();
-                requestState.ResponseStream = responseStream;
-
-                var task = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
-                ReadCallBack(task, requestState);
-            }
-            catch (Exception ex)
-            {
-                var webEx = ex as WebException;
-                var firstCall = Interlocked.Increment(ref requestState.RequestCount) == 1;
-                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx,
-                    (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
-                        || Credentials != null
-                        || BearerToken != null
-                        || OnAuthenticationRequired != null))
-                {
                     try
                     {
-                        OnAuthenticationRequired?.Invoke();
-
-                        requestState.WebRequest = (HttpWebRequest)WebRequest.Create(requestState.Url);
-
-                        if (StoreCookies)
-                            requestState.WebRequest.CookieContainer = CookieContainer;
-
-                        HandleAuthException(ex, requestState.WebRequest);
-
-                        SendWebRequestAsync(
-                            requestState.HttpMethod, requestState.Request,
-                            requestState, requestState.WebRequest);
-                    }
-                    catch (Exception /*subEx*/)
-                    {
-                        HandleResponseError(ex, requestState);
-                    }
-                    return;
-                }
-
-                if (ExceptionFilter != null && webEx != null && webEx.Response != null)
-                {
-                    var cachedResponse = ExceptionFilter(webEx, webEx.Response, requestState.Url, typeof(T));
-                    if (cachedResponse is T)
-                    {
-                        requestState.OnSuccess((T)cachedResponse);
-                        return;
-                    }
-                }
-
-                HandleResponseError(ex, requestState);
-            }
-        }
-
-        private void HandleAuthException(Exception ex, WebRequest client)
-        {
-            var webEx = ex as WebException;
-            if (webEx != null && webEx.Response != null)
-            {
-                var headers = ((HttpWebResponse)webEx.Response).Headers;
-                var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
-                    HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
-
-                if (doAuthHeader == null)
-                {
-                    client.AddBasicAuth(this.UserName, this.Password);
-                }
-                else
-                {
-                    this.authInfo = new AuthenticationInfo(doAuthHeader);
-                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
-                }
-            }
-        }
-
-        private void ReadCallBack<T>(Task<int> task, AsyncState<T> requestState)
-        {
-            task.ContinueWith(t =>
-            {
-                try
-                {
-                    requestState.Token.ThrowIfCancellationRequested();
-
-                    var responseStream = requestState.ResponseStream;
-
-                    int read = t.Result;
-                    if (read > 0)
-                    {
-                        requestState.BytesData.Write(requestState.BufferRead, 0, read);
-
-                        var responeStreamTask = responseStream.ReadAsync(requestState.BufferRead, 0, BufferSize);
-
-                        requestState.ResponseBytesRead += read;
-                        OnDownloadProgress?.Invoke(requestState.ResponseBytesRead, requestState.ResponseContentLength);
-
-                        ReadCallBack(responeStreamTask, requestState);
-                        return;
-                    }
-
-                    Interlocked.Increment(ref requestState.Completed);
-
-                    var response = default(T);
-                    try
-                    {
-                        requestState.BytesData.Position = 0;
+                        ms.Position = 0;
                         if (typeof(T) == typeof(Stream))
                         {
-                            response = (T)(object)requestState.BytesData;
+                            return Complete((T) (object) ms);
                         }
                         else
                         {
-                            var reader = requestState.BytesData;
+                            var reader = ms;
                             try
                             {
                                 if (typeof(T) == typeof(string))
                                 {
                                     using (var sr = new StreamReader(reader))
                                     {
-                                        response = (T)(object)sr.ReadToEnd();
+                                        return Complete((T) (object) sr.ReadToEnd());
                                     }
                                 }
                                 else if (typeof(T) == typeof(byte[]))
-                                {
-                                    response = (T)(object)reader.ToArray();
-                                }
+                                    return Complete((T) (object) reader.ToArray());
                                 else
-                                {
-                                    response = (T)this.StreamDeserializer(typeof(T), reader);
-                                }
+                                    return Complete((T) this.StreamDeserializer(typeof(T), reader));
                             }
                             finally
                             {
@@ -456,31 +297,122 @@ namespace ServiceStack
                                     reader.Dispose(); // Not yet disposed, but could've been.
                             }
                         }
-
-                        PclExportClient.Instance.SynchronizeCookies(this);
-
-                        requestState.HandleSuccess(response);
                     }
                     catch (Exception ex)
                     {
-                        Log.Debug($"Error Reading Response Error: {ex.Message}", ex);
-                        requestState.HandleError(default(T), ex);
+                        if (Log.IsDebugEnabled)
+                            Log.Debug($"Error Reading Response Error: {ex.Message}", ex);
+
+                        throw;
                     }
                     finally
                     {
-                        PclExportClient.Instance.CloseReadStream(responseStream);
-
-                        CancelAsyncFn = null;
+                        responseStream.Close();
                     }
                 }
-                catch (Exception ex)
+            }
+            catch (Exception ex)
+            {
+                var webEx = ex as WebException;
+                var firstCall = !recall;
+                if (firstCall && WebRequestUtils.ShouldAuthenticate(webEx,
+                        (!string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password))
+                        || Credentials != null
+                        || BearerToken != null
+                        || RefreshToken != null
+                        || OnAuthenticationRequired != null))
                 {
-                    HandleResponseError(ex, requestState);
+                    try
+                    {
+                        if (RefreshToken != null)
+                        {
+                            var refreshRequest = new GetAccessToken {RefreshToken = RefreshToken};
+                            var uri = this.RefreshTokenUri ??
+                                      this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
+
+                            GetAccessTokenResponse tokenResponse;
+                            try
+                            {
+                                tokenResponse = uri.PostJsonToUrl(refreshRequest)
+                                    .FromJson<GetAccessTokenResponse>();
+                            }
+                            catch (WebException refreshEx)
+                            {
+                                var webServiceEx = ServiceClientBase.ToWebServiceException(refreshEx,
+                                    stream => StreamDeserializer(typeof(T), stream),
+                                    ContentType);
+
+                                if (webServiceEx != null)
+                                    throw new RefreshTokenException(webServiceEx);
+
+                                throw new RefreshTokenException(refreshEx.Message, refreshEx);
+                            }
+
+                            var accessToken = tokenResponse?.AccessToken;
+                            if (string.IsNullOrEmpty(accessToken))
+                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                            var refreshClient = webReq = (HttpWebRequest) WebRequest.Create(requestUri);
+                            if (this.CookieContainer.GetTokenCookie(BaseUri) != null)
+                            {
+                                this.CookieContainer.SetTokenCookie(accessToken, BaseUri);
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            }
+                            else
+                            {
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
+
+                            return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                        }
+
+                        OnAuthenticationRequired?.Invoke();
+
+                        var newReq = (HttpWebRequest) WebRequest.Create(requestUri);
+
+                        if (StoreCookies)
+                            newReq.CookieContainer = CookieContainer;
+
+                        HandleAuthException(ex, webReq);
+
+                        return await SendWebRequestAsync<T>(httpMethod, absoluteUrl, request, token, recall: true).ConfigureAwait(false);
+                    }
+                    catch (WebServiceException)
+                    {
+                        throw;
+                    }
+                    catch (Exception /*subEx*/)
+                    {
+                        throw HandleResponseError<T>(ResolveException(ex), requestUri, request);
+                    }
                 }
-            });
+
+                if (ExceptionFilter != null && webEx?.Response != null)
+                {
+                    var cachedResponse = ExceptionFilter(webEx, webEx.Response, requestUri, typeof(T));
+                    if (cachedResponse is T variable)
+                        return variable;
+                }
+
+                throw HandleResponseError<T>(ResolveException(ex), requestUri, request);
+            }
+            finally
+            {
+                if (!returningWebResponse)
+                    webRes?.Dispose();
+            }
         }
 
-        private void HandleResponseError<TResponse>(Exception exception, AsyncState<TResponse> state)
+        private static Stream GetResponseStream(WebResponse webRes)
+        {
+#if NETSTANDARD2_0
+            return webRes.GetResponseStream().Decompress(webRes.Headers[HttpHeaders.ContentEncoding]);
+#else
+            return webRes.GetResponseStream();
+#endif
+        }
+
+        private Exception HandleResponseError<TResponse>(Exception exception, string url, object request)
         {
             var webEx = exception as WebException;
             if (PclExportClient.Instance.IsWebException(webEx))
@@ -506,7 +438,7 @@ namespace ServiceStack
                     {
                         var bytes = stream.ReadFully();
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(state.Request);
+                        var errorResponseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
 
                         if (stream.CanSeek)
                         {
@@ -520,35 +452,52 @@ namespace ServiceStack
                                 serviceEx.ResponseDto = this.StreamDeserializer(errorResponseType, ms);
                             }
                         }
-                        state.HandleError(serviceEx.ResponseDto, serviceEx);
+                        return serviceEx;
                     }
                 }
                 catch (Exception innerEx)
                 {
                     // Oh, well, we tried
                     Log.Debug($"WebException Reading Response Error: {innerEx.Message}", innerEx);
-                    state.HandleError(default(TResponse), new WebServiceException(errorResponse.StatusDescription, innerEx) {
+                    return new WebServiceException(errorResponse.StatusDescription, innerEx)
+                    {
                         StatusCode = (int)errorResponse.StatusCode,
                         StatusDescription = errorResponse.StatusDescription,
                         ResponseHeaders = errorResponse.Headers
-                    });
+                    };
                 }
-                return;
             }
 
-            var authEx = exception as AuthenticationException;
-            if (authEx != null)
+            if (exception is AuthenticationException authEx)
             {
-                var customEx = WebRequestUtils.CreateCustomException(state.Url, authEx);
+                var customEx = WebRequestUtils.CreateCustomException(url, authEx);
 
                 Log.Debug($"AuthenticationException: {customEx.Message}", customEx);
-                state.HandleError(default(TResponse), authEx);
+                return authEx;
             }
 
             Log.Debug($"Exception Reading Response Error: {exception.Message}", exception);
-            state.HandleError(default(TResponse), exception);
+            return exception;
+        }
 
-            CancelAsyncFn = null;
+        private void HandleAuthException(Exception ex, WebRequest client)
+        {
+            if (ex is WebException webEx && webEx.Response != null)
+            {
+                var headers = ((HttpWebResponse)webEx.Response).Headers;
+                var doAuthHeader = PclExportClient.Instance.GetHeader(headers,
+                    HttpHeaders.WwwAuthenticate, x => x.Contains("realm"));
+
+                if (doAuthHeader == null)
+                {
+                    client.AddBasicAuth(this.UserName, this.Password);
+                }
+                else
+                {
+                    this.authInfo = new AuthenticationInfo(doAuthHeader);
+                    client.AddAuthInfo(this.UserName, this.Password, authInfo);
+                }
+            }
         }
 
         private void ApplyWebResponseFilters(WebResponse webResponse)

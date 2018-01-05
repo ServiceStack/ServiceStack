@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.OrmLite;
-using ServiceStack.Text;
+using ServiceStack.Caching;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -28,15 +25,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
         }
 
+        [TearDown]
+        public void TearDown()
+        {
+            //clear cache after each test
+            var cache = appHost.TryResolve<ICacheClient>();
+            cache.FlushAll();
+        }        
+
         protected JsonServiceClient GetClient()
         {
-            return new JsonServiceClient(Config.ListeningOn);
+            var client = new JsonServiceClient(Config.ListeningOn);
+#if NETCORE            
+            client.AddHeader(HttpHeaders.AcceptEncoding, "gzip,deflate");
+#endif
+            return client;
         }
 
         [Test]
@@ -96,7 +105,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(res.Headers[HttpHeaders.Age], Is.EqualTo("864000"));
                 Assert.That(res.Headers[HttpHeaders.ETag], Is.EqualTo("etag".Quoted()));
-                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=86400, public, must-revalidate, no-store"));
+                Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=86400, public, must-revalidate, no-store")
+                                                                .Or.EqualTo("no-store, public, must-revalidate, max-age=86400"));
             };
 
             var request = new SetCache
@@ -158,7 +168,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
 
             client.RequestFilter = req =>
-                req.IfModifiedSince = request.LastModified.Value;
+                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value);
 
             client.ResponseFilter = res =>
             {
@@ -185,7 +195,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SetCache { LastModified = new DateTime(2016, 1, 1, 0, 0, 0) };
 
             client.RequestFilter = req =>
-                req.IfModifiedSince = request.LastModified.Value + TimeSpan.FromSeconds(1);
+                PclExportClient.Instance.SetIfModifiedSince(req, request.LastModified.Value + TimeSpan.FromSeconds(-1));
 
             client.ResponseFilter = res =>
                 Assert.That(res.Headers[HttpHeaders.CacheControl], Is.EqualTo("max-age=600"));
@@ -273,7 +283,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.RequestFilter = req =>
-                    req.IfModifiedSince = lastModified.Value;
+                    PclExportClient.Instance.SetIfModifiedSince(req, lastModified.Value);
 
                 response = client.Get(request);
                 Assert.Fail("Should throw 304 NotModified");
@@ -412,9 +422,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(CachedRequest request)
         {
-            return Request.ToOptimizedResultUsingCache(Cache,
-                Request.QueryString.ToString(),
-                () => request);
+            var cacheKey = Request.QueryString.ToString();
+
+            return Request.ToOptimizedResultUsingCache(Cache, cacheKey, () => request);
         }
 
         public object Any(FailsAfterOnce request)

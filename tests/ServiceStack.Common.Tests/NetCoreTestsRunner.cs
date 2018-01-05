@@ -1,3 +1,4 @@
+#if NUNITLITE
 using NUnitLite;
 using NUnit.Common;
 using System.Reflection;
@@ -34,3 +35,4 @@ namespace NUnitLite.Tests
         }
     }
 }
+#endif

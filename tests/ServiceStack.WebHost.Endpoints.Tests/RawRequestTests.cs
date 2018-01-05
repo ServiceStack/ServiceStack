@@ -1,88 +1,147 @@
-﻿using System;
-using System.IO;
-using System.Net;
+﻿using System.IO;
+using System.Reflection;
+using Funq;
 using NUnit.Framework;
-using ServiceStack.Common;
-using ServiceStack.Common.Web;
-using ServiceStack.Logging;
-using ServiceStack.Logging.Support.Logging;
-using ServiceStack.ServiceClient.Web;
-using ServiceStack.ServiceHost;
-using ServiceStack.ServiceInterface;
 using ServiceStack.Text;
-using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
-using ServiceStack.WebHost.IntegrationTests.Services;
+using ServiceStack.Web;
 
-namespace ServiceStack.WebHost.IntegrationTests.Tests
+namespace ServiceStack.WebHost.Endpoints.Tests
 {
-	[RestService("/rawrequest")]
-	public class RawRequest : IRequiresRequestStream
-	{
-		public Stream RequestStream { get; set; }
-	}
+    [Route("/rawrequest")]
+    public class RawRequest : IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
 
-	public class RawRequestResponse
-	{
-		public string Result { get; set; }
-	}
+    [Route("/rawrequest/{Path}")]
+    public class RawRequestWithParam : IRequiresRequestStream
+    {
+        public string Path { get; set; }
+        public string Param { get; set; }
+        public Stream RequestStream { get; set; }
+    }
 
-	public class RawRequestService : IService<RawRequest>
-	{
-		public object Execute(RawRequest request)
-		{
-			var rawRequest = request.RequestStream.ToUtf8String();
-			return new RawRequestResponse { Result = rawRequest };
-		}
-	}
+    public class RawRequestResponse
+    {
+        public string Result { get; set; }
+    }
 
-	[TestFixture]
-	public class RawRequestTests 
-	{
-		static class Config
-		{
-			public const string AbsoluteBaseUri = "http://localhost:82/";
-		}
+    [Restrict(RequestAttributes.Xml)]
+    [Route("/Leads/LeadData/", "POST", Notes = "LMS - DirectApi")]
+    public class CustomXml : IRequiresRequestStream
+    {
+        public Stream RequestStream { get; set; }
+    }
 
-		ExampleAppHostHttpListener appHost;
-		
-		[TestFixtureSetUp]
-		public void OnTestFixtureStartUp() 
-		{
-			appHost = new ExampleAppHostHttpListener();
-			appHost.Init();
-			appHost.Start(Config.AbsoluteBaseUri);
+    public class RawRequestService : IService
+    {
+        public object Any(RawRequest request)
+        {
+            var rawRequest = request.RequestStream.ToUtf8String();
+            return new RawRequestResponse { Result = rawRequest };
+        }
 
-			System.Console.WriteLine("RawRequestTests Created at {0}, listening on {1}",
-									 DateTime.Now, Config.AbsoluteBaseUri);
-		}
+        public object Any(RawRequestWithParam request)
+        {
+            var rawRequest = request.RequestStream.ToUtf8String();
+            return new RawRequestResponse { Result = request.Path + ":" + request.Param + ":" + rawRequest };
+        }
 
-		[TestFixtureTearDown]
-		public void OnTestFixtureTearDown()
-		{
-			appHost.Dispose();
-			appHost = null;
-		}
+        public object Any(CustomXml request)
+        {
+            var xml = request.RequestStream.ReadFully().FromUtf8Bytes();
+            return xml;
+        }
+    }
 
-		[Test]
-		public void Can_POST_raw_request()
-		{
-			var rawData = "<<(( 'RAW_DATA' ))>>";
-			var requestUrl = Config.AbsoluteBaseUri + "/rawrequest";
-			var json = requestUrl.PutToUrl(rawData, ContentType.Json);
-			var response = json.FromJson<RawRequestResponse>();
-			Assert.That(response.Result, Is.EqualTo(rawData));
-		}
+    [TestFixture]
+    public class RawRequestTests
+    {
+        class AppHost : AppSelfHostBase
+        {
+            public AppHost() 
+                : base(nameof(RawRequestTests), typeof(RawRequestService).Assembly) {}
 
-		[Test]
-		public void Can_PUT_raw_request()
-		{
-			var rawData = "<<(( 'RAW_DATA' ))>>";
-			var requestUrl = Config.AbsoluteBaseUri + "/rawrequest";
-			var json = requestUrl.PutToUrl(rawData, ContentType.Json);
-			var response = json.FromJson<RawRequestResponse>();
-			Assert.That(response.Result, Is.EqualTo(rawData));
-		}
+            public override void Configure(Container container)
+            {
+            }
+        }
 
-	}
+        private ServiceStackHost appHost;
+
+        public RawRequestTests()
+        {
+            appHost = new AppHost()
+                .Init()
+                .Start(Config.ListeningOn);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown() => appHost.Dispose();
+
+        [Test]
+        public void Can_POST_raw_request()
+        {
+            var rawData = "<<(( 'RAW_DATA' ))>>";
+            var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
+            var json = requestUrl.PostStringToUrl(rawData, contentType: MimeTypes.PlainText, accept: MimeTypes.Json);
+            var response = json.FromJson<RawRequestResponse>();
+            Assert.That(response.Result, Is.EqualTo(rawData));
+        }
+
+        [Test]
+        public void Can_POST_raw_request_to_predefined_route()
+        {
+            var rawData = "{\"raw\":\"json\"}";
+            var requestUrl = Config.ServiceStackBaseUri + "/json/reply/RawRequest";
+            var json = requestUrl.PostJsonToUrl(rawData);
+            var response = json.FromJson<RawRequestResponse>();
+            Assert.That(response.Result, Is.EqualTo(rawData));
+        }
+
+        [Test]
+        public void Can_POST_raw_request_with_params()
+        {
+            var rawData = "<<(( 'RAW_DATA' ))>>";
+            var requestUrl = Config.ServiceStackBaseUri + "/rawrequest/Foo?Param=Bar";
+            var json = requestUrl.PostStringToUrl(rawData, contentType: MimeTypes.PlainText, accept: MimeTypes.Json);
+            var response = json.FromJson<RawRequestResponse>();
+            var expected = "{0}:{1}:{2}".Fmt("Foo", "Bar", rawData);
+            Assert.That(response.Result, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void Can_PUT_raw_request()
+        {
+            var rawData = "<<(( 'RAW_DATA' ))>>";
+            var requestUrl = Config.ServiceStackBaseUri + "/rawrequest";
+            var json = requestUrl.PutStringToUrl(rawData, contentType: MimeTypes.PlainText, accept: MimeTypes.Json);
+            var response = json.FromJson<RawRequestResponse>();
+            Assert.That(response.Result, Is.EqualTo(rawData));
+        }
+
+        [Test]
+        public void Can_POST_Custom_XML()
+        {
+            var xml = @"<LeadApplications>
+                          <LeadApplication>
+                            <Email>daffy.duck@example.com</Email>
+                            <FirstName>Joey</FirstName>
+                            <MiddleName>Disney</MiddleName>
+                            <LastName>Duck</LastName>
+                            <Street1>1 Disneyland Street</Street1>
+                            <Street2>2 Disneyland Street</Street2>
+                            <City>PAUMA VALLEY</City>
+                            <State>CA</State>   
+                            <Zip>92503</Zip>
+                          </LeadApplication>
+                        </LeadApplications>";
+
+            var requestUrl = Config.ServiceStackBaseUri + "/Leads/LeadData/";
+            var responseXml = requestUrl.PostXmlToUrl(xml);
+
+            Assert.That(responseXml, Is.EqualTo(xml));
+        }
+    }
 
 }

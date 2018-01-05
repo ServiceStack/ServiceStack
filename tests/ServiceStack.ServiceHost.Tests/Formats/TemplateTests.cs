@@ -9,7 +9,7 @@ using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -26,7 +26,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         private MarkdownFormat markdownFormat;
         Dictionary<string, object> templateArgs;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             staticTemplatePath = "~/Views/Shared/_Layout.shtml".MapProjectPath();
@@ -44,7 +44,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             markdownFormat = new MarkdownFormat
             {
-                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
+                VirtualPathProvider = new MemoryVirtualFiles()
             };
             templateArgs = new Dictionary<string, object> { { MarkdownPage.ModelName, person } };
         }

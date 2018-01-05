@@ -3,24 +3,29 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using Funq;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack.Testing
 {
-    public class MockHttpRequest : IHttpRequest
+    public class MockHttpRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
-        public Container Container { get; set; }
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
+        }
 
         public MockHttpRequest()
         {
-            this.FormData = PclExportClient.Instance.NewNameValueCollection();
-            this.Headers = PclExportClient.Instance.NewNameValueCollection();
-            this.QueryString = PclExportClient.Instance.NewNameValueCollection();
+            this.FormData = new NameValueCollection();
+            this.Headers = new NameValueCollection();
+            this.QueryString = new NameValueCollection();
             this.Cookies = new Dictionary<string, Cookie>();
             this.Items = new Dictionary<string, object>();
-            this.Container = ServiceStackHost.Instance != null ? ServiceStackHost.Instance.Container : new Container();
             this.Response = new MockHttpResponse(this);
         }
 
@@ -35,8 +40,8 @@ namespace ServiceStack.Testing
             this.ResponseContentType = contentType;
             this.PathInfo = pathInfo;
             this.InputStream = inputStream;
-            this.QueryString = queryString.InWrapper();
-            this.FormData = new NameValueCollectionWrapper(formData ?? new NameValueCollection());
+            this.QueryString = queryString;
+            this.FormData = formData;
         }
 
         public object OriginalRequest => null;
@@ -45,9 +50,7 @@ namespace ServiceStack.Testing
 
         public T TryResolve<T>()
         {
-            return Container != null 
-                ? Container.TryResolve<T>()
-                : HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public AuthUserSession RemoveSession()
@@ -87,11 +90,11 @@ namespace ServiceStack.Testing
 
         public bool HasExplicitResponseContentType { get; private set; }
 
-        public INameValueCollection Headers { get; set; }
+        public NameValueCollection Headers { get; set; }
 
-        public INameValueCollection QueryString { get; set; }
+        public NameValueCollection QueryString { get; set; }
 
-        public INameValueCollection FormData { get; set; }
+        public NameValueCollection FormData { get; set; }
 
         public bool UseBufferedStream { get; set; }
 
@@ -126,6 +129,7 @@ namespace ServiceStack.Testing
         public bool IsSecureConnection { get; set; }
         public string[] AcceptTypes { get; set; }
         public string PathInfo { get; set; }
+        public string OriginalPathInfo { get; }
         public Stream InputStream { get; set; }
 
         public long ContentLength
@@ -150,5 +154,15 @@ namespace ServiceStack.Testing
         }
 
         public Uri UrlReferrer => null;
+        
+        public IVirtualFile GetFile() => HostContext.VirtualFileSources.GetFile(PathInfo);
+
+        public IVirtualDirectory GetDirectory() => HostContext.VirtualFileSources.GetDirectory(PathInfo);
+
+        private bool? isDirectory;
+        public bool IsDirectory => isDirectory ?? (bool)(isDirectory = HostContext.VirtualFiles.DirectoryExists(PathInfo));
+
+        private bool? isFile;
+        public bool IsFile => isFile ?? (bool)(isFile = HostContext.VirtualFiles.FileExists(PathInfo));
     }
 }

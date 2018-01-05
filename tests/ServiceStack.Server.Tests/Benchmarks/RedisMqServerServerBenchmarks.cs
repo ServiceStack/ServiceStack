@@ -9,7 +9,6 @@ using ServiceStack.Text;
 namespace ServiceStack.Server.Tests.Benchmarks
 {
     [Ignore("Benchmarks")]
-    [Explicit]
     [TestFixture, Category("Benchmarks")]
     public class RedisMqServerServerBenchmarks
     {

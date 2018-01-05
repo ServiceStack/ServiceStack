@@ -1,4 +1,3 @@
-#if !NETCORE_SUPPORT
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,10 +33,17 @@ namespace ServiceStack.Common.Tests
             ServiceClientBaseUri = serviceClientBaseUri;
             ServiceAssemblies = serviceAssemblies;
 
-            this.AppHost = new BasicAppHost(serviceAssemblies).Init();
+            this.AppHost = new BasicAppHost(serviceAssemblies)
+            {
+                ConfigureAppHost = host =>
+                {
+                    host.CatchAllHandlers.Add(new PredefinedRoutesFeature().ProcessRequest);
+                    host.CatchAllHandlers.Add(new MetadataFeature().ProcessRequest);
+                }
+            }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             this.AppHost.Dispose();
@@ -45,15 +51,9 @@ namespace ServiceStack.Common.Tests
 
         protected abstract void Configure(Funq.Container container);
 
-        protected Funq.Container Container
-        {
-            get { return HostContext.Container; }
-        }
+        protected Funq.Container Container => HostContext.Container;
 
-        protected IServiceRoutes Routes
-        {
-            get { return HostContext.AppHost.Routes; }
-        }
+        protected IServiceRoutes Routes => HostContext.AppHost.Routes;
 
         //All integration tests call the Webservices hosted at the following location:
         protected string ServiceClientBaseUri { get; set; }
@@ -247,6 +247,11 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+            {
+                throw new NotImplementedException();
+            }
+
             public void Patch(IReturnVoid requestDto)
             {
                 throw new NotImplementedException();
@@ -291,8 +296,7 @@ namespace ServiceStack.Common.Tests
             private static void HandleException<TResponse>(Exception exception, Action<TResponse, Exception> onError)
             {
                 var response = (TResponse)typeof(TResponse).CreateInstance();
-                var hasResponseStatus = response as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                if (response is IHasResponseStatus hasResponseStatus)
                 {
                     hasResponseStatus.ResponseStatus = new ResponseStatus {
                         ErrorCode = exception.GetType().Name,
@@ -301,7 +305,7 @@ namespace ServiceStack.Common.Tests
                     };
                 }
                 var webServiceEx = new WebServiceException(exception.Message, exception);
-                if (onError != null) onError(response, webServiceEx);
+                onError?.Invoke(response, webServiceEx);
             }
 
             public void SetCredentials(string userName, string password)
@@ -399,6 +403,12 @@ namespace ServiceStack.Common.Tests
                 throw new NotImplementedException();
             }
 
+            public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request,
+                CancellationToken token = new CancellationToken())
+            {
+                throw new NotImplementedException();
+            }
+
             public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
             {
                 throw new NotImplementedException();
@@ -482,8 +492,7 @@ namespace ServiceStack.Common.Tests
             {
                 var message = MessageFactory.Create(request);
                 var response = ServiceManager.ExecuteMessage(message);
-                var httpResult = response as IHttpResult;
-                if (httpResult != null)
+                if (response is IHttpResult httpResult)
                 {
                     if (httpResult.StatusCode >= HttpStatusCode.BadRequest)
                     {
@@ -498,7 +507,7 @@ namespace ServiceStack.Common.Tests
                 }
 
                 var responseStatus = response.GetResponseStatus();
-                var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                var isError = responseStatus?.ErrorCode != null;
                 if (isError)
                 {
                     var webEx = new WebServiceException(responseStatus.Message)
@@ -570,7 +579,7 @@ namespace ServiceStack.Common.Tests
             public UrlParts(string pathInfo)
             {
                 this.PathInfo = pathInfo.UrlDecode();
-                var qsIndex = pathInfo.IndexOf("?");
+                var qsIndex = pathInfo.IndexOf("?", StringComparison.Ordinal);
                 if (qsIndex != -1)
                 {
                     var qs = pathInfo.Substring(qsIndex + 1);
@@ -626,25 +635,28 @@ namespace ServiceStack.Common.Tests
             Dictionary<string, string> formData,
             string requestBody)
         {
-            var httpHandler = GetHandler(httpMethod, pathInfo);
-
             var contentType = (formData != null && formData.Count > 0)
                 ? MimeTypes.FormUrlEncoded
                 : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
-                    httpHandler.RequestName, httpMethod, contentType,
+                    nameof(MockHttpRequest), 
+                    httpMethod, 
+                    contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
                     requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
                     formData.ToNameValueCollection()
                 );
 
-            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            var httpHandler = (IRequestHttpHandler)GetHandler(httpReq);
+            httpReq.OperationName = httpHandler.RequestName;
+
+            var request = httpHandler.CreateRequestAsync(httpReq, httpHandler.RequestName).Result;
             object response;
             try
             {
-                response = httpHandler.GetResponse(httpReq, request);
+                response = httpHandler.GetResponseAsync(httpReq, request).Result;
             }
             catch (Exception ex)
             {
@@ -663,16 +675,13 @@ namespace ServiceStack.Common.Tests
                     };
                 }
                 var hasResponseStatus = httpRes.Response as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                var status = hasResponseStatus?.ResponseStatus;
+                if (status != null && !status.ErrorCode.IsNullOrEmpty())
                 {
-                    var status = hasResponseStatus.ResponseStatus;
-                    if (status != null && !status.ErrorCode.IsNullOrEmpty())
-                    {
-                        throw new WebServiceException(status.Message) {
-                            StatusCode = (int)HttpStatusCode.InternalServerError,
-                            ResponseDto = httpRes.Response,
-                        };
-                    }
+                    throw new WebServiceException(status.Message) {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                        ResponseDto = httpRes.Response,
+                    };
                 }
 
                 return httpRes.Response;
@@ -705,32 +714,34 @@ namespace ServiceStack.Common.Tests
                 Dictionary<string, string> formData,
                 string requestBody)
         {
-            var httpHandler = GetHandler(httpMethod, pathInfo);
-
             var contentType = (formData != null && formData.Count > 0)
                 ? MimeTypes.FormUrlEncoded
                 : requestBody != null ? MimeTypes.Json : null;
 
             var httpReq = new MockHttpRequest(
-                    httpHandler.RequestName, httpMethod, contentType,
+                    nameof(MockHttpRequest), 
+                    httpMethod, 
+                    contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
                     requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
                     formData.ToNameValueCollection()
                 );
 
-            var request = httpHandler.CreateRequest(httpReq, httpHandler.RequestName);
+            var httpHandler = (IRequestHttpHandler)GetHandler(httpReq);
+            httpReq.OperationName = httpHandler.RequestName;
+
+            var request = httpHandler.CreateRequestAsync(httpReq, httpHandler.RequestName).Result;
             return request;
         }
 
-        private static ServiceStackHandlerBase GetHandler(string httpMethod, string pathInfo)
+        private static ServiceStackHandlerBase GetHandler(IHttpRequest httpReq)
         {
-            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpMethod, pathInfo, pathInfo, null) as ServiceStackHandlerBase;
+            var httpHandler = HttpHandlerFactory.GetHandlerForPathInfo(httpReq, null) as ServiceStackHandlerBase;
             if (httpHandler == null)
-                throw new NotSupportedException(pathInfo);
+                throw new NotSupportedException(httpReq.PathInfo);
             return httpHandler;
         }
     }
 
 }
-#endif

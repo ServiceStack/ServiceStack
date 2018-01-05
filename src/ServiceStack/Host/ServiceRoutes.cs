@@ -59,6 +59,14 @@ namespace ServiceStack.Host
             return this;
         }
 
+        public IServiceRoutes Add(Type requestType, string restPath, string verbs, string summary, string notes, string matches)
+        {
+            if (HasExistingRoute(requestType, restPath)) return this;
+
+            appHost.RestPaths.Add(new RestPath(requestType, restPath, verbs, summary, notes, matches));
+            return this;
+        }
+
         private bool HasExistingRoute(Type requestType, string restPath)
         {
             var existingRoute = appHost.RestPaths.FirstOrDefault(

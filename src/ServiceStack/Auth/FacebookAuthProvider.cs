@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web;
 using ServiceStack.Configuration;
@@ -13,7 +14,7 @@ namespace ServiceStack.Auth
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";
-        public static string Realm = "https://graph.facebook.com/v2.0/";
+        public static string Realm = "https://graph.facebook.com/v2.8/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
         public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
@@ -34,8 +35,24 @@ namespace ServiceStack.Auth
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {
             var tokens = Init(authService, ref session, request);
-            var httpRequest = authService.Request;
 
+            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            if (request?.AccessToken != null)
+            {
+                if (!AuthHttpGateway.VerifyFacebookAccessToken(AppId, request.AccessToken))
+                    return HttpError.Unauthorized("AccessToken is not for App: " + AppId);
+
+                var isHtml = authService.Request.IsHtml();
+                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                if (failedResult != null)
+                    return ConvertToClientError(failedResult, isHtml);
+
+                return isHtml
+                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    : null; //return default AuthenticateResponse
+            }
+
+            var httpRequest = authService.Request;
             var error = httpRequest.QueryString["error_reason"]
                 ?? httpRequest.QueryString["error"]
                 ?? httpRequest.QueryString["error_code"]
@@ -48,7 +65,7 @@ namespace ServiceStack.Auth
                 return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", error)));
             }             
         
-            var code = httpRequest.QueryString["code"];
+            var code = httpRequest.QueryString[Keywords.Code];
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
@@ -58,18 +75,16 @@ namespace ServiceStack.Auth
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
             }
 
-            var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
-
             try
             {
-                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetStringFromUrl();
-                var authInfo = PclExportClient.Instance.ParseQueryString(contents);
-                tokens.AccessTokenSecret = authInfo["access_token"];
+                var accessTokenUrl = $"{AccessTokenUrl}?client_id={AppId}&redirect_uri={this.CallbackUrl.UrlEncode()}&client_secret={AppSecret}&code={code}";
+                var contents = AccessTokenUrlFilter(this, accessTokenUrl).GetJsonFromUrl();
+                var authInfo = JsonObject.Parse(contents);
 
-                session.IsAuthenticated = true;
-                
-                return OnAuthenticated(authService, session, tokens, authInfo.ToDictionary())
-                    ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz access!
+                var accessToken = authInfo["access_token"];
+
+                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
+                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
             }
             catch (WebException we)
             {
@@ -84,26 +99,31 @@ namespace ServiceStack.Auth
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
         }
 
-        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, System.Collections.Generic.Dictionary<string, string> authInfo)
+        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        {
+            tokens.AccessTokenSecret = accessToken;
+
+            var json = AuthHttpGateway.DownloadFacebookUserInfo(accessToken, Fields);
+            var authInfo = JsonObject.Parse(json);
+
+            session.IsAuthenticated = true;
+
+            return OnAuthenticated(authService, session, tokens, authInfo);
+        }
+
+        protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
             {
-                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, Fields);
+                tokens.UserId = authInfo.Get("id");
+                tokens.UserName = authInfo.Get("id") ?? authInfo.Get("username");
+                tokens.DisplayName = authInfo.Get("name");
+                tokens.FirstName = authInfo.Get("first_name");
+                tokens.LastName = authInfo.Get("last_name");
+                tokens.Email = authInfo.Get("email");
+
+                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
                 var obj = JsonObject.Parse(json);
-                tokens.UserId = obj.Get("id");
-                tokens.UserName = obj.Get("id") ?? obj.Get("username");
-                tokens.DisplayName = obj.Get("name");
-                tokens.FirstName = obj.Get("first_name");
-                tokens.LastName = obj.Get("last_name");
-                tokens.Email = obj.Get("email");
-
-                if (SaveExtendedUserInfo)
-                {
-                    obj.Each(x => authInfo[x.Key] = x.Value);
-                }
-
-                json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
-                obj = JsonObject.Parse(json);
                 var picture = obj.Object("picture");
                 var data = picture?.Object("data");
                 if (data != null)

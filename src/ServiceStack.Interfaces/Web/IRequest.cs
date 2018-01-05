@@ -1,8 +1,9 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using ServiceStack.Configuration;
 
@@ -18,6 +19,9 @@ namespace ServiceStack.Web
         /// </summary>
         object OriginalRequest { get; }
 
+        /// <summary>
+        /// The Response API for this Request
+        /// </summary>
         IResponse Response { get; }
 
         /// <summary>
@@ -30,6 +34,9 @@ namespace ServiceStack.Web
         /// </summary>
         string Verb { get; }
 
+        /// <summary>
+        /// Different Attribute Enum flags classifying this Request
+        /// </summary>
         RequestAttributes RequestAttributes { get; set; }
 
         /// <summary>
@@ -47,10 +54,19 @@ namespace ServiceStack.Web
         /// </summary>
         string ContentType { get; }
 
+        /// <summary>
+        /// Whether this was an Internal Request
+        /// </summary>
         bool IsLocal { get; }
 
+        /// <summary>
+        /// The UserAgent for the request
+        /// </summary>
         string UserAgent { get; }
 
+        /// <summary>
+        /// A Dictionary of HTTP Cookies sent with this Request
+        /// </summary>
         IDictionary<string, System.Net.Cookie> Cookies { get; }
 
         /// <summary>
@@ -68,11 +84,20 @@ namespace ServiceStack.Web
         /// </summary>
         Dictionary<string, object> Items { get; }
 
-        INameValueCollection Headers { get; }
+        /// <summary>
+        /// The HTTP Headers in a NameValueCollection
+        /// </summary>
+        NameValueCollection Headers { get; }
 
-        INameValueCollection QueryString { get; }
+        /// <summary>
+        /// The ?query=string in a NameValueCollection
+        /// </summary>
+        NameValueCollection QueryString { get; }
 
-        INameValueCollection FormData { get; }
+        /// <summary>
+        /// The HTTP POST'ed Form Data in a NameValueCollection
+        /// </summary>
+        NameValueCollection FormData { get; }
         /// <summary>
         /// Buffer the Request InputStream so it can be re-read
         /// </summary>
@@ -84,12 +109,18 @@ namespace ServiceStack.Web
         /// <returns></returns>
         string GetRawBody();
 
+        /// <summary>
+        /// Relative URL containing /path/info?query=string
+        /// </summary>
         string RawUrl { get; }
 
+        /// <summary>
+        /// The Absolute URL for the request
+        /// </summary>
         string AbsoluteUri { get; }
 
         /// <summary>
-        /// The Remote Ip as reported by Request.UserHostAddress
+        /// The Remote IP as reported by Request.UserHostAddress
         /// </summary>
         string UserHostAddress { get; }
 
@@ -108,12 +139,29 @@ namespace ServiceStack.Web
         /// </summary>
         bool IsSecureConnection { get; }
 
+        /// <summary>
+        /// Array of different Content-Types accepted by the client
+        /// </summary>
         string[] AcceptTypes { get; }
 
+        /// <summary>
+        /// The normalized /path/info for the request
+        /// </summary>
         string PathInfo { get; }
 
+        /// <summary>
+        /// The original /path/info as sent
+        /// </summary>
+        string OriginalPathInfo { get; }
+
+        /// <summary>
+        /// The Request Body Input Stream
+        /// </summary>
         Stream InputStream { get; }
 
+        /// <summary>
+        /// The size of the Request Body if provided
+        /// </summary>
         long ContentLength { get; }
 
         /// <summary>

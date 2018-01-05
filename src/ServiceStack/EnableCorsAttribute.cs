@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -7,9 +8,9 @@ namespace ServiceStack
     /// Attribute marks that specific response class has support for Cross-origin resource sharing (CORS, see http://www.w3.org/TR/access-control/). CORS allows to access resources from different domain which usually forbidden by origin policy. 
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
-    public class EnableCorsAttribute : AttributeBase, IHasRequestFilter
+    public class EnableCorsAttribute : AttributeBase, IHasRequestFilterAsync
     {
-        public int Priority => 0;
+        public int Priority { get; set; } = 0;
 
         public bool AutoHandleOptionRequests { get; set; }
 
@@ -31,7 +32,7 @@ namespace ServiceStack
             this.AutoHandleOptionRequests = true;
         }
 
-        public void RequestFilter(IRequest req, IResponse res, object requestDto)
+        public Task RequestFilterAsync(IRequest req, IResponse res, object requestDto)
         {
             if (!string.IsNullOrEmpty(allowedOrigins))
                 res.AddHeader(HttpHeaders.AllowOrigin, allowedOrigins);
@@ -44,11 +45,10 @@ namespace ServiceStack
 
             if (AutoHandleOptionRequests && req.Verb == HttpMethods.Options)
                 res.EndRequest();
+
+            return TypeConstants.EmptyTask;
         }
 
-        public IHasRequestFilter Copy()
-        {
-            return (IHasRequestFilter)MemberwiseClone();
-        }
+        public IRequestFilterBase Copy() => (IRequestFilterBase)MemberwiseClone();
     }
 }

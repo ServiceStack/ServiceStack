@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Web;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -12,11 +12,8 @@ namespace ServiceStack.Host.Handlers
 
         private StaticContentHandler(string contentType)
         {
-            if (string.IsNullOrEmpty(contentType))
-                throw new ArgumentNullException(nameof(contentType));
-
-            this.contentType = contentType;
-            this.RequestName = GetType().Name;
+            this.contentType = contentType ?? throw new ArgumentNullException(nameof(contentType)); 
+            this.RequestName = nameof(StaticContentHandler);
         }
 
         public StaticContentHandler(string textContents, string contentType)
@@ -31,7 +28,7 @@ namespace ServiceStack.Host.Handlers
             this.bytes = bytes;
         }
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return;
@@ -41,20 +38,12 @@ namespace ServiceStack.Host.Handlers
             httpRes.ContentType = contentType;
 
             if (textContents != null)
-                httpRes.Write(textContents);
+                await httpRes.WriteAsync(textContents);
             else if (bytes != null)
-                httpRes.OutputStream.Write(bytes, 0, bytes.Length);
+                await httpRes.OutputStream.WriteAsync(bytes, 0, bytes.Length);
 
-            httpRes.Flush();
+            await httpRes.FlushAsync();
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
-
-#if !NETSTANDARD1_6
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var httpReq = context.ToRequest("StaticContent");
-            ProcessRequest(httpReq, httpReq.Response, "StaticContent");
-        }
-#endif
     }
 }

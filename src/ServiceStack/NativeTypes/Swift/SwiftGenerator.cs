@@ -13,27 +13,27 @@ namespace ServiceStack.NativeTypes.Swift
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        readonly List<MetadataType> AllTypes;
+        List<MetadataType> allTypes;
         List<string> conflictTypeNames = new List<string>();
 
         public SwiftGenerator(MetadataTypesConfig config)
         {
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
-            AllTypes = new List<MetadataType>();
         }
 
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
+            //"ServiceStackClient", //Required when using Swift Package Manager, not in Xcode
         };
 
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
-            {"DateTime", "NSDate"},
-            {"TimeSpan", "NSTimeInterval"},
-            {"DateTimeOffset", "NSDate"},
+            {"DateTime", "Date"},
+            {"TimeSpan", "TimeInterval"},
+            {"DateTimeOffset", "Date"},
             {"Guid", "String"},
             {"Char", "Character"},
             {"Byte", "Int8"},
@@ -46,11 +46,16 @@ namespace ServiceStack.NativeTypes.Swift
             {"Single", "Float"},
             {"Double", "Double"},
             {"Decimal", "Double"},
+            {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
         };
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -71,7 +76,7 @@ namespace ServiceStack.NativeTypes.Swift
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("SwiftVersion: 2.0");
+            sb.AppendLine("SwiftVersion: 3.0");
             sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
@@ -109,25 +114,28 @@ namespace ServiceStack.NativeTypes.Swift
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(requestTypes);
-            AllTypes.AddRange(responseTypes);
-            AllTypes.AddRange(types);
+            allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
+
+            allTypes = FilterTypes(allTypes);
 
             //Swift doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = AllTypes
+            this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
             defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
 
             //ServiceStack core interfaces
-            foreach (var type in AllTypes)
+            foreach (var type in allTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -292,8 +300,7 @@ namespace ServiceStack.NativeTypes.Swift
                     //Converting them into protocols with typealiases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
 
-                    if (!type.Implements.IsEmpty())
-                        type.Implements.Each(x => extends.Add(Type(x)));
+                    type.Implements.Each(x => extends.Add(Type(x)));
                 }
 
                 if (type.IsInterface())
@@ -306,7 +313,7 @@ namespace ServiceStack.NativeTypes.Swift
                         typeName = Type(type.Name, null);
                         foreach (var arg in type.GenericArgs)
                         {
-                            typeAliases.Add("public typealias {0} = {0}".Fmt(arg));
+                            typeAliases.Add($"associatedtype {arg}");
                         }
                     }
                 }
@@ -315,7 +322,7 @@ namespace ServiceStack.NativeTypes.Swift
                     ? " : " + (string.Join(", ", extends.ToArray()))
                     : "";
 
-                sb.AppendLine("public {0} {1}{2}".Fmt(defType, typeName, extend));
+                sb.AppendLine($"public {defType} {typeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
@@ -344,12 +351,11 @@ namespace ServiceStack.NativeTypes.Swift
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("public var {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine($"public var {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
                 }
 
-                var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && initCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
@@ -384,7 +390,7 @@ namespace ServiceStack.NativeTypes.Swift
                         : implStr;
 
                     var genericType = interfaceParts[1].Substring(0, interfaceParts[1].Length - 1);
-                    typeAliases.Add("public typealias {0} = {1}".Fmt(alias, genericType));
+                    typeAliases.Add($"public typealias {alias} = {genericType}");
                 }
 
                 extends.Add(implStr);
@@ -417,6 +423,7 @@ namespace ServiceStack.NativeTypes.Swift
                 return;
 
             var typeName = Type(type.Name, type.GenericArgs);
+            typeName = typeName.LeftPart('<'); // Type<QueryResponse<T>> into correct mapping Type<QueryResponse>
 
             var typeNameOnly = typeName.LeftPart('<');
 
@@ -429,7 +436,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             //func typeConfig()
 
-            var isGenericType = !type.GenericArgs.IsEmpty();
+            var isGenericType = type.GenericArgs?.Length > 0 || type.Inherits?.GenericArgs?.Length > 0;
             if (!isGenericType)
             {
                 sbExt.AppendLine("public static var metadata = Metadata.create([");
@@ -528,7 +535,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromString()
-            sbExt.AppendLine("public static func fromString(strValue:String) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromString(_ strValue:String) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
 
             sbExt.AppendLine("switch strValue {");
@@ -543,7 +550,7 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("}");
 
             //fromObject()
-            sbExt.AppendLine("public static func fromObject(any:AnyObject) -> {0}? {{".Fmt(typeName));
+            sbExt.AppendLine("public static func fromObject(_ any:Any) -> {0}? {{".Fmt(typeName));
             sbExt = sbExt.Indent();
             sbExt.AppendLine("switch any {");
             sbExt.AppendLine("case let i as Int: return {0}(rawValue: i)".Fmt(typeName));
@@ -567,7 +574,7 @@ namespace ServiceStack.NativeTypes.Swift
             {
                 if (wasAdded) sb.AppendLine();
 
-                var propTypeName = Type(prop.Type, prop.GenericArgs);
+                var propTypeName = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                 var propType = FindType(prop.Type, prop.TypeNamespace, prop.GenericArgs);
                 var optional = "";
                 var defaultValue = "";
@@ -720,7 +727,7 @@ namespace ServiceStack.NativeTypes.Swift
             if (typeName == null)
                 return null;
 
-            var foundType = AllTypes
+            var foundType = allTypes
                 .FirstOrDefault(x => (typeName.Namespace == null || x.Namespace == typeName.Namespace)
                     && x.Name == typeName.Name
                     && x.GenericArgs.Safe().Count() == typeName.GenericArgs.Safe().Count());
@@ -728,10 +735,11 @@ namespace ServiceStack.NativeTypes.Swift
             if (foundType != null)
                 return foundType;
 
+#pragma warning disable 618
             if (typeName.Name == typeof(QueryBase).Name || 
-                typeName.Name == typeof(QueryBase<>).Name || 
                 typeName.Name == typeof(QueryDb<>).Name)
                 return CreateType(typeof(QueryBase)); //Properties are on QueryBase
+#pragma warning restore 618
 
 
             if (typeName.Name == typeof(AuthUserSession).Name)
@@ -801,7 +809,7 @@ namespace ServiceStack.NativeTypes.Swift
                 if (type == "Nullable`1")
                     return "{0}?".Fmt(TypeAlias(GenericArg(genericArgs[0])));
                 if (ArrayTypes.Contains(type))
-                    return "[{0}]".Fmt(TypeAlias(GenericArg(genericArgs[0])));
+                    return "[{0}]".Fmt(TypeAlias(GenericArg(genericArgs[0]))).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "[{0}:{1}]".Fmt(
                         TypeAlias(GenericArg(genericArgs[0])),
@@ -822,6 +830,10 @@ namespace ServiceStack.NativeTypes.Swift
                     var typeName = TypeAlias(type);
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);
@@ -1015,6 +1027,7 @@ namespace ServiceStack.NativeTypes.Swift
             "struct",
             "subscript",
             "typealias",
+            "associatedtype",
             "var",
             "break",
             "case",

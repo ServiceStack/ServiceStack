@@ -12,13 +12,12 @@ namespace ServiceStack.NativeTypes.Java
     public class JavaGenerator
     {
         readonly MetadataTypesConfig Config;
-        readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
+        List<MetadataType> allTypes;
 
         public JavaGenerator(MetadataTypesConfig config)
         {
             Config = config;
-            AllTypes = new List<MetadataType>();
         }
 
         public static string DefaultGlobalNamespace = "dtos";
@@ -38,6 +37,7 @@ namespace ServiceStack.NativeTypes.Java
             "net.servicestack.client.*",
         };
 
+        public static string JavaIoNamespace = "java.io.*";
         public static string GSonAnnotationsNamespace = "com.google.gson.annotations.*";
         public static string GSonReflectNamespace = "com.google.gson.reflect.*";
 
@@ -76,7 +76,12 @@ namespace ServiceStack.NativeTypes.Java
             {"Type", "Class"},
             {"List", "ArrayList"},
             {"Dictionary", "HashMap"},
+            {"Stream", "InputStream"},
         }.ToConcurrentDictionary();
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
@@ -90,12 +95,17 @@ namespace ServiceStack.NativeTypes.Java
             {
                 defaultImports = Config.DefaultImports;
             }
-            else if (ReferencesGson(metadata))
+            else
             {
-                if (!defaultImports.Contains(GSonAnnotationsNamespace))
-                    defaultImports.Add(GSonAnnotationsNamespace);
-                if (!defaultImports.Contains(GSonReflectNamespace))
-                    defaultImports.Add(GSonReflectNamespace);
+                if (ReferencesGson(metadata))
+                {
+                    defaultImports.AddIfNotExists(GSonAnnotationsNamespace);
+                    defaultImports.AddIfNotExists(GSonReflectNamespace);
+                }
+                if (ReferencesStream(metadata))
+                {
+                    defaultImports.AddIfNotExists(JavaIoNamespace);
+                }
             }
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
@@ -149,18 +159,21 @@ namespace ServiceStack.NativeTypes.Java
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(requestTypes);
-            AllTypes.AddRange(responseTypes);
-            AllTypes.AddRange(types);
+            allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
+
+            allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = AllTypes
+            this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
@@ -171,7 +184,7 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("{");
 
             //ServiceStack core interfaces
-            foreach (var type in AllTypes)
+            foreach (var type in allTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -240,19 +253,16 @@ namespace ServiceStack.NativeTypes.Java
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            var allTypes = GetAllMetadataTypes(metadata);
-            return allTypes.Any(x => JavaGeneratorExtensions.JavaKeyWords.Contains(x.Name)
-                || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
-                || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
+            return metadata.GetAllMetadataTypes()
+                .Any(x => x.Properties.Safe().Any(p => JavaGeneratorExtensions.JavaKeyWords.Contains(p.Name.PropertyStyle()))
+                    || x.Properties.Safe().Any(p => p.DataMember?.Name != null)
+                    || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0) //uses TypeToken<T>
+                );
         }
 
-        private static List<MetadataType> GetAllMetadataTypes(MetadataTypes metadata)
+        private static bool ReferencesStream(MetadataTypes metadata)
         {
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(metadata.Types);
-            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
-            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Request));
-            return allTypes;
+            return metadata.GetAllMetadataTypes().Any(x => x.Name == "Stream" && x.Namespace == "System.IO");
         }
 
         //Use built-in types already in net.servicestack.client package
@@ -355,13 +365,7 @@ namespace ServiceStack.NativeTypes.Java
                                 : "{0}.class".Fmt(returnType);
                         }
                     }
-                    if (!type.Implements.IsEmpty())
-                    {
-                        foreach (var interfaceRef in type.Implements)
-                        {
-                            interfaces.Add(Type(interfaceRef));
-                        }
-                    }
+                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
                 var extend = extends.Count > 0 
@@ -431,7 +435,7 @@ namespace ServiceStack.NativeTypes.Java
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
                     var fieldName = prop.Name.SafeToken().PropertyStyle();
                     var accessorName = fieldName.ToPascalCase();
@@ -573,7 +577,7 @@ namespace ServiceStack.NativeTypes.Java
                 if (type == "Nullable`1")
                     return /*@Nullable*/ "{0}".Fmt(GenericArg(genericArgs[0]));
                 if (ArrayTypes.Contains(type))
-                    return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0]));
+                    return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "HashMap<{0},{1}>".Fmt(
                         GenericArg(genericArgs[0]),
@@ -594,6 +598,10 @@ namespace ServiceStack.NativeTypes.Java
                     var typeName = TypeAlias(type);
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);

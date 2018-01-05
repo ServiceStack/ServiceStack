@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using System.Web;
+using System.Threading.Tasks;
 using System.Web.UI;
 using System.Xml.Schema;
 using ServiceStack.Web;
@@ -16,26 +16,19 @@ namespace ServiceStack.Metadata
 
         public string OperationName { get; set; }
 
-#if !NETSTANDARD1_6
-        public override void Execute(HttpContextBase context)
-        {
-            var httpReq = context.ToRequest(OperationName);
-            ProcessRequestAsync(httpReq, httpReq.Response, OperationName);
-        }
-#endif
-
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
-                return;
+                return TypeConstants.EmptyTask;
 
-            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) return;
+            if (!AssertAccess(httpReq, httpRes, httpReq.QueryString["op"])) 
+                return TypeConstants.EmptyTask;
 
-            var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
 
             if (httpReq.QueryString["xsd"] != null)
             {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
+                var operationTypes = HostContext.Metadata.GetAllSoapOperationTypes();
                 var xsdNo = Convert.ToInt32(httpReq.QueryString["xsd"]);
                 var schemaSet = XsdUtils.GetXmlSchemaSet(operationTypes);
                 var schemas = schemaSet.Schemas();
@@ -63,6 +56,8 @@ namespace ServiceStack.Metadata
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
+
+            return TypeConstants.EmptyTask;
         }
 
     }

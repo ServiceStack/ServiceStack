@@ -1,5 +1,7 @@
 using System.Runtime.Serialization;
+#if !NETCORE_SUPPORT
 using ServiceStack.ServiceModel;
+#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {

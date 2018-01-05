@@ -6,7 +6,6 @@ namespace ServiceStack.Reflection
 {
     public static class DelegateFactory
     {
-
         /*
          *	MethodInfo method = typeof(String).GetMethod("StartsWith", new[] { typeof(string) });  
             LateBoundMethod callback = DelegateFactory.Create(method);  
@@ -64,8 +63,5 @@ namespace ServiceStack.Reflection
 
             return lambda.Compile();
         }
-
-
     }
-
 }

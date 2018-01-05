@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Razor;
 using ServiceStack.ServiceHost.Tests.Formats;
 using ServiceStack.Testing;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -30,7 +30,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
@@ -43,7 +43,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             productArgs = new { products = products };
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -56,7 +56,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             RazorFormat = new RazorFormat
             {
                 PageBaseType = typeof(CustomRazorBasePage<>),
-                VirtualFileSources = new InMemoryVirtualPathProvider(new BasicAppHost()),
+                VirtualFileSources = new MemoryVirtualFiles(),
             }.Init();
         }
 
@@ -74,14 +74,13 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             var expectedHtml =
 @"<h1>Razor Example</h1>
 
-<h3>Hello Demis, the year is 2016</h3>
+<h3>Hello Demis, the year is 2018</h3>
 
 <p>Checkout <a href=""/Product/Details/10"">this product</a></p>
 ".NormalizeNewLines();
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: new { name = "Demis", productId = 10 });
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -107,7 +106,6 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 
@@ -128,8 +126,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.EqualTo(expectedHtml));
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
         [Test]
@@ -150,8 +147,7 @@ var message = ""Number is "" + number;
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.EqualTo(expectedHtml));
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(expectedHtml));
         }
 
 
@@ -168,8 +164,7 @@ var message = ""Number is "" + number;
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            Assert.That(html, Does.Match(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
 
@@ -178,23 +173,22 @@ var message = ""Number is "" + number;
         {
             var template =
 @"
-@if (DateTime.Now.Year == 2016) {
-<p>If the year is 2016 then print this 
+@if (DateTime.Now.Year == 2018) {
+<p>If the year is 2018 then print this 
 multi-line text block and 
 the date: @DateTime.Now</p>
 }
 ".NormalizeNewLines();
 
             var expectedHtml =
-@"<p>If the year is 2016 then print this 
+@"<p>If the year is 2018 then print this 
 multi-line text block and 
 the date: 02/06/2013 06:42:45</p>
 ".NormalizeNewLines();
 
             var html = RazorFormat.CreateAndRenderToHtml(template, model: productArgs);
 
-            html.Print();
-            Assert.That(html, Is.StringMatching(expectedHtml.Substring(0, expectedHtml.Length - 25)));
+            Assert.That(html, Does.Match(expectedHtml.Substring(0, expectedHtml.Length - 25)));
         }
 
         [Test]
@@ -210,7 +204,6 @@ the date: 02/06/2013 06:42:45</p>
 
             var html = RazorFormat.CreateAndRenderToHtml(template, new { stringContainingHtml = "<span>html</span>" });
 
-            html.Print();
             Assert.That(html, Is.EqualTo(expectedHtml));
         }
 

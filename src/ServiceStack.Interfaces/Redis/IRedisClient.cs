@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2016 Service Stack LLC. All Rights Reserved.
+// Copyright 2017 ServiceStack, Inc. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -37,6 +37,9 @@ namespace ServiceStack.Redis
         int SendTimeout { get; set; }
         string Password { get; set; }
         bool HadExceptions { get; }
+
+        bool Ping();
+        string Echo(string text);
 
         RedisText Custom(params object[] cmdWithArgs);
 
@@ -70,17 +73,6 @@ namespace ServiceStack.Redis
         string UrnKey<T>(T value);
         string UrnKey<T>(object id);
         string UrnKey(Type type, object id);
-
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, string value);
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, string value, TimeSpan expireIn);
-        [Obsolete("Use SetValueIfNotExists()")]
-        bool SetEntryIfNotExists(string key, string value);
-        [Obsolete("Use GetValue()")]
-        string GetEntry(string key);
-        [Obsolete("Use GetAndSetValue()")]
-        string GetAndSetEntry(string key, string value);
 
         void SetAll(IEnumerable<string> keys, IEnumerable<string> values);
         void SetAll(Dictionary<string, string> map);

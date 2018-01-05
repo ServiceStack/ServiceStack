@@ -48,6 +48,7 @@ namespace ServiceStack.Admin
     }
 
     [DefaultRequest(typeof(RequestLogs))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
     public class RequestLogsService : Service
     {
         private static readonly Dictionary<string, string> Usage = new Dictionary<string, string> {

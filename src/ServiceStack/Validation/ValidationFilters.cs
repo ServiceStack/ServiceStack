@@ -1,28 +1,47 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.FluentValidation;
+using ServiceStack.FluentValidation.Results;
 using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
     public static class ValidationFilters
     {
-        public static void RequestFilter(IRequest req, IResponse res, object requestDto)
+        public static async Task RequestFilterAsync(IRequest req, IResponse res, object requestDto)
         {
             var validator = ValidatorCache.GetValidator(req, requestDto.GetType());
-            if (validator == null) return;
+            var ruleSet = req.Verb;
+            if (validator == null)
+                return;
 
             try
             {
-                var ruleSet = req.Verb;
-                var validationResult = validator.Validate(
-                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)) {
-                        Request = req
-                    });
+                ValidationResult validationResult;
 
-                if (validationResult.IsValid) return;
+                if (validator.HasAsyncValidators(ruleSet))
+                {
+                    validationResult = await validator.ValidateAsync(
+                        new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
+                        {
+                            Request = req
+                        });
+                }
+                else
+                {
+                    validationResult = validator.Validate(
+                        new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
+                        {
+                            Request = req
+                        });
+                }
 
-                var errorResponse = HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
-                    ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
+                if (validationResult.IsValid)
+                    return;
+
+                var errorResponse = await HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
+                                    ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
 
                 var validationFeature = HostContext.GetPlugin<ValidationFeature>();
                 if (validationFeature?.ErrorResponseFilter != null)
@@ -30,12 +49,22 @@ namespace ServiceStack.Validation
                     errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
                 }
 
-                res.WriteToResponse(req, errorResponse);
+                await res.WriteToResponse(req, errorResponse);
+            }
+            catch (Exception ex)
+            {
+                var validationEx = ex.UnwrapIfSingleException();
+
+                var errorResponse = await HostContext.RaiseServiceException(req, requestDto, validationEx)
+                                    ?? DtoUtils.CreateErrorResponse(requestDto, validationEx);
+
+                await res.WriteToResponse(req, errorResponse);
             }
             finally
             {
-                using (validator as IDisposable) {}
+                using (validator as IDisposable) { }
             }
         }
+        
     }
 }

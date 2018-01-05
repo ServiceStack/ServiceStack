@@ -1,22 +1,21 @@
-// Copyright (c) Service Stack LLC. All Rights Reserved.
+// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Runtime.Serialization;
-using System.Text;
+using ServiceStack.Logging;
 using ServiceStack.Model;
 using ServiceStack.Text;
 
 namespace ServiceStack
 {
-#if !(NETFX_CORE || WP || SL5 || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
     [Serializable]
-#endif
     public class WebServiceException
         : Exception, IHasStatusCode, IHasStatusDescription, IResponseStatusConvertible
     {
+        public static ILog log = LogManager.GetLogger(typeof(WebServiceException));
+
         public WebServiceException() { }
         public WebServiceException(string message) : base(message) { }
         public WebServiceException(string message, Exception innerException) : base(message, innerException) { }
@@ -31,12 +30,13 @@ namespace ServiceStack
         
         public string ResponseBody { get; set; }
 
+        public override string Message => ErrorMessage ?? base.Message;
+
         private string errorCode;
 
         private void ParseResponseDto()
         {
-            string responseStatus;
-            if (!TryGetResponseStatusFromResponseDto(out responseStatus))
+            if (!TryGetResponseStatusFromResponseDto(out var responseStatus))
             {
                 if (!TryGetResponseStatusFromResponseBody(out responseStatus))
                 {
@@ -134,11 +134,10 @@ namespace ServiceStack
                 if (this.ResponseDto == null)
                     return null;
 
-                var hasResponseStatus = this.ResponseDto as IHasResponseStatus;
-                if (hasResponseStatus != null)
+                if (this.ResponseDto is IHasResponseStatus hasResponseStatus)
                     return hasResponseStatus.ResponseStatus;
 
-                var propertyInfo = this.ResponseDto.GetType().GetPropertyInfo("ResponseStatus");
+                var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");
                 return propertyInfo?.GetProperty(this.ResponseDto) as ResponseStatus;
             }
         }
@@ -209,6 +208,27 @@ namespace ServiceStack
         public ResponseStatus ToResponseStatus()
         {
             return ResponseStatus;
+        }
+    }
+
+    public class RefreshTokenException : WebServiceException
+    {
+        public RefreshTokenException(string message) : base(message) {}
+
+        public RefreshTokenException(string message, Exception innerException) 
+            : base(message, innerException) {}
+
+        public RefreshTokenException(WebServiceException webEx) 
+            : base(webEx.Message)
+        {
+            if (webEx == null)
+                throw new ArgumentNullException(nameof(webEx));
+
+            this.StatusCode = webEx.StatusCode;
+            this.StatusDescription = webEx.StatusDescription;
+            this.ResponseHeaders = webEx.ResponseHeaders;
+            this.ResponseBody = webEx.ResponseBody;
+            this.ResponseDto = webEx.ResponseDto;
         }
     }
 }

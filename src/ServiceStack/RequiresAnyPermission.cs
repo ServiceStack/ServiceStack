@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
@@ -25,16 +26,16 @@ namespace ServiceStack
         }
 
         public RequiresAnyPermissionAttribute(params string[] permissions)
-            : this(ApplyTo.All, permissions)
-        { }
+            : this(ApplyTo.All, permissions) {}
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            base.Execute(req, res, requestDto); //first check if session is authenticated
-            if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
+            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            if (res.IsClosed)
+                return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
 
@@ -44,10 +45,12 @@ namespace ServiceStack
                 if (session != null && session.HasRole(RoleNames.Admin, authRepo))
                     return;
 
-                if (HasAnyPermissions(req, session, authRepo)) return;
+                if (HasAnyPermissions(req, session, authRepo))
+                    return;
             }
 
-            if (DoHtmlRedirectIfConfigured(req, res)) return;
+            if (DoHtmlRedirectIfConfigured(req, res))
+                return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidPermission;

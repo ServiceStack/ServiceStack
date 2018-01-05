@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Runtime.Serialization;
 using System.Threading;
 using Funq;
@@ -10,6 +11,7 @@ using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using TestsConfig = ServiceStack.WebHost.Endpoints.Tests.Config;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -18,8 +20,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public AutoQueryAppHost()
             : base("AutoQuery", typeof(AutoQueryService).Assembly) { }
 
+        public static readonly string SqlServerConnString = TestsConfig.SqlServerConnString;
         public const string SqlServerNamedConnection = "SqlServer";
-        public const string SqlServerConnString = "Server=localhost;Database=test;User Id=test;Password=test;";
         public const string SqlServerProvider = "SqlServer2012";
 
         public static string SqliteFileConnString = "~/App_Data/autoquery.sqlite".MapProjectPath();
@@ -118,6 +120,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     UInt = 9,
                     ULong = 10,
                     UShort = 11,
+                    Enum = HttpStatusCode.MethodNotAllowed,
+                    NullableEnum = HttpStatusCode.MethodNotAllowed,
                 });
 
                 db.DropAndCreateTable<Adhoc>();
@@ -127,6 +131,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     FirstName = x.FirstName,
                     LastName = x.LastName
                 }));
+                
+                db.CreateTable<TypeWithEnum>();
+
+                db.Insert(new TypeWithEnum { Id = 1, Name = "Value1", SomeEnum = SomeEnum.Value1, NSomeEnum = SomeEnum.Value1, SomeEnumAsInt = SomeEnumAsInt.Value1, NSomeEnumAsInt = SomeEnumAsInt.Value1 });
+                db.Insert(new TypeWithEnum { Id = 2, Name = "Value2", SomeEnum = SomeEnum.Value2, NSomeEnum = SomeEnum.Value2, SomeEnumAsInt = SomeEnumAsInt.Value2, NSomeEnumAsInt = SomeEnumAsInt.Value2 });
+                db.Insert(new TypeWithEnum { Id = 3, Name = "Value3", SomeEnum = SomeEnum.Value3, NSomeEnum = SomeEnum.Value3, SomeEnumAsInt = SomeEnumAsInt.Value3, NSomeEnumAsInt = SomeEnumAsInt.Value3 });
             }
 
             var autoQuery = new AutoQueryFeature
@@ -146,9 +156,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                             foreach (var cmd in ctx.Commands)
                             {
                                 Func<int, int, int> fn;
-                                if (!supportedFns.TryGetValue(cmd.Name, out fn)) continue;
-                                var label = !string.IsNullOrWhiteSpace(cmd.Suffix) ? cmd.Suffix.Trim() : cmd.ToString();
-                                ctx.Response.Meta[label] = fn(int.Parse(cmd.Args[0]), int.Parse(cmd.Args[1])).ToString();
+                                if (!supportedFns.TryGetValue(cmd.Name.ToString(), out fn)) continue;
+                                var label = !cmd.Suffix.IsNullOrWhiteSpace() ? cmd.Suffix.Trim().ToString() : cmd.ToString();
+                                ctx.Response.Meta[label] = fn(cmd.Args[0].ParseInt32(), cmd.Args[1].ParseInt32()).ToString();
                                 executedCmds.Add(cmd);
                             }
                             ctx.Commands.RemoveAll(executedCmds.Contains);
@@ -197,16 +207,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         };
 
         public static Movie[] SeedMovies = new[] {
-			new Movie { ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
-			new Movie { ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
-			new Movie { ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
-			new Movie { ImdbId = "tt0071562", Title = "The Godfather: Part II", Score = 9.0m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1974,12,20), Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
-			new Movie { ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Score = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, Rating = "R", },
-			new Movie { ImdbId = "tt0114709", Title = "Toy Story", Score = 8.3m, Director = "John Lasseter", ReleaseDate = new DateTime(1995,11,22), TagLine = "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
-			new Movie { ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
-			new Movie { ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
-			new Movie { ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
-			new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
+            new Movie { ImdbId = "tt0111161", Title = "The Shawshank Redemption", Score = 9.2m, Director = "Frank Darabont", ReleaseDate = new DateTime(1995,2,17), TagLine = "Fear can hold you prisoner. Hope can set you free.", Genres = new List<string>{"Crime","Drama"}, Rating = "R", },
+            new Movie { ImdbId = "tt0068646", Title = "The Godfather", Score = 9.2m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1972,3,24), TagLine = "An offer you can't refuse.", Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+            new Movie { ImdbId = "tt1375666", Title = "Inception", Score = 9.2m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2010,7,16), TagLine = "Your mind is the scene of the crime", Genres = new List<string>{"Action", "Mystery", "Sci-Fi", "Thriller"}, Rating = "PG-13", },
+            new Movie { ImdbId = "tt0071562", Title = "The Godfather: Part II", Score = 9.0m, Director = "Francis Ford Coppola", ReleaseDate = new DateTime(1974,12,20), Genres = new List<string> {"Crime","Drama", "Thriller"}, Rating = "R", },
+            new Movie { ImdbId = "tt0060196", Title = "The Good, the Bad and the Ugly", Score = 9.0m, Director = "Sergio Leone", ReleaseDate = new DateTime(1967,12,29), TagLine = "They formed an alliance of hate to steal a fortune in dead man's gold", Genres = new List<string>{"Adventure","Western"}, Rating = "R", },
+            new Movie { ImdbId = "tt0114709", Title = "Toy Story", Score = 8.3m, Director = "John Lasseter", ReleaseDate = new DateTime(1995,11,22), TagLine = "A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+            new Movie { ImdbId = "tt2294629", Title = "Frozen", Score = 7.8m, Director = "Chris Buck", ReleaseDate = new DateTime(2013,11,27), TagLine = "Fearless optimist Anna teams up with Kristoff in an epic journey, encountering Everest-like conditions, and a hilarious snowman named Olaf", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "PG", },
+            new Movie { ImdbId = "tt1453405", Title = "Monsters University", Score = 7.4m, Director = "Dan Scanlon", ReleaseDate = new DateTime(2013,06,21), TagLine = "A look at the relationship between Mike and Sulley during their days at Monsters University -- when they weren't necessarily the best of friends.", Genres = new List<string>{"Animation","Adventure","Comedy"}, Rating = "G", },
+            new Movie { ImdbId = "tt0468569", Title = "The Dark Knight", Score = 9.0m, Director = "Christopher Nolan", ReleaseDate = new DateTime(2008,07,18), TagLine = "When Batman, Gordon and Harvey Dent launch an assault on the mob, they let the clown out of the box, the Joker, bent on turning Gotham on itself and bringing any heroes down to his level.", Genres = new List<string>{"Action","Crime","Drama"}, Rating = "PG-13", },
+            new Movie { ImdbId = "tt0109830", Title = "Forrest Gump", Score = 8.8m, Director = "Robert Zemeckis", ReleaseDate = new DateTime(1996,07,06), TagLine = "Forrest Gump, while not intelligent, has accidentally been present at many historic moments, but his true love, Jenny Curran, eludes him.", Genres = new List<string>{"Drama","Romance"}, Rating = "PG-13", },
         };
 
         public static PagingTest[] SeedPagingTest = 250.Times(i => new PagingTest { Id = i, Name = "Name" + i, Value = i % 2 }).ToArray();
@@ -303,14 +313,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string RockstarGenreName { get; set; }
     }
 
-
-
     public class QueryOverridedRockstars : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
 
     public class QueryOverridedCustomRockstars : QueryDb<Rockstar, CustomRockstar>
+    {
+        public int? Age { get; set; }
+    }
+
+    public class QueryCaseInsensitiveOrderBy : QueryDb<Rockstar>
     {
         public int? Age { get; set; }
     }
@@ -338,6 +351,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         [QueryDbField(Term = QueryTerm.Or, Template = "UPPER({Field}) LIKE UPPER({Value})", Field = "LastName")]
         public string OrLastName { get; set; }
+    }
+
+    public class QueryRockstarAlias : QueryDb<Rockstar, RockstarAlias>,
+        IJoin<Rockstar, RockstarAlbum>
+    {
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+    }
+
+    [DataContract]
+    public class RockstarAlias
+    {
+        [DataMember]
+        [Alias("Id")]
+        public int RockstarId { get; set; }
+
+        [DataMember]
+        public string FirstName { get; set; }
+
+        [DataMember]
+        [Alias("LastName")]
+        public string Surname { get; set; }
+
+        [DataMember(Name = "album")]
+        public string RockstarAlbumName { get; set; }
     }
 
     public class QueryFieldRockstarsDynamic : QueryDb<Rockstar>
@@ -379,8 +417,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string LastName { get; set; }
     }
 
+    public class QueryFieldsImplicitConventions : QueryDb<Rockstar>
+    {
+        [QueryDbField(Term = QueryTerm.Or)]
+        public string FirstNameContains { get; set; }
+
+        [QueryDbField(Term = QueryTerm.Or)]
+        public string LastNameEndsWith { get; set; }
+    }
+
     [QueryDb(QueryTerm.Or)]
     public class QueryGetRockstars : QueryDb<Rockstar>
+    {
+        public int[] Ids { get; set; }
+        public List<int> Ages { get; set; }
+        public List<string> FirstNames { get; set; }
+        public int[] IdsBetween { get; set; }
+    }
+
+    public class QueryRockstarFilters : QueryDb<Rockstar>
     {
         public int[] Ids { get; set; }
         public List<int> Ages { get; set; }
@@ -497,9 +552,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<RockstarAlbum> Albums { get; set; } 
     }
 
+    [Route("/query/all-fields")]
     public class QueryAllFields : QueryDb<AllFields>
     {
-        public virtual Guid Guid { get; set; }
+        public virtual Guid? Guid { get; set; }
     }
 
     public class AllFields
@@ -523,7 +579,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public virtual DateTime? NullableDateTime { get; set; }
         public virtual TimeSpan? NullableTimeSpan { get; set; }
         public virtual Guid? NullableGuid { get; set; }
+        public HttpStatusCode Enum { get; set; }
+        public HttpStatusCode? NullableEnum { get; set; }
     }
+
+    [EnumAsInt]
+    public enum SomeEnumAsInt
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 3,
+    }
+
+    public enum SomeEnum
+    {
+        Value1 = 1,
+        Value2 = 2,
+        Value3 = 3
+    }
+
+    public class TypeWithEnum
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public SomeEnum SomeEnum { get; set; }
+        public SomeEnumAsInt SomeEnumAsInt { get; set; }
+        public SomeEnum? NSomeEnum { get; set; }
+        public SomeEnumAsInt? NSomeEnumAsInt { get; set; }
+    }
+
+    [Route("/query-enums")]
+    public class QueryTypeWithEnums : QueryDb<TypeWithEnum> {}
 
     [DataContract]
     public class Adhoc
@@ -566,6 +652,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams());
             q.Take(1);
+            return AutoQuery.Execute(dto, q);
+        }
+
+        public object Any(QueryCaseInsensitiveOrderBy dto)
+        {
+            var q = AutoQuery.CreateQuery(dto, Request);
+            if (q.OrderByExpression != null)
+                q.OrderByExpression += " COLLATE NOCASE";
+
             return AutoQuery.Execute(dto, q);
         }
 
@@ -669,7 +764,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client = new JsonServiceClient(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -685,18 +780,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             get { return AutoQueryAppHost.SeedPagingTest.ToList(); }
         }
 
-        [NUnit.Framework.Ignore("Debug Run")]
-        [Test]
+//        [NUnit.Framework.Ignore("Debug Run"), Test]
         public void RunFor10Mins()
         {
+#if NET45
             Process.Start(Config.ListeningOn);
+#endif
             Thread.Sleep(TimeSpan.FromMinutes(10));
         }
 
         [Test]
         public void Can_execute_basic_query()
         {
-            var response = client.Get(new QueryRockstars());
+            var response = client.Get(new QueryRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
@@ -706,7 +802,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_basic_query_NamedRockstar()
         {
-            var response = client.Get(new QueryNamedRockstars());
+            var response = client.Get(new QueryNamedRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(1));
@@ -717,7 +813,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_overridden_basic_query()
         {
-            var response = client.Get(new QueryOverridedRockstars());
+            var response = client.Get(new QueryOverridedRockstars { Include = "Total" });
 
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
@@ -725,11 +821,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Can_execute_overridden_basic_query_with_case_insensitive_orderBy()
+        {
+            var response = client.Get(new QueryCaseInsensitiveOrderBy { Age = 27, OrderBy = "FirstName" });
+
+            Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
         public void Can_execute_AdhocRockstars_query()
         {
-            var request = new QueryAdhocRockstars { FirstName = "Jimi" };
+            var request = new QueryAdhocRockstars { FirstName = "Jimi", Include = "Total" };
 
-            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi"));
+            Assert.That(request.ToGetUrl(), Is.EqualTo("/adhoc-rockstars?first_name=Jimi&include=Total"));
 
             var response = client.Get(request);
 
@@ -774,7 +878,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_overridden_CustomRockstar()
         {
-            var response = client.Get(new QueryOverridedCustomRockstars { Age = 27 });
+            var response = client.Get(new QueryOverridedCustomRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(1));
@@ -783,17 +887,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_basic_query_with_limits()
         {
-            var response = client.Get(new QueryRockstars { Skip = 2 });
+            var response = client.Get(new QueryRockstars { Skip = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 2));
 
-            response = client.Get(new QueryRockstars { Take = 2 });
+            response = client.Get(new QueryRockstars { Take = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(0));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(2));
 
-            response = client.Get(new QueryRockstars { Skip = 2, Take = 2 });
+            response = client.Get(new QueryRockstars { Skip = 2, Take = 2, Include = "Total" });
             Assert.That(response.Offset, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(TotalRockstars));
             Assert.That(response.Results.Count, Is.EqualTo(2));
@@ -802,7 +906,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition()
         {
-            var response = client.Get(new QueryRockstars { Age = 27 });
+            var response = client.Get(new QueryRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
@@ -811,7 +915,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_CustomRockstar()
         {
-            var response = client.Get(new QueryCustomRockstars { Age = 27 });
+            var response = client.Get(new QueryCustomRockstars { Age = 27, Include = "Total" });
 
             Assert.That(response.Total, Is.EqualTo(3));
             Assert.That(response.Results.Count, Is.EqualTo(3));
@@ -820,7 +924,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_explicit_equality_condition_on_CustomRockstarSchema()
         {
-            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27 });
+            var response = client.Get(new QueryCustomRockstarsSchema { Age = 27, Include = "Total" });
 
             response.PrintDump();
 
@@ -837,6 +941,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstName", "Jim")
                 .AddQueryParam("LivingStatus", "Dead")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -851,6 +956,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstName", "Jim")
                 .AddQueryParam("FirstName", "Jim")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -861,6 +967,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
                 .AddQueryParam("FirstNameStartsWith", "Jim")
                 .AddQueryParam("FirstNameStartsWith", "Jimi")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -872,7 +979,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_implicit_IsNull_condition()
         {
-            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=")
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars?DateDied=&Include=Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
 
@@ -883,7 +990,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_JOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryJoinedRockstarAlbums());
+            var response = client.Get(new QueryJoinedRockstarAlbums { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -892,7 +999,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "MTV Unplugged in New York", "Foo Fighters", "Into the Wild",
             }));
 
-            response = client.Get(new QueryJoinedRockstarAlbums { Age = 27 });
+            response = client.Get(new QueryJoinedRockstarAlbums { Age = 27, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(6));
             Assert.That(response.Results.Count, Is.EqualTo(6));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -901,7 +1008,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "MTV Unplugged in New York",
             }));
 
-            response = client.Get(new QueryJoinedRockstarAlbums { RockstarAlbumName = "Nevermind" });
+            response = client.Get(new QueryJoinedRockstarAlbums { RockstarAlbumName = "Nevermind", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -911,7 +1018,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_multiple_JOINs_on_Rockstar_Albums_and_Genres()
         {
-            var response = client.Get(new QueryMultiJoinRockstar());
+            var response = client.Get(new QueryMultiJoinRockstar { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalAlbums));
             Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
             var albumNames = response.Results.Select(x => x.RockstarAlbumName);
@@ -925,13 +1032,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "Rock", "Grunge", "Alternative Rock", "Folk Rock"
             }));
 
-            response = client.Get(new QueryMultiJoinRockstar { RockstarAlbumName = "Nevermind" });
+            response = client.Get(new QueryMultiJoinRockstar { RockstarAlbumName = "Nevermind", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarAlbumName);
             Assert.That(albumNames, Is.EquivalentTo(new[] { "Nevermind" }));
 
-            response = client.Get(new QueryMultiJoinRockstar { RockstarGenreName = "Folk Rock" });
+            response = client.Get(new QueryMultiJoinRockstar { RockstarGenreName = "Folk Rock", Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results.Count, Is.EqualTo(1));
             albumNames = response.Results.Select(x => x.RockstarGenreName);
@@ -943,6 +1050,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
                 .AddQueryParam("Age", "27")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
             Assert.That(response.Total, Is.EqualTo(6));
@@ -955,6 +1063,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             response = Config.ListeningOn.CombineWith("json/reply/QueryRockstarAlbumsImplicit")
                 .AddQueryParam("RockstarAlbumName", "Nevermind")
+                .AddQueryParam("Include", "Total")
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<CustomRockstar>>();
             Assert.That(response.Total, Is.EqualTo(1));
@@ -966,7 +1075,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_LEFTJOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3 });
+            var response = client.Get(new QueryRockstarAlbumsLeftJoin { IdNotEqualTo = 3, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -978,7 +1087,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_execute_query_with_custom_LEFTJOIN_on_RockstarAlbums()
         {
-            var response = client.Get(new QueryRockstarAlbumsCustomLeftJoin { IdNotEqualTo = 3 });
+            var response = client.Get(new QueryRockstarAlbumsCustomLeftJoin { IdNotEqualTo = 3, Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(TotalRockstars - 1));
             Assert.That(response.Results.Count, Is.EqualTo(TotalRockstars - 1));
             var albumNames = response.Results.Where(x => x.RockstarAlbumName != null).Select(x => x.RockstarAlbumName);
@@ -1060,6 +1169,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_use_custom_model_to_select_columns()
+        {
+            var response = client.Get(new QueryRockstarAlias { RockstarAlbumName = "Nevermind" });
+
+            Assert.That(response.Results.Count, Is.EqualTo(1));
+            Assert.That(response.Results[0].RockstarId, Is.EqualTo(3));
+            Assert.That(response.Results[0].FirstName, Is.EqualTo("Kurt"));
+            Assert.That(response.Results[0].RockstarAlbumName, Is.EqualTo("Nevermind"));
+        }
+
+        [Test]
         public void Does_allow_adding_attributes_dynamically()
         {
             typeof(QueryFieldRockstarsDynamic)
@@ -1097,6 +1217,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetJsonFromUrl()
                 .FromJson<QueryResponse<Rockstar>>();
             Assert.That(response.Results.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void Does_retain_implicit_convention_when_not_overriding_template_or_ValueFormat()
+        {
+            var response = client.Get(new QueryFieldsImplicitConventions { FirstNameContains = "im" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
+
+            response = client.Get(new QueryFieldsImplicitConventions { LastNameEndsWith = "son" });
+            Assert.That(response.Results.Count, Is.EqualTo(2));
         }
 
         [Test]
@@ -1255,6 +1385,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public void Does_ignore_empty_collection_filters_by_default()
+        {
+            QueryResponse<Rockstar> response;
+            response = client.Get(new QueryRockstarFilters());
+            Assert.That(response.Results.Count, Is.EqualTo(AutoQueryAppHost.SeedRockstars.Length));
+
+            response = client.Get(new QueryRockstarFilters
+            {
+                Ids = new int[] {},
+                Ages = new List<int>(),
+                FirstNames = new List<string>(),
+                IdsBetween = new int[] {},               
+            });
+            Assert.That(response.Results.Count, Is.EqualTo(AutoQueryAppHost.SeedRockstars.Length));
+        }
+
+        [Test]
         public void Can_execute_In_OR_Queries_with_implicit_conventions()
         {
             var baseUrl = Config.ListeningOn.CombineWith("json/reply/QueryGetRockstarsDynamic");
@@ -1397,6 +1544,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Get(new QueryUnknownRockstars {
                 UnknownProperty = "Foo",
                 UnknownInt = 1,
+                Include = "Total"
             });
 
             Assert.That(response.Offset, Is.EqualTo(0));
@@ -1468,7 +1616,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_populate_Total()
         {
-            var response = client.Get(new QueryRockstars());
+            var response = client.Get(new QueryRockstars { Include = "Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
@@ -1478,7 +1626,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Get(new QueryRockstars { Include = "COUNT(*)" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
-            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus)" });
+            response = client.Get(new QueryRockstars { Include = "COUNT(DISTINCT LivingStatus), Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
 
             response = client.Get(new QueryRockstars { Include = "Count(*), Min(Age), Max(Age), Sum(Id)" });
@@ -1528,7 +1676,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_ignore_unknown_aggregate_commands()
         {
-            var response = client.Get(new QueryRockstars { Include = "FOO(1)" });
+            var response = client.Get(new QueryRockstars { Include = "FOO(1), Total" });
             Assert.That(response.Total, Is.EqualTo(Rockstars.Count));
             Assert.That(response.Meta, Is.Null);
 
@@ -1651,7 +1799,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
+        }
+
+        [Test]
+        public void Can_select_partial_list_of_fields_DISTINCT()
+        {
+            var response = Config.ListeningOn.CombineWith("json/reply/QueryRockstars")
+                .AddQueryParam("Fields", "DISTINCT Age")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<Rockstar>>();
+
+            response.PrintDump();
+
+            Assert.That(response.Results.Any(x => x.Age > 0));
+            Assert.That(response.Results.Count, Is.EqualTo(response.Results.Select(x => x.Age).ToHashSet().Count));
+            Assert.That(response.Results.All(x => x.Id == 0));
+            Assert.That(response.Results.All(x => x.FirstName == null));
+            Assert.That(response.Results.All(x => x.LastName == null));
+            Assert.That(response.Results.All(x => x.DateDied == null));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]
@@ -1670,7 +1837,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Results.All(x => x.LastName == null));
             Assert.That(response.Results.Any(x => x.Age > 0));
             Assert.That(response.Results.All(x => x.DateDied == null));
-            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime)));
+            Assert.That(response.Results.All(x => x.DateOfBirth == default(DateTime).ToLocalTime()));
         }
 
         [Test]
@@ -1707,15 +1874,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Does_return_MaxLimit_results()
         {
             QueryResponse<PagingTest> response;
-            response = client.Get(new QueryPagingTest());
+            response = client.Get(new QueryPagingTest { Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
 
-            response = client.Get(new QueryPagingTest { Skip = 200 });
+            response = client.Get(new QueryPagingTest { Skip = 200, Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(PagingTests.Skip(200).Count()));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count));
 
-            response = client.Get(new QueryPagingTest { Value = 1 });
+            response = client.Get(new QueryPagingTest { Value = 1, Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(100));
             Assert.That(response.Total, Is.EqualTo(PagingTests.Count(x => x.Value == 1)));
         }
@@ -1724,17 +1891,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_query_on_ForeignKey_and_Index()
         {
             QueryResponse<RockstarAlbum> response;
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3 }); //Hash
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Include = "Total" }); //Hash
             Assert.That(response.Results.Count, Is.EqualTo(5));
             Assert.That(response.Total, Is.EqualTo(5));
 
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Id = 3 }); //Hash + Range
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Id = 3, Include = "Total" }); //Hash + Range
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
 
             //Hash + Range BETWEEN
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, IdBetween = new[] { 2, 3 } });
+            response = client.Get(new QueryRockstarAlbums
+            {
+                RockstarId = 3,
+                IdBetween = new[] { 2, 3 },
+                Include = "Total"
+            });
             Assert.That(response.Results.Count, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(2));
 
@@ -1743,18 +1915,66 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 RockstarId = 3,
                 IdBetween = new[] { 2, 3 },
-                Name = "Nevermind"
+                Name = "Nevermind",
+                Include = "Total"
             });
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Id, Is.EqualTo(3));
 
             //Hash + LocalSecondaryIndex
-            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Genre = "Grunge" });
+            response = client.Get(new QueryRockstarAlbums { RockstarId = 3, Genre = "Grunge", Include = "Total" });
             Assert.That(response.Results.Count, Is.EqualTo(4));
             Assert.That(response.Total, Is.EqualTo(4));
 
             response.PrintDump();
+        }
+
+        [Test]
+        public void Can_use_implicit_query_on_enums_on_all_fields()
+        {
+            var allFieldsResponse = Config.ListeningOn.CombineWith("query", "all-fields")
+                .AddQueryParam("EnumContains", "MethodNotAllowed")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<AllFields>>();
+
+            Assert.That(allFieldsResponse.Results[0].Enum, Is.EqualTo(HttpStatusCode.MethodNotAllowed));
+        }
+
+        [Test]
+        public void Can_use_implicit_query_to_query_equals_on_int_enums()
+        {
+            var response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("SomeEnumAsInt", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].SomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
+            
+            response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("NSomeEnumAsInt", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].NSomeEnumAsInt, Is.EqualTo(SomeEnumAsInt.Value2));
+        }
+
+        [Test]
+        public void Can_use_implicit_query_to_query_contains_on_string_enums()
+        {
+            var response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("SomeEnumContains", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].SomeEnum, Is.EqualTo(SomeEnum.Value2));
+            
+            response = Config.ListeningOn.CombineWith("query-enums")
+                .AddQueryParam("NSomeEnumContains", "Value2")
+                .GetJsonFromUrl()
+                .FromJson<QueryResponse<TypeWithEnum>>();
+
+            Assert.That(response.Results[0].NSomeEnum, Is.EqualTo(SomeEnum.Value2));
         }
     }
 

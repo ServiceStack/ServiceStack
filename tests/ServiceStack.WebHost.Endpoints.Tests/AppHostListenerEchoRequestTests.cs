@@ -4,7 +4,9 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host.Handlers;
+#if !NETCORE_SUPPORT
 using ServiceStack.Host.HttpListener;
+#endif
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -21,6 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container) { }
 
+#if !NETCORE_SUPPORT
             public override ListenerRequest CreateRequest(HttpListenerContext httpContext, string operationName)
             {
                 var req = new ListenerRequest(httpContext, operationName, RequestAttributes.None)
@@ -30,6 +33,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 req.RequestAttributes = req.GetAttributes();
                 return req;
             }
+#endif
         }
 
         [Route("/echo")]
@@ -77,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AppHost();
@@ -85,7 +89,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -96,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test://?&% encoding";
             var url = "{0}echo?Param={1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo?Param=test%3a%2f%2f%3f%26%25+encoding"));
+            Assert.That(url, Does.EndWith("/echo?Param=test%3a%2f%2f%3f%26%25+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -108,7 +112,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var testEncoding = "test encoding";
             var url = "{0}echo/{1}".Fmt(Config.AbsoluteBaseUri, testEncoding.UrlEncode());
-            Assert.That(url, Is.StringEnding("/echo/test+encoding"));
+            Assert.That(url, Does.EndWith("/echo/test+encoding"));
 
             var json = url.GetJsonFromUrl();
             var response = json.FromJson<Echo>();
@@ -151,7 +155,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 requestBody: "Param=" + param.UrlEncode(),
                 contentType: MimeTypes.FormUrlEncoded, accept: MimeTypes.Json);
 
-            var value = JsonObject.Parse(json)["Param"];
+            var value = JsonObject.Parse(json)["Param"]
+                        ?? JsonObject.Parse(json)["param"];
 
             Assert.That(value, Is.EqualTo(param));
         }

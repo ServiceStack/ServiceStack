@@ -4,6 +4,6 @@ namespace ServiceStack.Configuration
 {
     public interface ITypeFactory
     {
-        object CreateInstance(Type type);
+        object CreateInstance(IResolver resolver, Type type);
     }
 }

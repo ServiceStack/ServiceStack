@@ -34,6 +34,7 @@
 
     public interface IProtoBufPlugin { }        //Marker for ProtoBuf plugin
     public interface IMsgPackPlugin { }         //Marker for MsgPack plugin
+    public interface IWirePlugin { }            //Marker for Wire plugin
     public interface INetSerializerPlugin { }   //Marker for NetSerialize plugin
     public interface IRazorPlugin { }           //Marker for MVC Razor plugin
 }

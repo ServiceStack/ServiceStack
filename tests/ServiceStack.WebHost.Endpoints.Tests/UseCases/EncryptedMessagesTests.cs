@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 .Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             ((IClearable)appHost.TryResolve<IAuthRepository>()).Clear(); //Flush InMemoryAuthProvider
@@ -216,7 +216,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             catch (WebServiceException ex)
             {
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
-                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("Value cannot be null.\r\nParameter name: Name"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo($"Value cannot be null.{Environment.NewLine}Parameter name: Name"));
             }
 
             try
@@ -458,7 +458,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             {
                 Assert.That(ex.StatusCode, Is.EqualTo((int)HttpStatusCode.NotFound));
                 Assert.That(ex.StatusDescription, Is.EqualTo("KeyNotFoundException"));
-                Assert.That(ex.ResponseStatus.Message, Is.StringStarting(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
+                Assert.That(ex.ResponseStatus.Message, Does.StartWith(EncryptedMessagesFeature.ErrorKeyNotFound.Substring(0,10)));
             }
         }
     }

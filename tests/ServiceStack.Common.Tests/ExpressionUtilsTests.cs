@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
+using ServiceStack.DataAnnotations;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -106,6 +108,38 @@ namespace ServiceStack.Common.Tests
                 Is.EquivalentTo(new[] {"BaseMember"}));
             Assert.That(ExpressionUtils.GetFieldNames<Derived>(p => p.DerivedMember),
                 Is.EquivalentTo(new[] { "DerivedMember" }));
+        }
+
+        public class Question
+        {
+            public int Id { get; set; }
+            public string Text { get; set; }
+
+            [CustomField("json")]
+            public List<Answer> Answers { get; set; }
+        }
+
+        public class Answer
+        {
+            public int Id { get; set; }
+            public string Text { get; set; }
+        }
+
+        [Test]
+        public void Can_get_assigned_ComplexTypes()
+        {
+            var assignedValues = GetAssignmentExpression(() => new Question
+            {
+                Id = 1,
+                Answers = new List<Answer>
+                {
+                    new Answer { Id = 1, Text = "Q1 Answer1" }
+                }
+            }).AssignedValues();
+
+            Assert.That(assignedValues.Count, Is.EqualTo(2));
+            var assignedValue = (List<Answer>)assignedValues["Answers"];
+            Assert.That(assignedValue[0].Text, Is.EqualTo("Q1 Answer1"));
         }
     }
 }

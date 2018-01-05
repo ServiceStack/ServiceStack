@@ -49,6 +49,8 @@ namespace ServiceStack.Razor.BuildTask.Support
             throw new NotImplementedException();
         }
 
+        public void Refresh() {}
+
         public IVirtualPathProvider VirtualPathProvider { get; private set; }
 
         public string Extension { get; private set; }

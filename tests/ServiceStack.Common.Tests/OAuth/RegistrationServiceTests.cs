@@ -16,7 +16,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost
@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests.OAuth
             }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -40,9 +40,9 @@ namespace ServiceStack.Common.Tests.OAuth
         public static IUserAuthRepository GetStubRepo()
         {
             var mock = new Mock<IUserAuthRepository>();
-            mock.Expect(x => x.GetUserAuthByUserName(It.IsAny<string>()))
+            mock.Setup(x => x.GetUserAuthByUserName(It.IsAny<string>()))
                 .Returns((UserAuth)null);
-            mock.Expect(x => x.CreateUserAuth(It.IsAny<UserAuth>(), It.IsAny<string>()))
+            mock.Setup(x => x.CreateUserAuth(It.IsAny<UserAuth>(), It.IsAny<string>()))
                 .Returns(new UserAuth { Id = 1 });
 
             return mock.Object;
@@ -147,7 +147,7 @@ namespace ServiceStack.Common.Tests.OAuth
             var mockExistingUser = new UserAuth();
 
             var mock = new Mock<IUserAuthRepository>();
-            mock.Expect(x => x.GetUserAuthByUserName(It.IsAny<string>()))
+            mock.Setup(x => x.GetUserAuthByUserName(It.IsAny<string>()))
                 .Returns(() => mockExistingUser);
             var mockUserAuth = mock.Object;
             appHost.Register<IAuthRepository>(mockUserAuth);

@@ -13,41 +13,68 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Text.RegularExpressions;
-    using Attributes;
-    using Internal;
-    using Resources;
-    using Results;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Text.RegularExpressions;
+	using Attributes;
+	using Internal;
+	using Resources;
+	using Results;
 
-    public class RegularExpressionValidator : PropertyValidator, IRegularExpressionValidator {
-        readonly string expression;
-        readonly Regex regex;
+	public class RegularExpressionValidator : PropertyValidator, IRegularExpressionValidator {
+		readonly string expression;
+		readonly Func<object, Regex> regexFunc;
 
-        public RegularExpressionValidator(string expression) : base(() => Messages.regex_error, ValidationErrors.RegularExpression) {
-            this.expression = expression;
-            regex = new Regex(expression);
+		public RegularExpressionValidator(string expression) :base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+			this.expression = expression;
 
-        }
+			var regex = new Regex(expression);
+			this.regexFunc = x => regex;
+		}
 
-        protected override bool IsValid(PropertyValidatorContext context) {
-            if (context.PropertyValue != null && !regex.IsMatch((string)context.PropertyValue)) {
-                return false;
-            }
-            return true;
-        }
+		public RegularExpressionValidator(Regex regex) : base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+			this.expression = regex.ToString();
+			this.regexFunc = x => regex;
+		}
 
-        public string Expression {
-            get { return expression; }
-        }
-    }
+		public RegularExpressionValidator(string expression, RegexOptions options) : base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+			this.expression = expression;
+			var regex = new Regex(expression, options);
+			this.regexFunc = x => regex;
+		}
 
-    public interface IRegularExpressionValidator : IPropertyValidator {
-        string Expression { get; }
-    }
+		public RegularExpressionValidator(Func<object, string> expressionFunc) : base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+			this.regexFunc = x => new Regex(expressionFunc(x));
+		}
+
+		public RegularExpressionValidator(Func<object, Regex> regexFunc) : base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+			this.regexFunc = regexFunc;
+		}
+
+		public RegularExpressionValidator(Func<object, string> expression, RegexOptions options) : base(new LanguageStringSource(nameof(RegularExpressionValidator))) {
+
+			this.regexFunc = x => new Regex(expression(x), options);
+		}
+
+		protected override bool IsValid(PropertyValidatorContext context) {
+			var regex = regexFunc(context.Instance);
+			
+			if (regex != null && context.PropertyValue != null && !regex.IsMatch((string) context.PropertyValue)) {
+				context.MessageFormatter.AppendArgument("RegularExpression", regex.ToString());
+				return false;
+			}
+			return true;
+		}
+
+		public string Expression {
+			get { return expression; }
+		}
+	}
+
+	public interface IRegularExpressionValidator : IPropertyValidator {
+		string Expression { get; }
+	}
 }

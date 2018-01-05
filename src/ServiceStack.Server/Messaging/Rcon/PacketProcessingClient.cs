@@ -1,4 +1,4 @@
-﻿#if !SL5 
+﻿#if !NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.Net.Sockets;

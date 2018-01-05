@@ -1,4 +1,6 @@
-﻿using System;
+﻿//Requires ServiceStack deps
+#if FALSE 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -50,7 +52,7 @@ namespace ServiceStack.Logging.Tests.UnitTests
     {
         readonly AppSelfHostBase testAppHost = new TestAppHost();
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             testAppHost.Init().Start("http://localhost:22334/");
@@ -232,3 +234,4 @@ namespace ServiceStack.Logging.Tests.UnitTests
         }
     }
 }
+#endif

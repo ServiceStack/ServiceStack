@@ -17,50 +17,50 @@ namespace ServiceStack
 
         public TimeSpan Timeout
         {
-            get { return local.IdleTimeout; }
-            set { local.IdleTimeout = value; }
+            get => local.IdleTimeout;
+            set => local.IdleTimeout = value;
         }
 
         public TimeSpan HouseKeepingInterval
         {
-            get { return local.HouseKeepingInterval; }
-            set { local.HouseKeepingInterval = value; }
+            get => local.HouseKeepingInterval;
+            set => local.HouseKeepingInterval = value;
         }
 
         public Action<IEventSubscription> OnSubscribe
         {
-            get { return local.OnSubscribe; }
-            set { local.OnSubscribe = value; }
+            get => local.OnSubscribe;
+            set => local.OnSubscribe = value;
         }
 
         public Action<IEventSubscription> OnUnsubscribe
         {
-            get { return local.OnUnsubscribe; }
-            set { local.OnUnsubscribe = value; }
+            get => local.OnUnsubscribe;
+            set => local.OnUnsubscribe = value;
         }
 
         public bool NotifyChannelOfSubscriptions
         {
-            get { return local.NotifyChannelOfSubscriptions; }
-            set { local.NotifyChannelOfSubscriptions = value; }
+            get => local.NotifyChannelOfSubscriptions;
+            set => local.NotifyChannelOfSubscriptions = value;
         }
 
         public TimeSpan? WaitBeforeNextRestart
         {
-            get { return RedisPubSub.WaitBeforeNextRestart; }
-            set { RedisPubSub.WaitBeforeNextRestart = value; }
+            get => RedisPubSub.WaitBeforeNextRestart;
+            set => RedisPubSub.WaitBeforeNextRestart = value;
         }
 
         public static string Topic = "sse:topic";
 
         public class RedisIndex
         {
-            public const string Subscription = "sse:id:{0}";
-            public const string ActiveSubscriptionsSet = "sse:ids";
-            public const string ChannelSet = "sse:channel:{0}";
-            public const string UserIdSet = "sse:userid:{0}";
-            public const string UserNameSet = "sse:username:{0}";
-            public const string SessionSet = "sse:session:{0}";
+            public static string Subscription = "sse:id:{0}";
+            public static string ActiveSubscriptionsSet = "sse:ids";
+            public static string ChannelSet = "sse:channel:{0}";
+            public static string UserIdSet = "sse:userid:{0}";
+            public static string UserNameSet = "sse:username:{0}";
+            public static string SessionSet = "sse:session:{0}";
         }
 
         public IRedisClientsManager clientsManager;
@@ -87,7 +87,7 @@ namespace ServiceStack
             };
 
             var appHost = HostContext.AppHost;
-            var feature = appHost != null ? appHost.GetPlugin<ServerEventsFeature>() : null;
+            var feature = appHost?.GetPlugin<ServerEventsFeature>();
             if (feature != null)
             {
                 Timeout = feature.IdleTimeout;
@@ -372,7 +372,7 @@ namespace ServiceStack
                 var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
                 foreach (var channelSetKey in channelSetKeys)
                 {
-                    var channelIds = redis.GetAllItemsFromSet(RedisIndex.ChannelSet.Fmt(channelSetKey));
+                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
                     foreach (var channelId in channelIds)
                     {
                         ids.Add(channelId);
@@ -384,6 +384,28 @@ namespace ServiceStack
 
                 var metas = infos.Map(x => x.Meta);
                 return metas;
+            }
+        }
+
+        public List<SubscriptionInfo> GetAllSubscriptionInfos()
+        {
+            using (var redis = clientsManager.GetClient())
+            {
+                var ids = new HashSet<string>();
+
+                var channelSetKeys = redis.ScanAllKeys(pattern: RedisIndex.ChannelSet.Fmt("*"));
+                foreach (var channelSetKey in channelSetKeys)
+                {
+                    var channelIds = redis.GetAllItemsFromSet(channelSetKey);
+                    foreach (var channelId in channelIds)
+                    {
+                        ids.Add(channelId);
+                    }
+                }
+
+                var keys = ids.Map(x => RedisIndex.Subscription.Fmt(x));
+                var infos = redis.GetValues<SubscriptionInfo>(keys);
+                return infos;
             }
         }
 
@@ -409,7 +431,14 @@ namespace ServiceStack
             local.Reset();
             using (var redis = clientsManager.GetClient())
             {
-                redis.FlushDb();
+                var keysToDelete = new List<string> { RedisIndex.ActiveSubscriptionsSet };
+
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.Subscription.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.ChannelSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserIdSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.UserNameSet.Replace("{0}", "*")));
+                keysToDelete.AddRange(redis.SearchKeys(RedisIndex.SessionSet.Replace("{0}", "*")));
+                redis.RemoveAll(keysToDelete);
             }
         }
 
@@ -429,7 +458,7 @@ namespace ServiceStack
         {
             using (var redis = clientsManager.GetClient())
             {
-                var json = message != null ? message.ToJson() : null;
+                var json = message?.ToJson();
                 var sb = StringBuilderCache.Allocate().Append(key);
 
                 if (selector != null)
@@ -541,11 +570,25 @@ namespace ServiceStack
 
         public void Dispose()
         {
-            if (RedisPubSub != null)
-                RedisPubSub.Dispose();
+            try
+            {
+                foreach (var entry in local.Subcriptions)
+                {
+                    var info = local.GetSubscriptionInfo(entry.Key);
+                    if (info != null)
+                    {
+                        RemoveSubscriptionFromRedis(info);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn("Error trying to remove local.Subcriptions during Dispose()...", ex);
+            }
 
-            if (local != null)
-                local.Dispose();
+            RedisPubSub?.Dispose();
+
+            local?.Dispose();
 
             RedisPubSub = null;
             local = null;

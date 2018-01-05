@@ -17,7 +17,7 @@ namespace ServiceStack.Common.Tests.Messaging
         public string Name { get; set; }
     }
 
-    [TestFixture, Explicit]
+    [TestFixture, Ignore("Integration Test")]
     public class RabbitMqTests
     {
         private readonly ConnectionFactory mqFactory = new ConnectionFactory { HostName = "localhost" };
@@ -26,7 +26,7 @@ namespace ServiceStack.Common.Tests.Messaging
         private const string ExchangeTopic = "mq:tests.topic";
         private const string ExchangeFanout = "mq:tests.fanout";
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             using (IConnection connection = mqFactory.CreateConnection())
@@ -111,7 +111,7 @@ namespace ServiceStack.Common.Tests.Messaging
 
                 while (true)
                 {
-                    var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: false);
+                    var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, autoAck: false);
 
                     if (basicGetMsg == null)
                     {
@@ -135,7 +135,7 @@ namespace ServiceStack.Common.Tests.Messaging
             using (IModel channel = connection.CreateModel())
             {
                 var consumer = new QueueingBasicConsumer(channel);
-                var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, noAck: false, consumer: consumer);
+                var consumerTag = channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
                 string recvMsg = null;
 
                 ThreadPool.QueueUserWorkItem(_ =>
@@ -181,10 +181,10 @@ namespace ServiceStack.Common.Tests.Messaging
             {
                 PublishHelloRabbit(channel);
 
-                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, autoAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
 
-                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, noAck: true);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, autoAck: true);
                 Assert.That(basicGetMsg, Is.Null);
             }
         }
@@ -214,10 +214,10 @@ namespace ServiceStack.Common.Tests.Messaging
 
                 channel.BasicPublish(ExchangeFanout, QueueNames<HelloRabbit>.In, props, payload);
 
-                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, autoAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
 
-                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, noAck: true);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.Priority, autoAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
             }
         }
@@ -230,23 +230,23 @@ namespace ServiceStack.Common.Tests.Messaging
             {
                 PublishHelloRabbit(channel);
 
-                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: true);
-                var dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: true);
+                var basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, autoAck: true);
+                var dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, autoAck: true);
                 Assert.That(basicGetMsg, Is.Not.Null);
                 Assert.That(dlqBasicMsg, Is.Null);
 
                 PublishHelloRabbit(channel);
 
-                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, noAck: false);
+                basicGetMsg = channel.BasicGet(QueueNames<HelloRabbit>.In, autoAck: false);
                 Thread.Sleep(500);
-                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: false);
+                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, autoAck: false);
                 Assert.That(basicGetMsg, Is.Not.Null);
                 Assert.That(dlqBasicMsg, Is.Null);
 
                 channel.BasicNack(basicGetMsg.DeliveryTag, multiple: false, requeue: false);
 
                 Thread.Sleep(500);
-                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, noAck: true);
+                dlqBasicMsg = channel.BasicGet(QueueNames<HelloRabbit>.Dlq, autoAck: true);
                 Assert.That(dlqBasicMsg, Is.Not.Null);
             }
         }
@@ -265,7 +265,7 @@ namespace ServiceStack.Common.Tests.Messaging
                     try
                     {
                         var consumer = new QueueingBasicConsumer(channel);
-                        channel.BasicConsume(QueueNames<HelloRabbit>.In, noAck: false, consumer: consumer);
+                        channel.BasicConsume(QueueNames<HelloRabbit>.In, autoAck: false, consumer: consumer);
 
                         while (true)
                         {

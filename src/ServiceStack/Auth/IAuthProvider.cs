@@ -45,6 +45,22 @@ namespace ServiceStack.Auth
 
     public interface IAuthResponseFilter
     {
-        AuthenticateResponse Execute(IServiceBase authService, IAuthProvider authProvider, IAuthSession session, AuthenticateResponse response);
+        void Execute(AuthFilterContext authContext);
+    }
+
+    public interface IUserSessionSource
+    {
+        IAuthSession GetUserSession(string userAuthId);
+    }
+
+    public class AuthFilterContext
+    {
+        public AuthenticateService AuthService { get; internal set; }
+        public IAuthProvider AuthProvider { get; internal set; }
+        public IAuthSession Session { get; internal set; }
+        public Authenticate AuthRequest { get; internal set; }
+        public AuthenticateResponse AuthResponse { get; internal set; }
+        public bool AlreadyAuthenticated { get; internal set; }
+        public bool DidAuthenticate { get; internal set; }
     }
 }

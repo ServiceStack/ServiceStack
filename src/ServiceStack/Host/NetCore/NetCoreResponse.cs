@@ -1,39 +1,75 @@
-﻿#if NETSTANDARD1_6
+﻿#if NETSTANDARD2_0
 
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Web;
 using System.Net;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Primitives;
+using ServiceStack.Logging;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ServiceStack.Host.NetCore
 {
     public class NetCoreResponse : IHttpResponse
     {
+        private static ILog Log = LogManager.GetLogger(typeof(NetCoreResponse));
+
         private readonly NetCoreRequest request;
         private readonly HttpResponse response;
+        private bool hasResponseBody;
 
         public NetCoreResponse(NetCoreRequest request, HttpResponse response)
         {
             this.request = request;
             this.response = response;
             this.Items = new Dictionary<string, object>();
-            this.Cookies = new NetCoreCookies(response);
-            response.StatusCode = 200;
+            this.Cookies = HostContext.AppHost.GetCookies(this);
+
+            //Don't set StatusCode here as it disables Redirects from working in MVC 
+            //response.StatusCode = 200;
         }
 
         public void AddHeader(string name, string value)
         {
-            response.Headers.Add(name, new StringValues(value));
+            try
+            {
+                if (response.Headers.TryGetValue(name, out var values))
+                {
+                    string[] existingValues = values.ToArray();
+                    if (!existingValues.Contains(value))
+                    {
+                        var newValues = new string[existingValues.Length + 1];
+                        existingValues.CopyTo(newValues, 0);
+                        newValues[newValues.Length - 1] = value;
+                        response.Headers[name] = new StringValues(newValues);
+                    }
+                }
+                else
+                {
+                    response.Headers.Add(name, new StringValues(value));
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed Adding Headers[{name}]={value}: {ex.Message}", ex);
+            }
+        }
+
+        public void RemoveHeader(string name)
+        {
+            response.Headers.Remove(name);
         }
 
         public string GetHeader(string name)
         {
             var values = response.Headers[name];
-            return values.ToString();
+            return values.Count > 0 ? values.ToString() : null;
         }
 
         public void Redirect(string url)
@@ -41,27 +77,20 @@ namespace ServiceStack.Host.NetCore
             response.Redirect(url);
         }
 
-        public void Write(string text)
-        {
-            var bytes = text.ToUtf8Bytes();
-            response.Body.Write(bytes, 0, bytes.Length);
-        }
-
         bool closed = false;
 
         public void Close()
         {
-            if (closed) return;
-            Flush();
-            response.Body.Close();
             closed = true;
         }
 
         public void End()
         {
             if (closed) return;
+            if (!hasResponseBody && !response.HasStarted)
+                response.ContentLength = 0;
+
             Flush();
-            response.Body.Dispose();
             closed = true;
         }
 
@@ -71,9 +100,19 @@ namespace ServiceStack.Host.NetCore
             response.Body.Flush();
         }
 
+        public Task FlushAsync(CancellationToken token = new CancellationToken())
+        {
+            if (closed) return TypeConstants.EmptyTask;
+            return response.Body.FlushAsync(token);
+        }
+
         public void SetContentLength(long contentLength)
         {
-            response.ContentLength = contentLength;
+            if (request.HttpMethod == HttpMethods.Head || Platforms.PlatformNetCore.HostInstance.Config?.DisableChunkedEncoding == true && contentLength >= 0)
+                response.ContentLength = contentLength;
+            
+            if (contentLength > 0)
+                hasResponseBody = true;
         }
 
         public object OriginalResponse => response;
@@ -82,16 +121,20 @@ namespace ServiceStack.Host.NetCore
 
         public int StatusCode
         {
-            get { return response.StatusCode; }
-            set { response.StatusCode = value; }
+            get => response.StatusCode;
+            set => response.StatusCode = value;
         }
 
-        public string StatusDescription { get; set; } // Not available in .NET Core
+        public string StatusDescription 
+        { 
+            get => response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+            set => response.HttpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase = value;
+        }
 
         public string ContentType
         {
-            get { return response.ContentType; }
-            set { response.ContentType = value; }
+            get => response.ContentType;
+            set => response.ContentType = value;
         }
 
         public Stream OutputStream => response.Body;
@@ -100,72 +143,36 @@ namespace ServiceStack.Host.NetCore
 
         public bool UseBufferedStream { get; set; }
 
-        public bool IsClosed { get; set; }
+        public bool IsClosed => closed; 
 
         public bool KeepAlive { get; set; }
+
+        public bool HasStarted => response.HasStarted;
 
         public Dictionary<string, object> Items { get; set; }
 
         public void SetCookie(Cookie cookie)
         {
-            response.Cookies.Append(cookie.Name, cookie.Value, new CookieOptions {
-                Domain = cookie.Domain,
-                Expires = cookie.Expires,
-                HttpOnly = cookie.HttpOnly,
-                Path = cookie.Path,
-                Secure = cookie.Secure,
-            });
+            try
+            {
+                if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+                    return;
+
+                var cookieOptions = cookie.ToCookieOptions();
+                response.Cookies.Append(cookie.Name, cookie.Value, cookieOptions);
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not Set-Cookie '{cookie.Name}': " + ex.Message, ex);
+            }
         }
 
         public void ClearCookies()
         {
-            //response.Cookies.Delete();
+            response.Headers.Remove(HttpHeaders.SetCookie);
         }
 
         public ICookies Cookies { get; }
-    }
-
-    public class NetCoreCookies : ICookies
-    {
-        public const string RootPath = "/";
-        private HttpResponse response;
-
-        public NetCoreCookies(HttpResponse response)
-        {
-            this.response = response;
-        }
-
-        public void DeleteCookie(string cookieName)
-        {
-            response.Cookies.Delete(cookieName);
-        }
-
-        public void AddPermanentCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new CookieOptions
-            {
-                Path = RootPath,
-                Expires = DateTime.UtcNow.AddYears(20)
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
-
-        public void AddSessionCookie(string cookieName, string cookieValue, bool? secureOnly = null)
-        {
-            var options = new CookieOptions
-            {
-                Path = RootPath,
-            };
-            if (secureOnly != null)
-            {
-                options.Secure = secureOnly.Value;
-            }
-            response.Cookies.Append(cookieName, cookieValue, options);
-        }
     }
 }
 

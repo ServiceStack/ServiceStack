@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -25,10 +27,10 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.GlobalResponseFilters.Add(HandleCacheResponses);
+            appHost.GlobalResponseFiltersAsync.Add(HandleCacheResponses);
         }
 
-        public void HandleCacheResponses(IRequest req, IResponse res, object response)
+        public async Task HandleCacheResponses(IRequest req, IResponse res, object response)
         {
             if (req.IsInProcessRequest())
                 return;
@@ -37,9 +39,9 @@ namespace ServiceStack
                 return;
 
             var cacheInfo = req.GetItem(Keywords.CacheInfo) as CacheInfo;
-            if (cacheInfo != null && cacheInfo.CacheKey != null)
+            if (cacheInfo?.CacheKey != null)
             {
-                if (CacheAndWriteResponse(cacheInfo, req, res, response))
+                if (await CacheAndWriteResponse(cacheInfo, req, res, response))
                     return;
             }
 
@@ -76,29 +78,28 @@ namespace ServiceStack
             if (req.ETagMatch(httpResult.ETag) || req.NotModifiedSince(httpResult.LastModified))
             {
                 res.EndNotModified();
+                httpResult.Dispose();
             }
         }
 
-        private bool CacheAndWriteResponse(CacheInfo cacheInfo, IRequest req, IResponse res, object response)
+        private async Task<bool> CacheAndWriteResponse(CacheInfo cacheInfo, IRequest req, IResponse res, object response)
         {
             var httpResult = response as IHttpResult;
             var dto = httpResult != null ? httpResult.Response : response;
-            if (dto == null || dto is IPartialWriter || dto is IStreamWriter)
+            if (dto == null || dto is IPartialWriter || dto is IPartialWriterAsync || dto is IStreamWriter || dto is IStreamWriterAsync)
                 return false;
 
             var expiresIn = cacheInfo.ExpiresIn.GetValueOrDefault(DefaultExpiresIn);
-            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
 
             var responseBytes = dto as byte[];
             if (responseBytes == null)
             {
-                var rawStr = dto as string;
-                if (rawStr != null)
+                if (dto is string rawStr)
                     responseBytes = rawStr.ToUtf8Bytes();
                 else
                 {
-                    var stream = dto as Stream;
-                    if (stream != null)
+                    if (dto is Stream stream)
                         responseBytes = stream.ReadFully();
                 }
             }
@@ -107,39 +108,50 @@ namespace ServiceStack
                 ? req.GetCompressionType()
                 : null;
 
-            var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
-            if (responseBytes != null || req.ResponseContentType.IsBinary())
+            if (response is HttpResult customResult)
             {
-                if (responseBytes == null)
-                    responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
-
-                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
-
-                if (encoding != null)
-                {
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
-                    responseBytes = responseBytes.CompressBytes(encoding);
-                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
-                }
+                if (customResult.View != null)
+                    req.Items[Keywords.View] = customResult.View;
+                if (customResult.Template != null)
+                    req.Items[Keywords.Template] = customResult.Template;
             }
-            else
+
+            using (httpResult?.ResultScope?.Invoke())
             {
-                var serializedDto = req.SerializeToString(dto);
-                if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
+                if (responseBytes != null || req.ResponseContentType.IsBinary())
                 {
-                    var jsonp = req.GetJsonpCallback();
-                    if (jsonp != null)
-                        serializedDto = jsonp + "(" + serializedDto + ")";
+                    if (responseBytes == null)
+                        responseBytes = HostContext.ContentTypes.SerializeToBytes(req, dto);
+
+                    cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+
+                    if (encoding != null)
+                    {
+                        res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                        responseBytes = responseBytes.CompressBytes(encoding);
+                        cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    }
                 }
-
-                responseBytes = serializedDto.ToUtf8Bytes();
-                cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
-
-                if (encoding != null)
+                else
                 {
-                    responseBytes = responseBytes.CompressBytes(encoding);
-                    cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
-                    res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                    var serializedDto = req.SerializeToString(dto);
+                    if (req.ResponseContentType.MatchesContentType(MimeTypes.Json))
+                    {
+                        var jsonp = req.GetJsonpCallback();
+                        if (jsonp != null)
+                            serializedDto = jsonp + "(" + serializedDto + ")";
+                    }
+
+                    responseBytes = serializedDto.ToUtf8Bytes();
+                    cache.Set(cacheInfo.CacheKey, responseBytes, expiresIn);
+
+                    if (encoding != null)
+                    {
+                        res.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                        responseBytes = responseBytes.CompressBytes(encoding);
+                        cache.Set(cacheKeyEncoded, responseBytes, expiresIn);
+                    }
                 }
             }
 
@@ -169,7 +181,7 @@ namespace ServiceStack
                 }
             }
 
-            res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+            await res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
             return true;
         }
 
@@ -243,8 +255,11 @@ namespace ServiceStack
                 if (ifModifiedSince != null)
                 {
                     DateTime modifiedSinceDate;
-                    if (DateTime.TryParse(ifModifiedSince, out modifiedSinceDate))
-                        return modifiedSinceDate <= lastModified.Value;
+                    if (DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out modifiedSinceDate))
+                    {
+                        var lastModifiedUtc = lastModified.Value.Truncate(TimeSpan.FromSeconds(1)).ToUniversalTime();
+                       return modifiedSinceDate >= lastModifiedUtc;
+                    }
                 }
             }
 
@@ -268,7 +283,7 @@ namespace ServiceStack
 
         public static bool ShouldAddLastModifiedToOptimizedResults(this HttpCacheFeature feature)
         {
-            return feature != null && feature.CacheControlForOptimizedResults != null;
+            return feature?.CacheControlForOptimizedResults != null;
         }
 
         internal static string StripWeakRef(this string eTag)

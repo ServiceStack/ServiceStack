@@ -1,7 +1,8 @@
-﻿#if !NETSTANDARD1_6
+﻿#if !NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.ServiceModel.Channels;
 
 namespace ServiceStack.Platforms
 {
@@ -27,14 +28,10 @@ namespace ServiceStack.Platforms
         {
 #if !MONO
             var prop = context.IncomingMessageProperties;
-            if (context.IncomingMessageProperties.ContainsKey(System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name))
+            if (context.IncomingMessageProperties.ContainsKey(RemoteEndpointMessageProperty.Name))
             {
-                var endpoint = prop[System.ServiceModel.Channels.RemoteEndpointMessageProperty.Name]
-                    as System.ServiceModel.Channels.RemoteEndpointMessageProperty;
-                if (endpoint != null)
-                {
+                if (prop[RemoteEndpointMessageProperty.Name] is RemoteEndpointMessageProperty endpoint)
                     return IPAddress.Parse(endpoint.Address);
-                }
             }
 #endif
             return null;

@@ -56,11 +56,8 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var results = new List<string> {
                 ResolvePath(null, "/handler.all35/metadata"),
-                ResolvePath(null, "/handler.all35/metadata/"),
                 ResolvePath("api", "/location.api.wildcard35/api/metadata"),
-                ResolvePath("api", "/location.api.wildcard35/api/metadata/"),
                 ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata"),
-                ResolvePath("servicestack", "/location.servicestack.wildcard35/servicestack/metadata/"),
             };
 
             Console.WriteLine(results.Dump());
@@ -73,11 +70,8 @@ namespace ServiceStack.ServiceHost.Tests
         {
             var results = new List<string> {
                 ResolvePath(null, "/handler.all35/json/metadata"),
-                ResolvePath(null, "/handler.all35/json/metadata/"),
                 ResolvePath("api", "/location.api.wildcard35/api/json/metadata"),
-                ResolvePath("api", "/location.api.wildcard35/api/json/metadata/"),
                 ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata"),
-                ResolvePath("servicestack", "/location.api.wildcard35/servicestack/json/metadata/"),
             };
 
             Console.WriteLine(results.Dump());

@@ -21,10 +21,10 @@ namespace ServiceStack.Host
 
         public override void Log(IRequest request, object requestDto, object response, TimeSpan requestDuration)
         {
-            var requestType = requestDto != null ? requestDto.GetType() : null;
-
-            if (ExcludeRequestType(requestType))
+            if (ShouldSkip(request, requestDto))
                 return;
+
+            var requestType = requestDto?.GetType();
 
             using (var redis = redisManager.GetClient())
             {

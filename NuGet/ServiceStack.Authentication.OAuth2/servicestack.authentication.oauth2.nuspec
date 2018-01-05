@@ -1,30 +1,32 @@
-<?xml version="1.0"?>
-<package xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <metadata xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
     <id>ServiceStack.Authentication.OAuth2</id> 
     <title>OAuth2 Providers for ServiceStack - inc. Google, LinkedIn</title>
-    <version>4.5.0</version> 
-    <authors>Service Stack</authors> 
-    <owners>Service Stack</owners>
+    <version>5.0.0</version> 
+    <authors>ServiceStack</authors> 
+    <owners>ServiceStack</owners>
     <summary>OpenId Auth Providers for ServiceStack - inc. Google, LinkedIn</summary>
     <description>
         Adds OAuth2 Providers for use in ServiceStack Web and REST Services. 
         Includes built-in support for Google and LinkedIn OAuth2 providers.
         
         More Info on Auth Providers: 
-        https://github.com/ServiceStack/ServiceStack/wiki/Authentication-and-authorization
+        http://docs.servicestack.net/authentication-and-authorization
     </description> 
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
     <tags>OAuth OAuth2 Google LinkedIn Authentication Auth Provider ServiceStack Web Services</tags>
     <language>en-US</language>
-    <copyright>Copyright 2016 Service Stack</copyright>
+    <copyright>ServiceStack and contributors</copyright>
     <dependencies>
-        <dependency id="ServiceStack" version="4.5" />
+      <group targetFramework="net45">
         <dependency id="DotNetOpenAuth.Ultimate" version="4.3.4.13329" />
         <dependency id="Microsoft.Net.Http" version="2.2.29" />
-    </dependencies> 
+        <dependency id="ServiceStack" version="5.0.0" />
+      </group>
+    </dependencies>
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />

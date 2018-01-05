@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using ServiceStack.Html;
 using ServiceStack.Web;
 
@@ -85,9 +86,6 @@ namespace ServiceStack.Razor
             this.Output.Flush();
         }
 
-        public override Type ModelType
-        {
-            get { return typeof(TModel); }
-        }
+        public override Type ModelType => typeof(TModel);
     }
 }

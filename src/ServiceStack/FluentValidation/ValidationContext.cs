@@ -13,59 +13,133 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using ServiceStack.Web;
+namespace ServiceStack.FluentValidation {
+	using System.Collections.Generic;
+	using Internal;
 
-namespace ServiceStack.FluentValidation
-{
-    using Internal;
+	/// <summary>
+	/// Validation context
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	public partial class ValidationContext<T> : ValidationContext {
+		/// <summary>
+		/// Creates a new validation context
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		public ValidationContext(T instanceToValidate) : this(instanceToValidate, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory()) {
+			
+		}
 
-    public class ValidationContext<T> : ValidationContext {
-        public ValidationContext(T instanceToValidate) : this(instanceToValidate, new PropertyChain(), new DefaultValidatorSelector()) {
-            
-        }
+		/// <summary>
+		/// Creates a new validation context with a custom property chain and selector
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		/// <param name="propertyChain"></param>
+		/// <param name="validatorSelector"></param>
+		public ValidationContext(T instanceToValidate, PropertyChain propertyChain, IValidatorSelector validatorSelector)
+			: base(instanceToValidate, propertyChain, validatorSelector) {
 
-        public ValidationContext(T instanceToValidate, PropertyChain propertyChain, IValidatorSelector validatorSelector)
-            : base(instanceToValidate, propertyChain, validatorSelector) {
+			InstanceToValidate = instanceToValidate;
+		}
 
-            InstanceToValidate = instanceToValidate;
-        }
+		/// <summary>
+		/// The object to validate
+		/// </summary>
+		public new T InstanceToValidate { get; private set; }
+	}
 
-        public new T InstanceToValidate { get; private set; }
-    }
+	/// <summary>
+	/// Validation context
+	/// </summary>
+	public partial class ValidationContext {
 
-    public class ValidationContext {
+		public Dictionary<string, object> RootContextData { get; internal set; } = new Dictionary<string, object>();
 
-        public ValidationContext(object instanceToValidate)
-         : this (instanceToValidate, new PropertyChain(), new DefaultValidatorSelector()){
-            
-        }
+		/// <summary>
+		/// Creates a new validation context
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		public ValidationContext(object instanceToValidate)
+		 : this (instanceToValidate, new PropertyChain(), ValidatorOptions.ValidatorSelectors.DefaultValidatorSelectorFactory()){
+			
+		}
 
-        public ValidationContext(object instanceToValidate, PropertyChain propertyChain, IValidatorSelector validatorSelector) {
-            PropertyChain = new PropertyChain(propertyChain);
-            InstanceToValidate = instanceToValidate;
-            Selector = validatorSelector;
-        }
+		/// <summary>
+		/// Creates a new validation context with a property chain and validation selector
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		/// <param name="propertyChain"></param>
+		/// <param name="validatorSelector"></param>
+		public ValidationContext(object instanceToValidate, PropertyChain propertyChain, IValidatorSelector validatorSelector) {
+			PropertyChain = new PropertyChain(propertyChain);
+			InstanceToValidate = instanceToValidate;
+			Selector = validatorSelector;
+		}
 
-        public PropertyChain PropertyChain { get; private set; }
-        public object InstanceToValidate { get; private set; }
-        public IValidatorSelector Selector { get; private set; }
-        public bool IsChildContext { get; internal set; }
-        public IRequest Request { get; internal set; }
+		/// <summary>
+		/// Property chain
+		/// </summary>
+		public PropertyChain PropertyChain { get; private set; }
+		/// <summary>
+		/// Object being validated
+		/// </summary>
+		public object InstanceToValidate { get; private set; }
+		/// <summary>
+		/// Selector
+		/// </summary>
+		public IValidatorSelector Selector { get; private set; }
+		/// <summary>
+		/// Whether this is a child context
+		/// </summary>
+		public virtual bool IsChildContext { get; internal set; }
 
-        public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
-            return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector) {
+		/// <summary>
+		/// Whether this is a child collection context.
+		/// </summary>
+		public virtual bool IsChildCollectionContext { get; internal set; }
+
+		/// <summary>
+		/// Creates a new ValidationContext based on this one
+		/// </summary>
+		/// <param name="chain"></param>
+		/// <param name="instanceToValidate"></param>
+		/// <param name="selector"></param>
+		/// <returns></returns>
+		public ValidationContext Clone(PropertyChain chain = null, object instanceToValidate = null, IValidatorSelector selector = null) {
+			return new ValidationContext(instanceToValidate ?? this.InstanceToValidate, chain ?? this.PropertyChain, selector ?? this.Selector) {
+				RootContextData = RootContextData
+			};
+		}
+
+		/// <summary>
+		/// Creates a new validation context for use with a child validator
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		/// <returns></returns>
+		public ValidationContext CloneForChildValidator(object instanceToValidate) {
+			return new ValidationContext(instanceToValidate, PropertyChain, Selector) {
+				IsChildContext = true,
+				RootContextData = RootContextData,
                 Request = Request
             };
-        }
+		}
 
-        internal ValidationContext CloneForChildValidator(object instanceToValidate) {
-            return new ValidationContext(instanceToValidate, PropertyChain, Selector) {
-                IsChildContext = true,
-                Request = Request
-            };
-        }
-    }
+		/// <summary>
+		/// Creates a new validation context for use with a child collection validator
+		/// </summary>
+		/// <param name="instanceToValidate"></param>
+		/// <returns></returns>
+		public ValidationContext CloneForChildCollectionValidator(object instanceToValidate) {
+			return new ValidationContext(instanceToValidate, null, Selector) {
+				IsChildContext = true,
+				IsChildCollectionContext = true,
+			    RootContextData = RootContextData,
+			    Request = Request
+			};
+		}
+
+	}
 }

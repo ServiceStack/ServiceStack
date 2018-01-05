@@ -356,6 +356,7 @@ namespace Check.ServiceModel.Types
         public DateTimeOffset DateTimeOffset { get; set; }
         public Guid Guid { get; set; }
         public Char Char { get; set; }
+        public KeyValuePair<string,string> KeyValuePair { get; set; }
         public DateTime? NullableDateTime { get; set; }
         public TimeSpan? NullableTimeSpan { get; set; }
         public List<string> StringList { get; set; }
@@ -379,6 +380,12 @@ namespace Check.ServiceModel.Types
 
         public Poco[] PocoArray { get; set; }
         public List<Poco> PocoList { get; set; }
+
+        public byte?[] NullableByteArray { get; set; }
+        public List<byte?> NullableByteList { get; set; }
+
+        public DateTime?[] NullableDateTimeArray { get; set; }
+        public List<DateTime?> NullableDateTimeList { get; set; }
 
         public Dictionary<string, List<Poco>> PocoLookup { get; set; }
         public Dictionary<string, List<Dictionary<string,Poco>>> PocoLookupMap { get; set; } 
@@ -416,6 +423,7 @@ namespace Check.ServiceModel.Types
     public class HelloStruct : IReturn<HelloStruct>
     {
         public Point Point { get; set; }
+        public Point? NullablePoint { get; set; }
     }
 
     public abstract class HelloBase
@@ -460,6 +468,16 @@ namespace Check.ServiceModel.Types
         public EmptyClass EmptyClass { get; set; }
         public string Value { get; set; }
         //public IGenericInterface<string> GenericInterface { get; set; }
+    }
+
+    public class HelloImplementsInterface : IReturn<HelloImplementsInterface>, ImplementsPoco
+    {
+        public string Name { get; set; }
+    }
+
+    public interface ImplementsPoco
+    {
+        string Name { get; set; }
     }
 
     public interface IPoco
@@ -671,6 +689,31 @@ namespace Check.ServiceModel.Types
     public class IgnoreInMetadataConfig : IReturn<IgnoreInMetadataConfig>
     {
         public int Id { get; set; }
+    }
+
+    public class HelloTuple : IReturn<HelloTuple>
+    {
+        public Tuple<string,long> Tuple2 { get; set; }
+        public Tuple<string,long,bool> Tuple3 { get; set; }
+
+        public List<Tuple<string, long>> Tuples2 { get; set; }
+        public List<Tuple<string, long, bool>> Tuples3 { get; set; }
+    }
+
+    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        public string SessionId { get; set; }
+        public int Version { get; set; }
+    }
+
+    public class HelloAuthenticatedResponse
+    {
+        public int Version { get; set; }
+        public string SessionId { get; set; }
+        public string UserName { get; set; }
+        public string Email { get; set; }
+        public bool IsAuthenticated { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
     }
 }
 

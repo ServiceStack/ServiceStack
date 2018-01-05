@@ -7,7 +7,7 @@ using ServiceStack.Html;
 using ServiceStack.Markdown;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -43,18 +43,18 @@ namespace ServiceStack.ServiceHost.Tests.Formats
     [TestFixture]
     public class IntroductionLayoutTests : MarkdownTestBase
     {
-        private InMemoryVirtualPathProvider pathProvider;
+        private MemoryVirtualFiles pathProvider;
         private MarkdownFormat markdownFormat;
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -63,7 +63,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         [SetUp]
         public void SetUp()
         {
-            ServiceStackHost.Instance.VirtualFileSources = pathProvider = new InMemoryVirtualPathProvider(new BasicAppHost());
+            ServiceStackHost.Instance.VirtualFileSources = pathProvider = new MemoryVirtualFiles();
             markdownFormat = new MarkdownFormat
             {
                 VirtualPathProvider = pathProvider,
@@ -125,7 +125,7 @@ page of our web-site. We'll use this in conjunction
 with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
 <p>And obviously I can have code in here too. Here is the
-current date/year: 2016</p>
+current date/year: 2018</p>
 
         </div>
     </body>
@@ -226,7 +226,7 @@ page of our web-site. We'll use this in conjunction
 with a layout template. The content you are seeing here
 comes from ^^^websiteTemplate.</p>
 <p>And obviously I can have code in here too. Here is the
-current date/year: 2016</p>
+current date/year: 2018</p>
 
         </div>
         

@@ -10,9 +10,9 @@ using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Formats;
 using ServiceStack.OrmLite;
 using ServiceStack.Razor;
-using ServiceStack.Text;
 using ServiceStack.Validation;
 using ServiceStack.Web;
 
@@ -24,7 +24,7 @@ namespace RazorRockstars.Console.Files
         public AppHost() : base("Test Razor", typeof(AppHost).Assembly) { }
 
         public bool EnableRazor = true;
-        public bool EnableAuth = false;
+        public bool EnableMarkdown = false;
         public RSAParameters? JwtRsaPrivateKey;
         public RSAParameters? JwtRsaPublicKey;
         public bool JwtEncryptPayload = false;
@@ -36,12 +36,13 @@ namespace RazorRockstars.Console.Files
 
         public override void Configure(Container container)
         {
-            if (Use != null)
-                Use(container);
+            Use?.Invoke(container);
 
             if (EnableRazor)
                 Plugins.Add(new RazorFormat());
-
+            if (EnableMarkdown)
+                Plugins.Add(new MarkdownFormat());
+            
             Plugins.Add(new SwaggerFeature());
             Plugins.Add(new RequestInfoFeature());
             Plugins.Add(new RequestLogsFeature());
@@ -72,32 +73,6 @@ namespace RazorRockstars.Console.Files
                 AdminAuthSecret = "secret",
                 DebugMode = true,
             });
-
-            if (EnableAuth)
-            {
-                Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                    new IAuthProvider[] {
-                        new BasicAuthProvider(AppSettings),
-                        new CredentialsAuthProvider(AppSettings),
-                        new ApiKeyAuthProvider(AppSettings) { RequireSecureConnection = false },
-                        new JwtAuthProvider(AppSettings)
-                        {
-                            AuthKey = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? null : AesUtils.CreateKey(),
-                            RequireSecureConnection = false,
-                            HashAlgorithm = JwtRsaPrivateKey != null || JwtRsaPublicKey != null ? "RS256" : "HS256",
-                            PublicKey = JwtRsaPublicKey,
-                            PrivateKey = JwtRsaPrivateKey,
-                            EncryptPayload = JwtEncryptPayload,
-                            FallbackAuthKeys = FallbackAuthKeys,
-                            FallbackPublicKeys = FallbackPublicKeys,
-                        },
-                    })
-                {
-                    IncludeRegistrationService = true,
-                });
-
-                container.Resolve<IAuthRepository>().InitSchema();
-            }
         }
 
         public override IDbConnection GetDbConnection(IRequest req = null)
@@ -119,8 +94,8 @@ namespace RazorRockstars.Console.Files
         {
             var appHost = new AppHost();
             appHost.Init();
-            appHost.Start("http://*:1337/");
-            System.Console.WriteLine("Listening on http://localhost:1337/ ...");
+            appHost.Start("http://*:3337/");
+            System.Console.WriteLine("Listening on http://localhost:3337/ ...");
             System.Console.ReadLine();
             System.Threading.Thread.Sleep(System.Threading.Timeout.Infinite);
         }

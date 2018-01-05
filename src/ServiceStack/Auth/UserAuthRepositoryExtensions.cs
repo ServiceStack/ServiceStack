@@ -22,16 +22,22 @@ namespace ServiceStack.Auth
             {
                 if (!roles.IsEmpty())
                 {
-                    foreach (var missingRole in roles.Where(x => !userAuth.Roles.Contains(x)))
+                    foreach (var missingRole in roles.Where(x => userAuth.Roles == null || !userAuth.Roles.Contains(x)))
                     {
+                        if (userAuth.Roles == null)
+                            userAuth.Roles = new List<string>();
+
                         userAuth.Roles.Add(missingRole);
                     }
                 }
 
                 if (!permissions.IsEmpty())
                 {
-                    foreach (var missingPermission in permissions.Where(x => !userAuth.Permissions.Contains(x)))
+                    foreach (var missingPermission in permissions.Where(x => userAuth.Permissions == null || !userAuth.Permissions.Contains(x)))
                     {
+                        if (userAuth.Permissions == null)
+                            userAuth.Permissions = new List<string>();
+
                         userAuth.Permissions.Add(missingPermission);
                     }
                 }
@@ -135,9 +141,8 @@ namespace ServiceStack.Auth
 
         static IUserAuthRepository AssertUserAuthRepository(this IAuthRepository repo)
         {
-            var userRepo = repo as IUserAuthRepository;
-            if (userRepo == null)
-                throw new NotSupportedException("This opertation requires a IUserAuthRepository");
+            if (!(repo is IUserAuthRepository userRepo))
+                throw new NotSupportedException("This operation requires a IUserAuthRepository");
 
             return userRepo;
         }

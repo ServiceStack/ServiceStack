@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -55,11 +55,8 @@ namespace ServiceStack
         private ICacheClient cache;
         public virtual ICacheClient Cache
         {
-            get
-            {
-                return cache ?? (cache = RedisManager != null ? RedisManager.GetCacheClient() : ServiceExtensions.DefaultCache);
-            }
-            set { cache = value; }
+            get => cache ?? (cache = RedisManager != null ? RedisManager.GetCacheClient() : ServiceStackHost.DefaultCache);
+            set => cache = value;
         }
 
         public virtual IMessageFactory MessageFactory { get; set; }
@@ -67,8 +64,8 @@ namespace ServiceStack
         private IMessageProducer messageProducer;
         public virtual IMessageProducer MessageProducer
         {
-            get { return messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer()); }
-            set { messageProducer = value; }
+            get => messageProducer ?? (messageProducer = MessageFactory.CreateMessageProducer());
+            set => messageProducer = value;
         }
 
         public virtual void PublishMessage<T>(T message)

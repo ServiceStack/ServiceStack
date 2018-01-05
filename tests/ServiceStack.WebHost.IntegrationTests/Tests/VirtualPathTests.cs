@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -59,43 +59,43 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         public void Can_download_ServiceStack_Template_IndexOperations()
         {
             var contents = "{0}/metadata".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("The following operations are supported."));
+            Assert.That(contents, Does.Contain("The following operations are supported."));
         }
 
         [Test]
         public void Can_download_File_Template_OperationControl()
         {
             var contents = "{0}/json/metadata?op=Hello".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("(File Resource)"));
+            Assert.That(contents, Does.Contain("(File Resource)"));
         }
 
         [Test]
         public void Can_download_EmbeddedResource_Template_HtmlFormat()
         {
             var contents = "{0}/hello".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("(Embedded Resource)"));
+            Assert.That(contents, Does.Contain("(Embedded Resource)"));
         }
 
         [Test]
         public void Can_get_service_matching_api_prefix()
         {
             var contents = "{0}/gettestapi".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("GetTestapi"));
+            Assert.That(contents, Does.Contain("GetTestapi"));
         }
 
         [Test]
         public void Can_get_swagger_urls()
         {
             var contents = "{0}/swagger-ui/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining(ServiceStackBaseUri));
+            Assert.That(contents, Does.Contain(ServiceStackBaseUri));
 
             contents = "{0}/swagger-ui-bootstrap/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining(ServiceStackBaseUri));
+            Assert.That(contents, Does.Contain(ServiceStackBaseUri));
 
             contents = "{0}/resources".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("/resource/swagger"));
+            Assert.That(contents, Does.Contain("/resource/swagger"));
             contents = "{0}/resource/swagger".Fmt(ServiceStackBaseUri).GetStringFromUrl();
-            Assert.That(contents, Is.StringContaining("SwaggerNestedModel"));
+            Assert.That(contents, Does.Contain("SwaggerNestedModel"));
         }
 
         [Test]

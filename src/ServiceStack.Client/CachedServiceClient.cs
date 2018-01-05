@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Net;
 using System.Threading;
@@ -143,7 +144,7 @@ namespace ServiceStack
             if (lastModifiedStr != null)
             {
                 DateTime lastModified;
-                if (DateTime.TryParse(lastModifiedStr, out lastModified))
+                if (DateTime.TryParse(lastModifiedStr, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out lastModified))
                     entry.LastModified = lastModified.ToUniversalTime();
             }
 
@@ -160,7 +161,7 @@ namespace ServiceStack
                 foreach (var part in parts)
                 {
                     var kvp = part.Split('=');
-                    var key = kvp[0].Trim().ToLower();
+                    var key = kvp[0].Trim().ToLowerInvariant();
 
                     switch (key)
                     {
@@ -334,6 +335,11 @@ namespace ServiceStack
             return client.PutAsync(requestDto);
         }
 
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
+        {
+            return client.SendAsync<TResponse>(httpMethod, absoluteUrl, request, token);
+        }
+
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
         {
             return client.CustomMethodAsync(httpVerb, requestDto);
@@ -352,11 +358,6 @@ namespace ServiceStack
         public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
         {
             return client.CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request);
-        }
-
-        public void CancelAsync()
-        {
-            client.CancelAsync();
         }
 
         public void SendOneWay(object requestDto)
@@ -497,6 +498,11 @@ namespace ServiceStack
         public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
         {
             return client.Patch<TResponse>(relativeOrAbsoluteUrl, requestDto);
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
+        {
+            return client.Send<TResponse>(httpMethod, relativeOrAbsoluteUrl, request);
         }
 
         public void CustomMethod(string httpVerb, IReturnVoid requestDto)

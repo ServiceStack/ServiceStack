@@ -7,11 +7,12 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     [DataContract]
-    public class AuthUserSession : IAuthSession
+    public class AuthUserSession : IAuthSession, IMeta
     {
         public AuthUserSession()
         {
             this.ProviderOAuthAccess = new List<IAuthTokens>();
+            this.Meta = new Dictionary<string, string>();
         }
 
         [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
@@ -55,7 +56,9 @@ namespace ServiceStack
         [DataMember(Order = 39)] public virtual string ProfileUrl { get; set; }
         [DataMember(Order = 40)] public virtual string Sequence { get; set; }
         [DataMember(Order = 41)] public long Tag { get; set; }
-        [DataMember(Order = 42)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 42)] public string AuthProvider { get; set; }
+        [DataMember(Order = 43)] public List<IAuthTokens> ProviderOAuthAccess { get; set; }
+        [DataMember(Order = 44)] public Dictionary<string, string> Meta { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
@@ -65,14 +68,13 @@ namespace ServiceStack
 
         public virtual bool HasPermission(string permission, IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return false;
-
             if (!FromToken) //If populated from a token it should have the complete list of permissions
             {
-                var managesRoles = authRepo as IManageRoles;
-                if (managesRoles != null)
+                if (authRepo is IManageRoles managesRoles)
                 {
+                    if (UserAuthId == null)
+                        return false;
+
                     return managesRoles.HasPermission(this.UserAuthId, permission);
                 }
             }
@@ -82,14 +84,13 @@ namespace ServiceStack
 
         public virtual bool HasRole(string role, IAuthRepository authRepo)
         {
-            if (UserAuthId == null)
-                return false;
-
             if (!FromToken) //If populated from a token it should have the complete list of roles
             {
-                var managesRoles = authRepo as IManageRoles;
-                if (managesRoles != null)
+                if (authRepo is IManageRoles managesRoles)
                 {
+                    if (UserAuthId == null)
+                        return false;
+
                     return managesRoles.HasRole(this.UserAuthId, role);
                 }
             }
@@ -143,12 +144,6 @@ namespace ServiceStack
             return null;
         }
 
-        [Obsolete("Use GetAuthTokens()")]
-        public static IAuthTokens GetOAuthTokens(this IAuthSession session, string provider)
-        {
-            return GetAuthTokens(session, provider);
-        }
-
         public static string GetProfileUrl(this IAuthSession authSession, string defaultUrl = null)
         {
             if (authSession.ProfileUrl != null)
@@ -162,9 +157,14 @@ namespace ServiceStack
         {
             if (authSession != null)
             {
-                return authSession.UserName != null && authSession.UserName.IndexOf('@') < 0
-                    ? authSession.UserName
-                    : authSession.DisplayName.SafeVarName();
+                long id;
+                var displayName = authSession.UserName != null 
+                    && authSession.UserName.IndexOf('@') == -1      // don't use email
+                    && !long.TryParse(authSession.UserName, out id) // don't use id number
+                        ? authSession.UserName
+                        : authSession.DisplayName.SafeVarName();
+
+                return displayName;
             }
             return null;
         }

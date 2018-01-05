@@ -25,7 +25,12 @@ namespace ServiceStack.Templates
         {
             return LoadTemplate("HtmlFormat.html");
         }
-        
+
+        public static string GetMetadataDebugTemplate()
+        {
+            return LoadTemplate("MetadataDebugTemplate.html");
+        }
+
         private static string LoadTemplate(string templateName)
         {
             var templatePath = "/Templates/" + templateName;

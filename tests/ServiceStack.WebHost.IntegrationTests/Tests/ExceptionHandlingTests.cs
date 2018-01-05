@@ -210,7 +210,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-                Assert.That(body, Is.StringStarting(
+                Assert.That(body, Does.StartWith(
                     "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\"")); //inc stacktrace
             }
         }
@@ -244,7 +244,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
                 var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
-                Assert.That(body, Is.StringStarting("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
+                Assert.That(body, Does.StartWith("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
 

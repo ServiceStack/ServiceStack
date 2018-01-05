@@ -1,4 +1,3 @@
-#if !(SL5 || XBOX || ANDROID || __IOS__ || __MAC__ || PCL)
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -47,6 +46,10 @@ namespace ServiceStack.Support
         {
             return new DeflateStream(outputStream, CompressionMode.Compress);
         }
+
+        public Stream InflateStream(Stream inputStream)
+        {
+            return new DeflateStream(inputStream, CompressionMode.Decompress);
+        }
     }
 }
-#endif

@@ -1,21 +1,30 @@
-using System.Runtime.Serialization;
-
 namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
-	[Restrict(AccessTo = RequestAttributes.InternalNetworkAccess)]
-	[DataContract]
-	public class InternalRestriction { }
+    [Restrict(AccessTo = RequestAttributes.InternalNetworkAccess)]
+    public class InternalRestriction { }
 
-	[DataContract]
-	public class IntranetRestrictionResponse { }
+    [Restrict(RequestAttributes.Localhost)]
+    public class LocalhostRestriction { }
 
-	public class InternalRestrictionService
-		: TestServiceBase<InternalRestriction>
-	{
-		protected override object Run(InternalRestriction request)
-		{
-			return new IntranetRestrictionResponse();
-		}
-	}
+    [Restrict(RequestAttributes.LocalSubnet)]
+    public class LocalSubnetRestriction { }
 
+    [Restrict(RequestAttributes.InProcess)]
+    public class InProcessRestriction { }
+
+    public class NetworkRestrictionServices : Service
+    {
+        public object Any(InternalRestriction request) => request;
+        public object Any(InProcessRestriction request) => request;
+        public object Any(LocalhostRestriction request) => request;
+        public object Any(LocalSubnetRestriction request) => request;
+    }
+
+    public class LocalhostRestrictionOnService : IReturn<Response> { }
+
+    [Restrict(LocalhostOnly = true)]
+    public class LocalHostOnService : Service
+    {
+        public object Any(LocalhostRestrictionOnService request) => request;
+    }
 }

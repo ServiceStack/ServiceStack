@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Text;
 using ServiceStack.Formats;
+using ServiceStack.IO;
 using ServiceStack.Support.Markdown;
 using ServiceStack.Testing;
-using ServiceStack.VirtualPath;
 
 namespace ServiceStack.ServiceHost.Tests.Formats
 {
@@ -17,7 +17,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             var markdownFormat = new MarkdownFormat
             {
-                VirtualPathProvider = new InMemoryVirtualPathProvider(new BasicAppHost())
+                VirtualPathProvider = new MemoryVirtualFiles()
             };
 
             markdownFormat.AddFileAndTemplate("websiteTemplate", websiteTemplate);

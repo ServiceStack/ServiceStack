@@ -1,0 +1,20 @@
+﻿@model AlwaysThrowsResponse
+@{
+    Layout = "";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AlwaysThrowsResponse</title>
+</head>
+<body>
+    <h1>Page created at @DateTime.Now.ToString("HH:mm:ss")</h1>
+
+    <h2>Model</h2>
+    <pre>@Model.AsRawJson()</pre>
+
+    <h2>GetErrorHtml</h2>
+    @base.GetErrorHtml()
+</body>
+</html>

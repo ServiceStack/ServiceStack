@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
@@ -40,6 +41,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Text { get; set; }
     }
 
+    [Route("/bytes-streams/{Text}")]
+    public class BytesAsStreams : IReturn<Stream>
+    {
+        public string Text { get; set; }
+    }
+
     [Route("/streams/{Text}")]
     public class Streams : IReturn<Stream>
     {
@@ -74,18 +81,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Guid(request.Text).ToByteArray();
         }
 
-        public byte[] Any(Streams request)
+        public byte[] Any(BytesAsStreams request)
         {
             return new Guid(request.Text).ToByteArray();
         }
 
-        public IStreamWriter Any(StreamWriters request)
+        public Stream Any(Streams request)
+        {
+            var bytes = new Guid(request.Text).ToByteArray();
+            var ms = new MemoryStream();
+            ms.Write(bytes, 0, bytes.Length);
+            return ms;
+        }
+
+        public IStreamWriterAsync Any(StreamWriters request)
         {
             return new StreamWriterResult(new Guid(request.Text).ToByteArray());
         }
     }
 
-    public class StreamWriterResult : IStreamWriter
+    public class StreamWriterResult : IStreamWriterAsync
     {
         private byte[] result;
 
@@ -94,11 +109,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             this.result = result;
         }
 
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
-            responseStream.Write(result, 0, result.Length);
+            await responseStream.WriteAsync(result, token);
         }
     }
+    
     
     public class BuiltInTypesAppHost : AppHostHttpListenerBase
     {
@@ -116,7 +132,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private BufferedRequestAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost { EnableRequestBodyTracking = true };
@@ -124,7 +140,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -154,7 +170,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             string response = client.Get<string>("/poco/Test");
 
-            Assert.That(response, Is.StringContaining("Hello, Test"));
+            Assert.That(response, Does.Contain("Hello, Test"));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -162,7 +178,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             byte[] response = client.Get<byte[]>("/poco/Test");
 
-            Assert.That(response.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+            Assert.That(response.FromUtf8Bytes(), Does.Contain("Hello, Test"));
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -172,7 +188,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (response)
             {
                 var bytes = response.ReadFully();
-                Assert.That(bytes.FromUtf8Bytes(), Is.StringContaining("Hello, Test"));
+                Assert.That(bytes.FromUtf8Bytes(), Does.Contain("Hello, Test"));
             }
         }
 
@@ -186,7 +202,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             using (var stream = response.GetResponseStream())
             using (var sr = new StreamReader(stream))
             {
-                Assert.That(sr.ReadToEnd(), Is.StringContaining("Hello, Test"));
+                Assert.That(sr.ReadToEnd(), Does.Contain("Hello, Test"));
             }
         }
 
@@ -206,9 +222,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             //Note: HttpWebResponse is returned before any response is read, so it's ideal point for streaming in app code
 
-            var response = await client.GetAsync(new Headers { Text = "Test" });
-
-            Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
+            using (var response = await client.GetAsync(new Headers { Text = "Test" }))
+            {
+                Assert.That(response.Headers["X-Response"], Is.EqualTo("Test"));
+            }
         }
 
         [Test, TestCaseSource("RestClients")]
@@ -245,6 +262,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test, TestCaseSource("RestClients")]
+        public void Can_download_BytesAsStreams_response(IRestClient client)
+        {
+            var guid = Guid.NewGuid();
+            Stream response = client.Get(new BytesAsStreams { Text = guid.ToString() });
+            using (response)
+            {
+                var bytes = response.ReadFully();
+                Assert.That(new Guid(bytes), Is.EqualTo(guid));
+            }
+        }
+
+        [Test, TestCaseSource("RestClients")]
         public void Can_download_Streams_response(IRestClient client)
         {
             var guid = Guid.NewGuid();
@@ -264,7 +293,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             byte[] bytes = null;
             var guid = Guid.NewGuid();
 
-            var stream = await client.GetAsync(new Streams { Text = guid.ToString() });
+            var stream = await client.GetAsync(new BytesAsStreams { Text = guid.ToString() });
 
             bytes = stream.ReadFully();
 

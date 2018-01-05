@@ -1,24 +1,14 @@
 ﻿using System;
-using System.Runtime.Serialization;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.Caching;
+using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Server.Tests.Shared;
-using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Caching
 {
-    public class Config
-    {
-        public const string ServiceStackBaseUri = "http://localhost:20000";
-        public const string AbsoluteBaseUri = ServiceStackBaseUri + "/";
-        public const string ListeningOn = ServiceStackBaseUri + "/";
-
-        public static string SqlServerBuildDb = "Server=localhost;Database=test;User Id=test;Password=test;";
-    }
-
     public class SqlServerOrmLiteCacheClientTests : CacheClientTestsBase
     {
         public override ICacheClient CreateClient()
@@ -97,5 +87,76 @@ namespace ServiceStack.Server.Tests.Caching
         {
             return new RedisManagerPool("127.0.0.1").GetCacheClient();
         }
+    }
+
+    public class SqlServer2014MemoryOptimizedOrmLiteCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            var cache = new OrmLiteCacheClient<SqlServer2014MemoryOptimizedCacheEntry>
+            {
+                DbFactory = new OrmLiteConnectionFactory(
+                    Config.SqlServerBuildDb, SqlServer2014Dialect.Provider)
+            };
+
+            using (var db = cache.DbFactory.Open())
+            {
+                db.DropTable<SqlServer2014MemoryOptimizedCacheEntry>();
+            }
+
+            cache.InitSchema();
+
+            return cache;
+        }
+    }
+
+    [SqlServerMemoryOptimized(SqlServerDurability.SchemaOnly)]
+    public class SqlServer2014MemoryOptimizedCacheEntry : ICacheEntry
+    {
+        [PrimaryKey]
+        [SqlServerCollate("Latin1_General_100_BIN2")]
+        [StringLength(512)]
+        [SqlServerBucketCount(10000000)]
+        public string Id { get; set; }
+        [StringLength(4000)]
+        public string Data { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+    }
+
+    public class SqlServer2016MemoryOptimizedOrmLiteCacheClientTests : CacheClientTestsBase
+    {
+        public override ICacheClient CreateClient()
+        {
+            var cache = new OrmLiteCacheClient<SqlServer2016MemoryOptimizedCacheEntry>
+            {
+                DbFactory = new OrmLiteConnectionFactory(
+                    Config.SqlServerBuildDb, SqlServer2016Dialect.Provider)
+            };
+
+            using (var db = cache.DbFactory.Open())
+            {
+                db.DropTable<SqlServer2016MemoryOptimizedCacheEntry>();
+            }
+
+            cache.InitSchema();
+
+            return cache;
+        }
+    }
+
+    [SqlServerMemoryOptimized(SqlServerDurability.SchemaOnly)]
+    public class SqlServer2016MemoryOptimizedCacheEntry : ICacheEntry
+    {
+        [PrimaryKey]
+        [StringLength(StringLengthAttribute.MaxText)]
+        [SqlServerBucketCount(10000000)]
+        public string Id { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
+        public string Data { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
     }
 }

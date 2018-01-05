@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 	{
         ServiceStackHost appHost;
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void InferRoutes()
 		{
             appHost = new BasicAppHost().Init();
@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Routes.AddFromAssembly(typeof(RouteInferenceTests).Assembly);
 		}
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

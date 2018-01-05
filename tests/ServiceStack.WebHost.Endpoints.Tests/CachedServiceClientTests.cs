@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Caching;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -10,7 +11,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         protected override ICachedServiceClient GetCachedServiceClient()
         {
-            return new CachedServiceClient(new JsonServiceClient(Config.ListeningOn));
+            var client = new JsonServiceClient(Config.ListeningOn);
+#if NETCORE            
+            client.AddHeader(HttpHeaders.AcceptEncoding, "gzip,deflate");
+#endif
+            return new CachedServiceClient(client);
         }
     }
 
@@ -42,11 +47,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            //clear cache after each test
+            var cache = Service.GlobalResolver.TryResolve<ICacheClient>();
+            cache.FlushAll();
+        }        
 
         protected abstract ICachedServiceClient GetCachedServiceClient();
 

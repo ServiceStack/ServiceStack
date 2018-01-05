@@ -1,18 +1,25 @@
 /* Options:
-Date: 2015-01-19 22:30:44
-Version: 1
+Date: 2017-11-08 03:06:38
+Version: 4.50
+Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://stackapis.servicestack.net
 
+//GlobalNamespace: 
 //MakePartial: True
 //MakeVirtual: True
+//MakeInternal: False
 //MakeDataContractsExtensible: False
 //AddReturnMarker: True
 //AddDescriptionAsComments: True
 //AddDataContractAttributes: False
 //AddIndexesToDataMembers: False
+//AddGeneratedCodeAttributes: False
 //AddResponseStatus: False
 //AddImplicitVersion: 
 //InitializeCollections: True
+//IncludeTypes: 
+//ExcludeTypes: 
+//AddNamespaces: 
 //AddDefaultXmlNamespace: http://schemas.servicestack.net/types
 */
 
@@ -68,8 +75,9 @@ namespace StackApis.ServiceModel
     }
 
     [Route("/questions")]
+    [AutoQueryViewer(Title="Explore StackOverflow Questions", Description="Find ServiceStack Questions on StackOverflow", IconUrl="material-icons:cast", DefaultSearchField="Title", DefaultSearchType="Contains", DefaultSearchText="ServiceStack")]
     public partial class StackOverflowQuery
-        : QueryBase<Question>, IReturn<QueryResponse<Question>>
+        : QueryDb<Question>, IReturn<QueryResponse<Question>>
     {
         public virtual int? ScoreGreaterThan { get; set; }
     }
@@ -98,17 +106,17 @@ namespace StackApis.ServiceModel.Types
         }
 
         public virtual int QuestionId { get; set; }
+        public virtual string Title { get; set; }
+        public virtual int Score { get; set; }
+        public virtual int ViewCount { get; set; }
+        public virtual bool IsAnswered { get; set; }
+        public virtual int AnswerCount { get; set; }
+        public virtual string Link { get; set; }
         public virtual string[] Tags { get; set; }
         public virtual User Owner { get; set; }
-        public virtual bool IsAnswered { get; set; }
-        public virtual int ViewCount { get; set; }
-        public virtual int AnswerCount { get; set; }
-        public virtual int Score { get; set; }
         public virtual int LastActivityDate { get; set; }
         public virtual int CreationDate { get; set; }
         public virtual int LastEditDate { get; set; }
-        public virtual string Link { get; set; }
-        public virtual string Title { get; set; }
         public virtual int? AcceptedAnswerId { get; set; }
     }
 

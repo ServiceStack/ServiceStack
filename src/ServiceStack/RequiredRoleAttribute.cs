@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Web;
@@ -28,13 +29,14 @@ namespace ServiceStack
             : this(ApplyTo.All, roles)
         { }
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (HostContext.AppHost.HasValidAuthSecret(req))
                 return;
 
-            base.Execute(req, res, requestDto); //first check if session is authenticated
-            if (res.IsClosed) return; //AuthenticateAttribute already closed the request (ie auth failed)
+            await base.ExecuteAsync(req, res, requestDto); //first check if session is authenticated
+            if (res.IsClosed)
+                return; //AuthenticateAttribute already closed the request (ie auth failed)
 
             var session = req.GetSession();
 
@@ -44,10 +46,12 @@ namespace ServiceStack
                 if (session != null && session.HasRole(RoleNames.Admin, authRepo))
                     return;
 
-                if (HasAllRoles(req, session, authRepo)) return;
+                if (HasAllRoles(req, session, authRepo))
+                    return;
             }
 
-            if (DoHtmlRedirectIfConfigured(req, res)) return;
+            if (DoHtmlRedirectIfConfigured(req, res))
+                return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);

@@ -1,6 +1,4 @@
-﻿using ServiceStack.Web;
-
-namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
+﻿namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
 {
     public class GetsOnly { }
     public class PostsOnly { }

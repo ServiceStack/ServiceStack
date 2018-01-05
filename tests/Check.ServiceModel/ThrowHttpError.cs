@@ -35,4 +35,21 @@ namespace Check.ServiceModel
     {
         public ResponseStatus ResponseStatus { get; set; }
     }
+
+    [Route("/throwvalidation")]
+    public class ThrowValidation : IReturn<ThrowValidationResponse>
+    {
+        public int Age { get; set; }
+        public string Required { get; set; }
+        public string Email { get; set; }
+    }
+
+    public class ThrowValidationResponse
+    {
+        public int Age { get; set; }
+        public string Required { get; set; }
+        public string Email { get; set; }
+
+        public ResponseStatus ResponseStatus { get; set; }
+    }
 }

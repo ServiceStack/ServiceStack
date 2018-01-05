@@ -50,7 +50,7 @@ xmlns:a=""http://www.w3.org/2005/08/addressing"">
 
             var soapXml = soapBytes.FromUtf8Bytes();
 
-            Assert.That(soapXml, Is.StringStarting(@"<?xml version=""1.0"" encoding=""utf-8""?><s:Envelope"));
+            Assert.That(soapXml, Does.StartWith(@"<?xml version=""1.0"" encoding=""utf-8""?><s:Envelope"));
         }
     }
 }

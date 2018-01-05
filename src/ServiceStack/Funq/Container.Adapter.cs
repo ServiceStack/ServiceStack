@@ -7,11 +7,12 @@ using System.Threading;
 using ServiceStack;
 using ServiceStack.Configuration;
 using System;
+using System.Collections.Concurrent;
 using ServiceStack.Text;
 
 namespace Funq
 {
-    public partial class Container : IResolver
+    public partial class Container : IResolver, IContainer
     {
         public IContainerAdapter Adapter { get; set; }
 
@@ -131,6 +132,18 @@ namespace Funq
             return entry != null;
         }
 
+        public bool Exists(Type type)
+        {
+            var existsGeneric = typeof(Container).GetMethods()
+                .First(x => x.Name == "Exists"
+                            && x.IsGenericMethod
+                            && x.GetGenericArguments().Length == 1);
+
+            var existsMethod = existsGeneric.MakeGenericMethod(type);
+            var instance = existsMethod.Invoke(this, TypeConstants.EmptyObjectArray);
+            return instance is bool exists && exists;
+        }
+
         private Dictionary<Type, Action<object>[]> autoWireCache = new Dictionary<Type, Action<object>[]>();
 
         private static MethodInfo GetResolveMethod(Type typeWithResolveMethod, Type serviceType)
@@ -154,7 +167,7 @@ namespace Funq
         private static bool IsPublicWritableUserPropertyType(PropertyInfo pi)
         {
             return pi.CanWrite
-                && !pi.PropertyType.IsValueType()
+                && !pi.PropertyType.IsValueType
                 && pi.PropertyType != typeof(string)
                 && !IgnorePropertyTypeFullNames.Contains(pi.PropertyType.FullName);
         }
@@ -215,10 +228,11 @@ namespace Funq
                 do
                 {
                     snapshot = autoWireCache;
-                    newCache = new Dictionary<Type, Action<object>[]>(autoWireCache);
-                    newCache[instanceType] = setters;
+                    newCache = new Dictionary<Type, Action<object>[]>(autoWireCache) {
+                        [instanceType] = setters
+                    };
                 } while (!ReferenceEquals(
-                Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
+                    Interlocked.CompareExchange(ref autoWireCache, newCache, snapshot), snapshot));
             }
 
             foreach (var setter in setters)
@@ -254,7 +268,7 @@ namespace Funq
             };
         }
 
-        private static NewExpression ConstructorExpression(
+        public static NewExpression ConstructorExpression(
             MethodInfo resolveMethodInfo, Type type, Expression lambdaParam)
         {
             var ctorWithMostParameters = GetConstructorWithMostParams(type);
@@ -275,16 +289,110 @@ namespace Funq
             return Expression.Call(containerParam, method);
         }
 
+        private static Dictionary<Type, Func<Container,object>> tryResolveCache = new Dictionary<Type, Func<Container, object>>();
+
         public object TryResolve(Type type)
         {
+            Func<Container, object> fn;
+            if (tryResolveCache.TryGetValue(type, out fn))
+                return fn(this);
+
             var mi = typeof(Container).GetMethods(BindingFlags.Public | BindingFlags.Instance)
                 .First(x => x.Name == "TryResolve" &&
                        x.GetGenericArguments().Length == 1 &&
                        x.GetParameters().Length == 0);
 
             var genericMi = mi.MakeGenericMethod(type);
-            var instance = genericMi.Invoke(this, TypeConstants.EmptyObjectArray);
+
+            var p = Expression.Parameter(typeof(Container), "container");
+            fn = Expression.Lambda<Func<Container, object>>(
+                    Expression.Call(p, genericMi),
+                    p
+                ).Compile();
+
+            Dictionary<Type, Func<Container, object>> snapshot, newCache;
+            do
+            {
+                snapshot = tryResolveCache;
+                newCache = new Dictionary<Type, Func<Container, object>>(tryResolveCache) {
+                    [type] = fn
+                };
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref tryResolveCache, newCache, snapshot), snapshot));
+
+            return fn(this);
+        }
+
+        public object RequiredResolve(Type type, Type ownerType)
+        {
+            var instance = Resolve(type);
+            if (instance == null)
+                throw new ArgumentNullException($"Required Type of '{type.Name}' in '{ownerType.Name}' constructor was not registered in '{GetType().Name}'");
+
             return instance;
+        }
+
+        private static Type[] TryResolveArgs = new[] {typeof(Type)};
+
+        public Func<object> CreateFactory(Type type)
+        {
+            var containerParam = Expression.Constant(this);
+            var memberBindings = type.GetPublicProperties()
+                .Where(IsPublicWritableUserPropertyType)
+                .Select(x =>
+                    Expression.Bind
+                    (
+                        x,
+                        Expression.TypeAs(Expression.Call(containerParam, GetType().GetMethodInfo(nameof(TryResolve), TryResolveArgs), Expression.Constant(x.PropertyType)), x.PropertyType)
+                    )
+                ).ToArray();
+
+            var ctorWithMostParameters = GetConstructorWithMostParams(type);
+            if (ctorWithMostParameters == null)
+                throw new Exception($"Constructor not found for Type '{type.Name}");
+
+            var constructorParameterInfos = ctorWithMostParameters.GetParameters();
+            var regParams = constructorParameterInfos
+                .Select(x => 
+                    Expression.TypeAs(Expression.Call(containerParam, GetType().GetMethodInfo(nameof(RequiredResolve)), Expression.Constant(x.ParameterType), Expression.Constant(type)), x.ParameterType)
+                );
+
+            return Expression.Lambda<Func<object>>
+            (
+                Expression.TypeAs(Expression.MemberInit
+                (
+                    Expression.New(ctorWithMostParameters, regParams.ToArray()),
+                    memberBindings
+                ), typeof(object))
+            ).Compile();
+        }
+
+        public IRegistration<TService> RegisterFactory<TService>(Func<object> factory)
+        {
+            return Register(null, c => (TService)factory());
+        }
+        
+        public IContainer AddSingleton(Type type, Func<object> factory)
+        {
+            var methodInfo = typeof(Container).GetMethodInfo(nameof(RegisterFactory));
+            var registerMethodInfo = methodInfo.MakeGenericMethod(type);
+            var registration = (IRegistration)registerMethodInfo.Invoke(this, new object[]{ factory });
+            registration.ReusedWithin(ReuseScope.Container);
+            return this;
+        }
+
+        public IContainer AddTransient(Type type, Func<object> factory)
+        {
+            var methodInfo = typeof(Container).GetMethodInfo(nameof(RegisterFactory));
+            var registerMethodInfo = methodInfo.MakeGenericMethod(type);
+            var registration = (IRegistration)registerMethodInfo.Invoke(this, new object[]{ factory });
+            registration.ReusedWithin(ReuseScope.None);
+            return this;
+        }
+
+        public object Resolve(Type type)
+        {
+            return TryResolve(type);
         }
     }
 }

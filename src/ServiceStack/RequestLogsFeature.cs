@@ -34,6 +34,11 @@ namespace ServiceStack
         public bool EnableErrorTracking { get; set; }
 
         /// <summary>
+        /// Don't log matching requests
+        /// </summary>
+        public Func<IRequest, bool> SkipLogging { get; set; }
+
+        /// <summary>
         /// Size of InMemoryRollingRequestLogger circular buffer
         /// </summary>
         public int? Capacity { get; set; }
@@ -58,14 +63,24 @@ namespace ServiceStack
         /// By default Auth and Registration requests are hidden.
         /// </summary>
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
+        
+        /// <summary>
+        /// Limit logging to only Service Requests
+        /// </summary>
+        public bool LimitToServiceRequests { get; set; }
 
-        public RequestLogsFeature(int? capacity = null)
+        public RequestLogsFeature(int capacity) : this()
+        {
+            this.Capacity = capacity;
+        }
+
+        public RequestLogsFeature()
         {
             this.AtRestPath = "/requestlogs";
-            this.Capacity = capacity;
             this.RequiredRoles = new[] { RoleNames.Admin };
             this.EnableErrorTracking = true;
             this.EnableRequestBodyTracking = false;
+            this.LimitToServiceRequests = true;
             this.ExcludeRequestDtoTypes = new[] { typeof(RequestLogs) };
             this.HideRequestBodyForRequestDtoTypes = new[] {
                 typeof(Authenticate), typeof(Register)
@@ -80,8 +95,10 @@ namespace ServiceStack
             requestLogger.EnableSessionTracking = EnableSessionTracking;
             requestLogger.EnableResponseTracking = EnableResponseTracking;
             requestLogger.EnableRequestBodyTracking = EnableRequestBodyTracking;
-            requestLogger.EnableErrorTracking = EnableErrorTracking;
+            requestLogger.LimitToServiceRequests = LimitToServiceRequests;
+            requestLogger.SkipLogging = SkipLogging;
             requestLogger.RequiredRoles = RequiredRoles;
+            requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
 

@@ -1,10 +1,15 @@
-﻿using System.Web;
+﻿using System;
+using System.Collections.Generic;
+using System.Web;
+using Funq;
 using ServiceStack.Host.Handlers;
 
 namespace ServiceStack
 {
     public class PredefinedRoutesFeature : IPlugin
     {
+        public Dictionary<string, Func<IHttpHandler>> HandlerMappings { get; } = new Dictionary<string, Func<IHttpHandler>>();
+        
         public void Register(IAppHost appHost)
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
@@ -17,17 +22,14 @@ namespace ServiceStack
             return GetHandlerForPathParts(pathParts);
         }
 
-        private static IHttpHandler GetHandlerForPathParts(string[] pathParts)
+        private IHttpHandler GetHandlerForPathParts(string[] pathParts)
         {
             var pathController = pathParts[0].ToLower();
+
             if (pathParts.Length == 1)
             {
-#if !NETSTANDARD1_6
-                if (pathController == "soap11")
-                    return new Soap11MessageReplyHttpHandler();
-                if (pathController == "soap12")
-                    return new Soap12MessageReplyHttpHandler();
-#endif
+                if (HandlerMappings.TryGetValue(pathController, out var handlerFn))
+                    return handlerFn();
 
                 return null;
             }
@@ -60,8 +62,7 @@ namespace ServiceStack
                     break;
 
                 default:
-                    string contentType;
-                    if (HostContext.ContentTypes.ContentTypeFormats.TryGetValue(pathController, out contentType))
+                    if (HostContext.ContentTypes.ContentTypeFormats.TryGetValue(pathController, out var contentType))
                     {
                         var feature = contentType.ToFeature();
                         if (feature == Feature.None) feature = Feature.CustomFormat;

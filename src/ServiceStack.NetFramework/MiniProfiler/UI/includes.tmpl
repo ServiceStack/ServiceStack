@@ -1,0 +1,167 @@
+﻿<script id="profilerTemplate" type="text/x-jquery-tmpl">
+
+  <div class="profiler-result">
+
+    <div class="profiler-button <%= HasDuplicateSqlTimings ? 'warning' : '' %>">
+    <% if (HasDuplicateSqlTimings){ %><span class="nuclear">!</span><% } %>
+      <span class="number">
+        <%= MiniProfiler.formatDuration(DurationMilliseconds) %> <span class="unit">ms</span>
+      </span>
+    </div>
+
+    <div class="profiler-popup">
+      <div class="info">
+        <span class="name">
+          <%=Name%> <span class="overall-duration">(<%=MiniProfiler.formatDuration(DurationMilliseconds)%> ms)</span>
+        </span>
+        <span class="server-time"><%=MachineName%> on <%=MiniProfiler.renderDate(Started)%></span>
+      </div>
+      <div class="profiler-output">
+        <table class="timings">
+          <thead>
+            <tr>
+              <th></th>
+              <th>duration (ms)</th>
+              <th class="duration-with-children">with children (ms)</th>
+              <th class="time-from-start">from start (ms)</th>
+			<% if (HasSqlTimings){ %>
+              <th colspan="2">query time (ms)</th>
+			<% } %>
+            </tr>
+          </thead>
+          <tbody>
+            <%= $.tmpl("#timingTemplate", Root) %>
+			</tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">
+                <a href="<%=MiniProfiler.shareUrl(Id)%>" class="share-profiler-results" target="_blank">share</a>
+				  <a class="toggle-trivial" data-show-on-load=""<%=HasAllTrivialTimings%>" title="toggles any rows with &lt; <%=TrivialDurationThresholdMilliseconds%> ms">
+					  show trivial
+				  </a>
+				  <a class="toggle-duration-with-children" title="toggles column with aggregate child durations">show time with children</a>
+              </td>
+            <% if (HasSqlTimings){ %>
+              <td colspan="2" class="number percent-in-sql" title="<%=MiniProfiler.getSqlTimingsCount(Root)%> queries spent <%=MiniProfiler.formatDuration(DurationMillisecondsInSql)%> ms of total request time">
+                <%=MiniProfiler.formatDuration(DurationMillisecondsInSql / DurationMilliseconds * 100)%>
+                <span class="unit">% in sql</span>
+              </td>
+		    <% } %>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+  <% if (HasSqlTimings){ %>
+    <div class="profiler-queries">
+      <table>
+      <thead>
+        <tr>
+          <th style="text-align:right">step<br />time from start<br />query type<br />duration</th>
+          <th style="text-align:left">call stack<br />query</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% $._each(MiniProfiler.getSqlTimings(Root), function(s, i) { %> 
+          <%= $.tmpl("#sqlGapTemplate", { g:s.prevGap }) %>
+		  <%= $.tmpl("#sqlTimingTemplate", { i:i, s:s }) %>
+	      <% if (s.nextGap){ %>
+			  <%= $.tmpl("#sqlGapTemplate", { g:s.nextGap }) %>
+		  <% } %>
+		<% }) %>
+      </tbody>
+      </table>
+      <p class="trivial-gap-container">
+        <a class="toggle-trivial-gaps" href="#">show trivial gaps</a>
+      </p>
+    </div>
+  <% } %>
+
+  </div>
+
+</script>
+
+<script id="timingTemplate" type="text/x-jquery-tmpl">
+
+  <tr class="<%= IsTrivial ? 'trivial' : '' %>" data-timing-id="<%= Id %>">
+  <td class="label" title="<%= Name && Name.length > 45 ? Name : '' %>">
+      <span class="indent"><%= MiniProfiler.renderIndent(Depth) %></span> <%= Name.slice(0,45) %><%= Name && Name.length > 45 ? '...' : '' %>
+    </td>
+    <td class="duration" title="duration of this step without any children's durations">
+	  <%= MiniProfiler.formatDuration(DurationWithoutChildrenMilliseconds) %>
+	</td>
+    <td class="duration duration-with-children" title="duration of this step and its children">
+	  <%= MiniProfiler.formatDuration(DurationMilliseconds) %>
+	</td>
+    <td class="duration time-from-start" title="time elapsed since profiling started">
+      <span class="unit">+</span><%= MiniProfiler.formatDuration(StartMilliseconds) %>
+    </td>
+
+	<% if (HasSqlTimings){ %>
+	  <td class="duration <%= HasDuplicateSqlTimings ? 'warning' : '' %>" title="<%= HasDuplicateSqlTimings ? 'duplicate queries detected - ' : '' %><%= ExecutedReaders %> reader, <%= ExecutedScalars %> scalar, <%= ExecutedNonQueries %> non-query statements executed">
+	  <a class="queries-show">
+        <% if (HasDuplicateSqlTimings){ %><span class="nuclear">!</span><% } %>
+        <%= SqlTimings.length %><span class="unit">sql</span>
+      </a>
+    </td>
+    <td class="duration" title="aggregate duration of all queries in this step (excludes children)">
+	  <%= MiniProfiler.formatDuration(SqlTimingsDurationMilliseconds) %>
+    </td>
+    <% } %>
+
+  </tr>
+
+  <% if (HasChildren){ %>
+	<% $._each(Children, function($value){ %>
+	  <%= $.tmpl("#timingTemplate", $value) %>
+	<% }) %>
+  <% } %>
+
+</script>
+
+<script id="sqlTimingTemplate" type="text/x-jquery-tmpl">
+
+  <tr class="<%= i % 2 == 1 ? 'odd' : '' %>" data-timing-id="<%= s.ParentTimingId %>">
+  <td class="info">
+      <div><%= s.ParentTimingName %></div>
+      <div class="number"><span class="unit">T+</span><%= MiniProfiler.formatDuration(s.StartMilliseconds) %> <span class="unit">ms</span></div>
+      <div>
+        <% if (s.IsDuplicate){ %><span class="warning">DUPLICATE</span><% } %>
+		<%= MiniProfiler.renderExecuteType(s.ExecuteType) %>
+	</div>
+      <div title="<%= s.ExecuteType == 3 ? 'first result fetched: ' + s.FirstFetchDurationMilliseconds : '' %>ms"><%= MiniProfiler.formatDuration(s.DurationMilliseconds)%> <span class="unit">ms</span></div>
+    </td>
+    <td>
+      <div class="query">
+        <pre class="stack-trace"><%= s.StackTraceSnippet %></pre>
+        <pre class="prettyprint lang-sql"><code><%= s.FormattedCommandString %></code></pre>
+        <% if (s.Parameters){ %>
+         <div class="params">
+            <% $._each(s.Parameters, function($value){ %>
+            <%= $.tmpl("#sqlParameterTemplate", $value) %>
+            <% }) %>
+         </div>
+        <% } %>
+      </div>
+    </td>
+  </tr>
+
+</script>
+
+<script id="sqlParameterTemplate" type="text/x-jquery-tmpl">
+  <div><span><%= DbType %></span> @<%= Name %> = <b><%= Value %></b></div>
+</script>
+
+<script id="sqlGapTemplate" type="text/x-jquery-tmpl">
+
+  <tr class="gap-info<%= g.duration < 4 ? 'trivial-gaps' : '' %>">
+    <td class="info">
+      <%= g.duration  %><span class="unit">ms</span>  
+    </td>
+    <td class="query">
+      <div><%= g.topReason.name %> &mdash; <%= g.topReason.duration.toFixed(2) %> <span class="unit">ms</span></div>
+    </td>
+  </tr>
+
+</script>

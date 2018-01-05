@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#if !NETCORE
+using NUnit.Framework;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
 {
@@ -28,3 +29,4 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
         }
     }
 }
+#endif

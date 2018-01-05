@@ -156,7 +156,7 @@ namespace RazorRockstars.Web.Tests
 
         private Stopwatch startedAt;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             LogManager.LogFactory = new ConsoleLogFactory();
@@ -178,7 +178,7 @@ namespace RazorRockstars.Web.Tests
             //db.Dispose();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();
@@ -243,8 +243,8 @@ namespace RazorRockstars.Web.Tests
         {
             var html = "{0}/reqstars".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
-            Assert.That(html, Is.StringContaining("<!--view:AllReqstars.cshtml-->"));
-            Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
+            Assert.That(html, Does.Contain("<!--view:AllReqstars.cshtml-->"));
+            Assert.That(html, Does.Contain("<!--template:HtmlReport.cshtml-->"));
         }
 
 
@@ -375,8 +375,8 @@ namespace RazorRockstars.Web.Tests
         {
             var html = "{0}/reqstars/1".Fmt(Host).GetStringFromUrl(accept: "text/html");
             html.Print();
-            Assert.That(html, Is.StringContaining("<!--view:GetReqstar.cshtml-->"));
-            Assert.That(html, Is.StringContaining("<!--template:HtmlReport.cshtml-->"));
+            Assert.That(html, Does.Contain("<!--view:GetReqstar.cshtml-->"));
+            Assert.That(html, Does.Contain("<!--template:HtmlReport.cshtml-->"));
         }
 
 

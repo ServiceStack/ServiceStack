@@ -13,31 +13,33 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Reflection;
-    using Internal;
-    using Resources;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Reflection;
+	using Internal;
+	using Resources;
 
-    public class GreaterThanOrEqualValidator : AbstractComparisonValidator  {
-        public GreaterThanOrEqualValidator(IComparable value) : base(value, () => Messages.greaterthanorequal_error, ValidationErrors.GreaterThanOrEqual) {
-        }
+	public class GreaterThanOrEqualValidator : AbstractComparisonValidator  {
+		public GreaterThanOrEqualValidator(IComparable value) : 
+			base(value, new LanguageStringSource(nameof(GreaterThanOrEqualValidator))) {
+		}
 
-        public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
-            : base(valueToCompareFunc, member, () => Messages.greaterthanorequal_error, ValidationErrors.GreaterThanOrEqual)
-        {
-        }
+		public GreaterThanOrEqualValidator(Func<object, object> valueToCompareFunc, MemberInfo member)
+			: base(valueToCompareFunc, member, new LanguageStringSource(nameof(GreaterThanOrEqualValidator))) {
+		}
 
-        public override bool IsValid(IComparable value, IComparable valueToCompare) {
-            return value.CompareTo(valueToCompare) >= 0;
-        }
+		public override bool IsValid(IComparable value, IComparable valueToCompare) {
+			if (valueToCompare == null)
+				return false;
 
-        public override Comparison Comparison {
-            get { return Validators.Comparison.GreaterThanOrEqual; }
-        }
-    }
+			return Comparer.GetComparisonResult(value, valueToCompare) >= 0;
+		}
+
+		public override Comparison Comparison {
+			get { return Validators.Comparison.GreaterThanOrEqual; }
+		}
+	}
 }

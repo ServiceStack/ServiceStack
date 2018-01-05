@@ -1,4 +1,4 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -11,13 +11,13 @@ namespace ServiceStack
         None = 0,
 
         Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
-        AnyNetworkAccessType = External | Localhost | LocalSubnet,
+        AnyNetworkAccessType = External | LocalSubnet | Localhost | InProcess,
         AnySecurityMode = Secure | InSecure,
         AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,
         AnyCallStyle = OneWay | Reply,
-        AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Yaml | FormatOther,
+        AnyFormat = Soap11 | Soap12 | Xml | Json | Jsv | Html | ProtoBuf | Csv | MsgPack | Wire | FormatOther,
         AnyEndpoint = Http | MessageQueue | Tcp | EndpointOther,
-        InternalNetworkAccess = Localhost | LocalSubnet,
+        InternalNetworkAccess = InProcess | Localhost | LocalSubnet,
 
         //Whether it came from an Internal or External address
         Localhost = 1 << 0,
@@ -56,7 +56,7 @@ namespace ServiceStack
         //e.g. text/csv
         Csv = 1 << 21,
         Html = 1 << 22,
-        Yaml = 1 << 23,
+        Wire = 1 << 23,
         MsgPack = 1 << 24,
         FormatOther = 1 << 25,
 
@@ -110,7 +110,7 @@ namespace ServiceStack
         ProtoBuf = 1 << 20,
         Csv = 1 << 21,
         Html = 1 << 22,
-        Yaml = 1 << 23,
+        Wire = 1 << 23,
         MsgPack = 1 << 24,
         Other = 1 << 25,
     }
@@ -154,7 +154,7 @@ namespace ServiceStack
 
         public static string FromFormat(this Format format)
         {
-            var formatStr = format.ToString().ToLower();
+            var formatStr = format.ToString().ToLowerInvariant();
             if (format == Format.ProtoBuf || format == Format.MsgPack)
                 return "x-" + formatStr;
             return formatStr;

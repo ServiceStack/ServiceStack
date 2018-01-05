@@ -13,34 +13,49 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using ServiceStack.Web;
+namespace ServiceStack.FluentValidation.Results {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
 
-namespace ServiceStack.FluentValidation.Results
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-
-#if !(SL5 || NETSTANDARD1_6)
-    [Serializable]
+	/// <summary>
+	/// The result of running a validator
+	/// </summary>
+#if !NETSTANDARD2_0
+	[Serializable]
 #endif
-    public class ValidationResult
-    {
-        private readonly List<ValidationFailure> errors = new List<ValidationFailure>();
+	public partial class ValidationResult {
+		private readonly IList<ValidationFailure> errors;
 
-        public bool IsValid => Errors.Count == 0;
+		/// <summary>
+		/// Whether validation succeeded
+		/// </summary>
+		public virtual bool IsValid => Errors.Count == 0;
 
-        public IList<ValidationFailure> Errors => errors;
+		/// <summary>
+		/// A collection of errors
+		/// </summary>
+		public IList<ValidationFailure> Errors => errors;
 
-        public IRequest Request { get; set; }
+		/// <summary>
+		/// Creates a new validationResult
+		/// </summary>
+		public ValidationResult() {
+			this.errors = new List<ValidationFailure>();
+		}
 
-        public ValidationResult() {}
-
-        public ValidationResult(IEnumerable<ValidationFailure> failures) {
-            errors.AddRange(failures.Where(failure => failure != null));
-        }
-    }
+		/// <summary>
+		/// Creates a new ValidationResult from a collection of failures
+		/// </summary>
+		/// <param name="failures">List of <see cref="ValidationFailure"/> which is later available through <see cref="Errors"/>. This list get's copied.</param>
+		/// <remarks>
+		/// Every caller is responsible for not adding <c>null</c> to the list.
+		/// </remarks>
+		public ValidationResult(IEnumerable<ValidationFailure> failures) {
+			errors = failures.Where(failure => failure != null).ToList();
+		}
+	}
 }

@@ -15,26 +15,14 @@ namespace ServiceStack.Serialization
         /// <summary>
         /// Default MaxStringContentLength is 8k, and throws an exception when reached
         /// </summary>
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
         private readonly XmlDictionaryReaderQuotas quotas;
-#endif
 
         public static DataContractSerializer Instance
-            = new DataContractSerializer(
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
-new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024, }
-#endif
-);
+            = new DataContractSerializer(new XmlDictionaryReaderQuotas { MaxStringContentLength = 1024 * 1024 });
 
-        public DataContractSerializer(
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
-XmlDictionaryReaderQuotas quotas = null
-#endif
-)
+        public DataContractSerializer(XmlDictionaryReaderQuotas quotas = null)
         {
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL)
             this.quotas = quotas;
-#endif
         }
 
         public string Parse<XmlDto>(XmlDto from, bool indentXml)
@@ -45,18 +33,14 @@ XmlDictionaryReaderQuotas quotas = null
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
-                    var xw = new XmlTextWriter(ms, Encoding); 
+                    var xw = new XmlTextWriter(ms, Encoding);
                     if (indentXml)
                     {
-                        xw.Formatting = Formatting.Indented;	
+                        xw.Formatting = Formatting.Indented;
                     }
 
                     serializer.WriteObject(xw, from);
                     xw.Flush();
-#else
-                    serializer.WriteObject(ms, from);
-#endif
 
                     ms.Seek(0, SeekOrigin.Begin);
                     var reader = new StreamReader(ms);
@@ -74,22 +58,15 @@ XmlDictionaryReaderQuotas quotas = null
             return Parse(from, false);
         }
 
-
         public void SerializeToStream(object obj, Stream stream)
         {
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             using (var xw = new XmlTextWriter(stream, Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
                 serializer.WriteObject(xw, obj);
             }
-#else
-            var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
-            serializer.WriteObject(stream, obj);
-#endif
         }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
             using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))
@@ -106,11 +83,10 @@ XmlDictionaryReaderQuotas quotas = null
             using (var ms = new MemoryStream()) //only use MS with .NET's incompat Compression classes
             {
                 CompressToStream(from, ms);
-                
+
                 return ms.ToArray();
             }
         }
-#endif
 
     }
 }

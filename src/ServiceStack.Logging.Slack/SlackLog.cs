@@ -4,7 +4,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Logging.Slack
 {
-    public class SlackLog : ILog
+    public class SlackLog : ILogWithException
     {
         private readonly string incomingWebHookUrl;
         private readonly bool debugEnabled;
@@ -148,6 +148,13 @@ namespace ServiceStack.Logging.Slack
             Write(string.Format(format, args), null, DebugChannel);
         }
 
+        public void Debug(Exception exception, string format, params object[] args)
+        {
+            if (!debugEnabled)
+                return;
+            Write(string.Format(format, args), exception, DebugChannel);
+        }
+
         public void Error(object message)
         {
             Write(message, null, ErrorChannel);
@@ -161,6 +168,11 @@ namespace ServiceStack.Logging.Slack
         public void ErrorFormat(string format, params object[] args)
         {
             Write(string.Format(format, args), null, ErrorChannel);
+        }
+
+        public void Error(Exception exception, string format, params object[] args)
+        {
+            Write(string.Format(format, args), exception, ErrorChannel);
         }
 
         public void Fatal(object message)
@@ -178,6 +190,11 @@ namespace ServiceStack.Logging.Slack
             Write(string.Format(format, args), null, FatalChannel);
         }
 
+        public void Fatal(Exception exception, string format, params object[] args)
+        {
+            Write(string.Format(format, args), exception, FatalChannel);
+        }
+
         public void Info(object message)
         {
             Write(message, null, InfoChannel);
@@ -191,6 +208,11 @@ namespace ServiceStack.Logging.Slack
         public void InfoFormat(string format, params object[] args)
         {
             Write(string.Format(format, args), null, InfoChannel);
+        }
+
+        public void Info(Exception exception, string format, params object[] args)
+        {
+            Write(string.Format(format, args), exception, InfoChannel);
         }
 
         public void Warn(object message)
@@ -208,10 +230,12 @@ namespace ServiceStack.Logging.Slack
             Write(string.Format(format, args), null, WarnChannel);
         }
 
-        public bool IsDebugEnabled
+        public void Warn(Exception exception, string format, params object[] args)
         {
-            get { return debugEnabled; }
+            Write(string.Format(format, args), exception, WarnChannel);
         }
+
+        public bool IsDebugEnabled => debugEnabled;
     }
 
     class SlackLoggingData

@@ -13,6 +13,7 @@ namespace ServiceStack.NativeTypes.VbNet
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
+        private List<MetadataType> allTypes;
 
         public VbNetGenerator(MetadataTypesConfig config)
         {
@@ -66,8 +67,17 @@ namespace ServiceStack.NativeTypes.VbNet
             "With",
             "When",
             "Operator",
-            "Class"
+            "Class",
+            "Date",
+            "End",
+            "end",
+            "True",
+            "False",
         };
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
 
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
@@ -78,7 +88,11 @@ namespace ServiceStack.NativeTypes.VbNet
             if (Config.GlobalNamespace == null)
             {
                 metadata.Types.Each(x => namespaces.Add(x.Namespace));
-                metadata.Operations.Each(x => namespaces.Add(x.Request.Namespace));
+                metadata.Operations.Each(x => {
+                    namespaces.Add(x.Request.Namespace);
+                    if (x.Response != null)
+                        namespaces.Add(x.Response.Namespace);
+                });
             }
             else
             {
@@ -108,6 +122,7 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
             sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
             sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
             sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(", ")));
             sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
             sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
@@ -146,14 +161,17 @@ namespace ServiceStack.NativeTypes.VbNet
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(requestTypes);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(types);
 
             var orderedTypes = allTypes
                 .OrderBy(x => x.Namespace)
-                .ThenBy(x => x.Name);
+                .ThenBy(x => x.Name)
+                .ToList();
+
+            orderedTypes = FilterTypes(orderedTypes);
 
             foreach (var type in orderedTypes)
             {
@@ -258,7 +276,6 @@ namespace ServiceStack.NativeTypes.VbNet
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine("Public Enum {0}".Fmt(Type(type.Name, type.GenericArgs)));
-                //sb.AppendLine("{");
                 sb = sb.Indent();
 
                 if (type.EnumNames != null)
@@ -266,10 +283,13 @@ namespace ServiceStack.NativeTypes.VbNet
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
                         var name = type.EnumNames[i];
-                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                        var value = type.EnumValues?[i];
+                        if (KeyWords.Contains(name))
+                            name = $"[{name}]";
+                        
                         sb.AppendLine(value == null
-                            ? "{0}".Fmt(name)
-                            : "{0} = {1}".Fmt(name, value));
+                            ? name
+                            : $"{name} = {value}");
                     }
                 }
 
@@ -294,8 +314,8 @@ namespace ServiceStack.NativeTypes.VbNet
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         implements.Add(implStr);
-                    if (!type.Implements.IsEmpty())
-                        type.Implements.Each(x => implements.Add(Type(x)));
+
+                    type.Implements.Each(x => implements.Add(Type(x)));
                 }
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
@@ -310,7 +330,6 @@ namespace ServiceStack.NativeTypes.VbNet
                     }
                 }
 
-                //sb.AppendLine("{");
                 sb = sb.Indent();
 
                 AddConstuctor(sb, type, options);
@@ -342,12 +361,12 @@ namespace ServiceStack.NativeTypes.VbNet
         {
             if (type.IsInterface())
                 return;
-            var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
-            if (Config.AddImplicitVersion == null && !initCollections)
+
+            if (Config.AddImplicitVersion == null && !Config.InitializeCollections)
                 return;
 
             var collectionProps = new List<MetadataPropertyType>();
-            if (type.Properties != null && initCollections)
+            if (type.Properties != null && Config.InitializeCollections)
                 collectionProps = type.Properties.Where(x => x.IsCollection()).ToList();
 
             var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
@@ -395,7 +414,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs, includeNested:true);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs, includeNested:true);
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;

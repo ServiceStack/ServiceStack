@@ -12,6 +12,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
+        List<MetadataType> allTypes;
 
         public TypeScriptGenerator(MetadataTypesConfig config)
         {
@@ -43,6 +44,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Double", "number"},
             {"Decimal", "number"},
             {"List", "Array"},
+            {"Byte[]", "Uint8Array"},
+            {"Stream", "Blob"},
+            {"HttpWebResponse", "Blob"},
+            {"IDictionary", "any"},
         };
         private static string declaredEmptyString = "\"\"";
         private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
@@ -50,6 +55,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
             {"Boolean", "false"},
+            {"boolean", "false"},
             {"DateTime", declaredEmptyString},
             {"DateTimeOffset", declaredEmptyString},
             {"TimeSpan", declaredEmptyString},
@@ -69,8 +75,16 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Double", "0"},
             {"Decimal", "0"},
             {"number", "0"},
-            {"List", "[]"}
+            {"List", "[]"},
+            {"Uint8Array", "new Uint8Array(0)"},
         };
+
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
+        {
+            return types.OrderTypesByDeps();
+        }
 
         private void AddTypeToSortedList(List<MetadataType> allTypes, List<MetadataType> sortedTypes, MetadataType metadataType)
         {
@@ -140,7 +154,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
+            //sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -166,11 +180,13 @@ namespace ServiceStack.NativeTypes.TypeScript
             // Base Types need to be written first
             var types = CreateSortedTypeList(metadata.Types);
 
-            var allTypes = new List<MetadataType>();
+            allTypes = new List<MetadataType>();
             allTypes.AddRange(types);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
             allTypes.RemoveAll(x => x.IgnoreType(Config));
+
+            allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
@@ -187,7 +203,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             if (!string.IsNullOrEmpty(globalNamespace))
             {
-                var moduleDef = Config.ExportAsTypes ? "" : "declare ";
+                var moduleDef = Config.ExportAsTypes ? "export " : "declare ";
                 sb.AppendLine();
                 sb.AppendLine("{0}module {1}".Fmt(moduleDef, globalNamespace.SafeToken()));
                 sb.AppendLine("{");
@@ -287,7 +303,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         ? "enum"
                         : "export enum";
 
-                    sb.AppendLine("{0} {1}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+                    sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}");
                     sb.AppendLine("{");
                     sb = sb.Indent();
 
@@ -296,11 +312,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                         for (var i = 0; i < type.EnumNames.Count; i++)
                         {
                             var name = type.EnumNames[i];
-                            var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                            var value = type.EnumValues?[i];
 
                             sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
-                                ? "{0},".Fmt(name)
-                                : "{0} = {1},".Fmt(name, value));
+                                ? $"{name},"
+                                : $"{name} = {value},");
                         }
                     }
 
@@ -315,7 +331,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                         ? "type"
                         : "export type";
 
-                    sbType.Append("{0} {1} = ".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs)));
+                    sbType.Append($"{typeDeclaration} {Type(type.Name, type.GenericArgs)} = ");
 
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
@@ -341,13 +357,13 @@ namespace ServiceStack.NativeTypes.TypeScript
                 string responseTypeExpression = null;
 
                 var interfaces = new List<string>();
-                if (options.ImplementsFn != null)
+                var implStr = options.ImplementsFn?.Invoke();
+                if (!string.IsNullOrEmpty(implStr))
                 {
-                    var implStr = options.ImplementsFn();
-                    if (!string.IsNullOrEmpty(implStr))
-                    {
-                        interfaces.Add(implStr);
+                    interfaces.Add(implStr);
 
+                    if (Config.ExportAsTypes)
+                    { 
                         if (implStr.StartsWith("IReturn<"))
                         {
                             var types = implStr.RightPart('<');
@@ -370,6 +386,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                             responseTypeExpression = "createResponse() {}";
                         }
                     }
+
+                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
@@ -396,7 +414,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 var typeDeclaration = !Config.ExportAsTypes
                     ? "interface"
-                    : "export {0}".Fmt(isClass ? "class" : "interface"); 
+                    : $"export {(isClass ? "class" : "interface")}"; 
 
                 sb.AppendLine("{0} {1}{2}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs), extend));
                 sb.AppendLine("{");
@@ -410,11 +428,23 @@ namespace ServiceStack.NativeTypes.TypeScript
                         "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
+                if (Config.ExportAsTypes)
+                {
+                    if (type.Name == "IReturn`1")
+                    {
+                        sb.AppendLine("createResponse() : T;");
+                    }
+                    else if (type.Name == "IReturnVoid")
+                    {
+                        sb.AppendLine("createResponse() : void;");
+                    }
+                }
+
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
-                if (responseTypeExpression != null)
+                if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
                     sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
@@ -438,7 +468,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
                     var optional = "";
                     if (propType.EndsWith("?"))
                     {
@@ -563,7 +593,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type == "Nullable`1")
                     return "{0}?".Fmt(GenericArg(genericArgs[0]));
                 if (ArrayTypes.Contains(type))
-                    return "{0}[]".Fmt(GenericArg(genericArgs[0]));
+                    return "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return "{{ [index:{0}]: {1}; }}".Fmt(
                         GenericArg(genericArgs[0]),
@@ -585,6 +615,10 @@ namespace ServiceStack.NativeTypes.TypeScript
                     return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
                 }
             }
+            else
+            {
+                type = type.StripNullable();
+            }
 
             return TypeAlias(type);
         }
@@ -592,6 +626,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         private string TypeAlias(string type)
         {
             type = type.SanitizeType();
+            if (type == "Byte[]")
+                return TypeAliases["Byte[]"];
+
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
@@ -729,6 +766,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             }
             else
             {
+                if (node.Text == "Tuple")
+                    node.Text += "`" + node.Children.Count;
+
                 sb.Append(TypeAlias(node.Text));
                 if (node.Children.Count > 0)
                 {

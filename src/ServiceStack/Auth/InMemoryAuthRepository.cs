@@ -134,8 +134,7 @@ namespace ServiceStack.Auth
             {
                 lock (root.Sets)
                 {
-                    HashSet<string> set;
-                    return root.Sets.TryGetValue(setId, out set) ? set : new HashSet<string>();
+                    return root.Sets.TryGetValue(setId, out var set) ? set : new HashSet<string>();
                 }
             }
 
@@ -173,11 +172,9 @@ namespace ServiceStack.Auth
 
                 lock (root.Hashes)
                 {
-                    Dictionary<string, string> hash;
-                    if (!root.Hashes.TryGetValue(hashId, out hash)) return null;
+                    if (!root.Hashes.TryGetValue(hashId, out var hash)) return null;
 
-                    string value;
-                    hash.TryGetValue(key, out value);
+                    hash.TryGetValue(key, out var value);
                     return value;
                 }
             }
@@ -191,8 +188,7 @@ namespace ServiceStack.Auth
 
                 lock (root.Hashes)
                 {
-                    Dictionary<string, string> hash;
-                    if (!root.Hashes.TryGetValue(hashId, out hash))
+                    if (!root.Hashes.TryGetValue(hashId, out var hash))
                         root.Hashes[hashId] = hash = new Dictionary<string, string>();
 
                     hash[key] = value;
@@ -208,8 +204,7 @@ namespace ServiceStack.Auth
 
                 lock (root.Hashes)
                 {
-                    Dictionary<string, string> hash;
-                    if (!root.Hashes.TryGetValue(hashId, out hash))
+                    if (!root.Hashes.TryGetValue(hashId, out var hash))
                         root.Hashes[hashId] = hash = new Dictionary<string, string>();
 
                     hash.Remove(key);
@@ -220,8 +215,7 @@ namespace ServiceStack.Auth
             {
                 lock (root.Sets)
                 {
-                    HashSet<string> set;
-                    if (!root.Sets.TryGetValue(setId, out set))
+                    if (!root.Sets.TryGetValue(setId, out var set))
                         root.Sets[setId] = set = new HashSet<string>();
 
                     set.Add(item);

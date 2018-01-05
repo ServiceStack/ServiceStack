@@ -21,7 +21,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		private string customUrl = ListeningOn.CombineWith("customrequestbinder");
 		private string predefinedUrl = ListeningOn.CombineWith("json/reply/customrequestbinder");
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void OnTestFixtureSetUp()
 		{
 			appHost = new ExampleAppHostHttpListener();
@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			appHost.Start(ListeningOn);
 		}
 
-		[TestFixtureTearDown]
+		[OneTimeTearDown]
 		public void OnTestFixtureTearDown()
 		{
 			appHost.Dispose();
@@ -47,13 +47,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
 			try
 			{
-				using (var sw = new StreamWriter(webReq.GetRequestStream()))
+				using (var sw = new StreamWriter(PclExport.Instance.GetRequestStream(webReq)))
 				{
-					sw.Write("&first-name=tom&item-0=blah&item-1-delete=1");
+#if !NETCORE
+					sw.Write("&");
+#endif
+					sw.Write("first-name=tom&item-0=blah&item-1-delete=1");
 				}
 				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
 
-				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}"));
+				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}")
+										.Or.EqualTo("{\"firstName\":\"tom\",\"item0\":\"blah\",\"item1Delete\":\"1\"}")
+				);
 			}
 			catch (WebException webEx)
 			{
@@ -150,6 +155,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 		}
 
 		[Test]
+#if NETCORE
+		[Ignore("HttpClient does not support `Expect: 100-Continue`. Should be fixed in .NET Core 1.1")]
+#endif
 		public void Does_use_request_binder_for_PUT()
 		{
             var response = client.Put<CustomRequestBinderResponse>("/customrequestbinder", new CustomRequestBinder());

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
 using ServiceStack.OrmLite;
@@ -10,13 +9,16 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Caching
 {
-    public class OrmLiteCacheClient : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
+    public class OrmLiteCacheClient : OrmLiteCacheClient<CacheEntry> { }
+
+    public class OrmLiteCacheClient<TCacheEntry> : ICacheClient, IRequiresSchema, ICacheClientExtended, IRemoveByPattern
+        where TCacheEntry : ICacheEntry, new()
     {
-        CacheEntry CreateEntry(string id, string data = null,
+        TCacheEntry CreateEntry(string id, string data = null,
             DateTime? created = null, DateTime? expires = null)
         {
             var createdDate = created ?? DateTime.UtcNow;
-            return new CacheEntry
+            return new TCacheEntry
             {
                 Id = id,
                 Data = data,
@@ -48,19 +50,19 @@ namespace ServiceStack.Caching
 
         public bool Remove(string key)
         {
-            return Exec(db => db.DeleteById<CacheEntry>(key) > 0);
+            return Exec(db => db.DeleteById<TCacheEntry>(key) > 0);
         }
 
         public void RemoveAll(IEnumerable<string> keys)
         {
-            Exec(db => db.DeleteByIds<CacheEntry>(keys) > 0);
+            Exec(db => db.DeleteByIds<TCacheEntry>(keys) > 0);
         }
 
         public T Get<T>(string key)
         {
             return Exec(db =>
             {
-                var cache = Verify(db, db.SingleById<CacheEntry>(key));
+                var cache = Verify(db, db.SingleById<TCacheEntry>(key));
                 return cache == null
                     ? default(T)
                     : db.Deserialize<T>(cache.Data);
@@ -74,7 +76,7 @@ namespace ServiceStack.Caching
                 long nextVal;
                 using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
                 {
-                    var cache = Verify(db, db.SingleById<CacheEntry>(key));
+                    var cache = Verify(db, db.SingleById<TCacheEntry>(key));
 
                     if (cache == null)
                     {
@@ -103,7 +105,7 @@ namespace ServiceStack.Caching
                 long nextVal;
                 using (var dbTrans = db.OpenTransaction(IsolationLevel.ReadCommitted))
                 {
-                    var cache = Verify(db, db.SingleById<CacheEntry>(key));
+                    var cache = Verify(db, db.SingleById<TCacheEntry>(key));
 
                     if (cache == null)
                     {
@@ -143,7 +145,7 @@ namespace ServiceStack.Caching
 
         private static bool UpdateIfExists<T>(IDbConnection db, string key, T value)
         {
-            var exists = db.UpdateOnly(new CacheEntry
+            var exists = db.UpdateOnly(new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
@@ -157,7 +159,7 @@ namespace ServiceStack.Caching
 
         private static bool UpdateIfExists<T>(IDbConnection db, string key, T value, DateTime expiresAt)
         {
-            var exists = db.UpdateOnly(new CacheEntry
+            var exists = db.UpdateOnly(new TCacheEntry
                 {
                     Id = key,
                     Data = db.Serialize(value),
@@ -197,7 +199,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
+                var exists = db.UpdateOnly(new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
@@ -257,7 +259,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
+                var exists = db.UpdateOnly(new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
@@ -319,7 +321,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var exists = db.UpdateOnly(new CacheEntry
+                var exists = db.UpdateOnly(new TCacheEntry
                     {
                         Id = key,
                         Data = db.Serialize(value),
@@ -342,7 +344,7 @@ namespace ServiceStack.Caching
         {
             Exec(db =>
             {
-                db.DeleteAll<CacheEntry>();
+                db.DeleteAll<TCacheEntry>();
             });
         }
 
@@ -350,7 +352,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var results = Verify(db, db.SelectByIds<CacheEntry>(keys));
+                var results = Verify(db, db.SelectByIds<TCacheEntry>(keys));
                 var map = new Dictionary<string, T>();
 
                 results.Each(x =>
@@ -380,28 +382,28 @@ namespace ServiceStack.Caching
 
         public void InitSchema()
         {
-            Exec(db => db.CreateTableIfNotExists<CacheEntry>());
+            Exec(db => db.CreateTableIfNotExists<TCacheEntry>());
         }
 
-        public List<CacheEntry> Verify(IDbConnection db, IEnumerable<CacheEntry> entries)
+        public List<TCacheEntry> Verify(IDbConnection db, IEnumerable<TCacheEntry> entries)
         {
             var results = entries.ToList();
             var expired = results.RemoveAll(x => x.ExpiryDate != null && DateTime.UtcNow > x.ExpiryDate);
             if (expired > 0)
             {
-                db.Delete<CacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
+                db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
             }
 
             return results;
         }
 
-        public CacheEntry Verify(IDbConnection db, CacheEntry entry)
+        public TCacheEntry Verify(IDbConnection db, TCacheEntry entry)
         {
             if (entry != null &&
                 entry.ExpiryDate != null && DateTime.UtcNow > entry.ExpiryDate)
             {
-                db.Delete<CacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
-                return null;
+                db.Delete<TCacheEntry>(q => DateTime.UtcNow > q.ExpiryDate);
+                return default(TCacheEntry);
             }
             return entry;
         }
@@ -410,7 +412,7 @@ namespace ServiceStack.Caching
         {
             return Exec(db =>
             {
-                var cache = db.SingleById<CacheEntry>(key);
+                var cache = db.SingleById<TCacheEntry>(key);
                 if (cache == null)
                     return null;
 
@@ -426,7 +428,7 @@ namespace ServiceStack.Caching
             Exec(db => {
                 var dbPattern = pattern.Replace('*', '%');
                 var dialect = db.GetDialectProvider();
-                db.Delete<CacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), new { dbPattern });
+                db.Delete<TCacheEntry>(dialect.GetQuotedColumnName("Id") + " LIKE " + dialect.GetParam("dbPattern"), new { dbPattern });
             });
         }
 
@@ -435,13 +437,13 @@ namespace ServiceStack.Caching
             return Exec(db =>
             {
                 if (pattern == "*")
-                    return db.Column<string>(db.From<CacheEntry>().Select(x => x.Id));
+                    return db.Column<string>(db.From<TCacheEntry>().Select(x => x.Id));
 
                 var dbPattern = pattern.Replace('*', '%');
                 var dialect = db.GetDialectProvider();
                 var id = dialect.GetQuotedColumnName("Id");
 
-                return db.Column<string>(db.From<CacheEntry>()
+                return db.Column<string>(db.From<TCacheEntry>()
                     .Where(id + " LIKE {0}", dbPattern));
             });
         }
@@ -454,13 +456,36 @@ namespace ServiceStack.Caching
         public void Dispose() { }
     }
 
-    public class CacheEntry
+    public interface ICacheEntry
+    {
+        string Id { get; set; }
+        string Data { get; set; }
+        DateTime? ExpiryDate { get; set; }
+        DateTime CreatedDate { get; set; }
+        DateTime ModifiedDate { get; set; }
+    }
+
+    public class CacheEntry : ICacheEntry
     {
         public string Id { get; set; }
         [StringLength(StringLengthAttribute.MaxText)]
         public string Data { get; set; }
         public DateTime? ExpiryDate { get; set; }
         public DateTime CreatedDate { get; set; }
+        public DateTime ModifiedDate { get; set; }
+    }
+
+    [SqlServerMemoryOptimized(SqlServerDurability.SchemaOnly)]
+    public class SqlServerMemoryOptimizedCacheEntry : ICacheEntry
+    {
+        [PrimaryKey]
+        [StringLength(StringLengthAttribute.MaxText)]
+        [SqlServerBucketCount(1000000)]
+        public string Id { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
+        public string Data { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime? ExpiryDate { get; set; }
         public DateTime ModifiedDate { get; set; }
     }
 

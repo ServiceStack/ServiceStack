@@ -13,14 +13,13 @@ namespace ServiceStack.NativeTypes.Kotlin
     {
         readonly MetadataTypesConfig Config;
         readonly NativeTypesFeature feature;
-        readonly List<MetadataType> AllTypes;
         List<string> conflictTypeNames = new List<string>();
+        List<MetadataType> allTypes;
 
         public KotlinGenerator(MetadataTypesConfig config)
         {
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
-            AllTypes = new List<MetadataType>();
         }
 
         public static List<string> DefaultImports = new List<string>
@@ -38,6 +37,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             "net.servicestack.client.*",
         };
 
+        public static string JavaIoNamespace = "java.io.*";
         public static string GSonAnnotationsNamespace = "com.google.gson.annotations.*";
         public static string GSonReflectNamespace = "com.google.gson.reflect.*";
 
@@ -78,6 +78,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Dictionary", "HashMap"},
         }.ToConcurrentDictionary();
 
+        public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
+
+        public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
+
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
@@ -90,12 +94,17 @@ namespace ServiceStack.NativeTypes.Kotlin
             {
                 defaultImports = Config.DefaultImports;
             }
-            else if (ReferencesGson(metadata))
+            else
             {
-                if (!defaultImports.Contains(GSonAnnotationsNamespace))
-                    defaultImports.Add(GSonAnnotationsNamespace);
-                if (!defaultImports.Contains(GSonReflectNamespace))
-                    defaultImports.Add(GSonReflectNamespace);
+                if (ReferencesGson(metadata))
+                {
+                    defaultImports.AddIfNotExists(GSonAnnotationsNamespace);
+                    defaultImports.AddIfNotExists(GSonReflectNamespace);
+                }
+                if (ReferencesStream(metadata))
+                {
+                    defaultImports.AddIfNotExists(JavaIoNamespace);
+                }
             }
 
             Func<string, string> defaultValue = k =>
@@ -104,10 +113,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
             sb.AppendLine("/* Options:");
-            sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
-            sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
-            sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
+            sb.AppendLine($"Date: {DateTime.Now.ToString("s").Replace("T", " ")}");
+            sb.AppendLine($"Version: {Env.ServiceStackVersion}");
+            sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
+            sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
             sb.AppendLine();
             sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
@@ -130,7 +139,7 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             if (Config.Package != null)
             {
-                sb.AppendLine("package {0}".Fmt(Config.Package));
+                sb.AppendLine($"package {Config.Package}");
                 sb.AppendLine();
             }
 
@@ -145,26 +154,29 @@ namespace ServiceStack.NativeTypes.Kotlin
                 .Select(x => x.Response).ToHashSet();
             var types = metadata.Types.ToHashSet();
 
-            AllTypes.AddRange(requestTypes);
-            AllTypes.AddRange(responseTypes);
-            AllTypes.AddRange(types);
+            allTypes = new List<MetadataType>();
+            allTypes.AddRange(requestTypes);
+            allTypes.AddRange(responseTypes);
+            allTypes.AddRange(types);
+
+            allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
-            var conflictPartialNames = AllTypes.Map(x => x.Name).Distinct()
+            var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
                 .GroupBy(g => g.LeftPart('`'))
                 .Where(g => g.Count() > 1)
                 .Select(g => g.Key)
                 .ToList();
 
-            this.conflictTypeNames = AllTypes
+            this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultImports.Each(x => sb.AppendLine("import {0}".Fmt(x)));
+            defaultImports.Each(x => sb.AppendLine($"import {x}"));
             sb.AppendLine();
 
             //ServiceStack core interfaces
-            foreach (var type in AllTypes)
+            foreach (var type in allTypes)
             {
                 var fullTypeName = type.GetFullName();
                 if (requestTypes.Contains(type))
@@ -230,19 +242,14 @@ namespace ServiceStack.NativeTypes.Kotlin
 
         private bool ReferencesGson(MetadataTypes metadata)
         {
-            var allTypes = GetAllMetadataTypes(metadata);
-            return allTypes.Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
+            return metadata.GetAllMetadataTypes().Any(x => KotlinGeneratorExtensions.KotlinKeyWords.Contains(x.Name)
                 || x.Properties.Safe().Any(p => p.DataMember != null && p.DataMember.Name != null)
                 || (x.ReturnMarkerTypeName != null && x.ReturnMarkerTypeName.Name.IndexOf('`') >= 0)); //uses TypeToken<T>
         }
 
-        private static List<MetadataType> GetAllMetadataTypes(MetadataTypes metadata)
+        private static bool ReferencesStream(MetadataTypes metadata)
         {
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(metadata.Types);
-            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
-            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Request));
-            return allTypes;
+            return metadata.GetAllMetadataTypes().Any(x => x.Name == "Stream" && x.Namespace == "System.IO");
         }
 
         //Use built-in types already in net.servicestack.client package
@@ -276,10 +283,10 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                var hasIntValue = type.EnumNames.Count == (type.EnumValues != null ? type.EnumValues.Count : 0);
+                var hasIntValue = type.EnumNames.Count == (type.EnumValues?.Count ?? 0);
                 var enumConstructor = hasIntValue ? "(val value:Int)" : "";
 
-                sb.AppendLine("enum class {0}{1}".Fmt(typeName, enumConstructor));
+                sb.AppendLine($"enum class {typeName}{enumConstructor}");
                 sb.AppendLine("{");
                 sb = sb.Indent();
 
@@ -291,13 +298,13 @@ namespace ServiceStack.NativeTypes.Kotlin
                         var name = type.EnumNames[i];
                         var value = hasIntValue ? type.EnumValues[i] : null;
 
-                        var serializeAs = JsConfig.TreatEnumAsInteger || (type.Attributes.Safe().Any(x => x.Name == "Flags"))
-                            ? "@SerializedName(\"{0}\") ".Fmt(value)
+                        var serializeAs = JsConfig.TreatEnumAsInteger || type.Attributes.Safe().Any(x => x.Name == "Flags")
+                            ? $"@SerializedName(\"{value}\") "
                             : "";
 
                         sb.AppendLine(value == null
-                            ? "{0},".Fmt(name.ToPascalCase())
-                            : serializeAs + "{0}({1}),".Fmt(name.ToPascalCase(), value));
+                            ? $"{name.ToPascalCase()},"
+                            : serializeAs + $"{name.ToPascalCase()}({value}),");
                     }
 
                     //if (hasIntValue)
@@ -340,17 +347,11 @@ namespace ServiceStack.NativeTypes.Kotlin
 
                             //Can't get .class from Generic Type definition
                             responseTypeExpression = returnType.Contains("<")
-                                ? "object : TypeToken<{0}>(){{}}.type".Fmt(returnType)
-                                : "{0}::class.java".Fmt(returnType);
+                                ? $"object : TypeToken<{returnType}>(){{}}.type"
+                                : $"{returnType}::class.java";
                         }
                     }
-                    if (!type.Implements.IsEmpty())
-                    {
-                        foreach (var interfaceRef in type.Implements)
-                        {
-                            interfaces.Add(Type(interfaceRef));
-                        }
-                    }
+                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
                 var extend = extends.Count > 0 
@@ -360,7 +361,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (interfaces.Count > 0)
                     extend += (extend.IsNullOrEmpty() ? " : " : ", ") + string.Join(", ", interfaces.ToArray());
 
-                sb.AppendLine("open {0} {1}{2}".Fmt(defType, typeName, extend));
+                sb.AppendLine($"open {defType} {typeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
@@ -368,19 +369,18 @@ namespace ServiceStack.NativeTypes.Kotlin
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("val {0}:Int = {1}".Fmt("Version".PropertyStyle(), Config.AddImplicitVersion));
+                    sb.AppendLine($"val {"Version".PropertyStyle()}:Int = {Config.AddImplicitVersion}");
                 }
 
-                var initCollections = feature.ShouldInitializeCollections(type, Config.InitializeCollections);
                 AddProperties(sb, type,
-                    initCollections: !type.IsInterface() && initCollections,
+                    initCollections: !type.IsInterface() && Config.InitializeCollections,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
 
                 if (responseTypeExpression != null)
                 {
-                    sb.AppendLine("companion object {{ private val responseType = {0} }}".Fmt(responseTypeExpression));
-                    sb.AppendLine("override fun getResponseType(): Any? = responseType");
+                    sb.AppendLine($"companion object {{ private val responseType = {responseTypeExpression} }}");
+                    sb.AppendLine($"override fun getResponseType(): Any? = {typeName}.responseType");
                 }
 
                 sb = sb.UnIndent();
@@ -404,7 +404,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 {
                     if (wasAdded) sb.AppendLine();
 
-                    var propType = Type(prop.Type, prop.GenericArgs);
+                    var propType = Type(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
 
                     var fieldName = prop.Name.SafeToken().PropertyStyle();
 
@@ -418,17 +418,16 @@ namespace ServiceStack.NativeTypes.Kotlin
                     if (!fieldName.IsKeyWord())
                     {
                         sb.AppendLine(!initProp
-                            ? "var {0}:{1}?{2}".Fmt(fieldName, propType, defaultValue)
-                            : "var {0}:{1} = {1}()".Fmt(fieldName, propType, defaultValue));
+                            ? $"var {fieldName}:{propType}?{defaultValue}"
+                            : $"var {fieldName}:{propType} = {propType}()");
                     }
                     else
                     {
                         var originalName = fieldName;
                         fieldName = char.ToUpper(fieldName[0]) + fieldName.SafeSubstring(1);
                         sb.AppendLine(!initProp
-                            ? "@SerializedName(\"{0}\") var {1}:{2}?{3}".Fmt(originalName, fieldName, propType,
-                                defaultValue)
-                            : "@SerializedName(\"{0}\") var {1}:{2} = {2}()".Fmt(originalName, fieldName, propType));
+                            ? $"@SerializedName(\"{originalName}\") var {fieldName}:{propType}?{defaultValue}"
+                            : $"@SerializedName(\"{originalName}\") var {fieldName}:{propType} = {propType}()");
                     }
                 }
             }
@@ -438,7 +437,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("var {0}:ResponseStatus?{1}".Fmt(typeof(ResponseStatus).Name.PropertyStyle(), defaultValue));
+                sb.AppendLine($"var {typeof(ResponseStatus).Name.PropertyStyle()}:ResponseStatus?{defaultValue}");
             }
         }
         
@@ -459,7 +458,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if ((attr.Args == null || attr.Args.Count == 0)
                     && (attr.ConstructorArgs == null || attr.ConstructorArgs.Count == 0))
                 {
-                    sb.AppendLine(prefix + "@{0}()".Fmt(attr.Name));
+                    sb.AppendLine(prefix + $"@{attr.Name}()");
                 }
                 else
                 {
@@ -473,7 +472,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -482,10 +481,10 @@ namespace ServiceStack.NativeTypes.Kotlin
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
-                    sb.AppendLine(prefix + "@{0}({1})".Fmt(attr.Name, StringBuilderCacheAlt.ReturnAndFree(args)));
+                    sb.AppendLine(prefix + $"@{attr.Name}({StringBuilderCacheAlt.ReturnAndFree(args)})");
                 }
             }
 
@@ -542,13 +541,11 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return /*@Nullable*/ "{0}".Fmt(GenericArg(genericArgs[0]));
+                    return /*@Nullable*/ GenericArg(genericArgs[0]);
                 if (ArrayTypes.Contains(type))
-                    return "ArrayList<{0}>".Fmt(GenericArg(genericArgs[0]));
+                    return $"ArrayList<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))
-                    return "HashMap<{0},{1}>".Fmt(
-                        GenericArg(genericArgs[0]),
-                        GenericArg(genericArgs[1]));
+                    return $"HashMap<{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}>";
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -563,8 +560,12 @@ namespace ServiceStack.NativeTypes.Kotlin
                     }
 
                     var typeName = TypeAlias(type);
-                    return "{0}<{1}>".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
+                    return $"{typeName}<{StringBuilderCacheAlt.ReturnAndFree(args)}>";
                 }
+            }
+            else
+            {
+                type = type.StripNullable();
             }
 
             return TypeAlias(type);
@@ -575,7 +576,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             type = type.SanitizeType();
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "ArrayList<{0}>".Fmt(TypeAlias(arrParts[0]));
+                return $"ArrayList<{TypeAlias(arrParts[0])}>";
 
             string typeAlias;
             TypeAliases.TryGetValue(type, out typeAlias);
@@ -597,7 +598,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (desc != null && Config.AddDescriptionAsComments)
             {
                 sb.AppendLine("/**");
-                sb.AppendLine("* {0}".Fmt(desc.SafeComment()));
+                sb.AppendLine($"* {desc.SafeComment()}");
                 sb.AppendLine("*/");
             }
 
@@ -617,19 +618,19 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (dcMeta.Name != null || dcMeta.Namespace != null)
             {
                 if (dcMeta.Name != null)
-                    dcArgs = "Name={0}".Fmt(dcMeta.Name.QuotedSafeValue());
+                    dcArgs = $"Name={dcMeta.Name.QuotedSafeValue()}";
 
                 if (dcMeta.Namespace != null)
                 {
                     if (dcArgs.Length > 0)
                         dcArgs += ", ";
 
-                    dcArgs += "Namespace={0}".Fmt(dcMeta.Namespace.QuotedSafeValue());
+                    dcArgs += $"Namespace={dcMeta.Namespace.QuotedSafeValue()}";
                 }
 
-                dcArgs = "({0})".Fmt(dcArgs);
+                dcArgs = $"({dcArgs})";
             }
-            sb.AppendLine("@DataContract{0}".Fmt(dcArgs));
+            sb.AppendLine($"@DataContract{dcArgs}");
         }
 
         public bool AppendDataMember(StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
@@ -639,8 +640,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                 if (Config.AddDataContractAttributes)
                 {
                     sb.AppendLine(Config.AddIndexesToDataMembers
-                                  ? "@DataMember(Order={0})".Fmt(dataMemberIndex)
-                                  : "@DataMember()");
+                        ? $"@DataMember(Order={dataMemberIndex})"
+                        : "@DataMember()");
                     return true;
                 }
                 return false;
@@ -654,14 +655,14 @@ namespace ServiceStack.NativeTypes.Kotlin
                 || Config.AddIndexesToDataMembers)
             {
                 if (dmMeta.Name != null)
-                    dmArgs = "Name={0}".Fmt(dmMeta.Name.QuotedSafeValue());
+                    dmArgs = $"Name={dmMeta.Name.QuotedSafeValue()}";
 
                 if (dmMeta.Order != null || Config.AddIndexesToDataMembers)
                 {
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "Order={0}".Fmt(dmMeta.Order ?? dataMemberIndex);
+                    dmArgs += $"Order={dmMeta.Order ?? dataMemberIndex}";
                 }
 
                 if (dmMeta.IsRequired != null)
@@ -669,7 +670,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "IsRequired={0}".Fmt(dmMeta.IsRequired.ToString().ToLower());
+                    dmArgs += $"IsRequired={dmMeta.IsRequired.ToString().ToLower()}";
                 }
 
                 if (dmMeta.EmitDefaultValue != null)
@@ -677,16 +678,16 @@ namespace ServiceStack.NativeTypes.Kotlin
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "EmitDefaultValue={0}".Fmt(dmMeta.EmitDefaultValue.ToString().ToLower());
+                    dmArgs += $"EmitDefaultValue={dmMeta.EmitDefaultValue.ToString().ToLower()}";
                 }
 
-                dmArgs = "({0})".Fmt(dmArgs);
+                dmArgs = $"({dmArgs})";
             }
-            sb.AppendLine("@DataMember{0}".Fmt(dmArgs));
+            sb.AppendLine($"@DataMember{dmArgs}");
 
             if (dmMeta.Name != null)
             {
-                sb.AppendLine("@SerializedName(\"{0}\")".Fmt(dmMeta.Name));
+                sb.AppendLine($"@SerializedName(\"{dmMeta.Name}\")");
             }
 
             return true;
@@ -889,15 +890,10 @@ namespace ServiceStack.NativeTypes.Kotlin
             var getter = type.StartsWithIgnoreCase("bool") && !accessorName.StartsWithIgnoreCase("is") 
                 ? "is" 
                 : "get";
-            sb.AppendLine("public {0} {3}{1}() {{ return {2}; }}".Fmt(type, accessorName, fieldName, getter));
-            if (settersReturnThis != null)
-            {
-                sb.AppendLine("public {3} set{1}({0} value) {{ this.{2} = value; return this; }}".Fmt(type, accessorName, fieldName, settersReturnThis));
-            }
-            else
-            {
-                sb.AppendLine("public void set{1}({0} value) {{ this.{2} = value; }}".Fmt(type, accessorName, fieldName));
-            }
+            sb.AppendLine($"public {type} {getter}{accessorName}() {{ return {fieldName}; }}");
+            sb.AppendLine(settersReturnThis != null
+                ? $"public {settersReturnThis} set{accessorName}({type} value) {{ this.{fieldName} = value; return this; }}"
+                : $"public void set{accessorName}({type} value) {{ this.{fieldName} = value; }}");
             return sb;
         }
     }

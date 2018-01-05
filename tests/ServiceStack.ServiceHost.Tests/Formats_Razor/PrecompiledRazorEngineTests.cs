@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Web;
 using NUnit.Framework;
-using ServiceStack.VirtualPath;
+using ServiceStack.IO;
 
 namespace ServiceStack.ServiceHost.Tests.Formats_Razor
 {
@@ -14,7 +14,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
         const string View2Html = "<div class='view2'>@DateTime.Now</div>";
         const string View3Html = "<div class='view3'>@DateTime.Now</div>";
 
-        protected override void InitializeFileSystem(InMemoryVirtualPathProvider fileSystem)
+        protected override void InitializeFileSystem(MemoryVirtualFiles fileSystem)
         {
             base.InitializeFileSystem(fileSystem);
 
@@ -54,14 +54,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats_Razor
             Assert.That(page.CompileException, Is.Not.Null);
         }
 
-        [ExpectedException(typeof(HttpCompileException))]
         [Test]
         public void Pages_with_errors_still_throw_exceptions_when_rendering()
         {
             const string template = "This is a bad template, Hello @SomeInvalidMember.Name!";
-            RazorFormat.AddFileAndPage("/simple.cshtml", template);
 
-            RazorFormat.RenderToHtml("/simple.cshtml", new { Name = "World" });
+            Assert.Throws<HttpCompileException>(() => {
+                RazorFormat.AddFileAndPage("/simple.cshtml", template);
+                RazorFormat.RenderToHtml("/simple.cshtml", new { Name = "World" });
+            });
         }
     }
 

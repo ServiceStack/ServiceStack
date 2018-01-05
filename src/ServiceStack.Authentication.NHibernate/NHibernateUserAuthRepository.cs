@@ -88,9 +88,9 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth == null)
                 return false;
 
-            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                this.RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth, needsRehash, password);
 
                 return true;
             }
@@ -107,8 +107,7 @@ namespace ServiceStack.Authentication.NHibernate
             if (userAuth == null)
                 return false;
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
 
@@ -212,13 +211,7 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser);
 
-            var saltedHash = HostContext.Resolve<IHashProvider>();
-            string salt;
-            string hash;
-            saltedHash.GetHashAndSaltString(password, out hash, out salt);
-
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password);
             newUser.CreatedDate = DateTime.UtcNow;
             newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -235,7 +228,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
 
             if (newUser.Email != null)
@@ -243,7 +236,7 @@ namespace ServiceStack.Authentication.NHibernate
                 var existingUser = GetUserAuthByUserName(newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
             }
         }
 
@@ -280,17 +273,8 @@ namespace ServiceStack.Authentication.NHibernate
 
             AssertNoExistingUser(newUser, existingUser);
 
-            var hash = existingUser.PasswordHash;
-            var salt = existingUser.Salt;
-            if (password != null)
-            {
-                var saltedHash = HostContext.Resolve<IHashProvider>();
-                saltedHash.GetHashAndSaltString(password, out hash, out salt);
-            }
-
             newUser.Id = existingUser.Id;
-            newUser.PasswordHash = hash;
-            newUser.Salt = salt;
+            newUser.PopulatePasswordHashes(password, existingUser);
             newUser.CreatedDate = existingUser.CreatedDate;
             newUser.ModifiedDate = DateTime.UtcNow;
 

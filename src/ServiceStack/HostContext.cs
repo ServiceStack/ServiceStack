@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using System.Web;
 using Funq;
 using ServiceStack.Caching;
@@ -13,7 +14,6 @@ using ServiceStack.IO;
 using ServiceStack.Metadata;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Web;
-using static System.String;
 
 namespace ServiceStack
 {
@@ -23,17 +23,19 @@ namespace ServiceStack
 
         public static ServiceStackHost AppHost => ServiceStackHost.Instance;
 
-        private static ServiceStackHost AssertAppHost()
+        public static AsyncContext Async = new AsyncContext();
+
+        internal static ServiceStackHost AssertAppHost()
         {
             if (ServiceStackHost.Instance == null)
                 throw new ConfigurationErrorsException(
                     "ServiceStack: AppHost does not exist or has not been initialized. " +
                     "Make sure you have created an AppHost and started it with 'new AppHost().Init();' " +
                     " in your Global.asax Application_Start() or alternative Application StartUp");
-
+                    
             return ServiceStackHost.Instance;
         }
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static bool IsAspNetHost => ServiceStackHost.Instance is AppHostBase;
         public static bool IsHttpListenerHost => ServiceStackHost.Instance is Host.HttpListener.HttpListenerBase;
         public static bool IsNetCore => false;
@@ -62,25 +64,15 @@ namespace ServiceStack
 
         public static string ServiceName => AssertAppHost().ServiceName;
 
-        public static bool DebugMode => AppHost?.Config.DebugMode == true;
+        public static bool DebugMode => AppHost?.Config?.DebugMode == true;
+
+        public static bool StrictMode => AppHost?.Config?.StrictMode == true;
 
         public static bool TestMode
         {
-            get { return ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode; }
-            set { ServiceStackHost.Instance.TestMode = value; }
+            get => ServiceStackHost.Instance != null && ServiceStackHost.Instance.TestMode;
+            set => ServiceStackHost.Instance.TestMode = value;
         }
-
-        public static List<HttpHandlerResolverDelegate> CatchAllHandlers => AssertAppHost().CatchAllHandlers;
-
-        public static List<Func<IHttpRequest, IHttpHandler>> RawHttpHandlers => AssertAppHost().RawHttpHandlers;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalRequestFilters => AssertAppHost().GlobalRequestFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalResponseFilters => AssertAppHost().GlobalResponseFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageRequestFilters => AssertAppHost().GlobalMessageRequestFilters;
-
-        public static List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters => AssertAppHost().GlobalMessageResponseFilters;
 
         public static bool ApplyCustomHandlerRequestFilters(IRequest httpReq, IResponse httpRes)
         {
@@ -92,14 +84,14 @@ namespace ServiceStack
             return AssertAppHost().ApplyPreRequestFilters(httpReq, httpRes);
         }
 
-        public static bool ApplyRequestFilters(IRequest httpReq, IResponse httpRes, object requestDto)
+        public static Task ApplyRequestFiltersAsync(IRequest httpReq, IResponse httpRes, object requestDto)
         {
-            return AssertAppHost().ApplyRequestFilters(httpReq, httpRes, requestDto);
+            return AssertAppHost().ApplyRequestFiltersAsync(httpReq, httpRes, requestDto);
         }
 
-        public static bool ApplyResponseFilters(IRequest httpReq, IResponse httpRes, object response)
+        public static Task ApplyResponseFiltersAsync(IRequest httpReq, IResponse httpRes, object response)
         {
-            return AssertAppHost().ApplyResponseFilters(httpReq, httpRes, response);
+            return AssertAppHost().ApplyResponseFiltersAsync(httpReq, httpRes, response);
         }
 
         /// <summary>
@@ -111,9 +103,6 @@ namespace ServiceStack
         /// Cascading collection of virtual file sources, inc. Embedded Resources, File System, In Memory, S3
         /// </summary>
         public static IVirtualPathProvider VirtualFileSources => AssertAppHost().VirtualFileSources;
-
-        [Obsolete("Renamed to VirtualFileSources")]
-        public static IVirtualPathProvider VirtualPathProvider => AssertAppHost().VirtualFileSources;
 
         public static ICacheClient Cache => TryResolve<ICacheClient>();
 
@@ -142,6 +131,15 @@ namespace ServiceStack
             {
                 return AssertAppHost().ServiceController.Execute(request, httpReq);
             }
+        }
+
+        public static T AssertPlugin<T>() where T : class, IPlugin
+        {
+            var appHost = AppHost;
+            var plugin = appHost.GetPlugin<T>();
+            if (plugin == null)
+                throw new NotImplementedException($"Plugin '{typeof(T).Name}' has not been registered.");
+            return plugin;
         }
 
         public static T GetPlugin<T>() where T : class, IPlugin
@@ -188,31 +186,16 @@ namespace ServiceStack
             return AssertAppHost().ResolvePhysicalPath(virtualPath, httpReq);
         }
 
-        public static IVirtualFile ResolveVirtualFile(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualFile(virtualPath, httpReq);
-        }
-
-        public static IVirtualDirectory ResolveVirtualDirectory(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualDirectory(virtualPath, httpReq);
-        }
-
-        public static IVirtualNode ResolveVirtualNode(string virtualPath, IRequest httpReq)
-        {
-            return AssertAppHost().ResolveVirtualNode(virtualPath, httpReq);
-        }
-
         private static string defaultOperationNamespace;
         public static string DefaultOperationNamespace
         {
-            get { return defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace()); }
-            set { defaultOperationNamespace = value; }
+            get => defaultOperationNamespace ?? (defaultOperationNamespace = GetDefaultNamespace());
+            set => defaultOperationNamespace = value;
         }
 
         public static string GetDefaultNamespace()
         {
-            if (!IsNullOrEmpty(defaultOperationNamespace)) return null;
+            if (!string.IsNullOrEmpty(defaultOperationNamespace)) return null;
 
             foreach (var operationType in Metadata.RequestTypes)
             {
@@ -221,7 +204,7 @@ namespace ServiceStack
                 if (attrs.Length <= 0) continue;
 
                 var attr = attrs[0];
-                if (IsNullOrEmpty(attr.Namespace)) continue;
+                if (string.IsNullOrEmpty(attr.Namespace)) continue;
 
                 return attr.Namespace;
             }
@@ -229,27 +212,27 @@ namespace ServiceStack
             return null;
         }
 
-        public static object RaiseServiceException(IRequest httpReq, object request, Exception ex)
+        public static Task<object> RaiseServiceException(IRequest httpReq, object request, Exception ex)
         {
             return AssertAppHost().OnServiceException(httpReq, request, ex);
         }
 
-        public static void RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static Task RaiseUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            return AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-        public static void RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        public static async Task RaiseAndHandleUncaughtException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
-            AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().OnUncaughtException(httpReq, httpRes, operationName, ex);
 
             if (httpRes.IsClosed)
                 return;
 
-            AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
+            await AssertAppHost().HandleUncaughtException(httpReq, httpRes, operationName, ex);
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         /// <summary>
         /// Resolves and auto-wires a ServiceStack Service from a ASP.NET HttpContext.
         /// </summary>
@@ -278,8 +261,7 @@ namespace ServiceStack
 
         public static T ResolveService<T>(IRequest httpReq, T service)
         {
-            var hasRequest = service as IRequiresRequest;
-            if (hasRequest != null)
+            if (service is IRequiresRequest hasRequest)
             {
                 httpReq.SetInProcessRequest();
                 hasRequest.Request = httpReq;

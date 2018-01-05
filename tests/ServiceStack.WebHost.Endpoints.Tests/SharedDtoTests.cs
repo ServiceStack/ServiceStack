@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
      * Leave commented out - this pollutes and causes many failures in other tests
      */
 
-    //[Explicit("This isn't supported at the moment.")]
+    //[Ignore("This isn't supported at the moment.")]
     //public class SharedDtoTests
     //{
     //    [Route("/shareddto")]
@@ -49,7 +49,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     //    AppHost appHost;
 
-    //    [TestFixtureSetUp]
+    //    [OneTimeSetUp]
     //    public void OnTestFixtureSetUp()
     //    {
     //        appHost = new AppHost();
@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     //        appHost.Start(ListeningOn);
     //    }
 
-    //    [TestFixtureTearDown]
+    //    [OneTimeTearDown]
     //    public void OnTestFixtureTearDown()
     //    {
     //        appHost.Dispose();

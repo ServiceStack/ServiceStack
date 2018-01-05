@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_6
+﻿#if !NETSTANDARD2_0
 
 using System;
 using System.Collections.Generic;
@@ -29,6 +29,8 @@ namespace ServiceStack.Auth
                     "AspNetWindowsAuthProvider is only supported on ASP.NET hosts");
             }
 
+            PopulateUserRoles = PopulateUserSessionWithIsInRole;
+
             //Add all pre-defined Roles used to in App to 'AllRoles'
             appHost.AfterInitCallbacks.Add(host =>
             {
@@ -50,6 +52,8 @@ namespace ServiceStack.Auth
         /// Only allow access to users in specified roles
         /// </summary>
         public List<string> LimitAccessToRoles { get; set; }
+
+        public Action<IRequest, IPrincipal, IAuthSession> PopulateUserRoles { get; set; }
 
         public bool AllowAllWindowsAuthUsers
         {
@@ -122,11 +126,7 @@ namespace ServiceStack.Auth
                 if (session.Roles == null)
                     session.Roles = new List<string>();
 
-                foreach (var role in AllRoles.Safe())
-                {
-                    if (user.IsInRole(role))
-                        session.Roles.AddIfNotExists(role);
-                }
+                PopulateUserRoles(authService.Request, user, session);
 
                 this.SaveSession(authService, session, SessionExpiry);
                 
@@ -143,6 +143,23 @@ namespace ServiceStack.Auth
             }
 
             throw HttpError.Unauthorized(ErrorMessages.WindowsAuthFailed);
+        }
+
+        protected override IAuthRepository GetAuthRepository(IRequest req)
+        {
+            return null; //Sources User Info from Windows Auth instead of Auth Repo
+        }
+
+        private void PopulateUserSessionWithIsInRole(IRequest req, IPrincipal user, IAuthSession session)
+        {
+            foreach (var role in AllRoles.Safe())
+            {
+                if (session.Roles.Contains(role))
+                    continue;
+
+                if (user.IsInRole(role))
+                    session.Roles.AddIfNotExists(role);
+            }
         }
 
         public static void AuthenticateIfWindowsAuth(IRequest req, IResponse res)

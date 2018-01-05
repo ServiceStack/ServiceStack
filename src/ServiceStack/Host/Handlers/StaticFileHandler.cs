@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.IO;
 using ServiceStack.Logging;
@@ -53,6 +54,17 @@ namespace ServiceStack.Host.Handlers
             RequestName = GetType().Name; //Always allow StaticFileHandlers
         }
 
+        /// <summary>
+        /// Return File at specified virtualPath from AppHost.VirtualFiles ContentRootPath
+        /// </summary>
+        public StaticFileHandler(string virtualPath) : this()
+        {
+            VirtualNode = HostContext.AppHost.VirtualFiles.GetFile(virtualPath);
+
+            if (VirtualNode == null)
+                throw new ArgumentException("Could not find file at VirtualPath: " + virtualPath);
+        }
+
         public StaticFileHandler(IVirtualFile virtualFile) : this()
         {
             VirtualNode = virtualFile;
@@ -63,17 +75,12 @@ namespace ServiceStack.Host.Handlers
             VirtualNode = virtualDir;
         }
 
-#if !NETSTANDARD1_6
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            var httpReq = context.ToRequest(GetType().GetOperationName());
-            ProcessRequest(httpReq, httpReq.Response, httpReq.OperationName);
-        }
-#endif
         public int BufferSize { get; set; }
         private static DateTime DefaultFileModified { get; set; }
         private static string DefaultFilePath { get; set; }
         private static byte[] DefaultFileContents { get; set; }
+        private static byte[] DefaultFileContentsGzip { get; set; }
+        private static byte[] DefaultFileContentsDeflate { get; set; }
         public IVirtualNode VirtualNode { get; set; }
 
         /// <summary>
@@ -94,12 +101,12 @@ namespace ServiceStack.Host.Handlers
             }
         }
 
-        public override void ProcessRequest(IRequest request, IResponse response, string operationName)
+        public override async Task ProcessRequestAsync(IRequest request, IResponse response, string operationName)
         {
             HostContext.ApplyCustomHandlerRequestFilters(request, response);
             if (response.IsClosed) return;
 
-            response.EndHttpHandlerRequest(afterHeaders: r =>
+            await response.EndHttpHandlerRequestAsync(afterHeaders: async r =>
             {
                 var node = this.VirtualNode ?? request.GetVirtualNode();
                 var file = node as IVirtualFile;
@@ -108,7 +115,7 @@ namespace ServiceStack.Host.Handlers
                     var dir = node as IVirtualDirectory;
                     if (dir != null)
                     {
-                        file = dir.GetDefaultDocument();
+                        file = dir.GetDefaultDocument(HostContext.AppHost.Config.DefaultDocuments);
                         if (file != null && HostContext.Config.RedirectToDefaultDocuments)
                         {
                             r.Redirect(request.GetPathUrl() + '/' + file.Name);
@@ -137,7 +144,7 @@ namespace ServiceStack.Host.Handlers
 
                         if (file == null)
                         {
-                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo);
+                            var msg = ErrorMessages.FileNotExistsFmt.Fmt(request.PathInfo.SafeInput());
                             log.Warn($"{msg} in path: {originalFileName}");
                             response.StatusCode = 404;
                             response.StatusDescription = msg;
@@ -164,6 +171,8 @@ namespace ServiceStack.Host.Handlers
 
                 try
                 {
+                    var encoding = request.GetCompressionType();
+                    var shouldCompress = encoding != null && HostContext.AppHost.ShouldCompressFile(file);
                     r.AddHeaderLastModified(file.LastModified);
                     r.ContentType = MimeTypes.GetMimeType(file.Name);
 
@@ -175,12 +184,39 @@ namespace ServiceStack.Host.Handlers
                             return;
                     }
 
-                    if (file.VirtualPath.EqualsIgnoreCase(DefaultFilePath))
+                    if (!HostContext.DebugMode && file.VirtualPath.EqualsIgnoreCase(DefaultFilePath))
                     {
                         if (file.LastModified > DefaultFileModified)
                             SetDefaultFile(DefaultFilePath, file.ReadAllBytes(), file.LastModified); //reload
 
-                        r.OutputStream.Write(DefaultFileContents, 0, DefaultFileContents.Length);
+                        if (!shouldCompress)
+                        {
+                            await r.OutputStream.WriteAsync(DefaultFileContents);
+                            await r.OutputStream.FlushAsync();
+                        }
+                        else
+                        {
+                            byte[] zipBytes = null;
+                            if (encoding == CompressionTypes.GZip)
+                            {
+                                zipBytes = DefaultFileContentsGzip ??
+                                           (DefaultFileContentsGzip = DefaultFileContents.CompressBytes(encoding));
+                            }
+                            else if (encoding == CompressionTypes.Deflate)
+                            {
+                                zipBytes = DefaultFileContentsDeflate ??
+                                           (DefaultFileContentsDeflate = DefaultFileContents.CompressBytes(encoding));
+                            }
+                            else
+                            {
+                                zipBytes = DefaultFileContents.CompressBytes(encoding);
+                            }
+                            r.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                            r.SetContentLength(zipBytes.Length);
+                            await r.OutputStream.WriteAsync(zipBytes);
+                            await r.OutputStream.FlushAsync();
+                        }
+
                         r.Close();
                         return;
                     }
@@ -203,23 +239,34 @@ namespace ServiceStack.Host.Handlers
                     {
                         rangeStart = 0;
                         rangeEnd = contentLength - 1;
-                        r.SetContentLength(contentLength); //throws with ASP.NET webdev server non-IIS pipelined mode
                     }
                     var outputStream = r.OutputStream;
                     using (var fs = file.OpenRead())
                     {
                         if (rangeStart != 0 || rangeEnd != file.Length - 1)
                         {
-                            fs.WritePartialTo(outputStream, rangeStart, rangeEnd);
+                            await fs.WritePartialToAsync(outputStream, rangeStart, rangeEnd);
                         }
                         else
                         {
-                            fs.CopyTo(outputStream, BufferSize);
-                            outputStream.Flush();
+                            if (!shouldCompress)
+                            {
+                                r.SetContentLength(contentLength);
+                                await fs.CopyToAsync(outputStream, BufferSize);
+                                outputStream.Flush();
+                            }
+                            else
+                            {
+                                r.AddHeader(HttpHeaders.ContentEncoding, encoding);
+                                outputStream = outputStream.CompressStream(encoding);
+                                await fs.CopyToAsync(outputStream);
+                                await outputStream.FlushAsync();
+                                outputStream.Close();
+                            }
                         }
                     }
                 }
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 catch (System.Net.HttpListenerException ex)
                 {
                     if (ex.ErrorCode == 1229)
@@ -267,19 +314,9 @@ namespace ServiceStack.Host.Handlers
 
         public override bool IsReusable => true;
 
-        public static bool DirectoryExists(string dirPath, string appFilePath)
+        public static bool MonoDirectoryExists(string dirPath, string appFilePath)
         {
             if (dirPath == null) return false;
-
-            try
-            {
-                if (!Env.IsMono)
-                    return Directory.Exists(dirPath);
-            }
-            catch
-            {
-                return false;
-            }
 
             if (allDirs == null)
                 allDirs = CreateDirIndex(appFilePath);
@@ -287,10 +324,9 @@ namespace ServiceStack.Host.Handlers
             var foundDir = allDirs.ContainsKey(dirPath.ToLower());
 
             //log.DebugFormat("Found dirPath {0} in Mono: ", dirPath, foundDir);
-
             return foundDir;
         }
-
+        
         private static Dictionary<string, string> allDirs; //populated by GetFiles()
         private static Dictionary<string, string> allFiles;
 

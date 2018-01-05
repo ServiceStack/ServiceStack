@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -46,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             {
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("Object reference not set to an instance of an object."));
             }
         }
 
@@ -63,7 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
                 var ex = (WebServiceException)aex.UnwrapIfSingleException();
                 Assert.That(ex.StatusCode, Is.EqualTo(500));
                 Assert.That(ex.StatusDescription, Is.EqualTo("NullReferenceException"));
-                Assert.That(ex.Message, Is.EqualTo("NullReferenceException"));
+                Assert.That(ex.Message, Is.EqualTo("Object reference not set to an instance of an object."));
             }
         }
 
@@ -156,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
     {
         public object Get(Error request)
         {
-            if (request != null && !string.IsNullOrEmpty(request.Id))
+            if (!string.IsNullOrEmpty(request?.Id))
                 return new ErrorResponse(new Error { Id = "Test" });
 
             return new ErrorCollectionResponse(new List<Error> { new Error { Id = "TestCollection" } });
@@ -173,14 +174,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.IntegrationTests
             return new ActionError();
         }
 
-        public string Any(EchoCustomResponse request)
+        public async Task<string> Any(EchoCustomResponse request)
         {
             base.Response.StatusCode = request.StatusCode;
             base.Response.StatusDescription = request.StatusDescription;
             base.Response.ContentType = request.ContentType ?? MimeTypes.PlainText;
 
             if (request.Body != null)
-                base.Response.Write(request.Body);
+                await base.Response.WriteAsync(request.Body);
 
             base.Response.EndRequest(skipHeaders:true);
 

@@ -1,6 +1,6 @@
-﻿#if !NETSTANDARD1_6 
+﻿#if !NETSTANDARD2_0
 
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -34,22 +34,22 @@ namespace ServiceStack.Host.HttpListener
 
         private readonly AutoResetEvent ListenForNextRequest = new AutoResetEvent(false);
 
-        [Obsolete("Use OnBeforeRequestFn")]
-        public event DelReceiveWebRequest ReceiveWebRequest;
-
         public Action<HttpListenerContext> BeforeRequest { get; set; }
 
         protected HttpListenerBase(string serviceName, params Assembly[] assembliesWithServices)
-            : base(serviceName, assembliesWithServices)
-        {
-            RawHttpHandlers.Add(RedirectDirectory);
-        }
+            : base(serviceName, assembliesWithServices) {}
 
         public override void OnAfterInit()
         {
             base.OnAfterInit();
 
             SetAppDomainData();
+
+            if (ServiceStack.Text.Env.IsMono)
+            {
+                // Required or throws NRE in Xamarin.Mac
+                System.Web.Util.HttpEncoder.Current = System.Web.Util.HttpEncoder.Default;
+            }
         }
 
         public virtual void SetAppDomainData()
@@ -215,8 +215,6 @@ namespace ServiceStack.Host.HttpListener
                 ListenForNextRequest.Set();
             }
 
-            if (context == null) return;
-
             if (Config.DebugMode)
                 Log.DebugFormat("{0} Request : {1}", context.Request.UserHostAddress, context.Request.RawUrl);
 
@@ -237,7 +235,7 @@ namespace ServiceStack.Host.HttpListener
             try
             {
                 var task = this.ProcessRequestAsync(context);
-                task.ContinueWith(x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
+                task = HostContext.Async.ContinueWith(task, x => HandleError(x.Exception, context), TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.AttachedToParent);
 
                 if (task.Status == TaskStatus.Created)
                 {
@@ -262,9 +260,10 @@ namespace ServiceStack.Host.HttpListener
             }
             catch (Exception errorEx)
             {
-                var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}"
-                            .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message);
+                var error = "Error this.ProcessRequest(context)(Exception while writing error to the response): [{0}]: {1}\n{2}"
+                            .Fmt(errorEx.GetType().GetOperationName(), errorEx.Message, ex);
                 Log.Error(error, errorEx);
+                context.Response.Close();
             }
         }
 
@@ -283,15 +282,14 @@ namespace ServiceStack.Host.HttpListener
             var httpRes = httpReq.Response;
             var contentType = httpReq.ResponseContentType;
 
-            var serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+            var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             if (serializer == null)
             {
                 contentType = HostContext.Config.DefaultContentType;
-                serializer = HostContext.ContentTypes.GetResponseSerializer(contentType);
+                serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType);
             }
 
-            var httpError = ex as IHttpError;
-            if (httpError != null)
+            if (ex is IHttpError httpError)
             {
                 httpRes.StatusCode = httpError.Status;
                 httpRes.StatusDescription = httpError.StatusDescription;
@@ -303,7 +301,7 @@ namespace ServiceStack.Host.HttpListener
 
             httpRes.ContentType = contentType;
 
-            serializer(httpReq, errorResponse, httpRes);
+            serializer(httpReq, errorResponse, httpRes.OutputStream).Wait();
 
             httpRes.Close();
         }
@@ -317,10 +315,8 @@ namespace ServiceStack.Host.HttpListener
 
         protected virtual void OnBeginRequest(HttpListenerContext context)
         {
-            ReceiveWebRequest?.Invoke(context);
             BeforeRequest?.Invoke(context);
         }
-
 
         /// <summary>
         /// Shut down the Web Service
@@ -439,10 +435,9 @@ namespace ServiceStack.Host.HttpListener
         }
 
         private bool disposed;
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             if (disposed) return;
-            base.Dispose();
 
             lock (this)
             {
@@ -452,16 +447,12 @@ namespace ServiceStack.Host.HttpListener
                 {
                     this.Stop();
                 }
-
                 //release unmanaged resources here...
+                
                 disposed = true;
             }
-        }
 
-        public override void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            base.Dispose(disposing);
         }
     }
 }

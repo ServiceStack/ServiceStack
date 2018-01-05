@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
@@ -53,23 +54,7 @@ namespace ServiceStack
             return sessionId;
         }
 
-        /// <summary>
-        /// If they don't have an ICacheClient configured use an In Memory one.
-        /// </summary>
-        internal static readonly MemoryCacheClient DefaultCache = new MemoryCacheClient();
-
-        public static ICacheClient GetCacheClient(this IResolver service)
-        {
-            var cache = service.TryResolve<ICacheClient>();
-            if (cache != null)
-                return cache;
-
-            var redisManager = service.TryResolve<IRedisClientsManager>();
-            if (redisManager != null)
-                return redisManager.GetCacheClient();
-
-            return DefaultCache;
-        }
+        public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost.GetCacheClient(request);
 
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {
@@ -138,6 +123,19 @@ namespace ServiceStack
             }
 
             return SessionFeature.GetOrCreateSession<TUserSession>(req.GetCacheClient(), req, req.Response);
+        }
+
+        public static bool IsAuthenticated(this IRequest req)
+        {
+            //Sync with [Authenticate] impl
+            if (HostContext.HasValidAuthSecret(req))
+                return true;
+            
+            var authProviders = AuthenticateService.GetAuthProviders();
+            AuthenticateAttribute.PreAuthenticate(req, authProviders);
+            
+            var session = req.GetSession();
+            return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
         }
 
         public static IAuthSession GetSession(this IRequest httpReq, bool reload = false)
@@ -214,8 +212,8 @@ namespace ServiceStack
         {
             var actionCtx = new ActionContext
             {
-                RequestFilters = TypeConstants<IHasRequestFilter>.EmptyArray,
-                ResponseFilters = TypeConstants<IHasResponseFilter>.EmptyArray,
+                RequestFilters = TypeConstants<IRequestFilterBase>.EmptyArray,
+                ResponseFilters = TypeConstants<IResponseFilterBase>.EmptyArray,
                 ServiceType = typeof(TService),
                 RequestType = typeof(TRequest),
                 ServiceAction = (instance, req) => invokeAction(service, request)
@@ -224,7 +222,8 @@ namespace ServiceStack
             requestContext = requestContext ?? new MockHttpRequest();
             ServiceController.InjectRequestContext(service, requestContext);
             var runner = HostContext.CreateServiceRunner<TRequest>(actionCtx);
-            var response = runner.Execute(requestContext, service, request);
+            var responseTask = runner.ExecuteAsync(requestContext, service, request);
+            var response = responseTask.Result;
             return response;
         }
     }

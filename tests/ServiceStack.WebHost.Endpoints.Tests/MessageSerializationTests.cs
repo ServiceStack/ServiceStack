@@ -64,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			}
 		}
 
+#if !NETCORE
 		[Test]
 		public void Can_create_entire_message_from_xml()
 		{
@@ -153,6 +154,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			var request = (Reverse)DataContractSerializer.Instance.DeserializeFromString(requestXml, requestType);
 			Assert.That(request.Value, Is.EqualTo("Testing"));
 		}
+#endif
 
 		public class DtoBodyWriter : BodyWriter
 		{

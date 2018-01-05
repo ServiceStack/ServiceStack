@@ -2,7 +2,9 @@
 
 using System;
 using System.Collections.Generic;
+#if !MONO
 using System.DirectoryServices.AccountManagement;
+#endif
 using System.Net;
 using System.Threading;
 using System.Web;
@@ -49,15 +51,16 @@ namespace ServiceStack.AuthWeb.Tests
 
         public override void Configure(Container container)
         {
+            Plugins.Add(new MiniProfilerFeature());
             Plugins.Add(new RazorFormat());
             Plugins.Add(new ServerEventsFeature
             {
-                WriteEvent = (res, frame) =>
+                OnCreated = (sub, req) =>
                 {
-                    var aspRes = (HttpResponseBase)res.OriginalResponse;
-                    var bytes = frame.ToUtf8Bytes();
-                    aspRes.OutputStream.WriteAsync(bytes, 0, bytes.Length)
-                        .Then(_ => aspRes.OutputStream.FlushAsync());
+                    sub.ServerArgs = new Dictionary<string, string>
+                    {
+                        { "server-arg", "1" }
+                    };
                 }
             });
 
@@ -258,7 +261,7 @@ namespace ServiceStack.AuthWeb.Tests
         {
             if (userSession == null)
                 return;
-
+#if !MONO
             try
             {
                 using (PrincipalContext pc = new PrincipalContext(ContextType.Domain))
@@ -283,6 +286,7 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 Log.Error("Could not retrieve windows user info for '{0}'".Fmt(tokens.DisplayName), ex);
             }
+#endif
         }
 
         public override List<Type> ExportSoapOperationTypes(List<Type> operationTypes)
@@ -441,6 +445,11 @@ namespace ServiceStack.AuthWeb.Tests
         public string Selector { get; set; }
     }
 
+    [Route("/subscribers")]
+    public class GetAllSubscribers : IReturn<SubscriptionInfo>
+    {        
+    }
+
     public class ServerEventsService : Service
     {
         private static long msgId;
@@ -494,6 +503,11 @@ namespace ServiceStack.AuthWeb.Tests
             {
                 ServerEvents.NotifyChannel(request.Channel, request.Selector, request.Message);
             }
+        }
+
+        public object Any(GetAllSubscribers request)
+        {
+            return ServerEvents.GetAllSubscriptionInfos();
         }
     }
 

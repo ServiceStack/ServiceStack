@@ -7,6 +7,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Testing;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
@@ -95,14 +96,14 @@ namespace ServiceStack.Common.Tests.OAuth
             .Register(null);
 
             mockService = new Mock<IServiceBase>();
-            mockService.Expect(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
+            mockService.Setup(x => x.TryResolve<IAuthRepository>()).Returns(userAuthRepository);
             requestContext = new BasicRequest
             {
                 Headers = {
                     {"X-ss-id", SessionExtensions.CreateRandomSessionId() }
                 }
             };
-            mockService.Expect(x => x.Request).Returns(requestContext);
+            mockService.Setup(x => x.Request).Returns(requestContext);
             service = mockService.Object;
 
             RegisterDto = new Register
@@ -201,7 +202,8 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             MockAuthHttpGateway.Tokens = facebookGatewayTokens;
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens, new Dictionary<string, string>());
+            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
             Console.WriteLine("UserId: " + oAuthUserSession.UserAuthId);
         }
     }

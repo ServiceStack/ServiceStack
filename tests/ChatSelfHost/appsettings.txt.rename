@@ -1,0 +1,20 @@
+LimitRemoteControlToAuthenticatedUsers False
+
+# Auth config
+oauth.RedirectUrl http://localhost:1337/
+# Should match with OAuth2's App Callback URL 
+oauth.CallbackUrl http://localhost:1337/auth/{0}
+
+# Create Twitter App at: https://dev.twitter.com/apps 
+oauth.twitter.ConsumerKey 6APZQFxeVVLobXT2wRZArerg0
+oauth.twitter.ConsumerSecret bKwpp31AS90MUBw1s1w0pIIdYdVEdPLa1VvobUr7IXR762hdUn
+
+# Create Facebook App at: https://developers.facebook.com/apps
+oauth.facebook.Permissions email,read_stream
+oauth.facebook.AppId 273152282888528
+oauth.facebook.AppSecret 458e362db7629b21c2ec7e02d2bf27fd
+
+# Create GitHub App at: https://github.com/settings/applications/new
+oauth.github.Scopes user
+oauth.github.ClientId 5cb5eedbf0a8d1fccb1f
+oauth.github.ClientSecret 89b3b8885c4c05400f1d1538f82eaed5eb5d6224

@@ -1,445 +1,110 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="12.0">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.30729</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{55C5C6DA-1834-4BA8-8D2F-19C091B6FC81}</ProjectGuid>
+    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.WebHost.Endpoints.Tests</RootNamespace>
     <AssemblyName>ServiceStack.WebHost.Endpoints.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <UpgradeBackupLocation />
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\src\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-    <TargetFrameworkProfile />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <PlatformTarget>x86</PlatformTarget>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>True</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <PlatformTarget>x86</PlatformTarget>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'STATIC_ONLY NO_EXPRESSIONS|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\STATIC_ONLY NO_EXPRESSIONS\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'MonoTouch|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <OutputPath>bin\MonoTouch\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Optimize>False</Optimize>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
-    <OutputPath>bin\Signed\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PackageId>ServiceStack.WebHost.Endpoints.Tests</PackageId>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\AWSSDK.Core.3.1.9.1\lib\net45\AWSSDK.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="AWSSDK.DynamoDBv2, Version=3.1.0.0, Culture=neutral, PublicKeyToken=885c28607f98e604, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\AWSSDK.DynamoDBv2.3.1.5.2\lib\net45\AWSSDK.DynamoDBv2.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MySql.Data">
-      <HintPath>..\..\lib\MySql.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="NHibernate">
-      <HintPath>..\..\src\ServiceStack.Authentication.NHibernate\bin\Release\NHibernate.dll</HintPath>
-    </Reference>
-    <Reference Include="Npgsql">
-      <HintPath>..\..\lib\Npgsql.dll</HintPath>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.4.14350, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="protobuf-net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\protobuf-net.2.1.0\lib\net45\protobuf-net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="ServiceStack.Aws, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\lib\ServiceStack.Aws.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite.MySql">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.MySql.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite.PostgreSQL">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.OrmLite.SqlServer">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Redis">
-      <HintPath>..\..\lib\ServiceStack.Redis.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Net" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Runtime.Serialization">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.ServiceModel">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="NUnit" Version="3.9.0" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.10.6" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.4.4" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
+      <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
+      <Name>ServiceStack.Api.OpenApi</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
+    <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.106" />
+    <PackageReference Include="Mysql.Data" Version="6.9.10" />
     <Reference Include="System.Xml" />
-    <Reference Include="Moq">
-      <HintPath>..\..\lib\tests\Moq.dll</HintPath>
-    </Reference>
-    <Reference Include="Mono.Data.Sqlite">
-      <HintPath>..\..\lib\tests\Mono.Data.Sqlite.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Net" />
+    <Reference Include="System.ServiceModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
+    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.SqlServer.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.MySql.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
+  </ItemGroup>
+  <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
+   https://github.com/nunit/dotnet-test-nunit/issues/91 
+   To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
+   -->
+  <PropertyGroup Condition=" '$(NUNITLITE)' != '' ">
+    <OutputType>Exe</OutputType>
+    <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
+    <PackageReference Include="NUnitLite" Version="3.7.1" />
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+    <PackageReference Include="System.Threading" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.Sqlite.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.SqlServer.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.MySql.dll" />
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AlwaysThrowsService.cs" />
-    <Compile Include="AppHostListenerEchoRequestTests.cs" />
-    <Compile Include="AppHostHttpListenerLongRunningBaseTests.cs" />
-    <Compile Include="AppHostListenerBaseTests.cs" />
-    <Compile Include="AppSelfHostTests.cs" />
-    <Compile Include="AsyncProgressTests.cs" />
-    <Compile Include="AsyncRestClientTests.cs" />
-    <Compile Include="AsyncServiceClientTests.cs" />
-    <Compile Include="AsyncTaskTests.cs" />
-    <Compile Include="AttributeFiltersTest.cs" />
-    <Compile Include="AuthDigestTests.cs" />
-    <Compile Include="AuthTests.cs" />
-    <Compile Include="AutoQueryDataServiceTests.cs" />
-    <Compile Include="AutoQueryDataTests.cs" />
-    <Compile Include="AutoQueryDataTests.Dynamo.cs" />
-    <Compile Include="AutoQueryTests.cs" />
-    <Compile Include="BufferedRequestTests.cs" />
-    <Compile Include="CachedServiceClientTests.cs" />
-    <Compile Include="CachedServiceTests.cs" />
-    <Compile Include="CacheResponseTests.cs" />
-    <Compile Include="CacheServerFeatureTests.cs" />
-    <Compile Include="CancellableRequestTests.cs" />
-    <Compile Include="CompressionTests.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="ContentTypeTests.cs" />
-    <Compile Include="CsvServiceClientTests.cs" />
-    <Compile Include="CustomerRestExample.cs" />
-    <Compile Include="CustomFormatTests.cs" />
-    <Compile Include="HttpErrorSyncTests.cs" />
-    <Compile Include="HttpHandlerTests.cs" />
-    <Compile Include="Issues\AutoQueryJoinReferenceId.cs" />
-    <Compile Include="Issues\ClientMemoryLeak.cs" />
-    <Compile Include="Issues\EmptyDtoIssue.cs" />
-    <Compile Include="Issues\NetworkIssues.cs" />
-    <Compile Include="Issues\RequestScopeIssue.cs" />
-    <Compile Include="Issues\XmlContentTypeIssue.cs" />
-    <Compile Include="ReplyAllTests.cs" />
-    <Compile Include="MultiTennantAppHostTests.cs" />
-    <Compile Include="RequestPipelineTests.cs" />
-    <Compile Include="NestedServiceTests.cs" />
-    <Compile Include="CorsFeaturePluginTests.cs" />
-    <Compile Include="CustomServiceRunnerTests.cs" />
-    <Compile Include="LicenseUsageTests.cs" />
-    <Compile Include="RequestTypedFilterTests.cs" />
-    <Compile Include="RoutePriorityTests.cs" />
-    <Compile Include="RouteTests.cs" />
-    <Compile Include="CustomValidationErrorTests.cs" />
-    <Compile Include="EncodingTests.cs" />
-    <Compile Include="ExceptionHandling2Tests.cs" />
-    <Compile Include="IntegrationTests\MovieSoap11Tests.cs" />
-    <Compile Include="RestHandlerTests.cs" />
-    <Compile Include="RouteInferenceTests.cs" />
-    <Compile Include="RuntimeAttributeTests.cs" />
-    <Compile Include="ServerEventIntegrationTests.cs" />
-    <Compile Include="ServerEventTests.cs" />
-    <Compile Include="ServiceClientResolverTests.cs" />
-    <Compile Include="ServiceClientsBuiltInResponseTests.cs" />
-    <Compile Include="ServiceGatewayTestsAsync.cs" />
-    <Compile Include="ServiceGatewayTests.cs" />
-    <Compile Include="ServiceGatewayUsageTests.cs" />
-    <Compile Include="SessionTests.cs" />
-    <Compile Include="Support\GithubGateway.cs" />
-    <Compile Include="Support\Services\EchoService.cs" />
-    <Compile Include="Support\Services\SendVerbService.cs" />
-    <Compile Include="Support\Services\TestRestService.cs" />
-    <Compile Include="Support\Types\KeyAttribute.cs" />
-    <Compile Include="PartialContentResultTests.cs" />
-    <Compile Include="ServiceSetupTests.cs" />
-    <Compile Include="Support\Services\FailingService.cs" />
-    <Compile Include="GetEncodingFromContentTypeTest.cs" />
-    <Compile Include="UniqueRequestTests.cs" />
-    <Compile Include="SendOneWayTests.cs" />
-    <Compile Include="Support\Services\EndpointAccessService.cs" />
-    <Compile Include="SwaggerFeatureTests.cs" />
-    <Compile Include="CorsFeatureTest.cs" />
-    <Compile Include="IntegrationTests\CachedMoviesService.cs" />
-    <Compile Include="IntegrationTests\ErrorRestTests.cs" />
-    <Compile Include="NewApiTodos.cs" />
-    <Compile Include="ProtoBufServiceTests.cs" />
-    <Compile Include="SharedDtoTests.cs" />
-    <Compile Include="Support\Operations\CustomRequestBinder.cs" />
-    <Compile Include="TodoListTests.cs" />
-    <Compile Include="CustomerServiceValidationTests.cs" />
-    <Compile Include="ExceptionHandlingTests.cs" />
-    <Compile Include="HttpResultContentTypeTests.cs" />
-    <Compile Include="RemoteEndDropsConnectionTests.cs" />
-    <Compile Include="IocServiceTests.cs" />
-    <Compile Include="Support\EndpointHandlerBaseTests.cs" />
-    <Compile Include="UnitTestExample.cs" />
-    <Compile Include="UseCases\BasicEncryptedMessagesTests.cs" />
-    <Compile Include="UseCases\EncryptedMessagesTests.cs" />
-    <Compile Include="UseCases\SecureConfig.cs" />
-    <Compile Include="UserServiceValidationTests.cs" />
-    <Compile Include="JsonpTests.cs" />
-    <Compile Include="Shared\IocService.cs" />
-    <Compile Include="CustomRequestDataTests.cs" />
-    <Compile Include="HttpResultTests.cs" />
-    <Compile Include="IntegrationTests\ResetMovies.cs" />
-    <Compile Include="Support\Host\TestConfigAppHostHttpListener.cs" />
-    <Compile Include="Support\Operations\CustomFormData.cs" />
-    <Compile Include="Support\Services\CustomFormDataService.cs" />
-    <Compile Include="AppHostConfigTests.cs" />
-    <Compile Include="SyncRestClientTests.cs" />
-    <Compile Include="CsvContentTypeFilterTests.cs" />
-    <Compile Include="EndpointRestrictionTests.cs" />
-    <Compile Include="FileUploadTests.cs" />
-    <Compile Include="HttpErrorAsyncTests.cs" />
-    <Compile Include="RequestContextTests.cs" />
-    <Compile Include="RequestFiltersTests.cs" />
-    <Compile Include="Support\DirectServiceClient.cs" />
-    <Compile Include="Support\Host\ExampleAppHostHttpListener.cs" />
-    <Compile Include="HtmlResultTests.cs" />
-    <Compile Include="IntegrationTests\ConfigureDatabase.cs" />
-    <Compile Include="IntegrationTests\ExampleConfig.cs" />
-    <Compile Include="IntegrationTests\IntegrationTestBase.cs" />
-    <Compile Include="IntegrationTests\RestMovie.cs" />
-    <Compile Include="IntegrationTests\RestMovieService.cs" />
-    <Compile Include="IntegrationTests\MovieRestTests.cs" />
-    <Compile Include="IntegrationTests\ResetMovieDatabase.cs" />
-    <Compile Include="IntegrationTests\ResetMovieDatabaseService.cs" />
-    <Compile Include="KeyValueDataContractDeserializerTests.cs" />
-    <Compile Include="MessageSerializationTests.cs" />
-    <Compile Include="ServiceHostTestBase.cs" />
-    <Compile Include="Support\ServiceClientTestBase.cs" />
-    <Compile Include="ServiceClientTests.cs" />
-    <Compile Include="ServiceStackHttpHandlerFactoryTests.cs" />
-    <Compile Include="Support\Host\TestAppHostHttpListener.cs" />
-    <Compile Include="Support\Operations\RequestOfAllTypes.cs" />
-    <Compile Include="Support\Operations\RequestOfComplexTypes.cs" />
-    <Compile Include="Support\Services\FileUploadService.cs" />
-    <Compile Include="Support\Services\HttpErrorService.cs" />
-    <Compile Include="Support\Services\RequestFilter.cs" />
-    <Compile Include="Support\Services\HeadersService.cs" />
-    <Compile Include="Support\Services\GetCustomerService.cs" />
-    <Compile Include="Support\Services\HelloService.cs" />
-    <Compile Include="Support\Services\TestAsyncService.cs" />
-    <Compile Include="Support\Services\InSecureLiveEnvironmentRestriction.cs" />
-    <Compile Include="Support\Services\SecureLiveEnvironmentRestriction.cs" />
-    <Compile Include="Support\Services\SecureDevEnvironmentRestrictionService.cs" />
-    <Compile Include="Support\Services\InsecureDevEnvironmentRestrictionService.cs" />
-    <Compile Include="Support\Services\HttpPostXmlAndSecureLocalSubnetRestrictionService.cs" />
-    <Compile Include="Support\Services\HttpPostXmlOrSecureLocalSubnetRestrictionService.cs" />
-    <Compile Include="Support\Services\SecureLocalSubnetRestrictionService.cs" />
-    <Compile Include="Support\Services\InternalRestrictionService.cs" />
-    <Compile Include="Support\Services\LocalhostRestrictionService.cs" />
-    <Compile Include="Support\Services\LocalSubnetRestrictionService.cs" />
-    <Compile Include="Support\Services\NestedService.cs" />
-    <Compile Include="ServiceStackHostTests.cs" />
-    <Compile Include="Support\Operations\GetCustomers.cs" />
-    <Compile Include="Support\Operations\StoreCustomer.cs" />
-    <Compile Include="Support\Services\TestServiceBase.cs" />
-    <Compile Include="Support\Host\TestAppHost.cs" />
-    <Compile Include="Support\Services\TestService.cs" />
-    <Compile Include="BuiltinRouteTests.cs" />
-    <Compile Include="VirtualPathProviderTests.cs" />
-    <Compile Include="WebServiceExceptionTests.cs" />
-    <Compile Include="WsdlMetadataTests.cs" />
-    <Compile Include="OperationTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\Operations\GetCustomer.cs" />
-    <Compile Include="Support\Types\Customer.cs" />
-    <Compile Include="XmlMetaDataHandlerTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj">
-      <Project>{01D3F057-7984-498F-8B0A-EB375701E204}</Project>
-      <Name>ServiceStack.Api.Swagger</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj">
-      <Project>{c43f583f-abde-4dd4-bbe3-66322817a6ad}</Project>
-      <Name>ServiceStack.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj">
-      <Project>{c05de4a1-84c5-481b-8bd4-c837a1303b01}</Project>
-      <Name>ServiceStack.HttpClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
-      <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>
-      <Name>ServiceStack.ProtoBuf</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj">
-      <Project>{E940929C-9E76-41CD-BD09-08029FE9B440}</Project>
-      <Name>ServiceStack.RabbitMq</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj">
-      <Project>{5a315f92-80d2-4c60-a5a4-22e027ac7e7e}</Project>
-      <Name>ServiceStack.Server</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj">
-      <Project>{3FA9197A-462D-44CC-9AB3-61AF414D0B45}</Project>
-      <Name>ServiceStack.Common.Tests</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj">
-      <Project>{A5646013-C243-453F-A2B6-3B6870A9637D}</Project>
-      <Name>ServiceStack.ServiceModel.Tests</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\lib\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestExistingDir\textfile.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="webpage.forbidden">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="webpage.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestExistingDir\default.html">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="TestExistingDir\upload.html">
+    <Content Update="App_Data\customers.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <None Update="TestExistingDir\default.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestExistingDir\textfile.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestExistingDir\upload.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="webpage.forbidden">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="webpage.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
-    <Folder Include="ServiceModel\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-    <None Include="README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Analyzer Include="..\..\src\packages\AWSSDK.DynamoDBv2.3.1.5.2\analyzers\dotnet\cs\AWSSDK.DynamoDBv2.CodeAnalysis.dll" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

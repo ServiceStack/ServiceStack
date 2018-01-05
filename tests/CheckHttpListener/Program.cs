@@ -6,10 +6,12 @@ using Check.ServiceModel;
 using Funq;
 using ServiceStack;
 using ServiceStack.Admin;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace CheckHttpListener
 {
@@ -39,6 +41,10 @@ namespace CheckHttpListener
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(SeedRockstars);
             }
+            
+            Plugins.Add(new TemplatePagesFeature());
+            
+            Plugins.Add(new OpenApiFeature());
 
             Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
             Plugins.Add(new AdminFeature());
@@ -50,14 +56,23 @@ namespace CheckHttpListener
                   { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
                 }
             });
+
+            SetConfig(new HostConfig
+            {
+                CompressFilesWithExtensions = { "html", "js" },
+                DebugMode = true
+            });
         }
 
-        public override RouteAttribute[] GetRouteAttributes(Type requestType)
-        {
-            var routes = base.GetRouteAttributes(requestType);
-            routes.Each(x => x.Path = "/api" + x.Path);
-            return routes;
-        }
+        public override string ResolvePathInfo(IRequest request, string originalPathInfo) =>
+            base.ResolvePathInfo(request, originalPathInfo.Replace("/testsite", "/TestSite"));
+
+//        public override RouteAttribute[] GetRouteAttributes(Type requestType)
+//        {
+//            var routes = base.GetRouteAttributes(requestType);
+//            routes.Each(x => x.Path = "/api" + x.Path);
+//            return routes;
+//        }
     }
 
     [Route("/query/rockstars")]
@@ -77,11 +92,13 @@ namespace CheckHttpListener
     {
         private static void Main(string[] args)
         {
+            var baseUrl = "http://localhost:8000/TestSite/";
             var appHost = new AppSelfHost()
                 .Init()
-                .Start("http://127.0.0.1:2222/");
+                .Start(baseUrl);
 
-            Process.Start("http://127.0.0.1:2222/");
+            Console.WriteLine(baseUrl);
+            Process.Start(baseUrl);
             Console.ReadLine();
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -12,19 +13,13 @@ namespace ServiceStack
 
         public ApplyTo ApplyTo { get; set; }
 
-        public ResponseFilterAttribute()
-        {
-            ApplyTo = ApplyTo.All;
-        }
+        public ResponseFilterAttribute() : this(ApplyTo.All) {}
 
         /// <summary>
         /// Creates a new <see cref="ResponseFilterAttribute"/>
         /// </summary>
         /// <param name="applyTo">Defines when the filter should be executed</param>
-        public ResponseFilterAttribute(ApplyTo applyTo)
-        {
-            ApplyTo = applyTo;
-        }
+        public ResponseFilterAttribute(ApplyTo applyTo) => ApplyTo = applyTo;
 
         public void ResponseFilter(IRequest req, IResponse res, object response)
         {
@@ -45,9 +40,47 @@ namespace ServiceStack
         /// Create a ShallowCopy of this instance.
         /// </summary>
         /// <returns></returns>
-        public virtual IHasResponseFilter Copy()
+        public virtual IResponseFilterBase Copy() => (IResponseFilterBase)MemberwiseClone();
+    }
+    
+    /// <summary>
+    /// Base class to create response filter attributes only for specific HTTP methods (GET, POST...)
+    /// </summary>
+    public abstract class ResponseFilterAsyncAttribute : AttributeBase, IHasResponseFilterAsync
+    {
+        public int Priority { get; set; }
+
+        public ApplyTo ApplyTo { get; set; }
+
+        public ResponseFilterAsyncAttribute() : this(ApplyTo.All) {}
+
+        /// <summary>
+        /// Creates a new <see cref="ResponseFilterAttribute"/>
+        /// </summary>
+        /// <param name="applyTo">Defines when the filter should be executed</param>
+        public ResponseFilterAsyncAttribute(ApplyTo applyTo) => ApplyTo = applyTo;
+
+        public Task ResponseFilterAsync(IRequest req, IResponse res, object response)
         {
-            return (IHasResponseFilter)this.MemberwiseClone();
+            ApplyTo httpMethod = req.HttpMethodAsApplyTo();
+            if (ApplyTo.Has(httpMethod))
+                return this.ExecuteAsync(req, res, response);
+
+            return TypeConstants.EmptyTask;
         }
+
+        /// <summary>
+        /// This method is only executed if the HTTP method matches the <see cref="ApplyTo"/> property.
+        /// </summary>
+        /// <param name="req">The http request wrapper</param>
+        /// <param name="res">The http response wrapper</param>
+        /// <param name="requestDto">The response DTO</param>
+        public abstract Task ExecuteAsync(IRequest req, IResponse res, object responseDto);
+
+        /// <summary>
+        /// Create a ShallowCopy of this instance.
+        /// </summary>
+        /// <returns></returns>
+        public virtual IResponseFilterBase Copy() => (IResponseFilterBase)MemberwiseClone();
     }
 }

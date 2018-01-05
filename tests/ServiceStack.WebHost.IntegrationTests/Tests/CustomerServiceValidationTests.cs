@@ -26,7 +26,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             "ShouldNotBeEmpty",
             "NotEmpty",
             "NotNull",
-            "Length",
+            "NotNull", //Length returns true if null
             "Predicate",
         };
 

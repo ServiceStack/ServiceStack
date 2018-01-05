@@ -2,12 +2,14 @@ using System;
 using System.IO;
 using System.Net;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Text;
+using ServiceStack.Web;
 using ServiceStack.WebHost.Endpoints.Tests.Support;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
@@ -78,12 +80,56 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapFaultTest : IReturn<SoapFaultTestResponse> { }
+
+    [DataContract(Namespace = HostConfig.DefaultWsdlNamespace)]
+    public class SoapFaultTestResponse
+    {
+        [DataMember]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
     public class SoapServices : Service
     {
         public object Any(SoapDeserializationException request)
         {
             return new SoapDeserializationExceptionResponse();
         }
+
+        public object Any(SoapFaultTest request)
+        {
+            throw new Exception("Test SOAP Fault");
+        }
+    }
+
+    public class ThrowsInFilterAttribute : RequestFilterAttribute
+    {
+        public override void Execute(IRequest req, IResponse res, object requestDto)
+        {
+            var dto = (ThrowsInFilter)requestDto;
+
+            var status = (HttpStatusCode)dto.StatusCode.GetValueOrDefault(400);
+            var errorMsg = dto.Message ?? nameof(ThrowsInFilter);
+
+            if (dto.ExceptionType == nameof(HttpError))
+                throw new HttpError(status, errorMsg);
+
+            throw new Exception(errorMsg);
+        }
+    }
+
+    public class ThrowsInFilter : IReturn<ThrowsInFilter>
+    {
+        public string ExceptionType { get; set; }
+        public string Message { get; set; }
+        public int? StatusCode { get; set; }
+    }
+
+    [ThrowsInFilter]
+    public class ThrowsInFilterService : Service
+    {
+        public object Any(ThrowsInFilter request) => request;
     }
 
     [TestFixture]
@@ -102,6 +148,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
+#if !NETCORE
+                Plugins.Add(new SoapFormat());
+#endif
+
                 this.GlobalRequestFilters.Add((req, res, dto) =>
                 {
                     var userPass = req.GetBasicAuthUserAndPassword();
@@ -137,18 +187,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         req.Response.UseBufferedStream = true;
                     }
                 });
-                this.ServiceExceptionHandlers.Add((req, dto, ex) => 
-                    dto is SoapDeserializationException
-                        ? new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" }
-                        : null);
+#if !NETCORE
+                this.ServiceExceptionHandlers.Add((req, dto, ex) =>
+                {
+                    if (dto is SoapDeserializationException)
+                        return new SoapDeserializationExceptionResponse { RequiredProperty = "ServiceExceptionHandlers" };
+
+                    if (dto is SoapFaultTest)
+                    {
+                        if (req.GetItem(Keywords.SoapMessage) is System.ServiceModel.Channels.Message requestMsg)
+                        {
+                            var msgVersion = requestMsg.Version;
+                            using (var response = System.Xml.XmlWriter.Create(req.Response.OutputStream))
+                            {
+                                var message = System.ServiceModel.Channels.Message.CreateMessage(
+                                    msgVersion, new System.ServiceModel.FaultCode("Receiver"), ex.Message, null);
+                                message.WriteMessage(response);
+                            }
+                            req.Response.End();
+                        }
+                    }
+
+                    return null;
+                });
+#endif
             }
         }
 
         RequestFiltersAppHostHttpListener appHost;
 
-        public const string ServiceClientBaseUri = Config.ListeningOn;
+        string ServiceClientBaseUri = Config.ListeningOn;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new RequestFiltersAppHostHttpListener();
@@ -156,7 +226,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -172,6 +242,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private static void Assert401(IServiceClient client, WebServiceException ex)
         {
+#if !NETCORE
             if (client is Soap11ServiceClient || client is Soap12ServiceClient)
             {
                 if (ex.StatusCode != 401)
@@ -180,7 +251,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 }
                 return;
             }
-
+#endif
             Console.WriteLine(ex);
             Assert.That(ex.StatusCode, Is.EqualTo(401));
         }
@@ -247,8 +318,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var format = GetFormat();
             if (format == null) return;
 
-            var req = (HttpWebRequest)WebRequest.Create(
-                string.Format("{0}{1}/reply/Insecure", ServiceClientBaseUri, format));
+            var req = (HttpWebRequest)WebRequest.Create($"{ServiceClientBaseUri}{format}/reply/Insecure");
 
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
@@ -300,7 +370,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             if (cookie != null)
             {
                 req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
-                req.CookieContainer.Add(new Cookie("ss-session", cookie.Value));
+                req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
                 var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
                 Assert.That(dtoString.Contains("Confidential"));
@@ -317,7 +387,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
 
             req.CookieContainer = new CookieContainer();
-            req.CookieContainer.Add(new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
+            req.CookieContainer.Add(new Uri("http://localhost"), new Cookie("ss-session", AllowedUser + "/" + Guid.NewGuid().ToString("N"), "/", "localhost"));
 
             try
             {
@@ -345,6 +415,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return;
             }
             Assert.Fail("Should throw WebServiceException.StatusCode == 401");
+        }
+
+        [Test]
+        public async Task Does_populate_ResponseStatus_when_Exception_thrown_in_RequestFilter()
+        {
+            var client = CreateNewRestClientAsync();
+            if (client == null) return;
+
+            try
+            {
+                var response = await client.PostAsync(new ThrowsInFilter
+                {
+                    StatusCode = 409,
+                    ExceptionType = nameof(HttpError),
+                    Message = "POST HttpError CONFLICT",
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(409));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Conflict"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST HttpError CONFLICT"));
+            }
+
+            try
+            {
+                var response = await client.PostAsync(new ThrowsInFilter
+                {
+                    ExceptionType = nameof(Exception),
+                    Message = "POST Generic Exception",
+                });
+
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(500));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("Exception"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("POST Generic Exception"));
+            }
         }
 
         [Test]
@@ -490,7 +602,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-#if !IOS
+#if !NETCORE
 
         [TestFixture]
         public class Soap11IntegrationTests : RequestFiltersTests
@@ -526,6 +638,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = client.Send(new SoapDeserializationException());
                 Assert.That(response.RequiredProperty, Is.EqualTo("ServiceExceptionHandlers"));
             }
+
+            [Test]
+            public void Does_return_Custom_SoapFault()
+            {
+                var responseSoap = ServiceClientBaseUri.CombineWith("/Soap12")
+                    .SendStringToUrl(method: "POST", 
+                        requestBody: @"<s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope"" xmlns:a=""http://www.w3.org/2005/08/addressing"">
+                            <s:Header>
+                                <a:Action s:mustUnderstand=""1"">SoapFaultTest</a:Action>
+                                <a:MessageID>urn:uuid:84d9f946-d3c3-4252-84ff-0b306ce53386</a:MessageID>
+                                <a:ReplyTo><a:Address>http://www.w3.org/2005/08/addressing/anonymous</a:Address>
+                                </a:ReplyTo>
+                                <a:To s:mustUnderstand=""1"">http://localhost:20000/Soap12</a:To>
+                            </s:Header>
+                            <s:Body>
+                                <SoapFaultTest xmlns=""http://schemas.servicestack.net/types"" xmlns:i=""http://www.w3.org/2001/XMLSchema-instance""/>
+                            </s:Body>
+                        </s:Envelope>", 
+                        contentType: "application/soap+xml; charset=utf-8",
+                        responseFilter: res => { });
+
+                Assert.That(responseSoap, Is.EqualTo(
+                    @"<?xml version=""1.0"" encoding=""utf-8""?><s:Envelope xmlns:s=""http://www.w3.org/2003/05/soap-envelope""><s:Body><s:Fault><s:Code><s:Value>s:Receiver</s:Value></s:Code><s:Reason><s:Text xml:lang=""en-US"">Test SOAP Fault</s:Text></s:Reason></s:Fault></s:Body></s:Envelope>"));
+            }
+
         }
 
 #endif

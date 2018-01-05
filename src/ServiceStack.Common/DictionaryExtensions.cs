@@ -77,5 +77,21 @@ public static class DictionaryExtensions
             to[entry.Key] = entry.Value;
         }
         return to;
-    } 
+    }
+
+    public static bool TryRemove<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey key, out TValue value)
+    {
+        lock (map)
+        {
+            if (!map.TryGetValue(key, out value)) return false;
+            map.Remove(key);
+            return true;
+        }
+    }
+
+    public static Dictionary<TKey, TValue> RemoveKey<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey key)
+    {
+        map?.Remove(key);
+        return map;
+    }
 }

@@ -100,6 +100,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Name { get; set; }
     }
 
+    [Route("/cache/custom-json/{Id}")]
+    public class CacheCustomJson : ICacheDto
+    {
+        internal static int Count = 0;
+
+        public int Id { get; set; }
+        public string Value { get; set; }
+    }
+
     public class CacheResponseServices : Service
     {
         [CacheResponse(Duration = 5000)]
@@ -159,13 +168,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [CacheResponse(Duration = 10)]
-        public object Any(ServerCustomCacheKey request)
+        public async Task<object> Any(ServerCustomCacheKey request)
         {
-            var cacheInfo = Request.GetItem(Keywords.CacheInfo) as CacheInfo;
-            if (cacheInfo != null)
+            if (Request.GetItem(Keywords.CacheInfo) is CacheInfo cacheInfo)
             {
                 cacheInfo.KeyBase += "::flag=" + (ServerCustomCacheKey.Count % 2 == 0);
-                if (Request.HandleValidCache(cacheInfo))
+                if (await Request.HandleValidCache(cacheInfo))
                     return null;
             }
 
@@ -177,6 +185,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(CacheAlwaysThrows request)
         {
             throw new Exception(request.Message);
+        }
+
+        [CacheResponse(Duration = 10)]
+        public object Any(CacheCustomJson request)
+        {
+            Interlocked.Increment(ref CacheCustomJson.Count);
+            return new HttpResult(request)
+            {
+                ResultScope = () => JsConfig.With(emitCamelCaseNames:true, includeNullValues:true)
+            };
         }
     }
 
@@ -219,7 +237,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -240,7 +258,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnly>();
@@ -251,7 +269,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnly>();
@@ -274,7 +292,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnlyAsync>();
@@ -285,7 +303,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .GetJsonFromUrl(responseFilter: res =>
                 {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
                     Assert.That(res.Headers[HttpHeaders.CacheControl], Is.Null);
                 })
                 .FromJson<ServerCacheOnlyAsync>();
@@ -328,21 +346,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheUser { Id = 3, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "1")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "1"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "1")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-ss-id", "2"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-ss-id"] = "2")
                 .FromJson<ServerCacheUser>();
 
             Assert.That(ServerCacheUser.Count, Is.EqualTo(2));
@@ -356,21 +374,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new ServerCacheRoles { Id = 3, Value = "foo" };
 
             var response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleA")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleA"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleA")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(1));
             AssertEquals(response, request);
 
             response = Config.ListeningOn.CombineWith(request.ToGetUrl())
-                .GetJsonFromUrl(requestFilter: req => req.Headers.Add("X-role", "RoleB"))
+                .GetJsonFromUrl(requestFilter: req => req.Headers["X-role"] = "RoleB")
                 .FromJson<ServerCacheRoles>();
 
             Assert.That(ServerCacheRoles.Count, Is.EqualTo(2));
@@ -389,7 +407,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //JSON + Deflate
             response = url.GetJsonFromUrl(responseFilter: res =>
             {
-                Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Json));
+                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json));
             })
                 .FromJson<ServerCacheOnly>();
 
@@ -399,9 +417,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //JSON + No Accept-Encoding
             var webReq = (HttpWebRequest)WebRequest.Create(url);
             webReq.Accept = MimeTypes.Json;
+#if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.None;
+#endif
             var webRes = webReq.GetResponse();
-            Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
+            Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
             response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
                 .FromJson<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1)); //Uses plain json cache from #1
@@ -411,17 +431,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq = (HttpWebRequest)WebRequest.Create(url);
             webReq.Accept = MimeTypes.Json;
             webReq.Headers[HttpHeaders.AcceptEncoding] = CompressionTypes.GZip;
+#if !NETCORE            
             webReq.AutomaticDecompression = DecompressionMethods.GZip;
+#endif
             webRes = webReq.GetResponse();
-            Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.Json));
-            response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
-                .FromJson<ServerCacheOnly>();
+            Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
+            var responseGzip = webRes.GetResponseStream().ReadFully();
+#if !NETCORE
+            response = responseGzip.FromUtf8Bytes().FromJson<ServerCacheOnly>();
+#else
+            response = responseGzip.Decompress("gzip").FromJson<ServerCacheOnly>();
+#endif
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(2)); //New encoding new cache
             AssertEquals(response, request);
 
             //XML + Deflate
             response = url.GetXmlFromUrl(responseFilter: res => {
-                    Assert.That(res.ContentType, Is.StringStarting(MimeTypes.Xml));
+                    Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
                 })
                 .FromXml<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(3));
@@ -430,10 +456,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             //HTML + Deflate
             var html = url.GetStringFromUrl(requestFilter:req => req.ContentType = MimeTypes.Html);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
-            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            Assert.That(html, Does.StartWith("<!doctype html>"));
             html = url.GetStringFromUrl(requestFilter: req => req.ContentType = MimeTypes.Html);
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(4));
-            Assert.That(html, Is.StringStarting("<!doctype html>"));
+            Assert.That(html, Does.StartWith("<!doctype html>"));
         }
 
         [Test]
@@ -569,5 +595,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ErrorMessage, Is.EqualTo("bar"));
             }
         }
+
+        [Test]
+        public void Cache_does_use_custom_serialization()
+        {
+            var json = Config.ListeningOn.CombineWith("/cache/custom-json/1")
+                .GetJsonFromUrl();
+            
+            Assert.That(json, Is.EqualTo("{\"id\":1,\"value\":null}"));
+        }
+
     }
 }

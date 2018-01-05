@@ -43,7 +43,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyRequestFilters<TResponse>(object request)
         {
-            if (HostContext.ApplyRequestFilters(httpReq, httpRes, request))
+            HostContext.ApplyRequestFiltersAsync(httpReq, httpRes, request).Wait();
+            if (httpRes.IsClosed)
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;
@@ -77,7 +78,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         private bool ApplyResponseFilters<TResponse>(object response)
         {
-            if (HostContext.ApplyResponseFilters(httpReq, httpRes, response))
+            HostContext.ApplyResponseFiltersAsync(httpReq, httpRes, response).Wait();
+            if (httpRes.IsClosed)
             {
                 ThrowIfError<TResponse>(httpRes);
                 return true;
@@ -86,6 +88,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
         {
             throw new NotImplementedException();
         }
@@ -337,6 +344,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         }
 
         public Task PutAsync(IReturnVoid requestDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
         {
             throw new NotImplementedException();
         }

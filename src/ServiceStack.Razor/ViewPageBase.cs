@@ -12,8 +12,8 @@ using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Messaging;
-using ServiceStack.MiniProfiler;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -115,18 +115,12 @@ namespace ServiceStack.Razor
 
         public virtual void WriteTo(TextWriter writer, HelperResult value)
         {
-            if (value != null)
-            {
-                value.WriteTo(writer);
-            }
+            value?.WriteTo(writer);
         }
 
         public virtual void WriteLiteralTo(TextWriter writer, HelperResult value)
         {
-            if (value != null)
-            {
-                value.WriteTo(writer);
-            }
+            value?.WriteTo(writer);
         }
 
         public void WriteLiteralTo(TextWriter writer, string literal)
@@ -144,9 +138,7 @@ namespace ServiceStack.Razor
                 return null;
             }
 
-            var str = value as System.Web.IHtmlString;
-
-            return str != null ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
+            return value is System.Web.IHtmlString str ? str.ToHtmlString() : HttpUtility.HtmlEncode(Convert.ToString(value, CultureInfo.CurrentCulture));
         }
 
         public virtual void WriteAttribute(string name, Tuple<string, int> prefix, Tuple<string, int> suffix, params AttributeValue[] values)
@@ -203,8 +195,7 @@ namespace ServiceStack.Razor
                 return (string)value.Value.Item1;
             }
 
-            var htmlString = value.Value.Item1 as IHtmlString;
-            if (htmlString != null)
+            if (value.Value.Item1 is IHtmlString htmlString)
                 return htmlString.ToHtmlString();
 
             //if (value.Value.Item1 is DynamicDictionaryValue) {
@@ -251,8 +242,7 @@ namespace ServiceStack.Razor
 
         public virtual bool IsSectionDefined(string sectionName)
         {
-            var parentPage = ParentPage as RenderingPage;
-            return parentPage != null
+            return ParentPage is RenderingPage parentPage
                 ? parentPage.IsChildSectionDefined(sectionName)
                 : IsChildSectionDefined(sectionName);
         }
@@ -262,8 +252,7 @@ namespace ServiceStack.Razor
             var hasChildSection = this.childSections.ContainsKey(sectionName);
             if (hasChildSection) return true;
 
-            var childPage = ChildPage as RenderingPage;
-            return childPage != null && childPage.IsSectionDefined(sectionName);
+            return ChildPage is RenderingPage childPage && childPage.IsSectionDefined(sectionName);
         }
 
         public virtual void DefineSection(string sectionName, Action action)
@@ -281,23 +270,20 @@ namespace ServiceStack.Razor
 
         public object RenderSection(string sectionName)
         {
-            var parentPage = ParentPage as RenderingPage;
-            return parentPage != null
+            return ParentPage is RenderingPage parentPage
                 ? parentPage.RenderChildSection(sectionName)
                 : RenderChildSection(sectionName);
         }
 
         internal object RenderChildSection(string sectionName)
         {
-            Action section;
-            if (childSections.TryGetValue(sectionName, out section))
+            if (childSections.TryGetValue(sectionName, out var section))
             {
                 section();
                 return null;
             }
 
-            var childPage = ChildPage as RenderingPage;
-            if (childPage != null)
+            if (ChildPage is RenderingPage childPage)
             {
                 childPage.RenderChildSection(sectionName, Output);
             }
@@ -306,8 +292,7 @@ namespace ServiceStack.Razor
 
         public void RenderChildSection(string sectionName, StreamWriter writer)
         {
-            Action section;
-            if (childSections.TryGetValue(sectionName, out section))
+            if (childSections.TryGetValue(sectionName, out var section))
             {
                 var hold = Output;
                 try
@@ -335,31 +320,22 @@ namespace ServiceStack.Razor
     {
         public string Layout
         {
-            get
-            {
-                return layout;
-            }
-            set
-            {
-                layout = value != null ? value.Trim(' ', '"') : null;
-            }
+            get => layout;
+            set => layout = value?.Trim(' ', '"');
         }
 
         private TModel model;
         public TModel Model
         {
-            get { return model; }
-            set
-            {
-                SetModel(value);
-            }
+            get => model;
+            set => SetModel(value);
         }
 
         public abstract Type ModelType { get; }
 
         public virtual void SetModel(object o)
         {
-            var viewModel = o is TModel ? (TModel)o : default(TModel);
+            var viewModel = o is TModel m ? m : default(TModel);
             this.model = viewModel;
 
             if (Equals(viewModel, default(TModel)))
@@ -370,20 +346,18 @@ namespace ServiceStack.Razor
 
         public UrlHelper Url = new UrlHelper();
 
-        private IAppHost appHost;
-
         public virtual IViewEngine ViewEngine { get; set; }
 
+        private IAppHost appHost;
         public IAppHost AppHost
         {
-            get { return appHost ?? ServiceStackHost.Instance; }
-            set { appHost = value; }
+            get => appHost ?? ServiceStackHost.Instance;
+            set => appHost = value;
         }
 
-        public IAppSettings AppSettings
-        {
-            get { return AppHost.AppSettings; }
-        }
+        public bool DebugMode => HostContext.DebugMode;
+
+        public IAppSettings AppSettings => AppHost.AppSettings;
 
         public virtual T Get<T>()
         {
@@ -403,8 +377,7 @@ namespace ServiceStack.Razor
         public virtual T ResolveService<T>()
         {
             var service = Get<T>();
-            var requiresContext = service as IRequiresRequest;
-            if (requiresContext != null)
+            if (service is IRequiresRequest requiresContext)
             {
                 requiresContext.Request = this.Request;
             }
@@ -412,57 +385,29 @@ namespace ServiceStack.Razor
         }
 
         private IServiceGateway gateway;
-        public virtual IServiceGateway Gateway
-        {
-            get { return gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request)); }
-        }
+        public virtual IServiceGateway Gateway => gateway ?? (gateway = HostContext.AppHost.GetServiceGateway(Request));
 
-        [Obsolete("Use Gateway")]
-        public virtual object ExecuteService<T>(Func<T, object> fn)
-        {
-            var service = ResolveService<T>();
-            using (service as IDisposable)
-            {
-                return fn(service);
-            }
-        }
-
-        public bool IsError
-        {
-            get { return ModelError != null || GetErrorStatus() != null; }
-        }
+        public bool IsError => ModelError != null || GetErrorStatus() != null;
 
         public object ModelError { get; set; }
 
+        public IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
+        public IVirtualPathProvider VirtualFileSources => HostContext.VirtualFileSources;
+
         private ICacheClient cache;
-        public ICacheClient Cache
-        {
-            get { return cache ?? (cache = HostContext.AppHost.GetCacheClient(Request)); }
-        }
+        public ICacheClient Cache => cache ?? (cache = HostContext.AppHost.GetCacheClient(Request));
 
         private IDbConnection db;
-        public IDbConnection Db
-        {
-            get { return db ?? (db = HostContext.AppHost.GetDbConnection(Request)); }
-        }
+        public IDbConnection Db => db ?? (db = HostContext.AppHost.GetDbConnection(Request));
 
         private IRedisClient redis;
-        public IRedisClient Redis
-        {
-            get { return redis ?? (redis = HostContext.AppHost.GetRedisClient(Request)); }
-        }
+        public IRedisClient Redis => redis ?? (redis = HostContext.AppHost.GetRedisClient(Request));
 
         private IMessageProducer messageProducer;
-        public virtual IMessageProducer MessageProducer
-        {
-            get { return messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request)); }
-        }
+        public virtual IMessageProducer MessageProducer => messageProducer ?? (messageProducer = HostContext.AppHost.GetMessageProducer(Request));
 
         private IAuthRepository authRepository;
-        public IAuthRepository AuthRepository
-        {
-            get { return authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request)); }
-        }
+        public IAuthRepository AuthRepository => authRepository ?? (authRepository = HostContext.AppHost.GetAuthRepository(Request));
 
         private ISessionFactory sessionFactory;
         private ISession session;
@@ -492,18 +437,9 @@ namespace ServiceStack.Razor
             return SessionFeature.GetOrCreateSession<T>(Cache, Request, Response);
         }
 
-        public bool IsAuthenticated
-        {
-            get { return this.GetSession().IsAuthenticated; }
-        }
+        public bool IsAuthenticated => this.GetSession().IsAuthenticated;
 
-        public string SessionKey
-        {
-            get
-            {
-                return SessionFeature.GetSessionKey();
-            }
-        }
+        public string SessionKey => SessionFeature.GetSessionKey();
 
         public void ClearSession()
         {
@@ -563,10 +499,7 @@ namespace ServiceStack.Razor
             //Builder.Insert(0, contents);
         }
 
-        public bool IsPostBack
-        {
-            get { return this.Request.Verb == HttpMethods.Post; }
-        }
+        public bool IsPostBack => this.Request.Verb == HttpMethods.Post;
 
         public ResponseStatus GetErrorStatus()
         {
@@ -580,15 +513,13 @@ namespace ServiceStack.Razor
             if (response == null)
                 return null;
 
-            var status = response as ResponseStatus;
-            if (status != null)
+            if (response is ResponseStatus status)
                 return status;
 
-            var hasResponseStatus = response as IHasResponseStatus;
-            if (hasResponseStatus != null)
+            if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetPropertyInfo("ResponseStatus");
+            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
             if (propertyInfo == null)
                 return null;
 
@@ -608,7 +539,7 @@ namespace ServiceStack.Razor
 
         public void ApplyRequestFilters(object requestDto)
         {
-            HostContext.ApplyRequestFilters(base.Request, base.Response, requestDto);
+            HostContext.ApplyRequestFiltersAsync(base.Request, base.Response, requestDto).Wait();
             if (base.Response.IsClosed)
                 throw new StopExecutionException();
         }

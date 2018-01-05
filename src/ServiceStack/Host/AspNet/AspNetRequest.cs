@@ -1,25 +1,34 @@
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Web;
-using Funq;
+using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.AspNet
 {
     public class AspNetRequest
-        : IHttpRequest
+        : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
         public static ILog log = LogManager.GetLogger(typeof(AspNetRequest));
 
-        public Container Container { get; set; }
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
+        }
+
         private readonly HttpRequestBase request;
         private readonly IHttpResponse response;
         
@@ -54,6 +63,9 @@ namespace ServiceStack.Host.AspNet
                     Items[strKey] = httpContext.Items[key];
                 }
             }
+
+            this.PathInfo = this.OriginalPathInfo = GetPathInfo();
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo);
         }
 
         public HttpRequestBase HttpRequest => request;
@@ -70,15 +82,7 @@ namespace ServiceStack.Host.AspNet
 
         public T TryResolve<T>()
         {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container != null
-                ? Container.TryResolve<T>()
-                : HostContext.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string OperationName { get; set; }
@@ -178,14 +182,14 @@ namespace ServiceStack.Host.AspNet
             }
         }
 
-        private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = request.Headers);
 
-        private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(request.QueryString));
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = request.QueryString);
 
-        private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(request.Form));
+        private NameValueCollection formData;
+        public NameValueCollection FormData => formData ?? (formData = request.Form);
 
         public string GetRawBody()
         {
@@ -265,23 +269,37 @@ namespace ServiceStack.Host.AspNet
 
         public string[] AcceptTypes => request.AcceptTypes;
 
-        public string PathInfo => request.GetPathInfo();
+        public string PathInfo { get; }
 
+        public string OriginalPathInfo { get; } 
+
+        public string GetPathInfo()
+        {
+            if (!string.IsNullOrEmpty(request.PathInfo)) 
+                return request.PathInfo;
+
+            var mode = HostContext.Config.HandlerFactoryPath;
+            var appPath = string.IsNullOrEmpty(request.ApplicationPath)
+                ? HttpRequestExtensions.WebHostDirectoryName
+                : request.ApplicationPath.TrimStart('/');
+
+            //mod_mono: /CustomPath35/api//default.htm
+            var path = Env.IsMono ? request.Path.Replace("//", "/") : request.Path;
+            return HttpRequestExtensions.GetPathInfo(path, mode, appPath);
+        }
+        
         public string UrlHostName => request.GetUrlHostName();
 
         public bool UseBufferedStream
         {
-            get { return BufferedStream != null; }
-            set
-            {
-                BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
-                    : null;
-            }
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                : null;
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream => BufferedStream ?? request.InputStream;
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
 
         public long ContentLength => request.ContentLength;
 
@@ -311,6 +329,43 @@ namespace ServiceStack.Host.AspNet
         }
 
         public Uri UrlReferrer => request.UrlReferrer;
+        
+        
+        private IVirtualFile file;
+        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
+
+        private IVirtualDirectory dir;
+        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
+
+        private bool? isDirectory;
+        public bool IsDirectory
+        {
+            get
+            {
+                if (isDirectory == null)
+                {
+                    isDirectory = dir != null || HostContext.VirtualFileSources.DirectoryExists(PathInfo);
+                    if (isDirectory == true)
+                        isFile = false;
+                }
+                return isDirectory.Value;
+            }
+        }
+
+        private bool? isFile;
+        public bool IsFile
+        {
+            get
+            {
+                if (isFile == null)
+                {
+                    isFile = GetFile() != null;
+                    if (isFile == true)
+                        isDirectory = false;                    
+                }
+                return isFile.Value;
+            }
+        }
     }
 
 }

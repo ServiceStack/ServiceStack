@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace ServiceStack.Auth.Tests
 {
-    [Explicit]
+    [Ignore("Debug Test")]
     [TestFixture]
     public class RazorAppHostTests
     {

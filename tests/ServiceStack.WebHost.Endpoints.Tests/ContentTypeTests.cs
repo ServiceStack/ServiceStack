@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         ExampleAppHostHttpListener appHost;
         readonly JsonServiceClient client = new JsonServiceClient(ListeningOn);
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new ExampleAppHostHttpListener();
@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();

@@ -25,11 +25,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private OperationTestsAppHost appHost;
 	    private OperationControl operationControl;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new OperationTestsAppHost();
             appHost.Init();
+#if NETCORE
+            appHost.Start(Config.ListeningOn);
+#endif
 
             var dummyServiceType = GetType();
             appHost.Metadata.Add(dummyServiceType, typeof(GetCustomer), typeof(GetCustomerResponse));
@@ -50,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -59,7 +62,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void OnTearDown()
         {
-            appHost.Config.WebHostUrl = null;
+            if (appHost?.Config?.WebHostUrl != null)
+                appHost.Config.WebHostUrl = null;
         }
 
         [Test]
@@ -81,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             operationControl.Render(new HtmlTextWriter(stringWriter));
 
             string html = stringWriter.ToString();
-            Assert.That(html, Is.StringContaining("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
+            Assert.That(html, Does.Contain("<a href=\"http://localhost/metadata\">&lt;back to all web services</a>"));
         }
 
         [Test]
@@ -107,15 +111,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public CultureSwitch(string culture)
         {
+#if NETCORE
+            _currentCulture = CultureInfo.CurrentCulture;
+            CultureInfo.CurrentCulture = new CultureInfo(culture);
+#else
             var currentThread = Thread.CurrentThread;
             _currentCulture = currentThread.CurrentCulture;
             var switchCulture = CultureInfo.GetCultureInfo(culture);
             currentThread.CurrentCulture = switchCulture;
+#endif
         }
 
         public void Dispose()
         {
+#if NETCORE
+            CultureInfo.CurrentCulture = _currentCulture;
+#else
             Thread.CurrentThread.CurrentCulture = _currentCulture;
+#endif
         }
     }
 }

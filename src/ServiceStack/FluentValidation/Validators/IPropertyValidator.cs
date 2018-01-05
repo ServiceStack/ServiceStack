@@ -13,27 +13,32 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Collections.Generic;
-    using Resources;
-    using Results;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Collections.Generic;
+	using System.Threading;
+	using System.Threading.Tasks;
+	using Resources;
+	using Results;
 
-    /// <summary>
-    /// A custom property validator.
-    /// This interface should not be implemented directly in your code as it is subject to change.
-    /// Please inherit from <see cref="PropertyValidator">PropertyValidator</see> instead.
-    /// </summary>
-    public interface IPropertyValidator
-    {
-        IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
-        ICollection<Func<object, object>> CustomMessageFormatArguments { get; }
-        Func<object, object> CustomStateProvider { get; set; }
-        IStringSource ErrorMessageSource { get; set; }
-        string ErrorCode { get; set; }
-    }
+	/// <summary>
+	/// A custom property validator.
+	/// This interface should not be implemented directly in your code as it is subject to change.
+	/// Please inherit from <see cref="PropertyValidator">PropertyValidator</see> instead.
+	/// </summary>
+	public interface IPropertyValidator {
+		bool IsAsync { get; }
+
+		IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
+
+		Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation);
+
+		Func<PropertyValidatorContext, object> CustomStateProvider { get; set; }
+		Severity Severity { get; set; }
+		IStringSource ErrorMessageSource { get; set; }
+		IStringSource ErrorCodeSource { get; set; }
+	}
 }

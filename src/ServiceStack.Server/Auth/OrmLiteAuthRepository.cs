@@ -57,7 +57,7 @@ namespace ServiceStack.Auth
     {
         public OrmLiteAuthRepositoryMultitenancy(IDbConnection db) : base(db) { }
 
-        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, params string[] connectionStrings)
             : base(dbFactory, connectionStrings) { }
     }
 
@@ -75,7 +75,7 @@ namespace ServiceStack.Auth
         private readonly IDbConnectionFactory dbFactory;
         private readonly string[] connectionStrings;
 
-        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, string[] connectionStrings)
+        public OrmLiteAuthRepositoryMultitenancy(IDbConnectionFactory dbFactory, params string[] connectionStrings)
         {
             this.dbFactory = dbFactory;
             this.connectionStrings = connectionStrings;
@@ -157,14 +157,15 @@ namespace ServiceStack.Auth
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys
+    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
-        private readonly IDbConnectionFactory dbFactory;
         public bool hasInitSchema;
 
         public bool UseDistinctRoleTables { get; set; }
+
+        public bool ForceCaseInsensitiveUserNameSearch { get; set; } = true;
 
         public abstract void Exec(Action<IDbConnection> fn);
 
@@ -200,13 +201,7 @@ namespace ServiceStack.Auth
             {
                 AssertNoExistingUser(db, newUser);
 
-                string salt;
-                string hash;
-                HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
-                var digestHelper = new DigestAuthFunctions();
-                newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-                newUser.PasswordHash = hash;
-                newUser.Salt = salt;
+                newUser.PopulatePasswordHashes(password);
                 newUser.CreatedDate = DateTime.UtcNow;
                 newUser.ModifiedDate = newUser.CreatedDate;
 
@@ -224,14 +219,14 @@ namespace ServiceStack.Auth
                 var existingUser = GetUserAuthByUserName(db, newUser.UserName);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName));
+                    throw new ArgumentException(string.Format(ErrorMessages.UserAlreadyExistsTemplate1, newUser.UserName.SafeInput()));
             }
             if (newUser.Email != null)
             {
                 var existingUser = GetUserAuthByUserName(db, newUser.Email);
                 if (existingUser != null
                     && (exceptForExistingUser == null || existingUser.Id != exceptForExistingUser.Id))
-                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email));
+                    throw new ArgumentException(string.Format(ErrorMessages.EmailAlreadyExistsTemplate1, newUser.Email.SafeInput()));
             }
         }
 
@@ -243,20 +238,8 @@ namespace ServiceStack.Auth
             {
                 AssertNoExistingUser(db, newUser, existingUser);
 
-                var hash = existingUser.PasswordHash;
-                var salt = existingUser.Salt;
-                if (password != null)
-                    HostContext.Resolve<IHashProvider>().GetHashAndSaltString(password, out hash, out salt);
-
-                // If either one changes the digest hash has to be recalculated
-                var digestHash = existingUser.DigestHa1Hash;
-                if (password != null || existingUser.UserName != newUser.UserName)
-                    digestHash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
-
                 newUser.Id = existingUser.Id;
-                newUser.PasswordHash = hash;
-                newUser.Salt = salt;
-                newUser.DigestHa1Hash = digestHash;
+                newUser.PopulatePasswordHashes(password, existingUser);
                 newUser.CreatedDate = existingUser.CreatedDate;
                 newUser.ModifiedDate = DateTime.UtcNow;
 
@@ -305,13 +288,37 @@ namespace ServiceStack.Auth
             });
         }
 
-        private static TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
+        private TUserAuth GetUserAuthByUserName(IDbConnection db, string userNameOrEmail)
         {
             var isEmail = userNameOrEmail.Contains("@");
-            var userAuth = isEmail
-                ? db.Select<TUserAuth>(q => q.Email.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault()
-                : db.Select<TUserAuth>(q => q.UserName.ToLower() == userNameOrEmail.ToLower()).FirstOrDefault();
+            var lowerUserName = userNameOrEmail.ToLower();
+            
+            TUserAuth userAuth = null;
 
+            // Usernames/Emails are saved in Lower Case so we can do an exact search using lowerUserName
+            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            {
+                return isEmail
+                    ? db.Select<TUserAuth>(q => q.Email == lowerUserName).FirstOrDefault()
+                    : db.Select<TUserAuth>(q => q.UserName == lowerUserName).FirstOrDefault();
+            }
+            
+            // Try an exact search using index first
+            userAuth = isEmail
+                ? db.Select<TUserAuth>(q => q.Email == userNameOrEmail).FirstOrDefault()
+                : db.Select<TUserAuth>(q => q.UserName == userNameOrEmail).FirstOrDefault();
+
+            if (userAuth != null)
+                return userAuth;
+
+            // Fallback to a non-index search if no exact match is found
+            if (ForceCaseInsensitiveUserNameSearch)
+            {
+                userAuth = isEmail
+                    ? db.Select<TUserAuth>(q => q.Email.ToLower() == lowerUserName).FirstOrDefault()
+                    : db.Select<TUserAuth>(q => q.UserName.ToLower() == lowerUserName).FirstOrDefault();
+            }
+            
             return userAuth;
         }
         
@@ -321,9 +328,9 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return false;
 
-            if (HostContext.Resolve<IHashProvider>().VerifyHashString(password, userAuth.PasswordHash, userAuth.Salt))
+            if (userAuth.VerifyPassword(password, out var needsRehash))
             {
-                this.RecordSuccessfulLogin(userAuth);
+                this.RecordSuccessfulLogin(userAuth, needsRehash, password);
                 return true;
             }
 
@@ -339,8 +346,7 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return false;
 
-            var digestHelper = new DigestAuthFunctions();
-            if (digestHelper.ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence))
+            if (userAuth.VerifyDigestAuth(digestHeaders, privateKey, nonceTimeOut, sequence))
             {
                 this.RecordSuccessfulLogin(userAuth);
                 return true;
@@ -608,16 +614,22 @@ namespace ServiceStack.Auth
             {
                 if (!roles.IsEmpty())
                 {
-                    foreach (var missingRole in roles.Where(x => !userAuth.Roles.Contains(x)))
+                    foreach (var missingRole in roles.Where(x => userAuth.Roles == null || !userAuth.Roles.Contains(x)))
                     {
+                        if (userAuth.Roles == null)
+                            userAuth.Roles = new List<string>();
+
                         userAuth.Roles.Add(missingRole);
                     }
                 }
 
                 if (!permissions.IsEmpty())
                 {
-                    foreach (var missingPermission in permissions.Where(x => !userAuth.Permissions.Contains(x)))
+                    foreach (var missingPermission in permissions.Where(x => userAuth.Permissions == null || !userAuth.Permissions.Contains(x)))
                     {
+                        if (userAuth.Permissions == null)
+                            userAuth.Permissions = new List<string>();
+
                         userAuth.Permissions.Add(missingPermission);
                     }
                 }
@@ -743,6 +755,16 @@ namespace ServiceStack.Auth
             {
                 db.SaveAll(apiKeys);
             });
+        }
+
+        public IUserAuth CreateUserAuth()
+        {
+            return (IUserAuth) typeof(TUserAuth).CreateInstance();
+        }
+
+        public IUserAuthDetails CreateUserAuthDetails()
+        {
+            return (IUserAuthDetails)typeof(TUserAuthDetails).CreateInstance();
         }
     }
 }

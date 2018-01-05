@@ -239,14 +239,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     public class CustomAuthenticateAttribute : AuthenticateAttribute
     {
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             //Need to run SessionFeature filter since its not executed before this attribute (Priority -100)
             SessionFeature.AddSessionIdToRequestFilter(req, res, null); //Required to get req.GetSessionId()
 
             req.Items["TriedMyOwnAuthFirst"] = true; // let's simulate some sort of auth _before_ relaying to base class.
 
-            base.Execute(req, res, requestDto);
+            return base.ExecuteAsync(req, res, requestDto);
         }
     }
 
@@ -389,7 +389,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new AuthAppHost(WebHostUrl, Configure);
@@ -397,7 +397,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -481,7 +481,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 var client = GetClient();
-                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+                var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
                 client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
                 Assert.Fail("Shouldn't be allowed");
@@ -497,7 +497,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void PostFile_does_work_with_BasicAuth()
         {
             var client = GetClientWithUserPassword();
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             var response = client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
@@ -511,7 +511,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var client = GetClientWithUserPassword();
             var request = new SecuredFileUpload { CustomerId = 123, CustomerName = "Foo" };
-            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPath());
+            var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
             var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, request);
@@ -957,7 +957,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var request = new Secured { Name = "test" };
-            client.Send<SecureResponse>(request);
+            try
+            {
+                client.Send<SecureResponse>(request);
+            } catch (WebServiceException ex)
+            {
+#if NETCORE
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Found)
+                    return;
+#endif
+                throw;
+            } 
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
@@ -976,7 +987,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             };
 
             var request = new Secured { Name = "test" };
-            client.Send<SecureResponse>(request);
+            try
+            {
+                client.Send<SecureResponse>(request);
+            } catch (WebServiceException ex)
+            {
+#if NETCORE
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Found)
+                    return;
+#endif
+                throw;
+            }
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var queryString = HttpUtility.ParseQueryString(locationUri.Query);
@@ -1006,7 +1028,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var request = new Secured { Name = "test" };
             // Perform a GET so that the Name DTO field is encoded as query string.
-            client.Get(request);
+            try
+            {
+                client.Get(request);
+            } catch (WebServiceException ex)
+            {
+#if NETCORE
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Found)
+                    return;
+#endif
+                throw;
+            }
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var locationUriQueryString = HttpUtility.ParseQueryString(locationUri.Query);
@@ -1031,13 +1064,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 lastResponseLocationHeader = response.Headers["Location"];
             };
 
-            client.Send(new Authenticate
+            try
             {
-                provider = CredentialsAuthProvider.Name,
-                UserName = UserNameWithSessionRedirect,
-                Password = PasswordForSessionRedirect,
-                RememberMe = true,
-            });
+                client.Send(new Authenticate
+                {
+                    provider = CredentialsAuthProvider.Name,
+                    UserName = UserNameWithSessionRedirect,
+                    Password = PasswordForSessionRedirect,
+                    RememberMe = true,
+                });
+            } catch (WebServiceException ex)
+            {
+#if NETCORE
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Redirect)
+                    return;
+#endif
+                throw;
+            }
 
             Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionRedirectUrl));
         }
@@ -1238,10 +1282,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 
-        [TestCase(ExpectedException = typeof(AuthenticationException))]
+        [Test]
         public void Meaningful_Exception_for_Unknown_Auth_Header()
         {
-            var authInfo = new AuthenticationInfo("Negotiate,NTLM");
+            Assert.Throws<AuthenticationException>(() => new AuthenticationInfo("Negotiate,NTLM"));
         }
 
         [Test]

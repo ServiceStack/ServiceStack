@@ -13,15 +13,15 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.TestHelper
-{
-    using System;
+#pragma warning disable 1591
+namespace ServiceStack.FluentValidation.TestHelper {
+	using System;
 
-    public class ValidationTestException : Exception {
-        public ValidationTestException(string message) : base(message) {
-        }
-    }
+	public class ValidationTestException : Exception {
+		public ValidationTestException(string message) : base(message) {
+		}
+	}
 }

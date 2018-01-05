@@ -1,0 +1,45 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Dead Rockstars</title>
+    <link href="/stars/style.css" rel="stylesheet" />
+    <style type="text/css">
+    body {
+        background: #F3DDC5 url(/img/tileable_wood_texture.png);
+        background-attachment: fixed;
+    }
+    a {
+        color: #a30;
+    }
+    </style>
+</head> 
+    <body>       
+        <div id="page">
+            <div id="info">
+                <h6>Rocking the grave...</h6>
+                <p>
+                    <a id="home" href="/"></a>
+                    <a href="Content?format=text.bare">Markdown Only</a>
+                </p>
+            </div>
+
+            <h1>@ViewBag.Title</h1>
+            
+            @Html.Partial("MenuDead")
+        
+            <div id="content">
+                @RenderBody()
+                <b class="clear"></b>
+            </div>
+            
+            @Html.Partial("MenuAlive")
+
+        </div>
+        
+        <div id="preview">
+            <h1>Implementation</h1>
+
+            @RenderSection("preview")
+        </div>
+    </body>
+</html>

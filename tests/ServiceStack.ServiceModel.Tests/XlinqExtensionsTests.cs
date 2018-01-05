@@ -28,21 +28,21 @@ namespace ServiceStack.ServiceModel.Tests
 		}
 
 		[Test]
-		[ExpectedException(typeof(ArgumentNullException))]
 		public void xelement_get_int_null_throws_exception_test()
 		{
-			var el = CreateEmptyChildElement();
-			el.GetInt("child");
-			Assert.Fail("Expected ArgumentNullException");
+			Assert.Throws<ArgumentNullException>(() => {
+				var el = CreateEmptyChildElement();
+				el.GetInt("child");
+			});
 		}
 
 		[Test]
-		[ExpectedException(typeof(FormatException))]
 		public void xelement_get_int_text_throws_exception_test()
 		{
-			var el = CreateChildElement("Non int value");
-			el.GetInt("child");
-			Assert.Fail("Expected FormatException");
+			Assert.Throws<FormatException>(() => {
+				var el = CreateChildElement("Non int value");
+				el.GetInt("child");
+			});
 		}
 
 		[Test]

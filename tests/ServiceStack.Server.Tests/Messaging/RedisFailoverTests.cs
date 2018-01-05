@@ -11,7 +11,7 @@ using RedisMessageQueueClient = ServiceStack.Messaging.RedisMessageQueueClient;
 
 namespace ServiceStack.Server.Tests.Messaging
 {
-    [Explicit("Simulating error conditions")]
+    [Ignore("Simulating error conditions")]
     [TestFixture]
     public class RedisFailoverTests
     {
@@ -194,7 +194,7 @@ namespace ServiceStack.Server.Tests.Messaging
                                     lock (clientManager)
                                         Console.WriteLine("count: {0}, errors: {1}", count, errors);
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 Interlocked.Increment(ref errors);
                             }
@@ -309,7 +309,7 @@ namespace ServiceStack.Server.Tests.Messaging
                                     lock (mqServer)
                                         "count: {0}, errors: {1}".Print(count, errors);
                             }
-                            catch (Exception ex)
+                            catch (Exception)
                             {
                                 Interlocked.Increment(ref errors);
                             }

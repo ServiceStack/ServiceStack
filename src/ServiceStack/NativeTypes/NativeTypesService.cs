@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
@@ -88,6 +89,7 @@ namespace ServiceStack.NativeTypes
         public bool? SettersReturnThis { get; set; }
         public bool? MakePropertiesOptional { get; set; }
         public bool? ExportAsTypes { get; set; }
+        public bool? ExportValueTypes { get; set; }
         public bool? ExcludeNamespace { get; set; }
         public string AddDefaultXmlNamespace { get; set; }
         public string GlobalNamespace { get; set; }
@@ -212,9 +214,45 @@ namespace ServiceStack.NativeTypes
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
                 var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturn<>)));
-                metadataTypes.Types.Insert(0, generator.ToType(typeof(IReturnVoid)));
+                var registerInterfaces = new List<Type>
+                {
+                    typeof(IReturn<>),
+                    typeof(IReturnVoid),
+                };
+                var builtinInterfaces = new[]
+                {
+                    typeof(IGet),
+                    typeof(IPost),
+                    typeof(IPut),
+                    typeof(IDelete),
+                    typeof(IPatch),
+                    typeof(IOptions),
+                    typeof(IMeta),
+                    typeof(IHasSessionId),
+                    typeof(IHasVersion),
+                };
+                
+                foreach (var op in metadataTypes.Operations)
+                {
+                    foreach (var typeName in op.Request.Implements.Safe())
+                    {
+                        var iface = builtinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
+                        if (iface != null)
+                        {
+                            registerInterfaces.AddIfNotExists(iface);
+                        }
+                    }
+                }
+                
+                metadataTypes.Types.InsertRange(0, registerInterfaces.Map(x => generator.ToType(x)));
             }
+
+            ExportMissingSystemTypes(typesConfig);
+
+            typesConfig.ExportTypes.Add(typeof(Tuple<>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
 
             var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return typeScript;
@@ -232,6 +270,8 @@ namespace ServiceStack.NativeTypes
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
+
+            ExportMissingSystemTypes(typesConfig);
 
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
@@ -260,6 +300,8 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
+            ExportMissingSystemTypes(typesConfig);
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
@@ -280,12 +322,22 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
+            ExportMissingSystemTypes(typesConfig);
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
             var java = new KotlinGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return java;
+        }
+
+        private static void ExportMissingSystemTypes(MetadataTypesConfig typesConfig)
+        {
+            if (typesConfig.ExportTypes == null)
+                typesConfig.ExportTypes = new HashSet<Type>();
+
+            typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
         }
     }
 }

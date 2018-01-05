@@ -32,6 +32,8 @@ namespace ServiceStack.Authentication.OAuth2
                 ?? FallbackConfig(appSettings.GetString("oauth.AccessTokenUrl"));
             this.UserProfileUrl = appSettings.GetString("oauth.{0}.UserProfileUrl".Fmt(provider))
                 ?? FallbackConfig(appSettings.GetString("oauth.UserProfileUrl"));
+
+            this.SaveExtendedUserInfo = appSettings.Get($"oauth.{provider}.SaveExtendedUserInfo", true);
         }
 
         public string AccessTokenUrl { get; set; }
@@ -54,6 +56,8 @@ namespace ServiceStack.Authentication.OAuth2
 
         public Action<WebServerClient> AuthClientFilter { get; set; }
 
+        public Func<string, bool> VerifyAccessToken { get; set; }
+
         public virtual IAuthorizationState ProcessUserAuthorization(
             WebServerClient authClient, AuthorizationServerDescription authServer, IServiceBase authService)
         {
@@ -66,17 +70,34 @@ namespace ServiceStack.Authentication.OAuth2
         {
             var tokens = this.Init(authService, ref session, request);
 
+            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            if (request?.AccessToken != null)
+            {
+                if (VerifyAccessToken == null)
+                    throw new NotImplementedException($"VerifyAccessToken is not implemented by {Provider}");
+
+                if (!VerifyAccessToken(request.AccessToken))
+                    return HttpError.Unauthorized($"AccessToken is not for the configured {Provider} App");
+
+                var failedResult = AuthenticateWithAccessToken(authService, session, tokens, request.AccessToken);
+                var isHtml = authService.Request.IsHtml();
+                if (failedResult != null)
+                    return ConvertToClientError(failedResult, isHtml);
+
+                return isHtml
+                    ? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")))
+                    : null; //return default AuthenticateResponse
+            }
+
             var authServer = new AuthorizationServerDescription { AuthorizationEndpoint = new Uri(this.AuthorizeUrl), TokenEndpoint = new Uri(this.AccessTokenUrl) };
 
-            if (AuthServerFilter != null)
-                AuthServerFilter(authServer);
+            AuthServerFilter?.Invoke(authServer);
 
             var authClient = new WebServerClient(authServer, this.ConsumerKey) {
                 ClientCredentialApplicator = ClientCredentialApplicator.PostParameter(this.ConsumerSecret),
             };
 
-            if (AuthClientFilter != null)
-                AuthClientFilter(authClient);
+            AuthClientFilter?.Invoke(authClient);
 
             var authState = ProcessUserAuthorization(authClient, authServer, authService);
             if (authState == null)
@@ -113,17 +134,15 @@ namespace ServiceStack.Authentication.OAuth2
             var accessToken = authState.AccessToken;
             if (accessToken != null)
             {
+                tokens.RefreshToken = authState.RefreshToken;
+                tokens.RefreshTokenExpiry = authState.AccessTokenExpirationUtc;
+            }
+
+            if (accessToken != null)
+            {
                 try
                 {
-                    tokens.AccessToken = accessToken;
-                    tokens.RefreshToken = authState.RefreshToken;
-                    tokens.RefreshTokenExpiry = authState.AccessTokenExpirationUtc;
-
-                    var authInfo = this.CreateAuthInfo(accessToken);
-
-                    session.IsAuthenticated = true;
-                    
-                    return OnAuthenticated(authService, session, tokens, authInfo)
+                    return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
                         ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1")));
                 }
                 catch (WebException we)
@@ -137,6 +156,17 @@ namespace ServiceStack.Authentication.OAuth2
             }
 
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));
+        }
+
+        protected virtual object AuthenticateWithAccessToken(IServiceBase authService, IAuthSession session, IAuthTokens tokens, string accessToken)
+        {
+            tokens.AccessToken = accessToken;
+
+            var authInfo = this.CreateAuthInfo(accessToken);
+
+            session.IsAuthenticated = true;
+
+            return OnAuthenticated(authService, session, tokens, authInfo);
         }
 
         public override bool IsAuthorized(IAuthSession session, IAuthTokens tokens, Authenticate request = null)
@@ -204,13 +234,13 @@ namespace ServiceStack.Authentication.OAuth2
 
             if (session.ReferrerUrl.IsNullOrEmpty())
             {
-                session.ReferrerUrl = (request != null ? request.Continue : null) ?? authService.Request.GetHeader("Referer");
+                session.ReferrerUrl = request?.Continue ?? authService.Request.GetHeader("Referer");
             }
 
             if (session.ReferrerUrl.IsNullOrEmpty() || session.ReferrerUrl.IndexOf("/auth", StringComparison.OrdinalIgnoreCase) >= 0)
             {
                 session.ReferrerUrl = this.RedirectUrl
-                    ?? HttpHandlerFactory.GetBaseUrl()
+                    ?? HostContext.Config.WebHostUrl
                     ?? requestUri.Substring(0, requestUri.IndexOf("/", "https://".Length + 1, StringComparison.Ordinal));
             }
 

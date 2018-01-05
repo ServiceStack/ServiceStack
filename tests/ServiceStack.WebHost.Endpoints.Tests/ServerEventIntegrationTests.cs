@@ -6,7 +6,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    [Ignore, TestFixture] //requires SSE AppHost on 
+    [Ignore("Requires SSE AppHost on"), TestFixture] //requires SSE AppHost on 
     public class ServerEventIntegrationTests
     {
         [Test]

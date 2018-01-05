@@ -1,4 +1,4 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace ServiceStack
 {
-	/// <summary>
-	/// Decorate on Request DTO's to alter the accessibility of a service and its visibility on /metadata pages
-	/// </summary>
-	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-	public class RestrictAttribute : AttributeBase
-	{
+    /// <summary>
+    /// Decorate on Request DTO's to alter the accessibility of a service and its visibility on /metadata pages
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class RestrictAttribute : AttributeBase
+    {
         /// <summary>
         /// Allow access but hide from metadata to requests from Localhost only
         /// </summary>
@@ -39,7 +39,7 @@ namespace ServiceStack
                 if (value == false)
                     throw new Exception("Only true allowed");
 
-                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet(); 
+                VisibilityTo = RequestAttributes.Localhost.ToAllowedFlagsSet();
             }
         }
 
@@ -172,20 +172,20 @@ namespace ServiceStack
         /// <param name="restrictToAny"></param>
         /// <returns></returns>
         private static RequestAttributes[] ToAllowedFlagsSet(RequestAttributes[] restrictToAny)
-	    {
-	        if (restrictToAny.Length == 0)
+        {
+            if (restrictToAny.Length == 0)
                 return new[] { RequestAttributes.Any };
 
-	        var scenarios = new List<RequestAttributes>();
-	        foreach (var restrictToScenario in restrictToAny)
-	        {
-	            var restrictTo = restrictToScenario.ToAllowedFlagsSet();
+            var scenarios = new List<RequestAttributes>();
+            foreach (var restrictToScenario in restrictToAny)
+            {
+                var restrictTo = restrictToScenario.ToAllowedFlagsSet();
 
-	            scenarios.Add(restrictTo);
-	        }
+                scenarios.Add(restrictTo);
+            }
 
             return scenarios.ToArray();
-	    }
+        }
 
         public bool CanShowTo(RequestAttributes restrictions)
         {
@@ -197,83 +197,71 @@ namespace ServiceStack
             return this.AccessibleToAny.Any(scenario => (restrictions & scenario) == restrictions);
         }
 
-        public bool HasNoAccessRestrictions
-        {
-            get
-            {
-                return this.AccessTo == RequestAttributes.Any;
-            }
-        }
+        public bool HasNoAccessRestrictions => this.AccessTo == RequestAttributes.Any;
 
-        public bool HasNoVisibilityRestrictions
-        {
-            get
-            {
-                return this.VisibilityTo == RequestAttributes.Any;
-            }
-        }
-	}
+        public bool HasNoVisibilityRestrictions => this.VisibilityTo == RequestAttributes.Any;
+    }
 
-	public static class RestrictExtensions
-	{
-	    /// <summary>
-	    /// Converts from a User intended restriction to a flag with all the allowed attribute flags set, e.g:
-	    /// 
-	    /// If No Network restrictions were specified all Network access types are allowed, e.g:
-	    ///     restrict EndpointAttributes.None => ... 111
-	    /// 
-	    /// If a Network restriction was specified, only it will be allowed, e.g:
-	    ///     restrict EndpointAttributes.LocalSubnet => ... 010
-	    /// 
-	    /// The returned Enum will have a flag with all the allowed attributes set
-	    /// </summary>
-	    /// <param name="restrictTo"></param>
-	    /// <returns></returns>
-	    public static RequestAttributes ToAllowedFlagsSet(this RequestAttributes restrictTo)
-	    {
+    public static class RestrictExtensions
+    {
+        /// <summary>
+        /// Converts from a User intended restriction to a flag with all the allowed attribute flags set, e.g:
+        /// 
+        /// If No Network restrictions were specified all Network access types are allowed, e.g:
+        ///     restrict EndpointAttributes.None => ... 111
+        /// 
+        /// If a Network restriction was specified, only it will be allowed, e.g:
+        ///     restrict EndpointAttributes.LocalSubnet => ... 010
+        /// 
+        /// The returned Enum will have a flag with all the allowed attributes set
+        /// </summary>
+        /// <param name="restrictTo"></param>
+        /// <returns></returns>
+        public static RequestAttributes ToAllowedFlagsSet(this RequestAttributes restrictTo)
+        {
             if (restrictTo == RequestAttributes.Any)
                 return RequestAttributes.Any;
 
-	        var allowedAttrs = RequestAttributes.None;
+            var allowedAttrs = RequestAttributes.None;
 
-	        //Network access
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyNetworkAccessType))
-	            allowedAttrs |= RequestAttributes.AnyNetworkAccessType;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnyNetworkAccessType);
+            //Network access
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyNetworkAccessType))
+                allowedAttrs |= RequestAttributes.AnyNetworkAccessType;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnyNetworkAccessType);
 
-	        //Security
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnySecurityMode))
-	            allowedAttrs |= RequestAttributes.AnySecurityMode;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnySecurityMode);
+            //Security
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnySecurityMode))
+                allowedAttrs |= RequestAttributes.AnySecurityMode;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnySecurityMode);
 
-	        //Http Method
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyHttpMethod))
-	            allowedAttrs |= RequestAttributes.AnyHttpMethod;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnyHttpMethod);
+            //Http Method
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyHttpMethod))
+                allowedAttrs |= RequestAttributes.AnyHttpMethod;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnyHttpMethod);
 
-	        //Call Style
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyCallStyle))
-	            allowedAttrs |= RequestAttributes.AnyCallStyle;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnyCallStyle);
+            //Call Style
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyCallStyle))
+                allowedAttrs |= RequestAttributes.AnyCallStyle;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnyCallStyle);
 
-	        //Format
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyFormat))
-	            allowedAttrs |= RequestAttributes.AnyFormat;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnyFormat);
+            //Format
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyFormat))
+                allowedAttrs |= RequestAttributes.AnyFormat;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnyFormat);
 
-	        //Endpoint
-	        if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyEndpoint))
-	            allowedAttrs |= RequestAttributes.AnyEndpoint;
-	        else
-	            allowedAttrs |= (restrictTo & RequestAttributes.AnyEndpoint);
+            //Endpoint
+            if (!HasAnyRestrictionsOf(restrictTo, RequestAttributes.AnyEndpoint))
+                allowedAttrs |= RequestAttributes.AnyEndpoint;
+            else
+                allowedAttrs |= (restrictTo & RequestAttributes.AnyEndpoint);
 
-	        return allowedAttrs;
-	    }
+            return allowedAttrs;
+        }
 
         public static bool HasAnyRestrictionsOf(RequestAttributes allRestrictions, RequestAttributes restrictions)
         {

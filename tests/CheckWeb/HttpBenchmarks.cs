@@ -1,19 +1,26 @@
 ﻿/* Options:
-Version: 1
+Date: 2017-11-09 21:58:38
+Version: 4.50
+Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: https://httpbenchmarks.servicestack.net
 
-ServerVersion: 1
-MakePartial: True
-MakeVirtual: True
-MakeDataContractsExtensible: False
-AddReturnMarker: True
-AddDescriptionAsComments: True
-AddDataContractAttributes: False
-AddIndexesToDataMembers: False
-AddResponseStatus: False
-AddImplicitVersion: 
-InitializeCollections: True
-AddDefaultXmlNamespace: http://schemas.servicestack.net/types
+//GlobalNamespace: 
+//MakePartial: True
+//MakeVirtual: True
+//MakeInternal: False
+//MakeDataContractsExtensible: False
+//AddReturnMarker: True
+//AddDescriptionAsComments: True
+//AddDataContractAttributes: False
+//AddIndexesToDataMembers: False
+//AddGeneratedCodeAttributes: False
+//AddResponseStatus: False
+//AddImplicitVersion: 
+//InitializeCollections: True
+//IncludeTypes: 
+//ExcludeTypes: 
+//AddNamespaces: 
+//AddDefaultXmlNamespace: http://schemas.servicestack.net/types
 */
 
 using System;
@@ -29,8 +36,8 @@ using BenchmarksAnalyzer.ServiceModel;
 namespace BenchmarksAnalyzer.ServiceModel
 {
 
-    [Route("/testplans/{TestPlanId}/testruns/{TestRunId}/testresults", "POST")]
     [Route("/testplans/{TestPlanId}/testresults", "POST")]
+    [Route("/testplans/{TestPlanId}/testruns/{TestRunId}/testresults", "POST")]
     public partial class AddTestResults
         : IReturn<List<TestResult>>
     {
@@ -98,13 +105,13 @@ namespace BenchmarksAnalyzer.ServiceModel
 
     [Route("/myinfo")]
     public partial class MyInfo
-        : IReturn<MyInfo>
+        : IReturn<UserInfo>
     {
     }
 
     [Route("/ping")]
     public partial class Ping
-        : IReturn<Ping>
+        : IReturn<PingResponse>
     {
     }
 
@@ -187,10 +194,10 @@ namespace BenchmarksAnalyzer.ServiceModel
             Results = new List<DisplayResult>{};
         }
 
-        public virtual ResponseStatus ResponseStatus { get; set; }
         public virtual TestPlan TestPlan { get; set; }
         public virtual TestRun TestRun { get; set; }
         public virtual List<DisplayResult> Results { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
     }
 }
 

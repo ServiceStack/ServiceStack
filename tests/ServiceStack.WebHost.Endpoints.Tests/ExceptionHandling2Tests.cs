@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using NUnit.Framework;
 using ProtoBuf;
-using ServiceStack.ProtoBuf;
-using ServiceStack.ServiceModel;
 using ServiceStack.Text;
+using ServiceStack.ProtoBuf;
+#if !NETCORE_SUPPORT
+using ServiceStack.ServiceModel;
+#endif
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -147,15 +150,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         AppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void Init()
         {
             try
             {
+                LogManager.LogFactory = null;
                 appHost = new AppHost();
                 appHost.Init();
-                appHost.Config.DebugMode = true;
                 appHost.Start(Config.ListeningOn);
+                appHost.Config.DebugMode = true;
             }
             catch (Exception ex)
             {
@@ -163,7 +167,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TearDown()
         {
             appHost.Dispose();

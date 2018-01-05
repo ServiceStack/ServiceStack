@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Check.ServiceModel.Types;
 using ServiceStack;
 
 namespace Check.ServiceModel
@@ -68,5 +69,18 @@ namespace Check.ServiceModel
         [ApiMember]
         [DataMember(Order = 1, IsRequired = false)]
         public string Name1 { get; set; }
+    }
+
+    [ServiceStack.DataAnnotations.ExcludeMetadata]
+    public class ExcludeMetadataType
+    {
+        public int Id { get; set; }
+    }
+
+    public class ExcludeMetadataProperty
+    {
+        public int Id { get; set; }
+        [ServiceStack.DataAnnotations.ExcludeMetadata]
+        public int ExcludedProperty { get; set; }
     }
 }

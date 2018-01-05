@@ -10,6 +10,19 @@ Test
 
 @Html.RenderMarkdownToHtml("## Heading 2")
 
+@Html.DisplayPrice(0)
+
+@DisplayPrice(1.1m)
+
+@helper DisplayPrice(Decimal price) { 
+    if (price == 0) {
+        <span>FREE!</span>
+    }
+    else {
+        @String.Format("{0:C2}", price)
+    }
+}
+
 <script>
     //setInterval(function () {
     //    $.getJSON("/hello/world", function(r) {

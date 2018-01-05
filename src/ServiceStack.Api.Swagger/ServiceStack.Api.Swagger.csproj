@@ -1,140 +1,60 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{01D3F057-7984-498F-8B0A-EB375701E204}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ServiceStack.Api.Swagger</RootNamespace>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
     <AssemblyName>ServiceStack.Api.Swagger</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <PackageId>ServiceStack.Api.Swagger</PackageId>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+
+  <PropertyGroup Condition=" '$(Configuration)' != 'Debug' ">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\ServiceStack.Api.Swagger.xml</DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Signed|AnyCPU'">
-    <OutputPath>bin\Signed\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="ServiceStack.Interfaces">
-      <HintPath>..\..\lib\ServiceStack.Interfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Serialization" />
+    <EmbeddedResource Include="swagger-ui\**\*.*;swagger-ui-bootstrap\**\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <DefineConstants>$(DefineConstants);NET45</DefineConstants>
+    <SignAssembly>True</SignAssembly>
+    <DelaySign>False</DelaySign>
+    <AssemblyOriginatorKeyFile>../servicestack.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
+    <Reference Include="System.Net" />
     <Reference Include="System.Web" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+
+    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Support\IOrderedDictionary.cs" />
-    <Compile Include="Support\OrderedDictionary.cs" />
-    <Compile Include="SwaggerApiService.cs" />
-    <Compile Include="SwaggerFeature.cs" />
-    <Compile Include="SwaggerResourcesService.cs" />
+
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <DefineConstants>$(DefineConstants);NETSTANDARD2_0</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.ServiceModel.Primitives" Version="4.4.0" />
+    <PackageReference Include="System.Xml.XmlSerializer" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
+
+    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj">
-      <Project>{982416DB-C143-4028-A0C3-CF41892D18D3}</Project>
-      <Name>ServiceStack.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj">
-      <Project>{680A1709-25EB-4D52-A87F-EE03FFD94BAA}</Project>
-      <Name>ServiceStack</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui-bootstrap\index.html" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\jiko.js" />
-    <EmbeddedResource Include="swagger-ui-bootstrap\swagger-like-template.html" />
-    <EmbeddedResource Include="swagger-ui\css\screen.css" />
-    <EmbeddedResource Include="swagger-ui\images\logo_small.png" />
-    <EmbeddedResource Include="swagger-ui\images\pet_store_api.png" />
-    <EmbeddedResource Include="swagger-ui\images\throbber.gif" />
-    <EmbeddedResource Include="swagger-ui\images\wordnik_api.png" />
-    <EmbeddedResource Include="swagger-ui\index.html" />
-    <EmbeddedResource Include="swagger-ui\lib\backbone-min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\highlight.7.3.pack.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery-1.8.0.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.ba-bbq.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.slideto.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\jquery.wiggle.min.js" />
-    <EmbeddedResource Include="swagger-ui\lib\shred.bundle.js" />
-    <EmbeddedResource Include="swagger-ui\lib\shred\content.js" />
-    <EmbeddedResource Include="swagger-ui\lib\underscore-min.js" />
-    <EmbeddedResource Include="swagger-ui\swagger-ui.js" />
-    <EmbeddedResource Include="swagger-ui\swagger-ui.min.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\css\reset.css" />
-    <EmbeddedResource Include="swagger-ui\images\explorer_icons.png" />
-    <EmbeddedResource Include="swagger-ui\lib\swagger-oauth.js" />
-    <EmbeddedResource Include="swagger-ui\o2c.html" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\lib\swagger-client.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\css\typography.css" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.svg" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.svg" />
-    <EmbeddedResource Include="swagger-ui\lib\handlebars-2.0.0.js" />
-    <EmbeddedResource Include="swagger-ui\lib\marked.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.eot" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.ttf" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.woff" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-700.woff2" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.eot" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.ttf" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff" />
-    <EmbeddedResource Include="swagger-ui\fonts\droid-sans-v6-latin-regular.woff2" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="swagger-ui\patch.js" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>

@@ -13,40 +13,54 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-using System;
-using System.Linq;
-using ServiceStack.Model;
-using ServiceStack.Validation;
-using System.Collections.Generic;
-using ServiceStack.FluentValidation.Results;
+namespace ServiceStack.FluentValidation {
+	using System;
+	using System.Collections.Generic;
+	using Results;
+	using System.Linq;
 
-namespace ServiceStack.FluentValidation
-{
-    public class ValidationException : ArgumentException, IResponseStatusConvertible 
-    {
-        public IEnumerable<ValidationFailure> Errors { get; private set; }
+	/// <summary>
+	/// An exception that represents failed validation
+	/// </summary>
+#if !NETSTANDARD2_0
+	[Serializable]
+#endif
+	public partial class ValidationException {
+		/// <summary>
+		/// Validation errors
+		/// </summary>
+		public IEnumerable<ValidationFailure> Errors { get; private set; }
 
-        public ValidationException(IEnumerable<ValidationFailure> errors) : base(BuildErrorMessage(errors)) {
-            Errors = errors;
-        }
+		/// <summary>
+		/// Creates a new ValidationException
+		/// </summary>
+		/// <param name="message"></param>
+	    public ValidationException(string message) : this(message, Enumerable.Empty<ValidationFailure>()) {
+	        
+	    }
 
-        private static string BuildErrorMessage(IEnumerable<ValidationFailure> errors) {
-            var arr = errors.Select(x => "\r\n -- " + x.ErrorMessage).ToArray();
-            return "Validation failed: " + string.Join("", arr);
-        }
+		/// <summary>
+		/// Creates a new ValidationException
+		/// </summary>
+		/// <param name="message"></param>
+		/// <param name="errors"></param>
+		public ValidationException(string message, IEnumerable<ValidationFailure> errors) : base(message) {
+			Errors = errors;
+		}
+		/// <summary>
+		/// Creates a new ValidationException
+		/// </summary>
+		/// <param name="errors"></param>
+		public ValidationException(IEnumerable<ValidationFailure> errors) : base(BuildErrorMesage(errors)) {
+			Errors = errors;
+		}
 
-        public ResponseStatus ToResponseStatus()
-        {
-            var errors = Errors.Map(x =>
-                new ValidationErrorField(x.ErrorCode, x.PropertyName, x.ErrorMessage) {
-                    Meta = x.CustomState as Dictionary<string,string> ?? x.PlaceholderValues
-                });
-
-            var responseStatus = ResponseStatusUtils.CreateResponseStatus(typeof(ValidationException).GetOperationName(), Message, errors);
-            return responseStatus;
-        }
-    }
+		private static string BuildErrorMesage(IEnumerable<ValidationFailure> errors) {
+			var arr = errors.Select(x => "\r\n -- " + x.ErrorMessage).ToArray();
+			return "Validation failed: " + string.Join("", arr);
+		}
+	}
 }

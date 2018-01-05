@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -9,7 +9,7 @@ using ServiceStack.DataAnnotations;
 namespace ServiceStack
 {
     [DataContract]
-    public class Authenticate : IReturn<AuthenticateResponse>, IMeta
+    public class Authenticate : IPost, IReturn<AuthenticateResponse>, IMeta
     {
         [DataMember(Order = 1)] public string provider { get; set; }
         [DataMember(Order = 2)] public string State { get; set; }
@@ -30,7 +30,10 @@ namespace ServiceStack
 
         [DataMember(Order = 15)] public bool? UseTokenCookie { get; set; }
 
-        [DataMember(Order = 16)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 16)] public string AccessToken { get; set; }
+        [DataMember(Order = 17)] public string AccessTokenSecret { get; set; }
+
+        [DataMember(Order = 18)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -47,13 +50,14 @@ namespace ServiceStack
         [DataMember(Order = 4)] public string DisplayName { get; set; }
         [DataMember(Order = 5)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 6)] public string BearerToken { get; set; }
+        [DataMember(Order = 7)] public string RefreshToken { get; set; }
 
-        [DataMember(Order = 7)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 8)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 8)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 9)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class Register : IReturn<RegisterResponse>
+    public class Register : IPost, IReturn<RegisterResponse>
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
         [DataMember(Order = 2)] public string FirstName { get; set; }
@@ -77,13 +81,15 @@ namespace ServiceStack
         [DataMember(Order = 2)] public string SessionId { get; set; }
         [DataMember(Order = 3)] public string UserName { get; set; }
         [DataMember(Order = 4)] public string ReferrerUrl { get; set; }
+        [DataMember(Order = 5)] public string BearerToken { get; set; }
+        [DataMember(Order = 6)] public string RefreshToken { get; set; }
 
-        [DataMember(Order = 5)] public ResponseStatus ResponseStatus { get; set; }
-        [DataMember(Order = 6)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 7)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 8)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class AssignRoles : IReturn<AssignRolesResponse>
+    public class AssignRoles : IPost, IReturn<AssignRolesResponse>
     {
         public AssignRoles()
         {
@@ -121,7 +127,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class UnAssignRoles : IReturn<UnAssignRolesResponse>
+    public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>
     {
         public UnAssignRoles()
         {
@@ -158,7 +164,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class CancelRequest : IReturn<CancelRequestResponse>
+    public class CancelRequest : IPost, IReturn<CancelRequestResponse>
     {
         [DataMember(Order = 1)]
         public string Tag { get; set; }
@@ -180,7 +186,7 @@ namespace ServiceStack
     [Exclude(Feature.Soap)]
     [DataContract]
     [Route("/event-subscribers/{Id}", "POST")]
-    public class UpdateEventSubscriber : IReturn<UpdateEventSubscriberResponse>
+    public class UpdateEventSubscriber : IPost, IReturn<UpdateEventSubscriberResponse>
     {
         [DataMember(Order = 1)]
         public string Id { get; set; }
@@ -198,7 +204,7 @@ namespace ServiceStack
     }
 
     [Exclude(Feature.Soap)]
-    public class GetEventSubscribers : IReturn<List<Dictionary<string, string>>>
+    public class GetEventSubscribers : IGet, IReturn<List<Dictionary<string, string>>>
     {
         public string[] Channels { get; set; }
     }
@@ -251,6 +257,23 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)]
         public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 2)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DataContract]
+    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>
+    {
+        [DataMember(Order = 1)]
+        public string RefreshToken { get; set; }
+    }
+
+    [DataContract]
+    public class GetAccessTokenResponse
+    {
+        [DataMember(Order = 1)]
+        public string AccessToken { get; set; }
 
         [DataMember(Order = 2)]
         public ResponseStatus ResponseStatus { get; set; }

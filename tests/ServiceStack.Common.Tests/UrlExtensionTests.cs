@@ -98,6 +98,14 @@ namespace ServiceStack.Common.Tests
         public Gender? Gender2 { get; set; }
     }
 
+    [Route("/thing/{Id}/point", "POST")]
+    [DataContract]
+    public class IdWithAlias : IReturn<IdWithAlias>
+    {
+        [DataMember(Name = "id")]
+        public int Id { get; set; }
+    }
+
     [TestFixture]
     public class UrlExtensionTests
     {
@@ -146,6 +154,13 @@ namespace ServiceStack.Common.Tests
                 Assert.That(url, Is.EqualTo("/route/1"));
 
             }
+        }
+
+        [Test]
+        public void Can_create_POST_url_with_IdWithAlias()
+        {
+            var url = new IdWithAlias { Id = 1 }.ToPostUrl();
+            Assert.That(url, Is.EqualTo("/thing/1/point"));
         }
 
         [Test]

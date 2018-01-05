@@ -1,4 +1,4 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -28,7 +28,8 @@ namespace ServiceStack
         Razor        = 1 << 12,
         ProtoBuf     = 1 << 13,
         MsgPack      = 1 << 14,
+        Wire         = 1 << 15,
 
-        ServiceDiscovery = 1 << 15,
+        ServiceDiscovery = 1 << 16,
     }
 }

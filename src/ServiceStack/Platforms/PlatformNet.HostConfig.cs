@@ -1,4 +1,4 @@
-﻿#if !NETSTANDARD1_6
+﻿#if !NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -49,7 +49,7 @@ namespace ServiceStack.Platforms
             return razorNamespaces;
         }
 
-        public static string GetAppConfigPath()
+        public override string GetAppConfigPath()
         {
             if (ServiceStackHost.Instance == null) return null;
 
@@ -103,7 +103,7 @@ namespace ServiceStack.Platforms
                 {
                     throw new ConfigurationErrorsException(
                         "Unable to infer ServiceStack's <httpHandler.Path/> from the Web.Config\n"
-                        + "Check with https://github.com/ServiceStack/ServiceStack/wiki/Create-your-first-webservice to ensure you have configured ServiceStack properly.\n"
+                        + "Check with http://docs.servicestack.net/create-your-first-webservice to ensure you have configured ServiceStack properly.\n"
                         + "Otherwise you can explicitly set your httpHandler.Path by setting: EndpointHostConfig.ServiceStackPath");
                 }
             }
@@ -136,7 +136,7 @@ namespace ServiceStack.Platforms
             {
                 var webServerSection = webConfig.GetSection("system.webServer");
                 var rawXml = webServerSection?.SectionInformation.GetRawXml();
-                if (!String.IsNullOrEmpty(rawXml))
+                if (!string.IsNullOrEmpty(rawXml))
                 {
                     SetPaths(config, ExtractHandlerPathFromWebServerConfigurationXml(rawXml), locationPath);
                 }
@@ -156,11 +156,19 @@ namespace ServiceStack.Platforms
 
         private static string ExtractHandlerPathFromWebServerConfigurationXml(string rawXml)
         {
-            return XDocument.Parse(rawXml).Root.Element("handlers")
-                .Descendants("add")
-                .Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
-                .Select(handler => handler.Attribute("path").Value)
-                .FirstOrDefault();
+            try
+            {
+                return XDocument.Parse(rawXml).Root.Element("handlers")
+                    ?.Descendants("add")
+                    ?.Where(handler => EnsureHandlerTypeAttribute(handler).StartsWith("ServiceStack"))
+                    .Select(handler => handler.Attribute("path").Value)
+                    .FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                HostContext.AppHost?.OnStartupException(ex);
+                return null;
+            }
         }
 
         private static string EnsureHandlerTypeAttribute(XElement handler)
@@ -169,7 +177,7 @@ namespace ServiceStack.Platforms
             {
                 return handler.Attribute("type").Value;
             }
-            return String.Empty;
+            return string.Empty;
         }
 
         private static void SetPaths(HostConfig config, string handlerPath, string locationPath)
@@ -178,13 +186,13 @@ namespace ServiceStack.Platforms
 
             if (locationPath == null)
             {
-                handlerPath = handlerPath.Replace("*", String.Empty);
+                handlerPath = handlerPath.Replace("*", string.Empty);
             }
 
             config.HandlerFactoryPath = locationPath ??
-                                        (String.IsNullOrEmpty(handlerPath) ? null : handlerPath);
+                (string.IsNullOrEmpty(handlerPath) ? null : handlerPath);
 
-            config.MetadataRedirectPath = "metadata";
+            config.MetadataRedirectPath = "~/metadata";
         }
     }
 }

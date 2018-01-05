@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private BufferedRequestAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost();
@@ -19,7 +19,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -80,7 +80,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         private BufferedRequestAppHost appHost;
         MyRequest request = new MyRequest { Data = "RequestData" };
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BufferedRequestAppHost { EnableRequestBodyTracking = true };
@@ -88,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -102,6 +102,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(logBody, Is.EqualTo(request.ToJson()));
         }
 
+#if !NETCORE
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap12()
         {
@@ -110,12 +111,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var logBody = Run(new Soap12ServiceClient(Config.ServiceStackBaseUri));
 
-            Assert.That(appHost.LastRequestBody, Is.StringStarting(soap12start));
-            Assert.That(appHost.LastRequestBody, Is.StringEnding(soap12end));
-            Assert.That(logBody, Is.StringStarting(soap12start));
-            Assert.That(logBody, Is.StringEnding(soap12end));
+            Assert.That(appHost.LastRequestBody, Does.StartWith(soap12start));
+            Assert.That(appHost.LastRequestBody, Does.EndWith(soap12end));
+            Assert.That(logBody, Does.StartWith(soap12start));
+            Assert.That(logBody, Does.EndWith(soap12end));
         }
-
 
         [Test]
         public void Can_see_RequestBody_in_RequestLogger_when_EnableRequestBodyTracking_Soap11()
@@ -126,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(appHost.LastRequestBody, Is.EqualTo(soap11));
             Assert.That(logBody, Is.EqualTo(soap11));
         }
-
+#endif
         
         string Run(IServiceClient client)
         {
@@ -155,6 +155,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
+#if !NETCORE
+            Plugins.Add(new SoapFormat());
+#endif
             PreRequestFilters.Add((httpReq, httpRes) => {
                 if (UseBufferredStream)
                     httpReq.UseBufferedStream = UseBufferredStream;

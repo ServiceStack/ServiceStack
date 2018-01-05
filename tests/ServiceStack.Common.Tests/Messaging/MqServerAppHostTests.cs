@@ -183,7 +183,7 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public abstract IMessageService CreateMqServer(int retryCount = 1);
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new MqTestsAppHost(() => CreateMqServer())
@@ -191,7 +191,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public virtual void TestFixtureTearDown()
         {
             appHost.Dispose();

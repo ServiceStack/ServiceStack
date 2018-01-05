@@ -224,6 +224,7 @@ function notUndefinedNullOrZeroLength(obj) {
     <thead>
         <tr>
             <th width="12%">Parameter</th>
+            <th width="5%">Required</th>
             <th width="7%">Parameter Type</th>
             <th width="7%">Data Type</th>
             <th>Description</th>
@@ -233,6 +234,7 @@ function notUndefinedNullOrZeroLength(obj) {
         % a.parameters.forEach(function(param) {
         <tr>
             <td>${ param.name !== undefined && param.name !== null ? param.name : param.type }</td>
+            <td>${ param.required ? "yes" : "" }</td>
             <td>${ param.paramType }</td>
             <td>${ param.name === undefined || param.name === null ? '' : param.type }</td>
             <td>${ param.description }</td>
@@ -289,7 +291,6 @@ function notUndefinedNullOrZeroLength(obj) {
         <thead>
             <tr>
                 <th width="12%">Field</th>
-                <th width="5%">Required</th>
                 <th width="9%">Data Type</th>
                 <th>Description</th>
             </tr>
@@ -298,7 +299,6 @@ function notUndefinedNullOrZeroLength(obj) {
             % _.each(a.properties, function(prop, key) {
             <tr>
                 <td>${ key }</td>
-                <td>${ _.contains(a.required, key) ? "yes" : "" }</td>
                 <td>${ toSwaggerType(prop) }</td>
                 <td>${ prop.description }</td>
             </tr>

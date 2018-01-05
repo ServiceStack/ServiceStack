@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace ServiceStack
@@ -102,7 +101,6 @@ namespace ServiceStack
             return network1Bytes.AreEqual(network2Bytes);
         }
 
-
         /// <summary>
         /// Gets the ipv4 addresses from all Network Interfaces that have Subnet masks.
         /// </summary>
@@ -113,8 +111,7 @@ namespace ServiceStack
 
             try
             {
-#if !SL5
-                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
                     {
@@ -124,7 +121,6 @@ namespace ServiceStack
                         map[uipi.Address] = uipi.IPv4Mask;
                     }
                 }
-#endif
             }
             catch /*(NotImplementedException ex)*/
             {
@@ -143,8 +139,7 @@ namespace ServiceStack
 
             try
             {
-#if !SL5
-                foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+                foreach (var ni in System.Net.NetworkInformation.NetworkInterface.GetAllNetworkInterfaces())
                 {
                     foreach (var uipi in ni.GetIPProperties().UnicastAddresses)
                     {
@@ -152,7 +147,6 @@ namespace ServiceStack
                         list.Add(uipi.Address);
                     }
                 }
-#endif
             }
             catch /*(NotImplementedException ex)*/
             {

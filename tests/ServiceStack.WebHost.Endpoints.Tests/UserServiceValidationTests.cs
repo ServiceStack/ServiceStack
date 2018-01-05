@@ -26,7 +26,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class UserValidator : AbstractValidator<UserValidation>, IRequiresRequest
     {
         public IAddressValidator AddressValidator { get; set; }
-        public IRequest Request { get; set; }
 
         public UserValidator()
         {
@@ -80,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         static UserAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new UserAppHostHttpListener();
@@ -88,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

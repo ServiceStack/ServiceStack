@@ -36,6 +36,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
     }
 
+    [Ignore("Integration Test")]
     public class DynamoDbAuthUserSessionTests : AuthUserSessionTests
     {
         public override IUserAuthRepository CreateAuthRepo()
@@ -79,13 +80,13 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new BasicAppHost().Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -146,9 +147,9 @@ namespace ServiceStack.Common.Tests.OAuth
             var serviceTokens = MockAuthHttpGateway.Tokens = facebookGatewayTokens;
 
             var oAuthUserSession = requestContext.ReloadSession();
-            var authInfo = new Dictionary<string, string> { };
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens, authInfo);
+            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
 
             oAuthUserSession = requestContext.ReloadSession();
 
@@ -188,13 +189,14 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var oAuthUserSession = requestContext.ReloadSession();
             var facebookAuth = GetFacebookAuthProvider();
-            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens, new Dictionary<string, string>());
+            facebookAuth.OnAuthenticated(service, oAuthUserSession, facebookAuthTokens,
+                JsonObject.Parse(facebookAuth.AuthHttpGateway.DownloadFacebookUserInfo("facebookCode")));
 
             oAuthUserSession = requestContext.ReloadSession();
 
             var serviceTokensTw = MockAuthHttpGateway.Tokens = twitterGatewayTokens;
             var authInfo = new Dictionary<string, string> {
-                {"user_id", "133371690876022785"},
+                {"user_id", "17575623"},
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();
@@ -315,7 +317,7 @@ namespace ServiceStack.Common.Tests.OAuth
             //Twitter
             MockAuthHttpGateway.Tokens = twitterGatewayTokens;
             var authInfo = new Dictionary<string, string> {
-                {"user_id", "133371690876022785"},
+                {"user_id", "17575623"},
                 {"screen_name", "demisbellot"},
             };
             var twitterAuth = GetTwitterAuthProvider();

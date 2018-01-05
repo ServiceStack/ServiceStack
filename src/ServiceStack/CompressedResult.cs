@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack
 {
     public class CompressedResult
-        : IStreamWriter, IHttpResult
+        : IStreamWriterAsync, IHttpResult
     {
         public const int Adler32ChecksumLength = 4;
 
@@ -84,16 +86,15 @@ namespace ServiceStack
             this.Cookies = new List<Cookie>();
         }
 
-        public void WriteTo(Stream responseStream)
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = new CancellationToken())
         {
             var response = RequestContext?.Response;
             response?.SetContentLength(this.Contents.Length + PaddingLength);
 
-            responseStream.Write(this.Contents, 0, this.Contents.Length);
+            await responseStream.WriteAsync(this.Contents, token);
             //stream.Write(this.Contents, Adler32ChecksumLength, this.Contents.Length - Adler32ChecksumLength);
 
-            responseStream.Flush();
+            await responseStream.FlushAsync(token);
         }
-
     }
 }

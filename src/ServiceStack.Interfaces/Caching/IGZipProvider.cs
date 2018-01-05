@@ -11,5 +11,6 @@ namespace ServiceStack.Caching
         byte[] GUnzipBytes(byte[] gzBuffer);
 
         Stream GZipStream(Stream outputStream);
+        Stream GUnzipStream(Stream gzStream);
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using ServiceStack.Html;
 using ServiceStack.Web;
 
@@ -7,7 +8,7 @@ namespace ServiceStack
     /// <summary>
     /// Cache the Response of a Service
     /// </summary>
-    public class CacheResponseAttribute : RequestFilterAttribute
+    public class CacheResponseAttribute : RequestFilterAsyncAttribute
     {
         /// <summary>
         /// Cache expiry in seconds
@@ -35,6 +36,11 @@ namespace ServiceStack
         public string[] VaryByRoles { get; set; }
 
         /// <summary>
+        /// Vary cache for different HTTP Headers
+        /// </summary>
+        public string[] VaryByHeaders { get; set; }
+
+        /// <summary>
         /// Use HostContext.LocalCache or HostContext.Cache
         /// </summary>
         public bool LocalCache { get; set; }
@@ -49,7 +55,7 @@ namespace ServiceStack
             MaxAge = -1;
         }
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (req.Verb != HttpMethods.Get && req.Verb != HttpMethods.Head)
                 return;
@@ -91,6 +97,18 @@ namespace ServiceStack
                 }
             }
 
+            if (VaryByHeaders != null && VaryByHeaders.Length > 0)
+            {
+                foreach (var header in VaryByHeaders)
+                {
+                    var value = req.GetHeader(header);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        modifiers += (modifiers.Length > 0 ? "+" : "") + $"{header}:{value}";
+                    }
+                }
+            }
+
             if (modifiers.Length > 0)
                 keySuffix += "+" + modifiers;
 
@@ -106,7 +124,7 @@ namespace ServiceStack
                 NoCompression = NoCompression,
             };
 
-            if (req.HandleValidCache(cacheInfo))
+            if (await req.HandleValidCache(cacheInfo))
                 return;
 
             req.Items[Keywords.CacheInfo] = cacheInfo;
@@ -120,13 +138,13 @@ namespace ServiceStack
             return "date:" + cacheInfo.CacheKey;
         }
 
-        public static bool HandleValidCache(this IRequest req, CacheInfo cacheInfo)
+        public static async Task<bool> HandleValidCache(this IRequest req, CacheInfo cacheInfo)
         {
             if (cacheInfo == null)
                 return false;
 
             var res = req.Response;
-            var cache = cacheInfo.LocalCache ? HostContext.LocalCache : HostContext.Cache;
+            var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
 
             DateTime? lastModified = null;
 
@@ -166,7 +184,7 @@ namespace ServiceStack
                 if (lastModified != null)
                     res.AddHeader(HttpHeaders.LastModified, lastModified.Value.ToUniversalTime().ToString("r"));
 
-                res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
+                await res.WriteBytesToResponse(responseBytes, req.ResponseContentType);
                 return true;
             }
 

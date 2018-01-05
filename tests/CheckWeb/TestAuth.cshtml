@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Auth</title>
+</head>
+<body>
+
+<form action="@(new Authenticate { provider = "credentials" }.ToPostUrl())" method="post">
+    <input type="text" name="username" placeholder="username" />
+    <input type="password" name="password" placeholder="password" />
+    <input type="hidden" name="continue" value="/" />
+    <input type="submit"/>
+</form>
+
+</body>
+</html>

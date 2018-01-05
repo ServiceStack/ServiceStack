@@ -14,11 +14,16 @@ namespace ServiceStack.Razor.Tests
         {
             //http://stackoverflow.com/questions/13206038/servicestack-razor-default-page/13206221
 
+            this.SetConfig(new HostConfig
+            {
+                DebugMode = true,
+            });
+
             var razor3 = new RazorFormat();
 
             this.Plugins.Add(razor3);
-            this.Plugins.Add(new RequestLogsFeature()
-                {
+            this.Plugins.Add(new RequestLogsFeature
+            {
                     EnableErrorTracking = true,
                     EnableResponseTracking = true,
                     EnableSessionTracking = true,
@@ -29,13 +34,6 @@ namespace ServiceStack.Razor.Tests
             this.PreRequestFilters.Add(SimplePreRequestFilter);
 
             this.GlobalRequestFilters.Add(SimpleRequestFilter);
-
-            //this.SetConfig( new EndpointHostConfig()
-            //    {
-            //        DebugMode = false,
-
-            //    } );
-
 
             this.Routes.Add<HelloRequest>("/hello");
             this.Routes.Add<HelloRequest>("/hello/{Name}");

@@ -1,0 +1,54 @@
+﻿<!DOCTYPE HTML>
+<html>
+<head>
+<title>Alive Rockstars</title>
+<link href="/stars/style.css" rel="stylesheet" />
+<style type="text/css">
+body {
+    background: #ACDBCE url(/img/green_dust_scratch.png);
+    background-attachment: fixed;
+}
+a {
+    color: #060;    
+}
+</style>
+</head>
+    <body>
+        
+        <div id="page">
+            <div id="info">
+                <h6>Rockstars still rocking it...</h6>
+                <p>
+                    <a id="home" href="/"></a>
+                    @if (ViewBag.Title == "Dave Grohl") 
+                    {
+                        @*Special case for Grohl show casing an alternative way to layout pages*@
+                        <p><a href="GrohlContent?format=text.bare">Markdown Only</a></p>
+                    }
+                    else
+                    {
+                        <p><a href="Content?format=text.bare">Markdown Only</a></p>
+                    }
+                </p>
+            </div>
+
+            <h1>@ViewBag.Title</h1>
+            
+            @Html.Partial("MenuAlive")
+        
+            <div id="content">
+                @RenderBody()
+                <b class="clear"></b>
+            </div>
+            
+            @Html.Partial("MenuDead")
+        </div>
+        
+        <div id="preview">
+            <h1>Implementation</h1>
+
+            @RenderSection("preview")
+        </div>
+
+    </body>
+</html>

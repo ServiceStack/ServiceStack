@@ -1,4 +1,4 @@
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
 
 using System;
 using System.Net;
@@ -40,35 +40,35 @@ namespace ServiceStack
             HandlerPath = handlerPath;
         }
 
-        protected override Task ProcessRequestAsync(HttpListenerContext context)
+        protected override async Task ProcessRequestAsync(HttpListenerContext context)
         {
             if (string.IsNullOrEmpty(context.Request.RawUrl))
-                return TypeConstants.EmptyTask;
+                return;
+            
+            RequestContext.Instance.StartRequestContext();
 
             var operationName = context.Request.GetOperationName().UrlDecode();
 
-            var httpReq = context.ToRequest(operationName);
+            var httpReq = (ListenerRequest)context.ToRequest(operationName);
             var httpRes = httpReq.Response;
+
             var handler = HttpHandlerFactory.GetHandler(httpReq);
 
-            var serviceStackHandler = handler as IServiceStackHandler;
-            if (serviceStackHandler != null)
+            if (handler is IServiceStackHandler serviceStackHandler)
             {
-                var restHandler = serviceStackHandler as RestHandler;
-                if (restHandler != null)
+                if (serviceStackHandler is RestHandler restHandler)
                 {
                     httpReq.OperationName = operationName = restHandler.RestPath.RequestType.GetOperationName();
                 }
 
                 var task = serviceStackHandler.ProcessRequestAsync(httpReq, httpRes, operationName);
-                task.ContinueWith(x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+                await HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
                 //Matches Exceptions handled in HttpListenerBase.InitTask()
 
-                return task;
+                return;
             }
 
-            return new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}")
-                .AsTaskException();
+            throw new NotImplementedException($"Cannot execute handler: {handler} at PathInfo: {httpReq.PathInfo}");
         }
 
         public override void OnConfigLoad()

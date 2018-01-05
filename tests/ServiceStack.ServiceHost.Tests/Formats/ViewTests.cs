@@ -4,6 +4,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.Host;
@@ -22,7 +24,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         private MarkdownFormat markdownFormat;
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             var json = "~/AppData/ALFKI.json".MapProjectPath().ReadAllText();
@@ -30,6 +32,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             appHost = new BasicAppHost
             {
+                Plugins = { new MarkdownFormat() },
                 ConfigFilter = config =>
                 {
                     //Files aren't copied, set RootDirectory to ProjectPath instead.
@@ -39,7 +42,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             markdownFormat = appHost.GetPlugin<MarkdownFormat>();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -49,15 +52,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats
         {
             var httpReq = new MockHttpRequest
             {
-                Headers = PclExportClient.Instance.NewNameValueCollection(),
+                Headers = new NameValueCollection(),
                 OperationName = "OperationName",
-                QueryString = PclExportClient.Instance.NewNameValueCollection(),
+                QueryString = new NameValueCollection(),
             };
             httpReq.QueryString.Add("format", format);
             using (var ms = new MemoryStream())
             {
                 var httpRes = new HttpResponseStreamWrapper(ms, httpReq);
-                appHost.ViewEngines[0].ProcessRequest(httpReq, httpRes, dto);
+                appHost.ViewEngines[0].ProcessRequestAsync(httpReq, dto, httpRes.OutputStream);
 
                 var utf8Bytes = ms.ToArray();
                 var html = utf8Bytes.FromUtf8Bytes();
@@ -140,7 +143,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Request = httpReq;
                 this.Headers = new Dictionary<string, string>();
                 this.MemoryStream = new MemoryStream();
-                this.Cookies = new Cookies(this);
+                this.Cookies = new Host.Cookies(this);
                 this.Items = new Dictionary<string, object>();
             }
 
@@ -166,6 +169,11 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers.Add(name, value);
             }
 
+            public void RemoveHeader(string name)
+            {
+                Headers.Remove(name);
+            }
+
             public string GetHeader(string name)
             {
                 string value;
@@ -178,15 +186,9 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 this.Headers[HttpHeaders.Location] = url;
             }
 
-            public Stream OutputStream { get { return MemoryStream; } }
+            public Stream OutputStream => MemoryStream;
 
             public object Dto { get; set; }
-
-            public void Write(string text)
-            {
-                var bytes = Encoding.UTF8.GetBytes(text);
-                MemoryStream.Write(bytes, 0, bytes.Length);
-            }
 
             public bool UseBufferedStream { get; set; }
 
@@ -209,6 +211,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 MemoryStream.Flush();
             }
 
+            public Task FlushAsync(CancellationToken token = new CancellationToken()) => MemoryStream.FlushAsync(token);
+
             public bool IsClosed { get; private set; }
 
             public void SetContentLength(long contentLength)
@@ -217,6 +221,8 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             }
 
             public bool KeepAlive { get; set; }
+
+            public bool HasStarted { get; set; }
 
             public Dictionary<string, object> Items { get; private set; }
 
@@ -236,7 +242,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
             {
                 MarkdownFormat = markdownFormat,
             };
-            var httpReq = new MockHttpRequest { QueryString = PclExportClient.Instance.NewNameValueCollection() };
+            var httpReq = new MockHttpRequest { QueryString = new NameValueCollection() };
             var httpRes = new MockHttpResponse(httpReq);
             markdownHandler.ProcessRequestAsync(httpReq, httpRes, "Static").Wait();
 

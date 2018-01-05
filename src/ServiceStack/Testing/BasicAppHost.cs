@@ -12,15 +12,15 @@ namespace ServiceStack.Testing
             : base(typeof (BasicAppHost).GetOperationName(),
                    serviceAssemblies.Length > 0 ? serviceAssemblies : new[]
                    {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                        Assembly.GetExecutingAssembly()
 #else
                        typeof(BasicAppHost).GetTypeInfo().Assembly
 #endif
                    })
         {
-            this.ExcludeAutoRegisteringServiceTypes = new HashSet<Type>();
             this.TestMode = true;
+            Plugins.Clear();
         }
 
         public override void Configure(Container container)
@@ -37,7 +37,7 @@ namespace ServiceStack.Testing
 
         public Func<BasicAppHost, ServiceController> UseServiceController
         {
-            set { ServiceController = value(this); }
+            set => ServiceController = value(this);
         }
 
         public override void OnConfigLoad()

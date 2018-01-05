@@ -39,6 +39,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+#if !NETCORE
+    [Ignore("Causes dll conflicts in ASP.NET Host projects when run from this test project")]
     public class IocServiceAspNetTests : IocServiceTests
     {
         public override IServiceClient CreateClient(ResetIoc request = null)
@@ -48,6 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return client;
         }
     }
+#endif
 
     public class IocServiceHttpListenerTests : IocServiceTests
     {
@@ -55,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         IocAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
             appHost = new IocAppHost();
@@ -63,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             if (appHost != null)

@@ -6,7 +6,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.IntegrationTests.Tests
 {
-    [Explicit, TestFixture]
+    [Ignore("Load Test"), TestFixture]
     public class LoadTests
     {
         string BaseUrl = "http://localhost:50000/api/";

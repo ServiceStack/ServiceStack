@@ -14,7 +14,7 @@ namespace RazorRockstars.Console
 
         Stopwatch startedAt;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
 	    public void TestFixtureSetUp()
 	    {
             startedAt = Stopwatch.StartNew();
@@ -23,7 +23,7 @@ namespace RazorRockstars.Console
             appHost.Start("http://*:1337/");
 	    }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             "Time Taken {0}ms".Fmt(startedAt.ElapsedMilliseconds).Print();

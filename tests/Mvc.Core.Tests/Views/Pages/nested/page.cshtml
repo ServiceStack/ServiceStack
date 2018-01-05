@@ -1,0 +1,28 @@
+﻿@inherits ViewPage<SearchRockstars>
+
+@{
+    Layout = "SimpleLayout";
+    ViewBag.Title = "Page with typed 'Rockstars' model and no C# controller";
+    var rockstars = base.Gateway.Send(new SearchRockstars { Age = Dto.Age }).Results;
+    var title = Dto.Age.HasValue ? $"{Dto.Age} year old rockstars" : "All Rockstars";
+}
+
+<h2>/Path: /View/Pages/nested/page.cshtml</h2>
+
+<div id="content-page">
+
+    @Html.Partial("OtherPages", null)
+
+    <div>@title</div>
+    <ul>
+        @foreach (var rockstar in rockstars)
+        {
+            <li><a href="@rockstar.Url">@rockstar.LastName, @rockstar.FirstName</a> (<a href="?Age=@rockstar.Age">@rockstar.Age</a>)</li>
+        }
+    </ul>
+
+    <p><a href="?">Show all Rockstars</a></p>
+
+    @Html.Partial("TestLinks")
+
+</div>

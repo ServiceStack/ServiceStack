@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Shared
@@ -138,7 +139,7 @@ namespace ServiceStack.Server.Tests.Shared
             Cache = CreateClient();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             Cache.Dispose();
@@ -242,6 +243,45 @@ namespace ServiceStack.Server.Tests.Shared
         }
 
         [Test]
+        public void Expired_item_returns_correct_GetTimeToLive()
+        {
+            var ormliteCache = Cache as OrmLiteCacheClient;
+            var key = "int:key";
+
+            var value = Cache.GetOrCreate(key, TimeSpan.FromMilliseconds(100), () => 1);
+            var ttl = Cache.GetTimeToLive(key);
+
+            if (ormliteCache != null)
+            {
+                using (var db = ormliteCache.DbFactory.OpenDbConnection())
+                {
+                    var row = db.SingleById<CacheEntry>(key);
+                    Assert.That(row, Is.Not.Null);
+                    Assert.That(row.ExpiryDate, Is.Not.Null);
+                }
+            }
+
+            Assert.That(value, Is.EqualTo(1));
+            Assert.That(ttl.Value.TotalMilliseconds, Is.GreaterThan(0));
+
+            Thread.Sleep(200);
+            value = Cache.Get<int>(key);
+            ttl = Cache.GetTimeToLive(key);
+
+            Assert.That(value, Is.EqualTo(0));
+            Assert.That(ttl, Is.Null);
+
+            if (ormliteCache != null)
+            {
+                using (var db = ormliteCache.DbFactory.OpenDbConnection())
+                {
+                    var row = db.SingleById<CacheEntry>(key);
+                    Assert.That(row, Is.Null);
+                }
+            }
+        }
+
+        [Test]
         public void Can_increment_and_decrement_values()
         {
             Assert.That(Cache.Increment("incr:a", 2), Is.EqualTo(2));
@@ -319,9 +359,9 @@ namespace ServiceStack.Server.Tests.Shared
             var sessionExpiry = SessionFeature.DefaultSessionExpiry;
             Cache.Set(sessionKey, session, sessionExpiry);
             ttl = Cache.GetTimeToLive(sessionKey);
-            var roundedToSec = new TimeSpan(ttl.Value.Ticks - (ttl.Value.Ticks % 1000));
-            Assert.That(roundedToSec, Is.GreaterThan(TimeSpan.FromSeconds(0)));
-            Assert.That(roundedToSec, Is.LessThanOrEqualTo(sessionExpiry));
+            Assert.That(ttl.Value, Is.GreaterThan(TimeSpan.FromSeconds(0)));
+            Assert.That(ttl.Value, Is.LessThan(sessionExpiry).
+                                   Or.EqualTo(sessionExpiry).Within(TimeSpan.FromSeconds(1)));
         }
 
         [Test]
@@ -361,7 +401,7 @@ namespace ServiceStack.Server.Tests.Shared
             Parallel.Invoke(fns.ToArray());
 
             var entry = cache.Get<string>("concurrent-test");
-            Assert.That(entry, Is.StringStarting("Data: "));
+            Assert.That(entry, Does.StartWith("Data: "));
         }
 
         [Test]

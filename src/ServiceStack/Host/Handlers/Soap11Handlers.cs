@@ -1,6 +1,6 @@
-﻿#if !NETSTANDARD1_6
+﻿#if !NETSTANDARD2_0
 
-using System.Web;
+using System.Threading.Tasks;
 using ServiceStack.Metadata;
 using ServiceStack.Web;
 
@@ -16,63 +16,26 @@ namespace ServiceStack.Host.Handlers
         }
     }
 
-    public class Soap11ReplyHandler : Soap11Handler
-    {
-        public Soap11ReplyHandler() : base(RequestAttributes.Soap11) { }
-    }
-
-    public class Soap11OneWayHandler : Soap11Handler
-    {
-        public Soap11OneWayHandler() : base(RequestAttributes.Soap11) { }
-
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            if (context.Request.HttpMethod == HttpMethods.Get)
-            {
-                var wsdl = new Soap11WsdlMetadataHandler();
-                wsdl.Execute(context);
-                return;
-            }
-
-            SendOneWay(null);
-        }
-    }
-
     public class Soap11MessageReplyHttpHandler : Soap11Handler
     {
         public Soap11MessageReplyHttpHandler() : base(RequestAttributes.Soap11) { }
 
-        public override void ProcessRequest(HttpContextBase context)
-        {
-            if (context.Request.HttpMethod == HttpMethods.Get)
-            {
-                var wsdl = new Soap11WsdlMetadataHandler();
-                wsdl.Execute(context);
-                return;
-            }
-
-            var responseMessage = Send(null);
-
-            context.Response.ContentType = GetSoapContentType(context.Request.ContentType);
-
-            HostContext.AppHost.WriteSoapMessage(context.Request.ToRequest(), responseMessage, context.Response.OutputStream);
-        }
-
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (httpReq.Verb == HttpMethods.Get)
             {
                 var wsdl = new Soap11WsdlMetadataHandler();
-                wsdl.Execute(httpReq, httpRes);
-                return;
+                return wsdl.Execute(httpReq, httpRes);
             }
 
             var responseMessage = Send(null, httpReq, httpRes);
 
             if (httpRes.IsClosed)
-                return;
+                return TypeConstants.EmptyTask;
 
             HostContext.AppHost.WriteSoapMessage(httpReq, responseMessage, httpRes.OutputStream);
+
+            return TypeConstants.EmptyTask;
         }
     }
 }

@@ -14,8 +14,8 @@ namespace ServiceStack.Common.Tests
             1000.Times(i =>
             {
                 var sessionId = SessionExtensions.CreateRandomSessionId();
-                Assert.That(sessionId, Is.Not.StringContaining("+"));
-                Assert.That(sessionId, Is.Not.StringContaining("/"));
+                Assert.That(sessionId, Does.Not.Contain("+"));
+                Assert.That(sessionId, Does.Not.Contain("/"));
             });
         }
 
@@ -31,8 +31,8 @@ namespace ServiceStack.Common.Tests
 
                 var sessionId = bytes.ToBase64UrlSafe();
 
-                Assert.That(sessionId, Is.Not.StringContaining("+"));
-                Assert.That(sessionId, Is.Not.StringContaining("/"));
+                Assert.That(sessionId, Does.Not.Contain("+"));
+                Assert.That(sessionId, Does.Not.Contain("/"));
 
                 if (lastSessionId != null)
                     Assert.That(sessionId, Is.Not.EqualTo(lastSessionId));

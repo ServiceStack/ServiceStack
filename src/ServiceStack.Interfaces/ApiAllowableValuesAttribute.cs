@@ -1,4 +1,4 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -30,7 +30,7 @@ namespace ServiceStack
         public ApiAllowableValuesAttribute(string name, Type enumType)
             : this(name)
         {
-#if NETFX_CORE || NETSTANDARD1_1
+#if NETFX_CORE || NETSTANDARD1_1 || PORTABLE7
 			if (enumType.GetTypeInfo().IsEnum)
 #else
             if (enumType.IsEnum)

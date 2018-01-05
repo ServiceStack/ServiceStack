@@ -1,0 +1,8 @@
+﻿@inherits ViewPage<TestSessionResponse>
+@{
+    var session = base.GetSession();
+}
+
+IsAuthenticated:@session.IsAuthenticated
+
+<!--page:TestSessionView.cshtml-->

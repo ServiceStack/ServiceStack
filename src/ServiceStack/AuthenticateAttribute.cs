@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Web;
 
@@ -11,7 +13,7 @@ namespace ServiceStack
     /// requires authentication.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
-    public class AuthenticateAttribute : RequestFilterAttribute
+    public class AuthenticateAttribute : RequestFilterAsyncAttribute
     {
         /// <summary>
         /// Restrict authentication to a specific <see cref="IAuthProvider"/>.
@@ -34,8 +36,7 @@ namespace ServiceStack
         }
 
         public AuthenticateAttribute()
-            : this(ApplyTo.All)
-        { }
+            : this(ApplyTo.All) {}
 
         public AuthenticateAttribute(string provider)
             : this(ApplyTo.All)
@@ -49,7 +50,7 @@ namespace ServiceStack
             this.Provider = provider;
         }
 
-        public override void Execute(IRequest req, IResponse res, object requestDto)
+        public override async Task ExecuteAsync(IRequest req, IResponse res, object requestDto)
         {
             if (AuthenticateService.AuthProviders == null)
                 throw new InvalidOperationException(
@@ -58,30 +59,36 @@ namespace ServiceStack
             if (HostContext.HasValidAuthSecret(req))
                 return;
 
-            var matchingOAuthConfigs = AuthenticateService.AuthProviders.Where(x =>
-                this.Provider.IsNullOrEmpty()
-                || x.Provider == this.Provider).ToList();
-
-            if (matchingOAuthConfigs.Count == 0)
+            var authProviders = AuthenticateService.GetAuthProviders(this.Provider);
+            if (authProviders.Length == 0)
             {
-                res.WriteError(req, requestDto, $"No OAuth Configs found matching {this.Provider ?? "any"} provider");
+                await res.WriteError(req, requestDto, $"No registered Auth Providers found matching {this.Provider ?? "any"} provider");
                 res.EndRequest();
                 return;
             }
-
+            
             req.PopulateFromRequestIfHasSessionId(requestDto);
 
-            //Call before GetSession so Exceptions can bubble
-            req.Items[Keywords.HasPreAuthenticated] = true;
-            matchingOAuthConfigs.OfType<IAuthWithRequest>()
-                .Each(x => x.PreAuthenticate(req, res));
+            PreAuthenticate(req, authProviders);
 
             var session = req.GetSession();
-            if (session == null || !matchingOAuthConfigs.Any(x => session.IsAuthorized(x.Provider)))
+            if (session == null || !authProviders.Any(x => session.IsAuthorized(x.Provider)))
             {
-                if (this.DoHtmlRedirectIfConfigured(req, res, true)) return;
+                if (this.DoHtmlRedirectIfConfigured(req, res, true))
+                    return;
 
-                AuthProvider.HandleFailedAuth(matchingOAuthConfigs[0], session, req, res);
+                await AuthProvider.HandleFailedAuth(authProviders[0], session, req, res);
+            }
+        }
+
+        internal static void PreAuthenticate(IRequest req, IEnumerable<IAuthProvider> authProviders)
+        {
+            //Call before GetSession so Exceptions can bubble
+            if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
+            {
+                req.Items[Keywords.HasPreAuthenticated] = true;
+                authProviders.OfType<IAuthWithRequest>()
+                    .Each(x => x.PreAuthenticate(req, req.Response));
             }
         }
 
@@ -106,11 +113,6 @@ namespace ServiceStack
             }
 
             res.RedirectToUrl(url);
-        }
-
-        private static string ToQueryString(INameValueCollection queryStringCollection)
-        {
-            return ToQueryString((NameValueCollection)queryStringCollection.Original);
         }
 
         private static string ToQueryString(NameValueCollection queryStringCollection)

@@ -1,4 +1,4 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -22,9 +22,27 @@ namespace ServiceStack
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class ApiResponseAttribute : AttributeBase, IApiResponseDescription
     {
+        /// <summary>
+        /// HTTP status code of response
+        /// </summary>
         public int StatusCode { get; set; }
 
+        /// <summary>
+        /// End-user description of the data which is returned by response
+        /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// If set to true, the response is default for all non-explicity defined status codes 
+        /// </summary>
+        public bool IsDefaultResponse { get; set; }
+
+        /// <summary>
+        /// Open API schema definition type for response
+        /// </summary>
+        public Type ResponseType { get; set; }
+
+        public ApiResponseAttribute() { }
 
         public ApiResponseAttribute(HttpStatusCode statusCode, string description)
         {

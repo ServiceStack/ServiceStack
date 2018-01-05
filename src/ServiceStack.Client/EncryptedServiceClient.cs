@@ -1,7 +1,5 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
-
-#if !(PCL || SL5 || NETSTANDARD1_1) || __IOS__ || ANDROID
 
 using System;
 using System.Collections.Generic;
@@ -245,5 +243,3 @@ namespace ServiceStack
         }
     }
 }
-
-#endif

@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -26,13 +28,18 @@ namespace ServiceStack.Host
 
         public string ContentType
         {
-            get { return requestContext.ResponseContentType; }
-            set { requestContext.ResponseContentType = value; }
+            get => requestContext.ResponseContentType;
+            set => requestContext.ResponseContentType = value;
         }
 
         public void AddHeader(string name, string value)
         {
             Headers[name] = value;
+        }
+
+        public void RemoveHeader(string name)
+        {
+            Headers.Remove(name);
         }
 
         public string GetHeader(string name)
@@ -76,6 +83,8 @@ namespace ServiceStack.Host
         {
         }
 
+        public Task FlushAsync(CancellationToken token = default(CancellationToken)) => TypeConstants.EmptyTask;
+
         public bool IsClosed { get; set; }
 
         public void SetContentLength(long contentLength)
@@ -83,6 +92,8 @@ namespace ServiceStack.Host
         }
 
         public bool KeepAlive { get; set; }
+
+        public bool HasStarted { get; set; }
 
         public Dictionary<string, object> Items { get; }
     }

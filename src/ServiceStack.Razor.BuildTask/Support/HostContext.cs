@@ -13,15 +13,8 @@ namespace ServiceStack
 
         public static string AppConfigPath
         {
-            get
-            {
-                return appConfigPath ?? GetAppConfigPath();
-            }
-
-            set
-            {
-                appConfigPath = value;
-            }
+            get => appConfigPath ?? GetAppConfigPath();
+            set => appConfigPath = value;
         }
 
         private static string GetAppConfigPath()

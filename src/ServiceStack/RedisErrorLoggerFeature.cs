@@ -1,4 +1,4 @@
-﻿// Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿// Copyright (c) ServiceStack, Inc. All Rights Reserved.
 // License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 
@@ -17,10 +17,7 @@ namespace ServiceStack
 
         public RedisErrorLoggerFeature(IRedisClientsManager redisManager)
         {
-            if (redisManager == null)
-                throw new ArgumentNullException(nameof(redisManager));
-
-            this.redisManager = redisManager;
+            this.redisManager = redisManager ?? throw new ArgumentNullException(nameof(redisManager));
         }
 
         public void Register(IAppHost appHost)

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Runtime.Serialization;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
@@ -13,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private RouteAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new RouteAppHost();
@@ -21,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -33,11 +35,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
-            Assert.That(response, Is.StringStarting("<!doctype html>"));
+            Assert.That(response, Does.StartWith("<!doctype html>"));
+        }
+
+        [Test]
+        public void Can_download_original_route_with_Accept_json()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo")
+                .GetStringFromUrl(
+                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    responseFilter: httpRes =>
+                    {
+                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    });
+
+            Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
+        }
+
+        [Test]
+        public void Can_download_original_route_with_trailing_slash_and_Accept_json()
+        {
+            var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo/")
+                .GetStringFromUrl(
+                    requestFilter: req => req.Accept = MimeTypes.Json,
+                    responseFilter: httpRes =>
+                    {
+                        Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
+                    });
+
+            Assert.That(response.ToLower(), Is.EqualTo("{\"data\":\"foo\"}"));
         }
 
         [Test]
@@ -46,7 +75,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.json")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
                 });
 
@@ -61,7 +89,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     contentType:MimeTypes.PlainText,
                     responseFilter: httpRes => 
                     {
-                        httpRes.ContentType.Print();
                         Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Json));
                     });
 
@@ -74,7 +101,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.xml")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Xml));
                 });
 
@@ -87,11 +113,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.html")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Html));
                 });
 
-            Assert.That(response, Is.StringStarting("<!doctype html>"));
+            Assert.That(response, Does.StartWith("<!doctype html>"));
         }
 
         [Test]
@@ -100,12 +125,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/custom/foo.csv")
                 .GetStringFromUrl(responseFilter: httpRes =>
                 {
-                    httpRes.ContentType.Print();
                     Assert.That(httpRes.ContentType.MatchesContentType(MimeTypes.Csv));
                 });
 
-            var lf = System.Environment.NewLine;
-            Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
+            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
         }
 
         [Test]
@@ -181,6 +204,60 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(response.Version, Is.EqualTo(3));
         }
+
+        [Test]
+        public async Task Does_send_version_using_JsonServiceClient()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+            var response = client.Send(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+
+            response = await client.SendAsync(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            client.Version = 1;
+            response = client.Send(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            response = await client.SendAsync(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Does_send_version_using_JsonHttpClient()
+        {
+            var client = new JsonHttpClient(Config.AbsoluteBaseUri);
+            var response = client.Send(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+
+            response = await client.SendAsync(new RequestWithVersion { Version = 1 });
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            client.Version = 1;
+            response = client.Send(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+            
+            response = await client.SendAsync(new RequestWithVersion());
+            Assert.That(response.Version, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Can_POST_to_IdWithAlias_with_JsonServiceClient_async()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            var response = await client.PostAsync(new IdWithAlias { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+        }
+
+        [Test]
+        public async Task Can_POST_to_IdWithAlias_with_JsonHttpClient_async()
+        {
+            var client = new JsonHttpClient(Config.AbsoluteBaseUri);
+
+            var response = await client.PostAsync(new IdWithAlias { Id = 1 });
+            Assert.That(response.Id, Is.EqualTo(1));
+        }
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -195,8 +272,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
 
             Plugins.Add(new CsvFormat()); //required to allow .csv
-
-            Plugins.RemoveAll(x => x is MarkdownFormat);
 
             ContentTypes.Register(MimeTypes.PlainText,
                 (req, o, stream) => JsonSerializer.SerializeToStream(o.GetType(), stream),
@@ -233,33 +308,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
     [Route("/versioned-request")]
     [Route("/versioned-request/{Id}")]
-    public class RequestWithVersion : IHasVersion
+    public class RequestWithVersion : IReturn<RequestWithVersion>, IHasVersion
     {
         public int Id { get; set; }
         public int Version { get; set; }
     }
 
+    [Route("/thing/{Id}/point", "POST")]
+    [DataContract]
+    public class IdWithAlias : IReturn<IdWithAlias>
+    {
+        [DataMember(Name = "id")]
+        public int Id { get; set; }
+    }
+
+
     public class CustomRouteService : IService
     {
-        public object Any(CustomRoute request)
-        {
-            return request;
-        }
-
-        public object Any(CustomRouteDot request)
-        {
-            return request;
-        }
-
-        public object Any(GetPngPic request)
-        {
-            return request;
-        }
-
-        public object Any(RequestWithVersion request)
-        {
-            return request;
-        }
+        public object Any(CustomRoute request) => request;
+        public object Any(CustomRouteDot request) => request;
+        public object Any(GetPngPic request) => request;
+        public object Any(RequestWithVersion request) => request;
+        public object Any(IdWithAlias request) => request;
     }
 
     [TestFixture]
@@ -267,7 +337,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private ModifiedRouteAppHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new ModifiedRouteAppHost();
@@ -275,7 +345,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost.Start(Config.AbsoluteBaseUri);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -298,9 +368,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = Config.AbsoluteBaseUri.CombineWith("/api/modified/foo.csv")
                 .GetStringFromUrl();
 
-            var lf = System.Environment.NewLine;
-            Assert.That(response, Is.EqualTo("Data{0}foo{0}".Fmt(lf)));
-
+            Assert.That(response, Is.EqualTo("Data\r\nfoo\r\n"));
         }
     }
 

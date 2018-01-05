@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Text;
+using ServiceStack.Validation;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -70,6 +72,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class SGSendSyncGetAsyncObjectExternal : IReturn<SGSendSyncGetAsyncObjectExternal>
     {
         public string Value { get; set; }
+    }
+
+    public class SGSyncPostValidationExternal : IReturn<SGSyncPostValidationExternal>
+    {
+        public string Value { get; set; }
+        public string Required { get; set; }
     }
 
     public class ServiceGatewayServices : Service
@@ -161,6 +169,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             request.Value += "> " + Request.Verb + " " + typeof(SGSendSyncGetAsyncObjectExternal).Name;
             return Gateway.SendAsync<object>(request.ConvertTo<SGSyncGetAsyncObjectExternal>());
         }
+        
+        public object Any(SGSyncPostValidationExternal request)
+        {
+            request.Value += "> " + Request.Verb + " " + typeof(SGSyncPostValidationExternal).Name;
+            return Gateway.Send(request.ConvertTo<SGSyncPostValidationInternal>());
+        }
+
     }
 
     public class SGSyncGetInternal : IReturn<SGSyncGetInternal>, IGet
@@ -215,6 +230,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public string Value { get; set; }
     }
 
+    public class SGSyncPostValidationInternal : IReturn<SGSyncPostValidationInternal>
+    {
+        public string Value { get; set; }
+        public string Required { get; set; }
+    }
+
+    public class SGSyncPostValidationInternalValidator : AbstractValidator<SGSyncPostValidationInternal>
+    {
+        public SGSyncPostValidationInternalValidator()
+        {
+            RuleFor(x => x.Required).NotEmpty();
+        }
+    }
+
     public class ServiceGatewayInternalServices : Service
     {
         public object Get(SGSyncGetInternal request)
@@ -246,6 +275,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Any(SGSyncGetSyncObjectInternal request)
         {
             request.Value += "> GET " + typeof(SGSyncGetSyncObjectInternal).Name;
+            return request;
+        }
+
+        public object Any(SGSyncPostValidationInternal request)
+        {
+            request.Value += "> ANY " + typeof(SGSyncPostValidationInternal).Name;
             return request;
         }
     }
@@ -338,6 +373,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
                 container.Register<IServiceGatewayFactory>(x => new MixedServiceGatewayFactory())
                     .ReusedWithin(ReuseScope.None);
+                
+                Plugins.Add(new ValidationFeature());
+                container.RegisterValidator(typeof(SGSyncPostValidationInternalValidator));
             }
         }
 
@@ -357,6 +395,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 container.Register<IMessageFactory>(c => new MessageFactory());
                 container.Register<IServiceGateway>(c => new JsonServiceClient(Tests.Config.ListeningOn));
+                
+                Plugins.Add(new ValidationFeature());
+                container.RegisterValidator(typeof(SGSyncPostValidationInternalValidator));
             }
         }
 
@@ -376,6 +417,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             public override void Configure(Container container)
             {
                 container.Register<IMessageFactory>(c => new MessageFactory());
+                
+                Plugins.Add(new ValidationFeature());
+                container.RegisterValidator(typeof(SGSyncPostValidationInternalValidator));
             }
         }
 
@@ -425,7 +469,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             client = new JsonServiceClient(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -476,6 +520,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(ex.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
                 Assert.That(ex.ResponseStatus.Message, Is.EqualTo("ERROR " + typeof(SGSyncGetExternal).Name));
+            }
+        }
+
+        [Test]
+        public void Does_throw_original_ValidationException_in_SGSyncPostValidationExternal()
+        {
+            try
+            {
+                var response = client.Get(new SGSyncPostValidationExternal { Value = "GET CLIENT" });
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(400));
+                Assert.That(ex.StatusDescription, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ResponseStatus.ErrorCode, Is.EqualTo("NotEmpty"));
+                Assert.That(ex.ResponseStatus.Message, Is.EqualTo("'Required' should not be empty."));
             }
         }
 

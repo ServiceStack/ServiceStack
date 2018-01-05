@@ -1,0 +1,63 @@
+﻿@model RockstarsResponse
+@{
+    Layout = Html.ResolveLayout("HtmlReport");
+    ViewData["Title"] = Model.Aged.HasValue
+        ? $"{Model.Aged} year old rockstars" 
+        : "All Rockstars"; ;
+}
+
+<div style="float:right">
+    <strong>View this page in: </strong>
+    <a href="?format=json">json</a>,
+    <a href="?format=xml">xml</a>,
+    <a href="?format=jsv">jsv</a>,
+    <a href="?format=csv">csv</a>
+    <div id="swap-templates">
+        <a href="?View=AngularJS">View = AngularJS</a>
+        <a href="?Template=SimpleLayout">Template = SimpleLayout</a>
+        <a href="?View=AngularJS&amp;Template=SimpleLayout">AngularJS &amp; SimpleLayout</a>
+    </div>
+
+    <p>&nbsp;</p>
+    <form action="/rockstars" method="POST">
+        <div><b>@Html.Label("FirstName")</b> @Html.TextBox("FirstName", "Amy")</div>
+        <div><b>@Html.Label("LastName")</b> @Html.TextBox("LastName", "Winehouse")</div>
+        <div><b>@Html.Label("Age")</b> @Html.TextBox("Age", "27")</div>
+        <div><b>@Html.Label("Alive")</b> @Html.CheckBox("Alive", false)</div>
+        <p><button type="submit">Add new Rockstar</button></p>
+    </form>
+
+    <h3>Other Pages</h3>
+    <div><a class="home" href="/">/home</a></div>
+    <div><a class="rzr" href="/TypedModelNoController">/TypedModelNoController</a></div>
+    <div><a class="rzr" href="/NoModelNoController">/NoModelNoController</a></div>
+</div>
+
+<h3>We have @Model.Total Rockstars, showing @ViewBag.Title</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Age</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tfoot>
+        <tr>
+            <td colspan="3">
+                <p><a href="/rockstars">Show all @Model.Total Rockstars</a></p>
+                <p><a href="/reset">Reset Rockstars</a></p>
+            </td>
+        </tr>
+    </tfoot>
+    <tbody>
+        @foreach (var rockstar in Model.Results)
+        {
+            <tr>
+                <td><a href="@rockstar.Url">@rockstar.FirstName @rockstar.LastName</a></td>
+                <td><a href="/rockstars/aged/@rockstar.Age">@rockstar.Age</a></td>
+                <td><a href="/rockstars/delete/@rockstar.Id">delete</a></td>
+            </tr>
+        }
+    </tbody>
+</table>

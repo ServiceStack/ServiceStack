@@ -1,7 +1,10 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.Host;
+using ServiceStack.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -22,6 +25,22 @@ namespace ServiceStack
                 return CompressionTypes.GZip;
 
             return null;
+        }
+
+        public static string GetContentEncoding(this IRequest request)
+        {
+            return request.Headers.Get(HttpHeaders.ContentEncoding);
+        }
+
+        public static Stream GetInputStream(this IRequest req, Stream stream)
+        {
+            var enc = req.GetContentEncoding();
+            if (enc == CompressionTypes.Deflate)
+                return new DeflateStream(stream, CompressionMode.Decompress);
+            if (enc == CompressionTypes.GZip)
+                return new GZipStream(stream, CompressionMode.Decompress);
+
+            return stream;
         }
 
         public static string GetHeader(this IRequest request, string headerName)
@@ -46,19 +65,26 @@ namespace ServiceStack
         /// <param name="request"></param>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public static object ToOptimizedResult<T>(this IRequest request, T dto)
+        public static object ToOptimizedResult(this IRequest request, object dto)
         {
+            var httpResult = dto as IHttpResult;
+            if (httpResult != null)
+                dto = httpResult.Response;
+            
             request.Response.Dto = dto;
 
             var compressionType = request.GetCompressionType();
             if (compressionType == null)
-                return (object)HostContext.ContentTypes.SerializeToString(request, dto);
+                return HostContext.ContentTypes.SerializeToString(request, dto);
 
             using (var ms = new MemoryStream())
             using (var compressionStream = GetCompressionStream(ms, compressionType))
             {
-                HostContext.ContentTypes.SerializeToStream(request, dto, compressionStream);
-                compressionStream.Close();
+                using (httpResult?.ResultScope?.Invoke())
+                {
+                    HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream).Wait();
+                    compressionStream.Close();
+                }
 
                 var compressedBytes = ms.ToArray();
                 return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
@@ -136,12 +162,11 @@ namespace ServiceStack
         {
             if (httpReq == null) return null;
 
-            object value;
-            httpReq.Items.TryGetValue(key, out value);
+            httpReq.Items.TryGetValue(key, out var value);
             return value;
         }
 
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
             return new RequestBaseWrapper((IHttpRequest)httpReq);
@@ -165,6 +190,30 @@ namespace ServiceStack
             if (httpReq == null) return;
 
             httpReq.RequestAttributes = httpReq.RequestAttributes & ~RequestAttributes.InProcess;
+        }
+
+        internal static T TryResolveInternal<T>(this IRequest request)
+        {
+            if (typeof(T) == typeof(IRequest))
+                return (T)request;
+            if (typeof(T) == typeof(IResponse))
+                return (T)request.Response;
+
+            return request is IHasResolver hasResolver 
+                ? hasResolver.Resolver.TryResolve<T>() 
+                : Service.GlobalResolver.TryResolve<T>();
+        }
+
+        public static IVirtualFile GetFile(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetFile() : null;
+        public static IVirtualDirectory GetDirectory(this IRequest request) => request is IHasVirtualFiles vfs ? vfs.GetDirectory() : null;
+        public static bool IsFile(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsFile;
+        public static bool IsDirectory(this IRequest request) => request is IHasVirtualFiles vfs && vfs.IsDirectory;
+
+        public static T GetRuntimeConfig<T>(this IRequest req, string name, T defaultValue)
+        {
+            return req != null 
+                ? HostContext.AppHost.GetRuntimeConfig(req, name, defaultValue)
+                : defaultValue;
         }
     }
 }

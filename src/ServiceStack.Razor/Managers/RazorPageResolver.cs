@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
@@ -21,8 +22,6 @@ namespace ServiceStack.Razor.Managers
     {
         public static ILog Log = LogManager.GetLogger(typeof(RazorPageResolver));
 
-        public const string ViewKey = "View";
-        public const string LayoutKey = "Template";
         public const string DefaultLayoutName = "_Layout";
         public bool MinifyHtml { get; set; }
         public bool UseAdvancedCompression { get; set; }
@@ -81,18 +80,21 @@ namespace ServiceStack.Razor.Managers
         /// <summary>
         /// This is called by the hosting environment via CatchAll usually for content pages.
         /// </summary>
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
-            if (httpRes.IsClosed) return;
+            if (httpRes.IsClosed) 
+                return TypeConstants.EmptyTask;
 
             httpRes.ContentType = MimeTypes.Html;
 
             var contentPage = ResolveContentPage(httpReq);
-            using (ExecuteRazorPage(httpReq, httpRes, null, contentPage)) 
+            using (ExecuteRazorPage(httpReq, httpRes.OutputStream, null, contentPage)) 
             { 
                 httpRes.EndRequest(skipHeaders: true);
             }
+
+            return TypeConstants.EmptyTask;
         }
 
         /// <summary>
@@ -101,31 +103,25 @@ namespace ServiceStack.Razor.Managers
         /// allow another view engine to attempt to process it. If no view engines can process the DTO,
         /// HtmlFormat will simply handle it itself.
         /// </summary>
-        public virtual bool ProcessRequest(IRequest httpReq, IResponse httpRes, object dto)
+        public virtual Task<bool> ProcessRequestAsync(IRequest httpReq, object dto, Stream outputStream)
         {
             //for compatibility
-            var httpResult = dto as IHttpResult;
-            if (httpResult != null)
+            if (dto is IHttpResult httpResult)
                 dto = httpResult.Response;
 
-            var existingRazorPage = ResolveViewPage(httpReq, dto)
-                ?? ResolveContentPage(httpReq);
+            var existingRazorPage = ResolveViewPage(httpReq, dto) ?? ResolveContentPage(httpReq);
             if (existingRazorPage == null)
-            {
-                return false;
-            }
+                return TypeConstants.FalseTask;
 
-            using (ExecuteRazorPage(httpReq, httpRes, dto, existingRazorPage))
+            using (ExecuteRazorPage(httpReq, outputStream, dto, existingRazorPage))
             {
-                httpRes.EndRequest(skipHeaders:true);
-                return true;    
+                return TypeConstants.TrueTask;
             }
         }
 
         public RazorPage ResolveContentPage(IRequest httpReq)
         {
-            var viewName = httpReq.GetItem(ViewKey) as string;
-            if (viewName != null)
+            if (httpReq.GetItem(Keywords.View) is string viewName)
                 return viewManager.GetContentPage(viewName);
 
             return viewManager.GetContentPage(httpReq.PathInfo);
@@ -133,8 +129,7 @@ namespace ServiceStack.Razor.Managers
 
         public RazorPage ResolveViewPage(IRequest httpReq, object model)
         {
-            var viewName = httpReq.GetItem(ViewKey) as string;
-            if (viewName != null)
+            if (httpReq.GetItem(Keywords.View) is string viewName)
                 return viewManager.GetViewPage(viewName);
 
             return viewManager.GetViewPage(httpReq.OperationName) // Request DTO
@@ -151,8 +146,9 @@ namespace ServiceStack.Razor.Managers
                 : Minifiers.Html.Compress(html);
         }
 
-        public IRazorView ExecuteRazorPage(IRequest httpReq, IResponse httpRes, object model, RazorPage razorPage)
+        public IRazorView ExecuteRazorPage(IRequest httpReq, Stream outputStream, object model, RazorPage razorPage)
         {
+            var httpRes = httpReq.Response;
             if (razorPage == null)
             {
                 httpRes.StatusCode = (int)HttpStatusCode.NotFound;
@@ -167,14 +163,14 @@ namespace ServiceStack.Razor.Managers
                 if (includeLayout)
                 {
                     var result = ExecuteRazorPageWithLayout(razorPage, httpReq, httpRes, model, page, () =>
-                        httpReq.GetItem(LayoutKey) as string
+                        httpReq.GetItem(Keywords.Template) as string
                         ?? page.Layout
                         ?? DefaultLayoutName);
 
                     if (httpRes.IsClosed)
-                        return result != null ? result.Item1 : null;
+                        return result?.Item1;
 
-                    var layoutWriter = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                    var layoutWriter = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
                     var html = HtmlFilter(result.Item2);
 
                     layoutWriter.Write(html);
@@ -182,7 +178,7 @@ namespace ServiceStack.Razor.Managers
                     return result.Item1;
                 }
 
-                var writer = new StreamWriter(httpRes.OutputStream, UTF8EncodingWithoutBom);
+                var writer = new StreamWriter(outputStream, UTF8EncodingWithoutBom);
                 page.WriteTo(writer);
                 writer.Flush();
 
@@ -278,30 +274,21 @@ namespace ServiceStack.Razor.Managers
             hasModel.SetModel(model);
         }
 
-        public override object CreateRequest(IRequest request, string operationName)
-        {
-            return null;
-        }
-
-        public override object GetResponse(IRequest httpReq, object request)
-        {
-            return null;
-        }
-
         public bool HasView(string viewName, IRequest httpReq = null)
         {
             throw new NotImplementedException();
         }
 
-        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, HtmlHelper htmlHelper)
+        public virtual string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer, IHtmlContext htmlHelper)
         {
             var httpReq = htmlHelper.HttpRequest;
+            var _htmlHelper = (HtmlHelper)htmlHelper;
             var razorPage = viewManager.GetPartialPage(httpReq, pageName);
             if (razorPage != null)
             {
-                using (var page = CreateRazorPageInstance(httpReq, htmlHelper.HttpResponse, model, razorPage))
+                using (var page = CreateRazorPageInstance(httpReq, _htmlHelper.HttpResponse, model, razorPage))
                 {
-                    page.ParentPage = htmlHelper.RazorPage;
+                    page.ParentPage = _htmlHelper.RazorPage;
                     page.WriteTo(writer);
                 }
             }
@@ -309,7 +296,7 @@ namespace ServiceStack.Razor.Managers
             {
                 if (RenderPartialFn != null)
                 {
-                    RenderPartialFn(pageName, model, renderHtml, writer, htmlHelper, httpReq);
+                    RenderPartialFn(pageName, model, renderHtml, writer, _htmlHelper, httpReq);
                 }
                 else
                 {

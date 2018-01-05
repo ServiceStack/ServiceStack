@@ -13,47 +13,42 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Resources
-{
-    using System;
+namespace ServiceStack.FluentValidation.Resources {
+	using System;
 
-    /// <summary>
-    /// Represents a static string.
-    /// </summary>
-    public class StaticStringSource : IStringSource {
-        readonly string message;
+	/// <summary>
+	/// Represents a static string.
+	/// </summary>
+	public class StaticStringSource : IStringSource {
+		readonly string message;
 
-        /// <summary>
-        /// Creates a new StringErrorMessageSource using the specified error message as the error template.
-        /// </summary>
-        /// <param name="message">The error message template.</param>
-        public StaticStringSource(string message) {
-            this.message = message;
-        }
+		/// <summary>
+		/// Creates a new StringErrorMessageSource using the specified error message as the error template.
+		/// </summary>
+		/// <param name="message">The error message template.</param>
+		public StaticStringSource(string message) {
+			this.message = message;
+		}
 
-        /// <summary>
-        /// Construct the error message template
-        /// </summary>
-        /// <returns>Error message template</returns>
-        public string GetString() {
-            return message;
-        }
+		/// <summary>
+		/// Construct the error message template
+		/// </summary>
+		/// <returns>Error message template</returns>
+		public string GetString(object context) {
+			return message;
+		}
 
-        /// <summary>
-        /// The name of the resource if localized.
-        /// </summary>
-        public string ResourceName {
-            get { return null; }
-        }
+		/// <summary>
+		/// The name of the resource if localized.
+		/// </summary>
+		public string ResourceName => null;
 
-        /// <summary>
-        /// The type of the resource provider if localized.
-        /// </summary>
-        public Type ResourceType {
-            get { return null; }
-        }
-    }
+		/// <summary>
+		/// The type of the resource provider if localized.
+		/// </summary>
+		public Type ResourceType => null;
+	}
 }

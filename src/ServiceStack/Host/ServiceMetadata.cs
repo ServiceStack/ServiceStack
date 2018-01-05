@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Xml;
 using ServiceStack.Auth;
 using ServiceStack.DataAnnotations;
 using ServiceStack.NativeTypes;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host
@@ -42,9 +44,9 @@ namespace ServiceStack.Host
                           ?? serviceType.FirstAttribute<RestrictAttribute>();
 
             var reqFilterAttrs = new[] { requestType, serviceType }
-                .SelectMany(x => x.AllAttributes().OfType<IHasRequestFilter>()).ToList();
+                .SelectMany(x => x.AllAttributes().OfType<IRequestFilterBase>()).ToList();
             var resFilterAttrs = (responseType != null ? new[] { responseType, serviceType } : new[] { serviceType })
-                .SelectMany(x => x.AllAttributes().OfType<IHasResponseFilter>()).ToList();
+                .SelectMany(x => x.AllAttributes().OfType<IResponseFilterBase>()).ToList();
 
             var authAttrs = reqFilterAttrs.OfType<AuthenticateAttribute>().ToList();
             var actions = GetImplementedActions(serviceType, requestType);
@@ -68,7 +70,7 @@ namespace ServiceStack.Host
             };
 
             this.OperationsMap[requestType] = operation;
-            this.OperationNamesMap[operation.Name.ToLower()] = operation;
+            this.OperationNamesMap[operation.Name.ToLowerInvariant()] = operation;
             if (responseType != null)
             {
                 this.ResponseTypes.Add(responseType);
@@ -77,9 +79,10 @@ namespace ServiceStack.Host
 
             //Only count non-core ServiceStack Services, i.e. defined outside of ServiceStack.dll or Swagger
             var nonCoreServicesCount = OperationsMap.Values
-                .Count(x => x.ServiceType.GetAssembly() != typeof(Service).GetAssembly()
+                .Count(x => x.ServiceType.Assembly != typeof(Service).Assembly
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerApiService"
                 && x.ServiceType.FullName != "ServiceStack.Api.Swagger.SwaggerResourcesService"
+                && x.ServiceType.FullName != "ServiceStack.Api.OpenApi.OpenApiService"
                 && x.ServiceType.Name != "__AutoQueryServices");
 
             LicenseUtils.AssertValidUsage(LicenseFeature.ServiceStack, QuotaType.Operations, nonCoreServicesCount);
@@ -99,11 +102,11 @@ namespace ServiceStack.Host
 
         readonly HashSet<Assembly> excludeAssemblies = new HashSet<Assembly>
         {
-            typeof(string).GetAssembly(),            //mscorelib
-            typeof(Uri).GetAssembly(),               //System
-            typeof(ServiceStackHost).GetAssembly(),  //ServiceStack
-            typeof(UrnId).GetAssembly(),             //ServiceStack.Common
-            typeof(ErrorResponse).GetAssembly(),     //ServiceStack.Interfaces
+            typeof(string).Assembly,            //mscorelib
+            typeof(Uri).Assembly,               //System
+            typeof(ServiceStackHost).Assembly,  //ServiceStack
+            typeof(UrnId).Assembly,             //ServiceStack.Common
+            typeof(ErrorResponse).Assembly,     //ServiceStack.Interfaces
         };
 
         public List<Assembly> GetOperationAssemblies()
@@ -125,6 +128,9 @@ namespace ServiceStack.Host
 
         public Operation GetOperation(Type operationType)
         {
+            if (operationType == null)
+                return null;
+            
             Operation op;
             OperationsMap.TryGetValue(operationType, out op);
             return op;
@@ -143,7 +149,7 @@ namespace ServiceStack.Host
         public Type GetOperationType(string operationTypeName)
         {
             Operation operation;
-            var opName = operationTypeName.ToLower();
+            var opName = operationTypeName.ToLowerInvariant();
             if (!OperationNamesMap.TryGetValue(opName, out operation))
             {
                 var arrayPos = opName.LastIndexOf('[');
@@ -159,22 +165,19 @@ namespace ServiceStack.Host
 
         public Type GetServiceTypeByRequest(Type requestType)
         {
-            Operation operation;
-            OperationsMap.TryGetValue(requestType, out operation);
+            OperationsMap.TryGetValue(requestType, out var operation);
             return operation?.ServiceType;
         }
 
         public Type GetServiceTypeByResponse(Type responseType)
         {
-            Operation operation;
-            OperationsResponseMap.TryGetValue(responseType, out operation);
+            OperationsResponseMap.TryGetValue(responseType, out var operation);
             return operation?.ServiceType;
         }
 
         public Type GetResponseTypeByRequest(Type requestType)
         {
-            Operation operation;
-            OperationsMap.TryGetValue(requestType, out operation);
+            OperationsMap.TryGetValue(requestType, out var operation);
             return operation?.ResponseType;
         }
 
@@ -186,13 +189,6 @@ namespace ServiceStack.Host
                 allTypes.AddIfNotExists(responseType);
             }
             return allTypes;
-        }
-
-        public List<Type> GetAllSoapOperationTypes()
-        {
-            var operationTypes = GetAllOperationTypes();
-            var soapTypes = HostContext.AppHost.ExportSoapOperationTypes(operationTypes);
-            return soapTypes;
         }
 
         public List<string> GetAllOperationNames()
@@ -296,7 +292,7 @@ namespace ServiceStack.Host
                 return true;
 
             Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -317,7 +313,7 @@ namespace ServiceStack.Host
                 return true;
 
             Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLower(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -352,6 +348,74 @@ namespace ServiceStack.Host
                     ? RequestAttributes.LocalSubnet
                     : RequestAttributes.External);
         }
+
+        public HashSet<Type> GetAllDtos()
+        {
+            var to = new HashSet<Type>();
+            var ops = OperationsMap.Values;
+            foreach (var op in ops)
+            {
+                AddReferencedTypes(to, op.RequestType);
+                AddReferencedTypes(to, op.ResponseType);
+            }
+            return to;
+        }
+
+        private void AddReferencedTypes(HashSet<Type> to, Type type)
+        {
+            if (type == null || to.Contains(type) || !IsDtoType(type))
+                return;
+
+            to.Add(type);
+
+            var baseType = type.BaseType;
+            if (baseType != null && IsDtoType(baseType) && !to.Contains(baseType))
+            {
+                AddReferencedTypes(to, baseType);
+
+                var genericArgs = type.IsGenericType
+                    ? type.GetGenericArguments()
+                    : Type.EmptyTypes;
+
+                foreach (var arg in genericArgs)
+                {
+                    AddReferencedTypes(to, arg);
+                }
+            }
+
+            foreach (var pi in type.GetSerializableProperties())
+            {
+                if (to.Contains(pi.PropertyType))
+                    continue;
+                
+                if (IsDtoType(pi.PropertyType))
+                    to.Add(pi.PropertyType);
+
+                var genericArgs = pi.PropertyType.IsGenericType
+                    ? pi.PropertyType.GetGenericArguments()
+                    : Type.EmptyTypes;
+
+                if (genericArgs.Length > 0)
+                {
+                    foreach (var arg in genericArgs)
+                    {
+                        AddReferencedTypes(to, arg);
+                    }
+                }
+                else if (pi.PropertyType.IsArray)
+                {
+                    var elType = pi.PropertyType.HasElementType ? pi.PropertyType.GetElementType() : null;
+                    AddReferencedTypes(to, elType);
+                }
+            }
+        }
+
+        private bool IsDtoType(Type type) => type != null &&
+             type.Namespace?.StartsWith("System") == false &&
+             type.IsClass && type != typeof(string) &&
+             !type.IsGenericType &&
+             !type.IsArray &&
+             !type.HasInterface(typeof(IService));
 
         public List<MetadataType> GetMetadataTypesForOperation(IRequest httpReq, Operation op)
         {
@@ -450,7 +514,7 @@ namespace ServiceStack.Host
                     else if (p.IsArray())
                     {
                         var elType = p.Type.LeftPart('[');
-                        type = FindMetadataType(metadataTypes, elType);
+                        type = FindMetadataType(metadataTypes, elType, p.TypeNamespace);
                         if (type != null && !types.Contains(type))
                         {
                             types.Add(type);
@@ -488,6 +552,15 @@ namespace ServiceStack.Host
 
             return type;
         }
+        
+#if !NETSTANDARD2_0
+        public List<Type> GetAllSoapOperationTypes()
+        {
+            var operationTypes = GetAllOperationTypes();
+            var soapTypes = HostContext.AppHost.ExportSoapOperationTypes(operationTypes);
+            return soapTypes;
+        }
+#endif
     }
 
     public class Operation
@@ -501,8 +574,8 @@ namespace ServiceStack.Host
         public List<string> Actions { get; set; }
         public List<RestPath> Routes { get; set; }
         public bool IsOneWay => ResponseType == null;
-        public List<IHasRequestFilter> RequestFilterAttributes { get; set; }
-        public List<IHasResponseFilter> ResponseFilterAttributes { get; set; }
+        public List<IRequestFilterBase> RequestFilterAttributes { get; set; }
+        public List<IResponseFilterBase> ResponseFilterAttributes { get; set; }
         public bool RequiresAuthentication { get; set; }
         public List<string> RequiredRoles { get; set; }
         public List<string> RequiresAnyRole { get; set; }
@@ -571,7 +644,7 @@ namespace ServiceStack.Host
                 if (baseType.GetOperationName() == type.GetOperationName())
                     typesWithSameName.Push(baseType);
             }
-            while ((baseType = baseType.BaseType()) != null);
+            while ((baseType = baseType.BaseType) != null);
 
             return typesWithSameName.Pop();
         }
@@ -616,11 +689,11 @@ namespace ServiceStack.Host
 
         public static List<Assembly> GetAssemblies(this Operation operation)
         {
-            var ret = new List<Assembly> { operation.RequestType.GetAssembly() };
+            var ret = new List<Assembly> { operation.RequestType.Assembly };
             if (operation.ResponseType != null
-                && operation.ResponseType.GetAssembly() != operation.RequestType.GetAssembly())
+                && operation.ResponseType.Assembly != operation.RequestType.Assembly)
             {
-                ret.Add(operation.ResponseType.GetAssembly());
+                ret.Add(operation.ResponseType.Assembly);
             }
             return ret;
         }

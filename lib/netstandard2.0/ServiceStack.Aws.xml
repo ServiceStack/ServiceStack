@@ -1,0 +1,403 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>ServiceStack.Aws</name>
+    </assembly>
+    <members>
+        <member name="M:ServiceStack.Aws.DynamoDb.DynamoDbCacheClient.FlushAll">
+            <summary>
+            IMPORTANT: This method will delete and re-create the DynamoDB table in order to reduce read/write capacity costs, make sure the proper table name and throughput properties are set!
+            TODO: This method may take upwards of a minute to complete, need to look into a faster implementation
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Aws.DynamoDb.IPocoDynamo">
+            <summary>
+            Interface for the code-first PocoDynamo client for DynamoDB
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.IPocoDynamo.DynamoDb">
+            <summary>
+            Get the underlying AWS DynamoDB low-level client
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.IPocoDynamo.Sequences">
+            <summary>
+            Get the numeric Sequence provider configured with this client
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.IPocoDynamo.Converters">
+            <summary>
+            Access the converters that converts POCO's into DynamoDB data types
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.IPocoDynamo.MaxRetryOnExceptionTimeout">
+            <summary>
+            How long should PocoDynamo keep retrying failed operations in an exponential backoff (default 60s)
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetTableSchema(System.Type)">
+            <summary>
+            Get the AWSSDK DocumentModel schema for this Table
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetTableMetadata(System.Type)">
+            <summary>
+            Get PocoDynamo Table metadata for this table
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetTableNames">
+            <summary>
+            Calls 'ListTables' to return all Table Names in DynamoDB
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.CreateMissingTables(System.Collections.Generic.IEnumerable{ServiceStack.Aws.DynamoDb.DynamoMetadataType},System.Nullable{System.TimeSpan})">
+            <summary>
+            Creates any tables missing in DynamoDB from the Tables registered with PocoDynamo
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.CreateTables(System.Collections.Generic.IEnumerable{ServiceStack.Aws.DynamoDb.DynamoMetadataType},System.Nullable{System.TimeSpan})">
+            <summary>
+            Creates any tables missing from the specified list of tables
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.WaitForTablesToBeReady(System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.TimeSpan})">
+            <summary>
+            Polls 'DescribeTable' until all Tables have an ACTIVE TableStatus
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteAllTables(System.Nullable{System.TimeSpan})">
+            <summary>
+            Deletes all DynamoDB Tables
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteTables(System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.TimeSpan})">
+            <summary>
+            Deletes the tables in DynamoDB with the specified table names
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.WaitForTablesToBeDeleted(System.Collections.Generic.IEnumerable{System.String},System.Nullable{System.TimeSpan})">
+            <summary>
+            Polls 'ListTables' until all specified tables have been deleted
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetItem``1(System.Object)">
+            <summary>
+            Gets the POCO instance with the specified hash
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetItem``1(ServiceStack.Aws.DynamoDb.DynamoId)">
+            <summary>
+            Gets the POCO instance with the specified hash and range value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetItem``1(System.Object,System.Object)">
+            <summary>
+            Gets the POCO instance with the specified hash and range value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetItems``1(System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Calls 'BatchGetItem' in the min number of batch requests to return POCOs with the specified hashes 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetItems``1(System.Collections.Generic.IEnumerable{ServiceStack.Aws.DynamoDb.DynamoId})">
+            <summary>
+            Calls 'BatchGetItem' in the min number of batch requests to return POCOs with the specified hash and ranges 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.PutItem``1(``0,System.Boolean)">
+            <summary>
+            Calls 'PutItem' to store instance in DynamoDB
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.UpdateExpression``1(System.Object,System.Object)">
+            <summary>
+            Creates an Typed `UpdateExpression` for the specified table
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.UpdateItem``1(ServiceStack.Aws.DynamoDb.UpdateExpression{``0})">
+            <summary>
+            Calls 'UpdateItem' to SET, REMOVE, ADD or DELETE item fields in DynamoDB.
+            </summary>
+            <returns>false if conditional check failed, otherwise true</returns>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.UpdateItem``1(ServiceStack.Aws.DynamoDb.DynamoUpdateItem)">
+            <summary>
+            Calls 'UpdateItem' to ADD, PUT or DELETE item fields in DynamoDB
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.UpdateItemNonDefaults``1(``0,System.Boolean)">
+            <summary>
+            Calls 'UpdateItem' to PUT non null or default values from instance into DynamoDB
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.PutItems``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Calls 'BatchWriteItem' to efficiently store items in min number of batched requests
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteItem``1(System.Object,ServiceStack.Aws.DynamoDb.ReturnItem)">
+            <summary>
+            Deletes the instance at the specified hash
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteItem``1(ServiceStack.Aws.DynamoDb.DynamoId,ServiceStack.Aws.DynamoDb.ReturnItem)">
+            <summary>
+            Deletes the instance at the specified hash and range values
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteItem``1(System.Object,System.Object,ServiceStack.Aws.DynamoDb.ReturnItem)">
+            <summary>
+            Deletes the instance at the specified hash and range values
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteItems``1(System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Calls 'BatchWriteItem' to efficiently delete all items with the specified hashes
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteItems``1(System.Collections.Generic.IEnumerable{ServiceStack.Aws.DynamoDb.DynamoId})">
+            <summary>
+            Calls 'BatchWriteItem' to efficiently delete all items with the specified hash and range pairs
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Increment``1(System.Object,System.String,System.Int64)">
+            <summary>
+            Calls 'UpdateItem' with ADD AttributeUpdate to atomically increment specific field numeric value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.PutRelatedItem``1(System.Object,``0)">
+            <summary>
+            Updates item Hash field with hash value then calls 'PutItem' to store the related instance
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.PutRelatedItems``1(System.Object,System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Updates all item Hash fields with hash value then calls 'PutItems' to store all related instances
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.GetRelatedItems``1(System.Object)">
+            <summary>
+            Calls 'Query' to return all related Items containing the specified hash value
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DeleteRelatedItems``1(System.Object,System.Collections.Generic.IEnumerable{System.Object})">
+            <summary>
+            Deletes all items with the specified hash and ranges
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.ScanAll``1">
+            <summary>
+            Calls 'Scan' to return lazy enumerated results that's transparently paged across multiple queries
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.FromScan``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a Typed `ScanExpression` for the specified table
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.FromScanIndex``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a Typed `ScanExpression` for the specified Global Index
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Scan``1(ServiceStack.Aws.DynamoDb.ScanExpression{``0},System.Int32)">
+            <summary>
+            Executes the `ScanExpression` returning the specified maximum limit of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Scan``1(ServiceStack.Aws.DynamoDb.ScanExpression{``0})">
+            <summary>
+            Executes the `ScanExpression` returning lazy results transparently paged across multiple queries
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Scan``1(Amazon.DynamoDBv2.Model.ScanRequest,System.Int32)">
+            <summary>
+            Executes AWSSDK `ScanRequest` returning the specified maximum limit of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Scan``1(Amazon.DynamoDBv2.Model.ScanRequest)">
+            <summary>
+            Executes AWSSDK `ScanRequest` returning lazy results transparently paged across multiple queries
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Scan``1(Amazon.DynamoDBv2.Model.ScanRequest,System.Func{Amazon.DynamoDBv2.Model.ScanResponse,System.Collections.Generic.IEnumerable{``0}})">
+            <summary>
+            Executes AWSSDK `ScanRequest` with a custom conversion function to map ScanResponse to results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.FromQuery``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a Typed `QueryExpression` for the specified table
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Query``1(ServiceStack.Aws.DynamoDb.QueryExpression{``0})">
+            <summary>
+            Executes the `QueryExpression` returning lazy results transparently paged across multiple queries
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Query``1(ServiceStack.Aws.DynamoDb.QueryExpression{``0},System.Int32)">
+            <summary>
+            Executes the `QueryExpression` returning the specified maximum limit of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.FromQueryIndex``1(System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Creates a Typed `QueryExpression` for the specified Local or Global Index
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Query``1(Amazon.DynamoDBv2.Model.QueryRequest,System.Int32)">
+            <summary>
+            Executes AWSSDK `QueryRequest` returning the specified maximum limit of results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Query``1(Amazon.DynamoDBv2.Model.QueryRequest)">
+            <summary>
+            Executes AWSSDK `QueryRequest` returning lazy results transparently paged across multiple queries
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Query``1(Amazon.DynamoDBv2.Model.QueryRequest,System.Func{Amazon.DynamoDBv2.Model.QueryResponse,System.Collections.Generic.IEnumerable{``0}})">
+            <summary>
+            Executes AWSSDK `QueryRequest` with a custom conversion function to map QueryResponse to results
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.ScanItemCount``1">
+            <summary>
+            Return Live ItemCount using Table ScanRequest
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.DescribeItemCount``1">
+            <summary>
+            Return cached ItemCount in summary DescribeTable
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.ClientWith(System.Nullable{System.Boolean},System.Nullable{System.Int64},System.Nullable{System.Int64},System.Nullable{System.TimeSpan},System.Nullable{System.TimeSpan},System.Nullable{System.Int32},System.Nullable{System.Boolean})">
+            <summary>
+            Create a clone of the PocoDynamo client with different default settings
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.IPocoDynamo.Close">
+            <summary>
+            Disposes the underlying IAmazonDynamoDB client
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Aws.DynamoDb.IPocoDynamoAsync">
+            <summary>
+            Available API's with Async equivalents
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.PocoDynamo.ReadCapacityUnits">
+            <summary>
+            If the client needs to delete/re-create the DynamoDB table, this is the Read Capacity to use
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.DynamoDb.PocoDynamo.WriteCapacityUnits">
+            <summary>
+            If the client needs to delete/re-create the DynamoDB table, this is the Write Capacity to use
+            </summary> 
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.QueryExpression`1.SelectTableFields">
+            <summary>
+            Select all table fields, useful when querying an index with only a partial field set
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.DynamoDb.ScanExpression`1.SelectIndexedTableFields">
+            <summary>
+            Select all table fields, useful when querying an index with only a partial field set
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.MessageFactory">
+            <summary>
+            The Message Factory used by this MQ Server
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.KeepAliveRetryAfterMs">
+            
+            <summary>
+            Wait before Starting the MQ Server after a restart 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.WaitBeforeNextRestart">
+            <summary>
+            Wait (in seconds) before starting the MQ Server after a restart 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.ErrorHandler">
+            <summary>
+            Execute global error handler logic. Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.PriortyQueuesWhitelist">
+            <summary>
+            If you only want to enable priority queue handlers (and threads) for specific msg types
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.DisablePriorityQueues">
+            <summary>
+            Don't listen on any Priority Queues
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.PublishResponsesWhitelist">
+            <summary>
+            Opt-in to only publish responses on this white list. 
+            Publishes all responses by default.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.BaseMqServer`1.DisablePublishingResponses">
+            <summary>
+            Don't publish any response messages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.RetryCount">
+            <summary>
+            How many times a message should be retried before sending to the DLQ (Max of 1000).
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.BufferFlushIntervalSeconds">
+            <summary>
+            How often, in seconds, any buffered SQS data is forced to be processed by the client. Only valid if buffering
+            is enabled for a given model/server. By default, this is off entirely, which means if you are using buffering,
+            data will only be processed to the server when operations occur that push a given queue/type over the
+            configured size of the buffer.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.VisibilityTimeout">
+            <summary>
+            Default time (in seconds) each in-flight message remains locked/unavailable on the queue before being returned to visibility
+            Default of 30 seconds
+            See http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/AboutVT.html
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.ReceiveWaitTime">
+            <summary>
+            Defaut time (in seconds) each request to receive from the queue waits for a message to arrive
+            Default is 0 seconds
+            See http://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-long-polling.html
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.DisableBuffering">
+            <summary>
+            Disables buffering of send/delete/change/receive calls to SQS (call per request when disabled)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.RequestFilter">
+            <summary>
+            Execute global transformation or custom logic before a request is processed.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Aws.Sqs.SqsMqServer.ResponseFilter">
+            <summary>
+            Execute global transformation or custom logic on the response.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Aws.Support.AwsClientUtils.SleepBackOffMultiplier(System.Int32)">
+            <summary>
+            Sleep using AWS's recommended Exponential BackOff with Full Jitter from:
+            https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/
+            </summary>
+            <param name="retriesAttempted"></param>
+        </member>
+    </members>
+</doc>

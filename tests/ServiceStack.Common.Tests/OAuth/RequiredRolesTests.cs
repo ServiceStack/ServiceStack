@@ -4,7 +4,6 @@ using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Testing;
-using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.OAuth
 {
@@ -13,14 +12,23 @@ namespace ServiceStack.Common.Tests.OAuth
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
-            appHost = new BasicAppHost().Init();
-            AuthenticateService.Init(() => new AuthUserSession(), new CredentialsAuthProvider());
+            appHost = new BasicAppHost
+            {
+                ConfigureAppHost = host =>
+                {
+                    host.Plugins.Add(new AuthFeature(() => new AuthUserSession(), new[] { new CredentialsAuthProvider() })
+                    {
+                        IncludeRegistrationService = true,
+                    });
+                },
+
+            }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -85,7 +93,7 @@ namespace ServiceStack.Common.Tests.OAuth
             HostContext.Container.Register(userAuth);
             var httpRes = request.Response;
 
-            requiredRole.Execute(request, request.Response, request.OperationName);
+            requiredRole.ExecuteAsync(request, request.Response, request.OperationName).Wait();
 
             Assert.That(!httpRes.IsClosed);
         }

@@ -34,14 +34,11 @@ using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using System.Text;
 
-#if PCL || SL5 || NETSTANDARD1_1
-using ServiceStack.Pcl;
-#else
 using System.Collections.Specialized;
-#endif
 
-#if NETFX_CORE || ANDROID || __IOS__ || __MAC__ || PCL || SL5 || NETSTANDARD1_1 || NETSTANDARD1_6
+#if NETSTANDARD2_0
 //namespace System.Collections.Specialized
 namespace ServiceStack.Pcl
 {
@@ -71,10 +68,7 @@ namespace ServiceStack.Pcl
             }
         }
 
-        public static NameValueCollection ParseQueryString(string query)
-        {
-            return ParseQueryString(query, Encoding.UTF8);
-        }
+        public static NameValueCollection ParseQueryString(string query) => ParseQueryString(query, Encoding.UTF8);
 
         public static NameValueCollection ParseQueryString(string query, Encoding encoding)
         {
@@ -156,131 +150,8 @@ namespace ServiceStack.Pcl
 
 namespace ServiceStack
 {
-    public class NameValueCollectionWrapper : INameValueCollection
-    {
-        private readonly NameValueCollection data;
-
-        public NameValueCollectionWrapper(NameValueCollection data)
-        {
-            this.data = data;
-        }
-
-        public IEnumerator GetEnumerator()
-        {
-            return data.GetEnumerator();
-        }
-
-        public object Original
-        {
-            get { return data; }
-        }
-
-        public void Add(string name, string value)
-        {
-            data.Add(name, value);
-        }
-
-        public void Clear()
-        {
-            data.Clear();
-        }
-
-        public void CopyTo(Array dest, int index)
-        {
-            data.CopyTo(dest, index);
-        }
-
-        public string Get(int index)
-        {
-            return data.Get(index);
-        }
-
-        public string Get(string name)
-        {
-            return data.Get(name);
-        }
-
-        public string GetKey(int index)
-        {
-            return data.GetKey(index);
-        }
-
-        public string[] GetValues(string name)
-        {
-            return data.GetValues(name);
-        }
-
-        public bool HasKeys()
-        {
-            return data.HasKeys();
-        }
-
-        public void Remove(string name)
-        {
-            data.Remove(name);
-        }
-
-        public void Set(string name, string value)
-        {
-            data.Set(name, value);
-        }
-
-        public string this[int index]
-        {
-            get { return data[index]; }
-        }
-
-        public string this[string name]
-        {
-            get { return data[name]; }
-            set { data[name] = value; }
-        }
-
-        public string[] AllKeys
-        {
-            get { return data.AllKeys; }
-        }
-
-        public int Count
-        {
-            get { return data.Count; }
-        }
-
-        public bool IsReadOnly { get; set; }
-
-        public object SyncRoot
-        {
-            get { return data; }
-        }
-
-        public bool IsSynchronized
-        {
-            get { return false; }
-        }
-
-        public override string ToString()
-        {
-            return data.ToString();
-        }
-    }
-
     public static class NameValueCollectionWrapperExtensions
     {
-        public static NameValueCollectionWrapper InWrapper(this NameValueCollection nvc)
-        {
-            return new NameValueCollectionWrapper(nvc);
-        }
-
-        public static NameValueCollection ToNameValueCollection(this INameValueCollection nvc)
-        {
-            return (NameValueCollection)nvc.Original;
-        }
-
-        public static Dictionary<string, string> ToDictionary(this INameValueCollection nameValues)
-        {
-            return ToDictionary((NameValueCollection)nameValues.Original);
-        }
-
         public static Dictionary<string, string> ToDictionary(this NameValueCollection nameValues)
         {
             if (nameValues == null) return new Dictionary<string, string>();
@@ -319,21 +190,26 @@ namespace ServiceStack
         public static string ToFormUrlEncoded(this NameValueCollection queryParams)
         {
             var sb = StringBuilderCache.Allocate();
-            foreach (string key in queryParams)
+            foreach (string key in queryParams.AllKeys)
             {
                 var values = queryParams.GetValues(key);
-                if (values == null) continue;
-
-                foreach (var value in values)
-                {
-                    if (sb.Length > 0)
-                        sb.Append('&');
-
-                    sb.Append($"{key.UrlEncode()}={value.UrlEncode()}");
-                }
+                AppendKeyValue(sb, key, values);
             }
 
             return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        private static void AppendKeyValue(StringBuilder sb, string key, string[] values)
+        {
+            if (values == null) return;
+
+            foreach (var value in values)
+            {
+                if (sb.Length > 0)
+                    sb.Append('&');
+
+                sb.Append($"{key.UrlEncode()}={value.UrlEncode()}");
+            }
         }
 
     }

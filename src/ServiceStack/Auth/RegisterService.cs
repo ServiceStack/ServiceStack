@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Globalization;
 using ServiceStack.FluentValidation;
@@ -59,13 +60,11 @@ namespace ServiceStack.Auth
     }
 
     [DefaultRequest(typeof(Register))]
-    public class RegisterService : RegisterService<UserAuth> { }
-
-    [DefaultRequest(typeof(Register))]
-    public class RegisterService<TUserAuth> : Service
-        where TUserAuth : class, IUserAuth
+    public class RegisterService : Service
     {
         public static ValidateFn ValidateFn { get; set; }
+        
+        public static bool AllowUpdates { get; set; }
 
         public IValidator<Register> RegistrationValidator { get; set; }
 
@@ -84,27 +83,37 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
+            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            {
+                if (request.UserName != null)
+                    request.UserName = request.UserName.ToLower();
+                if (request.Email != null)
+                    request.Email = request.Email.ToLower();
+            }
+            
             var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
             if (validateResponse != null)
                 return validateResponse;
 
             RegisterResponse response = null;
             var session = this.GetSession();
-            var newUserAuth = ToUserAuth(request);
             bool registerNewUser;
             IUserAuth user;
 
             var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+            var newUserAuth = ToUserAuth(authRepo, request);
             using (authRepo as IDisposable)
             {
-                var existingUser = authRepo.GetUserAuth(session, null);
+                var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
                 registerNewUser = existingUser == null;
 
-                if (HostContext.GlobalRequestFilters == null
-                    || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter)) //Already gets run
+                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
                 {
                     RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
                 }
+                
+                if (!registerNewUser && !AllowUpdates)
+                    throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled);
 
                 user = registerNewUser
                     ? authRepo.CreateUserAuth(newUserAuth, request.Password)
@@ -126,8 +135,7 @@ namespace ServiceStack.Auth
                     if (authResponse is IHttpError)
                         throw (Exception)authResponse;
 
-                    var typedResponse = authResponse as AuthenticateResponse;
-                    if (typedResponse != null)
+                    if (authResponse is AuthenticateResponse typedResponse)
                     {
                         response = new RegisterResponse
                         {
@@ -135,6 +143,8 @@ namespace ServiceStack.Auth
                             UserName = typedResponse.UserName,
                             ReferrerUrl = typedResponse.ReferrerUrl,
                             UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                            BearerToken = typedResponse.BearerToken,
+                            RefreshToken = typedResponse.RefreshToken,
                         };
                     }
                 }
@@ -155,7 +165,8 @@ namespace ServiceStack.Auth
                 response = new RegisterResponse
                 {
                     UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                    ReferrerUrl = request.Continue
+                    ReferrerUrl = request.Continue,
+                    UserName = session.UserName,
                 };
             }
 
@@ -174,9 +185,13 @@ namespace ServiceStack.Auth
             return response;
         }
 
-        public TUserAuth ToUserAuth(Register request)
+        public IUserAuth ToUserAuth(IAuthRepository authRepo, Register request)
         {
-            var to = request.ConvertTo<TUserAuth>();
+            var to = authRepo is ICustomUserAuth customUserAuth
+                ? customUserAuth.CreateUserAuth()
+                : new UserAuth();
+
+            to.PopulateInstance(request);
             to.PrimaryEmail = request.Email;
             return to;
         }
@@ -186,8 +201,7 @@ namespace ServiceStack.Auth
         /// </summary>
         public object UpdateUserAuth(Register request)
         {
-            if (HostContext.GlobalRequestFilters == null
-                || !HostContext.GlobalRequestFilters.Contains(ValidationFilters.RequestFilter))
+            if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
             {
                 RegistrationValidator.ValidateAndThrow(request, ApplyTo.Put);
             }
@@ -205,7 +219,7 @@ namespace ServiceStack.Auth
                 if (existingUser == null)
                     throw HttpError.NotFound(ErrorMessages.UserNotExists);
 
-                var newUserAuth = ToUserAuth(request);
+                var newUserAuth = ToUserAuth(authRepo, request);
                 authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
 
                 return new RegisterResponse

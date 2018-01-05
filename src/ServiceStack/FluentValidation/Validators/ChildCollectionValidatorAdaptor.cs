@@ -13,64 +13,123 @@
 // See the License for the specific language governing permissions and 
 // limitations under the License.
 // 
-// The latest version of this file can be found at http://www.codeplex.com/FluentValidation
+// The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using Internal;
-    using Results;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Collections;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Linq.Expressions;
+	using System.Threading;
+	using System.Threading.Tasks;
+	using FluentValidation.Results;
 
-    public class ChildCollectionValidatorAdaptor : NoopPropertyValidator {
-        readonly IValidator childValidator;
+	public class ChildCollectionValidatorAdaptor : NoopPropertyValidator {
+		static readonly IEnumerable<ValidationFailure> EmptyResult = Enumerable.Empty<ValidationFailure>();
+		static readonly Task<IEnumerable<ValidationFailure>> AsyncEmptyResult = TaskHelpers.FromResult(Enumerable.Empty<ValidationFailure>());
 
-        public IValidator Validator {
-            get { return childValidator; }
-        }
+		readonly Func<object, IValidator> childValidatorProvider;
+		readonly Type childValidatorType;
 
-        public Func<object, bool> Predicate { get; set; }
+		public override bool IsAsync {
+			get { return true; }
+		}
 
-        public ChildCollectionValidatorAdaptor(IValidator childValidator) {
-            this.childValidator = childValidator;
-        }
+		public Type ChildValidatorType {
+			get { return childValidatorType; }
+		}
 
-        public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
-            if (context.Rule.Member == null) {
-                throw new InvalidOperationException(string.Format("Nested validators can only be used with Member Expressions."));
-            }
+		public Func<object, bool> Predicate { get; set; }
 
-            var collection = context.PropertyValue as IEnumerable;
+		public ChildCollectionValidatorAdaptor(IValidator childValidator) {
+			this.childValidatorProvider = _ => childValidator;
+			this.childValidatorType = childValidator.GetType();
+		}
 
-            if (collection == null) {
-                yield break;
-            }
+		public ChildCollectionValidatorAdaptor(Func<object, IValidator> childValidatorProvider, Type childValidatorType) {
+			this.childValidatorProvider = childValidatorProvider;
+			this.childValidatorType = childValidatorType;
+		}
 
-            int count = 0;
-            
-            var predicate = Predicate ?? (x => true);
+		public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
+			return ValidateInternal(
+				context,
+				items => items.Select(tuple => {
+					var ctx = tuple.Item1;
+					var validator = tuple.Item2;
+					return validator.Validate(ctx).Errors;
+				}).SelectMany(errors => errors),
+				EmptyResult
+			);
+		}
 
-            foreach (var element in collection) {
+		public override Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
+			return ValidateInternal(
+				context,
+				items => {
+					var failures = new List<ValidationFailure>();
+					var tasks = items.Select(tuple => {
+						var ctx = tuple.Item1;
+						var validator = tuple.Item2;
+						return validator.ValidateAsync(ctx, cancellation).Then(res => failures.AddRange(res.Errors), runSynchronously: true);
+					});
+					return TaskHelpers.Iterate(tasks).Then(() => failures.AsEnumerable(), runSynchronously: true);
+				},
+				AsyncEmptyResult
+			);
+		}
 
-                if(element == null || !(predicate(element))) {
-                    // If an element in the validator is null then we want to skip it to prevent NullReferenceExceptions in the child validator.
-                    // We still need to update the counter to ensure the indexes are correct.
-                    count++;
-                    continue;
-                }
+		TResult ValidateInternal<TResult>(
+			PropertyValidatorContext context,
+			Func<IEnumerable<Tuple<ValidationContext, IValidator>>, TResult> validatorApplicator,
+			TResult emptyResult
+		) {
+			var collection = context.PropertyValue as IEnumerable;
 
-                var newContext = context.ParentContext.CloneForChildValidator(element);
-                newContext.PropertyChain.Add(context.Rule.Member);
-                newContext.PropertyChain.AddIndexer(count++);
+			if (collection == null) {
+				return emptyResult;
+			}
 
-                var results = childValidator.Validate(newContext).Errors;
+			var predicate = Predicate ?? (x => true);
 
-                foreach (var result in results) {
-                    yield return result;
-                }
-            }
-        }
+			string propertyName = context.Rule.PropertyName;
+
+			if (string.IsNullOrEmpty(propertyName)) {
+				propertyName = InferPropertyName(context.Rule.Expression);
+			}
+
+			var itemsToValidate = collection
+				.Cast<object>()
+				.Select((item, index) => new { item, index })
+				.Where(a => a.item != null && predicate(a.item))
+				.Select(a => {
+					var newContext = context.ParentContext.CloneForChildValidator(a.item);
+					newContext.PropertyChain.Add(propertyName);
+					newContext.PropertyChain.AddIndexer(a.item is IIndexedCollectionItem ? ((IIndexedCollectionItem)a.item).Index : a.index.ToString());
+
+					var validator = childValidatorProvider(context.Instance);
+
+					return Tuple.Create(newContext, validator);
+				});
+
+			return validatorApplicator(itemsToValidate);
+		}
+
+		private string InferPropertyName(LambdaExpression expression) {
+			var paramExp = expression.Body as ParameterExpression;
+
+			if (paramExp == null) {
+				throw new InvalidOperationException("Could not infer property name for expression: " + expression + ". Please explicitly specify a property name by calling OverridePropertyName as part of the rule chain. Eg: RuleFor(x => x).SetCollectionValidator(new MyFooValidator()).OverridePropertyName(\"MyProperty\")");
+			}
+
+			return paramExp.Name;
+		}
+	}
+
+    public interface IIndexedCollectionItem
+    {
+        string Index { get; }
     }
 }

@@ -7,9 +7,7 @@ namespace ServiceStack.Auth
 {
     public interface IHashProvider
     {
-        void GetHashAndSalt(byte[] Data, out byte[] Hash, out byte[] Salt);
         void GetHashAndSaltString(string Data, out string Hash, out string Salt);
-        bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt);
         bool VerifyHashString(string Data, string Hash, string Salt);
     }
 
@@ -47,7 +45,7 @@ namespace ServiceStack.Auth
             Salt = new byte[SalthLength];
 
             var random = RandomNumberGenerator.Create();
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             random.GetNonZeroBytes(Salt);
 #else
             random.GetBytes(Salt);
@@ -58,13 +56,10 @@ namespace ServiceStack.Auth
 
         public void GetHashAndSaltString(string Data, out string Hash, out string Salt)
         {
-            byte[] HashOut;
-            byte[] SaltOut;
+            GetHashAndSalt(Encoding.UTF8.GetBytes(Data), out var hashOut, out var saltOut);
 
-            GetHashAndSalt(Encoding.UTF8.GetBytes(Data), out HashOut, out SaltOut);
-
-            Hash = Convert.ToBase64String(HashOut);
-            Salt = Convert.ToBase64String(SaltOut);
+            Hash = Convert.ToBase64String(hashOut);
+            Salt = Convert.ToBase64String(saltOut);
         }
 
         public bool VerifyHash(byte[] Data, byte[] Hash, byte[] Salt)

@@ -12,7 +12,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AsyncTaskAppHost()
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -315,6 +315,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public async Task<GetFactorialResponse> Any(ThrowErrorAwaitAsync request)
         {
+            await Task.Delay(0);
             throw new HttpError(HttpStatusCode.Forbidden, HttpStatusCode.Forbidden.ToString(), request.Message ?? "Request is forbidden");
         }
 
@@ -329,14 +330,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [Explicit, TestFixture]
+    [Ignore("Load Test"), TestFixture]
     public class AsyncLoadTests
     {
         const int NoOfTimes = 1000;
      
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AsyncTaskTests.AsyncTaskAppHost()
@@ -344,7 +345,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

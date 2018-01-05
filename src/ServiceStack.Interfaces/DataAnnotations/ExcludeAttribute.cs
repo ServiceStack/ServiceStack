@@ -15,4 +15,10 @@ namespace ServiceStack.DataAnnotations
             Feature = feature;
         }
     }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property)]
+    public class ExcludeMetadataAttribute : ExcludeAttribute
+    {
+        public ExcludeMetadataAttribute() : base(Feature.Metadata | Feature.Soap) {}
+    }
 }

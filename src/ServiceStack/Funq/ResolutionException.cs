@@ -6,7 +6,7 @@ namespace Funq
     /// <summary>
     /// Exception thrown by the container when a service cannot be resolved.
     /// </summary>
-#if !(SL5 || NETSTANDARD1_6)
+#if !(SL5 || NETSTANDARD2_0)
     [Serializable]
 #endif
     public class ResolutionException : Exception
@@ -17,7 +17,7 @@ namespace Funq
         public ResolutionException(Type missingServiceType)
             : base(String.Format(
                 CultureInfo.CurrentCulture,
-                ServiceStack.Properties.Resources.ResolutionException_MissingType,
+                ServiceStack.ResourceDesigner.Resources.ResolutionException_MissingType,
                 missingServiceType.FullName))
         { }
 
@@ -27,7 +27,7 @@ namespace Funq
         public ResolutionException(Type missingServiceType, string missingServiceName)
             : base(String.Format(
                 CultureInfo.CurrentCulture,
-                ServiceStack.Properties.Resources.ResolutionException_MissingNamedType,
+                ServiceStack.ResourceDesigner.Resources.ResolutionException_MissingNamedType,
                 missingServiceType.FullName, missingServiceName))
         { }
 

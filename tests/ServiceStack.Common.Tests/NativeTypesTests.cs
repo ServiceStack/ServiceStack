@@ -1,5 +1,7 @@
 ﻿#if !NETCORE_SUPPORT
 using NUnit.Framework;
+using ServiceStack.NativeTypes.Java;
+using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests
 {
@@ -12,18 +14,19 @@ namespace ServiceStack.Common.Tests
     {
         ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost =
-                new BasicAppHost(typeof(Dto).Assembly, typeof(TypesCSharp).Assembly)
+                new BasicAppHost(typeof(Dto).Assembly)
                 {
                     TestMode = true,
+                    Plugins = { new NativeTypesFeature() },
                     Config = new HostConfig()
                 }.Init();
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -70,6 +73,20 @@ namespace ServiceStack.Common.Tests
             StringAssert.Contains("class DtoResponse", stringResult);
             StringAssert.Contains("class EmbeddedRequest", stringResult);
             StringAssert.Contains("class EmbeddedResponse", stringResult);
+        }
+
+        [Test]
+        public void AnnotatedDtoTypes_ApiMemberNonDefaultProperties_AreSorted()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoResponse" }
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoResponse", stringResult);
+            StringAssert.Contains("[ApiMember(Description=\"ShouldBeFirstInGeneratedCode\", IsRequired=true, Name=\"ShouldBeLastInGeneratedCode\")]", stringResult);
         }
 
         [Test]
@@ -221,14 +238,80 @@ namespace ServiceStack.Common.Tests
             StringAssert.Contains("class EmbeddedRequest", stringResult);
             StringAssert.Contains("class EmbeddedResponse", stringResult);
         }
+
+        [Test]
+        public void GetIncludeList_Returns_IncludeList_when_Returning_generic_List()
+        {
+            var includeTypes = new List<string> { "GetRequest1", "ReturnedDto" };
+            var config = new MetadataTypesConfig
+            {
+                IncludeTypes = includeTypes
+            };
+
+            var result = MetadataExtensions.GetIncludeList(new MetadataTypes(), config);
+            result.PrintDump();
+
+            Assert.AreEqual(includeTypes, result);
+        }
+
+        [Test]
+        public void Custom_ValueTypes_defaults_to_use_opaque_strings_csharp()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public virtual string StructType { get; set; }", stringResult);
+            StringAssert.Contains("public virtual string NullableStructType { get; set; }", stringResult);
+        }
+
+        [Test]
+        public void Custom_ValueTypes_can_be_exported_csharp()
+        {
+            var result = appHost.ExecuteService(new TypesCSharp
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+                ExportValueTypes = true,
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public virtual StructType StructType { get; set; }", stringResult);
+            StringAssert.Contains("public virtual StructType? NullableStructType { get; set; }", stringResult);
+        }
+
+        [Test]
+        public void Custom_ValueTypes_can_be_exported_as_different_Type_in_java()
+        {
+            JavaGenerator.TypeAliases["StructType"] = "JavaStruct";
+
+            var result = appHost.ExecuteService(new TypesJava
+            {
+                IncludeTypes = new List<string> { "DtoRequestWithStructProperty" },
+                ExportValueTypes = true,
+            });
+
+            var stringResult = result.ToString();
+
+            StringAssert.Contains("class DtoRequestWithStructProperty", stringResult);
+            StringAssert.Contains("public JavaStruct StructType = null;", stringResult);
+            StringAssert.Contains("public JavaStruct NullableStructType = null;", stringResult);
+
+            string value;
+            JavaGenerator.TypeAliases.TryRemove("StructType", out value);
+        }
     }
 
     public class NativeTypesTestService : Service
     {
-        public object Any(Dto request)
-        {
-            return "just a test";
-        }
+        public object Any(Dto request) => request;
+
+        public object Any(DtoRequestWithStructProperty request) => request;
     }
 
     public class Dto : IReturn<DtoResponse>
@@ -238,10 +321,40 @@ namespace ServiceStack.Common.Tests
 
     public class DtoResponse
     {
+        [ApiMember(Name = "ShouldBeLastInGeneratedCode", Description = "ShouldBeFirstInGeneratedCode", IsRequired = true)]
         public EmbeddedRequest ReferencedType { get; set; }
     }
 
     public class EmbeddedResponse { }
     public class EmbeddedRequest { }
+
+
+    [Route("/Request1/", "GET")]
+    public partial class GetRequest1 : IReturn<List<ReturnedDto>>, IGet { }
+
+    [Route("/Request3", "GET")]
+    public partial class GetRequest2 : IReturn<ReturnedDto>, IGet {}
+
+    public partial class ReturnedDto
+    {
+        public virtual int Id { get; set; }
+    }
+
+    public class ReturnGenericListServices : Service
+    {
+        public object Any(GetRequest1 request) => request;
+        public object Any(GetRequest2 request) => request;
+    }
+
+    public class DtoRequestWithStructProperty : IReturn<DtoResponse>
+    {
+        public StructType StructType { get; set; }
+        public StructType? NullableStructType { get; set; }
+    }
+
+    public struct StructType
+    {
+        public int Id;
+    }
 }
 #endif

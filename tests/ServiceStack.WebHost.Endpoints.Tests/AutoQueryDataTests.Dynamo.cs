@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Amazon.DynamoDBv2;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Aws.DynamoDb;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+using Amazon.DynamoDBv2;
+using ServiceStack.Aws.DynamoDb;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -48,17 +48,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_query_on_ForeignKey_and_RockstarAlbumGenreIndex()
         {
             QueryResponse<RockstarAlbumGenreGlobalIndex> response;
-            response = client.Get(new QueryDataRockstarAlbumGenreIndex { Genre = "Grunge" }); //Hash
+            response = client.Get(new QueryDataRockstarAlbumGenreIndex { Genre = "Grunge", Include = "Total" }); //Hash
             Assert.That(response.Results.Count, Is.EqualTo(5));
             Assert.That(response.Total, Is.EqualTo(5));
 
-            response = client.Get(new QueryDataRockstarAlbumGenreIndex { Genre = "Grunge", Id = 3 }); //Hash + Range
+            response = client.Get(new QueryDataRockstarAlbumGenreIndex { Genre = "Grunge", Id = 3, Include = "Total" }); //Hash + Range
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
 
             //Hash + Range BETWEEN
-            response = client.Get(new QueryDataRockstarAlbumGenreIndex { Genre = "Grunge", IdBetween = new[] { 2, 3 } });
+            response = client.Get(new QueryDataRockstarAlbumGenreIndex
+            {
+                Genre = "Grunge",
+                IdBetween = new[] { 2, 3 },
+                Include = "Total"
+            });
             Assert.That(response.Results.Count, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(2));
 
@@ -67,7 +72,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Genre = "Grunge",
                 IdBetween = new[] { 2, 3 },
-                Name = "Nevermind"
+                Name = "Nevermind",
+                Include = "Total"
             });
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
@@ -80,17 +86,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_query_on_ForeignKey_and_RockstarAlbumGenreIndex_Mapped()
         {
             QueryResponse<RockstarAlbum> response;
-            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge" }); //Hash
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", Include = "Total" }); //Hash
             Assert.That(response.Results.Count, Is.EqualTo(5));
             Assert.That(response.Total, Is.EqualTo(5));
 
-            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", Id = 3 }); //Hash + Range
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", Id = 3, Include = "Total" }); //Hash + Range
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));
             Assert.That(response.Results[0].Name, Is.EqualTo("Nevermind"));
 
             //Hash + Range BETWEEN
-            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped { Genre = "Grunge", IdBetween = new[] { 2, 3 } });
+            response = client.Get(new QueryDataRockstarAlbumGenreIndexMapped
+            {
+                Genre = "Grunge",
+                IdBetween = new[] { 2, 3 },
+                Include = "Total"
+            });
             Assert.That(response.Results.Count, Is.EqualTo(2));
             Assert.That(response.Total, Is.EqualTo(2));
 
@@ -99,7 +110,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Genre = "Grunge",
                 IdBetween = new[] { 2, 3 },
-                Name = "Nevermind"
+                Name = "Nevermind",
+                Include = "Total"
             });
             Assert.That(response.Results.Count, Is.EqualTo(1));
             Assert.That(response.Total, Is.EqualTo(1));

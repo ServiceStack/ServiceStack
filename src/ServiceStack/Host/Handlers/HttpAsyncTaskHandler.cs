@@ -1,4 +1,4 @@
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
@@ -17,35 +17,17 @@ namespace ServiceStack.Host.Handlers
 
         public string RequestName { get; set; }
 
-        public virtual bool RunAsAsync() => false;
+        private Type[] ProcessRequestArgTypes = new[] {typeof(IRequest), typeof(IResponse), typeof(string)};
 
-#if !NETSTANDARD1_6
-        protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
-
-        protected static bool DefaultHandledRequest(HttpContextBase context) => false;
-
-        public virtual Task ProcessRequestAsync(HttpContextBase context)
+        public virtual bool RunAsAsync()
         {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            RememberLastRequestInfo(operationName, context.Request.PathInfo);
-
-            if (string.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
-
-            if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
-
-            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
-
-            if (RunAsAsync())
-                return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
-
-            return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
+            var implementsMethod = GetType().GetMethodInfo(nameof(ProcessRequest), ProcessRequestArgTypes);
+            return implementsMethod.DeclaringType == typeof(HttpAsyncTaskHandler);
         }
-#endif
 
         protected virtual Task CreateProcessRequestTask(IRequest httpReq, IResponse httpRes, string operationName)
         {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
             var currentCulture = Thread.CurrentThread.CurrentCulture;
             var currentUiCulture = Thread.CurrentThread.CurrentUICulture;
             var ctx = HttpContext.Current;
@@ -54,7 +36,7 @@ namespace ServiceStack.Host.Handlers
             //preserve Current Culture:
             return new Task(() =>
             {
-#if !NETSTANDARD1_6
+#if !NETSTANDARD2_0
                 Thread.CurrentThread.CurrentCulture = currentCulture;
                 Thread.CurrentThread.CurrentUICulture = currentUiCulture;
                 //HttpContext is not preserved in ThreadPool threads: http://stackoverflow.com/a/13558065/85785
@@ -81,9 +63,13 @@ namespace ServiceStack.Host.Handlers
 
         public virtual void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            throw new NotImplementedException();
+            Log.Error($"HttpAsyncTaskHandler.ProcessRequest() that should never have been called, was just called from: {Environment.StackTrace}");
+            ProcessRequestAsync(httpReq, httpRes, operationName).Wait();
         }
 
+        //.NET Core entry point for: 
+        // - .NET Core from AppHostBase.ProcessRequest() 
+        // - HttpListener from AppHostHttpListenerBase.ProcessRequestAsync()
         public virtual Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             var task = CreateProcessRequestTask(httpReq, httpRes, operationName);
@@ -91,35 +77,27 @@ namespace ServiceStack.Host.Handlers
             return task;
         }
 
-#if !NETSTANDARD1_6
-        public virtual void ProcessRequest(HttpContextBase context)
+#if !NETSTANDARD2_0
+        protected static bool DefaultHandledRequest(HttpListenerContext context) => false;
+
+        protected static bool DefaultHandledRequest(HttpContextBase context) => false;
+
+        //ASP.NET IHttpHandler entry point 
+        void IHttpHandler.ProcessRequest(HttpContext context)
         {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
+            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
-
-            ProcessRequest(httpReq, httpReq.Response, operationName);
+            if (task.Status == TaskStatus.Created)
+            {
+                task.RunSynchronously();
+            }
+            else
+            {
+                task.Wait();
+            }
         }
 
-        public virtual void ProcessRequest(HttpListenerContext context)
-        {
-            var operationName = this.RequestName ?? context.Request.GetOperationName();
-
-            RememberLastRequestInfo(operationName, context.Request.RawUrl);
-
-            if (string.IsNullOrEmpty(operationName)) return;
-
-            if (DefaultHandledRequest(context)) return;
-
-            var httpReq = ((HttpListener.HttpListenerBase)ServiceStackHost.Instance).CreateRequest(context, operationName);
-
-            ProcessRequest(httpReq, httpReq.Response, operationName);
-        }
-
+        //ASP.NET IHttpAsyncHandler entry point
         IAsyncResult IHttpAsyncHandler.BeginProcessRequest(HttpContext context, AsyncCallback cb, object extraData)
         {
             if (cb == null)
@@ -127,7 +105,7 @@ namespace ServiceStack.Host.Handlers
 
             var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
 
-            task.ContinueWith(ar =>
+            HostContext.Async.ContinueWith(task, ar =>
                 cb(ar));
 
             if (task.Status == TaskStatus.Created)
@@ -147,47 +125,67 @@ namespace ServiceStack.Host.Handlers
             // http://bradwilson.typepad.com/blog/2012/04/tpl-and-servers-pt4.html
             //task.Dispose();
         }
+
+        //Called by both ASP.NET IHttpHandler/IHttpAsyncHandler Requests
+        public virtual Task ProcessRequestAsync(HttpContextBase context)
+        {
+            RequestContext.Instance.StartRequestContext();
+            
+            var operationName = this.RequestName ?? context.Request.GetOperationName();
+
+            RememberLastRequestInfo(operationName, context.Request.PathInfo);
+
+            if (string.IsNullOrEmpty(operationName)) return TypeConstants.EmptyTask;
+
+            if (DefaultHandledRequest(context)) return TypeConstants.EmptyTask;
+
+            var httpReq = new ServiceStack.Host.AspNet.AspNetRequest(context, operationName);
+
+            if (RunAsAsync())
+                return ProcessRequestAsync(httpReq, httpReq.Response, operationName);
+
+            return CreateProcessRequestTask(httpReq, httpReq.Response, operationName);
+        }
+#else
+        public virtual Task Middleware(Microsoft.AspNetCore.Http.HttpContext context, Func<Task> next)
+        {
+            var operationName = context.Request.GetOperationName().UrlDecode() ?? "Home";
+
+            var httpReq = context.ToRequest(operationName);
+            var httpRes = httpReq.Response;
+
+            if (!string.IsNullOrEmpty(RequestName))
+                operationName = RequestName;
+
+            var task = ProcessRequestAsync(httpReq, httpRes, operationName);
+            HostContext.Async.ContinueWith(httpReq, task, x => httpRes.Close(), TaskContinuationOptions.OnlyOnRanToCompletion | TaskContinuationOptions.AttachedToParent);
+            return task;
+        }
 #endif
+
         public virtual bool IsReusable => false;
 
-        protected Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
+        protected async Task HandleException(IRequest httpReq, IResponse httpRes, string operationName, Exception ex)
         {
             var errorMessage = $"Error occured while Processing Request: {ex.Message}";
             HostContext.AppHost.OnLogError(typeof(HttpAsyncTaskHandler), errorMessage, ex);
 
             try
             {
-                HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
-                return TypeConstants.EmptyTask;
+                await HostContext.RaiseAndHandleUncaughtException(httpReq, httpRes, operationName, ex);
             }
             catch (Exception writeErrorEx)
             {
                 //Exception in writing to response should not hide the original exception
                 Log.Info("Failed to write error to response: {0}", writeErrorEx);
                 //rethrow the original exception
-                return ex.AsTaskException();
+                throw ex;
             }
             finally
             {
                 httpRes.EndRequest(skipHeaders: true);
             }
         }
-
-#if !NETSTANDARD1_6
-        void IHttpHandler.ProcessRequest(HttpContext context)
-        {
-            var task = ProcessRequestAsync(context.Request.RequestContext.HttpContext);
-
-            if (task.Status == TaskStatus.Created)
-            {
-                task.RunSynchronously();
-            }
-            else
-            {
-                task.Wait();
-            }
-        }
-#endif
 
     }
 }

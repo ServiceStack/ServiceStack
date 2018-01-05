@@ -122,6 +122,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public override void Configure(Container container)
         {
+#if !NETCORE
+            Plugins.Add(new SoapFormat());
+#endif
             Plugins.Add(new ValidationFeature());
 
             container.RegisterValidators(typeof(AlwaysThrowsValidator).Assembly);
@@ -177,7 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private ServiceStackHost appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
             appHost = new AlwaysThrowsAppHost()
@@ -185,7 +188,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
@@ -230,7 +233,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(400));
                 Assert.That(webEx.StatusDescription, Is.EqualTo(typeof(ArgumentNullException).Name));
-                Assert.That(webEx.Message, Is.EqualTo(typeof(ArgumentNullException).Name));
+                Assert.That(webEx.Message.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
                 Assert.That(webEx.ErrorCode, Is.EqualTo(typeof(ArgumentNullException).Name));
                 Assert.That(webEx.ErrorMessage.Replace("\r\n", "\n"), Is.EqualTo("Value cannot be null.\nParameter name: Id"));
             }
@@ -240,7 +243,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_Handle_Exception_from_AlwaysThrowsList_with_GET_route()
         {
             var client = CreateNewServiceClient();
+#if !NETCORE
             if (client is WcfServiceClient) return;
+#endif
             try
             {
                 var response = client.Get<List<AlwaysThrows>>("/throwslist/404/{0}".Fmt(TestString));
@@ -334,6 +339,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+#if !NETCORE
     public class Soap11IntegrationTests : WebServicesTests
     {
         protected override IServiceClient CreateNewServiceClient()
@@ -349,4 +355,5 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new Soap12ServiceClient(ListeningOn);
         }
     }
+#endif
 }

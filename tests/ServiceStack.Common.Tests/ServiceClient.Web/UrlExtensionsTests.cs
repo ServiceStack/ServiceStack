@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Common.Tests.Models;
-#if !NETCORE_SUPPORT
 using ServiceStack.NativeTypes;
 using ServiceStack.Testing;
-#endif
 using ServiceStack.Text;
 
 namespace ServiceStack.Common.Tests.ServiceClient.Web
@@ -38,11 +36,10 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             Assert.That(typeof(Root.Nested).GetOperationName(), Is.EqualTo("Root.Nested"));
         }
 
-#if !NETCORE_SUPPORT
         [Test]
         public void Can_use_nested_classes_as_Request_DTOs()
         {
-            using (var appHost = new BasicAppHost(typeof(NestedService).Assembly){}.Init())
+            using (var appHost = new BasicAppHost(typeof(NestedService).Assembly).Init())
             {
                 var root = (Root)appHost.ExecuteService(new Root { Id = 1 });
                 Assert.That(root.Id, Is.EqualTo(1));
@@ -51,7 +48,6 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
                 Assert.That(nested.Id, Is.EqualTo(2));
             }
         }
-#endif
 
         [Test]
         public void Can_expand_generic_List()
@@ -75,7 +71,6 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             Assert.That(genericName, Is.EqualTo("Dictionary<String,List<Poco>>"));
         }
 
-#if !NETCORE_SUPPORT
         [Test]
         public void Can_parse_Single_Type()
         {
@@ -92,7 +87,7 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         {
             var fullGenericTypeName = "List<Poco>";
 
-            var textNode = MetadataExtensions.ParseTypeIntoNodes(fullGenericTypeName);
+            var textNode = fullGenericTypeName.ParseTypeIntoNodes();
 
             textNode.PrintDump();
 
@@ -136,7 +131,32 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             Assert.That(textNode.Children[0].Children[1].Children[0].Text, Is.EqualTo("String"));
             Assert.That(textNode.Children[0].Children[1].Children[1].Text, Is.EqualTo("Poco"));
         }
-#endif
+
+        [Test]
+        public void Can_SplitGenericArgs()
+        {
+            var args = MetadataExtensions.SplitGenericArgs("String,Int64,Boolean");
+            Assert.That(args, Is.EquivalentTo(new[] {"String", "Int64", "Boolean"}));
+
+            args = MetadataExtensions.SplitGenericArgs("List<Dictionary<String,Dictionary<String,Poco>>>");
+            Assert.That(args, Is.EquivalentTo(new[] { "List<Dictionary<String,Dictionary<String,Poco>>>" }));
+
+            args = MetadataExtensions.SplitGenericArgs("String,List<Dictionary<String,Dictionary<String,Poco>>>,Int64");
+            Assert.That(args, Is.EquivalentTo(new[] { "String", "List<Dictionary<String,Dictionary<String,Poco>>>", "Int64" }));
+        }
+
+        [Test]
+        public void Can_strip_nullables()
+        {
+            Assert.That(MetadataExtensions.StripGenericType("Nullable<Byte>", "Nullable"),
+                Is.EqualTo("Byte"));
+            Assert.That(MetadataExtensions.StripGenericType("Nullable<Byte>[]", "Nullable"),
+                Is.EqualTo("Byte[]"));
+            Assert.That(MetadataExtensions.StripGenericType("List<Nullable<Byte>>[]", "Nullable"),
+                Is.EqualTo("List<Byte>[]"));
+            Assert.That(MetadataExtensions.StripGenericType("List<Nullable<List<Byte>>>[]", "Nullable"),
+                Is.EqualTo("List<List<Byte>>[]"));
+        }
 
     }
 
@@ -150,7 +170,6 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
         }
     }
 
-#if !NETCORE_SUPPORT
     public class NestedService : Service
     {
         public object Any(Root request)
@@ -163,5 +182,4 @@ namespace ServiceStack.Common.Tests.ServiceClient.Web
             return request;
         }
     }
-#endif
 }

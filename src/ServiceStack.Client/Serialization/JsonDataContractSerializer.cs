@@ -21,11 +21,8 @@ namespace ServiceStack.Serialization
         public string SerializeToString<T>(T obj)
         {
             if (TextSerializer != null)
-            {
                 return TextSerializer.SerializeToString(obj);
-            }
 
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             if (!UseBcl)
                 return JsonSerializer.SerializeToString(obj);
 
@@ -48,27 +45,22 @@ namespace ServiceStack.Serialization
             {
                 throw new SerializationException("JsonDataContractSerializer: Error converting type: " + ex.Message, ex);
             }
-#else
-            return JsonSerializer.SerializeToString(obj);
-#endif
         }
 
         public void SerializeToStream<T>(T obj, Stream stream)
         {
             if (obj == null) return;
 
+            var streamSerializer = TextSerializer as IStringStreamSerializer;
             if (TextSerializer != null)
             {
-                var streamSerializer = TextSerializer as IStringStreamSerializer;
                 streamSerializer?.SerializeToStream(obj, stream);
             }
-#if !(SL5 || __IOS__ || XBOX || ANDROID || PCL || NETSTANDARD1_1 || NETSTANDARD1_6)
             else if (UseBcl)
             {
                 var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(obj.GetType());
                 serializer.WriteObject(stream, obj);
             }
-#endif
             else
             {
                 JsonSerializer.SerializeToStream(obj, stream);

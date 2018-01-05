@@ -50,13 +50,13 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="ServiceStack.OrmLite.Sqlite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.Sqlite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.OrmLite">
-      <HintPath>..\..\lib\ServiceStack.OrmLite.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.OrmLite.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\lib\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.Configuration" />
     <Reference Include="nunit.framework">
@@ -79,10 +79,6 @@
     <EmbeddedResource Include="default.cshtml" />
     <None Include="packages.config" />
     <EmbeddedResource Include="Views\Shared\RazorPartial.cshtml" />
-    <Content Include="..\..\lib\tests\sqlite3.dll">
-      <Link>sqlite3.dll</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <EmbeddedResource Include="Views\Shared\_Layout.shtml" />
     <EmbeddedResource Include="Pages\_Layout.shtml" />
     <EmbeddedResource Include="Pages\Dir\_Layout.shtml" />

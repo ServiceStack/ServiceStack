@@ -18,10 +18,8 @@ namespace ServiceStack.Api.Swagger
     public class SwaggerResourcesResponse
     {
         [DataMember(Name = "swaggerVersion")]
-        public string SwaggerVersion
-        {
-            get { return "1.2"; }
-        }
+        public string SwaggerVersion => "1.2";
+
         [DataMember(Name = "apis")]
         public List<SwaggerResourceRef> Apis { get; set; }
         [DataMember(Name = "apiVersion")]
@@ -102,8 +100,7 @@ namespace ServiceStack.Api.Swagger
 
             result.Apis = result.Apis.OrderBy(a => a.Path).ToList();
 
-            if (ResourcesResponseFilter != null)
-                ResourcesResponseFilter(result);
+            ResourcesResponseFilter?.Invoke(result);
 
             return new HttpResult(result) {
                 ResultScope = () => JsConfig.With(includeNullValues:false)

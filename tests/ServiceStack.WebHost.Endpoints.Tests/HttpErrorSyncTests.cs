@@ -1,11 +1,11 @@
 using System;
 using System.Net;
 using NUnit.Framework;
-using ServiceStack.Model;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
+using ServiceStack.Logging;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -36,15 +36,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         private ExampleAppHostHttpListener appHost;
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureSetUp()
         {
+            LogManager.LogFactory = null;
             appHost = new ExampleAppHostHttpListener();
             appHost.Init();
             appHost.Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -97,10 +98,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(webEx.StatusCode, Is.EqualTo(403));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(typeof(Exception).Name));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo("ForbiddenErrorMessage"));
-            }
-            catch (Exception ex)
-            {
-                throw;
             }
         }
 
@@ -220,7 +217,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             catch (WebServiceException webEx)
             {
                 Assert.That(webEx.StatusCode, Is.EqualTo(request.StatusCode.Value));
-                Assert.That(webEx.Message, Is.EqualTo(request.StatusDescription));
+                Assert.That(webEx.Message, Is.EqualTo(request.ResponseStatus.Message));
+                Assert.That(webEx.StatusDescription, Is.EqualTo(request.StatusDescription));
                 Assert.That(webEx.ResponseStatus.ErrorCode, Is.EqualTo(request.ResponseStatus.ErrorCode));
                 Assert.That(webEx.ResponseStatus.Message, Is.EqualTo(request.ResponseStatus.Message));
             }

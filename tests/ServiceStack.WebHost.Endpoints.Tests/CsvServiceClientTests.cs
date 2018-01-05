@@ -93,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new AppHost().Init().Start(Config.ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

@@ -25,6 +25,12 @@ namespace ServiceStack.Auth
         void DeleteUserAuth(string userAuthId);
     }
 
+    public interface ICustomUserAuth
+    {
+        IUserAuth CreateUserAuth();
+        IUserAuthDetails CreateUserAuthDetails();
+    }
+
     public interface IManageRoles
     {
         ICollection<string> GetRoles(string userAuthId);

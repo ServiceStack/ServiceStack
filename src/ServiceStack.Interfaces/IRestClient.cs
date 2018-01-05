@@ -38,6 +38,8 @@ namespace ServiceStack
         TResponse Patch<TResponse>(object requestDto);
         TResponse Patch<TResponse>(string relativeOrAbsoluteUrl, object requestDto);
 
+        TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request);
+
         void CustomMethod(string httpVerb, IReturnVoid requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, IReturn<TResponse> requestDto);
         TResponse CustomMethod<TResponse>(string httpVerb, object requestDto);

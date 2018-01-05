@@ -11,5 +11,6 @@ namespace ServiceStack.Caching
         byte[] InflateBytes(byte[] gzBuffer);
 
         Stream DeflateStream(Stream outputStream);
+        Stream InflateStream(Stream inputStream);
     }
 }

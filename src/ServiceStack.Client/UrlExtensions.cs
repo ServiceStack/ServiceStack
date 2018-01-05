@@ -102,23 +102,69 @@ namespace ServiceStack
 
         public static string GetMetadataPropertyType(this Type type)
         {
-            return type.IsValueType() && !type.IsSystemType() && !type.IsEnum()
-                ? "string"
-                : GetOperationName(type);
+            return GetOperationName(type);
         }
 
         public static string GetOperationName(this Type type)
         {
-            var typeName = type.FullName?.LeftPart("[[")   //Generic Fullname
-                .Replace(type.Namespace + ".", "") //Trim Namespaces
-                .Replace("+", ".") ?? type.Name;
+            //Need to expand Arrays of Generic Types like Nullable<Byte>[]
+            if (type.IsArray)
+            {
+                return type.GetElementType().ExpandTypeName() + "[]";
+            }
 
-            return type.IsGenericParameter ? "'" + typeName : typeName;
+            string fullname = type.FullName;
+            int genericPrefixIndex = type.IsGenericParameter ? 1 : 0;
+                
+            if (fullname == null)
+                return genericPrefixIndex > 0 ? "'" + type.Name : type.Name;
+
+            int startIndex = type.Namespace != null ? type.Namespace.Length + 1: 0; //trim namespace + "."
+            int endIndex = fullname.IndexOf("[[", startIndex);  //Generic Fullname
+            if (endIndex == -1)
+                endIndex = fullname.Length;
+
+            char[] op = new char[endIndex - startIndex + genericPrefixIndex];
+            char cur;
+
+            for(int i = startIndex; i < endIndex; i++)
+            {
+                cur = fullname[i];
+                op[i - startIndex + genericPrefixIndex] = cur != '+' ? cur : '.';
+            }
+
+            if (genericPrefixIndex > 0)
+                op[0] = '\'';
+            
+            return new string(op);
+        }
+
+        public static string GetFullyQualifiedName(this Type type)
+        {
+            var sb = StringBuilderCache.Allocate().Append(type.Name);
+            if (type.IsGenericType)
+            {
+                var genericMarker = type.Name.IndexOf('`');
+                if (genericMarker > 0)
+                {
+                    sb.Clear();
+                    sb.Append(type.Name.Remove(genericMarker));
+                }
+                sb.Append("<");
+                var typeParameters = type.GetGenericArguments();
+                for (var i = 0; i < typeParameters.Length; ++i)
+                {
+                    var paramName = typeParameters[i].Name;
+                    sb.Append(i == 0 ? paramName : "," + paramName);
+                }
+                sb.Append(">");
+            }
+            return StringBuilderCache.ReturnAndFree(sb);
         }
 
         public static string ExpandTypeName(this Type type)
         {
-            if (type.IsGenericType())
+            if (type.IsGenericType)
                 return ExpandGenericTypeName(type);
 
             return type.GetOperationName();
@@ -129,7 +175,7 @@ namespace ServiceStack
             var nameOnly = type.Name.LeftPart('`');
 
             var sb = StringBuilderCache.Allocate();
-            foreach (var arg in type.GetTypeGenericArguments())
+            foreach (var arg in type.GetGenericArguments())
             {
                 if (sb.Length > 0)
                     sb.Append(",");
@@ -194,7 +240,7 @@ namespace ServiceStack
             }
 
             var url = matchingRoute.Uri;
-            if (!httpMethod.HasRequestBody())
+            if (!HttpUtils.HasRequestBody(httpMethod))
             {
                 var queryParams = matchingRoute.Route.FormatQueryParameters(requestDto);
                 if (!IsNullOrEmpty(queryParams))
@@ -204,20 +250,6 @@ namespace ServiceStack
             }
 
             return urlFilter == null ? url : urlFilter.ToUrl(url);
-        }
-
-        public static bool HasRequestBody(this string httpMethod)
-        {
-            switch (httpMethod)
-            {
-                case HttpMethods.Get:
-                case HttpMethods.Delete:
-                case HttpMethods.Head:
-                case HttpMethods.Options:
-                    return false;
-            }
-
-            return true;
         }
 
         private static List<RestRoute> GetRoutesForType(Type requestType)
@@ -438,7 +470,10 @@ namespace ServiceStack
                 if (value == null)
                     continue;
 
-                var qsName = Text.JsConfig.EmitLowercaseUnderscoreNames
+                if (ClientConfig.SkipEmptyArrays && value is Array array && array.Length == 0)
+                    continue;
+
+                var qsName = JsConfig.EmitLowercaseUnderscoreNames
                     ? queryProperty.Key.ToLowercaseUnderscore()
                     : queryProperty.Key;
 

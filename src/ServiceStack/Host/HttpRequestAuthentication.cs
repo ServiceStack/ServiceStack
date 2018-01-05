@@ -11,9 +11,13 @@ namespace ServiceStack.Host
         public static string GetBearerToken(this IRequest httpReq)
         {
             var auth = httpReq.Headers[HttpHeaders.Authorization];
-            if (auth == null) return null;
+            if (string.IsNullOrEmpty(auth))
+                return null;
 
             var pos = auth.IndexOf(' ');
+            if (pos < 0)
+                return null;
+
             return auth.Substring(0, pos).EqualsIgnoreCase("Bearer") ? auth.Substring(pos + 1) : null;
         }
 
@@ -43,7 +47,7 @@ namespace ServiceStack.Host
             // There should be at least to parts
             if (parts.Length < 2) return null;
             // It has to be a digest request
-            if (parts[0].ToLower() != "digest") return null;
+            if (parts[0].ToLowerInvariant() != "digest") return null;
             // Remove uptil the first space
             auth = auth.Substring(auth.IndexOf(' '));
             

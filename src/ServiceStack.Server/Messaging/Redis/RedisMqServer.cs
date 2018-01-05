@@ -1,12 +1,9 @@
-﻿//Copyright (c) Service Stack LLC. All Rights Reserved.
+﻿//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading;
 using ServiceStack.Logging;
 using ServiceStack.Redis;
 using ServiceStack.Text;
@@ -290,25 +287,25 @@ namespace ServiceStack.Messaging.Redis
         public void StartWorkerThreads()
         {
             Log.Debug("Starting all Redis MQ Server worker threads...");
-            Array.ForEach(workers, x => x.Start());
+            workers.Each(x => x.Start());
         }
 
         public void ForceRestartWorkerThreads()
         {
             Log.Debug("ForceRestart all Redis MQ Server worker threads...");
-            Array.ForEach(workers, x => x.ForceRestart());
+            workers.Each(x => x.ForceRestart());
         }
 
         public void StopWorkerThreads()
         {
             Log.Debug("Stopping all Redis MQ Server worker threads...");
-            Array.ForEach(workers, x => x.Stop());
+            workers.Each(x => x.Stop());
         }
 
         void DisposeWorkerThreads()
         {
             Log.Debug("Disposing all Redis MQ Server worker threads...");
-            if (workers != null) Array.ForEach(workers, x => x.Dispose());
+            if (workers != null) workers.Each(x => x.Dispose());
         }
 
         void WorkerErrorHandler(MessageHandlerWorker source, Exception ex)

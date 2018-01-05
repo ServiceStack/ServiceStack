@@ -1,53 +1,80 @@
-namespace ServiceStack.FluentValidation.Validators
-{
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Internal;
-    using Results;
+namespace ServiceStack.FluentValidation.Validators {
+	using System;
+	using System.Collections.Generic;
+	using System.Linq;
+	using System.Threading;
+	using System.Threading.Tasks;
+	using Internal;
+	using Results;
 
-    public class ChildValidatorAdaptor : NoopPropertyValidator {
-        readonly IValidator validator;
+	public class ChildValidatorAdaptor : NoopPropertyValidator {
+		static readonly IEnumerable<ValidationFailure> EmptyResult = Enumerable.Empty<ValidationFailure>();
+		static readonly Task<IEnumerable<ValidationFailure>> AsyncEmptyResult = TaskHelpers.FromResult(Enumerable.Empty<ValidationFailure>());
 
-        public IValidator Validator {
-            get { return validator; }
-        }
+		readonly Func<object, IValidator> validatorProvider;
+		readonly Type validatorType;
 
-        public ChildValidatorAdaptor(IValidator validator) {
-            this.validator = validator;
-        }
+		public Type ValidatorType {
+			get { return validatorType; }
+		}
 
-        public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
-            if (context.Rule.Member == null) {
-                throw new InvalidOperationException(string.Format("Nested validators can only be used with Member Expressions."));
-            }
+		public override bool IsAsync {
+			get { return true; }
+		}
 
-            var instanceToValidate = context.PropertyValue;
+		public ChildValidatorAdaptor(IValidator validator) : this(_ => validator, validator.GetType()) {
+		}
 
-            if (instanceToValidate == null) {
-                return Enumerable.Empty<ValidationFailure>();
-            }
+		public ChildValidatorAdaptor(Func<object, IValidator> validatorProvider, Type validatorType) {
+			this.validatorProvider = validatorProvider;
+			this.validatorType = validatorType;
+		}
 
-            var validator = GetValidator(context);
+		public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
+			return ValidateInternal(
+				context, 
+				(ctx, v) => v.Validate(ctx).Errors,
+				EmptyResult
+			);
+		}
 
-            if(validator == null) {
-                return Enumerable.Empty<ValidationFailure>();
-            }
+		public override Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
+			return ValidateInternal(
+				context, 
+				(ctx, v) => v.ValidateAsync(ctx).Then(r => r.Errors.AsEnumerable(), runSynchronously:true),
+				AsyncEmptyResult
+			);
+		}
 
-            var newContext = CreateNewValidationContextForChildValidator(instanceToValidate, context);
-            var results = validator.Validate(newContext).Errors;
+		private TResult ValidateInternal<TResult>(PropertyValidatorContext context, Func<ValidationContext, IValidator, TResult> validationApplicator, TResult emptyResult) {
+			var instanceToValidate = context.PropertyValue;
 
-            return results;
-        }
+			if (instanceToValidate == null) {
+				return emptyResult;
+			}
 
-        protected virtual IValidator GetValidator(PropertyValidatorContext context) {
-            return Validator;
-        }
+			var validator = GetValidator(context);
 
-        protected ValidationContext CreateNewValidationContextForChildValidator(object instanceToValidate, PropertyValidatorContext context) {
-            var newContext = context.ParentContext.CloneForChildValidator(instanceToValidate);
-            newContext.PropertyChain.Add(context.Rule.Member);
-            return newContext;
-        }
-    }
+			if (validator == null) {
+				return emptyResult;
+			}
+
+			var newContext = CreateNewValidationContextForChildValidator(instanceToValidate, context);
+
+			return validationApplicator(newContext, validator);
+		}
+
+		public virtual IValidator GetValidator(PropertyValidatorContext context) {
+			context.Guard("Cannot pass a null context to GetValidator");
+			return validatorProvider(context.Instance);
+		}
+
+		protected ValidationContext CreateNewValidationContextForChildValidator(object instanceToValidate, PropertyValidatorContext context) {
+			var newContext = context.ParentContext.CloneForChildValidator(instanceToValidate);
+			if(!context.ParentContext.IsChildCollectionContext)
+				newContext.PropertyChain.Add(context.Rule.PropertyName);
+
+			return newContext;
+		}
+	}
 }

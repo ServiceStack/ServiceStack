@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace ServiceStack
 {
     public static class ContentFormat
@@ -32,7 +35,7 @@ namespace ServiceStack
 
                 case MimeTypes.Yaml:
                 case MimeTypes.YamlText:
-                    return RequestAttributes.Yaml;
+                    return RequestAttributes.FormatOther;
 
                 case MimeTypes.Csv:
                     return RequestAttributes.Csv;
@@ -45,19 +48,96 @@ namespace ServiceStack
 
                 case MimeTypes.MsgPack:
                     return RequestAttributes.MsgPack;
+
+                case MimeTypes.Wire:
+                    return RequestAttributes.Wire;
             }
 
             return RequestAttributes.FormatOther;
         }
+        
+        public static readonly Dictionary<string, string> ContentTypeAliases = new Dictionary<string, string> {
+            { MimeTypes.JsonText, MimeTypes.Json },
+            { MimeTypes.XmlText, MimeTypes.Xml },
+            { MimeTypes.JsvText, MimeTypes.Jsv },
+            { MimeTypes.YamlText, MimeTypes.Yaml },
+        };
 
-        public static string GetRealContentType(string contentType)
+        public static string NormalizeContentType(string contentType)
         {
-            return contentType?.Split(';')[0].ToLower().Trim();
+            if (string.IsNullOrEmpty(contentType))
+                return null;
+
+            if (contentType == MimeTypes.Soap11)
+                return MimeTypes.Soap11;
+
+            var realContentType = GetRealContentType(contentType);
+            return ContentTypeAliases.TryGetValue(realContentType, out var alias)
+                ? alias
+                : realContentType;
         }
 
+        //lowercases and trims left part of content-type prior ';'
+        public static string GetRealContentType(string contentType)
+        {
+            if (contentType == null)
+                return null;
+
+            int start = -1, end = -1;
+
+            for(int i=0; i < contentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(contentType[i]))
+                {
+                    if (contentType[i] == ';')
+                        break;
+                    if (start == -1)
+                    {
+                        start = i;
+                    }
+                    end = i;
+                }
+            }
+
+            return start != -1 
+                    ? contentType.Substring(start, end - start + 1).ToLowerInvariant()
+                    :  null;
+        }
+
+        //Compares two string from start to ';' char, case-insensitive,
+        //ignoring (trimming) spaces at start and end
         public static bool MatchesContentType(this string contentType, string matchesContentType)
         {
-            return GetRealContentType(contentType) == GetRealContentType(matchesContentType);
+            if (contentType == null || matchesContentType == null)
+                return false;
+            
+            int start = -1, matchStart = -1, matchEnd = -1;
+
+            for(int i=0; i < contentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(contentType[i]))
+                {
+                    start = i;
+                    break;
+                }
+            }
+
+            for(int i=0; i < matchesContentType.Length; i++)
+            {
+                if (!char.IsWhiteSpace(matchesContentType[i]))
+                {
+                    if (matchesContentType[i] == ';')
+                        break;
+                    if (matchStart == -1)
+                        matchStart = i;
+                    matchEnd = i;
+                }
+            }
+            
+            return start != -1 && matchStart != -1 && matchEnd != -1
+                  && string.Compare(contentType, start,
+                        matchesContentType, matchStart, matchEnd - matchStart + 1,
+                        StringComparison.OrdinalIgnoreCase) == 0;
         }
 
         public static bool IsBinary(this string contentType)
@@ -69,6 +149,7 @@ namespace ServiceStack
                 case MimeTypes.MsgPack:
                 case MimeTypes.Binary:
                 case MimeTypes.Bson:
+                case MimeTypes.Wire:
                     return true;
             }
 
@@ -121,6 +202,9 @@ namespace ServiceStack
 
                 case MimeTypes.MsgPack:
                     return Feature.MsgPack;
+
+                case MimeTypes.Wire:
+                    return Feature.Wire;
             }
 
             return Feature.CustomFormat;
@@ -128,7 +212,12 @@ namespace ServiceStack
 
         public static string GetContentFormat(Format format)
         {
-            var formatStr = format.ToString().ToLower();
+            if (format == Format.Soap11)
+                return "soap11";
+            if (format == Format.Soap12)
+                return "soap12";
+            
+            var formatStr = format.ToString().ToLowerInvariant();
             return format == Format.MsgPack || format == Format.ProtoBuf
                 ? "x-" + formatStr
                 : formatStr;
@@ -136,8 +225,12 @@ namespace ServiceStack
 
         public static string GetContentFormat(string contentType)
         {
-            var parts = contentType?.Split('/');
-            return parts?[parts.Length - 1];
+            if (contentType == MimeTypes.Soap11)
+                return "soap11";
+            if (contentType == MimeTypes.Soap12)
+                return "soap12";
+            
+            return contentType?.RightPart('/');
         }
 
         public static string ToContentFormat(this string contentType)
@@ -172,8 +265,8 @@ namespace ServiceStack
                 case Format.Html:
                     return MimeTypes.Html;
 
-                case Format.Yaml:
-                    return MimeTypes.Yaml;
+                case Format.Wire:
+                    return MimeTypes.Wire;
 
                 default:
                     return null;

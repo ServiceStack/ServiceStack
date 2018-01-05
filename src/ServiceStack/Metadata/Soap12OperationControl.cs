@@ -19,7 +19,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public override string HttpRequestTemplate => 
+        public override string HttpRequestTemplateWithBody(string httpMethod) =>
 $@"POST {RequestUri} HTTP/1.1 
 Host: {HostName} 
 Content-Type: text/xml; charset=utf-8

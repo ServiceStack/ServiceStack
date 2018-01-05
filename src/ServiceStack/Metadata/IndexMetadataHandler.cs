@@ -1,8 +1,8 @@
 using System;
 
 namespace ServiceStack.Metadata
-{
-    public class IndexMetadataHandler : BaseSoapMetadataHandler
+{    
+    public class IndexMetadataHandler : BaseSoapMetadataHandler //TODO: refactor out SOAP base class
     {
         public override Format Format => Format.Soap12;
 

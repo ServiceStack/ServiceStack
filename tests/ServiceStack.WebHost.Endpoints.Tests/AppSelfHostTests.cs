@@ -25,7 +25,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public object Any(SpinWait request)
         {
+#if NETCORE
+            int i = request.Iterations.GetValueOrDefault(DefaultIterations);
+            //SpinWait.SpinUntil(i-- > 0);
+#else
             Thread.SpinWait(request.Iterations.GetValueOrDefault(DefaultIterations));
+#endif
             return request;
         }
 
@@ -65,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .Start(ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();

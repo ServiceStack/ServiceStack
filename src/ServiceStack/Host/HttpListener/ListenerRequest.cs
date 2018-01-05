@@ -1,22 +1,30 @@
-#if !NETSTANDARD1_6 
+#if !NETSTANDARD2_0 
 
-//Copyright (c) Service Stack LLC. All Rights Reserved.
+//Copyright (c) ServiceStack, Inc. All Rights Reserved.
 //License: https://raw.github.com/ServiceStack/ServiceStack/master/license.txt
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using Funq;
+using ServiceStack.Configuration;
+using ServiceStack.IO;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.HttpListener
 {
-    public partial class ListenerRequest : IHttpRequest
+    public partial class ListenerRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
     {
-        public Container Container { get; set; }
+        private IResolver resolver;
+        public IResolver Resolver
+        {
+            get => resolver ?? Service.GlobalResolver;
+            set => resolver = value;
+        }
+
         private readonly HttpListenerRequest request;
         private readonly IHttpResponse response;
 
@@ -28,8 +36,33 @@ namespace ServiceStack.Host.HttpListener
             this.response = new ListenerResponse(httpContext.Response, this);
 
             this.RequestPreferences = new RequestPreferences(this);
+            this.PathInfo = this.OriginalPathInfo = GetPathInfo();
+            this.PathInfo = HostContext.AppHost.ResolvePathInfo(this, OriginalPathInfo);
         }
 
+        private string GetPathInfo()
+        {
+            var mode = HostContext.Config.HandlerFactoryPath;
+
+            string pathInfo;
+            var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+            if (pos != -1)
+            {
+                var path = request.RawUrl.Substring(0, pos);
+                pathInfo = HttpRequestExtensions.GetPathInfo(
+                    path,
+                    mode,
+                    mode ?? "");
+            }
+            else
+            {
+                pathInfo = request.RawUrl;
+            }
+
+            pathInfo = pathInfo.UrlDecode();
+            return pathInfo;
+        }
+        
         public HttpListenerRequest HttpRequest => request;
 
         public object OriginalRequest => request;
@@ -44,15 +77,7 @@ namespace ServiceStack.Host.HttpListener
 
         public T TryResolve<T>()
         {
-            if (typeof(T) == typeof(IHttpRequest))
-                throw new Exception("You don't need to use IHttpRequest.TryResolve<IHttpRequest> to resolve itself");
-
-            if (typeof(T) == typeof(IHttpResponse))
-                throw new Exception("Resolve IHttpResponse with 'Response' property instead of IHttpRequest.TryResolve<IHttpResponse>");
-
-            return Container == null
-                ? HostContext.TryResolve<T>()
-                : Container.TryResolve<T>();
+            return this.TryResolveInternal<T>();
         }
 
         public string OperationName { get; set; }
@@ -116,35 +141,9 @@ namespace ServiceStack.Host.HttpListener
 
         public bool HasExplicitResponseContentType { get; private set; }
 
-        private string pathInfo;
-        public string PathInfo
-        {
-            get
-            {
-                if (this.pathInfo == null)
-                {
-                    var mode = HostContext.Config.HandlerFactoryPath;
+        public string PathInfo { get; }
 
-                    var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
-                    if (pos != -1)
-                    {
-                        var path = request.RawUrl.Substring(0, pos);
-                        this.pathInfo = HttpRequestExtensions.GetPathInfo(
-                            path,
-                            mode,
-                            mode ?? "");
-                    }
-                    else
-                    {
-                        this.pathInfo = request.RawUrl;
-                    }
-
-                    this.pathInfo = this.pathInfo.UrlDecode();
-                    this.pathInfo = NormalizePathInfo(pathInfo, mode);
-                }
-                return this.pathInfo;
-            }
-        }
+        public string OriginalPathInfo { get; }
 
         private Dictionary<string, Cookie> cookies;
         public IDictionary<string, Cookie> Cookies
@@ -167,14 +166,14 @@ namespace ServiceStack.Host.HttpListener
 
         public string UserAgent => request.UserAgent;
 
-        private NameValueCollectionWrapper headers;
-        public INameValueCollection Headers => headers ?? (headers = new NameValueCollectionWrapper(request.Headers));
+        private NameValueCollection headers;
+        public NameValueCollection Headers => headers ?? (headers = request.Headers);
 
-        private NameValueCollectionWrapper queryString;
-        public INameValueCollection QueryString => queryString ?? (queryString = new NameValueCollectionWrapper(HttpUtility.ParseQueryString(request.Url.Query)));
+        private NameValueCollection queryString;
+        public NameValueCollection QueryString => queryString ?? (queryString = HttpUtility.ParseQueryString(request.Url.Query));
 
-        private NameValueCollectionWrapper formData;
-        public INameValueCollection FormData => formData ?? (formData = new NameValueCollectionWrapper(this.Form));
+        private NameValueCollection formData;
+        public NameValueCollection FormData => formData ?? (formData = this.Form);
 
         public bool IsLocal => request.IsLocal;
 
@@ -229,7 +228,7 @@ namespace ServiceStack.Host.HttpListener
         }
 
         public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream => BufferedStream ?? request.InputStream;
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
 
         public long ContentLength => request.ContentLength64;
 
@@ -304,6 +303,42 @@ namespace ServiceStack.Host.HttpListener
             }
 
             return pathInfo;
+        }
+
+        private IVirtualFile file;
+        public IVirtualFile GetFile() => file ?? (file = HostContext.VirtualFileSources.GetFile(PathInfo));
+
+        private IVirtualDirectory dir;
+        public IVirtualDirectory GetDirectory() => dir ?? (dir = HostContext.VirtualFileSources.GetDirectory(PathInfo));
+
+        private bool? isDirectory;
+        public bool IsDirectory
+        {
+            get
+            {
+                if (isDirectory == null)
+                {
+                    isDirectory = dir != null || HostContext.VirtualFileSources.DirectoryExists(PathInfo);
+                    if (isDirectory == true)
+                        isFile = false;
+                }
+                return isDirectory.Value;
+            }
+        }
+
+        private bool? isFile;
+        public bool IsFile
+        {
+            get
+            {
+                if (isFile == null)
+                {
+                    isFile = GetFile() != null;
+                    if (isFile == true)
+                        isDirectory = false;                    
+                }
+                return isFile.Value;
+            }
         }
     }
 

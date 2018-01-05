@@ -1,0 +1,42 @@
+﻿@{
+    Layout = "DeadLayout";
+    ViewBag.Title = "Jimi Hendrix";
+}
+<div id="content-page">
+    
+    <img src="splash.jpg" id="splash" alt="Jimi Hendrix" />
+    <p>
+        James Marshall "Jimi" Hendrix was an American musician and singer-songwriter. 
+        He is widely considered to be the greatest electric guitarist in music history and one of 
+        the most influential musicians of ... 
+    </p>
+
+    <dl>
+        <dt> 
+            Born
+        </dt>
+        <dd>
+            November 27, 1942, Seattle
+        </dd>
+        <dt>
+            Died
+        </dt>
+        <dd>
+            September 18, 1970, London
+        </dd>
+    </dl>
+
+    @Html.PartialMarkdown("Content")
+
+</div>
+
+@section preview {
+
+    <h3><b>View</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/Hendrix/default.cshtml">/stars/dead/Hendrix/default.cshtml</a></h3>
+    <script src="https://gist.github.com/3616621.js"></script>
+
+    <h3><b>Markdown</b> <a href="Content?format=text.bare">/stars/dead/Hendrix/Content.md</a></h3>
+
+    <h3><b>Layout</b> <a href="https://github.com/ServiceStackApps/RazorRockstars/blob/master/src/RazorRockstars.WebHost/stars/dead/_Layout.cshtml">/stars/dead/_Layout.cshtml</a></h3>
+    <script src="https://gist.github.com/3616545.js"></script>
+}

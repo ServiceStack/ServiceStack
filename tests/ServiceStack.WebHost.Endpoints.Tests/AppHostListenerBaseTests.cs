@@ -5,7 +5,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using NUnit.Framework;
+#if !NETCORE_SUPPORT
 using ServiceStack.Host.HttpListener;
+#endif
 using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
@@ -23,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             LogManager.LogFactory = new ConsoleLogFactory();
         }
 
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void OnTestFixtureStartUp()
         {
             appHost = new ExampleAppHostHttpListener()
@@ -33,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             "ExampleAppHost Created at {0}, listening on {1}".Print(DateTime.Now, ListeningOn);
         }
 
-        [TestFixtureTearDown]
+        [OneTimeTearDown]
         public void OnTestFixtureTearDown()
         {
             appHost.Dispose();
@@ -157,29 +159,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webReq.Accept = "*/*";
             using (var webRes = webReq.GetResponse())
             {
-                Assert.That(webRes.ContentType, Is.StringStarting(MimeTypes.JavaScript));
+                Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.JavaScript));
                 response = webRes.ReadToEnd();
             }
 
             Assert.That(response, Is.Not.Null, "No response received");
             Console.WriteLine(response);
-            Assert.That(response, Is.StringStarting("cb("));
-            Assert.That(response, Is.StringEnding(")"));
+            Assert.That(response, Does.StartWith("cb("));
+            Assert.That(response, Does.EndWith(")"));
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Dubug test")]
         public void DebugHost()
         {
             Thread.Sleep(180 * 1000);
         }
 
-        [Test, Ignore]
+        [Test, Ignore("Performance test")]
         public void PerformanceTest()
         {
             const int clientCount = 500;
             var threads = new List<Thread>(clientCount);
+#if !NETCORE
             ThreadPool.SetMinThreads(500, 50);
             ThreadPool.SetMaxThreads(1000, 50);
+#endif           
 
             for (int i = 0; i < clientCount; i++)
             {
@@ -206,6 +210,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Trace.TraceInformation("Elapsed time for " + clientCount + " requests : " + sw.Elapsed);
         }
 
+#if !NETCORE_SUPPORT
         [Test]
         public void Can_infer_handler_path_from_listener_uris()
         {
@@ -225,6 +230,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(handlerPath, Is.EqualTo(entry.Value));
             }
         }
+#endif
 
         [Test, Ignore("You have to manually check the test output if there where NullReferenceExceptions!")]
         public void Rapid_Start_Stop_should_not_cause_exceptions()
@@ -234,7 +240,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             for (int i = 0; i < 100; i++)
             {
                 localAppHost.Start(GetBaseAddressWithFreePort());
+#if !NETCORE_SUPPORT                
                 localAppHost.Stop();
+#endif
             }
         }
 
@@ -248,7 +256,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 string address = endPoint.Address.ToString();
                 int port = endPoint.Port;
-                Uri uri = new UriBuilder(Uri.UriSchemeHttp, address, port).Uri;
+                Uri uri = new UriBuilder("http://", address, port).Uri;
 
                 listener.Stop();
 

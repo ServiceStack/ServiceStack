@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Logging;
 using ServiceStack.Web;
@@ -23,6 +22,7 @@ namespace ServiceStack.Auth
         public string RedirectUrl { get; set; }
 
         public bool PersistSession { get; set; }
+        public bool SaveExtendedUserInfo { get; set; }
 
         public Action<AuthUserSession, IAuthTokens, Dictionary<string, string>> LoadUserAuthFilter { get; set; }
 
@@ -109,40 +109,11 @@ namespace ServiceStack.Auth
             return new AuthenticateResponse();
         }
 
-        /// <summary>
-        /// Saves the Auth Tokens for this request. Called in OnAuthenticated(). 
-        /// Overrideable, the default behaviour is to call IUserAuthRepository.CreateOrMergeAuthSession().
-        /// </summary>
-        protected virtual void SaveUserAuth(IServiceBase authService, IAuthSession session, IAuthRepository authRepo, IAuthTokens tokens)
-        {
-            if (authRepo == null) return;
-            if (tokens != null)
-            {
-                session.UserAuthId = authRepo.CreateOrMergeAuthSession(session, tokens).UserAuthId.ToString();
-            }
-
-            authRepo.LoadUserAuth(session, tokens);
-
-            foreach (var oAuthToken in session.GetAuthTokens())
-            {
-                var authProvider = AuthenticateService.GetAuthProvider(oAuthToken.Provider);
-                var userAuthProvider = authProvider as OAuthProvider;
-                userAuthProvider?.LoadUserOAuthProvider(session, oAuthToken);
-            }
-
-            authRepo.SaveUserAuth(session);
-
-            var httpRes = authService.Request.Response as IHttpResponse;
-            httpRes?.Cookies.AddPermanentCookie(HttpHeaders.XUserAuthId, session.UserAuthId);
-            OnSaveUserAuth(authService, session);
-        }
-
-        public virtual void OnSaveUserAuth(IServiceBase authService, IAuthSession session) { }
-
         public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
-            var userSession = session as AuthUserSession;
-            if (userSession != null)
+            session.AuthProvider = Provider;
+
+            if (session is AuthUserSession userSession)
             {
                 LoadUserAuthInfo(userSession, tokens, authInfo);
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
@@ -151,12 +122,15 @@ namespace ServiceStack.Auth
             }
 
             var hasTokens = tokens != null && authInfo != null;
-            if (hasTokens)
+            if (hasTokens && SaveExtendedUserInfo)
             {
+                if (tokens.Items == null)
+                    tokens.Items = new Dictionary<string, string>();
+
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
-            var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
+            var authRepo = GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
                 if (CustomValidationFilter != null)
@@ -234,9 +208,15 @@ namespace ServiceStack.Auth
             finally
             {
                 this.SaveSession(authService, session, SessionExpiry);
+                authService.Request.Items[Keywords.DidAuthenticate] = true;
             }
 
             return null;
+        }
+
+        protected virtual IAuthRepository GetAuthRepository(IRequest req)
+        {
+            return HostContext.AppHost.GetAuthRepository(req);
         }
 
         // Keep in-memory map of userAuthId's when no IAuthRepository exists 
@@ -296,6 +276,12 @@ namespace ServiceStack.Auth
 
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
+        public virtual Task OnFailedAuthenticationAsync(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        {
+            OnFailedAuthentication(session, httpReq, httpRes);
+            return TypeConstants.EmptyTask;
+        }
+
         public virtual void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
@@ -303,26 +289,22 @@ namespace ServiceStack.Auth
             httpRes.EndRequest();
         }
 
-        public static void HandleFailedAuth(IAuthProvider authProvider,
+        public static Task HandleFailedAuth(IAuthProvider authProvider,
             IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
-            var baseAuthProvider = authProvider as AuthProvider;
-            if (baseAuthProvider != null)
-            {
-                baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
-                return;
-            }
+            if (authProvider is AuthProvider baseAuthProvider)
+                return baseAuthProvider.OnFailedAuthenticationAsync(session, httpReq, httpRes);
 
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
-            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\""
-                .Fmt(authProvider.Provider, authProvider.AuthRealm));
-
+            httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
             httpRes.EndRequest();
+
+            return TypeConstants.EmptyTask;
         }
 
         protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (tokens != null && tokens.UserName != null)
+            if (tokens?.UserName != null)
             {
                 var userWithUserName = authRepo.GetUserAuthByUserName(tokens.UserName);
                 if (userWithUserName == null)
@@ -336,7 +318,7 @@ namespace ServiceStack.Auth
 
         protected virtual bool EmailAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)
         {
-            if (tokens != null && tokens.Email != null)
+            if (tokens?.Email != null)
             {
                 var userWithEmail = authRepo.GetUserAuthByUserName(tokens.Email);
                 if (userWithEmail == null) 
@@ -353,7 +335,7 @@ namespace ServiceStack.Auth
             return session.ReferrerUrl;
         }
 
-        protected virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
+        public virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
         {
             return userAuth?.LockedDate != null;
         }
@@ -402,7 +384,7 @@ namespace ServiceStack.Auth
             return referrerUrl;
         }
 
-        protected void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
+        internal void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
         {
             if (authRepo == null)
                 return;
@@ -414,6 +396,25 @@ namespace ServiceStack.Auth
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
                 .ConvertAll(x => (IAuthTokens)x);
+        }
+
+        protected virtual object ConvertToClientError(object failedResult, bool isHtml)
+        {
+            if (!isHtml)
+            {
+                if (failedResult is IHttpResult httpRes)
+                {
+                    if (httpRes.Headers.TryGetValue(HttpHeaders.Location, out var location))
+                    {
+                        var parts = location.SplitOnLast("f=");
+                        if (parts.Length == 2)
+                        {
+                            return new HttpError(HttpStatusCode.BadRequest, parts[1], parts[1].SplitCamelCase());
+                        }
+                    }
+                }
+            }
+            return failedResult;
         }
     }
 
@@ -430,6 +431,8 @@ namespace ServiceStack.Auth
 
     public static class AuthExtensions
     {
+        private static ILog Log = LogManager.GetLogger(typeof(AuthExtensions));
+
         public static bool IsAuthorizedSafe(this IAuthProvider authProvider, IAuthSession session, IAuthTokens tokens)
         {
             return authProvider != null && authProvider.IsAuthorized(session, tokens);
@@ -460,8 +463,7 @@ namespace ServiceStack.Auth
 
         public static void SaveSession(this IAuthProvider provider, IServiceBase authService, IAuthSession session, TimeSpan? sessionExpiry = null)
         {
-            var authProvider = provider as AuthProvider;
-            var persistSession = authProvider == null || authProvider.PersistSession;
+            var persistSession = !(provider is AuthProvider authProvider) || authProvider.PersistSession;
             if (persistSession)
             {
                 authService.SaveSession(session, sessionExpiry);
@@ -470,6 +472,138 @@ namespace ServiceStack.Auth
             {
                 authService.Request.Items[Keywords.Session] = session;
             }
+        }
+
+        public static void PopulatePasswordHashes(this IUserAuth newUser, string password, IUserAuth existingUser = null)
+        {
+            if (newUser == null)
+                throw new ArgumentNullException(nameof(newUser));
+            
+            var hash = existingUser?.PasswordHash;
+            var salt = existingUser?.Salt;
+
+            if (password != null)
+            {
+                var passwordHasher = !HostContext.Config.UseSaltedHash
+                    ? HostContext.TryResolve<IPasswordHasher>()
+                    : null;
+
+                if (passwordHasher != null)
+                {
+                    salt = null; // IPasswordHasher stores its Salt in PasswordHash
+                    hash = passwordHasher.HashPassword(password);
+                }
+                else
+                {
+                    var hashProvider = HostContext.Resolve<IHashProvider>();
+                    hashProvider.GetHashAndSaltString(password, out hash, out salt);
+                }
+            }
+
+            newUser.PasswordHash = hash;
+            newUser.Salt = salt;
+            
+            newUser.PopulateDigestAuthHash(password, existingUser);
+        }
+
+        private static void PopulateDigestAuthHash(this IUserAuth newUser, string password, IUserAuth existingUser = null)
+        {
+            var createDigestAuthHashes = HostContext.GetPlugin<AuthFeature>()?.CreateDigestAuthHashes;
+            if (createDigestAuthHashes == true)
+            {
+                if (existingUser == null)
+                {
+                    var digestHelper = new DigestAuthFunctions();
+                    newUser.DigestHa1Hash = digestHelper.CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
+                else
+                {
+                    newUser.DigestHa1Hash = existingUser.DigestHa1Hash;
+
+                    // If either one changes the digest hash has to be recalculated
+                    if (password != null || existingUser.UserName != newUser.UserName)
+                        newUser.DigestHa1Hash = new DigestAuthFunctions().CreateHa1(newUser.UserName, DigestAuthProvider.Realm, password);
+                }
+            }
+            else if (createDigestAuthHashes == false)
+            {
+                newUser.DigestHa1Hash = null;
+            }
+        }
+
+        public static bool VerifyPassword(this IUserAuth userAuth, string providedPassword, out bool needsRehash)
+        {
+            needsRehash = false;
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+
+            if (userAuth.PasswordHash == null)
+                return false;
+
+            var passwordHasher = HostContext.TryResolve<IPasswordHasher>();
+
+            var usedOriginalSaltedHash = userAuth.Salt != null;
+            if (usedOriginalSaltedHash)
+            {
+                var oldSaltedHashProvider = HostContext.Resolve<IHashProvider>();
+                if (oldSaltedHashProvider.VerifyHashString(providedPassword, userAuth.PasswordHash, userAuth.Salt))
+                {
+                    needsRehash = !HostContext.Config.UseSaltedHash;
+                    return true;
+                }
+
+                return false;
+            }
+
+            if (passwordHasher == null)
+            {
+                if (Log.IsDebugEnabled)
+                    Log.Debug("Found newer PasswordHash without Salt but no registered IPasswordHasher to verify it");
+
+                return false;
+            }
+
+            if (passwordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out needsRehash))
+            {
+                needsRehash = HostContext.Config.UseSaltedHash;
+                return true;
+            }
+
+            if (HostContext.Config.FallbackPasswordHashers.Count > 0)
+            {
+                var decodedHashedPassword = Convert.FromBase64String(userAuth.PasswordHash);
+                if (decodedHashedPassword.Length == 0)
+                {
+                    if (Log.IsDebugEnabled)
+                        Log.Debug("userAuth.PasswordHash is empty");
+
+                    return false;
+                }
+
+                var formatMarker = decodedHashedPassword[0];
+
+                foreach (var oldPasswordHasher in HostContext.Config.FallbackPasswordHashers)
+                {
+                    if (oldPasswordHasher.Version == formatMarker)
+                    {
+                        if (oldPasswordHasher.VerifyPassword(userAuth.PasswordHash, providedPassword, out _))
+                        {
+                            needsRehash = true;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public static bool VerifyDigestAuth(this IUserAuth userAuth, Dictionary<string, string> digestHeaders, string privateKey, int nonceTimeOut, string sequence)
+        {
+            if (userAuth == null)
+                throw new ArgumentNullException(nameof(userAuth));
+
+            return new DigestAuthFunctions().ValidateResponse(digestHeaders, privateKey, nonceTimeOut, userAuth.DigestHa1Hash, sequence);
         }
     }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ServiceStack
 {
@@ -39,6 +40,17 @@ namespace ServiceStack
             foreach (var value in values)
             {
                 action(i++, value);
+            }
+        }
+
+        public static void Each<TKey, TValue>(this IDictionary<TKey, TValue> map, Action<TKey, TValue> action)
+        {
+            if (map == null) return;
+
+            var keys = map.Keys.ToList();
+            foreach (var key in keys)
+            {
+                action(key, map[key]);
             }
         }
 

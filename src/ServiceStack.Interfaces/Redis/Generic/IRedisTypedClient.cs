@@ -5,7 +5,7 @@
 // Authors:
 //   Demis Bellot (demis.bellot@gmail.com)
 //
-// Copyright 2016 Service Stack LLC. All Rights Reserved.
+// Copyright 2017 ServiceStack, Inc. All Rights Reserved.
 //
 // Licensed under the same terms of ServiceStack.
 //
@@ -47,13 +47,6 @@ namespace ServiceStack.Redis.Generic
         long GetNextSequence(int incrBy);
         RedisKeyType GetEntryType(string key);
         string GetRandomKey();
-
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, T value);
-        [Obsolete("Use SetValue()")]
-        void SetEntry(string key, T value, TimeSpan expireIn);
-        [Obsolete("Use SetValueIfNotExists()")]
-        bool SetEntryIfNotExists(string key, T value);
 
         void SetValue(string key, T entity);
         void SetValue(string key, T entity, TimeSpan expireIn);

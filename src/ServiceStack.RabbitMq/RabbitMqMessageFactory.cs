@@ -17,7 +17,7 @@ namespace ServiceStack.RabbitMq
             set
             {
                 if (value < 0 || value > 1)
-                    throw new ArgumentOutOfRangeException("RetryCount", 
+                    throw new ArgumentOutOfRangeException(nameof(RetryCount), 
                         "Rabbit MQ RetryCount must be 0-1");
 
                 retryCount = value;
@@ -30,7 +30,7 @@ namespace ServiceStack.RabbitMq
             string username = null, string password = null)
         {
             if (connectionString == null)
-                throw new ArgumentNullException("connectionString");
+                throw new ArgumentNullException(nameof(connectionString));
 
             ConnectionFactory = new ConnectionFactory {
                 RequestedHeartbeat = 10,
@@ -43,7 +43,7 @@ namespace ServiceStack.RabbitMq
 
             if (connectionString.StartsWith("amqp://"))
             {
-                ConnectionFactory.Uri = connectionString;
+                ConnectionFactory.Uri = new Uri(connectionString);
             }
             else
             {
