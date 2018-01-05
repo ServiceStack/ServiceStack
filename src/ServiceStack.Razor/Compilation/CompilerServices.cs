@@ -13,6 +13,8 @@ namespace ServiceStack.Razor.Compilation
     /// </summary>
     public static class CompilerServices
     {
+        public static List<Assembly> IncludeAssemblies { get; } = new List<Assembly>();
+
         private static readonly Type DynamicType = typeof(DynamicObject);
         private static readonly Type ExpandoType = typeof(ExpandoObject);
 
@@ -73,12 +75,13 @@ namespace ServiceStack.Razor.Compilation
             var domain = AppDomain.CurrentDomain;
             var dlls = domain.GetAssemblies().ToList();
 
-#if !BUILD_TASK
-            if (dlls.All(x => x != typeof(OrmLiteConfig).Assembly))
+            foreach (var assembly in IncludeAssemblies)
             {
-                dlls.Add(typeof(OrmLiteConfig).Assembly);
+                if (dlls.All(x => x != assembly))
+                {
+                    dlls.Add(assembly);
+                }
             }
-#endif
 
             return dlls;
         }
