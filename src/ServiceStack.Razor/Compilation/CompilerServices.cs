@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using ServiceStack.OrmLite;
 
 namespace ServiceStack.Razor.Compilation
 {
@@ -22,7 +24,7 @@ namespace ServiceStack.Razor.Compilation
         public static bool IsAnonymousType(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             return (type.IsClass
                      && type.IsSealed
@@ -39,7 +41,7 @@ namespace ServiceStack.Razor.Compilation
         public static bool IsDynamicType(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             return (DynamicType.IsAssignableFrom(type)
                      || ExpandoType.IsAssignableFrom(type)
@@ -54,7 +56,7 @@ namespace ServiceStack.Razor.Compilation
         public static IEnumerable<ConstructorInfo> GetConstructors(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             var constructors = type
                 .GetConstructors(BindingFlags.Public | BindingFlags.Instance);
@@ -69,7 +71,14 @@ namespace ServiceStack.Razor.Compilation
         public static IEnumerable<Assembly> GetLoadedAssemblies()
         {
             var domain = AppDomain.CurrentDomain;
-            return domain.GetAssemblies();
+            var dlls = domain.GetAssemblies().ToList();
+
+            if (dlls.All(x => x != typeof(OrmLiteConfig).Assembly))
+            {
+                dlls.Add(typeof(OrmLiteConfig).Assembly);
+            }
+
+            return dlls;
         }
     }
 }
