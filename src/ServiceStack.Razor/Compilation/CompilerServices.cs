@@ -4,7 +4,6 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using ServiceStack.OrmLite;
 
 namespace ServiceStack.Razor.Compilation
 {
