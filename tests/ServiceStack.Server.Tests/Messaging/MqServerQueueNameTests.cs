@@ -15,6 +15,9 @@ namespace ServiceStack.Server.Tests.Messaging
         {
             QueueNames.SetQueuePrefix("site1.");
 
+            Assert.That(QueueNames.TopicIn, Is.EqualTo("site1.mq:topic:in"));
+            Assert.That(QueueNames.TopicOut, Is.EqualTo("site1.mq:topic:out"));
+
             using (var mqServer = CreateMqServer())
             {
                 mqServer.RegisterHandler<HelloIntro>(m =>
