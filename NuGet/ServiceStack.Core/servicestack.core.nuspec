@@ -22,10 +22,10 @@
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.0.0, )" />
         <dependency id="System.Threading.Thread" version="[4.3.0, )" />
         <dependency id="System.Reflection.Emit" version="[4.3.0, )" />
         <dependency id="System.Linq.Queryable" version="[4.3.0, )" />
