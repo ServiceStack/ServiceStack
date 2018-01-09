@@ -149,16 +149,14 @@ namespace ServiceStack.NativeTypes
             var considered = new HashSet<Type>(opTypes);
             var queue = new Queue<Type>(opTypes);
 
-            Func<Type, bool> ignoreTypeFn = t =>
-                t == null
-                || t.IsGenericParameter
-                || t == typeof(Enum)
-                || considered.Contains(t)
-                || skipTypes.Contains(t)
+            bool ignoreTypeFn(Type t) => t == null 
+                || t.IsGenericParameter 
+                || t == typeof(Enum) 
+                || considered.Contains(t) 
+                || skipTypes.Contains(t) 
                 || (ignoreNamespaces.Contains(t.Namespace) && !exportTypes.ContainsMatch(t));
 
-            Action<Type> registerTypeFn = null;
-            registerTypeFn = t =>
+            void registerTypeFn(Type t)
             {
                 if (t.IsArray || t == typeof(Array))
                     return;
@@ -166,10 +164,7 @@ namespace ServiceStack.NativeTypes
                 considered.Add(t);
                 queue.Enqueue(t);
 
-                if ((!(t.IsSystemType() && !t.IsTuple())
-                        && (t.IsClass || t.IsEnum || t.IsInterface)
-                        && !t.IsGenericParameter)
-                    || exportTypes.ContainsMatch(t))
+                if ((!(t.IsSystemType() && !t.IsTuple()) && (t.IsClass || t.IsEnum || t.IsInterface) && !t.IsGenericParameter) || exportTypes.ContainsMatch(t))
                 {
                     metadata.Types.Add(ToType(t));
 
@@ -179,7 +174,7 @@ namespace ServiceStack.NativeTypes
                             metadata.Namespaces.Add(ns);
                     }
                 }
-            };
+            }
 
             while (queue.Count > 0)
             {
@@ -1039,7 +1034,7 @@ namespace ServiceStack.NativeTypes
 
         public static string SanitizeType(this string typeName)
         {
-            return typeName != null ? typeName.TrimStart('\'') : null;
+            return typeName?.TrimStart('\'');
         }
 
         public static string SafeComment(this string comment)
@@ -1105,8 +1100,7 @@ namespace ServiceStack.NativeTypes
 
         public static void Push(this Dictionary<string, List<string>> map, string key, string value)
         {
-            List<string> results;
-            if (!map.TryGetValue(key, out results))
+            if (!map.TryGetValue(key, out var results))
                 map[key] = results = new List<string>();
 
             if (!results.Contains(value))
@@ -1115,8 +1109,7 @@ namespace ServiceStack.NativeTypes
 
         public static List<string> GetValues(this Dictionary<string, List<string>> map, string key)
         {
-            List<string> results;
-            map.TryGetValue(key, out results);
+            map.TryGetValue(key, out var results);
             return results ?? new List<string>();
         }
 

@@ -36,8 +36,8 @@ namespace ServiceStack.Messaging.Redis
 
         public TimeSpan? WaitBeforeNextRestart
         {
-            get { return RedisPubSub.WaitBeforeNextRestart; }
-            set { RedisPubSub.WaitBeforeNextRestart = value; }
+            get => RedisPubSub.WaitBeforeNextRestart;
+            set => RedisPubSub.WaitBeforeNextRestart = value;
         }
 
         public IMessageFactory MessageFactory { get; private set; }
@@ -71,20 +71,14 @@ namespace ServiceStack.Messaging.Redis
         /// </summary>
         public bool DisablePriorityQueues
         {
-            set
-            {
-                PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
-            }
+            set => PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
         }
 
         public IRedisPubSubServer RedisPubSub { get; set; }
 
         private readonly IRedisClientsManager clientsManager; //Thread safe redis client/conn factory
 
-        public IRedisClientsManager ClientsManager
-        {
-            get { return clientsManager; }
-        }
+        public IRedisClientsManager ClientsManager => clientsManager;
 
         public IMessageQueueClient CreateMessageQueueClient()
         {
@@ -99,7 +93,7 @@ namespace ServiceStack.Messaging.Redis
 
         public bool DisablePublishingResponses
         {
-            set { PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null; }
+            set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
 
         private readonly Dictionary<Type, IMessageHandlerFactory> handlerMap
@@ -111,10 +105,7 @@ namespace ServiceStack.Messaging.Redis
         private MessageHandlerWorker[] workers;
         private Dictionary<string, int[]> queueWorkerIndexMap;
 
-        public List<Type> RegisteredTypes
-        {
-            get { return handlerMap.Keys.ToList(); }
-        }
+        public List<Type> RegisteredTypes => handlerMap.Keys.ToList();
 
         public RedisMqServer(IRedisClientsManager clientsManager,
             int retryCount = DefaultRetryCount, TimeSpan? requestTimeOut = null)
@@ -176,8 +167,7 @@ namespace ServiceStack.Messaging.Redis
 
         public void OnError(Exception ex)
         {
-            if (ErrorHandler != null)
-                ErrorHandler(ex);
+            ErrorHandler?.Invoke(ex);
         }
 
         public void OnStart()
@@ -230,8 +220,7 @@ namespace ServiceStack.Messaging.Redis
                 {
                     var worker = workers[i];
 
-                    int[] workerIds;
-                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out workerIds))
+                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out var workerIds))
                     {
                         queueWorkerIndexMap[worker.QueueName] = new[] { i };
                     }
@@ -248,8 +237,7 @@ namespace ServiceStack.Messaging.Redis
         {
             if (!string.IsNullOrEmpty(msg))
             {
-                int[] workerIndexes;
-                if (queueWorkerIndexMap.TryGetValue(msg, out workerIndexes))
+                if (queueWorkerIndexMap.TryGetValue(msg, out var workerIndexes))
                 {
                     foreach (var workerIndex in workerIndexes)
                     {
@@ -305,7 +293,7 @@ namespace ServiceStack.Messaging.Redis
         void DisposeWorkerThreads()
         {
             Log.Debug("Disposing all Redis MQ Server worker threads...");
-            if (workers != null) workers.Each(x => x.Dispose());
+            workers?.Each(x => x.Dispose());
         }
 
         void WorkerErrorHandler(MessageHandlerWorker source, Exception ex)

@@ -18,10 +18,7 @@ namespace ServiceStack.Messaging.Redis
         public string QueueName { get; set; }
 
         private int status;
-        public int Status
-        {
-            get { return status; }
-        }
+        public int Status => status;
 
         private Thread bgThread;
         private int timesStarted = 0;
@@ -29,22 +26,13 @@ namespace ServiceStack.Messaging.Redis
         public Action<MessageHandlerWorker, Exception> errorHandler { get; set; }
 
         private DateTime lastMsgProcessed;
-        public DateTime LastMsgProcessed
-        {
-            get { return lastMsgProcessed; }
-        }
+        public DateTime LastMsgProcessed => lastMsgProcessed;
 
         private int totalMessagesProcessed;
-        public int TotalMessagesProcessed
-        {
-            get { return totalMessagesProcessed; }
-        }
+        public int TotalMessagesProcessed => totalMessagesProcessed;
 
         private int msgNotificationsReceived;
-        public int MsgNotificationsReceived
-        {
-            get { return msgNotificationsReceived; }
-        }
+        public int MsgNotificationsReceived => msgNotificationsReceived;
 
         public MessageHandlerWorker(
             IRedisClientsManager clientsManager, IMessageHandler messageHandler, string queueName,
@@ -148,7 +136,7 @@ namespace ServiceStack.Messaging.Redis
 #endif
 
                 Stop();
-                if (this.errorHandler != null) this.errorHandler(this, ex);
+                errorHandler?.Invoke(this, ex);
             }
             finally
             {
