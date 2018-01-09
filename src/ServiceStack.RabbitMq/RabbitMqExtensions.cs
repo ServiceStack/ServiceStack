@@ -256,8 +256,7 @@ namespace ServiceStack.RabbitMq
                         var errors = entry.Value;
                         if (errors != null)
                         {
-                            var errorBytes = errors as byte[];
-                            var errorsJson = errorBytes != null
+                            var errorsJson = errors is byte[] errorBytes
                                 ? errorBytes.FromUtf8Bytes()
                                 : errors.ToString();
                             message.Error = errorsJson.FromJson<ResponseStatus>();
@@ -268,8 +267,7 @@ namespace ServiceStack.RabbitMq
                         if (message.Meta == null)
                             message.Meta = new Dictionary<string, string>();
 
-                        var bytes = entry.Value as byte[];
-                        var value = bytes != null
+                        var value = entry.Value is byte[] bytes
                             ? bytes.FromUtf8Bytes()
                             : entry.Value?.ToString();
 

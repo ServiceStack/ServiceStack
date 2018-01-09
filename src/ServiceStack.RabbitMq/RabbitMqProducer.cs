@@ -52,8 +52,7 @@ namespace ServiceStack.RabbitMq
 
         public virtual void Publish<T>(T messageBody)
         {
-            var message = messageBody as IMessage;
-            if (message != null)
+            if (messageBody is IMessage message)
             {
                 Publish(message.ToInQueueName(), message);
             }

@@ -73,8 +73,7 @@ namespace ServiceStack.RabbitMq
 
         public virtual IMessage<T> CreateMessage<T>(object mqResponse)
         {
-            var msgResult = mqResponse as BasicGetResult;
-            if (msgResult != null)
+            if (mqResponse is BasicGetResult msgResult)
             {
                 return msgResult.ToMessage<T>();
             }
