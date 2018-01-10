@@ -446,6 +446,25 @@ namespace CheckWeb
         public object Any(ReturnText request) => request.Text;
     }
 
+    [Route("/plain-dto")]
+    public class PlainDto : IReturn<PlainDto>
+    {
+        public string Name { get; set; }
+    }
+
+    [Route("/httpresult-dto")]
+    public class HttpResultDto : IReturn<HttpResultDto>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HttpResultServices : Service
+    {
+        public object Any(PlainDto request) => request;
+
+        public object Any(HttpResultDto request) => new HttpResult(request, HttpStatusCode.Created);
+    }
+
     public class Global : System.Web.HttpApplication
     {
         protected void Application_Start(object sender, EventArgs e)

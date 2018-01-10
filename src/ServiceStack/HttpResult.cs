@@ -221,8 +221,8 @@ namespace ServiceStack
 
         public HttpStatusCode StatusCode
         {
-            get { return (HttpStatusCode)Status; }
-            set { Status = (int)value; }
+            get => (HttpStatusCode)Status;
+            set => Status = (int)value;
         }
 
         public string StatusDescription { get; set; }

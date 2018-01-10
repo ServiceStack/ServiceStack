@@ -169,7 +169,6 @@ namespace ServiceStack
                 UseCamelCase = true,
                 EnableOptimizations = true,
 #endif
-                DisableChunkedEncoding = false
             };
 
             Platform.Instance.InitHostConifg(config);
@@ -251,7 +250,6 @@ namespace ServiceStack
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
             this.EnableOptimizations = instance.EnableOptimizations;
-            this.DisableChunkedEncoding = instance.DisableChunkedEncoding;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -370,9 +368,6 @@ namespace ServiceStack
 
         public bool UseCamelCase { get; set; }
         public bool EnableOptimizations { get; set; }
-
-        //Disables chunked encoding on Kestrel Server
-        public bool DisableChunkedEncoding { get; set; }
 
         public string AdminAuthSecret { get; set; }
 
