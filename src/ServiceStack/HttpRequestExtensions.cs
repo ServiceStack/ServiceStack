@@ -777,10 +777,19 @@ namespace ServiceStack
 
         public static string GetRawUrl(this IRequest httpReq)
         {
-            var handlerPath = HostContext.Config.HandlerFactoryPath;
-            return handlerPath != null
-                ? httpReq.RawUrl.IndexOf(handlerPath, StringComparison.OrdinalIgnoreCase) == 1 ? httpReq.RawUrl.Substring(1 + handlerPath.Length) : httpReq.RawUrl
+            var appPath = HostContext.Config.HandlerFactoryPath;
+#if !NETSTANDARD2_0
+            if (httpReq.OriginalRequest is HttpRequestBase aspReq && aspReq.ApplicationPath?.Length > 1)
+                appPath = aspReq.ApplicationPath.CombineWith(appPath);
+#endif
+            var pos = appPath != null
+                ? httpReq.RawUrl.IndexOf(appPath, StringComparison.OrdinalIgnoreCase)
+                : -1;
+            var rawUrl = pos >= 0
+                ? httpReq.RawUrl.Substring(pos + appPath.Length) 
                 : httpReq.RawUrl;
+
+            return rawUrl;
         }
 
         public static string GetAbsoluteUrl(this IRequest httpReq, string url)
