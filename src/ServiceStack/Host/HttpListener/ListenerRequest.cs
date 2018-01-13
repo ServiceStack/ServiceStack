@@ -128,10 +128,7 @@ namespace ServiceStack.Host.HttpListener
         private string responseContentType;
         public string ResponseContentType
         {
-            get
-            {
-                return responseContentType ?? (responseContentType = this.GetResponseContentType());
-            }
+            get => responseContentType ?? (responseContentType = this.GetResponseContentType());
             set
             {
                 this.responseContentType = value;
@@ -196,8 +193,8 @@ namespace ServiceStack.Host.HttpListener
         public Encoding contentEncoding;
         public Encoding ContentEncoding
         {
-            get { return contentEncoding ?? request.ContentEncoding; }
-            set { contentEncoding = value; }
+            get => contentEncoding ?? request.ContentEncoding;
+            set => contentEncoding = value;
         }
 
         public Uri UrlReferrer => request.UrlReferrer;
@@ -218,13 +215,10 @@ namespace ServiceStack.Host.HttpListener
 
         public bool UseBufferedStream
         {
-            get { return BufferedStream != null; }
-            set
-            {
-                BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
-                    : null;
-            }
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                : null;
         }
 
         public MemoryStream BufferedStream { get; set; }
@@ -262,8 +256,7 @@ namespace ServiceStack.Host.HttpListener
 
         static Stream GetSubStream(Stream stream)
         {
-            var other = stream as MemoryStream;
-            if (other != null)
+            if (stream is MemoryStream other)
             {
                 try
                 {

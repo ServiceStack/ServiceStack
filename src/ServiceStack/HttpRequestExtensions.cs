@@ -1046,10 +1046,7 @@ namespace ServiceStack
 
         public static void SetAutoBatchCompletedHeader(this IRequest req, int completed)
         {
-            if (req == null || req.Response == null)
-                return;
-
-            req.Response.AddHeader(HttpHeaders.XAutoBatchCompleted, completed.ToString());
+            req?.Response?.AddHeader(HttpHeaders.XAutoBatchCompleted, completed.ToString());
         }
 
         public static void SetRoute(this IRequest req, RestPath route)
@@ -1059,8 +1056,7 @@ namespace ServiceStack
 
         public static RestPath GetRoute(this IRequest req)
         {
-            object route;
-            req.Items.TryGetValue(Keywords.Route, out route);
+            req.Items.TryGetValue(Keywords.Route, out var route);
             return route as RestPath;
         }
 
