@@ -41,7 +41,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     DebugMode = true
                 });
 
-                Plugins.Add(new RequestLogsFeature());
+                Plugins.Add(new RequestLogsFeature
+                {
+                    LimitToServiceRequests = false
+                });
+
+                Plugins.Add(new CorsFeature());
             }
         }
 
@@ -63,13 +68,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 RequestFilter = req => req.Referer = Config.ListeningOn
             };
 
-            var response = client.Get(new RequestLogsTest { Name = "foo" });
+            var response = client.Get(new RequestLogsTest { Name = "foo1" });
 
             var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
             var requestLogs = json.FromJson<RequestLogsResponse>();
             var requestLog = requestLogs.Results.First();
             var request = (RequestLogsTest)requestLog.RequestDto;
-            Assert.That(request.Name, Is.EqualTo("foo"));
+            Assert.That(request.Name, Is.EqualTo("foo1"));
             Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
         }
 
@@ -83,7 +88,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Get(new RequestLogsErrorTest { Message = "foo" });
+                var response = client.Get(new RequestLogsErrorTest { Message = "foo2" });
             }
             catch (WebServiceException ex)
             {
@@ -92,9 +97,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var requestLogs = json.FromJson<RequestLogsResponse>();
                 var requestLog = requestLogs.Results.First();
                 var request = (RequestLogsErrorTest)requestLog.RequestDto;
-                Assert.That(request.Message, Is.EqualTo("foo"));
+                Assert.That(request.Message, Is.EqualTo("foo2"));
                 Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
             }
         }
+
+        [Test]
+        public void Does_log_Options_request()
+        {
+            var response = Config.ListeningOn.CombineWith("requestlogs-test")
+                .AddQueryParam("name", "foo3")
+                .OptionsFromUrl(requestFilter: req => req.Referer = Config.ListeningOn);
+
+            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var requestLogs = json.FromJson<RequestLogsResponse>();
+            var requestLog = requestLogs.Results.First();
+            Assert.That(requestLog.HttpMethod, Is.EqualTo("OPTIONS"));
+            Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
+        }
+
     }
 }
