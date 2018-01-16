@@ -453,13 +453,16 @@ namespace ServiceStack
             var hold = httpRes.StatusDescription;
             var hasDefaultStatusDescription = hold == null || hold == "OK";
 
-            httpRes.StatusCode = statusCode;
+            if (!httpRes.HasStarted)
+            {
+                httpRes.StatusCode = statusCode;
 
-            httpRes.StatusDescription = hasDefaultStatusDescription
-                ? (errorMessage ?? HttpStatus.GetStatusDescription(statusCode))
-                : hold;
+                httpRes.StatusDescription = hasDefaultStatusDescription
+                    ? (errorMessage ?? HttpStatus.GetStatusDescription(statusCode))
+                    : hold;
 
-            httpRes.ApplyGlobalResponseHeaders();
+                httpRes.ApplyGlobalResponseHeaders();
+            }
 
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
