@@ -1,6 +1,5 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Logging;
 
 namespace ServiceStack.Logging.Tests.UnitTests
 {
@@ -10,23 +9,52 @@ namespace ServiceStack.Logging.Tests.UnitTests
         [Test]
         public void Does_maintain_callsite()
         {
-            Logging.LogManager.LogFactory = new NLogger.NLogFactory();
-
-            var log = ServiceStack.Logging.LogManager.LogFactory.GetLogger(GetType());
-            log.InfoFormat("Message");
-            log.InfoFormat("Message with Args {0}", "Foo");
-            log.Info("Message with Exception", new Exception("Foo Exception"));
+            try
+            {
+                var target = new NLog.Targets.MemoryTarget();
+                NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target);
+                Logging.LogManager.LogFactory = new NLogger.NLogFactory();
+                var stringWriter = new System.IO.StringWriter();
+                NLog.Common.InternalLogger.LogLevel = NLog.LogLevel.Warn;
+                NLog.Common.InternalLogger.LogWriter = stringWriter;
+                var log = ServiceStack.Logging.LogManager.LogFactory.GetLogger(GetType());
+                log.InfoFormat("Message");
+                log.InfoFormat("Message with Args {0}", "Foo");
+                log.Info("Message with Exception", new Exception("Foo Exception"));
+                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
+                Assert.AreEqual(3, target.Logs.Count);
+            }
+            finally
+            {
+                NLog.Common.InternalLogger.Reset();
+                NLog.LogManager.Configuration = null;
+            }
         }
 
         [Test]
         public void PushPropertyTest()
         {
-            Logging.LogManager.LogFactory = new NLogger.NLogFactory();
-
-            var log = Logging.LogManager.LogFactory.GetLogger(GetType());
-            using (log.PushProperty("Hello", "World"))
+            try
             {
-                log.InfoFormat("Message");
+                var target = new NLog.Targets.MemoryTarget();
+                NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target);
+                Logging.LogManager.LogFactory = new NLogger.NLogFactory();
+                var stringWriter = new System.IO.StringWriter();
+                NLog.Common.InternalLogger.LogLevel = NLog.LogLevel.Warn;
+                NLog.Common.InternalLogger.LogWriter = stringWriter;
+                var log = Logging.LogManager.LogFactory.GetLogger(GetType());
+                using (log.PushProperty("Hello", "World"))
+                {
+                    log.InfoFormat("Message");
+                }
+                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
+                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
+                Assert.AreEqual(1, target.Logs.Count);
+            }
+            finally
+            {
+                NLog.Common.InternalLogger.Reset();
+                NLog.LogManager.Configuration = null;
             }
         }
     }

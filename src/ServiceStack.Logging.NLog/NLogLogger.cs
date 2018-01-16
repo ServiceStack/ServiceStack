@@ -12,7 +12,7 @@ namespace ServiceStack.Logging.NLogger
 
         public NLogLogger(string typeName)
         {
-            log = NLog.LogManager.GetLogger(typeName, typeof(NLogLogger));
+            log = NLog.LogManager.GetLogger(typeName);
         }
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace ServiceStack.Logging.NLogger
         /// <param name="type">The type.</param>
         public NLogLogger(Type type)
         {
-            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.FullName : type.Name, typeof(NLogLogger));
+            log = NLog.LogManager.GetLogger(UseFullTypeNames ? type.FullName : type.Name);
         }
 
         public static bool UseFullTypeNames { get; set; }
