@@ -11,17 +11,14 @@ namespace ServiceStack.Logging.Tests.UnitTests
         {
             try
             {
+                NLog.LogManager.ThrowExceptions = true; // Only use this for unit-tests
                 var target = new NLog.Targets.MemoryTarget();
                 NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target);
                 Logging.LogManager.LogFactory = new NLogger.NLogFactory();
-                var stringWriter = new System.IO.StringWriter();
-                NLog.Common.InternalLogger.LogLevel = NLog.LogLevel.Warn;
-                NLog.Common.InternalLogger.LogWriter = stringWriter;
                 var log = ServiceStack.Logging.LogManager.LogFactory.GetLogger(GetType());
                 log.InfoFormat("Message");
                 log.InfoFormat("Message with Args {0}", "Foo");
                 log.Info("Message with Exception", new Exception("Foo Exception"));
-                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
                 Assert.AreEqual(3, target.Logs.Count);
             }
             finally
@@ -36,19 +33,15 @@ namespace ServiceStack.Logging.Tests.UnitTests
         {
             try
             {
+                NLog.LogManager.ThrowExceptions = true; // Only use this for unit-tests
                 var target = new NLog.Targets.MemoryTarget();
                 NLog.Config.SimpleConfigurator.ConfigureForTargetLogging(target);
                 Logging.LogManager.LogFactory = new NLogger.NLogFactory();
-                var stringWriter = new System.IO.StringWriter();
-                NLog.Common.InternalLogger.LogLevel = NLog.LogLevel.Warn;
-                NLog.Common.InternalLogger.LogWriter = stringWriter;
                 var log = Logging.LogManager.LogFactory.GetLogger(GetType());
                 using (log.PushProperty("Hello", "World"))
                 {
                     log.InfoFormat("Message");
                 }
-                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
-                Assert.AreEqual(0, stringWriter.GetStringBuilder().Length);
                 Assert.AreEqual(1, target.Logs.Count);
             }
             finally
