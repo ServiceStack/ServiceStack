@@ -319,7 +319,7 @@ namespace ServiceStack
                 }
                 catch (Exception originalEx)
                 {
-                    //.NET Core prohibuts some status codes from having a body
+                    //.NET Core prohibits some status codes from having a body
                     if (originalEx is InvalidOperationException invalidEx)
                     {
                         Log.Error(invalidEx.Message, invalidEx);
