@@ -244,6 +244,38 @@ namespace ServiceStack.Server.Tests.Messaging
         }
 
         [Test]
+        public void Message_with_ReplyTo_that_throw_exceptions_are_retried_then_published_to_Request_dlq()
+        {
+            using (var mqServer = CreateMqServer(retryCount: 1))
+            {
+                var called = 0;
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                {
+                    Interlocked.Increment(ref called);
+                    throw new ArgumentException("Name");
+                });
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    const string replyToMq = "mq:Hello.replyto";
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
+                    {
+                        ReplyTo = replyToMq
+                    });
+
+                    IMessage<HelloIntro> dlqMsg = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Dlq);
+                    mqClient.Ack(dlqMsg);
+
+                    Assert.That(called, Is.EqualTo(2));
+                    Assert.That(dlqMsg.GetBody().Name, Is.EqualTo("World"));
+                    Assert.That(dlqMsg.Error.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                    Assert.That(dlqMsg.Error.Message, Is.EqualTo("Name"));
+                }
+            }
+        }
+
+        [Test]
         public void Message_with_ReplyTo_are_published_to_the_ReplyTo_queue()
         {
             using (var mqServer = CreateMqServer())
