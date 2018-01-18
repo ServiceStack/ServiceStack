@@ -66,7 +66,11 @@ namespace ServiceStack.Auth
     //
     public class OAuthAuthorizer
     {
-        private static ILog log = LogManager.GetLogger(typeof(OAuthAuthorizer)); 
+        private static ILog log = LogManager.GetLogger(typeof(OAuthAuthorizer));
+
+        // No issue has been reported with Twitter OAuth, but alt OAuth providers may require lexical ordering
+        public static bool OrderHeadersLexically = false;
+
         // Settable by the user
         public string xAuthUsername, xAuthPassword;
 
@@ -114,12 +118,16 @@ namespace ServiceStack.Auth
             {
                 log.Warn("Empty Headers: " + string.Join(", ", emptyHeaders));
             }
-                
-            var items = headers.Keys.OrderBy(k => k)                
-                .Select(k => k + "%3D" + OAuthUtils.PercentEncode(headers[k]));
 
-            return method + "&" + OAuthUtils.PercentEncode(base_uri) + "&" +
-                string.Join("%26", items.ToArray());
+            var sortedHeaders = !OrderHeadersLexically
+                ? headers.Keys.OrderBy(k => k)
+                : headers.Keys.OrderBy(k => k, StringComparer.Ordinal);
+
+            var items = sortedHeaders.Select(k => k + "%3D" + OAuthUtils.PercentEncode(headers[k]));
+
+            return method 
+                + "&" + OAuthUtils.PercentEncode(base_uri) 
+                + "&" + string.Join("%26", items.ToArray());
         }
 
         static string MakeSigningKey(string consumerSecret, string oauthTokenSecret)
@@ -141,13 +149,15 @@ namespace ServiceStack.Auth
 
         public bool AcquireRequestToken()
         {
-            var headers = new Dictionary<string, string>() {
+            var headers = new Dictionary<string, string>
+            {
                 { "oauth_callback", OAuthUtils.PercentEncode (provider.CallbackUrl) },
                 { "oauth_consumer_key", provider.ConsumerKey },
                 { "oauth_nonce", MakeNonce () },
                 { "oauth_signature_method", "HMAC-SHA1" },
                 { "oauth_timestamp", MakeTimestamp () },
-                { "oauth_version", "1.0" }};
+                { "oauth_version", "1.0" }
+            };
 
             var uri = new Uri(provider.RequestTokenUrl);
 
