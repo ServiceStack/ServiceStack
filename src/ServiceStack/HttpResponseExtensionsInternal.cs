@@ -173,8 +173,7 @@ namespace ServiceStack
                         if (httpResult is IHttpError httpError)
                         {
                             response.Dto = httpError.CreateErrorResponse();
-                            if (response.HandleCustomErrorHandler(request,
-                                defaultContentType, httpError.Status, response.Dto))
+                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto))
                             {
                                 return true;
                             }
@@ -437,7 +436,7 @@ namespace ServiceStack
             var errorDto = ex.ToErrorResponse();
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
-            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
+            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
                 return;
 
             if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
@@ -471,7 +470,7 @@ namespace ServiceStack
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
 
-        private static bool HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
+        private static async Task<bool> HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
             string contentType, int statusCode, object errorDto)
         {
             if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
@@ -482,7 +481,7 @@ namespace ServiceStack
                 {
                     httpReq.Items["Model"] = errorDto;
                     httpReq.Items[HtmlFormat.ErrorStatusKey] = errorDto.GetResponseStatus();
-                    errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
+                    await errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                     return true;
                 }
             }
