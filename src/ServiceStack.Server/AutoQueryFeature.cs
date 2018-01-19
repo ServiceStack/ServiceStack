@@ -883,8 +883,7 @@ namespace ServiceStack
 
                 dynamicParams.Remove(name);
 
-                QueryDbFieldAttribute implicitQuery;
-                QueryFieldMap.TryGetValue(name, out implicitQuery);
+                QueryFieldMap.TryGetValue(name, out var implicitQuery);
 
                 if (implicitQuery?.Field != null)
                     name = implicitQuery.Field;
@@ -1039,8 +1038,7 @@ namespace ServiceStack
 
             if (match == null)
             {
-                string alias;
-                if (aliases.TryGetValue(name, out alias))
+                if (aliases.TryGetValue(name, out var alias))
                     match = GetQueryMatch(q, alias, options);
 
                 if (match == null && JsConfig.EmitLowercaseUnderscoreNames && name.Contains("_"))
