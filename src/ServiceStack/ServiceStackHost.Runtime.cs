@@ -689,6 +689,9 @@ namespace ServiceStack
 
         public virtual IServiceGateway GetServiceGateway(IRequest req)
         {
+            if (req == null)
+                throw new ArgumentNullException(nameof(req));
+
             var factory = Container.TryResolve<IServiceGatewayFactory>();
             return factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()
