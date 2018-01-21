@@ -36,8 +36,7 @@ namespace ServiceStack.Messaging
         {
             lock (syncLock)
             {
-                Queue<byte[]> bytesQueue;
-                if (!queueMessageBytesMap.TryGetValue(queueName, out bytesQueue))
+                if (!queueMessageBytesMap.TryGetValue(queueName, out var bytesQueue))
                 {
                     bytesQueue = new Queue<byte[]>();
                     queueMessageBytesMap[queueName] = bytesQueue;
@@ -58,16 +57,11 @@ namespace ServiceStack.Messaging
         {
             lock (syncLock)
             {
-                Queue<byte[]> bytesQueue;
-                if (!queueMessageBytesMap.TryGetValue(queueName, out bytesQueue))
-                {
+                if (!queueMessageBytesMap.TryGetValue(queueName, out var bytesQueue))
                     return null;
-                }
 
                 if (bytesQueue.Count == 0)
-                {
                     return null;
-                }
 
                 var messageBytes = bytesQueue.Dequeue();
                 return messageBytes;
