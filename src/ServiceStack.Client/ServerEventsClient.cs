@@ -96,7 +96,7 @@ namespace ServiceStack
 
         public string ConnectionDisplayName => ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)";
 
-        private string eventStreamPath;
+        public string EventStreamPath { get; set; }
         public string EventStreamUri { get; private set; }
 
         public string BaseUri
@@ -108,7 +108,7 @@ namespace ServiceStack
             }
             set
             {
-                this.eventStreamPath = value.CombineWith("event-stream");
+                this.EventStreamPath = value.CombineWith("event-stream");
                 BuildEventStreamUri();
 
                 if (this.ServiceClient is IServiceClientMeta meta)
@@ -129,7 +129,7 @@ namespace ServiceStack
 
         private void BuildEventStreamUri()
         {
-            this.EventStreamUri = this.eventStreamPath
+            this.EventStreamUri = this.EventStreamPath
                 .AddQueryParam("channels", string.Join(",", this.channels));
         }
 
@@ -154,7 +154,7 @@ namespace ServiceStack
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
-            this.eventStreamPath = baseUri.CombineWith("event-stream");
+            this.EventStreamPath = baseUri.CombineWith("event-stream");
             this.Channels = channels;
 
             this.ServiceClient = new JsonServiceClient(baseUri);
