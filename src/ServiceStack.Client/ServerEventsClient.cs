@@ -96,8 +96,7 @@ namespace ServiceStack
 
         public string ConnectionDisplayName => ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)";
 
-        public string EventStreamPath { get; set; }
-        public string EventStreamUri { get; private set; }
+        public Func<string, string> ResolveStreamUrl { get; set; }
 
         public string BaseUri
         {
@@ -131,6 +130,15 @@ namespace ServiceStack
         {
             this.EventStreamUri = this.EventStreamPath
                 .AddQueryParam("channels", string.Join(",", this.channels));
+        }
+
+        public string EventStreamPath { get; set; }
+
+        private string eventStreamUri;
+        public string EventStreamUri
+        {
+            get => ResolveStreamUrl != null ? ResolveStreamUrl(eventStreamUri) : eventStreamUri;
+            private set => eventStreamUri = value;
         }
 
         public IServiceClient ServiceClient { get; set; }
@@ -566,6 +574,7 @@ namespace ServiceStack
         }
 
         private ServerEventMessage currentMsg;
+
         void ProcessLine(string line)
         {
             if (line == null) return;
