@@ -252,63 +252,50 @@ namespace CheckWeb
     [Route("/swagger/multiattrtest", Verbs = "POST", Summary = "Sample request")]
     public sealed class SwaggerMultiApiResponseTest : IReturnVoid {}
 
+    [Route("/stream-request")]
+    public class StreamRequest : IReturn<StreamResponse>
+    {
+    }
+
+    public class StreamResponse
+    {
+        public Stream Stream { get; set; }
+    }
+
+    public class Stream
+    {
+        public int Streamid { get; set; }
+        public string Description { get; set; }
+        public string Name { get; set; }
+        public string ProjectId { get; set; }
+    }
+
     public class SwaggerTestService : Service
     {
-        public object Any(SwaggerTest request)
-        {
-            return request;
-        }
+        public object Any(SwaggerTest request) => request;
 
-        public object Post(SwaggerTest2 request)
-        {
-            return request;
-        }
+        public object Post(SwaggerTest2 request) => request;
 
-        public object Post(SwaggerComplex request)
-        {
-            return request.ConvertTo<SwaggerComplexResponse>();
-        }
+        public object Post(SwaggerComplex request) => request.ConvertTo<SwaggerComplexResponse>();
 
-        public object Any(SwaggerPostTest request)
-        {
-            return new HelloResponse { Result = request.Required1 };
-        }
+        public object Any(SwaggerPostTest request) => new HelloResponse { Result = request.Required1 };
 
-        public object Any(SwaggerPostTest2 request)
-        {
-            return new HelloResponse { Result = request.Required1 };
-        }
+        public object Any(SwaggerPostTest2 request) => new HelloResponse { Result = request.Required1 };
 
-        public object Any(GetSwaggerExamples request)
-        {
-            return request;
-        }
+        public object Any(GetSwaggerExamples request) => request;
 
-        public object Any(GetSwaggerExample request)
-        {
-            return request;
-        }
+        public object Any(GetSwaggerExample request) => request;
 
-        public object Any(PostSwaggerExamples request)
-        {
-            return request;
-        }
+        public object Any(PostSwaggerExamples request) => request;
 
-        public object Any(PutSwaggerExample request)
-        {
-            return request;
-        }
+        public object Any(PutSwaggerExample request) => request;
 
-        public object Any(GetLists request)
-        {
-            return request;
-        }
+        public object Any(GetLists request) => request;
 
-        public object Any(CreateList request)
-        {
-            return request;
-        }
+        public object Any(CreateList request) => request;
 
         public object Any(SwaggerMultiApiResponseTest request) => request;
+
+        public object Any(StreamRequest request) => new StreamResponse();
     }
 }
