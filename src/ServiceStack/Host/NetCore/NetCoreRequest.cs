@@ -218,17 +218,18 @@ namespace ServiceStack.Host.NetCore
                 if (!request.HasFormContentType)                    
                     return new IHttpFile[0];
 
-                files = new IHttpFile[request.Form.Files.Count];
-                for (var i=0; i< request.Form.Files.Count; i++)
+                var filesCount = request.Form.Files.Count;
+                files = new IHttpFile[filesCount];
+                for (var i=0; i<filesCount; i++)
                 {
-                    var file = request.Form.Files[i];
-                    var fileStream = file.OpenReadStream();
+                    var uploadedFile = request.Form.Files[i];
+                    var fileStream = uploadedFile.OpenReadStream();
                     files[i] = new HttpFile
                     {
-                        ContentLength = file.Length,
-                        ContentType = file.ContentType,
-                        FileName = file.FileName,
-                        Name = file.Name,
+                        ContentLength = uploadedFile.Length,
+                        ContentType = uploadedFile.ContentType,
+                        FileName = uploadedFile.FileName,
+                        Name = uploadedFile.Name,
                         InputStream = fileStream,
                     };
                     context.Response.RegisterForDispose(fileStream);
