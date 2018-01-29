@@ -131,7 +131,11 @@ namespace ServiceStack.Host.NetCore
                     // from Cookie.Name, but the Cookie constructor will throw for these names.
                     try
                     {
-                        cookie = new Cookie(httpCookie.Key, httpCookie.Value);
+                        var name = httpCookie.Key.StartsWith("$")
+                            ? httpCookie.Key.Substring(1)
+                            : httpCookie.Key;
+
+                        cookie = new Cookie(name, httpCookie.Value);
                     }
                     catch (Exception ex)
                     {

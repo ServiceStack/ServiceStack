@@ -162,7 +162,11 @@ namespace ServiceStack.Host.AspNet
                         // from Cookie.Name, but the Cookie constructor will throw for these names.
                         try
                         {
-                            cookie = new Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+                            var name = httpCookie.Name.StartsWith("$")
+                                ? httpCookie.Name.Substring(1)
+                                : httpCookie.Name;
+
+                            cookie = new Cookie(name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
                             {
                                 HttpOnly = httpCookie.HttpOnly,
                                 Secure = httpCookie.Secure,
