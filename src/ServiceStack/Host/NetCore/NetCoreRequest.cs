@@ -212,7 +212,7 @@ namespace ServiceStack.Host.NetCore
         {
             get
             {
-                if (files != null)
+                if (files?.Length > 0 && files[0] != null) // During Debugging VS.NET initializes field to T[null]
                     return files;
 
                 if (!request.HasFormContentType)                    
