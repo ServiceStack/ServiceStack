@@ -107,7 +107,7 @@ namespace ServiceStack
             }
             set
             {
-                this.EventStreamPath = value.CombineWith("event-stream");
+                this.eventStreamPath = value.CombineWith("event-stream");
                 BuildEventStreamUri();
 
                 if (this.ServiceClient is IServiceClientMeta meta)
@@ -132,7 +132,14 @@ namespace ServiceStack
                 .AddQueryParam("channels", string.Join(",", this.channels));
         }
 
-        public string EventStreamPath { get; set; }
+        private string eventStreamPath;
+        public string EventStreamPath
+        {
+            get => eventStreamPath;
+            set => eventStreamPath = value?.StartsWith("/") == true
+                ? (BaseUri ?? "").CombineWith(value)
+                : value;
+        }
 
         private string eventStreamUri;
         public string EventStreamUri
@@ -162,7 +169,7 @@ namespace ServiceStack
 
         public ServerEventsClient(string baseUri, params string[] channels)
         {
-            this.EventStreamPath = baseUri.CombineWith("event-stream");
+            this.eventStreamPath = baseUri.CombineWith("event-stream");
             this.Channels = channels;
 
             this.ServiceClient = new JsonServiceClient(baseUri);
