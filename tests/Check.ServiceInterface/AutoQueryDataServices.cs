@@ -12,6 +12,7 @@ namespace Check.ServiceInterface
         public bool ViewErrors { get; set; }
     }
 
+    [AutoQueryViewer(Name = "Today's Logs", Title = "Logs from Today")]
     public class TodayLogs : QueryData<RequestLogEntry> { }
     public class TodayErrorLogs : QueryData<RequestLogEntry> { }
 
