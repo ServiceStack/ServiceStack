@@ -92,8 +92,7 @@ namespace ServiceStack.Host
         {
             foreach (var restPath in restPaths)
             {
-                Operation operation;
-                if (!OperationsMap.TryGetValue(restPath.RequestType, out operation))
+                if (!OperationsMap.TryGetValue(restPath.RequestType, out var operation))
                     continue;
 
                 operation.Routes.Add(restPath);
@@ -148,9 +147,8 @@ namespace ServiceStack.Host
 
         public Type GetOperationType(string operationTypeName)
         {
-            Operation operation;
             var opName = operationTypeName.ToLowerInvariant();
-            if (!OperationNamesMap.TryGetValue(opName, out operation))
+            if (!OperationNamesMap.TryGetValue(opName, out var operation))
             {
                 var arrayPos = opName.LastIndexOf('[');
                 if (arrayPos >= 0)
@@ -263,8 +261,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
@@ -291,8 +288,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -312,8 +308,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
