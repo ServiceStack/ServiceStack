@@ -10,7 +10,7 @@ namespace ServiceStack
     {
         None = 0,
 
-        Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat,
+        Any = AnyNetworkAccessType | AnySecurityMode | AnyHttpMethod | AnyCallStyle | AnyFormat | AnyEndpoint,
         AnyNetworkAccessType = External | LocalSubnet | Localhost | InProcess,
         AnySecurityMode = Secure | InSecure,
         AnyHttpMethod = HttpHead | HttpGet | HttpPost | HttpPut | HttpDelete | HttpPatch | HttpOptions | HttpOther,

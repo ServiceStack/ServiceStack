@@ -465,6 +465,18 @@ namespace CheckWeb
         public object Any(HttpResultDto request) => new HttpResult(request, HttpStatusCode.Created);
     }
 
+    [Route("/restrict/mq")]
+    [Restrict(RequestAttributes.MessageQueue)]
+    public class TestMqRestriction : IReturn<TestMqRestriction>
+    {
+        public string Name { get; set; }
+    }
+
+    public class TestRestrictionsService : Service
+    {
+        public object Any(TestMqRestriction request) => request;
+    }
+
     public class Global : System.Web.HttpApplication
     {
         protected void Application_Start(object sender, EventArgs e)
