@@ -136,9 +136,13 @@ namespace ServiceStack
         public string EventStreamPath
         {
             get => eventStreamPath;
-            set => eventStreamPath = value?.StartsWith("/") == true
-                ? (BaseUri ?? "").CombineWith(value)
-                : value;
+            set
+            {
+                eventStreamPath = value?.StartsWith("/") == true
+                    ? (BaseUri ?? "").CombineWith(value)
+                    : value;
+                BuildEventStreamUri();
+            }
         }
 
         private string eventStreamUri;
