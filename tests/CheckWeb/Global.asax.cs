@@ -477,6 +477,33 @@ namespace CheckWeb
         public object Any(TestMqRestriction request) => request;
     }
 
+    [Route("/set-cache")]
+    public class SetCache : IReturn<SetCache>
+    {
+        public string ETag { get; set; }
+        public TimeSpan? Age { get; set; }
+        public TimeSpan? MaxAge { get; set; }
+        public DateTime? Expires { get; set; }
+        public DateTime? LastModified { get; set; }
+        public CacheControl? CacheControl { get; set; }
+    }
+
+    public class CacheEtagServices : Service
+    {
+        public object Any(SetCache request)
+        {
+            return new HttpResult(request)
+            {
+                Age = request.Age,
+                ETag = request.ETag,
+                MaxAge = request.MaxAge,
+                Expires = request.Expires,
+                LastModified = request.LastModified,
+                CacheControl = request.CacheControl.GetValueOrDefault(CacheControl.None),
+            };
+        }
+    }
+
     public class Global : System.Web.HttpApplication
     {
         protected void Application_Start(object sender, EventArgs e)

@@ -76,6 +76,10 @@ namespace ServiceStack
 
             if (req.ETagMatch(httpResult.ETag) || req.NotModifiedSince(httpResult.LastModified))
             {
+                foreach (var header in httpResult.Headers)
+                {
+                    res.AddHeader(header.Key, header.Value);
+                }
                 res.EndNotModified();
                 httpResult.Dispose();
             }
