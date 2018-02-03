@@ -156,7 +156,7 @@ namespace ServiceStack
                 else
                     this.Headers.Remove(HttpHeaders.AcceptRanges);
             }
-            get { return allowsPartialResponse; }
+            get => allowsPartialResponse;
         }
 
         public string Location

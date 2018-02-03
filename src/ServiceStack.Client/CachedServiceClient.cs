@@ -71,8 +71,7 @@ namespace ServiceStack
         {
             existingRequestFilter?.Invoke(webReq);
 
-            HttpCacheEntry entry;
-            if (webReq.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out entry))
+            if (webReq.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out var entry))
             {
                 if (entry.ETag != null)
                     webReq.Headers[HttpRequestHeader.IfNoneMatch] = entry.ETag;
@@ -86,8 +85,7 @@ namespace ServiceStack
         {
             var ret = existingResultsFilter?.Invoke(responseType, httpMethod, requestUri, request);
 
-            HttpCacheEntry entry;
-            if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out entry))
+            if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out var entry))
             {
                 if (!entry.ShouldRevalidate())
                 {
@@ -105,8 +103,7 @@ namespace ServiceStack
             if (response != null)
                 return response;
 
-            HttpCacheEntry entry;
-            if (cache.TryGetValue(requestUri, out entry))
+            if (cache.TryGetValue(requestUri, out var entry))
             {
                 if (webEx.IsNotModified())
                 {
@@ -143,14 +140,12 @@ namespace ServiceStack
 
             if (lastModifiedStr != null)
             {
-                DateTime lastModified;
-                if (DateTime.TryParse(lastModifiedStr, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out lastModified))
+                if (DateTime.TryParse(lastModifiedStr, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out var lastModified))
                     entry.LastModified = lastModified.ToUniversalTime();
             }
 
-            long secs;
             var ageStr = webRes.Headers[HttpHeaders.Age];
-            if (ageStr != null && long.TryParse(ageStr, out secs))
+            if (ageStr != null && long.TryParse(ageStr, out var secs))
                 entry.Age = TimeSpan.FromSeconds(secs);
 
             var cacheControl = webRes.Headers[HttpHeaders.CacheControl];
@@ -197,10 +192,7 @@ namespace ServiceStack
 
         public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)
         {
-            if (cache == null)
-                throw new ArgumentNullException(nameof(cache));
-
-            this.cache = cache;
+            this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         public int RemoveCachesOlderThan(TimeSpan age)
@@ -216,8 +208,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                HttpCacheEntry ignore;
-                if (cache.TryRemove(key, out ignore))
+                if (cache.TryRemove(key, out var ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
 
@@ -237,8 +228,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                HttpCacheEntry ignore;
-                if (cache.TryRemove(key, out ignore))
+                if (cache.TryRemove(key, out var ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
 
@@ -588,14 +578,14 @@ namespace ServiceStack
 
         public string SessionId
         {
-            get { return client.SessionId; }
-            set { client.SessionId = value; }
+            get => client.SessionId;
+            set => client.SessionId = value;
         }
 
         public int Version
         {
-            get { return client.Version; }
-            set { client.Version = value; }
+            get => client.Version;
+            set => client.Version = value;
         }
     }
 
