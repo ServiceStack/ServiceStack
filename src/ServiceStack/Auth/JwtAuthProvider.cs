@@ -336,7 +336,7 @@ namespace ServiceStack.Auth
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
             if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
                 Request.ResponseContentType = MimeTypes.Json;
@@ -372,7 +372,7 @@ namespace ServiceStack.Auth
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
@@ -394,7 +394,7 @@ namespace ServiceStack.Auth
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(request.RefreshToken));
 
             var userId = jwtPayload["sub"];
 
@@ -406,7 +406,7 @@ namespace ServiceStack.Auth
             {
                 session = userSessionSource.GetUserSession(userId);
                 if (session == null)
-                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
                 roles = session.Roles;
                 perms = session.Permissions;
@@ -415,10 +415,10 @@ namespace ServiceStack.Auth
             {
                 var userAuth = userRepo.GetUserAuth(userId);
                 if (userAuth == null)
-                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
                 if (jwtAuthProvider.IsAccountLocked(userRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
 
                 session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
                 jwtAuthProvider.PopulateSession(userRepo, userAuth, session);

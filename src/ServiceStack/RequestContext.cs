@@ -51,14 +51,8 @@ namespace ServiceStack
         /// </remarks>
         public virtual IDictionary Items
         {
-            get
-            {
-                return GetItems() ?? CreateItems();
-            }
-            set
-            {
-                CreateItems(value);
-            }
+            get => GetItems() ?? CreateItems();
+            set => CreateItems(value);
         }
 
         private const string _key = "__Request.Items";

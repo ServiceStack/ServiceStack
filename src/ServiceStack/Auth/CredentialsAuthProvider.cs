@@ -51,7 +51,7 @@ namespace ServiceStack.Auth
                 if (authRepo.TryAuthenticate(userName, password, out var userAuth))
                 {
                     if (IsAccountLocked(authRepo, userAuth))
-                        throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                        throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
                     PopulateSession(authRepo, userAuth, session);
 
@@ -129,7 +129,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
+            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword.Localize(authService.Request));
         }
 
         protected virtual object AuthenticatePrivateRequest(
@@ -140,10 +140,10 @@ namespace ServiceStack.Auth
             {
                 var userAuth = authRepo.GetUserAuthByUserName(userName);
                 if (userAuth == null)
-                    throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
+                    throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword.Localize(authService.Request));
 
                 if (IsAccountLocked(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
                 PopulateSession(authRepo, userAuth, session);
 

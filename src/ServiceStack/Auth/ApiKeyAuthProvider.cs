@@ -199,7 +199,7 @@ namespace ServiceStack.Auth
                     throw HttpError.Unauthorized("User for ApiKey does not exist");
 
                 if (IsAccountLocked(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
                 PopulateSession(authRepo as IUserAuthRepository, userAuth, session);
 
@@ -278,7 +278,7 @@ namespace ServiceStack.Auth
         private void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             ValidateApiKey(apiKey);
 
@@ -496,7 +496,7 @@ namespace ServiceStack
         {
             var apiKeyAuth = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(AuthenticateService.ApiKeyProvider);
             if (apiKeyAuth.RequireSecureConnection && !req.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             return apiKeyAuth;
         }

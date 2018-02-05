@@ -115,7 +115,7 @@ namespace ServiceStack
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 
-            throw new HttpError(statusCode, ErrorMessages.InvalidRole);
+            throw new HttpError(statusCode, ErrorMessages.InvalidRole.Localize(req));
         }
 
         public static bool HasRequiredRoles(IRequest req, string[] requiredRoles)

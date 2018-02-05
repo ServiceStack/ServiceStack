@@ -53,7 +53,7 @@ namespace ServiceStack
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidPermission;
+            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
             res.EndRequest();
         }
 

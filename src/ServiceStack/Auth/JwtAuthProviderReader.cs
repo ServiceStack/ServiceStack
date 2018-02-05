@@ -351,7 +351,7 @@ namespace ServiceStack.Auth
                 if (parts.Length == 3)
                 {
                     if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
                     var jwtPayload = GetVerifiedJwtPayload(req, parts);
                     if (jwtPayload == null) //not verified
@@ -360,7 +360,7 @@ namespace ServiceStack.Auth
                     if (ValidateToken != null)
                     {
                         if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
                     var session = CreateSessionFromPayload(req, jwtPayload);
@@ -369,7 +369,7 @@ namespace ServiceStack.Auth
                 else if (parts.Length == 5) //Encrypted JWE Token
                 {
                     if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
                     var jwtPayload = GetVerifiedJwtPayload(req, parts);
                     if (jwtPayload == null) //not verified
@@ -378,7 +378,7 @@ namespace ServiceStack.Auth
                     if (ValidateToken != null)
                     {
                         if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
+                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
                     }
 
                     var session = CreateSessionFromPayload(req, jwtPayload);
@@ -472,7 +472,7 @@ namespace ServiceStack.Auth
                 }
             }
 
-            throw new ArgumentException(ErrorMessages.TokenInvalid);
+            throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
         public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
