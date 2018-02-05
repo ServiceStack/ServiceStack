@@ -330,6 +330,18 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/servicestack.logging.log4net.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.Logging.Log4Net.Core -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Log4Net.Core/ServiceStack.Logging.Log4Net.Core.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.Log4Net.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.Log4Net.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(Log4NetFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.Log4Net/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.Log4Net.Core/servicestack.logging.log4net.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+            LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Logging.NLog -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.NLog/ServiceStack.Logging.NLog.csproj"
