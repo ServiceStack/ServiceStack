@@ -36,22 +36,30 @@ namespace ServiceStack
 
         private void ParseResponseDto()
         {
-            if (!TryGetResponseStatusFromResponseDto(out var responseStatus))
+            try
             {
-                if (!TryGetResponseStatusFromResponseBody(out responseStatus))
+                if (!TryGetResponseStatusFromResponseDto(out var responseStatus))
                 {
-                    errorCode = StatusDescription;
-                    return;
+                    if (!TryGetResponseStatusFromResponseBody(out responseStatus))
+                    {
+                        errorCode = StatusDescription;
+                        return;
+                    }
                 }
+
+                var rsMap = responseStatus.FromJsv<Dictionary<string, string>>();
+                if (rsMap == null) return;
+
+                rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
+                rsMap.TryGetValue("ErrorCode", out errorCode);
+                rsMap.TryGetValue("Message", out errorMessage);
+                rsMap.TryGetValue("StackTrace", out serverStackTrace);
             }
-
-            var rsMap = responseStatus.FromJsv<Dictionary<string, string>>();
-            if (rsMap == null) return;
-
-            rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
-            rsMap.TryGetValue("ErrorCode", out errorCode);
-            rsMap.TryGetValue("Message", out errorMessage);
-            rsMap.TryGetValue("StackTrace", out serverStackTrace);
+            catch (Exception ex)
+            {
+                if (log.IsDebugEnabled)
+                    log.Debug($"Could not parse Error ResponseDto {ResponseDto?.GetType().Name}", ex);
+            }        
         }
 
         private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
