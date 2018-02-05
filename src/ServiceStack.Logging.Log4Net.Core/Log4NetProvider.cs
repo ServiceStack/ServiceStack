@@ -15,6 +15,10 @@ namespace ServiceStack.Logging.Log4Net.Core
         private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers =
             new ConcurrentDictionary<string, Log4NetLogger>();
 
+        public Log4NetProvider()
+        {
+        }
+
         public Log4NetProvider(string log4NetConfigFile)
         {
             Parselog4NetConfigFile(log4NetConfigFile);
@@ -82,7 +86,7 @@ namespace ServiceStack.Logging.Log4Net.Core
 
         public static ILoggerFactory AddLog4Net(this ILoggerFactory factory)
         {
-            factory.AddProvider(new Log4NetProvider("log4net.config"));
+            factory.AddProvider(new Log4NetProvider());
             return factory;
         }
     }
