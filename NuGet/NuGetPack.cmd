@@ -26,6 +26,7 @@ SET NUGET=..\src\.nuget\nuget
 %NUGET% pack ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec -symbols
 %NUGET% pack ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec -symbols
 %NUGET% pack ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec -symbols
+%NUGET% pack ServiceStack.Logging.Log4Net\servicestack.logging.log4net.core.nuspec -symbols
 %NUGET% pack ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec -symbols
 %NUGET% pack ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec -symbols
 

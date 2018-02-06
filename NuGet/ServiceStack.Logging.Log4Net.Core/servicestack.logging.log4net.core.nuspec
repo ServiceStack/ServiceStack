@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>ServiceStack.Logging.Log4Net.Core</id>
+    <version>5.0.0</version>
+    <title>ServiceStack.Logging.Log4Net.Core</title>
+    <authors>ServiceStack</authors>
+    <owners>ServiceStack</owners>
+    <summary>log4Net logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>
+      Provides log4net logging integration for other ServiceStack projects
+    </description>
+    <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
+    <licenseUrl>https://servicestack.net/terms</licenseUrl>
+    <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
+    <tags>servicestack log logging log4net</tags>
+    <language>en-US</language>
+    <copyright>ServiceStack and contributors</copyright>
+    <dependencies>
+      <group targetFramework=".netstandard2.0">
+        <dependency id="log4net" version="[2.0.8, )" />
+        <dependency id="ServiceStack.Interfaces.Core" version="5.0.0" />
+		    <dependency id="Microsoft.Extensions.Logging" version="1.0" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="lib\**\*.*" target="lib" />
+    <file src="..\..\src\ServiceStack.Logging.Log4Net.Core\**\*.cs" target="src" />
+  </files>
+</package>
