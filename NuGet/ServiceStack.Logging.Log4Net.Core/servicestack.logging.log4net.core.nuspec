@@ -19,10 +19,9 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework=".netstandard2.0">
-	  <PackageReference Include="Microsoft.Extensions.Logging" Version="1.0" />
         <dependency id="log4net" version="[2.0.8, )" />
         <dependency id="ServiceStack.Interfaces.Core" version="5.0.0" />
-		<dependency id="Microsoft.Extensions.Logging" version="[2.0.8, )" />
+		    <dependency id="Microsoft.Extensions.Logging" version="1.0" />
       </group>
     </dependencies>
   </metadata>
