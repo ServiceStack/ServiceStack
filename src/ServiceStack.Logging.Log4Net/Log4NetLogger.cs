@@ -5,14 +5,16 @@ namespace ServiceStack.Logging.Log4Net
     /// <summary>
     /// Wrapper over the log4net.1.2.10 and above logger 
     /// </summary>
-	public class Log4NetLogger : ILogWithContext
+	public partial class Log4NetLogger : ILogWithContext
     {
         private readonly log4net.ILog log;
-
+        
+#if !NETSTANDARD2_0            
         public Log4NetLogger(string typeName)
         {
             log = log4net.LogManager.GetLogger(typeName);
         }
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Log4NetLogger"/> class.

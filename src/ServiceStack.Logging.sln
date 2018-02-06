@@ -40,8 +40,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.Slack"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.Serilog", "ServiceStack.Logging.Serilog\ServiceStack.Logging.Serilog.csproj", "{D13C55F2-2688-41E1-B4D1-6B6609851844}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Logging.Log4Net.Core", "ServiceStack.Logging.Log4Net.Core\ServiceStack.Logging.Log4Net.Core.csproj", "{302CE57E-97EF-4A45-ACB3-B20174A92D07}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -151,16 +149,6 @@ Global
 		{D13C55F2-2688-41E1-B4D1-6B6609851844}.Signed|Any CPU.Build.0 = Release|Any CPU
 		{D13C55F2-2688-41E1-B4D1-6B6609851844}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Release|Any CPU
 		{D13C55F2-2688-41E1-B4D1-6B6609851844}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Release|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.MonoTouch|Any CPU.ActiveCfg = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.MonoTouch|Any CPU.Build.0 = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Release|Any CPU.Build.0 = Release|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Signed|Any CPU.ActiveCfg = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.Signed|Any CPU.Build.0 = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.ActiveCfg = Debug|Any CPU
-		{302CE57E-97EF-4A45-ACB3-B20174A92D07}.STATIC_ONLY NO_EXPRESSIONS|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

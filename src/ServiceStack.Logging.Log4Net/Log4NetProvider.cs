@@ -1,18 +1,20 @@
-﻿using System.Collections.Concurrent;
+﻿#if NETSTANDARD2_0
+
+using System.Collections.Concurrent;
 using System.IO;
 using System.Reflection;
 using System.Xml;
 using log4net.Repository;
 using Microsoft.Extensions.Logging;
 
-namespace ServiceStack.Logging.Log4Net.Core
+namespace ServiceStack.Logging.Log4Net
 {
     public class Log4NetProvider : ILoggerProvider
     {
         /// <summary>
         /// The Dictionary containing the associated logger implementations of each category
         /// </summary>
-        private readonly ConcurrentDictionary<string, Log4NetLogger> _loggers =
+        private readonly ConcurrentDictionary<string, Log4NetLogger> loggers =
             new ConcurrentDictionary<string, Log4NetLogger>();
 
         public Log4NetProvider()
@@ -31,7 +33,7 @@ namespace ServiceStack.Logging.Log4Net.Core
         /// <returns></returns>
         public ILogger CreateLogger(string categoryName)
         {
-            return _loggers.GetOrAdd(categoryName, CreateLoggerImplementation);
+            return loggers.GetOrAdd(categoryName, CreateLoggerImplementation);
         }
 
         /// <summary>
@@ -72,7 +74,7 @@ namespace ServiceStack.Logging.Log4Net.Core
 
         public void Dispose()
         {
-            _loggers.Clear();
+            loggers.Clear();
         }
     }
 
@@ -91,3 +93,5 @@ namespace ServiceStack.Logging.Log4Net.Core
         }
     }
 }
+
+#endif
