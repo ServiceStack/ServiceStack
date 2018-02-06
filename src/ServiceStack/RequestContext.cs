@@ -159,9 +159,8 @@ namespace ServiceStack
             if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
 
             var ctxItems = Instance.Items;
-            var disposables = ctxItems[DisposableTracker.HashId] as DisposableTracker;
 
-            if (disposables != null)
+            if (ctxItems[DisposableTracker.HashId] is DisposableTracker disposables)
             {
                 disposables.Dispose();
                 ctxItems.Remove(DisposableTracker.HashId);
