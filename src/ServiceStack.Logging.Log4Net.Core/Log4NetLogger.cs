@@ -312,20 +312,20 @@ namespace ServiceStack.Logging.Log4Net.Core
                 switch (logLevel)
                 {
                     case LogLevel.Critical:
-                        _log.Fatal(message);
+                        _log.Fatal(message, exception);
                         break;
                     case LogLevel.Debug:
                     case LogLevel.Trace:
-                        _log.Debug(message);
+                        _log.Debug(message, exception);
                         break;
                     case LogLevel.Error:
-                        _log.Error(message);
+                        _log.Error(message, exception);
                         break;
                     case LogLevel.Information:
-                        _log.Info(message);
+                        _log.Info(message, exception);
                         break;
                     case LogLevel.Warning:
-                        _log.Warn(message);
+                        _log.Warn(message, exception);
                         break;
                     default:
                         _log.Warn($"Encountered unknown log level {logLevel}, writing out as Info.");
