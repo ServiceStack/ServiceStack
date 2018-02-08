@@ -305,6 +305,13 @@ namespace CheckWeb
 
             Plugins.Add(new OpenApiFeature
             {
+                ApiDeclarationFilter = api =>
+                {
+                    foreach (var path in new[] {api.Paths["/auth"], api.Paths["/auth/{provider}"]})
+                    {
+                        path.Get = path.Put = path.Delete = null;
+                    }
+                },
                 Tags =
                 {
                     new OpenApiTag

@@ -120,6 +120,7 @@ namespace ServiceStack
             }
 
             using (httpResult?.ResultScope?.Invoke())
+            using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(req.QueryString[Keywords.JsConfig]) : null)
             {
                 var cacheKeyEncoded = encoding != null ? cacheInfo.CacheKey + "." + encoding : null;
                 if (responseBytes != null || req.ResponseContentType.IsBinary())

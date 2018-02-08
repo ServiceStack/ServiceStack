@@ -18,6 +18,12 @@ namespace Check.ServiceInterface
         public int? Age { get; set; }
     }
 
+    [Route("/query/rockstars/cached")]
+    public class QueryRockstarsCached : QueryDb<Rockstar>
+    {
+        public int? Age { get; set; }
+    }
+
     [ConnectionInfo(NamedConnection = "pgsql")]
     [Route("/pgsql/rockstars")]
     public class QueryPostgresRockstars : QueryDb<Rockstar>
@@ -241,8 +247,17 @@ namespace Check.ServiceInterface
         public QueryResponse<Rockstar> Any(QueryRockstars dto)
         {
             var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
-            q.Take(1);
+            //q.Take(1);
             return AutoQuery.Execute(dto, q);
         }
+    }
+
+    [CacheResponse(Duration = 3600)]
+    public class AutoQueryCachedServices : Service
+    {
+        public IAutoQueryDb AutoQuery { get; set; }
+
+        public QueryResponse<Rockstar> Any(QueryRockstarsCached request) =>
+            AutoQuery.Execute(request, AutoQuery.CreateQuery(request, Request.GetRequestParams()));
     }
 }
