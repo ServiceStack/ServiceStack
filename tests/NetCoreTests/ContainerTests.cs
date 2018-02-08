@@ -60,7 +60,7 @@ namespace NetCoreTests
             {
                 var client = new HttpClient();
                 var result = await client.GetStringAsync("http://localhost:2000/haskeys?test=foo");
-                Assert.That(result, Is.EqualTo("true"));
+                Assert.That(result.ToLower(), Is.EqualTo("true"));
             }
         }
         
