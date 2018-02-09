@@ -37,7 +37,6 @@ namespace ServiceStack
                 EmbeddedResourceSources = new List<Assembly>(),
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
                 EmbeddedResourceTreatAsFiles = new HashSet<string>(),
-                LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
                 HandlerFactoryPath = ServiceStackPath,
@@ -190,7 +189,6 @@ namespace ServiceStack
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.SoapServiceName = instance.SoapServiceName;
             this.XmlWriterSettings = instance.XmlWriterSettings;
-            this.LogFactory = instance.LogFactory;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.WebHostUrl = instance.WebHostUrl;
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
@@ -304,7 +302,6 @@ namespace ServiceStack
         public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
         public string SoapServiceName { get; set; }
         public XmlWriterSettings XmlWriterSettings { get; set; }
-        public ILogFactory LogFactory { get; set; }
         public bool EnableAccessRestrictions { get; set; }
         public bool UseBclJsonSerializers { get; set; }
         public Regex IsMobileRegex { get; set; }
@@ -315,6 +312,13 @@ namespace ServiceStack
         public bool WriteErrorsToResponse { get; set; }
         public bool DisposeDependenciesAfterUse { get; set; }
         public bool LogUnobservedTaskExceptions { get; set; }
+
+        [Obsolete("Use LogManager.LogFactory")]
+        public ILogFactory LogFactory
+        {
+            get => LogManager.LogFactory;
+            set => LogManager.LogFactory = value;
+        }
 
         public Dictionary<string, string> HtmlReplaceTokens { get; set; }
 

@@ -462,7 +462,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
 				},
 				WsdlServiceNamespace = "http://www.servicestack.net/types",
-				LogFactory = new ConsoleLogFactory(),
 				DebugMode = true,
                 PreferredContentTypes = { MimeTypes.ProtoBuf },
 			});
@@ -530,7 +529,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Host
 					{ "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS" },
 				},
                 WsdlServiceNamespace = "http://www.servicestack.net/types",
-                LogFactory = new ConsoleLogFactory(),
                 DebugMode = true,
             });
 
