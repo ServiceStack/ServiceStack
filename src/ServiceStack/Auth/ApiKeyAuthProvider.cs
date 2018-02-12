@@ -263,7 +263,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        protected virtual void ValidateApiKey(ApiKey apiKey)
+        public virtual void ValidateApiKey(ApiKey apiKey)
         {
             if (apiKey == null)
                 throw HttpError.NotFound("ApiKey does not exist");
@@ -275,7 +275,7 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden("ApiKey has expired");
         }
 
-        private void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
+        public void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
                 throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
@@ -326,8 +326,7 @@ namespace ServiceStack.Auth
             if (authRepo == null)
                 throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
 
-            var apiRepo = authRepo as IManageApiKeys;
-            if (apiRepo == null)
+            if (!(authRepo is IManageApiKeys apiRepo))
                 throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
 
             foreach (var registerService in ServiceRoutes)
