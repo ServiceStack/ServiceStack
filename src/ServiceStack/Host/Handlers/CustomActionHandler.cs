@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using System.Web;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
