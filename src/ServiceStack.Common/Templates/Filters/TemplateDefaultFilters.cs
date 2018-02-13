@@ -558,6 +558,8 @@ namespace ServiceStack.Templates
         public double toDouble(object target) => target.ConvertTo<double>();
         public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
+        public DateTime toDateTime(object target) => target.ConvertTo<DateTime>();
+        public TimeSpan toTimeSpan(object target) => target.ConvertTo<TimeSpan>();
 
         public List<string> toKeys(object target)
         {
