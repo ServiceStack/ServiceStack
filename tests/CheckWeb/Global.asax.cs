@@ -37,7 +37,7 @@ namespace CheckWeb
         /// Initializes a new instance of the <see cref="AppHost"/> class.
         /// </summary>
         public AppHost()
-            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) {}
+            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) { }
 
         /// <summary>
         /// Configure the Web Application host.
@@ -78,6 +78,8 @@ namespace CheckWeb
             {
                 EnableDebugTemplateToAll = true
             });
+
+            //            Plugins.Add(new SoapFormat());
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
@@ -306,7 +308,7 @@ namespace CheckWeb
             {
                 ApiDeclarationFilter = api =>
                 {
-                    foreach (var path in new[] {api.Paths["/auth"], api.Paths["/auth/{provider}"]})
+                    foreach (var path in new[] { api.Paths["/auth"], api.Paths["/auth/{provider}"] })
                     {
                         path.Get = path.Put = path.Delete = null;
                     }
@@ -384,7 +386,7 @@ namespace CheckWeb
     }
 
     [Route("/query/alltypes")]
-    public class QueryAllTypes : QueryDb<AllTypes> {}
+    public class QueryAllTypes : QueryDb<AllTypes> { }
 
     [Route("/test/html")]
     public class TestHtml : IReturn<TestHtml>
@@ -527,8 +529,7 @@ namespace CheckWeb
                 var targetPath = string.Concat(filePath, ".gz");
                 Compress(filePath, targetPath);
 
-                var bs = new BufferedStream(File.OpenRead(targetPath), 8192);
-
+                //var bs = new BufferedStream(File.OpenRead(targetPath), 8192);
                 //Response.AddHeader("Content-Type", "application/pdf");
                 //Response.AddHeader("Content-Disposition", "attachment; filename=test.pdf");
                 //return new GZipStream(bs, CompressionMode.Decompress);
