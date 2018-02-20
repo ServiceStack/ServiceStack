@@ -60,7 +60,10 @@ namespace ServiceStack
             if (result is Stream stream)
             {
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
-                stream.Position = 0;
+                if (stream.CanSeek)
+                {
+                    stream.Position = 0;
+                }
                 await stream.CopyToAsync(response.OutputStream, token);
                 if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;

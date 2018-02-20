@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
@@ -77,8 +78,6 @@ namespace CheckWeb
             {
                 EnableDebugTemplateToAll = true
             });
-            
-//            Plugins.Add(new SoapFormat());
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
@@ -129,7 +128,7 @@ namespace CheckWeb
             {
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(GetRockstars());
-                
+
                 db.DropAndCreateTable<AllTypes>();
                 db.Insert(new AllTypes
                 {
@@ -145,7 +144,7 @@ namespace CheckWeb
                     String = "String"
                 });
             }
-            
+
             Plugins.Add(new MiniProfilerFeature());
 
             var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
@@ -258,11 +257,11 @@ namespace CheckWeb
                     {
                         AuthKey = Convert.FromBase64String("3n/aJNQHPx0cLu/2dN3jWf0GSYL35QlMqgz+LH3hUyA="),
                         RequireSecureConnection = false,
-                    }, 
+                    },
                     new ApiKeyAuthProvider(AppSettings),
                     new BasicAuthProvider(AppSettings),
                 }));
-            
+
             Plugins.Add(new RegistrationFeature());
 
             var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
@@ -383,7 +382,7 @@ namespace CheckWeb
             return existingProviders;
         }
     }
-    
+
     [Route("/query/alltypes")]
     public class QueryAllTypes : QueryDb<AllTypes> {}
 
@@ -508,6 +507,63 @@ namespace CheckWeb
                 LastModified = request.LastModified,
                 CacheControl = request.CacheControl.GetValueOrDefault(CacheControl.None),
             };
+        }
+    }
+
+
+    [Route("/gzip/{FileName}")]
+    public class DownloadGzipFile : IReturn<byte[]>
+    {
+        public string FileName { get; set; }
+    }
+
+    public class FileServices : Service
+    {
+        public object Get(DownloadGzipFile request)
+        {
+            var filePath = HostContext.AppHost.MapProjectPath($"~/img/{request.FileName}");
+            if (Request.RequestPreferences.AcceptsGzip)
+            {
+                var targetPath = string.Concat(filePath, ".gz");
+                Compress(filePath, targetPath);
+
+                var bs = new BufferedStream(File.OpenRead(targetPath), 8192);
+
+                //Response.AddHeader("Content-Type", "application/pdf");
+                //Response.AddHeader("Content-Disposition", "attachment; filename=test.pdf");
+                //return new GZipStream(bs, CompressionMode.Decompress);
+
+                return new HttpResult(new FileInfo(targetPath))
+                {
+                    Headers = {
+                        { HttpHeaders.ContentDisposition, "attachment; filename=" + request.FileName },
+                        { HttpHeaders.ContentEncoding, CompressionTypes.GZip }
+                    }
+                };
+            }
+
+            return new HttpResult(filePath)
+            {
+                Headers = {
+                    { HttpHeaders.ContentDisposition, "attachment; filename=" + request.FileName },
+                }
+            };
+        }
+
+        private void Compress(string readFrom, string writeTo)
+        {
+            byte[] b;
+            using (var f = new FileStream(readFrom, FileMode.Open))
+            {
+                b = new byte[f.Length];
+                f.Read(b, 0, (int)f.Length);
+            }
+
+            using (var fs = new FileStream(writeTo, FileMode.OpenOrCreate))
+            using (var gz = new GZipStream(fs, CompressionMode.Compress, false))
+            {
+                gz.Write(b, 0, b.Length);
+            }
         }
     }
 
