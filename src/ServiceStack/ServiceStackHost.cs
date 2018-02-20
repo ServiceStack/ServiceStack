@@ -691,6 +691,9 @@ namespace ServiceStack
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
 
+            if (Config.UseJsObject)
+                JS.Configure();
+
             if (config.LogUnobservedTaskExceptions)
             {
                 TaskScheduler.UnobservedTaskException += (sender, args) =>
@@ -1109,6 +1112,7 @@ namespace ServiceStack
                     Container = null;
                 }
 
+                JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes
 
                 Instance = null;

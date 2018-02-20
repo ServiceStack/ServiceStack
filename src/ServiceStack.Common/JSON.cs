@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Templates;
 using ServiceStack.Text;
+using ServiceStack.Text.Json;
 
 namespace ServiceStack
 {
@@ -17,6 +18,20 @@ namespace ServiceStack
 
     public static class JS
     {
+        /// <summary>
+        /// Configure ServiceStack.Text JSON Serializer to use Templates JS parsing
+        /// </summary>
+        public static void Configure()
+        {
+            JsonTypeSerializer.Instance.ObjectDeserializer = segment =>
+            {
+                segment.ParseNextToken(out object value, out _);
+                return value;
+            };
+        }
+
+        public static void UnConfigure() => JsonTypeSerializer.Instance.ObjectDeserializer = null;
+
         public static TemplateScopeContext CreateScope(Dictionary<string, object> args = null, TemplateFilter functions = null)
         {
             var context = new TemplateContext();

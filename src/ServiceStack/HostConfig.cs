@@ -161,6 +161,7 @@ namespace ServiceStack
                 },
                 FallbackRestPath = null,
                 UseHttpsLinks = false,
+                UseJsObject = true,
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
                 EnableOptimizations = false,
@@ -247,6 +248,7 @@ namespace ServiceStack
             this.AdminAuthSecret = instance.AdminAuthSecret;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
+            this.UseJsObject = instance.UseJsObject;
             this.EnableOptimizations = instance.EnableOptimizations;
         }
 
@@ -371,6 +373,7 @@ namespace ServiceStack
         public bool UseHttpsLinks { get; set; }
 
         public bool UseCamelCase { get; set; }
+        public bool UseJsObject { get; set; }
         public bool EnableOptimizations { get; set; }
 
         public string AdminAuthSecret { get; set; }
