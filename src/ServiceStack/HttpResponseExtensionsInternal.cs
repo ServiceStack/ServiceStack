@@ -526,7 +526,7 @@ namespace ServiceStack
 
         public static bool ShouldWriteGlobalHeaders(IResponse httpRes)
         {
-            if (HostContext.Config != null && !httpRes.Items.ContainsKey("__global_headers"))
+            if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.Items.ContainsKey("__global_headers"))
             {
                 httpRes.Items["__global_headers"] = true;
                 return true;

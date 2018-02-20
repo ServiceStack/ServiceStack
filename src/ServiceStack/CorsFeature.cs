@@ -76,14 +76,14 @@ namespace ServiceStack
 
             if (allowOriginWhitelist != null)
             {
-                Action<IRequest, IResponse> allowOriginFilter = (httpReq, httpRes) =>
+                void allowOriginFilter(IRequest httpReq, IResponse httpRes)
                 {
                     var origin = httpReq.Headers.Get(HttpHeaders.Origin);
                     if (allowOriginWhitelist.Contains(origin))
                     {
                         httpRes.AddHeader(HttpHeaders.AllowOrigin, origin);
                     }
-                };
+                }
 
                 appHost.PreRequestFilters.Add(allowOriginFilter);
             }
