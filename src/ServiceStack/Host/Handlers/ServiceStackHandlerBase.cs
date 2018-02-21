@@ -183,9 +183,6 @@ namespace ServiceStack.Host.Handlers
         {
             try
             {
-                if (Log.IsDebugEnabled)
-                    Log.DebugFormat("CreateContentTypeRequest/contentType:" + contentType);
-
                 if (!string.IsNullOrEmpty(contentType))
                 {
                     //.NET Core HttpClient Zip Content-Length omission is reported as 0
@@ -198,7 +195,7 @@ namespace ServiceStack.Host.Handlers
                                 ));
 
                     if (Log.IsDebugEnabled)
-                        Log.DebugFormat($"CreateContentTypeRequest/hasContentBody:{hasContentBody}:{httpReq.ContentLength}:{httpReq.Verb}:{httpReq.GetContentEncoding()}");
+                        Log.DebugFormat($"CreateContentTypeRequest/hasContentBody:{hasContentBody}:{httpReq.Verb}:{contentType}:{httpReq.ContentLength}:{httpReq.GetContentEncoding()}");
 
                     if (hasContentBody)
                     {
