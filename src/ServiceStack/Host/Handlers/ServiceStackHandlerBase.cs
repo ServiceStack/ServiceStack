@@ -183,11 +183,22 @@ namespace ServiceStack.Host.Handlers
         {
             try
             {
+                if (Log.IsDebugEnabled)
+                    Log.DebugFormat("CreateContentTypeRequest/contentType:" + contentType);
+
                 if (!string.IsNullOrEmpty(contentType))
                 {
                     //.NET Core HttpClient Zip Content-Length omission is reported as 0
                     var hasContentBody = httpReq.ContentLength > 0
-                        || (HttpUtils.HasRequestBody(httpReq.Verb) && httpReq.GetContentEncoding() != null);
+                        || (HttpUtils.HasRequestBody(httpReq.Verb) && 
+                                (httpReq.GetContentEncoding() != null
+#if NETSTANDARD2_0
+                                || httpReq.InputStream.Length > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
+#endif
+                                ));
+
+                    if (Log.IsDebugEnabled)
+                        Log.DebugFormat($"CreateContentTypeRequest/hasContentBody:{hasContentBody}:{httpReq.ContentLength}:{httpReq.Verb}:{httpReq.GetContentEncoding()}");
 
                     if (hasContentBody)
                     {
@@ -209,9 +220,8 @@ namespace ServiceStack.Host.Handlers
 
         protected static object GetCustomRequestFromBinder(IRequest httpReq, Type requestType)
         {
-            Func<IRequest, object> requestFactoryFn;
             HostContext.ServiceController.RequestTypeFactoryMap.TryGetValue(
-                requestType, out requestFactoryFn);
+                requestType, out var requestFactoryFn);
 
             return requestFactoryFn?.Invoke(httpReq);
         }
