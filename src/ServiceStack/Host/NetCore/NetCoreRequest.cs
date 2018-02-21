@@ -191,7 +191,7 @@ namespace ServiceStack.Host.NetCore
 
         public string AbsoluteUri => request.GetDisplayUrl();
 
-        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
+        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
         public string Authorization => request.Headers[HttpHeaders.Authorization];
 
