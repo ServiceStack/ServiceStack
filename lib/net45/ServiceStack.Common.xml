@@ -114,6 +114,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.JS.Configure">
+            <summary>
+            Configure ServiceStack.Text JSON Serializer to use Templates JS parsing
+            </summary>
+        </member>
         <member name="T:ServiceStack.Logging.ConsoleLogFactory">
             <summary>
             Creates a Console Logger, that logs all messages to: System.Console

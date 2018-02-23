@@ -15,6 +15,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class AutoQueryDataServiceTests : AutoQueryDataTests
     {
+        static AutoQueryDataServiceTests()
+        {
+#if NET45
+            //https://githubengineering.com/crypto-removal-notice/
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+#endif
+        }
+
         public override ServiceStackHost CreateAppHost()
         {
             return new AutoQueryDataServiceAppHost();
