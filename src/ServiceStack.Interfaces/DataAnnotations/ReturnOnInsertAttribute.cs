@@ -10,5 +10,5 @@ namespace ServiceStack.DataAnnotations
     /// returning/output clause of INSERT sql sentences
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class ReturnAttribute : AttributeBase { }
+    public class ReturnOnInsertAttribute : AttributeBase { }
 }
