@@ -142,8 +142,7 @@ namespace ServiceStack.Auth
                 tokens.Company = authInfo.Get("company");
                 tokens.Country = authInfo.Get("country");
 
-                string profileUrl;
-                if (authInfo.TryGetValue("avatar_url", out profileUrl))
+                if (authInfo.TryGetValue("avatar_url", out var profileUrl))
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
 
                 if (tokens.Email == null)
@@ -174,8 +173,7 @@ namespace ServiceStack.Auth
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
+            if (!(authSession is AuthUserSession userSession)) return;
 
             userSession.UserName = tokens.UserName ?? userSession.UserName;
             userSession.UserAuthName = userSession.UserName;

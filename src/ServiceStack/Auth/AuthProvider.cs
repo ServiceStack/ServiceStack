@@ -130,6 +130,16 @@ namespace ServiceStack.Auth
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
+            if (session is AuthUserSession authSession)
+            {
+                var failed = authSession.Validate(authService, session, tokens, authInfo);
+                if (failed != null)
+                {
+                    authService.RemoveSession();
+                    return failed;
+                }
+            }
+
             var authRepo = GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
