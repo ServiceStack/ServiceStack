@@ -223,6 +223,16 @@ namespace ServiceStack
                 }
             }
 
+            try
+            {
+                absoluteUrl = new Uri(absoluteUrl).ToString();
+            }
+            catch (Exception ex)
+            {
+                if (log.IsDebugEnabled)
+                    log.Debug("Could not parse URL: " + absoluteUrl, ex);
+            }
+
             var response = ResultsFilter?.Invoke(typeof(TResponse), httpMethod, absoluteUrl, request);
             if (response is TResponse)
             {
@@ -262,8 +272,7 @@ namespace ServiceStack
                                 {
                                     if (t.IsFaulted)
                                     {
-                                        var refreshEx = t.Exception.UnwrapIfSingleException() as WebServiceException;
-                                        if (refreshEx != null)
+                                        if (t.Exception.UnwrapIfSingleException() is WebServiceException refreshEx)
                                         {
                                             throw new RefreshTokenException(refreshEx);
                                         }
