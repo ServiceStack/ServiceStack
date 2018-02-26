@@ -151,9 +151,6 @@ namespace ServiceStack
             var cacheControl = webRes.Headers.CacheControl;
             if (cacheControl != null)
             {
-                if (cacheControl.NoCache)
-                    return;
-
                 if (cacheControl.MaxAge != null)
                     entry.MaxAge = cacheControl.MaxAge.Value;
 
