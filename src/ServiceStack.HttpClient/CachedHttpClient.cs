@@ -18,47 +18,29 @@ namespace ServiceStack
 
         public int CleanCachesWhenCountExceeds { get; set; }
 
-        public int CacheCount
-        {
-            get { return cache.Count; }
-        }
+        public int CacheCount => cache.Count;
 
         private long cacheHits;
-        public long CacheHits
-        {
-            get { return cacheHits; }
-        }
+        public long CacheHits => cacheHits;
 
         private long notModifiedHits;
-        public long NotModifiedHits
-        {
-            get { return notModifiedHits; }
-        }
+        public long NotModifiedHits => notModifiedHits;
 
         private long errorFallbackHits;
-        public long ErrorFallbackHits
-        {
-            get { return errorFallbackHits; }
-        }
+        public long ErrorFallbackHits => errorFallbackHits;
 
         private long cachesAdded;
-        public long CachesAdded
-        {
-            get { return cachesAdded; }
-        }
+        public long CachesAdded => cachesAdded;
 
         private long cachesRemoved;
-        public long CachesRemoved
-        {
-            get { return cachesRemoved; }
-        }
+        public long CachesRemoved => cachesRemoved;
 
         private ConcurrentDictionary<string, HttpCacheEntry> cache = new ConcurrentDictionary<string, HttpCacheEntry>();
 
         private readonly Action<HttpRequestMessage> existingRequestFilter;
         private readonly ResultsFilterHttpDelegate existingResultsFilter;
         private readonly ResultsFilterHttpResponseDelegate existingResultsFilterResponse;
-        private ExceptionFilterHttpDelegate existingExceptionFilter;
+        private readonly ExceptionFilterHttpDelegate existingExceptionFilter;
 
         private readonly JsonHttpClient client;
 
@@ -91,8 +73,7 @@ namespace ServiceStack
             if (existingRequestFilter != null)
                 existingRequestFilter(webReq);
 
-            HttpCacheEntry entry;
-            if (webReq.Method.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out entry))
+            if (webReq.Method.Method == HttpMethods.Get && cache.TryGetValue(webReq.RequestUri.ToString(), out var entry))
             {
                 if (entry.ETag != null)
                     webReq.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(
@@ -106,12 +87,9 @@ namespace ServiceStack
 
         private object OnResultsFilter(Type responseType, string httpMethod, string requestUri, object request)
         {
-            var ret = existingResultsFilter != null
-                ? existingResultsFilter(responseType, httpMethod, requestUri, request)
-                : null;
+            var ret = existingResultsFilter?.Invoke(responseType, httpMethod, requestUri, request);
 
-            HttpCacheEntry entry;
-            if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out entry))
+            if (httpMethod == HttpMethods.Get && cache.TryGetValue(requestUri, out var entry))
             {
                 if (!entry.ShouldRevalidate())
                 {
@@ -125,15 +103,11 @@ namespace ServiceStack
 
         public object OnExceptionFilter(HttpResponseMessage webRes, string requestUri, Type responseType)
         {
-            if (existingExceptionFilter != null)
-            {
-                var response = existingExceptionFilter(webRes, requestUri, responseType);
-                if (response != null)
-                    return response;
-            }
+            var response = existingExceptionFilter?.Invoke(webRes, requestUri, responseType);
+            if (response != null)
+                return response;
 
-            HttpCacheEntry entry;
-            if (cache.TryGetValue(requestUri, out entry))
+            if (cache.TryGetValue(requestUri, out var entry))
             {
                 if (webRes.StatusCode == HttpStatusCode.NotModified)
                 {
@@ -158,7 +132,7 @@ namespace ServiceStack
             if (httpMethod != HttpMethods.Get || response == null || webRes == null)
                 return;
             
-            var eTag = webRes.Headers.ETag != null ? webRes.Headers.ETag.Tag : null;
+            var eTag = webRes.Headers.ETag?.Tag;
             
             if (eTag == null && webRes.Content.Headers.LastModified == null)
                 return;
@@ -204,10 +178,7 @@ namespace ServiceStack
 
         public void SetCache(ConcurrentDictionary<string, HttpCacheEntry> cache)
         {
-            if (cache == null)
-                throw new ArgumentNullException("cache");
-
-            this.cache = cache;
+            this.cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }
 
         public int RemoveCachesOlderThan(TimeSpan age)
@@ -223,8 +194,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                HttpCacheEntry ignore;
-                if (cache.TryRemove(key, out ignore))
+                if (cache.TryRemove(key, out var ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
 
@@ -244,8 +214,7 @@ namespace ServiceStack
 
             foreach (var key in keysToRemove)
             {
-                HttpCacheEntry ignore;
-                if (cache.TryRemove(key, out ignore))
+                if (cache.TryRemove(key, out var ignore))
                     Interlocked.Increment(ref cachesRemoved);
             }
 
@@ -600,14 +569,14 @@ namespace ServiceStack
 
         public string SessionId
         {
-            get { return client.SessionId; }
-            set { client.SessionId = value; }
+            get => client.SessionId;
+            set => client.SessionId = value;
         }
 
         public int Version
         {
-            get { return client.Version; }
-            set { client.Version = value; }
+            get => client.Version;
+            set => client.Version = value;
         }
     }
 
