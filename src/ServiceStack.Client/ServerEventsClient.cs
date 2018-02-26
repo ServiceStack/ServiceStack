@@ -180,8 +180,8 @@ namespace ServiceStack
 
             this.Resolver = new NewInstanceResolver();
             this.ReceiverTypes = new List<Type>();
-            this.Handlers = new Dictionary<string, ServerEventCallback>();
-            this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
+            this.Handlers = new ConcurrentDictionary<string, ServerEventCallback>();
+            this.NamedReceivers = new ConcurrentDictionary<string, ServerEventCallback>();
         }
 
         public ServerEventsClient Start()
