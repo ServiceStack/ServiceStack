@@ -816,6 +816,37 @@ namespace ServiceStack
             return this;
         }
 
+        public ServerEventsClient RemoveListeners(string eventName)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    handlers.Clear();
+            }
+
+            return this;
+        }
+
+        public bool HasListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    return handlers.Contains(handler);
+            }
+            return false;
+        }
+
+        public bool HasListeners(string eventName)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    return handlers.Any();
+            }
+            return false;
+        }
+
         public void RaiseEvent(string eventName, ServerEventMessage message)
         {
             lock (listeners)
