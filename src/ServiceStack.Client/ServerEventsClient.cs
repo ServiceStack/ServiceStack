@@ -837,6 +837,25 @@ namespace ServiceStack
             }
         }
 
+        public void RemoveAllListeners()
+        {
+            lock (listeners)
+            {
+                listeners.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Removes all registered Handlers, Named Receivers and Listeners
+        /// </summary>
+        public void RemoveAllRegistrations()
+        {
+            Handlers.Clear();
+            NamedReceivers.Clear();
+            ReceiverTypes.Clear();
+            RemoveAllListeners();
+        }
+
         public virtual string GetStatsDescription()
         {
             lock (this)
