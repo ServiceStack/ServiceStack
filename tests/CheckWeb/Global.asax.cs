@@ -444,6 +444,16 @@ namespace CheckWeb
         public string Text { get; set; }
     }
 
+    [Route("/swagger/model")]
+    public class SwaggerModel : IReturn<SwaggerModel>
+    {
+        public int Int { get; set; }
+        public string String { get; set; }
+        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTimeOffset { get; set; }
+        public TimeSpan TimeSpan { get; set; }
+    }
+
     public class MyServices : Service
     {
         //Return default.html for unmatched requests so routing is handled on client
@@ -452,6 +462,8 @@ namespace CheckWeb
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(ReturnText request) => request.Text;
+
+        public object Any(SwaggerModel request) => request;
     }
 
     [Route("/plain-dto")]

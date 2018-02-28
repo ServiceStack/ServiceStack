@@ -126,7 +126,8 @@ namespace ServiceStack.Api.OpenApi
             {typeof(double), OpenApiType.Number},
             {typeof(decimal), OpenApiType.Number},
             {typeof(string), OpenApiType.String},
-            {typeof(DateTime), OpenApiType.String}
+            {typeof(DateTime), OpenApiType.String},
+            {typeof(DateTimeOffset), OpenApiType.String},
         };
 
         private static readonly Dictionary<Type, string> ClrTypesToSwaggerScalarFormats = new Dictionary<Type, string> {
@@ -143,9 +144,9 @@ namespace ServiceStack.Api.OpenApi
             {typeof(float), OpenApiTypeFormat.Float},
             {typeof(double), OpenApiTypeFormat.Double},
             {typeof(decimal), OpenApiTypeFormat.Double},
-            {typeof(DateTime), OpenApiTypeFormat.DateTime}
+            {typeof(DateTime), OpenApiTypeFormat.DateTime},
+            {typeof(DateTimeOffset), OpenApiTypeFormat.DateTime},
         };
-
 
         private static bool IsSwaggerScalarType(Type type)
         {
