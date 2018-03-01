@@ -135,7 +135,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var url = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .AddQueryParam(Keywords.TokenCookie, authResponse.BearerToken);
 
-            var response = url.PostToUrl(null, accept: MimeTypes.Json)
+            var response = url.PostJsonToUrl("{}")
                 .FromJson<SecuredResponse>();
 
             Assert.That(response.Result, Is.EqualTo(request.Name));
@@ -268,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         private static string CreateExpiredToken()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProviderReader.Name);
             jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
@@ -457,8 +457,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_Auto_reconnect_with_RefreshToken_in_OnAuthenticationRequired_after_expired_token()
         {
             var client = GetClient();
-            var serviceClient = client as JsonServiceClient;
-            if (serviceClient == null) //OnAuthenticationRequired not implemented in JsonHttpClient
+            if (!(client is JsonServiceClient serviceClient)) //OnAuthenticationRequired not implemented in JsonHttpClient
                 return;
 
             var called = 0;
@@ -540,6 +539,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             response = client.Post(new Authenticate());
             Assert.That(response.BearerToken, Is.Null);
             Assert.That(response.RefreshToken, Is.Null);
+        }
+
+        [Test]
+        public void Can_validate_valid_token()
+        {
+            var authClient = GetClient();
+            var jwt = authClient.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            }).BearerToken;
+
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            Assert.That(jwtProvider.IsValidJwt(jwt));
+
+            var jwtPayload = jwtProvider.GetValidJwtPayload(jwt);
+            Assert.That(jwtPayload, Is.Not.Null);
+            Assert.That(jwtPayload["preferred_username"], Is.EqualTo(Username));
+        }
+
+        [Test]
+        public void Does_not_validate_invalid_token()
+        {
+            var expiredJwt = CreateExpiredToken();
+
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            Assert.That(jwtProvider.IsValidJwt(expiredJwt), Is.False);
+
+            Assert.That(jwtProvider.GetValidJwtPayload(expiredJwt), Is.Null);
         }
 
     }

@@ -387,6 +387,27 @@ namespace ServiceStack.Auth
             }
         }
 
+        public bool IsValidJwt(string jwt) => GetValidJwtPayload(jwt) != null;
+        public bool IsValidJwt(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;
+
+        public JsonObject GetValidJwtPayload(string jwt) =>
+            GetValidJwtPayload(null, jwt);
+
+        /// <summary>
+        /// Return token payload which is both verified and still valid
+        /// </summary>
+        public JsonObject GetValidJwtPayload(IRequest req, string jwt)
+        {
+            var vefifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+            var invalidError = GetInvalidJwtPayloadError(vefifiedPayload);
+            return invalidError != null
+                ? null
+                : vefifiedPayload;
+        }
+        
+        /// <summary>
+        /// Return token payload which has been verified to be created using the configured encryption key.
+        /// </summary>
         public JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
             if (parts.Length == 3)
@@ -522,26 +543,35 @@ namespace ServiceStack.Auth
 
         public void AssertJwtPayloadIsValid(JsonObject jwtPayload)
         {
+            var errorMessage = GetInvalidJwtPayloadError(jwtPayload);
+            if (errorMessage != null)
+                throw new TokenException(errorMessage);
+        }
+
+        public string GetInvalidJwtPayloadError(JsonObject jwtPayload)
+        {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
             var expiresAt = GetUnixTime(jwtPayload, "exp");
             var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
             if (secondsSinceEpoch >= expiresAt)
-                throw new TokenException(ErrorMessages.TokenExpired);
+                return ErrorMessages.TokenExpired;
 
             if (InvalidateTokensIssuedBefore != null)
             {
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
                 if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                    throw new TokenException(ErrorMessages.TokenInvalidated);
+                    return ErrorMessages.TokenInvalidated;
             }
 
             if (jwtPayload.TryGetValue("aud", out var audience))
             {
                 if (audience != Audience)
-                    throw new TokenException("Invalid Audience: " + audience);
+                    return "Invalid Audience: " + audience;
             }
+
+            return null;
         }
 
         public bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
