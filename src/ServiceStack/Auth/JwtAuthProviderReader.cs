@@ -387,8 +387,8 @@ namespace ServiceStack.Auth
             }
         }
 
-        public bool IsValidJwt(string jwt) => GetValidJwtPayload(jwt) != null;
-        public bool IsValidJwt(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;
+        public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;
+        public bool IsJwtValid(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;
 
         public JsonObject GetValidJwtPayload(string jwt) =>
             GetValidJwtPayload(null, jwt);

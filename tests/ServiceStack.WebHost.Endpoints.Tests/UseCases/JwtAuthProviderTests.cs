@@ -553,7 +553,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             }).BearerToken;
 
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            Assert.That(jwtProvider.IsValidJwt(jwt));
+            Assert.That(jwtProvider.IsJwtValid(jwt));
 
             var jwtPayload = jwtProvider.GetValidJwtPayload(jwt);
             Assert.That(jwtPayload, Is.Not.Null);
@@ -566,7 +566,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var expiredJwt = CreateExpiredToken();
 
             var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
-            Assert.That(jwtProvider.IsValidJwt(expiredJwt), Is.False);
+            Assert.That(jwtProvider.IsJwtValid(expiredJwt), Is.False);
 
             Assert.That(jwtProvider.GetValidJwtPayload(expiredJwt), Is.Null);
         }
