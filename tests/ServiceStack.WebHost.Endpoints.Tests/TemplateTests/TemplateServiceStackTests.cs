@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
@@ -154,10 +155,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
+        public void AssertHtmlContentType(HttpWebResponse res)
+        {
+            Assert.That(res.ContentType.MatchesContentType(MimeTypes.Html), $"Expected {MimeTypes.Html} got '{res.ContentType}'");
+        }
+
+        public void AssertJsonContentType(HttpWebResponse res)
+        {
+            Assert.That(res.ContentType.MatchesContentType(MimeTypes.Json), $"Expected {MimeTypes.Json} got '{res.ContentType}'");
+        }
+
         [Test]
         public void Can_call_AutoQuery_Data_services()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl(responseFilter:AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -170,7 +181,7 @@ Aniseed Syrup".NormalizeNewLines()));
         [Test]
         public void Can_call_AutoQuery_Data_services_with_limit()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -187,7 +198,7 @@ Boston Crab Meat
         [Test]
         public void Can_call_AutoQuery_Data_services_with_category()
         {
-            var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -213,7 +224,7 @@ Lakkalik&#246;&#246;ri
         [Test]
         public void Can_call_AutoQuery_Db_services()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -234,7 +245,7 @@ Michael Jackson
         [Test]
         public void Can_call_AutoQuery_Db_services_with_limit()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
@@ -251,7 +262,7 @@ Elvis Presley
         [Test]
         public void Can_call_AutoQuery_Db_services_by_age()
         {
-            var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
@@ -271,7 +282,7 @@ Jim Morrison
             var html = BaseUrl.CombineWith("autoquery-customers")
                 .AddQueryParam("countryIn","UK,Germany")
                 .AddQueryParam("orderBy","customerId")
-                .GetStringFromUrl();
+                .GetStringFromUrl(responseFilter: AssertHtmlContentType);
             html.Print();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
@@ -303,7 +314,7 @@ WANDK: Die Wandernde Kuh, Germany
         [Test]
         public void Can_call_AutoQuery_QueryCustomer_top5_UK_Germany()
         {
-            var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl();
+            var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             html.Print();
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
@@ -324,7 +335,7 @@ CONSH: Consolidated Holdings, UK
         {
             var url = BaseUrl.CombineWith("api", "customers");
 
-            var json = url.GetJsonFromUrl();
+            var json = url.GetJsonFromUrl(responseFilter:AssertJsonContentType);
             var customers = json.FromJson<List<Customer>>();
             Assert.That(customers.Count, Is.EqualTo(TemplateQueryData.Customers.Count));
         }
@@ -337,7 +348,7 @@ CONSH: Consolidated Holdings, UK
                 .AddQueryParam("city", "London")
                 .AddQueryParam("limit", 10);
 
-            var json = url.GetJsonFromUrl();
+            var json = url.GetJsonFromUrl(responseFilter: AssertJsonContentType);
             var customers = json.FromJson<List<Customer>>();
 
             Assert.That(customers.Map(x => x.CustomerId), Is.EquivalentTo("AROUT,BSBEV,CONSH,EASTC,NORTS,SEVES".Split(',')));
@@ -348,7 +359,7 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_single_customer_with_path_args()
         {
-            var json = BaseUrl.CombineWith("api", "customers", "ALFKI").GetJsonFromUrl();
+            var json = BaseUrl.CombineWith("api", "customers", "ALFKI").GetJsonFromUrl(responseFilter: AssertJsonContentType);
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));
@@ -359,10 +370,10 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_customer_with_csv_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl();
+            var json = BaseUrl.CombineWith("api", "customers").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertJsonContentType);
             Assert.That(json, Does.StartWith("["));
             
-            var html = BaseUrl.CombineWith("api", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl();
+            var html = BaseUrl.CombineWith("api", "customers.html").AddQueryParam("limit", 1).GetStringFromUrl(responseFilter: AssertHtmlContentType);
             Assert.That(html, Does.StartWith("<"));
             
             var csv = BaseUrl.CombineWith("api", "customers.csv").AddQueryParam("limit", 1).GetStringFromUrl();
@@ -372,7 +383,7 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_call_single_customer_with_json_extension_to_force_ContentType()
         {
-            var json = BaseUrl.CombineWith("api", "customers", "ALFKI.json").GetStringFromUrl();
+            var json = BaseUrl.CombineWith("api", "customers", "ALFKI.json").GetStringFromUrl(responseFilter: AssertJsonContentType);
             var customer = json.FromJson<Customer>();
             Assert.That(customer.CustomerId, Is.EqualTo("ALFKI"));
             Assert.That(customer.CompanyName, Is.EqualTo("Alfreds Futterkiste"));

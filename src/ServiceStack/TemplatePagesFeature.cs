@@ -532,8 +532,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 LayoutPage = layoutPage,
                 Model = Model,
             };
+
             try
             {
+                httpRes.ContentType = page.Format.ContentType;
                 await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
@@ -570,6 +572,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             try
             {
+                httpRes.ContentType = page.Format.ContentType;
                 await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
