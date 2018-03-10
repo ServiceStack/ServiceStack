@@ -394,7 +394,7 @@ namespace ServiceStack.Auth
             return referrerUrl;
         }
 
-        internal void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
+        protected void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
         {
             if (authRepo == null)
                 return;

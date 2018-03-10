@@ -68,16 +68,14 @@ namespace ServiceStack.Auth
 
         public static ICollection<string> GetRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth)
         {
-            var managesRoles = UserAuthRepo as IManageRoles;
-            return managesRoles != null 
+            return UserAuthRepo is IManageRoles managesRoles 
                 ? managesRoles.GetRoles(userAuth.Id.ToString()) 
                 : userAuth.Roles;
         }
 
         public static ICollection<string> GetPermissions(this IAuthRepository UserAuthRepo, IUserAuth userAuth)
         {
-            var managesRoles = UserAuthRepo as IManageRoles;
-            return managesRoles != null 
+            return UserAuthRepo is IManageRoles managesRoles 
                 ? managesRoles.GetPermissions(userAuth.Id.ToString()) 
                 : userAuth.Permissions;
         }
