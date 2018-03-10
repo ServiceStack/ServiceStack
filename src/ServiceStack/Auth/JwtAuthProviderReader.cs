@@ -353,42 +353,54 @@ namespace ServiceStack.Auth
 
             if (bearerToken != null)
             {
-                var parts = bearerToken.Split('.');
-                if (parts.Length == 3)
+                try
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
-
-                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                    if (jwtPayload == null) //not verified
-                        return;
-
-                    if (ValidateToken != null)
+                    var parts = bearerToken.Split('.');
+                    if (parts.Length == 3)
                     {
-                        if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
-                    }
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
-                    req.Items[Keywords.Session] = session;
+                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                        if (jwtPayload == null) //not verified
+                            return;
+
+                        if (ValidateToken != null)
+                        {
+                            if (!ValidateToken(jwtPayload, req))
+                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                        }
+
+                        var session = CreateSessionFromPayload(req, jwtPayload);
+                        req.Items[Keywords.Session] = session;
+                    }
+                    else if (parts.Length == 5) //Encrypted JWE Token
+                    {
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
+
+                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                        if (jwtPayload == null) //not verified
+                            return;
+
+                        if (ValidateToken != null)
+                        {
+                            if (!ValidateToken(jwtPayload, req))
+                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                        }
+
+                        var session = CreateSessionFromPayload(req, jwtPayload);
+                        req.Items[Keywords.Session] = session;
+                    }
                 }
-                else if (parts.Length == 5) //Encrypted JWE Token
+                catch (Exception)
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
-
-                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                    if (jwtPayload == null) //not verified
-                        return;
-
-                    if (ValidateToken != null)
+                    if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
                     {
-                        if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                        (req.Response as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
                     }
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
-                    req.Items[Keywords.Session] = session;
+                    throw;
                 }
             }
         }
@@ -416,102 +428,90 @@ namespace ServiceStack.Auth
         /// </summary>
         public JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
-            try
+            if (parts.Length == 3)
             {
-                if (parts.Length == 3)
+                var header = parts[0];
+                var payload = parts[1];
+                var signatureBytes = parts[2].FromBase64UrlSafe();
+
+                var headerJson = header.FromBase64UrlSafe().FromUtf8Bytes();
+                var payloadBytes = payload.FromBase64UrlSafe();
+
+                var headerData = headerJson.FromJson<Dictionary<string, string>>();
+
+                var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
+
+                var algorithm = headerData["alg"];
+
+                //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+                if (RequireHashAlgorithm && algorithm != HashAlgorithm)
+                    throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
+
+                if (!VerifyPayload(req, algorithm, bytesToSign, signatureBytes))
+                    return null;
+
+                var payloadJson = payloadBytes.FromUtf8Bytes();
+                var jwtPayload = JsonObject.Parse(payloadJson);
+                return jwtPayload;
+            }
+            if (parts.Length == 5) //Encrypted JWE Token
+            {
+                var jweHeaderBase64Url = parts[0];
+                var jweEncKeyBase64Url = parts[1];
+                var ivBase64Url = parts[2];
+                var cipherTextBase64Url = parts[3];
+                var tagBase64Url = parts[4];
+
+                var sentTag = tagBase64Url.FromBase64UrlSafe();
+                var aadBytes = (jweHeaderBase64Url + "." + jweEncKeyBase64Url).ToUtf8Bytes();
+                var iv = ivBase64Url.FromBase64UrlSafe();
+                var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
+
+                var privateKey = GetPrivateKey(req);
+                if (privateKey == null)
+                    throw new Exception("PrivateKey required to decrypt JWE Token");
+
+                var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
+                var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, privateKey.Value, UseRsaKeyLength);
+
+                var authKey = new byte[128 / 8];
+                var cryptKey = new byte[128 / 8];
+                Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
+                Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
+
+                using (var hmac = new HMACSHA256(authKey))
+                using (var encryptedStream = new MemoryStream())
                 {
-                    var header = parts[0];
-                    var payload = parts[1];
-                    var signatureBytes = parts[2].FromBase64UrlSafe();
-
-                    var headerJson = header.FromBase64UrlSafe().FromUtf8Bytes();
-                    var payloadBytes = payload.FromBase64UrlSafe();
-
-                    var headerData = headerJson.FromJson<Dictionary<string, string>>();
-
-                    var bytesToSign = string.Concat(header, ".", payload).ToUtf8Bytes();
-
-                    var algorithm = headerData["alg"];
-
-                    //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-                    if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                        throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
-
-                    if (!VerifyPayload(req, algorithm, bytesToSign, signatureBytes))
-                        return null;
-
-                    var payloadJson = payloadBytes.FromUtf8Bytes();
-                    var jwtPayload = JsonObject.Parse(payloadJson);
-                    return jwtPayload;
-                }
-                if (parts.Length == 5) //Encrypted JWE Token
-                {
-                    var jweHeaderBase64Url = parts[0];
-                    var jweEncKeyBase64Url = parts[1];
-                    var ivBase64Url = parts[2];
-                    var cipherTextBase64Url = parts[3];
-                    var tagBase64Url = parts[4];
-
-                    var sentTag = tagBase64Url.FromBase64UrlSafe();
-                    var aadBytes = (jweHeaderBase64Url + "." + jweEncKeyBase64Url).ToUtf8Bytes();
-                    var iv = ivBase64Url.FromBase64UrlSafe();
-                    var cipherText = cipherTextBase64Url.FromBase64UrlSafe();
-
-                    var privateKey = GetPrivateKey(req);
-                    if (privateKey == null)
-                        throw new Exception("PrivateKey required to decrypt JWE Token");
-
-                    var jweEncKey = jweEncKeyBase64Url.FromBase64UrlSafe();
-                    var cryptAuthKeys256 = RsaUtils.Decrypt(jweEncKey, privateKey.Value, UseRsaKeyLength);
-
-                    var authKey = new byte[128 / 8];
-                    var cryptKey = new byte[128 / 8];
-                    Buffer.BlockCopy(cryptAuthKeys256, 0, authKey, 0, authKey.Length);
-                    Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
-
-                    using (var hmac = new HMACSHA256(authKey))
-                    using (var encryptedStream = new MemoryStream())
+                    using (var writer = new BinaryWriter(encryptedStream))
                     {
-                        using (var writer = new BinaryWriter(encryptedStream))
-                        {
-                            writer.Write(aadBytes);
-                            writer.Write(iv);
-                            writer.Write(cipherText);
-                            writer.Flush();
+                        writer.Write(aadBytes);
+                        writer.Write(iv);
+                        writer.Write(cipherText);
+                        writer.Flush();
 
-                            var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
+                        var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
 
-                            if (!calcTag.EquivalentTo(sentTag))
-                                return null;
-                        }
-                    }
-
-                    var aes = Aes.Create();
-                    aes.KeySize = 128;
-                    aes.BlockSize = 128;
-                    aes.Mode = CipherMode.CBC;
-                    aes.Padding = PaddingMode.PKCS7;
-                    using (aes)
-                    using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
-                    using (var ms = MemoryStreamFactory.GetStream(cipherText))
-                    using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
-                    {
-                        var jwtPayloadBytes = cryptStream.ReadFully();
-                        return JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
+                        if (!calcTag.EquivalentTo(sentTag))
+                            return null;
                     }
                 }
 
-                throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
-            }
-            catch (Exception)
-            {
-                if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
+                var aes = Aes.Create();
+                aes.KeySize = 128;
+                aes.BlockSize = 128;
+                aes.Mode = CipherMode.CBC;
+                aes.Padding = PaddingMode.PKCS7;
+                using (aes)
+                using (var decryptor = aes.CreateDecryptor(cryptKey, iv))
+                using (var ms = MemoryStreamFactory.GetStream(cipherText))
+                using (var cryptStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
                 {
-                    (req.Response as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
+                    var jwtPayloadBytes = cryptStream.ReadFully();
+                    return JsonObject.Parse(jwtPayloadBytes.FromUtf8Bytes());
                 }
-
-                throw;
             }
+
+            throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
         public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
