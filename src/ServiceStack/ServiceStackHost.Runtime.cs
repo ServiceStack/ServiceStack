@@ -77,6 +77,9 @@ namespace ServiceStack
             foreach (var authProvider in AuthenticateService.AuthWithRequestProviders)
             {
                 authProvider.PreAuthenticate(httpReq, httpRes);
+
+                if (httpRes.IsClosed)
+                    return;
             }
         }
 

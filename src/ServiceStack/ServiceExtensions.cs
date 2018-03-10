@@ -133,6 +133,8 @@ namespace ServiceStack
             
             var authProviders = AuthenticateService.GetAuthProviders();
             AuthenticateAttribute.PreAuthenticate(req, authProviders);
+            if (req.Response.IsClosed)
+                return false;
             
             var session = req.GetSession();
             return session != null && authProviders.Any(x => session.IsAuthorized(x.Provider));
