@@ -35,7 +35,7 @@ namespace ServiceStack.FluentValidation.Results
         /// <summary>
         /// Gets or sets the error code.
         /// </summary>
-        string errorCode;
+        string errorCode = "Custom";
 		public string ErrorCode
         {
             get => errorCode;
