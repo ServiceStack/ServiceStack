@@ -286,30 +286,22 @@ namespace ServiceStack.Auth
 
         public abstract object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request);
 
-        public virtual Task OnFailedAuthenticationAsync(IAuthSession session, IRequest httpReq, IResponse httpRes)
-        {
-            OnFailedAuthentication(session, httpReq, httpRes);
-            return TypeConstants.EmptyTask;
-        }
-
-        public virtual void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        public virtual Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, "{0} realm=\"{1}\"".Fmt(this.Provider, this.AuthRealm));
-            httpRes.EndRequest();
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
         public static Task HandleFailedAuth(IAuthProvider authProvider,
             IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             if (authProvider is AuthProvider baseAuthProvider)
-                return baseAuthProvider.OnFailedAuthenticationAsync(session, httpReq, httpRes);
+                return baseAuthProvider.OnFailedAuthentication(session, httpReq, httpRes);
 
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{authProvider.Provider} realm=\"{authProvider.AuthRealm}\"");
-            httpRes.EndRequest();
-
-            return TypeConstants.EmptyTask;
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
         protected virtual bool UserNameAlreadyExists(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens = null)

@@ -538,6 +538,23 @@ namespace ServiceStack
             return httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
         }
 
+        public virtual async Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto)
+        {
+            var httpError = new HttpError(res.StatusCode, res.StatusDescription);
+            var response = await OnServiceException(req, requestDto, httpError);
+            if (response != null)
+            {
+                await res.EndHttpHandlerRequestAsync(afterHeaders: async httpRes =>
+                {
+                    await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream);
+                });
+            }
+            else
+            {
+                res.EndRequest();
+            }
+        }
+
         public virtual void OnStartupException(Exception ex)
         {
             if (Config.StrictMode == true)

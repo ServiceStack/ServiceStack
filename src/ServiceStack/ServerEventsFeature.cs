@@ -122,10 +122,7 @@ namespace ServiceStack
 
             var session = req.GetSession();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
-            {
-                session.ReturnFailedAuthentication(req);
-                return TypeConstants.EmptyTask;
-            }
+                return session.ReturnFailedAuthentication(req);
 
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");

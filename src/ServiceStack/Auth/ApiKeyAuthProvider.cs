@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -345,12 +346,12 @@ namespace ServiceStack.Auth
             }
         }
 
-        public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        public override Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             //Needs to be 'Basic ' in order for HttpWebRequest to accept challenge and send NetworkCredentials
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"Basic realm=\"{this.AuthRealm}\"");
-            httpRes.EndRequest();
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
         public List<ApiKey> GenerateNewApiKeys(string userId, params string[] environments)
