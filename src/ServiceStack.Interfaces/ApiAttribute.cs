@@ -41,6 +41,8 @@ namespace ServiceStack
         /// </summary>
         public bool IsRequired { get; set; }
 
+        public bool InlineSchema { get; set; }
+
         public ApiAttribute() { }
 
         public ApiAttribute(string description) : this(description, GenerateBodyParameter.IfNotDisabled) { }

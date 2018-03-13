@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.Api.OpenApi.Support;
 using System.Runtime.Serialization;
 
@@ -29,5 +30,8 @@ namespace ServiceStack.Api.OpenApi.Specification
         public OrderedDictionary<string, OpenApiProperty> Properties { get; set; }
         [DataMember(Name = "additionalProperties")]
         public OpenApiProperty AdditionalProperties { get; set; }
+
+        [IgnoreDataMember]
+        public Type ClrType { get; set; }
     }
 }

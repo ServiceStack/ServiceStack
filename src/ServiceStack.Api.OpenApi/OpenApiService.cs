@@ -58,7 +58,7 @@ namespace ServiceStack.Api.OpenApi
 
             var definitions = new Dictionary<string, OpenApiSchema>
             {
-                { "Object", new OpenApiSchema { Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>() } },
+                { "Object", new OpenApiSchema { Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>(), ClrType = typeof(object)} },
             };
 
             foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new { Value = x, Verb = y })))
@@ -82,7 +82,7 @@ namespace ServiceStack.Api.OpenApi
                 Host = basePath.Authority,
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
-                Definitions = definitions,
+                Definitions = definitions.Where(x => x.Value.ClrType is null || !IsInlineSchema(x.Value.ClrType)).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
                 SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
@@ -95,7 +95,7 @@ namespace ServiceStack.Api.OpenApi
 
             return new HttpResult(result)
             {
-                ResultScope = () => JsConfig.With(includeNullValues: false)
+                ResultScope = () => JsConfig.With(includeNullValues: false, includeTypeInfo: false, excludeTypeInfo: true)
             };
         }
 
@@ -235,7 +235,8 @@ namespace ServiceStack.Api.OpenApi
             {
                 Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Array,
-                Items = GetOpenApiListItems(listItemType, route, verb)
+                Items = GetOpenApiListItems(listItemType, route, verb),
+                ClrType = schemaType
             };
         }
 
@@ -269,7 +270,8 @@ namespace ServiceStack.Api.OpenApi
                 Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Object,
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb)
+                AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb),
+                ClrType = schemaType
             };
         }
 
@@ -295,7 +297,8 @@ namespace ServiceStack.Api.OpenApi
                 {
                     { "Key", GetOpenApiProperty(schemas, keyType, route, verb) },
                     { "Value", GetOpenApiProperty(schemas, valueType, route, verb) }
-                }
+                },
+                ClrType = schemaType
             };
         }
 
@@ -322,8 +325,16 @@ namespace ServiceStack.Api.OpenApi
 
             if (IsKeyValuePairType(propertyType))
             {
-                ParseDefinitions(schemas, propertyType, route, verb);
-                schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                if (IsInlineSchema(propertyType))
+                {
+                    ParseDefinitions(schemas, propertyType, route, verb);
+                    InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+                }
+                else
+                {
+                    ParseDefinitions(schemas, propertyType, route, verb);
+                    schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                }
             }
             else if (IsListType(propertyType))
             {
@@ -341,12 +352,18 @@ namespace ServiceStack.Api.OpenApi
                         schemaProp.Items.Add("x-nullable", false);
                         //schemaProp.Items.Add("required", "true");
                     }
+                    ParseDefinitions(schemas, listItemType, route, verb);
+                }
+                else if (IsInlineSchema(listItemType))
+                {
+                    ParseDefinitions(schemas, listItemType, route, verb);
+                    InlineSchema(schemas[GetSchemaTypeName(listItemType)], schemaProp);
                 }
                 else
                 {
                     schemaProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
+                    ParseDefinitions(schemas, listItemType, route, verb);
                 }
-                ParseDefinitions(schemas, listItemType, route, verb);
             }
             else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
             {
@@ -371,6 +388,11 @@ namespace ServiceStack.Api.OpenApi
                 schemaProp.Nullable = IsRequiredType(propertyType) ? false : (bool?)null;
                 //schemaProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
             }
+            else if (IsInlineSchema(propertyType))
+            {
+                ParseDefinitions(schemas, propertyType, route, verb);
+                InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+            }
             else
             {
                 ParseDefinitions(schemas, propertyType, route, verb);
@@ -378,6 +400,48 @@ namespace ServiceStack.Api.OpenApi
             }
 
             return schemaProp;
+        }
+
+        private static void InlineSchema(OpenApiSchema schema, OpenApiProperty schemaProp)
+        {
+            schemaProp.Items = new Dictionary<string, object>
+            {
+                {"title", schema.Title},
+                {"discriminator", schema.Discriminator},
+                {"readOnly", schema.ReadOnly},
+                {"xml", schema.Xml},
+                {"externalDocs", schema.ExternalDocs},
+                {"example", schema.Example},
+                {"required", schema.Required},
+                {"allOf", schema.AllOf},
+                {"properties", schema.Properties},
+                {"additionalProperties", schema.AdditionalProperties},
+                {"description", schema.Description},
+                {"type", schema.Type},
+                {"format", schema.Format},
+                {"items", schema.Items},
+                {"collectionFormat", schema.CollectionFormat},
+                {"default", schema.Default},
+                {"maximum", schema.Maximum},
+                {"exclusiveMaximum", schema.ExclusiveMaximum},
+                {"exclusiveMinimum", schema.ExclusiveMinimum},
+                {"maxLength", schema.MaxLength},
+                {"minLength", schema.MinLength},
+                {"pattern", schema.Pattern},
+                {"maxItems", schema.MaxItems},
+                {"minItems", schema.MinItems},
+                {"uniqueItems", schema.UniqueItems},
+                {"maxProperties", schema.MaxProperties},
+                {"minProperties", schema.MinProperties},
+                {"enum", schema.Enum},
+                {"multipleOf", schema.MultipleOf},
+                {"x-nullable", schema.Nullable}
+            };
+        }
+
+        protected bool IsInlineSchema(Type schemaType)
+        {
+            return schemaType.HasAttribute<ApiAttribute>() && schemaType.GetCustomAttribute<ApiAttribute>().InlineSchema;
         }
 
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
@@ -400,7 +464,8 @@ namespace ServiceStack.Api.OpenApi
                     Type = OpenApiType.Object,
                     Title = schemaType.Name,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                    Properties = new OrderedDictionary<string, OpenApiProperty>()
+                    Properties = new OrderedDictionary<string, OpenApiProperty>(),
+                    ClrType = schemaType
                 };
                 parseProperties = schemaType.IsUserType();
             }
@@ -540,8 +605,11 @@ namespace ServiceStack.Api.OpenApi
                     {
                         Title = GetSchemaTypeName(schemaType),
                         Type = GetSwaggerTypeName(schemaType),
-                        Format = GetSwaggerTypeFormat(schemaType)
+                        Format = GetSwaggerTypeFormat(schemaType),
+                        ClrType = schemaType
                     }
+                : IsInlineSchema(schemaType)
+                    ? schemas[GetSchemaTypeName(schemaType)]
                     : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
             schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
@@ -904,11 +972,22 @@ namespace ServiceStack.Api.OpenApi
                 return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn, allowableValueAttrs);
             }
 
+            OpenApiSchema openApiSchema;
+
+            if (IsInlineSchema(schemaType))
+            {
+                openApiSchema = schemas[GetSchemaTypeName(schemaType)];
+            }
+            else
+            {
+                openApiSchema = new OpenApiSchema {Ref = "#/definitions/" + GetSchemaTypeName(schemaType)};
+            }
+
             return new OpenApiParameter
             {
                 In = paramIn,
                 Name = paramName,
-                Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
+                Schema = openApiSchema
             };
         }
 
