@@ -91,6 +91,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".well-known\acme-challenge\XzF9VXFuw4UMBVdiX2jDj2vykjrvEsQR8AZ8kJiaBdk" />
     <Content Include="Global.asax" />
     <Content Include="css\bootstrap.css" />
     <Content Include="css\default.css" />

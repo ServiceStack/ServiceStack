@@ -96,7 +96,8 @@ namespace ServiceStack
                 CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
                 {
-                    "jspm_packages/**/*.json"
+                    "jspm_packages/**/*.json", //JSPM
+                    ".well-known/**/*",        //LetsEncrypt
                 },
                 ForbiddenPaths = new List<string>(),
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
