@@ -37,6 +37,8 @@ namespace ServiceStack.Common.Tests
                 {"BadDictionaryKey", "A1,B:"},
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
+                {"Email:From", "test@email.com"},
+                {"Email:Subject", "The Subject"},
             };
 
             var configurationBuilder = new ConfigurationBuilder();
@@ -44,6 +46,21 @@ namespace ServiceStack.Common.Tests
             var config = configurationBuilder.Build();
             var appSettings = new NetCoreAppSettings(config);
             return appSettings;
+        }
+
+        public class EmailConfig
+        {
+            public string From { get; set; }
+            public string Subject { get; set; }
+        }
+
+        [Test]
+        public void Can_populate_typed_config()
+        {
+            var appSettings = GetAppSettings();
+            var emailConfig = appSettings.Get<EmailConfig>("Email");
+            Assert.That(emailConfig.From, Is.EqualTo("test@email.com"));
+            Assert.That(emailConfig.Subject, Is.EqualTo("The Subject"));
         }
     }
 #endif
