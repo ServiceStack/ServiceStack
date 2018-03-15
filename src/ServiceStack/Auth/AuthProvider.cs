@@ -130,7 +130,7 @@ namespace ServiceStack.Auth
                 authInfo.ForEach((x, y) => tokens.Items[x] = y);
             }
 
-            if (session is AuthUserSession authSession)
+            if (session is IAuthSessionExtended authSession)
             {
                 var failed = authSession.Validate(authService, session, tokens, authInfo);
                 if (failed != null)
