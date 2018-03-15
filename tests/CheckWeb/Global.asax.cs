@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Check.ServiceInterface;
 using Check.ServiceModel;
+using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
@@ -78,8 +79,6 @@ namespace CheckWeb
             {
                 EnableDebugTemplateToAll = true
             });
-
-            //            Plugins.Add(new SoapFormat());
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
@@ -578,6 +577,25 @@ namespace CheckWeb
                 gz.Write(b, 0, b.Length);
             }
         }
+    }
+
+    [Route("/match/{Language}/{Name*}", Matches = @"PathInfo =~ \/match\/[a-z]{2}\/[A-Za-z]+$")]
+    public class MatchName : IReturn<HelloResponse>
+    {
+        public string Language { get; set; }
+        public string Name { get; set; }
+    }
+
+    [Route("/match/{Language*}", Matches = @"PathInfo =~ \/match\/[a-z]{2}$")]
+    public class MatchLang : IReturn<HelloResponse>
+    {
+        public string Language { get; set; }
+    }
+
+    public class RouteMatchServices : Service
+    {
+        public HelloResponse Any(MatchName request) => new HelloResponse { Result = request.GetType().Name };
+        public HelloResponse Any(MatchLang request) => new HelloResponse { Result = request.GetType().Name };
     }
 
     public class Global : System.Web.HttpApplication
