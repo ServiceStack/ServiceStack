@@ -561,11 +561,16 @@ namespace ServiceStack
             httpReq.Items[Keywords.Session] = session;
         }
 
+
+        [Obsolete("override OnSessionFilter(IRequest,IAuthSession,string)")]
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
+
         /// <summary>
         /// Inspect or modify ever new UserSession created or resolved from cache. 
         /// return null if Session is invalid to create new Session.
         /// </summary>
-        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
+        public virtual IAuthSession OnSessionFilter(IRequest req, IAuthSession session, string withSessionId) => 
+            OnSessionFilter(session, withSessionId);
 
         public virtual bool AllowSetCookie(IRequest req, string cookieName)
         {

@@ -545,7 +545,7 @@ namespace ServiceStack.Auth
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
 
-            HostContext.AppHost.OnSessionFilter(session, sessionId);
+            HostContext.AppHost.OnSessionFilter(req, session, sessionId);
             return session;
         }
 

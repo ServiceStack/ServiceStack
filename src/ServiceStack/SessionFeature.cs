@@ -71,8 +71,8 @@ namespace ServiceStack
                 httpReq = HostContext.GetCurrentRequest();
 
             var iSession = httpReq.GetSession(reload:false);
-            if (iSession is T)
-                return (T)iSession;
+            if (iSession is T variable)
+                return variable;
 
             var sessionId = httpReq.GetSessionId();
             var sessionKey = GetSessionKey(sessionId);
@@ -80,7 +80,7 @@ namespace ServiceStack
             {
                 var session = (cache ?? httpReq.GetCacheClient()).Get<T>(sessionKey);
                 if (!Equals(session, default(T)))
-                    return (T)HostContext.AppHost.OnSessionFilter((IAuthSession)session, sessionId);
+                    return (T)HostContext.AppHost.OnSessionFilter(httpReq, (IAuthSession)session, sessionId);
             }
 
             return (T)CreateNewSession(httpReq, sessionId);

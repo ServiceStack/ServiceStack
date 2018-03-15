@@ -289,7 +289,7 @@ namespace ServiceStack.Auth
                 var session = req.GetCacheClient().Get<IAuthSession>(apiSessionKey);
 
                 if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(session, session.Id);
+                    session = HostContext.AppHost.OnSessionFilter(req, session, session.Id);
 
                 if (session != null)
                 {

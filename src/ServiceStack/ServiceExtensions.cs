@@ -173,7 +173,7 @@ namespace ServiceStack
             var sessionId = httpReq.GetSessionId();
             var session = oSession as IAuthSession;
             if (session != null)
-                session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+                session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
             if (session != null)
                 return session;
 
@@ -183,13 +183,13 @@ namespace ServiceStack
                 session = httpReq.GetCacheClient().Get<IAuthSession>(sessionKey);
 
                 if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(session, sessionId);
+                    session = HostContext.AppHost.OnSessionFilter(httpReq, session, sessionId);
             }
 
             if (session == null)
             {
                 var newSession = SessionFeature.CreateNewSession(httpReq, sessionId);
-                session = HostContext.AppHost.OnSessionFilter(newSession, sessionId) ?? newSession;
+                session = HostContext.AppHost.OnSessionFilter(httpReq, newSession, sessionId) ?? newSession;
             }
 
             httpReq.Items[Keywords.Session] = session;
