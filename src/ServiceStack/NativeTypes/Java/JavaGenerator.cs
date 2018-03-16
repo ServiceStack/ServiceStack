@@ -86,7 +86,7 @@ namespace ServiceStack.NativeTypes.Java
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
-            RemoveIgnoredTypes(metadata);
+            var includeList = RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -110,8 +110,7 @@ namespace ServiceStack.NativeTypes.Java
 
             var defaultNamespace = Config.GlobalNamespace ?? DefaultGlobalNamespace;
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -121,18 +120,18 @@ namespace ServiceStack.NativeTypes.Java
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), defaultNamespace));
-            sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(defaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
-            sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(defaultValue("SettersReturnThis"), Config.SettersReturnThis));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), defaultNamespace));
+            sb.AppendLine("{0}AddPropertyAccessors: {1}".Fmt(DefaultValue("AddPropertyAccessors"), Config.AddPropertyAccessors));
+            sb.AppendLine("{0}SettersReturnThis: {1}".Fmt(DefaultValue("SettersReturnThis"), Config.SettersReturnThis));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -192,8 +191,7 @@ namespace ServiceStack.NativeTypes.Java
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -273,10 +271,11 @@ namespace ServiceStack.NativeTypes.Java
             typeof(ErrorResponse).Name,
         }; 
 
-        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
+            return includeList;
         }
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,

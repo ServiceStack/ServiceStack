@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Text;
@@ -936,7 +937,7 @@ namespace ServiceStack.NativeTypes
             metadata.Types.RemoveAll(x => x.IgnoreSystemType()); 
         }
 
-        public static void RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
+        public static List<string> RemoveIgnoredTypes(this MetadataTypes metadata, MetadataTypesConfig config)
         {
             var includeList = GetIncludeList(metadata, config);
 
@@ -965,55 +966,76 @@ namespace ServiceStack.NativeTypes
                     metadata.Types.Add(responseType);
                 }
             }
+
+            return includeList;
         }
+
+        const string NameWithReferencesWildCard = ".*";
+        const string NamespaceWildCard = "/*";
 
         public static List<string> GetIncludeList(MetadataTypes metadata, MetadataTypesConfig config)
         {
-            const string wildCard = ".*";
-
             if (config.IncludeTypes == null)
                 return null;
 
-            var typesToExpand = config.IncludeTypes
-                .Where(s => s.Length > 2 && s.EndsWith(wildCard))
+            var namespacedTypes = config.IncludeTypes
+                .Where(s => s.Length > 2 && s.EndsWith(NamespaceWildCard))
                 .Map(s => s.Substring(0, s.Length - 2));
 
-            if (typesToExpand.Count == 0)
-                return config.IncludeTypes;
+            var explicitTypes = config.IncludeTypes
+                .Where(x => !x.EndsWith(NamespaceWildCard))
+                .ToList();
+
+            var typesToExpand = explicitTypes
+                .Where(s => s.Length > 2 && s.EndsWith(NameWithReferencesWildCard))
+                .Map(s => s.Substring(0, s.Length - 2));
+
+            if (typesToExpand.Count != 0 || NamespaceWildCard.Length != 0)
+            {
+                var includeTypesInNamespace = NamespaceWildCard.Length > 0
+                    ? metadata.Types
+                        .Where(x => namespacedTypes.Any(ns => x.Namespace?.StartsWith(ns) == true))
+                        .Select(x => x.Name)
+                        .ToHashSet()
+                    : TypeConstants<string>.EmptyHashSet;
+
+                var includedMetadataTypes = metadata.Operations
+                    .Select(o => o.Request)
+                    .Where(t => typesToExpand.Contains(t.Name))
+                    .ToList();
+
+                var includeSet = includedMetadataTypes
+                    .Where(x => x.ReturnMarkerTypeName != null)
+                    .Select(x => x.ReturnMarkerTypeName.Name)
+                    .ToHashSet();
+
+                var includedResponses = metadata.Operations
+                    .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
+                    .Select(o => o.Response)
+                    .ToList();
+                includedResponses.ForEach(x => includeSet.Add(x.Name));
+
+                var returnTypesForInclude = metadata.Operations
+                    .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
+                    .Map(x => x.Response);
+
+                // GetReferencedTypes for both request + response objects
+                var referenceTypes = includedMetadataTypes
+                    .Union(returnTypesForInclude)
+                    .Where(x => x != null)
+                    .SelectMany(x => x.GetReferencedTypeNames());
+
+                return referenceTypes
+                    .Union(explicitTypes)
+                    .Union(includeTypesInNamespace)
+                    .Union(typesToExpand)
+                    .Union(returnTypesForInclude.Select(x => x.Name))
+                    .Distinct()
+                    .ToList();
+            }
 
             // From IncludeTypes get the corresponding MetadataTypes
-            var includedMetadataTypes = metadata.Operations
-                .Select(o => o.Request)
-                .Where(t => typesToExpand.Contains(t.Name))
-                .ToList();
-
-            var includeSet = includedMetadataTypes
-                .Where(x => x.ReturnMarkerTypeName != null)
-                .Select(x => x.ReturnMarkerTypeName.Name)
-                .ToHashSet();
-
-            var includedResponses = metadata.Operations
-                .Where(t => typesToExpand.Contains(t.Request.Name) && t.Response != null)
-                .Select(o => o.Response)
-                .ToList();
-            includedResponses.ForEach(x => includeSet.Add(x.Name));
-
-            var returnTypesForInclude = metadata.Operations
-                .Where(x => x.Response != null && includeSet.Contains(x.Response.Name))
-                .Map(x => x.Response);
-
-            // GetReferencedTypes for both request + response objects
-            var referenceTypes = includedMetadataTypes
-                .Union(returnTypesForInclude)
-                .Where(x => x != null)
-                .SelectMany(x => x.GetReferencedTypeNames());
-
-            return referenceTypes
-                .Union(config.IncludeTypes)
-                .Union(typesToExpand)
-                .Union(returnTypesForInclude.Select(x => x.Name))
-                .Distinct()
-                .ToList();
+            return config.IncludeTypes;
         }
 
         public static bool IgnoreType(this MetadataType type, MetadataTypesConfig config, List<string> overrideIncludeType = null)

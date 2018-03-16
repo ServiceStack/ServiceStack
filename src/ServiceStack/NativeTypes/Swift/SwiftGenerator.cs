@@ -60,7 +60,7 @@ namespace ServiceStack.NativeTypes.Swift
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var typeNamespaces = new HashSet<string>();
-            RemoveIgnoredTypes(metadata);
+            var includeList = RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -68,8 +68,7 @@ namespace ServiceStack.NativeTypes.Swift
                 ? Config.DefaultImports
                 : DefaultImports;
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -82,18 +81,18 @@ namespace ServiceStack.NativeTypes.Swift
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
 
-            sb.AppendLine("{0}BaseClass: {1}".Fmt(defaultValue("BaseClass"), Config.BaseClass));
-            sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(defaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}BaseClass: {1}".Fmt(DefaultValue("BaseClass"), Config.BaseClass));
+            sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(DefaultValue("AddModelExtensions"), Config.AddModelExtensions));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(DefaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -213,10 +212,11 @@ namespace ServiceStack.NativeTypes.Swift
             typeof(ErrorResponse).Name,
         };
 
-        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
+            return includeList;
         }
 
         private string AppendType(ref StringBuilderWrapper sb, ref StringBuilderWrapper sbExt, MetadataType type, string lastNS,

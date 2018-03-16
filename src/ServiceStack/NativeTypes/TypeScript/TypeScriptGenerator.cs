@@ -132,7 +132,7 @@ namespace ServiceStack.NativeTypes.TypeScript
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -183,7 +183,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             allTypes.AddRange(types);
             allTypes.AddRange(responseTypes);
             allTypes.AddRange(requestTypes);
-            allTypes.RemoveAll(x => x.IgnoreType(Config));
+            allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
 
             allTypes = FilterTypes(allTypes);
 
