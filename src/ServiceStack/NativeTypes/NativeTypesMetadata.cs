@@ -743,13 +743,13 @@ namespace ServiceStack.NativeTypes
 
         public static List<MetadataType> GetAllMetadataTypes(this MetadataTypes metadata)
         {
-            var allTypes = new List<MetadataType>();
-            allTypes.AddRange(metadata.Types);
-            allTypes.AddRange(metadata.Operations.Where(x => x.Request != null).Select(x => x.Request));
-            allTypes.AddRange(metadata.Operations.Where(x => x.Response != null).Select(x => x.Response));
-            allTypes.AddRange(metadata.Operations.Where(x => x.Request?.ReturnMarkerTypeName != null).Select(
-                x => x.Request.ReturnMarkerTypeName.ToMetadataType()));
-            return allTypes;
+            var allTypes = metadata.Operations.Where(x => x.Request != null).Select(x => x.Request)
+                .Union(metadata.Operations.Where(x => x.Response != null).Select(x => x.Response))
+                .Union(metadata.Operations.Where(x => x.Request?.ReturnMarkerTypeName != null).Select(
+                    x => x.Request.ReturnMarkerTypeName.ToMetadataType()))
+                .Union(metadata.Types);
+            
+            return allTypes.ToList();
         }
 
         public static HashSet<string> GetReferencedTypeNames(this MetadataType type)
@@ -993,7 +993,7 @@ namespace ServiceStack.NativeTypes
             if (typesToExpand.Count != 0 || NamespaceWildCard.Length != 0)
             {
                 var includeTypesInNamespace = NamespaceWildCard.Length > 0
-                    ? metadata.Types
+                    ? metadata.GetAllMetadataTypes()
                         .Where(x => namespacedTypes.Any(ns => x.Namespace?.StartsWith(ns) == true))
                         .Select(x => x.Name)
                         .ToHashSet()
