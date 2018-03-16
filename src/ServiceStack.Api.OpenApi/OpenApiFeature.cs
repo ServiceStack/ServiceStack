@@ -39,12 +39,15 @@ namespace ServiceStack.Api.OpenApi
 
         public List<string> AnyRouteVerbs { get; set; }
 
+        public List<string> InlineSchemaTypesInNamespaces { get; set; }
+
         public bool DisableSwaggerUI { get; set; }
 
         public OpenApiFeature()
         {
             Tags = new List<OpenApiTag>();
             AnyRouteVerbs = new List<string> { HttpMethods.Get, HttpMethods.Post, HttpMethods.Put, HttpMethods.Delete };
+            InlineSchemaTypesInNamespaces = new List<string>();
         }
 
         public void Configure(IAppHost appHost)
@@ -65,6 +68,7 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.SchemaFilter = SchemaFilter;
             OpenApiService.SchemaPropertyFilter = SchemaPropertyFilter;
             OpenApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
+            OpenApiService.InlineSchemaTypesInNamespaces = InlineSchemaTypesInNamespaces.ToArray();
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 

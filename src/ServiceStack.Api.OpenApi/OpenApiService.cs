@@ -39,6 +39,7 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<OpenApiSchema> SchemaFilter { get; set; }
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         internal static string[] AnyRouteVerbs { get; set; }
+        internal static string[] InlineSchemaTypesInNamespaces { get; set; }
 
         public object Get(OpenApiSpecification request)
         {
@@ -441,7 +442,7 @@ namespace ServiceStack.Api.OpenApi
 
         protected bool IsInlineSchema(Type schemaType)
         {
-            return schemaType.HasAttribute<ApiAttribute>() && schemaType.GetCustomAttribute<ApiAttribute>().InlineSchema;
+            return InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
         }
 
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
