@@ -1,5 +1,5 @@
 /* Options:
-Date: 2017-11-08 03:43:53
+Date: 2018-03-16 01:56:41
 Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://test.servicestack.net
@@ -110,7 +110,7 @@ namespace testdtos
 
     [Route("/jwt")]
     public partial class CreateJwt
-        : AuthUserSession, IReturn<CreateJwtResponse>
+        : AuthUserSession, IReturn<CreateJwtResponse>, IMeta
     {
         public virtual DateTime? JwtExpiry { get; set; }
     }
@@ -412,6 +412,13 @@ namespace testdtos
         public virtual string CustomName { get; set; }
     }
 
+    [Route("/logs")]
+    public partial class ViewLogs
+        : IReturn<string>
+    {
+        public virtual bool Clear { get; set; }
+    }
+
     [Route("/wait/{ForMs}")]
     public partial class Wait
         : IReturn<Wait>
@@ -456,8 +463,8 @@ namespace testdtos
 
     public partial class CustomHttpErrorResponse
     {
-        public virtual string Custom { get; set; }
         public virtual ResponseStatus ResponseStatus { get; set; }
+        public virtual string Custom { get; set; }
     }
 
     public partial class Device
@@ -953,20 +960,20 @@ namespace testdtos
     }
 
     public partial class QueryPocoBase
-        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
     public partial class QueryPocoIntoBase
-        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
     [Route("/rockstars")]
     public partial class QueryRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
     }
 

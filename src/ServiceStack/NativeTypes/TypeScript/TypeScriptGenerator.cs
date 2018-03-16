@@ -50,7 +50,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"IDictionary", "any"},
         };
         private static string declaredEmptyString = "\"\"";
-        private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
         {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
@@ -142,8 +142,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var globalNamespace = Config.GlobalNamespace;
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -220,8 +219,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -300,7 +298,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty())
                 {
                     var typeDeclaration = !Config.ExportAsTypes
-                        ? "enum"
+                        ? "declare enum"
                         : "export enum";
 
                     sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}");
@@ -373,8 +371,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                                 returnType = "Object";
 
                             // This is to avoid invalid syntax such as "return new string()"
-                            string replaceReturnType;
-                            if (primitiveDefaultValues.TryGetValue(returnType, out replaceReturnType))
+                            if (primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType))
                                 returnType = replaceReturnType;
 
                             responseTypeExpression = replaceReturnType == null ?
@@ -633,8 +630,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }

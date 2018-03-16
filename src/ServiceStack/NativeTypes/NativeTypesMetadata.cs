@@ -388,11 +388,12 @@ namespace ServiceStack.NativeTypes
                 metaType.EnumValues = new List<string>();
 
                 var isDefaultLayout = true;
-                var values = Enum.GetValues(type);
-                for (var i = 0; i < values.Length; i++)
+                var names = Enum.GetNames(type);
+                for (var i = 0; i < names.Length; i++)
                 {
-                    var value = values.GetValue(i);
-                    var name = value.ToString();
+                    var name = names[i];
+                    var enumMember = (FieldInfo)type.GetMember(name).First();
+                    var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
 
                     if (enumValue != i.ToString())

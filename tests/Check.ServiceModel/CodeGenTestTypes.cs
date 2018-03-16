@@ -124,9 +124,11 @@ namespace Check.ServiceModel.Operations
     [Flags]
     public enum EnumFlags
     {
+        Value0 = 0,
         Value1 = 1,
         Value2 = 2,
-        Value3 = 4,
+        Value3 = 3,
+        Value123 = Value1 | Value2 | Value3,
     }
 
     [Restrict(InternalOnly = true)]
