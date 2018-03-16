@@ -59,7 +59,7 @@ namespace ServiceStack.Api.OpenApi
 
             var definitions = new Dictionary<string, OpenApiSchema>
             {
-                { "Object", new OpenApiSchema { Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>(), ClrType = typeof(object)} },
+                { "Object", new OpenApiSchema { Description = "Object", Type = OpenApiType.Object, Properties = new OrderedDictionary<string, OpenApiProperty>() } },
             };
 
             foreach (var restPath in paths.SelectMany(x => x.Verbs.Select(y => new { Value = x, Verb = y })))
@@ -83,7 +83,7 @@ namespace ServiceStack.Api.OpenApi
                 Host = basePath.Authority,
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
-                Definitions = definitions.Where(x => x.Value.ClrType is null || !IsInlineSchema(x.Value.ClrType)).ToDictionary(x => x.Key, x => x.Value),
+                Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
                 SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
@@ -236,8 +236,7 @@ namespace ServiceStack.Api.OpenApi
             {
                 Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Array,
-                Items = GetOpenApiListItems(listItemType, route, verb),
-                ClrType = schemaType
+                Items = GetOpenApiListItems(listItemType, route, verb)
             };
         }
 
@@ -271,8 +270,7 @@ namespace ServiceStack.Api.OpenApi
                 Title = GetSchemaTypeName(schemaType),
                 Type = OpenApiType.Object,
                 Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb),
-                ClrType = schemaType
+                AdditionalProperties = GetOpenApiProperty(schemas, valueType, route, verb)
             };
         }
 
@@ -298,8 +296,7 @@ namespace ServiceStack.Api.OpenApi
                 {
                     { "Key", GetOpenApiProperty(schemas, keyType, route, verb) },
                     { "Value", GetOpenApiProperty(schemas, valueType, route, verb) }
-                },
-                ClrType = schemaType
+                }
             };
         }
 
@@ -445,6 +442,8 @@ namespace ServiceStack.Api.OpenApi
             return InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
         }
 
+        public Dictionary<string, Type> SchemaIdToClrType { get; } = new Dictionary<string, Type>();
+        
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
             if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
@@ -465,12 +464,12 @@ namespace ServiceStack.Api.OpenApi
                     Type = OpenApiType.Object,
                     Title = schemaType.Name,
                     Description = schemaType.GetDescription() ?? GetSchemaTypeName(schemaType),
-                    Properties = new OrderedDictionary<string, OpenApiProperty>(),
-                    ClrType = schemaType
+                    Properties = new OrderedDictionary<string, OpenApiProperty>()
                 };
                 parseProperties = schemaType.IsUserType();
             }
             schemas[schemaId] = schema;
+            SchemaIdToClrType[schemaId] = schemaType;
 
             var properties = schemaType.GetProperties();
 
@@ -606,8 +605,7 @@ namespace ServiceStack.Api.OpenApi
                     {
                         Title = GetSchemaTypeName(schemaType),
                         Type = GetSwaggerTypeName(schemaType),
-                        Format = GetSwaggerTypeFormat(schemaType),
-                        ClrType = schemaType
+                        Format = GetSwaggerTypeFormat(schemaType)
                     }
                 : IsInlineSchema(schemaType)
                     ? schemas[GetSchemaTypeName(schemaType)]
