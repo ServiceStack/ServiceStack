@@ -77,7 +77,7 @@ namespace CheckWeb
 
             Plugins.Add(new TemplatePagesFeature
             {
-                EnableDebugTemplateToAll = true
+                EnableDebugTemplateToAll = false
             });
 
             //ProxyFetureTests

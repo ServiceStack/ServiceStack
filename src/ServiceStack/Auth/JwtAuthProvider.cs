@@ -351,7 +351,11 @@ namespace ServiceStack.Auth
                     Request.RemoveSession(session.Id);
             }
 
-            return new HttpResult(new ConvertSessionToTokenResponse())
+            return new HttpResult(new ConvertSessionToTokenResponse {
+                AccessToken = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse
+                    ? token
+                    : null
+            })
             {
                 Cookies = {
                     new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {

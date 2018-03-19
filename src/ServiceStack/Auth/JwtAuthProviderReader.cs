@@ -228,6 +228,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool RemoveInvalidTokenCookie { get; set; }
 
+        /// <summary>
+        /// Whether to also Include Token in ConvertSessionToTokenResponse   
+        /// </summary>
+        public bool IncludeJwtInConvertSessionToTokenResponse { get; set;  }
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -260,6 +265,7 @@ namespace ServiceStack.Auth
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
                 AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
+                IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
                 Audience = appSettings.GetString("jwt.Audience");

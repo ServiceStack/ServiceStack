@@ -259,6 +259,9 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
 
         [DataMember(Order = 2)]
+        public string AccessToken { get; set; }
+
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
