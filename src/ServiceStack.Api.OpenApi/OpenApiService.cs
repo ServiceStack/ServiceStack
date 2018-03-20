@@ -39,6 +39,7 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<OpenApiSchema> SchemaFilter { get; set; }
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         internal static string[] AnyRouteVerbs { get; set; }
+        internal static string[] InlineSchemaTypesInNamespaces { get; set; }
 
         public object Get(OpenApiSpecification request)
         {
@@ -82,7 +83,7 @@ namespace ServiceStack.Api.OpenApi
                 Host = basePath.Authority,
                 Consumes = new List<string> { "application/json" },
                 Produces = new List<string> { "application/json" },
-                Definitions = definitions,
+                Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
                 SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
@@ -95,7 +96,7 @@ namespace ServiceStack.Api.OpenApi
 
             return new HttpResult(result)
             {
-                ResultScope = () => JsConfig.With(includeNullValues: false)
+                ResultScope = () => JsConfig.With(includeNullValues: false, includeTypeInfo: false, excludeTypeInfo: true)
             };
         }
 
@@ -323,8 +324,16 @@ namespace ServiceStack.Api.OpenApi
 
             if (IsKeyValuePairType(propertyType))
             {
-                ParseDefinitions(schemas, propertyType, route, verb);
-                schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                if (IsInlineSchema(propertyType))
+                {
+                    ParseDefinitions(schemas, propertyType, route, verb);
+                    InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+                }
+                else
+                {
+                    ParseDefinitions(schemas, propertyType, route, verb);
+                    schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                }
             }
             else if (IsListType(propertyType))
             {
@@ -342,12 +351,18 @@ namespace ServiceStack.Api.OpenApi
                         schemaProp.Items.Add("x-nullable", false);
                         //schemaProp.Items.Add("required", "true");
                     }
+                    ParseDefinitions(schemas, listItemType, route, verb);
+                }
+                else if (IsInlineSchema(listItemType))
+                {
+                    ParseDefinitions(schemas, listItemType, route, verb);
+                    InlineSchema(schemas[GetSchemaTypeName(listItemType)], schemaProp);
                 }
                 else
                 {
                     schemaProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
+                    ParseDefinitions(schemas, listItemType, route, verb);
                 }
-                ParseDefinitions(schemas, listItemType, route, verb);
             }
             else if ((Nullable.GetUnderlyingType(propertyType) ?? propertyType).IsEnum)
             {
@@ -372,6 +387,11 @@ namespace ServiceStack.Api.OpenApi
                 schemaProp.Nullable = IsRequiredType(propertyType) ? false : (bool?)null;
                 //schemaProp.Required = IsRequiredType(propertyType) ? true : (bool?)null;
             }
+            else if (IsInlineSchema(propertyType))
+            {
+                ParseDefinitions(schemas, propertyType, route, verb);
+                InlineSchema(schemas[GetSchemaTypeName(propertyType)], schemaProp);
+            }
             else
             {
                 ParseDefinitions(schemas, propertyType, route, verb);
@@ -381,6 +401,50 @@ namespace ServiceStack.Api.OpenApi
             return schemaProp;
         }
 
+        private static void InlineSchema(OpenApiSchema schema, OpenApiProperty schemaProp)
+        {
+            schemaProp.Items = new Dictionary<string, object>
+            {
+                {"title", schema.Title},
+                {"discriminator", schema.Discriminator},
+                {"readOnly", schema.ReadOnly},
+                {"xml", schema.Xml},
+                {"externalDocs", schema.ExternalDocs},
+                {"example", schema.Example},
+                {"required", schema.Required},
+                {"allOf", schema.AllOf},
+                {"properties", schema.Properties},
+                {"additionalProperties", schema.AdditionalProperties},
+                {"description", schema.Description},
+                {"type", schema.Type},
+                {"format", schema.Format},
+                {"items", schema.Items},
+                {"collectionFormat", schema.CollectionFormat},
+                {"default", schema.Default},
+                {"maximum", schema.Maximum},
+                {"exclusiveMaximum", schema.ExclusiveMaximum},
+                {"exclusiveMinimum", schema.ExclusiveMinimum},
+                {"maxLength", schema.MaxLength},
+                {"minLength", schema.MinLength},
+                {"pattern", schema.Pattern},
+                {"maxItems", schema.MaxItems},
+                {"minItems", schema.MinItems},
+                {"uniqueItems", schema.UniqueItems},
+                {"maxProperties", schema.MaxProperties},
+                {"minProperties", schema.MinProperties},
+                {"enum", schema.Enum},
+                {"multipleOf", schema.MultipleOf},
+                {"x-nullable", schema.Nullable}
+            };
+        }
+
+        protected bool IsInlineSchema(Type schemaType)
+        {
+            return InlineSchemaTypesInNamespaces.Contains(schemaType.Namespace);
+        }
+
+        public Dictionary<string, Type> SchemaIdToClrType { get; } = new Dictionary<string, Type>();
+        
         private void ParseDefinitions(IDictionary<string, OpenApiSchema> schemas, Type schemaType, string route, string verb)
         {
             if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
@@ -406,6 +470,7 @@ namespace ServiceStack.Api.OpenApi
                 parseProperties = schemaType.IsUserType();
             }
             schemas[schemaId] = schema;
+            SchemaIdToClrType[schemaId] = schemaType;
 
             var properties = schemaType.GetProperties();
 
@@ -543,6 +608,8 @@ namespace ServiceStack.Api.OpenApi
                         Type = GetSwaggerTypeName(schemaType),
                         Format = GetSwaggerTypeFormat(schemaType)
                     }
+                : IsInlineSchema(schemaType)
+                    ? schemas[GetSchemaTypeName(schemaType)]
                     : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
 
             schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
@@ -905,11 +972,22 @@ namespace ServiceStack.Api.OpenApi
                 return GetListParameter(schemas, schemaType, route, verb, paramName, paramIn, allowableValueAttrs);
             }
 
+            OpenApiSchema openApiSchema;
+
+            if (IsInlineSchema(schemaType))
+            {
+                openApiSchema = schemas[GetSchemaTypeName(schemaType)];
+            }
+            else
+            {
+                openApiSchema = new OpenApiSchema {Ref = "#/definitions/" + GetSchemaTypeName(schemaType)};
+            }
+
             return new OpenApiParameter
             {
                 In = paramIn,
                 Name = paramName,
-                Schema = new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) }
+                Schema = openApiSchema
             };
         }
 
