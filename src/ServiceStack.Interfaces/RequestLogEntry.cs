@@ -21,6 +21,7 @@ namespace ServiceStack
         public string HttpMethod { get; set; }
         public string AbsoluteUri { get; set; }
         public string PathInfo { get; set; }
+        [StringLength(StringLengthAttribute.MaxText)]
         public string RequestBody { get; set; }
         public object RequestDto { get; set; }
         public string UserAuthId { get; set; }
