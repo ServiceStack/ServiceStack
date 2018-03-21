@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
@@ -97,7 +98,24 @@ namespace ServiceStack.Auth
         /// <summary>
         /// The Audience to embed in the token. (default null)
         /// </summary>
-        public string Audience { get; set; }
+        public string Audience
+        {
+            get => Audiences.Join(",");
+            set
+            {
+                Audiences.Clear();
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Audiences.Add(value);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Embed Multiple Audiences in the token. (default none)
+        /// A JWT is valid if it contains ANY audience in this List
+        /// </summary>
+        public List<string> Audiences { get; set; }
 
         /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
@@ -253,6 +271,7 @@ namespace ServiceStack.Auth
             RequireHashAlgorithm = true;
             RemoveInvalidTokenCookie = true;
             Issuer = "ssjwt";
+            Audiences = new List<string>();
             ExpireTokensIn = TimeSpan.FromDays(14);
             ExpireRefreshTokensIn = TimeSpan.FromDays(365);
             FallbackAuthKeys = new List<byte[]>();
@@ -268,8 +287,13 @@ namespace ServiceStack.Auth
                 IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
-                Audience = appSettings.GetString("jwt.Audience");
                 KeyId = appSettings.GetString("jwt.KeyId");
+                Audience = appSettings.GetString("jwt.Audience");
+                var audiences = appSettings.GetList("jwt.Audiences");
+                if (!audiences.IsEmpty())
+                {
+                    Audiences = audiences.ToList();
+                }
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
@@ -591,8 +615,13 @@ namespace ServiceStack.Auth
 
             if (jwtPayload.TryGetValue("aud", out var audience))
             {
-                if (audience != Audience)
-                    return "Invalid Audience: " + audience;
+                var jwtAudiences = audience.FromJson<List<string>>();
+                if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
+                {
+                    var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
+                    if (!containsAnyAudience)
+                        return "Invalid Audience: " + audience;
+                }
             }
 
             return null;
@@ -663,9 +692,9 @@ namespace ServiceStack.Auth
                 throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
 
             if (isHmac && AuthKey == null)
-                throw new ArgumentNullException("AuthKey", "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
-            else if (isRsa && PrivateKey == null && PublicKey == null)
-                throw new ArgumentNullException("PrivateKey", "PrivateKey is Required to use JWT with " + HashAlgorithm);
+                throw new ArgumentNullException(nameof(AuthKey), "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
+            if (isRsa && PrivateKey == null && PublicKey == null)
+                throw new ArgumentNullException(nameof(PrivateKey), "PrivateKey is Required to use JWT with " + HashAlgorithm);
 
             if (KeyId == null)
                 KeyId = GetKeyId(null);

@@ -100,7 +100,7 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IRequest req, IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
-            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
+            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audiences, roles, perms);
             CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
@@ -141,8 +141,7 @@ namespace ServiceStack.Auth
                 {"exp", now.Add(expireRefreshTokenIn).ToUnixTime().ToString()},
             };
 
-            if (Audience != null)
-                jwtPayload["aud"] = Audience;
+            jwtPayload.SetAudience(Audiences);
 
             var hashAlgoritm = GetHashAlgorithm(req);
             var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
@@ -277,7 +276,7 @@ namespace ServiceStack.Auth
 
         public static JsonObject CreateJwtPayload(
             IAuthSession session, string issuer, TimeSpan expireIn, 
-            string audience=null,
+            IEnumerable<string> audiences=null,
             IEnumerable<string> roles=null,
             IEnumerable<string> permissions =null)
         {
@@ -290,8 +289,7 @@ namespace ServiceStack.Auth
                 {"exp", now.Add(expireIn).ToUnixTime().ToString()},
             };
 
-            if (audience != null)
-                jwtPayload["aud"] = audience;
+            jwtPayload.SetAudience(audiences?.ToList());
 
             if (!string.IsNullOrEmpty(session.Email))
                 jwtPayload["email"] = session.Email;
@@ -442,6 +440,19 @@ namespace ServiceStack.Auth
             {
                 AccessToken = accessToken
             };
+        }
+    }
+
+    internal static class JwtAuthProviderUtils
+    {
+        internal static void SetAudience(this JsonObject jwtPayload, List<string> audiences)
+        {
+            if (audiences?.Count > 0)
+            {
+                jwtPayload["aud"] = audiences.Count == 1
+                    ? audiences[0]
+                    : audiences.ToJson();
+            }
         }
     }
 }

@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 },
                 issuer: jwtProvider.Issuer,
                 expireIn: jwtProvider.ExpireTokensIn,
-                audience: jwtProvider.Audience,
+                audiences: jwtProvider.Audiences,
                 roles: new[] {"TheRole"},
                 permissions: new[] {"ThePermission"});
 
@@ -571,5 +571,45 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(jwtProvider.GetValidJwtPayload(expiredJwt), Is.Null);
         }
 
+        [Test]
+        public void Does_validate_multiple_audiences()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProviderReader.Name);
+
+            string CreateJwtWithAudiences(params string[] audiences)
+            {
+                var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+                var body = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+                    {
+                        UserAuthId = "1",
+                        DisplayName = "Test",
+                        Email = "as@if.com",
+                        IsAuthenticated = true,
+                    },
+                    issuer: jwtProvider.Issuer,
+                    expireIn: jwtProvider.ExpireTokensIn,
+                    audiences: audiences);
+
+                var jwtToken = JwtAuthProvider.CreateJwt(header, body, jwtProvider.GetHashAlgorithm());
+                return jwtToken;
+            }
+
+            jwtProvider.Audiences = new List<string> { "foo", "bar" };
+            var jwtNoAudience = CreateJwtWithAudiences();
+            Assert.That(jwtProvider.IsJwtValid(jwtNoAudience));
+
+            var jwtWrongAudience = CreateJwtWithAudiences("qux");
+            Assert.That(!jwtProvider.IsJwtValid(jwtWrongAudience));
+            
+            var jwtPartialAudienceMatch = CreateJwtWithAudiences("bar","qux");
+            Assert.That(jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+
+            jwtProvider.Audience = "foo";
+            Assert.That(!jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+
+            jwtProvider.Audience = null;
+            Assert.That(jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+        }
+        
     }
 }
