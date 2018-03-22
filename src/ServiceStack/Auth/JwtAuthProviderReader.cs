@@ -289,10 +289,13 @@ namespace ServiceStack.Auth
                 Issuer = appSettings.GetString("jwt.Issuer");
                 KeyId = appSettings.GetString("jwt.KeyId");
                 Audience = appSettings.GetString("jwt.Audience");
-                var audiences = appSettings.GetList("jwt.Audiences");
-                if (!audiences.IsEmpty())
+                if (appSettings.Exists("jwt.Audiences"))
                 {
-                    Audiences = audiences.ToList();
+                    var audiences = appSettings.GetList("jwt.Audiences");
+                    if (!audiences.IsEmpty())
+                    {
+                        Audiences = audiences.ToList();
+                    }
                 }
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
