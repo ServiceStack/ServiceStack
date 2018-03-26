@@ -412,7 +412,7 @@ namespace CheckWeb
     }
 
     [Route("/views/request")]
-    public class ViewRequest
+    public class ViewRequest : IReturn<ViewResponse>
     {
         public string Name { get; set; }
     }
@@ -428,6 +428,11 @@ namespace CheckWeb
         {
             var result = Gateway.Send(new TestHtml());
             return new ViewResponse { Result = request.Name };
+        }
+
+        public object Get(ViewRequest[] requests)
+        {
+            return requests.Map(x => new ViewResponse {Result = x.Name}).ToArray();
         }
     }
 
