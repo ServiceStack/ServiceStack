@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -189,6 +190,8 @@ namespace ServiceStack
 
             Service.GlobalResolver = Instance = this;
 
+            RegisterLicenseKey(AppSettings.GetNullableString("servicestack:license"));
+
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
@@ -236,6 +239,14 @@ namespace ServiceStack
             HttpHandlerFactory.Init();
 
             return this;
+        }
+
+        protected virtual void RegisterLicenseKey(string licenseKeyText)
+        {
+            if (!string.IsNullOrEmpty(licenseKeyText))
+            {
+                Licensing.RegisterLicense(licenseKeyText);
+            }
         }
 
         protected void PopulateArrayFilters()
