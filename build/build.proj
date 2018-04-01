@@ -124,7 +124,9 @@
       <ElmahFiles Include="$(SrcDir)/ServiceStack.Logging.Elmah/bin/$(Configuration)/net45/ServiceStack.Logging.Elmah.*"></ElmahFiles>
       <EntLib5Files Include="$(SrcDir)/ServiceStack.Logging.EntLib5/bin/$(Configuration)/net45/ServiceStack.Logging.EntLib5.*"></EntLib5Files>
       <EventLogFiles Include="$(SrcDir)/ServiceStack.Logging.EventLog/bin/$(Configuration)/net45/ServiceStack.Logging.EventLog.*"></EventLogFiles>
+
       <NLogFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/net45/ServiceStack.Logging.NLog.*"></NLogFiles>
+      <NLogCoreFiles Include="$(SrcDir)/ServiceStack.Logging.NLog/bin/$(Configuration)/netstandard2.0/ServiceStack.Logging.NLog.*"></NLogCoreFiles>
 
       <Log4NetFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/net45/ServiceStack.Logging.Log4Net.*"></Log4NetFiles>
       <Log4NetCoreFiles Include="$(SrcDir)/ServiceStack.Logging.Log4Net/bin/$(Configuration)/netstandard2.0/ServiceStack.Logging.Log4Net.*"></Log4NetCoreFiles>
@@ -351,6 +353,9 @@
 
     <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net45" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net45')" />
     <Copy SourceFiles="%(NLogFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/net45" />
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(NLogCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog/lib/netstandard2.0" />
 
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog/servicestack.logging.nlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
