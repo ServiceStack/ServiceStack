@@ -24,6 +24,7 @@ namespace ServiceStack.Auth
             ClientId = appSettings.GetString("oauth.github.ClientId");
             ClientSecret = appSettings.GetString("oauth.github.ClientSecret");
             Scopes = appSettings.Get("oauth.github.Scopes", new[] { "user" });
+            ClientConfig.ConfigureTls12();
         }
 
         public string ClientId { get; set; }

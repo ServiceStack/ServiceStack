@@ -179,6 +179,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
         public const string GithubApiBaseUrl = "https://api.github.com/";
         public static string UserAgent = typeof(GithubGateway).Namespace.SplitOnFirst('.').First();
 
+        public GithubGateway()
+        {
+            ClientConfig.ConfigureTls12();
+        }
+
         public string Username { get; set; }
         public string Password { get; set; }
 
