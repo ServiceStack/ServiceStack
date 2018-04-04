@@ -54,6 +54,11 @@ namespace ServiceStack.Messaging
         /// </summary>
         public List<Action<string, IMessage>> OutHandlers { get; } = new List<Action<string, IMessage>>();
 
+        /// <summary>
+        /// The max size of the Out MQ Collection in each Type (default 100)
+        /// </summary>
+        public int OutQMaxSize { get; set; } = 100;
+
         private readonly BackgroundMqClient mqClient;
 
         public IMessageFactory MessageFactory { get; }
@@ -71,6 +76,7 @@ namespace ServiceStack.Messaging
             = new Dictionary<Type, IMqCollection>();
 
         private IMqWorker[] workers;
+        private BlockingCollection<IMessage> unknownQueues;
 
         public void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn)
         {
@@ -95,7 +101,7 @@ namespace ServiceStack.Messaging
                 throw new ArgumentException("Message handler has already been registered for type: " + typeof(T).Name);
 
             var handlerFactory = CreateMessageHandlerFactory(processMessageFn, processExceptionEx);
-            collectionsMap[typeof(T)] = new BackgroundMqCollection<T>(mqClient, handlerFactory, noOfThreads);
+            collectionsMap[typeof(T)] = new BackgroundMqCollection<T>(mqClient, handlerFactory, noOfThreads, OutQMaxSize);
         }
 
         protected IMessageHandlerFactory CreateMessageHandlerFactory<T>(
@@ -173,11 +179,21 @@ namespace ServiceStack.Messaging
                 : null;
         }
 
+        private const string MessageQueueKey = "mq";
+        
+        private static Type GetMessageType(IMessage message)
+        {
+            if (message.Body != null)
+                return message.Body.GetType();
+
+            return message.GetType().GetGenericArguments()[0];
+        }
+
         public void Publish(string queueName, IMessage message)
         {
             AssertNotDisposed();
             
-            var msgType = message.Body.GetType();
+            var msgType = GetMessageType(message);
             if (collectionsMap.TryGetValue(msgType, out var collection))
             {
                 collection.Add(queueName, message);
@@ -185,25 +201,76 @@ namespace ServiceStack.Messaging
             else
             {
                 if (Log.IsDebugEnabled)
-                    Log.Debug($"Could not Publish message to unknown '{queueName}'");
+                    Log.Debug($"Publish message for '{queueName}' to unknownQueues");
+
+                if (message is Message msg)
+                {
+                    (msg.Meta ?? (msg.Meta = new Dictionary<string, string>()))[MessageQueueKey] = queueName;
+                    unknownQueues.Add(msg);
+                }
+                else
+                {
+                    Log.Warn($"Could not queue message for '{queueName}' of unknown Message type '{message.GetType().Name}'");
+                }
             }
+        }
+
+        public void Notify(string queueName, IMessage message)
+        {
+            if (Log.IsDebugEnabled)
+                Log.Debug($"Publish message for '{queueName}' to outQueues");
+
+            var msgType = GetMessageType(message);
+            if (collectionsMap.TryGetValue(msgType, out var collection))
+            {
+                collection.Add(queueName, message);
+            }
+            else
+            {
+                Log.Warn($"Could not queue message for .outq '{queueName}' of unknown Message type '{message.GetType().Name}'");
+            }
+
+            if (Log.IsDebugEnabled)
+                Log.Debug($"Sending '{queueName}' notification to {OutHandlers.Count} handler(s)");
+            
+            OutHandlers.Each(x => x(queueName, message));
         }
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = null)
         {
             AssertNotDisposed();
+
+            if (string.IsNullOrEmpty(queueName))
+                throw new ArgumentNullException(nameof(queueName));
+            
+            var waitFor = timeout.GetValueOrDefault(Timeout.InfiniteTimeSpan);
             
             if (collectionsMap.TryGetValue(typeof(T), out var collection))
             {
-                if (collection.TryTake(queueName, out var msg, timeout.GetValueOrDefault()))
+                if (collection.TryTake(queueName, out var msg, waitFor))
                 {
                     return (IMessage<T>)msg;
                 }
             }
             else
             {
+
+                var started = DateTime.UtcNow;
+    
                 if (Log.IsDebugEnabled)
-                    Log.Debug($"Could not Get message from unknown '{queueName}'");
+                    Log.Debug($"Checking messages in unknownQueues for '{queueName}'");
+
+                while (unknownQueues.TryTake(out var imsg, waitFor))
+                {
+                    if (imsg is Message msg && msg.Meta != null && msg.Meta.TryGetValue(MessageQueueKey, out var msgQ) && msgQ == queueName)
+                    {
+                        return (IMessage<T>)msg;
+                    }
+                    unknownQueues.Add(imsg); //re-add non matches back to queue
+    
+                    if (DateTime.UtcNow - started > waitFor)
+                        return null;
+                }
             }
             return null;
         }
@@ -252,6 +319,7 @@ namespace ServiceStack.Messaging
                         workerBuilder.Add(collection.CreateWorker(queueNames.In)));
                 }
 
+                unknownQueues = new BlockingCollection<IMessage>();
                 workers = workerBuilder.ToArray();
             }
         }
@@ -266,6 +334,7 @@ namespace ServiceStack.Messaging
                 lock (workers)
                 {
                     captureWorkers = workers;
+                    unknownQueues = null;
                     workers = null;
                 }
             }
@@ -294,12 +363,13 @@ namespace ServiceStack.Messaging
         {
             if (isDisposed)
                 return;
-            isDisposed = true;
-            
+
             if (Log.IsDebugEnabled)
                 Log.Debug($"Disposing {GetType().Name}...");
                     
             Stop();
+
+            isDisposed = true;
 
             foreach (var entry in collectionsMap)
             {
@@ -343,6 +413,7 @@ namespace ServiceStack.Messaging
         private static readonly ILog Log = LogManager.GetLogger(typeof(BackgroundMqWorker));
 
         public int ThreadCount { get; }
+        public int OutQMaxSize { get; set; }
         public Type QueueType { get; } = typeof(T);
 
         public BackgroundMqClient MqClient { get; }
@@ -354,16 +425,21 @@ namespace ServiceStack.Messaging
         private long totalMessagesAdded = 0;
         private long totalMessagesTaken = 0;
 
-        public BackgroundMqCollection(BackgroundMqClient mqClient, IMessageHandlerFactory handlerFactory, int threadCount)
+        private long totalOutQMessagesAdded = 0;
+        private long totalDlQMessagesAdded = 0;
+        
+        public BackgroundMqCollection(BackgroundMqClient mqClient, IMessageHandlerFactory handlerFactory, int threadCount, int outQMaxSize)
         {
             MqClient = mqClient;
             HandlerFactory = handlerFactory;
             ThreadCount = threadCount;
+            OutQMaxSize = outQMaxSize;
 
             queueMap = new Dictionary<string, BlockingCollection<IMessage>> {
                 { QueueNames<T>.In, new BlockingCollection<IMessage>() },
                 { QueueNames<T>.Priority, new BlockingCollection<IMessage>() },
                 { QueueNames<T>.Dlq, new BlockingCollection<IMessage>() },
+                { QueueNames<T>.Out, new BlockingCollection<IMessage>() },
             };
         }
 
@@ -372,8 +448,25 @@ namespace ServiceStack.Messaging
             if (queueMap.TryGetValue(queueName, out var mq))
             {
                 mq.Add(message);
-                Interlocked.Increment(ref totalMessagesAdded);
 
+                if (queueName == QueueNames<T>.Out)
+                {
+                    while (mq.Count > OutQMaxSize)
+                    {
+                        if (mq.TryTake(out var overflowMsg) && Log.IsDebugEnabled)
+                            Log.Debug($"Discarding .outq message {overflowMsg.Id} from overflowed outQueues, {mq.Count} remaining...");
+                    }
+                    Interlocked.Increment(ref totalOutQMessagesAdded);
+                }
+                else if (queueName == QueueNames<T>.Dlq)
+                {
+                    Interlocked.Increment(ref totalDlQMessagesAdded);
+                }
+                else
+                {
+                    Interlocked.Increment(ref totalMessagesAdded);
+                }
+                
                 if (Log.IsDebugEnabled)
                     Log.Debug($"Added new message to '{queueName}', total: {mq.Count}");
             }
@@ -390,7 +483,7 @@ namespace ServiceStack.Messaging
             {
                 var ret = mq.TryTake(out message);
                 
-                if (ret)
+                if (ret && queueName != QueueNames<T>.Out && queueName != QueueNames<T>.Dlq)
                     Interlocked.Increment(ref totalMessagesTaken);
                 
                 if (Log.IsDebugEnabled)
@@ -409,7 +502,7 @@ namespace ServiceStack.Messaging
             {
                 var ret = mq.TryTake(out message, timeout);
                 
-                if (ret)
+                if (ret && queueName != QueueNames<T>.Out && queueName != QueueNames<T>.Dlq)
                     Interlocked.Increment(ref totalMessagesTaken);
                 
                 if (Log.IsDebugEnabled)
@@ -450,6 +543,8 @@ namespace ServiceStack.Messaging
                 .AppendLine($"  Thread Count:         {ThreadCount}")
                 .AppendLine($"  Total Messages Added: {Interlocked.Read(ref totalMessagesAdded)}")
                 .AppendLine($"  Total Messages Taken: {Interlocked.Read(ref totalMessagesTaken)}")
+                .AppendLine($"  Total .outq Messages: {Interlocked.Read(ref totalOutQMessagesAdded)}")
+                .AppendLine($"  Total .dlq Messages:  {Interlocked.Read(ref totalDlQMessagesAdded)}")
                 .AppendLine("QUEUES:");
 
             var longestKey = queueMap.Keys.Map(x => x.Length).OrderByDescending(x => x).FirstOrDefault();
@@ -550,7 +645,7 @@ namespace ServiceStack.Messaging
         public void Dispose() {}
     }
 
-    public class BackgroundMqClient : IMessageProducer, IMessageQueueClient
+    public class BackgroundMqClient : IMessageProducer, IMessageQueueClient, IOneWayClient
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(BackgroundMqClient));
         
@@ -585,10 +680,7 @@ namespace ServiceStack.Messaging
 
         public void Notify(string queueName, IMessage message)
         {
-            if (Log.IsDebugEnabled)
-                Log.Debug($"Sending '{queueName}' notification to {mqService.OutHandlers.Count} handler(s)");
-            
-            mqService.OutHandlers.Each(x => x(queueName, message));
+            mqService.Notify(queueName, message);
         }
 
         public IMessage<T> Get<T>(string queueName, TimeSpan? timeout = null)
@@ -625,6 +717,25 @@ namespace ServiceStack.Messaging
             return QueueNames.GetTempQueueName();
         }
         
+        public void SendOneWay(object requestDto)
+        {
+            Publish(MessageFactory.Create(requestDto));
+        }
+
+        public void SendOneWay(string queueName, object requestDto)
+        {
+            Publish(queueName, MessageFactory.Create(requestDto));
+        }
+
+        public void SendAllOneWay(IEnumerable<object> requests)
+        {
+            if (requests == null) return;
+            foreach (var request in requests)
+            {
+                SendOneWay(request);
+            }
+        }
+
         public void Dispose() {}
     }
 }
