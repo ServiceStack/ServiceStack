@@ -62,6 +62,15 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
+    [TestFixture]
+    public class BackgroundMqServerAppHostTests : MqServerAppHostTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new BackgroundMqService { RetryCount = retryCount };
+        }
+    }
+
 
     public class AnyTestMq
     {
@@ -175,8 +184,8 @@ namespace ServiceStack.Common.Tests.Messaging
     [TestFixture]
     public abstract class MqServerAppHostTests
     {
-        protected const string ListeningOn = "http://*:1337/";
-        public const string Host = "http://localhost:1337";
+        protected const string ListeningOn = "http://*:2001/";
+        public const string Host = "http://localhost:2001";
         private const string BaseUri = Host + "/";
 
         protected ServiceStackHost appHost;

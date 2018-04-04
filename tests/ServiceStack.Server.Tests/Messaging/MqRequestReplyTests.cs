@@ -60,6 +60,14 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    public class BackgroundMqRequestReplyTests : MqRequestReplyTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new BackgroundMqService { RetryCount = retryCount };
+        }
+    }
+
     [TestFixture]
     public abstract class MqRequestReplyTests
     {

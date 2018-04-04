@@ -43,6 +43,14 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    public class BackgroundMqServerIntroTests : MqServerIntroTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new BackgroundMqService { RetryCount = retryCount };
+        }
+    }
+
     public class HelloIntro : IReturn<HelloIntroResponse>
     {
         public string Name { get; set; }
