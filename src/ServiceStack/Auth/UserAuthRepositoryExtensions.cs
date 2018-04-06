@@ -13,8 +13,7 @@ namespace ServiceStack.Auth
         public static void AssignRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth,
             ICollection<string> roles = null, ICollection<string> permissions = null)
         {
-            var managesRoles = UserAuthRepo as IManageRoles;
-            if (managesRoles != null)
+            if (UserAuthRepo is IManageRoles managesRoles)
             {
                 managesRoles.AssignRoles(userAuth.Id.ToString(), roles, permissions);
             }
@@ -49,8 +48,7 @@ namespace ServiceStack.Auth
         public static void UnAssignRoles(this IAuthRepository UserAuthRepo, IUserAuth userAuth,
             ICollection<string> roles = null, ICollection<string> permissions = null)
         {
-            var managesRoles = UserAuthRepo as IManageRoles;
-            if (managesRoles != null)
+            if (UserAuthRepo is IManageRoles managesRoles)
             {
                 managesRoles.UnAssignRoles(userAuth.Id.ToString(), roles, permissions);
             }

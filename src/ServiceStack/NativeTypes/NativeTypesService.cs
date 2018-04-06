@@ -338,6 +338,8 @@ namespace ServiceStack.NativeTypes
                 typesConfig.ExportTypes = new HashSet<Type>();
 
             typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
+
+            typesConfig.ExportTypes.Remove(typeof(IMeta));
         }
     }
 }
