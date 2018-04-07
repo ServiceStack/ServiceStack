@@ -83,25 +83,13 @@ namespace ServiceStack.Messaging
             this.messageType = messageType;
         }
 
-        public string Priority
-        {
-            get { return ResolveQueueNameFn(messageType.Name, ".priorityq"); }
-        }
+        public string Priority => ResolveQueueNameFn(messageType.Name, ".priorityq");
 
-        public string In
-        {
-            get { return ResolveQueueNameFn(messageType.Name, ".inq"); }
-        }
+        public string In => ResolveQueueNameFn(messageType.Name, ".inq");
 
-        public string Out
-        {
-            get { return ResolveQueueNameFn(messageType.Name, ".outq"); }
-        }
+        public string Out => ResolveQueueNameFn(messageType.Name, ".outq");
 
-        public string Dlq
-        {
-            get { return ResolveQueueNameFn(messageType.Name, ".dlq"); }
-        }
+        public string Dlq => ResolveQueueNameFn(messageType.Name, ".dlq");
 
         public static string GetTempQueueName()
         {
