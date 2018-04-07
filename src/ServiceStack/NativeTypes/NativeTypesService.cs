@@ -4,6 +4,7 @@ using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.Kotlin;
@@ -26,6 +27,7 @@ namespace ServiceStack.NativeTypes
         public string VbNet { get; set; }
         public string TypeScript { get; set; }
         public string TypeScriptDefinition { get; set; }
+        public string Dart { get; set; }
         public string Java { get; set; }
         public string Kotlin { get; set; }
         public string Swift { get; set; }
@@ -54,6 +56,10 @@ namespace ServiceStack.NativeTypes
     [Exclude(Feature.Soap)]
     [Route("/types/typescript.d")]
     public class TypesTypeScriptDefinition : NativeTypesBase { }
+
+    [Exclude(Feature.Soap)]
+    [Route("/types/dart")]
+    public class TypesDart : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
     [Route("/types/swift")]
@@ -126,6 +132,7 @@ namespace ServiceStack.NativeTypes
                 VbNet = new TypesVbNet().ToAbsoluteUri(),
                 TypeScript = new TypesTypeScript().ToAbsoluteUri(),
                 TypeScriptDefinition = new TypesTypeScriptDefinition().ToAbsoluteUri(),
+                Dart = new TypesDart().ToAbsoluteUri(),
                 Java = new TypesJava().ToAbsoluteUri(),
                 Kotlin = new TypesKotlin().ToAbsoluteUri(),
                 Swift = new TypesSwift().ToAbsoluteUri(),
@@ -202,6 +209,29 @@ namespace ServiceStack.NativeTypes
 
         public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
         {
+            var metadataTypes = ConfigureScript(typesConfig);
+
+            var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return typeScript;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesDart request)
+        {
+            if (request.BaseUrl == null)
+                request.BaseUrl = Request.GetBaseUrl();
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.ExportAsTypes = true;
+
+            var metadataTypes = ConfigureScript(typesConfig);
+
+            var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return dart;
+        }
+
+        private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
+        {
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
@@ -213,14 +243,12 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
-                var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                var registerInterfaces = new List<Type>
-                {
+                var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+                var registerInterfaces = new List<Type> {
                     typeof(IReturn<>),
                     typeof(IReturnVoid),
                 };
-                var builtinInterfaces = new[]
-                {
+                var builtinInterfaces = new[] {
                     typeof(IGet),
                     typeof(IPost),
                     typeof(IPut),
@@ -231,7 +259,7 @@ namespace ServiceStack.NativeTypes
                     typeof(IHasSessionId),
                     typeof(IHasVersion),
                 };
-                
+
                 foreach (var op in metadataTypes.Operations)
                 {
                     foreach (var typeName in op.Request.Implements.Safe())
@@ -243,7 +271,7 @@ namespace ServiceStack.NativeTypes
                         }
                     }
                 }
-                
+
                 metadataTypes.Types.InsertRange(0, registerInterfaces.Map(x => generator.ToType(x)));
             }
 
@@ -253,9 +281,7 @@ namespace ServiceStack.NativeTypes
             typesConfig.ExportTypes.Add(typeof(Tuple<,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
-
-            var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
-            return typeScript;
+            return metadataTypes;
         }
 
 
