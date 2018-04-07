@@ -24,6 +24,7 @@ using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -202,6 +203,8 @@ namespace CheckWeb
             //        }
             //    }
             //});
+            
+            Plugins.Add(new ProtoBufFormat());
         }
 
         public static Rockstar[] GetRockstars()
