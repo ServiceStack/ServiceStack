@@ -95,7 +95,7 @@ namespace ServiceStack.NativeTypes.Dart
             "int",
             "bool"
         };
-
+        
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
@@ -155,7 +155,7 @@ namespace ServiceStack.NativeTypes.Dart
 
             var defaultImports = !Config.DefaultImports.IsEmpty()
                 ? Config.DefaultImports
-                : new List<string> { "package:servicestack/client.dart" };
+                : new List<string> { "dart:collection", "package:servicestack/client.dart" };
 
             var globalNamespace = Config.GlobalNamespace;
 
@@ -388,8 +388,15 @@ namespace ServiceStack.NativeTypes.Dart
                 }
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
-                var extend = extends.Count > 0
-                    ? " extends " + extends[0]
+                var baseClass = extends.Count > 0 ? extends[0] : null;
+                var hasDtoBaseClass = baseClass != null;
+                if (baseClass != null && baseClass.StartsWith("List<"))
+                {
+                    baseClass = "ListBase" + baseClass.Substring(4);
+                    hasDtoBaseClass = false;
+                }
+                var extend = baseClass != null
+                    ? " extends " + baseClass
                     : "";
 
                 if (interfaces.Count > 0)
@@ -465,9 +472,15 @@ namespace ServiceStack.NativeTypes.Dart
                     foreach (var prop in props)
                     {
                         if (sbBody.Length == 0)
+                        {
                             sbBody.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) :");
+                            if (hasDtoBaseClass)
+                                sbBody.AppendLine("        super.fromJson(json),");
+                        }
                         else
+                        {
                             sbBody.AppendLine(",");
+                        }
 
                         var propName = prop.Name.PropertyStyle();
                         if (UseTypeConversion(prop))
@@ -489,9 +502,17 @@ namespace ServiceStack.NativeTypes.Dart
                     foreach (var prop in props)
                     {
                         if (sbBody.Length == 0)
-                            sbBody.AppendLine("Map<String, dynamic> toJson() => {");
+                        {
+                            sbBody.Append("Map<String, dynamic> toJson() => ");
+                            if (hasDtoBaseClass)
+                                sbBody.Append("super.toJson()..addAll(");
+
+                            sbBody.AppendLine("{");
+                        }
                         else
+                        {
                             sbBody.AppendLine(",");
+                        }
 
                         var propName = prop.Name.PropertyStyle();
                         if (UseTypeConversion(prop))
@@ -506,7 +527,7 @@ namespace ServiceStack.NativeTypes.Dart
                     if (sbBody.Length > 0)
                     {
                         sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
-                        sb.AppendLine("};");
+                        sb.AppendLine(hasDtoBaseClass ? "});" : "};");
                         sb.AppendLine();
                     }
                     
