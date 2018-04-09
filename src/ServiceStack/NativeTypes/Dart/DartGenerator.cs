@@ -13,6 +13,7 @@ namespace ServiceStack.NativeTypes.Dart
         readonly NativeTypesFeature feature;
         List<string> conflictTypeNames = new List<string>();
         List<MetadataType> allTypes;
+        Dictionary<string, MetadataType> allTypesMap;
 
         public DartGenerator(MetadataTypesConfig config)
         {
@@ -74,7 +75,10 @@ namespace ServiceStack.NativeTypes.Dart
             {"Decimal", "0"},
             {"number", "0"},
             {"List", "[]"},
-            {"Uint8Array", "new Uint8Array(0)"},
+            {"Byte[]", "new Uint8List(0)"},
+            {"Stream", "new Uint8List(0)"},
+            {"DateTime", "new DateTime(0)"},
+            {"DateTimeOffset", "new DateTime(0)"},
         };
         
         static HashSet<string> BasicJsonTypes = new HashSet<string> {
@@ -155,7 +159,7 @@ namespace ServiceStack.NativeTypes.Dart
 
             var defaultImports = !Config.DefaultImports.IsEmpty()
                 ? Config.DefaultImports
-                : new List<string> { "dart:collection", "package:servicestack/client.dart" };
+                : new List<string> { "dart:collection", "dart:typed_data", "package:servicestack/client.dart" };
 
             var globalNamespace = Config.GlobalNamespace;
 
@@ -201,6 +205,12 @@ namespace ServiceStack.NativeTypes.Dart
             allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
 
             allTypes = FilterTypes(allTypes);
+            
+            allTypesMap = new Dictionary<string, MetadataType>();
+            foreach (var allType in allTypes)
+            {
+                allTypesMap[allType.Name] = allType;
+            }
 
             //TypeScript doesn't support reusing same type name with different generic airity
             var conflictPartialNames = allTypes.Map(x => x.Name).Distinct()
@@ -338,7 +348,7 @@ namespace ServiceStack.NativeTypes.Dart
                     sb.AppendLine($"int get value => _value;");
 
                     var enumNames = (type.EnumNames ?? TypeConstants.EmptyStringList).Join(",");
-                    sb.AppendLine($"List<{enumType}> get values => const [{enumNames}];");
+                    sb.AppendLine($"static List<{enumType}> get values => const [{enumNames}];");
 
                     sb = sb.UnIndent();
                     sb.AppendLine("}");
@@ -390,7 +400,8 @@ namespace ServiceStack.NativeTypes.Dart
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
                 var baseClass = extends.Count > 0 ? extends[0] : null;
                 var hasDtoBaseClass = baseClass != null;
-                if (baseClass != null && baseClass.StartsWith("List<"))
+                var hasListBase = baseClass != null && baseClass.StartsWith("List<");
+                if (hasListBase)
                 {
                     baseClass = "ListBase" + baseClass.Substring(4);
                     hasDtoBaseClass = false;
@@ -398,7 +409,7 @@ namespace ServiceStack.NativeTypes.Dart
                 var extend = baseClass != null
                     ? " extends " + baseClass
                     : "";
-
+                
                 if (interfaces.Count > 0)
                 {
                     if (isClass)
@@ -447,88 +458,141 @@ namespace ServiceStack.NativeTypes.Dart
 
                 if (isClass)
                 {
-                    sb.AppendLine();
-
                     var typeNameWithoutGenericArgs = typeName.LeftPart('<');
                     var props = type.Properties ?? TypeConstants<MetadataPropertyType>.EmptyList;
 
+                    if (props.Count > 0)
+                        sb.AppendLine();
+
+                    if (hasListBase)
+                    {
+                        var genericArg = baseClass.Substring(9, baseClass.Length - 10);
+                        sb.AppendLine($"final List<{genericArg}> l = [];");
+                        sb.AppendLine("void set length(int newLength) { l.length = newLength; }");
+                        sb.AppendLine("int get length => l.length;");
+                        sb.AppendLine($"{genericArg} operator [](int index) => l[index];");
+                        sb.AppendLine($"void operator []=(int index, {genericArg} value) {{ l[index] = value; }}");
+                    }
+
                     var sbBody = StringBuilderCacheAlt.Allocate();
-                    foreach (var prop in props)
+                    if (props.Count > 0)
                     {
-                        if (sbBody.Length == 0)
-                            sbBody.Append(typeNameWithoutGenericArgs + "({");
-                        else
-                            sbBody.Append(",");
-                        sbBody.Append($"this.{prop.Name.PropertyStyle()}");
-                    }
-                    if (sbBody.Length > 0)
-                    {
-                        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + "});");
-                        sb.AppendLine();
-                    }
-                    
-                    
-                    sbBody = StringBuilderCacheAlt.Allocate();
-                    foreach (var prop in props)
-                    {
-                        if (sbBody.Length == 0)
+                        foreach (var prop in props)
                         {
-                            sbBody.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) :");
-                            if (hasDtoBaseClass)
-                                sbBody.AppendLine("        super.fromJson(json),");
+                            if (sbBody.Length == 0)
+                                sbBody.Append(typeNameWithoutGenericArgs + "({");
+                            else
+                                sbBody.Append(",");
+                            sbBody.Append($"this.{prop.Name.PropertyStyle()}");
                         }
-                        else
+                        if (sbBody.Length > 0)
                         {
-                            sbBody.AppendLine(",");
-                        }
-
-                        var propName = prop.Name.PropertyStyle();
-                        if (UseTypeConversion(prop))
-                        {
-                            sbBody.Append($"        {propName} = JsonConverters.get('{CSharpPropertyType(prop)}').fromJson(json['{propName}'])");
-                        }
-                        else
-                        {
-                            sbBody.Append($"        {propName} = json['{propName}']");
+                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + "});");
+                            sb.AppendLine();
                         }
                     }
-                    if (sbBody.Length > 0)
+                    else
                     {
-                        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + ";");
-                        sb.AppendLine();
+                        sb.AppendLine(typeNameWithoutGenericArgs + "();");
                     }
                     
                     sbBody = StringBuilderCacheAlt.Allocate();
-                    foreach (var prop in props)
+                    if (props.Count > 0)
                     {
-                        if (sbBody.Length == 0)
+                        foreach (var prop in props)
                         {
-                            sbBody.Append("Map<String, dynamic> toJson() => ");
-                            if (hasDtoBaseClass)
-                                sbBody.Append("super.toJson()..addAll(");
+                            if (sbBody.Length == 0)
+                            {
+                                sbBody.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) :");
+                                if (hasDtoBaseClass)
+                                    sbBody.AppendLine("        super.fromJson(json),");
+                            }
+                            else
+                            {
+                                sbBody.AppendLine(",");
+                            }
+    
+                            var propType = DartPropertyType(prop);
+                            var propName = prop.Name.PropertyStyle();
+                            if (UseTypeConversion(prop))
+                            {
+                                var csharpType = CSharpPropertyType(prop);
+                                var factoryFn = primitiveDefaultValues.TryGetValue(csharpType, out string defaultValue)
+                                    ? $"() => {defaultValue}"
+                                    : $"() => new {propType}()";
 
-                            sbBody.AppendLine("{");
+                                if (allTypesMap.TryGetValue(csharpType, out var metaPropType))
+                                {
+                                    if (metaPropType.IsInterface == true)
+                                        factoryFn = "null";
+                                }
+                                
+                                if (metaPropType?.IsEnum == true)
+                                {
+                                    var dartType = DartPropertyType(prop);
+                                    sbBody.Append($"        {propName} = JsonConverters.getEnum({dartType}.values).fromJson(json['{propName}'], null)");
+                                }
+                                else
+                                {
+                                    sbBody.Append($"        {propName} = JsonConverters.get('{csharpType}').fromJson(json['{propName}'], {factoryFn})");
+                                }
+                            }
+                            else
+                            {
+                                sbBody.Append($"        {propName} = json['{propName}']");
+                            }
                         }
-                        else
+                        if (sbBody.Length > 0)
                         {
-                            sbBody.AppendLine(",");
-                        }
-
-                        var propName = prop.Name.PropertyStyle();
-                        if (UseTypeConversion(prop))
-                        {
-                            sbBody.Append($"        '{propName}': JsonConverters.get('{CSharpPropertyType(prop)}').toJson({propName})");
-                        }
-                        else
-                        {
-                            sbBody.Append($"        '{propName}': {propName}");
+                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + ";");
+                            sb.AppendLine();
                         }
                     }
-                    if (sbBody.Length > 0)
+                    else
                     {
-                        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
-                        sb.AppendLine(hasDtoBaseClass ? "});" : "};");
-                        sb.AppendLine();
+                        sb.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) : " + 
+                                      (hasDtoBaseClass ? "super.fromJson(json);" : "super();"));
+                    }
+                    
+                    sbBody = StringBuilderCacheAlt.Allocate();
+                    if (props.Count > 0)
+                    {
+                        foreach (var prop in props)
+                        {
+                            if (sbBody.Length == 0)
+                            {
+                                sbBody.Append("Map<String, dynamic> toJson() => ");
+                                if (hasDtoBaseClass)
+                                    sbBody.Append("super.toJson()..addAll(");
+    
+                                sbBody.AppendLine("{");
+                            }
+                            else
+                            {
+                                sbBody.AppendLine(",");
+                            }
+    
+                            var propName = prop.Name.PropertyStyle();
+                            if (UseTypeConversion(prop))
+                            {
+                                sbBody.Append($"        '{propName}': JsonConverters.get('{CSharpPropertyType(prop)}').toJson({propName})");
+                            }
+                            else
+                            {
+                                sbBody.Append($"        '{propName}': {propName}");
+                            }
+                        }
+                        if (sbBody.Length > 0)
+                        {
+                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
+                            sb.AppendLine(hasDtoBaseClass ? "});" : "};");
+                            sb.AppendLine();
+                        }
+                    }
+                    else
+                    {
+                        sb.AppendLine("Map<String, dynamic> toJson() => " + 
+                                      (hasDtoBaseClass ? "super.toJson();" : "{};"));
                     }
                     
                     if (responseTypeExpression != null)
@@ -880,6 +944,8 @@ namespace ServiceStack.NativeTypes.Dart
 
             if (node.Text == "Dictionary")
                 node.Text = "Map";
+            if (conflictTypeNames.Contains(node.Text + "`" + node.Children.Count))
+                node.Text += node.Children.Count;
 
             sb.Append(TypeAlias(node.Text));
             if (node.Children.Count > 0)

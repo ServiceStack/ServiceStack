@@ -296,6 +296,6 @@ namespace CheckWeb
 
         public object Any(SwaggerMultiApiResponseTest request) => request;
 
-        public object Any(StreamRequest request) => new StreamResponse();
+//        public object Any(StreamRequest request) => new StreamResponse();
     }
 }
