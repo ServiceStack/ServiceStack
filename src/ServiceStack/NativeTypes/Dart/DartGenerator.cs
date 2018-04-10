@@ -804,7 +804,7 @@ namespace ServiceStack.NativeTypes.Dart
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return GenericArg(genericArgs[0]);
+                    return CsharpGenericArg(genericArgs[0]);
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -813,12 +813,12 @@ namespace ServiceStack.NativeTypes.Dart
                     foreach (var arg in genericArgs)
                     {
                         if (args.Length > 0)
-                            args.Append(", ");
+                            args.Append(",");
 
-                        args.Append(GenericArg(arg));
+                        args.Append(CsharpGenericArg(arg));
                     }
 
-                    var typeName = TypeAlias(type);
+                    var typeName = NameOnly(type);
                     return $"{typeName}<{StringBuilderCacheAlt.ReturnAndFree(args)}>";
                 }
             }
@@ -959,6 +959,34 @@ namespace ServiceStack.NativeTypes.Dart
                         sb.Append(",");
 
                     sb.Append(ConvertFromCSharp(childNode));
+                }
+                sb.Append(">");
+            }
+
+            return sb.ToString();
+        }
+
+        public string CsharpGenericArg(string arg)
+        {
+            return CSharpType(arg.TrimStart('\'').ParseTypeIntoNodes());
+        }
+
+        public string CSharpType(TextNode node)
+        {
+            var sb = new StringBuilder();
+
+            sb.Append(NameOnly(node.Text));
+            if (node.Children.Count > 0)
+            {
+                sb.Append("<");
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    var childNode = node.Children[i];
+
+                    if (i > 0)
+                        sb.Append(",");
+
+                    sb.Append(CSharpType(childNode));
                 }
                 sb.Append(">");
             }
