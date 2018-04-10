@@ -483,7 +483,7 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.Append(typeNameWithoutGenericArgs + "({");
                             else
                                 sbBody.Append(",");
-                            sbBody.Append($"this.{prop.Name.PropertyStyle()}");
+                            sbBody.Append($"this.{prop.Name.PropertyStyle().PropertyName()}");
                         }
                         if (sbBody.Length > 0)
                         {
@@ -496,6 +496,7 @@ namespace ServiceStack.NativeTypes.Dart
                         sb.AppendLine(typeNameWithoutGenericArgs + "();");
                     }
                     
+                    sb.AppendLine($"{typeNameWithoutGenericArgs} fromMap(Map<String, dynamic> map) => new {typeNameWithoutGenericArgs}.fromJson(map);");
                     sbBody = StringBuilderCacheAlt.Allocate();
                     if (props.Count > 0)
                     {
@@ -513,7 +514,8 @@ namespace ServiceStack.NativeTypes.Dart
                             }
     
                             var propType = DartPropertyType(prop);
-                            var propName = prop.Name.PropertyStyle();
+                            var jsonName = prop.Name.PropertyStyle();
+                            var propName = jsonName.PropertyName();
                             if (UseTypeConversion(prop))
                             {
                                 var csharpType = CSharpPropertyType(prop);
@@ -530,16 +532,16 @@ namespace ServiceStack.NativeTypes.Dart
                                 if (metaPropType?.IsEnum == true)
                                 {
                                     var dartType = DartPropertyType(prop);
-                                    sbBody.Append($"        {propName} = JsonConverters.getEnum({dartType}.values).fromJson(json['{propName}'], null)");
+                                    sbBody.Append($"        {propName} = JsonConverters.getEnum({dartType}.values).fromJson(json['{jsonName}'], null)");
                                 }
                                 else
                                 {
-                                    sbBody.Append($"        {propName} = JsonConverters.get('{csharpType}').fromJson(json['{propName}'], {factoryFn})");
+                                    sbBody.Append($"        {propName} = JsonConverters.get('{csharpType}').fromJson(json['{jsonName}'], {factoryFn})");
                                 }
                             }
                             else
                             {
-                                sbBody.Append($"        {propName} = json['{propName}']");
+                                sbBody.Append($"        {propName} = json['{jsonName}']");
                             }
                         }
                         if (sbBody.Length > 0)
@@ -572,14 +574,15 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.AppendLine(",");
                             }
     
-                            var propName = prop.Name.PropertyStyle();
+                            var jsonName = prop.Name.PropertyStyle();
+                            var propName = jsonName.PropertyName();
                             if (UseTypeConversion(prop))
                             {
-                                sbBody.Append($"        '{propName}': JsonConverters.get('{CSharpPropertyType(prop)}').toJson({propName})");
+                                sbBody.Append($"        '{jsonName}': JsonConverters.get('{CSharpPropertyType(prop)}').toJson({propName})");
                             }
                             else
                             {
-                                sbBody.Append($"        '{propName}': {propName}");
+                                sbBody.Append($"        '{jsonName}': {propName}");
                             }
                         }
                         if (sbBody.Length > 0)
@@ -636,7 +639,7 @@ namespace ServiceStack.NativeTypes.Dart
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle()};");
+                    sb.AppendLine($"{propType} {prop.Name.SafeToken().PropertyStyle().PropertyName()};");
                 }
             }
 
@@ -645,7 +648,7 @@ namespace ServiceStack.NativeTypes.Dart
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine($"ResponseStatus {typeof(ResponseStatus).Name.PropertyStyle()};");
+                sb.AppendLine($"ResponseStatus {typeof(ResponseStatus).Name.PropertyStyle().PropertyName()};");
             }
         }
 
@@ -1087,7 +1090,7 @@ namespace ServiceStack.NativeTypes.Dart
                     ? name.ToLowercaseUnderscore()
                     : name;
 
-            return formattedName.PropertyName();
+            return formattedName;
         }
 
         public static bool HasEnumFlags(MetadataType type)
