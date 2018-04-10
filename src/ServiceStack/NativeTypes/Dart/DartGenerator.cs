@@ -52,7 +52,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"IDictionary", "dynamic"},
         };
         private static string declaredEmptyString = "\"\"";
-        private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> defaultValues = new Dictionary<string, string>
         {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
@@ -77,6 +77,7 @@ namespace ServiceStack.NativeTypes.Dart
             {"List", "[]"},
             {"Byte[]", "new Uint8List(0)"},
             {"Stream", "new Uint8List(0)"},
+            {"Uint8List", "new Uint8List(0)"},
             {"DateTime", "new DateTime(0)"},
             {"DateTimeOffset", "new DateTime(0)"},
         };
@@ -381,12 +382,9 @@ namespace ServiceStack.NativeTypes.Dart
                                 returnType = "dynamic";
 
                             // This is to avoid invalid syntax such as "return new string()"
-                            if (primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType))
-                                returnType = replaceReturnType;
-
-                            responseTypeExpression = replaceReturnType == null 
-                                ? $"createResponse() {{ return new {returnType}(); }}"
-                                : $"String createResponse() {{ return {returnType}; }}";
+                            responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
+                                ? $"createResponse() {{ return {newReturnInstance}; }}"
+                                : $"createResponse() {{ return new {returnType}(); }}";
                         }
                         else if (implStr == "IReturnVoid")
                         {
@@ -443,12 +441,12 @@ namespace ServiceStack.NativeTypes.Dart
 
                 if (type.Name == "IReturn`1")
                 {
-//                        sb.AppendLine("T createResponse();");
+                    sb.AppendLine("T createResponse();");
                     sb.AppendLine("String getTypeName();");
                 }
                 else if (type.Name == "IReturnVoid")
                 {
-//                        sb.AppendLine("void createResponse();");
+                    sb.AppendLine("void createResponse();");
                     sb.AppendLine("String getTypeName();");
                 }
 
@@ -519,7 +517,7 @@ namespace ServiceStack.NativeTypes.Dart
                             if (UseTypeConversion(prop))
                             {
                                 var csharpType = CSharpPropertyType(prop);
-                                var factoryFn = primitiveDefaultValues.TryGetValue(csharpType, out string defaultValue)
+                                var factoryFn = defaultValues.TryGetValue(csharpType, out string defaultValue)
                                     ? $"() => {defaultValue}"
                                     : $"() => new {propType}()";
 
@@ -600,7 +598,7 @@ namespace ServiceStack.NativeTypes.Dart
                     
                     if (responseTypeExpression != null)
                     {
-    //                    sb.AppendLine(responseTypeExpression);
+                        sb.AppendLine(responseTypeExpression);
                         sb.AppendLine($"String getTypeName() {{ return \"{type.Name}\"; }}");
                     }
                 }
