@@ -1109,7 +1109,7 @@ namespace ServiceStack.Templates
                 {
                     if (c == '[')
                         ++inBrackets;
-                    if (c == ']')
+                    else if (c == ']')
                         --inBrackets;
                     continue;
                 }
@@ -1117,7 +1117,7 @@ namespace ServiceStack.Templates
                 {
                     if (c == '{')
                         ++inBraces;
-                    if (c == '}')
+                    else if (c == '}')
                         --inBraces;
                     continue;
                 }
@@ -1125,7 +1125,7 @@ namespace ServiceStack.Templates
                 {
                     if (c == '(')
                         ++inParens;
-                    if (c == ')')
+                    else if (c == ')')
                         --inParens;
                     continue;
                 }
