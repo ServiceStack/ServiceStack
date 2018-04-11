@@ -848,6 +848,11 @@ namespace ServiceStack.NativeTypes.Dart
             "IOrderedDictionary",
         };
 
+        public static HashSet<string> SetTypes = new HashSet<string>
+        {
+            "HashSet`1",
+        };
+
         public string Type(string type, string[] genericArgs)
         {
             if (genericArgs != null)
@@ -858,6 +863,8 @@ namespace ServiceStack.NativeTypes.Dart
                     return $"List<{GenericArg(genericArgs[0])}>".StripNullable();
                 if (DictionaryTypes.Contains(type))
                     return $"Map<{GenericArg(genericArgs[0])},{GenericArg(genericArgs[1])}>";
+                if (SetTypes.Contains(type))
+                    return $"Set<{GenericArg(genericArgs[0])}>".StripNullable();
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -1043,6 +1050,8 @@ namespace ServiceStack.NativeTypes.Dart
 
             if (node.Text == "Dictionary")
                 node.Text = "Map";
+            if (node.Text == "HashSet")
+                node.Text = "Set";
             if (conflictTypeNames.Contains(node.Text + "`" + node.Children.Count))
                 node.Text += node.Children.Count;
 

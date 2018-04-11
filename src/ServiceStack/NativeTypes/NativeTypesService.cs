@@ -223,12 +223,33 @@ namespace ServiceStack.NativeTypes
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
+            
+            var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+            ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
 
             var metadataTypes = ConfigureScript(typesConfig);
+            metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
 
             var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return dart;
         }
+
+        public static List<Type> ReturnInterfaces = new List<Type> {
+            typeof(IReturn<>),
+            typeof(IReturnVoid),
+        };
+
+        public static List<Type> BuiltinInterfaces = new []{
+            typeof(IGet),
+            typeof(IPost),
+            typeof(IPut),
+            typeof(IDelete),
+            typeof(IPatch),
+            typeof(IOptions),
+            typeof(IMeta),
+            typeof(IHasSessionId),
+            typeof(IHasVersion),
+        }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
         {
@@ -240,39 +261,26 @@ namespace ServiceStack.NativeTypes
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
 
+            var returnInterfaces = new List<Type>(ReturnInterfaces);
+
             if (typesConfig.AddServiceStackTypes)
             {
                 //IReturn markers are metadata properties that are not included as normal interfaces
                 var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                var registerInterfaces = new List<Type> {
-                    typeof(IReturn<>),
-                    typeof(IReturnVoid),
-                };
-                var builtinInterfaces = new[] {
-                    typeof(IGet),
-                    typeof(IPost),
-                    typeof(IPut),
-                    typeof(IDelete),
-                    typeof(IPatch),
-                    typeof(IOptions),
-                    typeof(IMeta),
-                    typeof(IHasSessionId),
-                    typeof(IHasVersion),
-                };
 
                 foreach (var op in metadataTypes.Operations)
                 {
                     foreach (var typeName in op.Request.Implements.Safe())
                     {
-                        var iface = builtinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
+                        var iface = BuiltinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
                         if (iface != null)
                         {
-                            registerInterfaces.AddIfNotExists(iface);
+                            returnInterfaces.AddIfNotExists(iface);
                         }
                     }
                 }
 
-                metadataTypes.Types.InsertRange(0, registerInterfaces.Map(x => generator.ToType(x)));
+                metadataTypes.Types.InsertRange(0, returnInterfaces.Map(x => generator.ToType(x)));
             }
 
             ExportMissingSystemTypes(typesConfig);
