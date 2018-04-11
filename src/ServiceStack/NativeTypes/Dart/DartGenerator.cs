@@ -100,7 +100,8 @@ namespace ServiceStack.NativeTypes.Dart
             nameof(Double),
             nameof(Decimal),
             "int",
-            "bool"
+            "bool",
+            "Dictionary<String,String>",
         };
         
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
@@ -225,6 +226,10 @@ namespace ServiceStack.NativeTypes.Dart
             this.conflictTypeNames = allTypes
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
+            
+            //Need to add removed built-in Types
+            this.conflictTypeNames.Add(typeof(QueryDb<>).Name);
+            this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
 
             defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
 
@@ -716,7 +721,8 @@ namespace ServiceStack.NativeTypes.Dart
                 if (prop.Type == "Nullable`1")
                     typeName = GenericArg(prop.GenericArgs[0]);
             }
-            return !BasicJsonTypes.Contains(typeName) && !typeName.Contains("'");
+            var rawType = RawGenericType(prop.Type, prop.GenericArgs);
+            return !BasicJsonTypes.Contains(typeName) && !typeName.Contains("'") && !BasicJsonTypes.Contains(rawType);
         }
 
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)

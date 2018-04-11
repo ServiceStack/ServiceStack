@@ -226,6 +226,12 @@ namespace ServiceStack.NativeTypes
             
             var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
             ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+            ignoreDartLibraryTypes.AddRange(new[] {
+                typeof(QueryBase).Name,
+                typeof(QueryData<>).Name,
+                typeof(QueryDb<>).Name,
+                typeof(QueryDb<,>).Name,
+            });
 
             var metadataTypes = ConfigureScript(typesConfig);
             metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
