@@ -818,7 +818,7 @@ namespace ServiceStack.NativeTypes
 
             if (lastBlockPos >= 0)
             {
-                node.Text = typeDef.Substring(0, lastBlockPos);
+                node.Text = typeDef.Substring(0, lastBlockPos).Trim();
 
                 var blockStartingPos = new Stack<int>();
                 blockStartingPos.Push(lastBlockPos);
@@ -856,7 +856,7 @@ namespace ServiceStack.NativeTypes
                                 }
                                 else
                                 {
-                                    node.Children.Add(new TextNode { Text = arg });
+                                    node.Children.Add(new TextNode { Text = arg.Trim() });
                                 }
                             }
 
@@ -868,7 +868,7 @@ namespace ServiceStack.NativeTypes
             }
             else
             {
-                node.Text = typeDef;
+                node.Text = typeDef.Trim();
             }
 
             return node;

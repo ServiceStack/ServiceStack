@@ -14,6 +14,8 @@ namespace ServiceStack.NativeTypes.Dart
         List<string> conflictTypeNames = new List<string>();
         List<MetadataType> allTypes;
         Dictionary<string, MetadataType> allTypesMap;
+        private HashSet<string> existingTypeInfos;
+        private StringBuilder sbTypeInfos;
 
         public DartGenerator(MetadataTypesConfig config)
         {
@@ -231,6 +233,10 @@ namespace ServiceStack.NativeTypes.Dart
                 sb.AppendLine();
                 sb.AppendLine($"library {globalNamespace.SafeToken()};");
             }
+            
+            existingTypeInfos = new HashSet<string>();
+            sbTypeInfos = new StringBuilder();
+            sbTypeInfos.AppendLine().AppendLine("Map<String, TypeInfo> _types = <String, TypeInfo> {");
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -293,6 +299,12 @@ namespace ServiceStack.NativeTypes.Dart
                 }
             }
 
+            if (existingTypes.Count > 0)
+            {
+                sbTypeInfos.AppendLine("};");
+                sb.AppendLine(sbTypeInfos.ToString());
+            }
+
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
 
@@ -310,10 +322,13 @@ namespace ServiceStack.NativeTypes.Dart
 
             if (type.IsEnum.GetValueOrDefault())
             {
+                var enumType = Type(type.Name, type.GenericArgs);
+                RegisterType(type, enumType);
+
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty();
                 if (!isIntEnum)
                 {
-                    sb.AppendLine($"enum {Type(type.Name, type.GenericArgs)}");
+                    sb.AppendLine($"enum {enumType}");
                     sb.AppendLine("{");
                     sb = sb.Indent();
     
@@ -326,7 +341,6 @@ namespace ServiceStack.NativeTypes.Dart
                 }
                 else
                 {
-                    var enumType = Type(type.Name, type.GenericArgs);
                     sb.AppendLine($"class {enumType}");
                     sb.AppendLine("{");
                     sb = sb.Indent();
@@ -371,31 +385,28 @@ namespace ServiceStack.NativeTypes.Dart
                 {
                     interfaces.Add(implStr);
 
-                    if (Config.ExportAsTypes)
-                    { 
-                        if (implStr.StartsWith("IReturn<"))
-                        {
-                            var types = implStr.RightPart('<');
-                            var returnType = types.Substring(0, types.Length - 1);
+                    if (implStr.StartsWith("IReturn<"))
+                    {
+                        var types = implStr.RightPart('<');
+                        var returnType = types.Substring(0, types.Length - 1);
 
-                            if (returnType == "any")
-                                returnType = "dynamic";
+                        if (returnType == "any")
+                            returnType = "dynamic";
 
-                            // This is to avoid invalid syntax such as "return new string()"
-                            responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
-                                ? $"createResponse() {{ return {newReturnInstance}; }}"
-                                : $"createResponse() {{ return new {returnType}(); }}";
-                        }
-                        else if (implStr == "IReturnVoid")
-                        {
-                            responseTypeExpression = "createResponse() {}";
-                        }
+                        // This is to avoid invalid syntax such as "return new string()"
+                        responseTypeExpression = defaultValues.TryGetValue(returnType, out var newReturnInstance)
+                            ? $"createResponse() {{ return {newReturnInstance}; }}"
+                            : $"createResponse() {{ return new {returnType}(); }}";
+                    }
+                    else if (implStr == "IReturnVoid")
+                    {
+                        responseTypeExpression = "createResponse() {}";
                     }
 
                     type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
 
-                var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
+                var isClass = type.IsInterface != true;
                 var baseClass = extends.Count > 0 ? extends[0] : null;
                 var hasDtoBaseClass = baseClass != null;
                 var hasListBase = baseClass != null && baseClass.StartsWith("List<");
@@ -424,10 +435,14 @@ namespace ServiceStack.NativeTypes.Dart
                         extend += string.Join(", ", interfaces.ToArray());
                     }
                 }
-                
-                var typeDeclaration = isClass ? "class" : "abstract class";
+
+                var isAbstractClass = type.IsInterface == true || type.IsAbstract == true;
+                var typeDeclaration = !isAbstractClass ? "class" : "abstract class";
 
                 var typeName = Type(type.Name, type.GenericArgs);
+ 
+                RegisterType(type, typeName);
+                
                 sb.AppendLine($"{typeDeclaration} {typeName}{extend}");
                 sb.AppendLine("{");
 
@@ -493,8 +508,12 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         sb.AppendLine(typeNameWithoutGenericArgs + "();");
                     }
-                    
-                    sb.AppendLine($"{typeNameWithoutGenericArgs} fromMap(Map<String, dynamic> map) => new {typeNameWithoutGenericArgs}.fromJson(map);");
+
+                    if (!isAbstractClass)
+                    {
+                        sb.AppendLine($"{typeNameWithoutGenericArgs} fromMap(Map<String, dynamic> map) => new {typeNameWithoutGenericArgs}.fromJson(map);");
+                    }
+
                     sbBody = StringBuilderCacheAlt.Allocate();
                     if (props.Count > 0)
                     {
@@ -502,13 +521,10 @@ namespace ServiceStack.NativeTypes.Dart
                         {
                             if (sbBody.Length == 0)
                             {
-                                sbBody.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) :");
+                                sbBody.Append(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json)");
                                 if (hasDtoBaseClass)
-                                    sbBody.AppendLine("        super.fromJson(json),");
-                            }
-                            else
-                            {
-                                sbBody.AppendLine(",");
+                                    sbBody.Append(": super.fromJson(json)");
+                                sbBody.AppendLine(" {");
                             }
     
                             var propType = DartPropertyType(prop);
@@ -516,36 +532,38 @@ namespace ServiceStack.NativeTypes.Dart
                             var propName = jsonName.PropertyName();
                             if (UseTypeConversion(prop))
                             {
-                                var csharpType = CSharpPropertyType(prop);
-                                var factoryFn = defaultValues.TryGetValue(csharpType, out string defaultValue)
-                                    ? $"() => {defaultValue}"
-                                    : $"() => new {propType}()";
-
-                                if (allTypesMap.TryGetValue(csharpType, out var metaPropType))
+                                bool registerType = true;
+                                if (type.GenericArgs?.Length > 0 && prop.GenericArgs?.Length > 0)
                                 {
-                                    if (metaPropType.IsInterface == true)
-                                        factoryFn = "null";
+                                    var argIndexes = new List<int>();
+                                    foreach (var arg in prop.GenericArgs)
+                                    {
+                                        var argIndex = Array.IndexOf(type.GenericArgs, arg);
+                                        argIndexes.Add(argIndex);
+                                    }
+                                    if (argIndexes.All(x => x != -1))
+                                    {
+                                        propType = prop.Type.LeftPart('`') + "<${runtimeGenericTypeDefs(this,[" + argIndexes.Join(",") +"]).join(\",\")}>";
+                                        registerType = false;
+                                    }
+                                }
+
+                                if (registerType)
+                                {
+                                    RegisterPropertyType(prop, propType);
                                 }
                                 
-                                if (metaPropType?.IsEnum == true)
-                                {
-                                    var dartType = DartPropertyType(prop);
-                                    sbBody.Append($"        {propName} = JsonConverters.getEnum({dartType}.values).fromJson(json['{jsonName}'], null)");
-                                }
-                                else
-                                {
-                                    sbBody.Append($"        {propName} = JsonConverters.get('{csharpType}').fromJson(json['{jsonName}'], {factoryFn})");
-                                }
+                                sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',_types);");
                             }
                             else
                             {
-                                sbBody.Append($"        {propName} = json['{jsonName}']");
+                                sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
                             }
                         }
                         if (sbBody.Length > 0)
                         {
-                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + ";");
-                            sb.AppendLine();
+                            sbBody.AppendLine("    }");
+                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
                         }
                     }
                     else
@@ -572,11 +590,12 @@ namespace ServiceStack.NativeTypes.Dart
                                 sbBody.AppendLine(",");
                             }
     
+                            var propType = DartPropertyType(prop);
                             var jsonName = prop.Name.PropertyStyle();
                             var propName = jsonName.PropertyName();
                             if (UseTypeConversion(prop))
                             {
-                                sbBody.Append($"        '{jsonName}': JsonConverters.get('{CSharpPropertyType(prop)}').toJson({propName})");
+                                sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',_types)");
                             }
                             else
                             {
@@ -608,6 +627,85 @@ namespace ServiceStack.NativeTypes.Dart
             }
 
             return lastNS;
+        }
+
+        public void RegisterPropertyType(MetadataPropertyType prop, string dartType)
+        {
+            if (existingTypeInfos.Contains(dartType))
+                return;
+
+            var csharpType = CSharpPropertyType(prop);
+            var factoryFn = defaultValues.TryGetValue(csharpType, out string defaultValue)
+                ? $"() => {defaultValue}"
+                : null;
+
+            allTypesMap.TryGetValue(csharpType, out var metaType);
+            RegisterType(metaType, dartType, factoryFn);
+        }
+
+        private void RegisterType(MetadataType metaType, string dartType, string factoryFn = null)
+        {
+            if (existingTypeInfos.Contains(dartType))
+                return;
+            existingTypeInfos.Add(dartType);
+
+            if (dartType == "Map<String,List<Map<String,Poco>>>")
+            {
+                dartType.Print();
+            }
+
+            if (factoryFn == null)
+                factoryFn = $"() => new {dartType}()"; 
+            
+            if (metaType == null)
+            {
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+
+                var hasGenericArgs = dartType.IndexOf("<", StringComparison.Ordinal) >= 0;
+                if (hasGenericArgs)
+                {
+                    var nodes = dartType.ParseTypeIntoNodes();
+                    foreach (var genericArgNode in nodes.Children.Safe())
+                    {
+                        if (BasicJsonTypes.Contains(genericArgNode.Text))
+                            continue;
+
+                        var genericArg = RawType(genericArgNode);
+
+                        var genericArgFactoryFn = defaultValues.TryGetValue(genericArg, out string defaultValue)
+                            ? $"() => {defaultValue}"
+                            : null;
+                        
+                        RegisterType(null, genericArg, genericArgFactoryFn);
+                    }
+                }
+                return;
+            }
+
+            var isClass = metaType.IsAbstract != true && metaType.IsInterface != true && metaType.IsEnum != true;
+            var isGenericTypeDef = isClass && metaType.GenericArgs?.Length > 0 && metaType.GenericArgs.Any(x => x.StartsWith("'"));
+
+            if (isGenericTypeDef)
+            {
+                var dartGenericBaseType = dartType.LeftPart("<");
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.GenericDef,create:() => new {dartGenericBaseType}()),");
+            }
+            else if (metaType?.IsInterface == true)
+            {
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Interface),");
+            }
+            else if (metaType?.IsAbstract == true)
+            {
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.AbstractClass),");
+            }
+            else if (metaType?.IsEnum == true)
+            {
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Enum, enumValues:{dartType}.values),");
+            }
+            else
+            {
+                sbTypeInfos.AppendLine($"    '{dartType}': new TypeInfo(TypeOf.Class, create:{factoryFn}),");
+            }
         }
 
         public bool UseTypeConversion(MetadataPropertyType prop)
@@ -660,7 +758,7 @@ namespace ServiceStack.NativeTypes.Dart
 
         private string CSharpPropertyType(MetadataPropertyType prop)
         {
-            var propType = CSharpType(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
+            var propType = RawGenericType(prop.GetTypeName(Config, allTypes), prop.GenericArgs);
             if (propType.EndsWith("?"))
                 propType = propType.Substring(0, propType.Length - 1);
             return propType;
@@ -800,12 +898,12 @@ namespace ServiceStack.NativeTypes.Dart
             return typeAlias ?? NameOnly(type);
         }
 
-        public string CSharpType(string type, string[] genericArgs)
+        public string RawGenericType(string type, string[] genericArgs)
         {
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return CsharpGenericArg(genericArgs[0]);
+                    return RawGenericArg(genericArgs[0]);
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -816,7 +914,7 @@ namespace ServiceStack.NativeTypes.Dart
                         if (args.Length > 0)
                             args.Append(",");
 
-                        args.Append(CsharpGenericArg(arg));
+                        args.Append(RawGenericArg(arg));
                     }
 
                     var typeName = NameOnly(type);
@@ -967,12 +1065,12 @@ namespace ServiceStack.NativeTypes.Dart
             return sb.ToString();
         }
 
-        public string CsharpGenericArg(string arg)
+        public string RawGenericArg(string arg)
         {
-            return CSharpType(arg.TrimStart('\'').ParseTypeIntoNodes());
+            return RawType(arg.TrimStart('\'').ParseTypeIntoNodes());
         }
 
-        public string CSharpType(TextNode node)
+        public string RawType(TextNode node)
         {
             var sb = new StringBuilder();
 
@@ -987,7 +1085,7 @@ namespace ServiceStack.NativeTypes.Dart
                     if (i > 0)
                         sb.Append(",");
 
-                    sb.Append(CSharpType(childNode));
+                    sb.Append(RawType(childNode));
                 }
                 sb.Append(">");
             }
