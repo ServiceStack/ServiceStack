@@ -104,6 +104,11 @@ namespace ServiceStack.NativeTypes.Dart
             "Dictionary<String,String>",
         };
         
+        public static Dictionary<string,string> DartToJsonConverters = new Dictionary<string, string> {
+            { "double", "toDouble" },
+            { "Map<String,String>", "toStringMap" },
+        };
+        
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
@@ -562,7 +567,14 @@ namespace ServiceStack.NativeTypes.Dart
                             }
                             else
                             {
-                                sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
+                                if (DartToJsonConverters.TryGetValue(propType, out var conversionFn))
+                                {
+                                    sbBody.AppendLine($"        {propName} = JsonConverters.{conversionFn}(json['{jsonName}']);");
+                                }
+                                else
+                                {
+                                    sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
+                                }
                             }
                         }
                         if (sbBody.Length > 0)
