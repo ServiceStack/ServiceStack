@@ -25,8 +25,11 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static List<string> DefaultImports = new List<string>
         {
+//            "dart:collection",  Required for inheriting List<T> / ListBase 
+//            "dart:typed_data",  Required for byte[] / Uint8List
+            "package:servicestack/client.dart"
         };
-
+        
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Object", "dynamic"},
@@ -218,7 +221,7 @@ namespace ServiceStack.NativeTypes.Dart
 
             var defaultImports = !Config.DefaultImports.IsEmpty()
                 ? Config.DefaultImports
-                : new List<string> { "dart:collection", "dart:typed_data", "package:servicestack/client.dart" };
+                : DefaultImports;
 
             var globalNamespace = Config.GlobalNamespace;
 
@@ -290,14 +293,25 @@ namespace ServiceStack.NativeTypes.Dart
             this.conflictTypeNames.Add(typeof(Tuple<,,>).Name);
             this.conflictTypeNames.Add(typeof(Tuple<,,,>).Name);
 
-            defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
-
             if (!string.IsNullOrEmpty(globalNamespace))
             {
                 sb.AppendLine();
                 sb.AppendLine($"library {globalNamespace.SafeToken()};");
             }
+
+            if (requestTypes.Any(x => x.Inherits?.Name == "List`1"))
+            {
+                defaultImports.AddIfNotExists("dart:collection");
+            }
+            if (allTypes.Any(x => x.Properties?.Any(p => p.Type == "Byte[]") == true)
+                || requestTypes.Any(x => x.ReturnMarkerTypeName?.Name == "Byte[]")
+                || responseTypes.Any(x => x.Name == "Byte[]"))
+            {
+                defaultImports.AddIfNotExists("dart:typed_data");
+            }
             
+            defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
+
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             sbTypeInfos.AppendLine().AppendLine("Map<String, TypeInfo> _types = <String, TypeInfo> {");
