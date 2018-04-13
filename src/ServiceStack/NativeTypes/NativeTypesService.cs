@@ -140,10 +140,11 @@ namespace ServiceStack.NativeTypes
             return response;
         }
 
+        private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
+
         public MetadataTypes Any(TypesMetadata request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -153,8 +154,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesCSharp request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -165,8 +165,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesFSharp request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -177,8 +176,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesVbNet request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -189,8 +187,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScript request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
@@ -201,8 +198,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScriptDefinition request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             return GenerateTypeScript(request, NativeTypesMetadata.GetConfig(request));
         }
@@ -218,8 +214,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesDart request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
@@ -341,8 +336,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesSwift request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
@@ -370,8 +364,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesJava request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
@@ -392,8 +385,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesKotlin request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
