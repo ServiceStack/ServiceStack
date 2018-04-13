@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using System.Web;
 using ServiceStack.Data;
 using ServiceStack.FluentValidation;
@@ -235,8 +236,11 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return httpReq?.QueryString[Keywords.Callback].SafeVarName();
+            return SafeVarRef(httpReq?.QueryString[Keywords.Callback]);
         }
+        
+        private static readonly Regex InvalidVarCharsRegex = new Regex(@"[^A-Za-z0-9.]", RegexOptions.Compiled);
+        private static string SafeVarRef(string text) => !string.IsNullOrEmpty(text) ? InvalidVarCharsRegex.Replace(text, "_") : null;
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
