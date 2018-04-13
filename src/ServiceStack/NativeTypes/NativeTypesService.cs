@@ -224,18 +224,21 @@ namespace ServiceStack.NativeTypes
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
             
-            var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
-            ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
-            ignoreDartLibraryTypes.AddRange(new[] {
-                typeof(QueryBase).Name,
-                typeof(QueryData<>).Name,
-                typeof(QueryDb<>).Name,
-                typeof(QueryDb<,>).Name,
-            });
-
             var metadataTypes = ConfigureScript(typesConfig);
-            metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
 
+            if (!DartGenerator.GenerateServiceStackTypes)
+            {
+                var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+                ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+                ignoreDartLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+
+                metadataTypes.Operations.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Request.Name) 
+                    || (x.Response != null && ignoreDartLibraryTypes.Contains(x.Response.Name)));
+                metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
+            }
+            
+            var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+    
             var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
             return dart;
         }
@@ -255,6 +258,42 @@ namespace ServiceStack.NativeTypes
             typeof(IMeta),
             typeof(IHasSessionId),
             typeof(IHasVersion),
+        }.ToList();
+
+        public static List<Type> BuiltInClientDtos = new[] {
+            typeof(ResponseStatus),
+            typeof(ResponseError),
+            typeof(QueryBase),
+            typeof(QueryData<>),
+            typeof(QueryDb<>),
+            typeof(QueryDb<,>),
+            typeof(QueryResponse<>),
+            typeof(Tuple<>),
+            typeof(Tuple<,>),
+            typeof(Tuple<,,>),
+            typeof(Tuple<,,,>),
+            typeof(Authenticate),
+            typeof(AuthenticateResponse),
+            typeof(Register),
+            typeof(RegisterResponse),
+            typeof(AssignRoles),
+            typeof(AssignRolesResponse),
+            typeof(UnAssignRoles),
+            typeof(UnAssignRolesResponse),
+            typeof(CancelRequest),
+            typeof(CancelRequestResponse),
+            typeof(UpdateEventSubscriber),
+            typeof(UpdateEventSubscriberResponse),
+            typeof(GetEventSubscribers),
+            typeof(GetApiKeys),
+            typeof(GetApiKeysResponse),
+            typeof(RegenerateApiKeys),
+            typeof(RegenerateApiKeysResponse),
+            typeof(UserApiKey),
+            typeof(ConvertSessionToToken),
+            typeof(ConvertSessionToTokenResponse),
+            typeof(GetAccessToken),
+            typeof(GetAccessTokenResponse),
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)

@@ -224,7 +224,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegenerateApiKeys : IPost, IReturn<GetApiKeysResponse>
+    public class RegenerateApiKeys : IPost, IReturn<RegenerateApiKeysResponse>
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
     }

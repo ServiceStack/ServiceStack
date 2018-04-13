@@ -109,6 +109,56 @@ namespace ServiceStack.NativeTypes.Dart
             { "Map<String,String>", "toStringMap" },
         };
         
+        public static bool GenerateServiceStackTypes => IgnoreTypeInfosFor.Count == 0;
+
+        //In _builtInTypes servicestack dart library 
+        public static HashSet<string> IgnoreTypeInfosFor = new HashSet<string> {
+            "dynamic",
+            "Map<String,String>",
+            "List<String>",
+            "List<int>",
+            "List<double>",
+            "DateTime",
+            "Duration",
+            "Tuple<T1,T2>",
+            "Tuple2<T1,T2>",
+            "Tuple3<T1,T2,T3>",
+            "Tuple4<T1,T2,T3,T4>",
+            "KeyValuePair<String,String>",
+            "ResponseStatus",
+            "ResponseError",
+            "List<ResponseError>",
+            "QueryBase",
+            "QueryData<T>",
+            "QueryDb<T>",
+            "QueryDb1<T>",
+            "QueryDb2<From,Into>",
+            "QueryResponse<T>",
+            "List<UserApiKey>",
+            "Authenticate",
+            "AuthenticateResponse",
+            "Register",
+            "RegisterResponse",
+            "AssignRoles",
+            "AssignRolesResponse",
+            "UnAssignRoles",
+            "UnAssignRolesResponse",
+            "CancelRequest",
+            "CancelRequestResponse",
+            "UpdateEventSubscriber",
+            "UpdateEventSubscriberResponse",
+            "GetEventSubscribers",
+            "GetApiKeys",
+            "GetApiKeysResponse",
+            "RegenerateApiKeys",
+            "RegenerateApiKeysResponse",
+            "UserApiKey",
+            "ConvertSessionToToken",
+            "ConvertSessionToTokenResponse",
+            "GetAccessToken",
+            "GetAccessTokenResponse",
+        };
+        
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types)
@@ -235,6 +285,10 @@ namespace ServiceStack.NativeTypes.Dart
             //Need to add removed built-in Types
             this.conflictTypeNames.Add(typeof(QueryDb<>).Name);
             this.conflictTypeNames.Add(typeof(QueryDb<,>).Name);
+            this.conflictTypeNames.Add(typeof(Tuple<>).Name);
+            this.conflictTypeNames.Add(typeof(Tuple<,>).Name);
+            this.conflictTypeNames.Add(typeof(Tuple<,,>).Name);
+            this.conflictTypeNames.Add(typeof(Tuple<,,,>).Name);
 
             defaultImports.Each(x => sb.AppendLine($"import '{x}';"));
 
@@ -244,7 +298,7 @@ namespace ServiceStack.NativeTypes.Dart
                 sb.AppendLine($"library {globalNamespace.SafeToken()};");
             }
             
-            existingTypeInfos = new HashSet<string>();
+            existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
             sbTypeInfos.AppendLine().AppendLine("Map<String, TypeInfo> _types = <String, TypeInfo> {");
 
@@ -891,7 +945,7 @@ namespace ServiceStack.NativeTypes.Dart
                     foreach (var arg in genericArgs)
                     {
                         if (args.Length > 0)
-                            args.Append(", ");
+                            args.Append(",");
 
                         args.Append(GenericArg(arg));
                     }
