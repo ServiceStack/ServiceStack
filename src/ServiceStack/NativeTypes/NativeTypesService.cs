@@ -268,6 +268,7 @@ namespace ServiceStack.NativeTypes
             typeof(QueryDb<>),
             typeof(QueryDb<,>),
             typeof(QueryResponse<>),
+            typeof(KeyValuePair<,>),
             typeof(Tuple<>),
             typeof(Tuple<,>),
             typeof(Tuple<,,>),
@@ -302,6 +303,13 @@ namespace ServiceStack.NativeTypes
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
+            typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
+            typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
+            typesConfig.ExportTypes.Remove(typeof(IMeta));
+            
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");
@@ -328,12 +336,6 @@ namespace ServiceStack.NativeTypes
                 metadataTypes.Types.InsertRange(0, returnInterfaces.Map(x => generator.ToType(x)));
             }
 
-            ExportMissingSystemTypes(typesConfig);
-
-            typesConfig.ExportTypes.Add(typeof(Tuple<>));
-            typesConfig.ExportTypes.Add(typeof(Tuple<,>));
-            typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
-            typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
             return metadataTypes;
         }
 

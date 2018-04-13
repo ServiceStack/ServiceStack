@@ -117,6 +117,10 @@ namespace ServiceStack.NativeTypes.Dart
         //In _builtInTypes servicestack dart library 
         public static HashSet<string> IgnoreTypeInfosFor = new HashSet<string> {
             "dynamic",
+            "String",
+            "int",
+            "bool",
+            "double",
             "Map<String,String>",
             "List<String>",
             "List<int>",
@@ -127,6 +131,7 @@ namespace ServiceStack.NativeTypes.Dart
             "Tuple2<T1,T2>",
             "Tuple3<T1,T2,T3>",
             "Tuple4<T1,T2,T3,T4>",
+            "KeyValuePair<K,V>",
             "KeyValuePair<String,String>",
             "ResponseStatus",
             "ResponseError",
