@@ -589,7 +589,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                     if (!isAbstractClass)
                     {
-                        sb.AppendLine($"{typeNameWithoutGenericArgs} fromMap(Map<String, dynamic> map) => new {typeNameWithoutGenericArgs}.fromJson(map);");
+                        sb.AppendLine($"{typeName} fromMap(Map<String, dynamic> map) => new {typeName}.fromJson(map);");
                     }
 
                     sbBody = StringBuilderCacheAlt.Allocate();

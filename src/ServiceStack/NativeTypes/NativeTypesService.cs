@@ -228,6 +228,12 @@ namespace ServiceStack.NativeTypes
                 ignoreDartLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
 
                 metadataTypes.Operations.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Request.Name));
+                metadataTypes.Operations.Each(x => {
+                    if (x.Response != null && ignoreDartLibraryTypes.Contains(x.Response.Name))
+                    {
+                        x.Response = null;
+                    }
+                });
                 metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
             }
             
