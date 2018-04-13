@@ -60,7 +60,7 @@
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
