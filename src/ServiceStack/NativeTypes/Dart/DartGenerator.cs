@@ -589,7 +589,6 @@ namespace ServiceStack.NativeTypes.Dart
                         if (sbBody.Length > 0)
                         {
                             sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody) + "});");
-                            sb.AppendLine();
                         }
                     }
                     else
@@ -597,75 +596,69 @@ namespace ServiceStack.NativeTypes.Dart
                         sb.AppendLine(typeNameWithoutGenericArgs + "();");
                     }
 
-                    if (!isAbstractClass)
-                    {
-                        sb.AppendLine($"fromMap(Map<String, dynamic> map) => new {typeName}.fromJson(map);");
-                    }
-
-                    sbBody = StringBuilderCacheAlt.Allocate();
                     if (props.Count > 0)
                     {
-                        foreach (var prop in props)
-                        {
-                            if (sbBody.Length == 0)
-                            {
-                                sbBody.Append(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json)");
-                                if (hasDtoBaseClass)
-                                    sbBody.Append(": super.fromJson(json)");
-                                sbBody.AppendLine(" {");
-                            }
-    
-                            var propType = DartPropertyType(prop);
-                            var jsonName = prop.Name.PropertyStyle();
-                            var propName = jsonName.PropertyName();
-                            if (UseTypeConversion(prop))
-                            {
-                                bool registerType = true;
-                                if (type.GenericArgs?.Length > 0 && prop.GenericArgs?.Length > 0)
-                                {
-                                    var argIndexes = new List<int>();
-                                    foreach (var arg in prop.GenericArgs)
-                                    {
-                                        var argIndex = Array.IndexOf(type.GenericArgs, arg);
-                                        argIndexes.Add(argIndex);
-                                    }
-                                    if (argIndexes.All(x => x != -1))
-                                    {
-                                        propType = prop.Type.LeftPart('`') + "<${runtimeGenericTypeDefs(this,[" + argIndexes.Join(",") +"]).join(\",\")}>";
-                                        registerType = false;
-                                    }
-                                }
-
-                                if (registerType)
-                                {
-                                    RegisterPropertyType(prop, propType);
-                                }
-                                
-                                sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context);");
-                            }
-                            else
-                            {
-                                if (DartToJsonConverters.TryGetValue(propType, out var conversionFn))
-                                {
-                                    sbBody.AppendLine($"        {propName} = JsonConverters.{conversionFn}(json['{jsonName}']);");
-                                }
-                                else
-                                {
-                                    sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
-                                }
-                            }
-                        }
-                        if (sbBody.Length > 0)
-                        {
-                            sbBody.AppendLine("    }");
-                            sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
-                        }
+                        sbBody = StringBuilderCacheAlt.Allocate();
+                        sbBody.Append(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json)");
+                        sbBody.Append(" { fromMap(json); }");
+                        sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
+                        sb.AppendLine();
                     }
                     else
                     {
                         sb.AppendLine(typeNameWithoutGenericArgs + ".fromJson(Map<String, dynamic> json) : " + 
                                       (hasDtoBaseClass ? "super.fromJson(json);" : "super();"));
                     }
+
+                    sbBody = StringBuilderCacheAlt.Allocate();
+                    sbBody.AppendLine("fromMap(Map<String, dynamic> json) {");
+                    if (hasDtoBaseClass)
+                        sbBody.AppendLine("        super.fromMap(json);");
+                    foreach (var prop in props)
+                    {
+                        var propType = DartPropertyType(prop);
+                        var jsonName = prop.Name.PropertyStyle();
+                        var propName = jsonName.PropertyName();
+                        if (UseTypeConversion(prop))
+                        {
+                            bool registerType = true;
+                            if (type.GenericArgs?.Length > 0 && prop.GenericArgs?.Length > 0)
+                            {
+                                var argIndexes = new List<int>();
+                                foreach (var arg in prop.GenericArgs)
+                                {
+                                    var argIndex = Array.IndexOf(type.GenericArgs, arg);
+                                    argIndexes.Add(argIndex);
+                                }
+                                if (argIndexes.All(x => x != -1))
+                                {
+                                    propType = prop.Type.LeftPart('`') + "<${runtimeGenericTypeDefs(this,[" + argIndexes.Join(",") +"]).join(\",\")}>";
+                                    registerType = false;
+                                }
+                            }
+
+                            if (registerType)
+                            {
+                                RegisterPropertyType(prop, propType);
+                            }
+                            
+                            sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context);");
+                        }
+                        else
+                        {
+                            if (DartToJsonConverters.TryGetValue(propType, out var conversionFn))
+                            {
+                                sbBody.AppendLine($"        {propName} = JsonConverters.{conversionFn}(json['{jsonName}']);");
+                            }
+                            else
+                            {
+                                sbBody.AppendLine($"        {propName} = json['{jsonName}'];");
+                            }
+                        }
+                    }
+                    sbBody.AppendLine("        return this;");
+                    sbBody.AppendLine("    }");
+                    sb.AppendLine(StringBuilderCacheAlt.ReturnAndFree(sbBody));
                     
                     sbBody = StringBuilderCacheAlt.Allocate();
                     if (props.Count > 0)
