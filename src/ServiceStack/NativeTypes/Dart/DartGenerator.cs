@@ -491,6 +491,7 @@ namespace ServiceStack.NativeTypes.Dart
                 }
 
                 var isClass = type.IsInterface != true;
+                var isAbstractClass = type.IsInterface == true || type.IsAbstract == true;
                 var baseClass = extends.Count > 0 ? extends[0] : null;
                 var hasDtoBaseClass = baseClass != null;
                 var hasListBase = baseClass != null && baseClass.StartsWith("List<");
@@ -498,6 +499,10 @@ namespace ServiceStack.NativeTypes.Dart
                 {
                     baseClass = "ListBase" + baseClass.Substring(4);
                     hasDtoBaseClass = false;
+                }
+                if (!isAbstractClass)
+                {
+                    interfaces.Add("IConvertible");
                 }
                 var extend = baseClass != null
                     ? " extends " + baseClass
@@ -520,7 +525,6 @@ namespace ServiceStack.NativeTypes.Dart
                     }
                 }
 
-                var isAbstractClass = type.IsInterface == true || type.IsAbstract == true;
                 var typeDeclaration = !isAbstractClass ? "class" : "abstract class";
 
                 var typeName = Type(type.Name, type.GenericArgs);
@@ -595,7 +599,7 @@ namespace ServiceStack.NativeTypes.Dart
 
                     if (!isAbstractClass)
                     {
-                        sb.AppendLine($"{typeName} fromMap(Map<String, dynamic> map) => new {typeName}.fromJson(map);");
+                        sb.AppendLine($"fromMap(Map<String, dynamic> map) => new {typeName}.fromJson(map);");
                     }
 
                     sbBody = StringBuilderCacheAlt.Allocate();
