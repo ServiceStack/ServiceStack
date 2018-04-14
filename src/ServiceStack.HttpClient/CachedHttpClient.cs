@@ -107,7 +107,7 @@ namespace ServiceStack
             if (response != null)
                 return response;
 
-            if (cache.TryGetValue(requestUri, out var entry))
+            if (webRes.RequestMessage.Method == HttpMethod.Get && cache.TryGetValue(requestUri, out var entry))
             {
                 if (webRes.StatusCode == HttpStatusCode.NotModified)
                 {

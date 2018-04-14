@@ -103,7 +103,7 @@ namespace ServiceStack
             if (response != null)
                 return response;
 
-            if (cache.TryGetValue(requestUri, out var entry))
+            if ((webRes as HttpWebResponse)?.Method == HttpMethods.Get && cache.TryGetValue(requestUri, out var entry))
             {
                 if (webEx.IsNotModified())
                 {
