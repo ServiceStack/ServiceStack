@@ -709,7 +709,7 @@ namespace ServiceStack.NativeTypes.Dart
                         sb.AppendLine($"String getTypeName() {{ return \"{type.Name}\"; }}");
                     }
 
-                    if (!hasDtoBaseClass)
+                    if (isClass)
                     {
                         sb.AppendLine("TypeContext context = _ctx;");
                     }
