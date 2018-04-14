@@ -319,7 +319,8 @@ namespace ServiceStack.NativeTypes.Dart
 
             existingTypeInfos = new HashSet<string>(IgnoreTypeInfosFor);
             sbTypeInfos = new StringBuilder();
-            sbTypeInfos.AppendLine().AppendLine("Map<String, TypeInfo> _types = <String, TypeInfo> {");
+            var dtosName = Config.GlobalNamespace ?? new Uri(Config.BaseUrl).Host;
+            sbTypeInfos.AppendLine().AppendLine("TypeContext _ctx = new TypeContext(typeName: '" + dtosName + "', types: <String, TypeInfo> {");
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -384,7 +385,7 @@ namespace ServiceStack.NativeTypes.Dart
 
             if (existingTypes.Count > 0)
             {
-                sbTypeInfos.AppendLine("};");
+                sbTypeInfos.AppendLine("});");
                 sb.AppendLine(sbTypeInfos.ToString());
             }
 
@@ -636,7 +637,7 @@ namespace ServiceStack.NativeTypes.Dart
                                     RegisterPropertyType(prop, propType);
                                 }
                                 
-                                sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',_types);");
+                                sbBody.AppendLine($"        {propName} = JsonConverters.fromJson(json['{jsonName}'],'{propType}',context);");
                             }
                             else
                             {
@@ -685,7 +686,7 @@ namespace ServiceStack.NativeTypes.Dart
                             var propName = jsonName.PropertyName();
                             if (UseTypeConversion(prop))
                             {
-                                sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',_types)");
+                                sbBody.Append($"        '{jsonName}': JsonConverters.toJson({propName},'{propType}',context)");
                             }
                             else
                             {
@@ -709,6 +710,11 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         sb.AppendLine(responseTypeExpression);
                         sb.AppendLine($"String getTypeName() {{ return \"{type.Name}\"; }}");
+                    }
+
+                    if (!hasDtoBaseClass)
+                    {
+                        sb.AppendLine("TypeContext context = _ctx;");
                     }
                 }
 
