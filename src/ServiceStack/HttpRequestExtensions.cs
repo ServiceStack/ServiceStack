@@ -236,11 +236,8 @@ namespace ServiceStack
 
         public static string GetJsonpCallback(this IRequest httpReq)
         {
-            return SafeVarRef(httpReq?.QueryString[Keywords.Callback]);
+            return httpReq?.QueryString[Keywords.Callback].SafeVarRef();
         }
-        
-        private static readonly Regex InvalidVarCharsRegex = new Regex(@"[^A-Za-z0-9.]", RegexOptions.Compiled);
-        private static string SafeVarRef(string text) => !string.IsNullOrEmpty(text) ? InvalidVarCharsRegex.Replace(text, "_") : null;
 
         public static Dictionary<string, string> CookiesAsDictionary(this IRequest httpReq)
         {
