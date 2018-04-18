@@ -1015,6 +1015,15 @@ namespace ServiceStack
                 : null;
         }
 #else
+        public static IHttpRequest ToRequest(this Microsoft.AspNetCore.Http.HttpContext httpCtx, string operationName = null) => httpCtx.Request.ToRequest();
+
+        public static IHttpRequest ToRequest(this Microsoft.AspNetCore.Http.HttpRequest request, string operationName = null)
+        {
+            var newReq = new Host.NetCore.NetCoreRequest(request.HttpContext, operationName, RequestAttributes.None, request.Path);
+            newReq.RequestAttributes = newReq.GetAttributes() | RequestAttributes.Http;
+            return newReq;
+        }
+
         public static string GetPathAndQuery(this Microsoft.AspNetCore.Http.HttpRequest request)
         {
             if (request == null)
