@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Text;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -258,6 +260,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = await client.PostAsync(new IdWithAlias { Id = 1 });
             Assert.That(response.Id, Is.EqualTo(1));
         }
+
+        [Test]
+        public void Can_create_request_DTO_from_URL()
+        {
+            Assert.That(HostContext.Metadata.CreateRequestFromUrl("/hello") is Hello);
+
+            var request = (Hello)HostContext.Metadata.CreateRequestFromUrl("/hello/foo");
+            Assert.That(request.Name, Is.EqualTo("foo"));
+            
+            request = (Hello)HostContext.Metadata.CreateRequestFromUrl("http://domain.org/hello/foo");
+            Assert.That(request.Name, Is.EqualTo("foo"));
+
+            request = (Hello)HostContext.Metadata.CreateRequestFromUrl("https://www.sub.domain.org/hello/foo");
+            Assert.That(request.Name, Is.EqualTo("foo"));
+
+            request = (Hello)HostContext.Metadata.CreateRequestFromUrl("/hello?name=bar");
+            Assert.That(request.Name, Is.EqualTo("bar"));
+
+            var responseType = HostContext.Metadata.GetResponseTypeByRequest(request.GetType());
+            Assert.That(responseType, Is.EqualTo(typeof(HelloResponse)));
+            
+            request = (Hello)HostContext.Metadata.CreateRequestFromUrl("/hello?name=gateway");
+            var response = (HelloResponse)HostContext.AppHost.GetServiceGateway(new BasicRequest()).Send(responseType, request);
+            Assert.That(response.Result, Is.EqualTo("Hello, gateway"));
+        }
+
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
