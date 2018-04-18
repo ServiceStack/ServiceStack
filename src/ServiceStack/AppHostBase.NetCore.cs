@@ -251,6 +251,8 @@ namespace ServiceStack
             req.RequestAttributes = req.GetAttributes() | RequestAttributes.Http;
             return req;
         }
+
+        public static IHttpRequest ToRequest(this HttpRequest request, string operationName = null) => request.HttpContext.ToRequest();
     }
 }
 
