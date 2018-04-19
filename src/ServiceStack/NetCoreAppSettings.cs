@@ -68,7 +68,9 @@ namespace ServiceStack
 
         public bool Exists(string key) => Configuration.GetChildren().Any(x => x.Key == key);
 
-        public void Set<T>(string key, T value) => Configuration[key] = TypeSerializer.SerializeToString(value);
+        public void Set<T>(string key, T value) => Configuration[key] = value is string 
+            ? value.ToString()
+            : TypeSerializer.SerializeToString(value);
 
         public string GetString(string name) => Configuration[name];
 

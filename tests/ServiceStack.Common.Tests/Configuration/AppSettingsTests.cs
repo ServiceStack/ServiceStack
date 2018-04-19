@@ -62,6 +62,21 @@ namespace ServiceStack.Common.Tests
             Assert.That(emailConfig.From, Is.EqualTo("test@email.com"));
             Assert.That(emailConfig.Subject, Is.EqualTo("The Subject"));
         }
+
+        [Test]
+        public void Can_set_and_get_strings()
+        {
+            var exampleUrl = "https://www.example.org";
+            var appSettings = GetAppSettings();
+            appSettings.Set("url", exampleUrl);
+            var url = appSettings.Get<string>("url");
+            
+            Assert.That(url, Is.EqualTo(exampleUrl));
+
+            url = appSettings.GetString("url");
+            Assert.That(url, Is.EqualTo(exampleUrl));
+        }
+
     }
 #endif
 
