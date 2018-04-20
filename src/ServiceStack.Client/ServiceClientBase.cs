@@ -1306,6 +1306,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Get(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
@@ -1314,6 +1315,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
@@ -1362,11 +1364,20 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
         }
 
+        
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Delete(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public virtual HttpWebResponse Delete(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
@@ -1393,6 +1404,10 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Post(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Post<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Post(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
@@ -1418,6 +1433,10 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Put(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Put<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Put(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
@@ -1444,6 +1463,7 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
         }
 
+        [Obsolete("Use: using (client.Patch<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Patch(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
@@ -1470,12 +1490,18 @@ namespace ServiceStack
             Send<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+        /// </summary>
         public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)
         {
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return Send<HttpWebResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+        /// </summary>
         public virtual HttpWebResponse CustomMethod(string httpVerb, string relativeOrAbsoluteUrl, object requestDto)
         {
             if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
@@ -1505,16 +1531,25 @@ namespace ServiceStack
         }
 
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(IReturn requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveTypedUrl(HttpMethods.Head, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveTypedUrl(HttpMethods.Head, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveUrl(HttpMethods.Head, relativeOrAbsoluteUrl), null);
