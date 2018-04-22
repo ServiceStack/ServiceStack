@@ -58,6 +58,13 @@
             <summary>
             Initialize the command definition
             </summary>
+            <param name="commandText">The text for this command.</param>
+            <param name="parameters">The parameters for this command.</param>
+            <param name="transaction">The transaction for this command to participate in.</param>
+            <param name="commandTimeout">The timeout (in seconds) for this command.</param>
+            <param name="commandType">The <see cref="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CommandType"/> for this command.</param>
+            <param name="flags">The behavior flags for this command.</param>
+            <param name="cancellationToken">The cancellation token for this command.</param>
         </member>
         <member name="P:ServiceStack.OrmLite.Dapper.CommandDefinition.CancellationToken">
             <summary>
@@ -253,13 +260,25 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.Add(System.String,System.Object,System.Nullable{System.Data.DbType},System.Nullable{System.Data.ParameterDirection},System.Nullable{System.Int32})">
             <summary>
-            Add a parameter to this dynamic parameter list
+            Add a parameter to this dynamic parameter list.
             </summary>
+            <param name="name">The name of the parameter.</param>
+            <param name="value">The value of the parameter.</param>
+            <param name="dbType">The type of the parameter.</param>
+            <param name="direction">The in or out direction of the parameter.</param>
+            <param name="size">The size of the parameter.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.DynamicParameters.Add(System.String,System.Object,System.Nullable{System.Data.DbType},System.Nullable{System.Data.ParameterDirection},System.Nullable{System.Int32},System.Nullable{System.Byte},System.Nullable{System.Byte})">
             <summary>
-            Add a parameter to this dynamic parameter list
+            Add a parameter to this dynamic parameter list.
             </summary>
+            <param name="name">The name of the parameter.</param>
+            <param name="value">The value of the parameter.</param>
+            <param name="dbType">The type of the parameter.</param>
+            <param name="direction">The in or out direction of the parameter.</param>
+            <param name="size">The size of the parameter.</param>
+            <param name="precision">The precision of the parameter.</param>
+            <param name="scale">The scale of the parameter.</param>
         </member>
         <member name="P:ServiceStack.OrmLite.Dapper.DynamicParameters.RemoveUnused">
             <summary>
@@ -312,6 +331,7 @@
             <summary>
             Gets the feature set based on the passed connection
             </summary>
+            <param name="connection">The connection to get supported features for.</param>
         </member>
         <member name="P:ServiceStack.OrmLite.Dapper.FeatureSupport.Arrays">
             <summary>
@@ -376,8 +396,10 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlDataRecordListTVPParameter.#ctor(System.Collections.Generic.IEnumerable{Microsoft.SqlServer.Server.SqlDataRecord},System.String)">
             <summary>
-            Create a new instance of SqlDataRecordListTVPParameter
+            Create a new instance of <see cref="T:ServiceStack.OrmLite.Dapper.SqlDataRecordListTVPParameter"/>.
             </summary>
+            <param name="data">The data records to convert into TVPs.</param>
+            <param name="typeName">The parameter type name.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper">
             <summary>
@@ -388,288 +410,605 @@
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
             <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of <typeparamref name="T"/>; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
+            </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A sequence of data of <typeparamref name="T"/>; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
+            </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="command">The command used to query on this connection.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="command">The command used to query on this connection.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="command">The command used to query on this connection.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefaultAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="command">The command used to query on this connection.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync(System.Data.IDbConnection,System.Type,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a single-row query asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="command">The command used to query on this connection.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefaultAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
+            <summary>
+            Execute a single-row query asynchronously using .NET 4.5 Task.
+            </summary>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
             Execute a command asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The number of rows affected.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute a command asynchronously using .NET 4.5 Task.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute on this connection.</param>
+            <returns>The number of rows affected.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Maps a query to objects
+            Perform a asynchronous multi-mapping query with 2 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst">The first type in the recordset</typeparam>
-            <typeparam name="TSecond">The second type in the recordset</typeparam>
-            <typeparam name="TReturn">The return type</typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
             <param name="commandType">Is it a stored proc or a batch?</param>
-            <returns></returns>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``3(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2},System.String)">
             <summary>
-            Maps a query to objects
+            Perform a asynchronous multi-mapping query with 2 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst">The first type in the recordset</typeparam>
-            <typeparam name="TSecond">The second type in the recordset</typeparam>
-            <typeparam name="TReturn">The return type</typeparam>
-            <param name="cnn"></param>
-            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
-            <param name="command">The command to execute</param>
-            <param name="map"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Maps a query to objects
+            Perform a asynchronous multi-mapping query with 3 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``4(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3},System.String)">
             <summary>
-            Maps a query to objects
+            Perform a asynchronous multi-mapping query with 3 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
-            <param name="command">The command to execute</param>
-            <param name="map"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 4 input parameters
+            Perform a asynchronous multi-mapping query with 4 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn"></param>
-            <param name="commandTimeout"></param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``5(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4},System.String)">
             <summary>
-            Perform a multi mapping query with 4 input parameters
+            Perform a asynchronous multi-mapping query with 4 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="splitOn">The field we should split and read the second object from (default: id)</param>
-            <param name="command">The command to execute</param>
-            <param name="map"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 5 input parameters
+            Perform a asynchronous multi-mapping query with 5 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``6(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5},System.String)">
             <summary>
-            Perform a multi mapping query with 5 input parameters
+            Perform a asynchronous multi-mapping query with 5 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 6 input parameters
+            Perform a asynchronous multi-mapping query with 6 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``7(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5,``6},System.String)">
             <summary>
-            Perform a multi mapping query with 6 input parameters
+            Perform a asynchronous multi-mapping query with 6 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 7 input parameters
+            Perform a asynchronous multi-mapping query with 7 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TSeventh">The seventh type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``8(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.String)">
             <summary>
-            Perform a multi mapping query with 7 input parameters
+            Perform an asynchronous multi-mapping query with 7 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TSeventh">The seventh type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="command">The command to execute.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryAsync``1(System.Data.IDbConnection,System.String,System.Type[],System.Func{System.Object[],``0},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with arbitrary input parameters
+            Perform a asynchronous multi-mapping query with an arbitrary number of input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TReturn">The return type</typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="types">array of types in the recordset</param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="types">Array of types in the recordset.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
             <param name="commandType">Is it a stored proc or a batch?</param>
-            <returns></returns>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultipleAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute a command that returns multiple result sets, and access each in turn
+            Execute a command that returns multiple result sets, and access each in turn.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultipleAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute a command that returns multiple result sets, and access each in turn
+            Execute a command that returns multiple result sets, and access each in turn.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command to execute for this query.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReaderAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
             <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
             <remarks>
             This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
@@ -689,8 +1028,23 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReaderAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
+            <remarks>
+            This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
+            or <see cref="T:DataSet"/>.
+            </remarks>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReaderAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Data.CommandBehavior)">
+            <summary>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
+            </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <param name="commandBehavior">The <see cref="T:System.Data.CommandBehavior"/> flags for this reader.</param>
             <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
             <remarks>
             This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
@@ -699,27 +1053,45 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The first cell returned, as <see cref="T:System.Object"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The first cell returned, as <typeparamref name="T"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <returns>The first cell selected as <see cref="T:System.Object"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalarAsync``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
             Execute parameterized SQL that selects a single value
             </summary>
-            <returns>The first cell selected</returns>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <returns>The first cell selected as <typeparamref name="T"/>.</returns>
         </member>
         <member name="E:ServiceStack.OrmLite.Dapper.SqlMapper.QueryCachePurged">
             <summary>
@@ -733,13 +1105,13 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetCachedSQLCount">
             <summary>
-            Return a count of all the cached queries by dapper
+            Return a count of all the cached queries by Dapper
             </summary>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetCachedSQL(System.Int32)">
             <summary>
-            Return a list of all the queries cached by dapper
+            Return a list of all the queries cached by Dapper
             </summary>
             <param name="ignoreHitCountAbove"></param>
             <returns></returns>
@@ -752,85 +1124,139 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ResetTypeHandlers">
             <summary>
-            Clear the registered type handlers
+            Clear the registered type handlers.
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeMap(System.Type,System.Data.DbType)">
             <summary>
-            Configure the specified type to be mapped to a given db-type
+            Configure the specified type to be mapped to a given db-type.
             </summary>
+            <param name="type">The type to map from.</param>
+            <param name="dbType">The database type to map to.</param>
+        </member>
+        <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.RemoveTypeMap(System.Type)">
+            <summary>
+            Removes the specified type from the Type/DbType mapping table.
+            </summary>
+            <param name="type">The type to remove from the current map.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandler(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler)">
             <summary>
-            Configure the specified type to be processed by a custom handler
+            Configure the specified type to be processed by a custom handler.
             </summary>
+            <param name="type">The type to handle.</param>
+            <param name="handler">The handler to process the <paramref name="type"/>.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandlerImpl(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler,System.Boolean)">
             <summary>
-            Configure the specified type to be processed by a custom handler
+            Configure the specified type to be processed by a custom handler.
             </summary>
+            <param name="type">The type to handle.</param>
+            <param name="handler">The handler to process the <paramref name="type"/>.</param>
+            <param name="clone">Whether to clone the current type handler map.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AddTypeHandler``1(ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler{``0})">
             <summary>
-            Configure the specified type to be processed by a custom handler
+            Configure the specified type to be processed by a custom handler.
             </summary>
+            <typeparam name="T">The type to handle.</typeparam>
+            <param name="handler">The handler for the type <typeparamref name="T"/>.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetDbType(System.Object)">
             <summary>
-            Get the DbType that maps to a given value
+            Get the DbType that maps to a given value.
             </summary>
+            <param name="value">The object to get a corresponding database type for.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.LookupDbType(System.Type,System.String,System.Boolean,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler@)">
             <summary>
             OBSOLETE: For internal usage only. Lookup the DbType and handler for a given Type and member
             </summary>
+            <param name="type">The type to lookup.</param>
+            <param name="name">The name (for error messages).</param>
+            <param name="demand">Whether to demand a value (throw if missing).</param>
+            <param name="handler">The handler for <paramref name="type"/>.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsList``1(System.Collections.Generic.IEnumerable{``0})">
             <summary>
             Obtains the data as a list; if it is *already* a list, the original object is returned without
             any duplication; otherwise, ToList() is invoked.
             </summary>
+            <typeparam name="T">The type of element in the list.</typeparam>
+            <param name="source">The enumerable to return as a list.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Execute(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL
+            Execute parameterized SQL.
             </summary>
-            <returns>Number of rows affected</returns>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The number of rows affected.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Execute(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL
+            Execute parameterized SQL.
             </summary>
-            <returns>Number of rows affected</returns>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute on this connection.</param>
+            <returns>The number of rows affected.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The first cell selected as <see cref="T:System.Object"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>The first cell returned, as <typeparamref name="T"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <returns>The first cell selected as <see cref="T:System.Object"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteScalar``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL that selects a single value
+            Execute parameterized SQL that selects a single value.
             </summary>
-            <returns>The first cell selected</returns>
+            <typeparam name="T">The type to return.</typeparam>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <returns>The first cell selected as <typeparamref name="T"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="sql">The SQL to execute.</param>
+            <param name="param">The parameters to use for this command.</param>
+            <param name="transaction">The transaction to use for this command.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
             <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
             <remarks>
             This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
@@ -850,8 +1276,10 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
             <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
             <remarks>
             This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
@@ -860,8 +1288,11 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ExecuteReader(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition,System.Data.CommandBehavior)">
             <summary>
-            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>
+            Execute parameterized SQL and return an <see cref="T:System.Data.IDataReader"/>.
             </summary>
+            <param name="cnn">The connection to execute on.</param>
+            <param name="command">The command to execute.</param>
+            <param name="commandBehavior">The <see cref="T:System.Data.CommandBehavior"/> flags for this reader.</param>
             <returns>An <see cref="T:System.Data.IDataReader"/> that can be used to iterate over the results of the SQL query.</returns>
             <remarks>
             This is typically used when the results of a query are not processed by Dapper, for example, used to fill a <see cref="T:System.Data.DataTable"/>
@@ -870,350 +1301,511 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Return a sequence of dynamic objects with properties matching the columns
+            Return a sequence of dynamic objects with properties matching the columns.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirst(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Return a dynamic object with properties matching the columns
+            Return a dynamic object with properties matching the columns.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefault(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Return a dynamic object with properties matching the columns
+            Return a dynamic object with properties matching the columns.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingle(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Return a dynamic object with properties matching the columns
+            Return a dynamic object with properties matching the columns.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefault(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Return a dynamic object with properties matching the columns
+            Return a dynamic object with properties matching the columns.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirst``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per T
+            Executes a single-row query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefault``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per T
+            Executes a single-row query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingle``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per T
+            Executes a single-row query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefault``1(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per T
+            Executes a single-row query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of result to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Boolean,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per the Type suggested
+            Executes a single-row query, returning the data typed as <paramref name="type"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirst(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per the Type suggested
+            Executes a single-row query, returning the data typed as <paramref name="type"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefault(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per the Type suggested
+            Executes a single-row query, returning the data typed as <paramref name="type"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingle(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per the Type suggested
+            Executes a single-row query, returning the data typed as <paramref name="type"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefault(System.Data.IDbConnection,System.Type,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Executes a single-row query, returning the data typed as per the Type suggested
+            Executes a single-row query, returning the data typed as <paramref name="type"/>.
             </summary>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <param name="cnn">The connection to query on.</param>
+            <param name="type">The type to return.</param>
+            <param name="sql">The SQL to execute for the query.</param>
+            <param name="param">The parameters to pass, if any.</param>
+            <param name="transaction">The transaction to use, if any.</param>
+            <param name="commandTimeout">The command timeout (in seconds).</param>
+            <param name="commandType">The type of command to execute.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
+            <returns>
+            A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
-            <returns>A sequence of data of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A sequence of data of <typeparamref name="T"/>; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirst``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
-            <returns>A single instance or null of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A single instance or null of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryFirstOrDefault``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
-            <returns>A single or null instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A single or null instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingle``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
-            <returns>A single instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A single instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QuerySingleOrDefault``1(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Executes a query, returning the data typed as per T
+            Executes a query, returning the data typed as <typeparamref name="T"/>.
             </summary>
-            <remarks>the dynamic param may seem a bit odd, but this works around a major usability issue in vs, if it is Object vs completion gets annoying. Eg type new [space] get new object</remarks>
-            <returns>A single instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command used to query on this connection.</param>
+            <returns>
+            A single instance of the supplied type; if a basic type (int, string, etc) is queried then the data from the first column in assumed, otherwise an instance is
             created per row, and a direct column-name===member-name mapping is assumed (case insensitive).
             </returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultiple(System.Data.IDbConnection,System.String,System.Object,System.Data.IDbTransaction,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Execute a command that returns multiple result sets, and access each in turn
+            Execute a command that returns multiple result sets, and access each in turn.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.QueryMultiple(System.Data.IDbConnection,ServiceStack.OrmLite.Dapper.CommandDefinition)">
             <summary>
-            Execute a command that returns multiple result sets, and access each in turn
+            Execute a command that returns multiple result sets, and access each in turn.
             </summary>
+            <param name="cnn">The connection to query on.</param>
+            <param name="command">The command to execute for this query.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``3(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Maps a query to objects
+            Perform a multi-mapping query with 2 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst">The first type in the record set</typeparam>
-            <typeparam name="TSecond">The second type in the record set</typeparam>
-            <typeparam name="TReturn">The return type</typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
             <param name="commandType">Is it a stored proc or a batch?</param>
-            <returns></returns>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``4(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Maps a query to objects
+            Perform a multi-mapping query with 3 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``5(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 4 input parameters
+            Perform a multi-mapping query with 4 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn"></param>
-            <param name="commandTimeout"></param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``6(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 5 input parameters
+            Perform a multi-mapping query with 5 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TFifth"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn"></param>
-            <param name="commandTimeout"></param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``7(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 6 input parameters
+            Perform a multi-mapping query with 6 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TFifth"></typeparam>
-            <typeparam name="TSixth"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn"></param>
-            <param name="commandTimeout"></param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``8(System.Data.IDbConnection,System.String,System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with 7 input parameters
+            Perform a multi-mapping query with 7 input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TFirst"></typeparam>
-            <typeparam name="TSecond"></typeparam>
-            <typeparam name="TThird"></typeparam>
-            <typeparam name="TFourth"></typeparam>
-            <typeparam name="TFifth"></typeparam>
-            <typeparam name="TSixth"></typeparam>
-            <typeparam name="TSeventh"></typeparam>
-            <typeparam name="TReturn"></typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn"></param>
-            <param name="commandTimeout"></param>
-            <param name="commandType"></param>
-            <returns></returns>
+            <typeparam name="TFirst">The first type in the recordset.</typeparam>
+            <typeparam name="TSecond">The second type in the recordset.</typeparam>
+            <typeparam name="TThird">The third type in the recordset.</typeparam>
+            <typeparam name="TFourth">The fourth type in the recordset.</typeparam>
+            <typeparam name="TFifth">The fifth type in the recordset.</typeparam>
+            <typeparam name="TSixth">The sixth type in the recordset.</typeparam>
+            <typeparam name="TSeventh">The seventh type in the recordset.</typeparam>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
+            <param name="commandType">Is it a stored proc or a batch?</param>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Query``1(System.Data.IDbConnection,System.String,System.Type[],System.Func{System.Object[],``0},System.Object,System.Data.IDbTransaction,System.Boolean,System.String,System.Nullable{System.Int32},System.Nullable{System.Data.CommandType})">
             <summary>
-            Perform a multi mapping query with arbitrary input parameters
+            Perform a multi-mapping query with an arbitrary number of input types. 
+            This returns a single type, combined from the raw types via <paramref name="map"/>.
             </summary>
-            <typeparam name="TReturn">The return type</typeparam>
-            <param name="cnn"></param>
-            <param name="sql"></param>
-            <param name="types">array of types in the record set</param>
-            <param name="map"></param>
-            <param name="param"></param>
-            <param name="transaction"></param>
-            <param name="buffered"></param>
-            <param name="splitOn">The Field we should split and read the second object from (default: id)</param>
-            <param name="commandTimeout">Number of seconds before command execution timeout</param>
+            <typeparam name="TReturn">The combined type to return.</typeparam>
+            <param name="cnn">The connection to query on.</param>
+            <param name="sql">The SQL to execute for this query.</param>
+            <param name="types">Array of types in the recordset.</param>
+            <param name="map">The function to map row types to the return type.</param>
+            <param name="param">The parameters to use for this query.</param>
+            <param name="transaction">The transaction to use for this query.</param>
+            <param name="buffered">Whether to buffer the results in memory.</param>
+            <param name="splitOn">The field we should split and read the second object from (default: "Id").</param>
+            <param name="commandTimeout">Number of seconds before command execution timeout.</param>
             <param name="commandType">Is it a stored proc or a batch?</param>
-            <returns></returns>
+            <returns>An enumerable of <typeparamref name="TReturn"/>.</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReadChar(System.Object)">
             <summary>
-            Internal use only
+            Internal use only.
             </summary>
-            <param name="value"></param>
-            <returns></returns>
+            <param name="value">The object to convert to a character.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReadNullableChar(System.Object)">
             <summary>
-            Internal use only
+            Internal use only.
             </summary>
+            <param name="value">The object to convert to a character.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.FindOrAddParameter(System.Data.IDataParameterCollection,System.Data.IDbCommand,System.String)">
             <summary>
-            Internal use only
+            Internal use only.
             </summary>
+            <param name="parameters">The parameter collection to search in.</param>
+            <param name="command">The command for this fetch.</param>
+            <param name="name">The name of the parameter to get.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.PackListParameters(System.Data.IDbCommand,System.String,System.Object)">
             <summary>
-            Internal use only
+            Internal use only.
             </summary>
+            <param name="command">The command to pack parameters for.</param>
+            <param name="namePrefix">The name prefix for these parameters.</param>
+            <param name="value">The parameter value can be an <see cref="T:System.Collections.Generic.IEnumerable`1"/></param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.SanitizeParameterValue(System.Object)">
             <summary>
             OBSOLETE: For internal usage only. Sanitizes the paramter value with proper type casting.
             </summary>
+            <param name="value">The value to sanitize.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.ReplaceLiterals(ServiceStack.OrmLite.Dapper.SqlMapper.IParameterLookup,System.Data.IDbCommand)">
             <summary>
-            Replace all literal tokens with their text form
+            Replace all literal tokens with their text form.
             </summary>
+            <param name="parameters">The parameter lookup to do replacements with.</param>
+            <param name="command">The command to repalce parameters in.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Format(System.Object)">
             <summary>
-            Convert numeric values to their string form for SQL literal purposes
+            Convert numeric values to their string form for SQL literal purposes.
             </summary>
+            <param name="value">The value to get a string for.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.CreateParamInfoGenerator(ServiceStack.OrmLite.Dapper.SqlMapper.Identity,System.Boolean,System.Boolean)">
             <summary>
-            Internal use only
+            Internal use only.
             </summary>
+            <param name="identity">The identity of the generator.</param>
+            <param name="checkForDuplicates">Whether to check for duplicates.</param>
+            <param name="removeUnused">Whether to remove unused parameters.</param>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.TypeMapProvider">
             <summary>
@@ -1223,8 +1815,9 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetTypeMap(System.Type)">
             <summary>
-            Gets type-map for the given type
+            Gets type-map for the given <see cref="T:System.Type"/>.
             </summary>
+            <param name="type">The type to get a map for.</param>
             <returns>Type map implementation, DefaultTypeMap instance if no override present</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.SetTypeMap(System.Type,ServiceStack.OrmLite.Dapper.SqlMapper.ITypeMap)">
@@ -1249,6 +1842,10 @@
             <summary>
             Throws a data exception, only used internally
             </summary>
+            <param name="ex">The exception to throw.</param>
+            <param name="index">The index the exception occured at.</param>
+            <param name="reader">The reader the exception occured in.</param>
+            <param name="value">The value that caused the exception.</param>
         </member>
         <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.ConnectionStringComparer">
             <summary>
@@ -1260,28 +1857,35 @@
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.DataTableTypeNameKey">
             <summary>
-            Key used to indicate the type name associated with a DataTable
+            Key used to indicate the type name associated with a DataTable.
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsTableValuedParameter(System.Data.DataTable,System.String)">
             <summary>
-            Used to pass a DataTable as a TableValuedParameter
+            Used to pass a DataTable as a <see cref="T:ServiceStack.OrmLite.Dapper.TableValuedParameter"/>.
             </summary>
+            <param name="table">The <see cref="T:System.Data.DataTable"/> to create this parameter for.</param>
+            <param name="typeName">The name of the type this parameter is for.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.SetTypeName(System.Data.DataTable,System.String)">
             <summary>
-            Associate a DataTable with a type name
+            Associate a DataTable with a type name.
             </summary>
+            <param name="table">The <see cref="T:System.Data.DataTable"/> that does with the <paramref name="typeName"/>.</param>
+            <param name="typeName">The name of the type this table is for.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetTypeName(System.Data.DataTable)">
             <summary>
-            Fetch the type name associated with a DataTable
+            Fetch the type name associated with a <see cref="T:System.Data.DataTable"/>.
             </summary>
+            <param name="table">The <see cref="T:System.Data.DataTable"/> that has a type name associated with it.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.AsTableValuedParameter(System.Collections.Generic.IEnumerable{Microsoft.SqlServer.Server.SqlDataRecord},System.String)">
             <summary>
-            Used to pass a IEnumerable&lt;SqlDataRecord&gt; as a TableValuedParameter
+            Used to pass a IEnumerable&lt;SqlDataRecord&gt; as a TableValuedParameter.
             </summary>
+            <param name="list">The list of records to convert to TVPs.</param>
+            <param name="typeName">The sql parameter type name.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.DontMap">
             <summary>
@@ -1298,6 +1902,7 @@
             Read the next grid of results, returned as a dynamic object
             </summary>
             <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
+            <param name="buffered">Whether to buffer the results.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync">
             <summary>
@@ -1327,166 +1932,257 @@
             <summary>
             Read the next grid of results
             </summary>
+            <param name="type">The type to read.</param>
+            <param name="buffered">Whether to buffer the results.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync(System.Type)">
             <summary>
             Read an individual row of the next grid of results
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefaultAsync(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleAsync(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefaultAsync(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadAsync``1(System.Boolean)">
             <summary>
-            Read the next grid of results
+            Read the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
+            <param name="buffered">Whether the results should be buffered in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstAsync``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefaultAsync``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleAsync``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefaultAsync``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read(System.Boolean)">
             <summary>
-            Read the next grid of results, returned as a dynamic object
+            Read the next grid of results, returned as a dynamic object.
             </summary>
+            <param name="buffered">Whether the results should be buffered in memory.</param>
             <remarks>Note: each row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirst">
             <summary>
-            Read an individual row of the next grid of results, returned as a dynamic object
+            Read an individual row of the next grid of results, returned as a dynamic object.
             </summary>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefault">
             <summary>
-            Read an individual row of the next grid of results, returned as a dynamic object
+            Read an individual row of the next grid of results, returned as a dynamic object.
             </summary>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingle">
             <summary>
-            Read an individual row of the next grid of results, returned as a dynamic object
+            Read an individual row of the next grid of results, returned as a dynamic object.
             </summary>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefault">
             <summary>
-            Read an individual row of the next grid of results, returned as a dynamic object
+            Read an individual row of the next grid of results, returned as a dynamic object.
             </summary>
             <remarks>Note: the row can be accessed via "dynamic", or by casting to an IDictionary&lt;string,object&gt;</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``1(System.Boolean)">
             <summary>
-            Read the next grid of results
+            Read the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
+            <param name="buffered">Whether the results should be buffered in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirst``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefault``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingle``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefault``1">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <typeparam name="T">The type to read.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read(System.Type,System.Boolean)">
             <summary>
-            Read the next grid of results
+            Read the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <param name="buffered">Whether to buffer the results.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirst(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadFirstOrDefault(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingle(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.ReadSingleOrDefault(System.Type)">
             <summary>
-            Read an individual row of the next grid of results
+            Read an individual row of the next grid of results.
             </summary>
+            <param name="type">The type to read.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="type"/> is <c>null</c>.</exception>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``3(System.Func{``0,``1,``2},System.String,System.Boolean)">
             <summary>
-            Read multiple objects from a single record set on the grid
+            Read multiple objects from a single record set on the grid.
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``4(System.Func{``0,``1,``2,``3},System.String,System.Boolean)">
             <summary>
-            Read multiple objects from a single record set on the grid
+            Read multiple objects from a single record set on the grid.
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TThird">The third type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``5(System.Func{``0,``1,``2,``3,``4},System.String,System.Boolean)">
             <summary>
             Read multiple objects from a single record set on the grid
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TThird">The third type in the record set.</typeparam>
+            <typeparam name="TFourth">The fourth type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``6(System.Func{``0,``1,``2,``3,``4,``5},System.String,System.Boolean)">
             <summary>
             Read multiple objects from a single record set on the grid
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TThird">The third type in the record set.</typeparam>
+            <typeparam name="TFourth">The fourth type in the record set.</typeparam>
+            <typeparam name="TFifth">The fifth type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``7(System.Func{``0,``1,``2,``3,``4,``5,``6},System.String,System.Boolean)">
             <summary>
             Read multiple objects from a single record set on the grid
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TThird">The third type in the record set.</typeparam>
+            <typeparam name="TFourth">The fourth type in the record set.</typeparam>
+            <typeparam name="TFifth">The fifth type in the record set.</typeparam>
+            <typeparam name="TSixth">The sixth type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``8(System.Func{``0,``1,``2,``3,``4,``5,``6,``7},System.String,System.Boolean)">
             <summary>
             Read multiple objects from a single record set on the grid
             </summary>
+            <typeparam name="TFirst">The first type in the record set.</typeparam>
+            <typeparam name="TSecond">The second type in the record set.</typeparam>
+            <typeparam name="TThird">The third type in the record set.</typeparam>
+            <typeparam name="TFourth">The fourth type in the record set.</typeparam>
+            <typeparam name="TFifth">The fifth type in the record set.</typeparam>
+            <typeparam name="TSixth">The sixth type in the record set.</typeparam>
+            <typeparam name="TSeventh">The seventh type in the record set.</typeparam>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="func">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.Read``1(System.Type[],System.Func{System.Object[],``0},System.String,System.Boolean)">
             <summary>
             Read multiple objects from a single record set on the grid
             </summary>
+            <typeparam name="TReturn">The type to return from the record set.</typeparam>
+            <param name="types">The types to read from the result set.</param>
+            <param name="map">The mapping function from the read types to the return type.</param>
+            <param name="splitOn">The field(s) we should split and read the second object from (defaults to "id")</param>
+            <param name="buffered">Whether to buffer results in memory.</param>
         </member>
         <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.GridReader.IsConsumed">
             <summary>
@@ -1519,16 +2215,21 @@
             <summary>
             Parses a data reader to a sequence of data of the supplied type. Used for deserializing a reader without a connection, etc.
             </summary>
+            <typeparam name="T">The type to parse from the <paramref name="reader"/>.</typeparam>
+            <param name="reader">The data reader to parse results from.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Parse(System.Data.IDataReader,System.Type)">
             <summary>
             Parses a data reader to a sequence of data of the supplied type (as object). Used for deserializing a reader without a connection, etc.
             </summary>
+            <param name="reader">The data reader to parse results from.</param>
+            <param name="type">The type to parse from the <paramref name="reader"/>.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Parse(System.Data.IDataReader)">
             <summary>
             Parses a data reader to a sequence of dynamic. Used for deserializing a reader without a connection, etc.
             </summary>
+            <param name="reader">The data reader to parse results from.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.GetRowParser(System.Data.IDataReader,System.Type,System.Int32,System.Int32,System.Boolean)">
             <summary>
@@ -1547,11 +2248,12 @@
             Gets the row parser for a specific row on a data reader. This allows for type switching every row based on, for example, a TypeId column.
             You could return a collection of the base type but have each more specific.
             </summary>
-            <param name="reader">The data reader to get the parser for the current row from</param>
-            <param name="concreteType">The type to get the parser for</param>
-            <param name="startIndex">The start column index of the object (default 0)</param>
-            <param name="length">The length of columns to read (default -1 = all fields following startIndex)</param>
-            <param name="returnNullIfFirstMissing">Return null if we can't find the first column? (default false)</param>
+            <typeparam name="T">The type of results to return.</typeparam>
+            <param name="reader">The data reader to get the parser for the current row from.</param>
+            <param name="concreteType">The type to get the parser for.</param>
+            <param name="startIndex">The start column index of the object (default: 0).</param>
+            <param name="length">The length of columns to read (default: -1 = all fields following startIndex).</param>
+            <param name="returnNullIfFirstMissing">Return null if we can't find the first column? (default: false).</param>
             <returns>A parser for this specific object from this row.</returns>
             <example>
             var result = new List&lt;BaseType&gt;();
@@ -1598,70 +2300,69 @@
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity">
             <summary>
-            Identity of a cached query in Dapper, used for extensibility
+            Identity of a cached query in Dapper, used for extensibility.
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.ForDynamicParameters(System.Type)">
             <summary>
-            Create an identity for use with DynamicParameters, internal use only
+            Create an identity for use with DynamicParameters, internal use only.
             </summary>
-            <param name="type"></param>
+            <param name="type">The parameters type to create an <see cref="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity"/> for.</param>
             <returns></returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.Equals(System.Object)">
-             <summary>
-            
-             </summary>
-             <param name="obj"></param>
-             <returns></returns>
+            <summary>
+            Whether this <see cref="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity"/> equals another.
+            </summary>
+            <param name="obj">The other <see cref="T:System.Object"/> to compare to.</param>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.sql">
             <summary>
-            The sql
+            The raw SQL command.
             </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.commandType">
             <summary>
-            The command type
+            The SQL command type.
             </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.hashCode">
-             <summary>
-            
-             </summary>
+            <summary>
+            The hash code of this Identity.
+            </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.gridIndex">
-             <summary>
-            
-             </summary>
+            <summary>
+            The grid index (position in the reader) of this Identity.
+            </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.type">
-             <summary>
-            
-             </summary>
+            <summary>
+            This <see cref="T:System.Type"/> of this Identity.
+            </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.connectionString">
-             <summary>
-            
-             </summary>
+            <summary>
+            The connection string for this Identity.
+            </summary>
         </member>
         <member name="F:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.parametersType">
-             <summary>
-            
-             </summary>
+            <summary>
+            The type of the parameters object for this Identity.
+            </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.GetHashCode">
-             <summary>
-            
-             </summary>
-             <returns></returns>
+            <summary>
+            Gets the hash code for this identity.
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Identity.Equals(ServiceStack.OrmLite.Dapper.SqlMapper.Identity)">
             <summary>
             Compare 2 Identity objects
             </summary>
-            <param name="other"></param>
-            <returns></returns>
+            <param name="other">The other <see cref="T:ServiceStack.OrmLite.Dapper.SqlMapper.Identity"/> object to compare.</param>
+            <returns>Whether the two are equal</returns>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.IDynamicParameters">
             <summary>
@@ -1724,6 +2425,7 @@
             <summary>
             Get the value of the specified parameter (return null if not found)
             </summary>
+            <param name="name">The name of the parameter to get.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.ITypeHandler">
             <summary>
@@ -1788,6 +2490,8 @@
             and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
             equality. The type is fully thread-safe.
             </summary>
+            <typeparam name="TKey">The type to cache.</typeparam>
+            <typeparam name="TValue">The value type of the cache.</typeparam>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.LiteralToken">
             <summary>
@@ -1808,6 +2512,18 @@
             <summary>
             Permits specifying certain SqlMapper values globally.
             </summary>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.Settings.UseSingleResultOptimization">
+            <summary>
+            Gets or sets whether Dapper should use the CommandBehavior.SingleResult optimization
+            </summary>
+            <remarks>Note that a consequence of enabling this option is that errors that happen <b>after</b> the first select may not be reported</remarks>
+        </member>
+        <member name="P:ServiceStack.OrmLite.Dapper.SqlMapper.Settings.UseSingleRowOptimization">
+            <summary>
+            Gets or sets whether Dapper should use the CommandBehavior.SingleRow optimization
+            </summary>
+            <remarks>Note that on some DB providers this optimization can have adverse performance impact</remarks>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.Settings.SetDefaults">
             <summary>
@@ -1847,6 +2563,7 @@
             <summary>
             Base-class for simple type-handlers
             </summary>
+            <typeparam name="T">This <see cref="T:System.Type"/> this handler is for.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandler`1.SetValue(System.Data.IDbDataParameter,`0)">
             <summary>
@@ -1866,16 +2583,19 @@
             <summary>
             Base-class for simple type-handlers that are based around strings
             </summary>
+            <typeparam name="T">This <see cref="T:System.Type"/> this handler is for.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.StringTypeHandler`1.Parse(System.String)">
             <summary>
             Parse a string into the expected type (the string will never be null)
             </summary>
+            <param name="xml">The string to parse.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.StringTypeHandler`1.Format(`0)">
             <summary>
             Format an instace into a string (the instance will never be null)
             </summary>
+            <param name="xml">The string to format.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.StringTypeHandler`1.SetValue(System.Data.IDbDataParameter,`0)">
             <summary>
@@ -1895,16 +2615,20 @@
             <summary>
             Not intended for direct usage
             </summary>
+            <typeparam name="T">The type to have a cache for.</typeparam>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1.Parse(System.Object)">
             <summary>
-            Not intended for direct usage
+            Not intended for direct usage.
             </summary>
+            <param name="value">The object to parse.</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.TypeHandlerCache`1.SetValue(System.Data.IDbDataParameter,System.Object)">
             <summary>
-            Not intended for direct usage
+            Not intended for direct usage.
             </summary>
+            <param name="parameter">The parameter to set a value for.</param>
+            <param name="value">The value to set.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler">
             <summary>
@@ -1914,8 +2638,9 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler.#ctor(System.String)">
             <summary>
-            Creates a new instance of UdtTypeHandler with the specified UdtTypeName
+            Creates a new instance of UdtTypeHandler with the specified <see cref="T:ServiceStack.OrmLite.Dapper.SqlMapper.UdtTypeHandler"/>.
             </summary>
+            <param name="udtTypeName">The user defined type name.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.TableValuedParameter">
             <summary>
@@ -1924,13 +2649,16 @@
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.TableValuedParameter.#ctor(System.Data.DataTable)">
             <summary>
-            Create a new instance of TableValuedParameter
+            Create a new instance of <see cref="T:ServiceStack.OrmLite.Dapper.TableValuedParameter"/>.
             </summary>
+            <param name="table">The <see cref="T:System.Data.DataTable"/> to create this parameter for</param>
         </member>
         <member name="M:ServiceStack.OrmLite.Dapper.TableValuedParameter.#ctor(System.Data.DataTable,System.String)">
             <summary>
-            Create a new instance of TableValuedParameter
+            Create a new instance of <see cref="T:ServiceStack.OrmLite.Dapper.TableValuedParameter"/>.
             </summary>
+            <param name="table">The <see cref="T:System.Data.DataTable"/> to create this parameter for.</param>
+            <param name="typeName">The name of the type this parameter is for.</param>
         </member>
         <member name="T:ServiceStack.OrmLite.Dapper.IWrappedDataReader">
             <summary>
@@ -2328,6 +3056,12 @@
             </summary>
             <param name="paramValue"></param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.PrepareParameterizedUpdateStatement``1(System.Data.IDbCommand,System.Collections.Generic.ICollection{System.String})">
+            <returns>If had RowVersion</returns>
+        </member>
+        <member name="M:ServiceStack.OrmLite.IOrmLiteDialectProvider.PrepareParameterizedDeleteStatement``1(System.Data.IDbCommand,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <returns>If had RowVersion</returns>
         </member>
         <member name="M:ServiceStack.OrmLite.Legacy.OrmLiteReadApiAsyncLegacy.SelectFmtAsync``1(System.Data.IDbConnection,System.Threading.CancellationToken,System.String,System.Object[])">
             <summary>

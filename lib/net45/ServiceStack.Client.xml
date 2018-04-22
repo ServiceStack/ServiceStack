@@ -108,6 +108,11 @@
             <param name="type"></param>
             <returns>Namespace of type</returns>
         </member>
+        <member name="M:ServiceStack.ServerEventsClient.RemoveAllRegistrations">
+            <summary>
+            Removes all registered Handlers, Named Receivers and Listeners
+            </summary>
+        </member>
         <member name="T:ServiceStack.ServiceClientBase">
             Need to provide async request options
             http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
@@ -244,6 +249,51 @@
         <member name="M:ServiceStack.ServiceClientBase.Get(System.String)">
             <summary>
             APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Delete(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Delete(System.String)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Post(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Post(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Put(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Put(url)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.CustomMethod(System.String,System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.CustomMethod(System.String,System.String,System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Head(ServiceStack.IReturn)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Head(System.Object)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+            </summary>
+        </member>
+        <member name="M:ServiceStack.ServiceClientBase.Head(System.String)">
+            <summary>
+            APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
             </summary>
         </member>
         <member name="M:ServiceStack.StreamExt.Compress(System.String,System.String)">

@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "3f0fab32b9d9e2bb260c0ce18b72ebbf5926f060"
+    "signature": "c48f6921fcca87d3be52424f131c5b273e4db30c"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,8 +9,8 @@
     ".NETStandard,Version=v2.0/": {
       "ServiceStack.OrmLite.PostgreSQL/1.0.0": {
         "dependencies": {
-          "NETStandard.Library": "2.0.0",
-          "Npgsql": "3.2.6",
+          "NETStandard.Library": "2.0.1",
+          "Npgsql": "3.2.7",
           "ServiceStack.OrmLite": "1.0.0",
           "ServiceStack.Common": "5.0.0.0",
           "ServiceStack.Interfaces": "5.0.0.0",
@@ -31,12 +31,12 @@
           "lib/netstandard2.0/Microsoft.Win32.Registry.dll": {}
         }
       },
-      "NETStandard.Library/2.0.0": {
+      "NETStandard.Library/2.0.1": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "Npgsql/3.2.6": {
+      "Npgsql/3.2.7": {
         "dependencies": {
           "System.Threading.Tasks.Extensions": "4.3.0"
         },
@@ -531,19 +531,19 @@
       "path": "microsoft.win32.registry/4.4.0",
       "hashPath": "microsoft.win32.registry.4.4.0.nupkg.sha512"
     },
-    "NETStandard.Library/2.0.0": {
+    "NETStandard.Library/2.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-7jnbRU+L08FXKMxqUflxEXtVymWvNOrS8yHgu9s6EM8Anr6T/wIX4nZ08j/u3Asz+tCufp3YVwFSEvFTPYmBPA==",
-      "path": "netstandard.library/2.0.0",
-      "hashPath": "netstandard.library.2.0.0.nupkg.sha512"
+      "sha512": "sha512-oA6nwv9MhEKYvLpjZ0ggSpb1g4CQViDVQjLUcDWg598jtvJbpfeP2reqwI1GLW2TbxC/Ml7xL6BBR1HmKPXlTg==",
+      "path": "netstandard.library/2.0.1",
+      "hashPath": "netstandard.library.2.0.1.nupkg.sha512"
     },
-    "Npgsql/3.2.6": {
+    "Npgsql/3.2.7": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-GMjVKgbNLKne/rGSvCQqZHt2aZfBByuw7jUD55V+svkdlG8jKoVCGjUyfPpET3XSoneqrJlf6E578mCh4H5aeg==",
-      "path": "npgsql/3.2.6",
-      "hashPath": "npgsql.3.2.6.nupkg.sha512"
+      "sha512": "sha512-CxSXzWn/MNbHX8L1xfQSzrZfJEA2Yt5cvT27Az5abmvbqtUY1ab6xAkmBj5FfLyKCIYEnmSrxn1IY1+Jy13oFA==",
+      "path": "npgsql/3.2.7",
+      "hashPath": "npgsql.3.2.7.nupkg.sha512"
     },
     "runtime.native.System.Data.SqlClient.sni/4.4.0": {
       "type": "package",
@@ -590,7 +590,7 @@
     "System.ComponentModel/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VyGn1jGRZVfxnh8EdvDCi71v3bMXrsu8aYJOwoV7SNDLVhiEqwP86pPMyRGsDsxhXAm2b3o9OIqeETfN5qfezw==",
+      "sha512": "sha512-LnBbfSfOA/4rgrHbGaf6ETPdOUtJLnGjoJon49ZFu4MAE7+gA2o0NiD19mK8CoJ2Ep8dlg6+nqRVZlWPoc4Y4A==",
       "path": "system.componentmodel/4.3.0",
       "hashPath": "system.componentmodel.4.3.0.nupkg.sha512"
     },
@@ -604,7 +604,7 @@
     "System.ComponentModel.Primitives/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-j8GUkCpM8V4d4vhLIIoBLGey2Z5bCkMVNjEZseyAlm4n5arcsJOeI3zkUP+zvZgzsbLTYh4lYeP/ZD/gdIAPrw==",
+      "sha512": "sha512-58rrdVPosSjHAsx5QjatUZ0oPp1MqYcRubaAjudg0Iq5FnSIXEzj6pcb3PjqlgstV7XAI/j5sQbxlzbstk4Ugw==",
       "path": "system.componentmodel.primitives/4.3.0",
       "hashPath": "system.componentmodel.primitives.4.3.0.nupkg.sha512"
     },

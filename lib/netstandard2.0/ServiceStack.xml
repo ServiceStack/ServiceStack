@@ -249,6 +249,23 @@
             Determine if the current session is already authenticated with this AuthProvider
             </summary>
         </member>
+        <member name="M:ServiceStack.Auth.IAuthSession.OnCreated(ServiceStack.Web.IRequest)">
+            <summary>
+            Fired when a new Session is created
+            </summary>
+            <param name="httpReq"></param>
+        </member>
+        <member name="M:ServiceStack.Auth.IAuthSessionExtended.OnLoad(ServiceStack.Web.IRequest)">
+            <summary>
+            Fired before Session is resolved
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.IAuthSessionExtended.Validate(ServiceStack.IServiceBase,ServiceStack.Auth.IAuthSession,ServiceStack.Auth.IAuthTokens,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Override with Custom Validation logic to Assert if User is allowed to Authenticate. 
+            Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Auth.InMemoryAuthRepository">
             <summary>
             Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
@@ -323,6 +340,12 @@
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.Audience">
             <summary>
             The Audience to embed in the token. (default null)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.Audiences">
+            <summary>
+            Embed Multiple Audiences in the token. (default none)
+            A JWT is valid if it contains ANY audience in this List
             </summary>
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.KeyId">
@@ -408,6 +431,26 @@
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.AllowInFormData">
             <summary>
             Allow JWT in ss-tok=jwt HTML POST FormData. (default false)
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.RemoveInvalidTokenCookie">
+            <summary>
+            Whether to automatically remove expired or invalid cookies
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Auth.JwtAuthProviderReader.IncludeJwtInConvertSessionToTokenResponse">
+            <summary>
+            Whether to also Include Token in ConvertSessionToTokenResponse   
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.JwtAuthProviderReader.GetValidJwtPayload(ServiceStack.Web.IRequest,System.String)">
+            <summary>
+            Return token payload which is both verified and still valid
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.JwtAuthProviderReader.GetVerifiedJwtPayload(ServiceStack.Web.IRequest,System.String[])">
+            <summary>
+            Return token payload which has been verified to be created using the configured encryption key.
             </summary>
         </member>
         <member name="M:ServiceStack.Auth.OAuthProvider.Authenticate(ServiceStack.IServiceBase,ServiceStack.Auth.IAuthSession,ServiceStack.Authenticate)">
@@ -5369,6 +5412,49 @@
             <typeparam name="T"></typeparam>
             <returns></returns>
         </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.RetryCount">
+            <summary>
+            How many times to retry processing messages before moving them to the DLQ 
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.RequestFilter">
+            <summary>
+            Execute global transformation or custom logic before a request is processed.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.ResponseFilter">
+            <summary>
+            Execute global transformation or custom logic on the response.
+            Must be thread-safe.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.PriortyQueuesWhitelist">
+            <summary>
+            If you only want to enable priority queue handlers (and threads) for specific msg types
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.EnablePriortyQueues">
+            <summary>
+            Create workers for priority queues
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.PublishResponsesWhitelist">
+            <summary>
+            Opt-in to only publish responses on this white list. 
+            Publishes all responses by default.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.OutHandlers">
+            <summary>
+            Subscribe to messages sent to .outq
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Messaging.BackgroundMqService.OutQMaxSize">
+            <summary>
+            The max size of the Out MQ Collection in each Type (default 100)
+            </summary>
+        </member>
         <member name="T:ServiceStack.Messaging.IMessageHandlerFactory">
             <summary>
             Encapsulates creating a new message handler
@@ -5535,6 +5621,12 @@
             <param name="request"></param>
             <param name="dto"></param>
             <returns></returns>
+        </member>
+        <member name="M:ServiceStack.RequestExtensions.ToOptimizedResultAsync(ServiceStack.Web.IRequest,System.Object)">
+            <summary>
+            Returns the optimized result for the IRequestContext. 
+            Does not use or store results in any cache.
+            </summary>
         </member>
         <member name="M:ServiceStack.RequestExtensions.ToOptimizedResultUsingCache``1(ServiceStack.Web.IRequest,ServiceStack.Caching.ICacheClient,System.String,System.Func{``0})">
             <summary>
@@ -6013,7 +6105,7 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:ServiceStack.ServiceStackHost.OnSessionFilter(ServiceStack.Auth.IAuthSession,System.String)">
+        <member name="M:ServiceStack.ServiceStackHost.OnSessionFilter(ServiceStack.Web.IRequest,ServiceStack.Auth.IAuthSession,System.String)">
             <summary>
             Inspect or modify ever new UserSession created or resolved from cache. 
             return null if Session is invalid to create new Session.
