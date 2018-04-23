@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>ServiceStack.Logging.Log4Net.Core</id>
     <version>5.0.0</version>
-    <title>ServiceStack.Logging.Log4Net.Core</title>
+    <title>ServiceStack.Logging.Log4Net .NET Standard 2.0</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
     <summary>log4Net logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
@@ -27,6 +27,6 @@
   </metadata>
   <files>
     <file src="lib\**\*.*" target="lib" />
-    <file src="..\..\src\ServiceStack.Logging.Log4Net.Core\**\*.cs" target="src" />
+    <file src="..\..\src\ServiceStack.Logging.Log4Net\**\*.cs" target="src" />
   </files>
 </package>

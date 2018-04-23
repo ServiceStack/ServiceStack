@@ -58,6 +58,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec = ..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec
 		..\NuGet\ServiceStack.Server\servicestack.server.nuspec = ..\NuGet\ServiceStack.Server\servicestack.server.nuspec
 		..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec = ..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec
+		..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec
+		..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec = ..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"

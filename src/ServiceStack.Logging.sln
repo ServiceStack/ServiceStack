@@ -26,6 +26,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CA7CF53F
 		..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec = ..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec
 		..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec = ..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec
 		..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec = ..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec
+		..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec = ..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.EntLib5", "ServiceStack.Logging.EntLib5\ServiceStack.Logging.EntLib5.csproj", "{EDD72ADC-327C-4152-B84B-B48552311534}"

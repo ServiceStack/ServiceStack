@@ -360,6 +360,14 @@
     <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog/servicestack.logging.nlog.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
             LogStandardErrorAsError="true" />
 
+    <!-- ServiceStack.Logging.NLog.Core -->
+
+    <MakeDir Directories="$(NuGetPackageDir)/ServiceStack.Logging.NLog.Core/lib/netstandard2.0" Condition="!Exists('$(NuGetPackageDir)/ServiceStack.Logging.NLog.Core/lib/netstandard2.0')" />
+    <Copy SourceFiles="%(NLogCoreFiles.Identity)" DestinationFolder="$(NuGetPackageDir)/ServiceStack.Logging.NLog.Core/lib/netstandard2.0" />
+
+    <Exec Command="&quot;$(NuGetPath)&quot; pack &quot;$(NuGetPackageDir)/ServiceStack.Logging.NLog.Core/servicestack.logging.nLog.core.nuspec&quot; -OutputDirectory &quot;$(NuGetPackageDir)&quot; -Version $(PackageVersion) -Symbols"
+          LogStandardErrorAsError="true" />
+
     <!-- ServiceStack.Logging.Serilog -->
 
     <MSBuild Projects="$(SrcDir)/ServiceStack.Logging.Serilog/ServiceStack.Logging.Serilog.csproj"
