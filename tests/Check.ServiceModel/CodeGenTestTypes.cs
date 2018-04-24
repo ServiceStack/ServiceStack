@@ -190,12 +190,15 @@ namespace Check.ServiceModel.Operations
     [Api(@"Multi 
 Line 
 Class")]
-    public class HelloMultiline
+    public class HelloAttributeStringTest
     {
         [ApiMember(Description = @"Multi 
 Line 
 Property")]
         public string Overflow { get; set; }
+        
+        [ApiMember(Description = "Some \\ escaped \t \n chars")]
+        public string EscapedChars { get; set; }
     }
 
     [System.ComponentModel.Description("Description on HelloAllResponse type")]

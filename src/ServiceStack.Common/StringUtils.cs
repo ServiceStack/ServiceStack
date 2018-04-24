@@ -73,6 +73,47 @@ namespace ServiceStack
                 : SafeInputRegEx.Replace(text, "");
         }
 
+        public static readonly Dictionary<char, string> EscapedCharMap = new Dictionary<char, string> {
+            { '\'',  @"\'" },
+            { '\"', "\\\"" },
+            { '\\',  @"\\" },
+            { '\0',  @"\0" },
+            { '\a',  @"\a" },
+            { '\b',  @"\b" },
+            { '\f',  @"\f" },
+            { '\n',  @"\n" },
+            { '\r',  @"\r" },
+            { '\t',  @"\t" },
+            { '\v',  @"\v" },
+        };
+        
+        public static string ToEscapedString(this string input)
+        {
+            var sb = new StringBuilder(input.Length + 2);
+            sb.Append('"');
+            foreach (var c in input)
+            {
+                if (EscapedCharMap.TryGetValue(c, out var escapedChar))
+                {
+                    sb.Append(escapedChar);
+                }
+                else
+                {
+                    if (char.GetUnicodeCategory(c) != UnicodeCategory.Control)
+                    {
+                        sb.Append(c);
+                    }
+                    else
+                    {
+                        sb.Append(@"\u");
+                        sb.Append(((ushort) c).ToString("x4"));
+                    }                    
+                }
+            }
+            sb.Append('"');
+            return sb.ToString();
+        }
+                
         static readonly Regex StripHtmlUnicodeRegEx = new Regex(@"&(#)?([xX])?([^ \f\n\r\t\v;]+);", RegexOptions.Compiled);
         static readonly Regex SafeInputRegEx = new Regex(@"[^\w\s\.,@-\\+\\/]", RegexOptions.Compiled);
 

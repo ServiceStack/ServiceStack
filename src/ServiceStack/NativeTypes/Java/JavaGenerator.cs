@@ -530,7 +530,7 @@ namespace ServiceStack.NativeTypes.Java
             if (value == null)
                 return "null";
             if (alias == "string" || type == "String")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
 
             if (value.StartsWith("typeof("))
             {

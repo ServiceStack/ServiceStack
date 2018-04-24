@@ -446,7 +446,7 @@ namespace ServiceStack.NativeTypes.CSharp
             if (value == null)
                 return "null";
             if (alias == "string")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
             return value;
         }
 
