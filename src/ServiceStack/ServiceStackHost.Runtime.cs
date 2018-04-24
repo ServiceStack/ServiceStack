@@ -701,6 +701,8 @@ namespace ServiceStack
                 ?? Container.TryResolve<IMessageService>().MessageFactory).CreateMessageProducer();
         }
 
+        public virtual IServiceGateway GetServiceGateway() => GetServiceGateway(new BasicRequest());
+
         public virtual IServiceGateway GetServiceGateway(IRequest req)
         {
             if (req == null)
