@@ -303,7 +303,6 @@ namespace ServiceStack
             if (!(response is IHttpResponse httpRes)) return;
             httpRes.Cookies.DeleteCookie(Keywords.SessionId);
             httpRes.Cookies.DeleteCookie(Keywords.PermanentSessionId);
-            httpRes.Cookies.DeleteCookie(Keywords.TokenCookie);
             httpRes.Cookies.DeleteCookie(HttpHeaders.XUserAuthId);
         }
 
