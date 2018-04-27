@@ -732,7 +732,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             return HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
         }
 
-        public static PageResult GetPageResult(this IRequest request, string virtualPath)
+        public static PageResult GetPageResult(this IRequest request, string virtualPath, Dictionary<string,object> args=null)
         {
             var page = HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
             var pageResult = new PageResult(page) {
@@ -740,6 +740,13 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                     ["Request"] = request   
                 }
             };
+            if (args != null)
+            {
+                foreach (var entry in args)
+                {
+                    pageResult.Args[entry.Key] = entry.Value;
+                }
+            }
             return pageResult;
         }
         
