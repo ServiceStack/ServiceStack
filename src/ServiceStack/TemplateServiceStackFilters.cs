@@ -135,8 +135,12 @@ namespace ServiceStack
        
         public IAuthSession userSession(TemplateScopeContext scope) => req(scope).GetSession();
 
-        public bool isAuthenticated(TemplateScopeContext scope) => userSession(scope)?.IsAuthenticated == true;
-        
+        public bool isAuthenticated(TemplateScopeContext scope)
+        {
+            var authSession = userSession(scope);
+            return authSession?.IsAuthenticated == true;
+        }
+
         [HandleUnknownValue] public object ifAuthenticated(TemplateScopeContext scope) => isAuthenticated(scope) 
             ? (object)IgnoreResult.Value : StopExecution.Value;
        

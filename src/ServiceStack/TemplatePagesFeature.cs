@@ -731,6 +731,17 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             return HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
         }
+
+        public static PageResult GetPageResult(this IRequest request, string virtualPath)
+        {
+            var page = HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+            var pageResult = new PageResult(page) {
+                Args = {
+                    ["Request"] = request   
+                }
+            };
+            return pageResult;
+        }
         
         public static TemplatePage OneTimePage(this IRequest request, string contents, string ext=null)
         {
