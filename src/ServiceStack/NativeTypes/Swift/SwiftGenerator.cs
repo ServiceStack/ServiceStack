@@ -131,7 +131,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
+            defaultImports.Each(x => sb.AppendLine($"import {x}"));
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -142,8 +142,7 @@ namespace ServiceStack.NativeTypes.Swift
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
