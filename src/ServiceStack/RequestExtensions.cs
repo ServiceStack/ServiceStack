@@ -47,7 +47,7 @@ namespace ServiceStack
 
         public static string GetHeader(this IRequest request, string headerName)
         {
-            return request.Headers.Get(headerName);
+            return request?.Headers.Get(headerName);
         }
 
         public static string GetParamInRequestHeader(this IRequest request, string name)
