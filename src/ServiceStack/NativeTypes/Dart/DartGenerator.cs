@@ -536,10 +536,10 @@ namespace ServiceStack.NativeTypes.Dart
 
                 sb = sb.Indent();
 
-                var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
+                var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"int {"Version".PropertyStyle()}; //{Config.AddImplicitVersion}");
+                    sb.AppendLine($"int {"Version".PropertyStyle()} = {Config.AddImplicitVersion};");
                 }
 
                 if (type.Name == "IReturn`1")
@@ -560,7 +560,17 @@ namespace ServiceStack.NativeTypes.Dart
                 if (isClass)
                 {
                     var typeNameWithoutGenericArgs = typeName.LeftPart('<');
-                    var props = type.Properties ?? TypeConstants<MetadataPropertyType>.EmptyList;
+                    var props = (type.Properties ?? TypeConstants<MetadataPropertyType>.EmptyList).ToList();
+
+                    if (addVersionInfo)
+                    {
+                        props.Insert(0, new MetadataPropertyType {
+                            Name = "Version".PropertyStyle(),
+                            Type = "Int32",
+                            TypeNamespace = "System",
+                            IsValueType = true,
+                        });
+                    }
 
                     if (props.Count > 0)
                         sb.AppendLine();
