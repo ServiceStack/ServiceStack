@@ -162,5 +162,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = client.Post(new HelloZip { Name = "GZIP" });
             Assert.That(response.Result, Is.EqualTo("Hello, GZIP"));
         }
+
+
+
+        [TestCase(CompressionTypes.Deflate)]
+        [TestCase(CompressionTypes.GZip)]
+        public async Task Can_send_async_compressed_client_request(string compressionType)
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestCompressionType = compressionType,
+            };
+            var response = await client.PostAsync(new HelloZip { Name = compressionType });
+            Assert.That(response.Result, Is.EqualTo($"Hello, {compressionType}"));
+        }
     }
 }
