@@ -91,6 +91,8 @@ namespace ServiceStack
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
 
+        public string RequestCompressionType { get; set; }
+
         public string UserName { get; set; }
 
         public string Password { get; set; }
@@ -220,6 +222,9 @@ namespace ServiceStack
                 if (HttpUtils.HasRequestBody(webReq.Method))
                 {
                     webReq.ContentType = ContentType;
+
+                   if (RequestCompressionType != null)
+                        webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
                     using (var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false))
                     {
