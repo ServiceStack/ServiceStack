@@ -28,7 +28,7 @@ namespace ServiceStack.NativeTypes.Swift
             "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
         };
 
-        public static Func<string, string> EnumNameStrategy => CSharpStyleEnums;
+        public static Func<string, string> EnumNameStrategy { get; set; } = CSharpStyleEnums;
 
         public static string CSharpStyleEnums(string enumName) => enumName;
         public static string SwiftStyleEnums(string enumName) => enumName.ToCamelCase();
