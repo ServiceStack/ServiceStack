@@ -215,6 +215,11 @@ namespace ServiceStack
             else if (this.AlwaysSendBasicAuthHeader)
                 webReq.AddBasicAuth(this.UserName, this.Password);
 
+            if (!DisableAutoCompression)
+            {
+                PclExport.Instance.AddCompression(webReq);
+            }
+
             ApplyWebRequestFilters(webReq);
 
             try

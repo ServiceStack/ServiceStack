@@ -79,6 +79,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Can_send_GZip_client_request_list_async()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestCompressionType = CompressionTypes.GZip,
+            };
+            var response = await client.PostAsync(new HelloZip
+            {
+                Name = "GZIP",
+                Test = new List<string> { "Test" }
+            });
+            Assert.That(response.Result, Is.EqualTo("Hello, GZIP (1)"));
+        }
+
+        [Test]
         public void Can_send_GZip_client_request_list_HttpClient()
         {
             var client = new JsonHttpClient(Config.ListeningOn)
