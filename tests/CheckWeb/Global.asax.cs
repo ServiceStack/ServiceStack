@@ -117,6 +117,7 @@ namespace CheckWeb
             Plugins.Add(new RequestLogsFeature
             {
                 RequestLogger = new CsvRequestLogger(),
+                EnableResponseTracking = true
             });
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
@@ -604,6 +605,29 @@ namespace CheckWeb
     {
         public HelloResponse Any(MatchName request) => new HelloResponse { Result = request.GetType().Name };
         public HelloResponse Any(MatchLang request) => new HelloResponse { Result = request.GetType().Name };
+    }
+    
+    [Route("/reqlogstest/{Name}")]
+    public class RequestLogsTest : IReturn<string>
+    {
+        public string Name { get; set; }
+    }
+
+    public class InProcRequest1 {}
+    public class InProcRequest2 {}
+
+    public class RequestLogsServices : Service
+    {
+        public object Any(RequestLogsTest request)
+        {
+            Gateway.Publish(new InProcRequest1());
+            Gateway.Publish(new InProcRequest2());
+
+            return "hello";
+        }
+
+        public object Any(InProcRequest1 request) => "InProcRequest1 response";
+        public object Any(InProcRequest2 request) => "InProcRequest2 response";
     }
 
     public class Global : System.Web.HttpApplication
