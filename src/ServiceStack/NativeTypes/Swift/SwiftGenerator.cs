@@ -28,6 +28,11 @@ namespace ServiceStack.NativeTypes.Swift
             "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
         };
 
+        public static Func<string, string> EnumNameStrategy => CSharpStyleEnums;
+
+        public static string CSharpStyleEnums(string enumName) => enumName;
+        public static string SwiftStyleEnums(string enumName) => enumName.ToCamelCase();
+
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Boolean", "Bool"},
@@ -241,7 +246,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                sb.AppendLine("public enum {0} : Int".Fmt(Type(type.Name, type.GenericArgs)));
+                sb.AppendLine($"public enum {Type(type.Name, type.GenericArgs)} : Int");
                 sb.AppendLine("{");
                 sb = sb.Indent();
 
@@ -249,11 +254,11 @@ namespace ServiceStack.NativeTypes.Swift
                 {
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
-                        var name = type.EnumNames[i];
-                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                        var name = EnumNameStrategy(type.EnumNames[i]);
+                        var value = type.EnumValues?[i];
                         sb.AppendLine(value == null
-                            ? "case {0}".Fmt(name)
-                            : "case {0} = {1}".Fmt(name, value));
+                            ? $"case {name}"
+                            : $"case {name} = {value}");
                     }
                 }
 
@@ -274,7 +279,7 @@ namespace ServiceStack.NativeTypes.Swift
                     var baseType = Type(type.Inherits).InheritedType();
 
                     //Swift requires re-declaring base type generics definition on super type
-                    var genericDefPos = baseType.IndexOf("<");
+                    var genericDefPos = baseType.IndexOf("<", StringComparison.Ordinal);
                     if (genericDefPos >= 0)
                     {
                         //Need to declare BaseType is JsonSerializable
@@ -527,7 +532,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch self {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name));
+                var swiftName = EnumNameStrategy(name);
+                sbExt.AppendLine($"case .{swiftName}: return \"{name}\"");
             }
             sbExt.AppendLine("}");
             sbExt = sbExt.UnIndent();
@@ -540,7 +546,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch strValue {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name));
+                var swiftName = EnumNameStrategy(name);
+                sbExt.AppendLine($"case \"{name}\": return .{swiftName}");
             }
             sbExt.AppendLine("default: return nil");
 

@@ -107,6 +107,7 @@ namespace Check.ServiceModel.Operations
         public EnumType? NullableEnumProp { get; set; }
 
         public EnumFlags EnumFlags { get; set; }
+        public EnumStyle EnumStyle { get; set; }
     }
 
     public enum EnumType
@@ -129,6 +130,16 @@ namespace Check.ServiceModel.Operations
         Value2 = 2,
         Value3 = 3,
         Value123 = Value1 | Value2 | Value3,
+    }
+
+    public enum EnumStyle
+    {
+        lower,
+        UPPER,
+        PascalCase,
+        camelCase,
+        camelUPPER,
+        PascalUPPER,
     }
 
     [Restrict(InternalOnly = true)]
