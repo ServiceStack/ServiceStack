@@ -767,7 +767,7 @@ namespace ServiceStack
                 {
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(contentType))
                     {
-                        var bytes = errorResponse.GetResponseStream().ReadFully();
+                        var bytes = errorResponse.ResponseStream().ReadFully();
                         var stream = MemoryStreamFactory.GetStream(bytes);
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                         serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
@@ -777,7 +777,7 @@ namespace ServiceStack
                     }
                     else
                     {
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ToUtf8String();
+                        serviceEx.ResponseBody = errorResponse.ResponseStream().ToUtf8String();
                     }
                 }
                 catch (Exception innerEx)
@@ -951,7 +951,7 @@ namespace ServiceStack
             using (var response = webRequest.GetResponse())
             {
                 ApplyWebResponseFilters(response);
-                using (var stream = response.GetResponseStream())
+                using (var stream = response.ResponseStream())
                     return stream.ReadFully();
             }
         }
@@ -1790,10 +1790,6 @@ namespace ServiceStack
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
-#if NETSTANDARD2_0
-            var compressionType = webResponse.Headers[HttpHeaders.ContentEncoding];
-#endif
-
             //Callee Needs to dispose of response manually
             if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
             {
@@ -1801,18 +1797,10 @@ namespace ServiceStack
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-#if NETSTANDARD2_0
-                return (TResponse)(object)webResponse.GetResponseStream().Decompress(compressionType);
-#else
-                return (TResponse)(object)webResponse.GetResponseStream();
-#endif
+                return (TResponse)(object)webResponse.ResponseStream();
             }
 
-#if NETSTANDARD2_0
-            using (var responseStream = webResponse.GetResponseStream().Decompress(compressionType))
-#else
-            using (var responseStream = webResponse.GetResponseStream())
-#endif
+            using (var responseStream = webResponse.ResponseStream())
             {
                 if (typeof(TResponse) == typeof(string))
                 {
@@ -1836,6 +1824,15 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
+        public static Stream ResponseStream(this WebResponse webRes)
+        {
+#if NETSTANDARD2_0
+            return webRes.GetResponseStream().Decompress(webRes.Headers[HttpHeaders.ContentEncoding]);
+#else
+            return webRes.GetResponseStream();
+#endif
+        }
+
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {

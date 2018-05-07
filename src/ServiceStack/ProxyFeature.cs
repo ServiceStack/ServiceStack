@@ -168,7 +168,7 @@ namespace ServiceStack
 
             ProxyResponseFilter?.Invoke(res, webRes);
 
-            var responseStream = webRes.GetResponseStream();
+            var responseStream = webRes.ResponseStream();
             if (responseStream != null)
             {
                 if (TransformResponse != null)

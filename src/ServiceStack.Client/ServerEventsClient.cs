@@ -208,7 +208,7 @@ namespace ServiceStack
                 EventStreamRequestFilter?.Invoke(httpReq);
 
                 response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
-                var stream = response.GetResponseStream();
+                var stream = response.ResponseStream();
 
                 buffer = new byte[BufferSize];
                 cancel = new CancellationTokenSource();
