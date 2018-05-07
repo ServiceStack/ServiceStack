@@ -129,7 +129,18 @@ namespace ServiceStack
         }
         private bool disableAutoCompression;
 
-        public string RequestCompressionType { get; set; }
+
+        private string requestCompressionType;
+
+        public string RequestCompressionType
+        {
+            get => requestCompressionType;
+            set
+            {
+                requestCompressionType = value;
+                asyncClient.RequestCompressionType = value;
+            }
+        }
 
         /// <summary>
         /// The user name for basic authentication

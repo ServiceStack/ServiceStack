@@ -38,6 +38,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(request.ForNumber)));
         }
 
+
+        [TestCase(CompressionTypes.Deflate)]
+        [TestCase(CompressionTypes.GZip)]
+        public async Task Can_call_SendAsync_with_compression_on_ServiceClient(string compressionType)
+        {
+            var jsonClient = new JsonServiceClient(ListeningOn) { RequestCompressionType = compressionType };
+
+            var request = new GetFactorial { ForNumber = 3 };
+            var response = await jsonClient.SendAsync<GetFactorialResponse>(request);
+
+            Assert.That(response, Is.Not.Null, "No response received");
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(request.ForNumber)));
+        }
+
         [TestFixture]
         public class JsonAsyncServiceClientTests : AsyncServiceClientTests
         {
