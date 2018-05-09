@@ -285,7 +285,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var response = (HelloResponse)HostContext.AppHost.GetServiceGateway(new BasicRequest()).Send(responseType, request);
             Assert.That(response.Result, Is.EqualTo("Hello, gateway"));
         }
-
     }
 
     public class RouteAppHost : AppHostHttpListenerBase
@@ -371,12 +370,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new ModifiedRouteAppHost();
             appHost.Init();
             appHost.Start(Config.AbsoluteBaseUri);
+//            appHost.Start(Config.AnyHostBaseUrl); //go through fiddler
         }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        [Test]
+        public void Does_URL_Decode_PathInfo()
+        {
+            var client = new JsonServiceClient(Config.HostNameBaseUrl);
+//            var client = new JsonServiceClient("http://test.servicestack.net");
+
+            var pathInfo = "ern::Closer2U::Userprofile::1c7e9ead-c7d9-46f8-a0cc-2777c4373ac4";
+            var response = client.Get(new CustomRoute {
+                Data = pathInfo 
+            });
+            
+            Assert.That(response.Data, Is.EqualTo(pathInfo));
         }
 
         [Test]
