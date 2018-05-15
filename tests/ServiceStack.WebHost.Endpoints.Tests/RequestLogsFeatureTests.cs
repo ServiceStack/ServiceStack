@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
             catch (WebServiceException ex)
             {
-                Assert.That(ex.Message, Is.EqualTo("Error: foo"));
+                Assert.That(ex.Message, Is.EqualTo("Error: foo2"));
                 var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
                 var requestLogs = json.FromJson<RequestLogsResponse>();
                 var requestLog = requestLogs.Results.First();

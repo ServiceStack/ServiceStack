@@ -282,13 +282,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             public NoLicenseTestsAppHost(params Type[] services)
                 : base(services) {}
-#if NETCORE            
+
             public override void OnConfigLoad()
             {
                 base.OnConfigLoad();
                 LicenseUtils.RemoveLicense();
             }
-#endif
         }
     }
 }

@@ -382,7 +382,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_URL_Decode_PathInfo()
         {
-            var client = new JsonServiceClient(Config.HostNameBaseUrl);
+            var client = new JsonServiceClient(Config.ListeningOn);
 //            var client = new JsonServiceClient("http://test.servicestack.net");
 
             var pathInfo = "ern::Closer2U::Userprofile::1c7e9ead-c7d9-46f8-a0cc-2777c4373ac4";
