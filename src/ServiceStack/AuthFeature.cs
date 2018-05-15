@@ -18,7 +18,7 @@ namespace ServiceStack
         public Func<string, bool> IsValidUsernameFn { get; set; }
 
         private readonly Func<IAuthSession> sessionFactory;
-        private readonly IAuthProvider[] authProviders;
+        private IAuthProvider[] authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
@@ -93,18 +93,18 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            string localize(string s) => HostContext.AppHost.ResolveLocalizedString(s, null);
+            string Localize(string s) => HostContext.AppHost.ResolveLocalizedString(s, null);
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
                     {
-                        "/" + localize(LocalizedStrings.Auth),
-                        "/" + localize(LocalizedStrings.Auth) + "/{provider}",
-                        "/" + localize(LocalizedStrings.Authenticate),
-                        "/" + localize(LocalizedStrings.Authenticate) + "/{provider}",
+                        "/" + Localize(LocalizedStrings.Auth),
+                        "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+                        "/" + Localize(LocalizedStrings.Authenticate),
+                        "/" + Localize(LocalizedStrings.Authenticate) + "/{provider}",
                     } },
-                { typeof(AssignRolesService), new[]{ "/" + localize(LocalizedStrings.AssignRoles) } },
-                { typeof(UnAssignRolesService), new[]{ "/" + localize(LocalizedStrings.UnassignRoles) } },
+                { typeof(AssignRolesService), new[]{ "/" + Localize(LocalizedStrings.AssignRoles) } },
+                { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
             };
 
             RegisterPlugins = new List<IPlugin> {
@@ -113,7 +113,7 @@ namespace ServiceStack
 
             AuthEvents = new List<IAuthEvents>();
 
-            this.HtmlRedirect = htmlRedirect ?? "~/" + localize(LocalizedStrings.Login);
+            this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
             this.IncludeAuthMetadataProvider = true;
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
@@ -121,8 +121,25 @@ namespace ServiceStack
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
+        /// <summary>
+        /// Use a plugin to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+        /// to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
+        /// </summary>
+        public void RegisterAuthProvider(IAuthProvider authProvider)
+        {
+            if (hasRegistered)
+                throw new Exception("AuthFeature has already been registered");
+            
+            this.authProviders = new List<IAuthProvider>(this.authProviders) {
+                authProvider
+            }.ToArray();
+        }
+
+        private bool hasRegistered;
+
         public void Register(IAppHost appHost)
         {
+            hasRegistered = true;
             AuthenticateService.Init(sessionFactory, authProviders);
 
             var unitTest = appHost == null;
