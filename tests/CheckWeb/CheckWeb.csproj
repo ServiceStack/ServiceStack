@@ -104,6 +104,9 @@
     <Content Include="Test.dtos.d.ts" />
     <Content Include="TestAuth.cshtml" />
     <Content Include="Views\Authenticate.cshtml" />
+    <Content Include="Views\TheView.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -120,6 +123,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestInfoTests.cs" />
     <Compile Include="SwaggerTestService.cs" />
+    <Compile Include="ViewTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.cshtml" />
