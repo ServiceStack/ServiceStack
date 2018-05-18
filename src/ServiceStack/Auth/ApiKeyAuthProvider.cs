@@ -486,8 +486,7 @@ namespace ServiceStack
             if (req == null)
                 return null;
 
-            object oApiKey;
-            return req.Items.TryGetValue(Keywords.ApiKey, out oApiKey)
+            return req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey)
                 ? oApiKey as ApiKey
                 : null;
         }

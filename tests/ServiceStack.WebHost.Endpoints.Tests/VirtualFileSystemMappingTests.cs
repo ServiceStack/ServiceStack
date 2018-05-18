@@ -190,5 +190,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             contents = Config.ListeningOn.AppendPath("vfs2", "dir2", "nested-file.txt").GetStringFromUrl();
             Assert.That(contents, Is.EqualTo("NESTED MOUNT2"));
         }
+
+        [Test]
+        public void Can_resolve_mapped_files_directly_case_insenstive()
+        {
+            var url = Config.ListeningOn.AppendPath("VFS1", "file.txt");
+            var contents = url.GetStringFromUrl();
+            Assert.That(contents, Is.EqualTo("MOUNT1"));
+
+            contents = Config.ListeningOn.AppendPath("VFS2", "dir2", "nested-file.txt").GetStringFromUrl();
+            Assert.That(contents, Is.EqualTo("NESTED MOUNT2"));
+        }
     }
 }
