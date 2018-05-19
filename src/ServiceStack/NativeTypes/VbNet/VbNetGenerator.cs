@@ -314,9 +314,9 @@ namespace ServiceStack.NativeTypes.VbNet
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         implements.Add(implStr);
-
-                    type.Implements.Each(x => implements.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => implements.Add(Type(x)));
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
                 if (makeExtensible)

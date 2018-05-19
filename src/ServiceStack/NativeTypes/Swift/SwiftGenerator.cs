@@ -303,9 +303,8 @@ namespace ServiceStack.NativeTypes.Swift
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
                     //Converting them into protocols with typealiases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
-
-                    type.Implements.Each(x => extends.Add(Type(x)));
                 }
+                type.Implements.Each(x => extends.Add(Type(x)));
 
                 if (type.IsInterface())
                 {

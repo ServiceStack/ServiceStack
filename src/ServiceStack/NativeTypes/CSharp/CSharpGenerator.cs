@@ -274,9 +274,9 @@ namespace ServiceStack.NativeTypes.CSharp
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         inheritsList.Add(implStr);
-
-                    type.Implements.Each(x => inheritsList.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => inheritsList.Add(Type(x)));
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
                 if (makeExtensible)

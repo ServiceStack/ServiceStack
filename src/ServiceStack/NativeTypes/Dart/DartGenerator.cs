@@ -486,9 +486,9 @@ namespace ServiceStack.NativeTypes.Dart
                     {
                         responseTypeExpression = "createResponse() {}";
                     }
-
-                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var isClass = type.IsInterface != true;
                 var isAbstractClass = type.IsInterface == true || type.IsAbstract == true;

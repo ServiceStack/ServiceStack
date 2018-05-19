@@ -383,9 +383,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                             responseTypeExpression = "createResponse() {}";
                         }
                     }
-
-                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
                 var extend = extends.Count > 0

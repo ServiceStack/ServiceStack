@@ -351,8 +351,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                                 : $"{returnType}::class.java";
                         }
                     }
-                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
+                type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var extend = extends.Count > 0 
                     ? " : " + extends[0] + "()"
