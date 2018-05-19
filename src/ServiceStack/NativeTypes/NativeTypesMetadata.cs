@@ -1121,6 +1121,64 @@ namespace ServiceStack.NativeTypes
             return map.Values.ToList();
         }
 
+        public static List<MetadataType> GetAllTypesOrdered(this MetadataTypes metadata)
+        {
+            // Base Types need to be written first
+            var types = metadata.Types.CreateSortedTypeList();
+
+            var allTypes = new List<MetadataType>();
+            allTypes.AddRange(types);
+            allTypes.AddRange(metadata.Operations
+                .Where(x => x.Response != null)
+                .Select(x => x.Response)
+                .Distinct());
+            allTypes.AddRange(metadata.Operations.Select(x => x.Request).Distinct());
+            return allTypes;
+        }
+
+        public static List<MetadataType> CreateSortedTypeList(this List<MetadataType> allTypes)
+        {
+            var result = new List<MetadataType>();
+            foreach (var metadataType in allTypes)
+            {
+                AddTypeToSortedList(allTypes, result, metadataType);
+            }
+            return result;
+        }
+
+        private static void AddTypeToSortedList(List<MetadataType> allTypes, List<MetadataType> sortedTypes, MetadataType metadataType)
+        {
+            if (sortedTypes.Contains(metadataType))
+                return;
+
+            if (metadataType == null)
+                return;
+
+            if (metadataType.Inherits == null)
+            {
+                sortedTypes.Add(metadataType);
+                return;
+            }
+
+            var inheritedMetadataType = FindMetadataTypeByMetadataTypeName(allTypes, metadataType.Inherits);
+            // Find and add base class first
+            AddTypeToSortedList(allTypes, sortedTypes, inheritedMetadataType);
+
+            if (!sortedTypes.Contains(metadataType))
+                sortedTypes.Add(metadataType);
+        }
+
+        private static MetadataType FindMetadataTypeByMetadataTypeName(List<MetadataType> allTypes,
+            MetadataTypeName metadataTypeName)
+        {
+            if (metadataTypeName == null)
+                return null;
+            var metaDataType = allTypes.Where(x => x.Name == metadataTypeName.Name &&
+                                                   x.Namespace == metadataTypeName.Namespace)
+                .FirstNonDefault();
+            return metaDataType;
+        }
+
         public static void Push(this Dictionary<string, List<string>> map, string key, string value)
         {
             if (!map.TryGetValue(key, out var results))

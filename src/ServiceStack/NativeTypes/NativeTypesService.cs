@@ -321,18 +321,19 @@ namespace ServiceStack.NativeTypes
                 //IReturn markers are metadata properties that are not included as normal interfaces
                 var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
 
-                foreach (var op in metadataTypes.Operations)
+                var allTypes = metadataTypes.GetAllTypesOrdered();
+                var allTypeNames = allTypes.Select(x => x.Name).ToHashSet();
+                foreach (var type in allTypes)
                 {
-                    foreach (var typeName in op.Request.Implements.Safe())
+                    foreach (var typeName in type.Implements.Safe())
                     {
                         var iface = BuiltinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
-                        if (iface != null)
+                        if (iface != null && !allTypeNames.Contains(iface.Name))
                         {
                             returnInterfaces.AddIfNotExists(iface);
                         }
                     }
                 }
-
                 metadataTypes.Types.InsertRange(0, returnInterfaces.Map(x => generator.ToType(x)));
             }
 
