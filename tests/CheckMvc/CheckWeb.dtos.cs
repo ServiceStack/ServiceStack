@@ -1,5 +1,5 @@
 /* Options:
-Date: 2017-11-22 18:12:01
+Date: 2018-05-19 14:47:02
 Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
@@ -121,6 +121,33 @@ namespace Check.ServiceInterface
         public virtual string Path { get; set; }
     }
 
+    [Route("/jwt")]
+    public partial class CreateJwt
+        : AuthUserSession, IReturn<CreateJwtResponse>, IMeta
+    {
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/jwt-refresh")]
+    public partial class CreateRefreshJwt
+        : IReturn<CreateRefreshJwtResponse>
+    {
+        public virtual string UserAuthId { get; set; }
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateRefreshJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
     public partial class CustomRockstar
     {
         [AutoQueryViewerField(Title="Name")]
@@ -138,7 +165,7 @@ namespace Check.ServiceInterface
     }
 
     public partial class CustomUserSession
-        : AuthUserSession
+        : AuthUserSession, IMeta
     {
         [DataMember]
         public virtual string CustomName { get; set; }
@@ -464,6 +491,13 @@ namespace Check.ServiceInterface
         public virtual int? Age { get; set; }
     }
 
+    [Route("/query/rockstars/cached")]
+    public partial class QueryRockstarsCached
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
+    {
+        public virtual int? Age { get; set; }
+    }
+
     public partial class QueryRockstarsConventions
         : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
@@ -579,6 +613,7 @@ namespace Check.ServiceInterface
     {
     }
 
+    [AutoQueryViewer(Name="Today\'s Logs", Title="Logs from Today")]
     public partial class TodayLogs
         : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
@@ -659,6 +694,7 @@ namespace Check.ServiceModel
     }
 
     public partial class Echo
+        : IEcho
     {
         public virtual string Sentence { get; set; }
     }
@@ -942,9 +978,21 @@ namespace Check.ServiceModel.Operations
     [Flags]
     public enum EnumFlags
     {
+        Value0 = 0,
         Value1 = 1,
         Value2 = 2,
-        Value3 = 4,
+        Value3 = 3,
+        Value123 = 3,
+    }
+
+    public enum EnumStyle
+    {
+        lower,
+        UPPER,
+        PascalCase,
+        camelCase,
+        camelUPPER,
+        PascalUPPER,
     }
 
     public enum EnumType
@@ -1052,6 +1100,25 @@ namespace Check.ServiceModel.Operations
         public virtual List<string> Names { get; set; }
     }
 
+    ///<summary>
+    ///Multi Line Class
+    ///</summary>
+    [Api(Description="Multi \r\nLine \r\nClass")]
+    public partial class HelloAttributeStringTest
+    {
+        ///<summary>
+        ///Multi Line Property
+        ///</summary>
+        [ApiMember(Description="Multi \r\nLine \r\nProperty")]
+        public virtual string Overflow { get; set; }
+
+        ///<summary>
+        ///Some \ escaped 	  chars
+        ///</summary>
+        [ApiMember(Description="Some \\ escaped \t \n chars")]
+        public virtual string EscapedChars { get; set; }
+    }
+
     public partial class HelloBase<T>
     {
         public HelloBase()
@@ -1098,19 +1165,6 @@ namespace Check.ServiceModel.Operations
         }
 
         public virtual List<string> Names { get; set; }
-    }
-
-    ///<summary>
-    ///Multi Line Class
-    ///</summary>
-    [Api(Description="Multi Line Class")]
-    public partial class HelloMultiline
-    {
-        ///<summary>
-        ///Multi Line Property
-        ///</summary>
-        [ApiMember(Description="Multi Line Property")]
-        public virtual string Overflow { get; set; }
     }
 
     public partial class HelloResponse
@@ -1188,6 +1242,7 @@ namespace Check.ServiceModel.Operations
         public virtual EnumWithValues EnumWithValues { get; set; }
         public virtual EnumType? NullableEnumProp { get; set; }
         public virtual EnumFlags EnumFlags { get; set; }
+        public virtual EnumStyle EnumStyle { get; set; }
     }
 
     public partial class HelloWithGenericInheritance
@@ -1581,6 +1636,7 @@ namespace Check.ServiceModel.Types
 
     [DataContract]
     public partial class QueryResponseTemplate<T>
+        : IMeta
     {
         public QueryResponseTemplate()
         {
@@ -1698,6 +1754,23 @@ namespace Check.ServiceModel.Types
 namespace CheckWeb
 {
 
+    [Route("/defaultview/action")]
+    public partial class DefaultViewActionAttr
+    {
+    }
+
+    [Route("/defaultview/class")]
+    public partial class DefaultViewAttr
+    {
+    }
+
+    [Route("/gzip/{FileName}")]
+    public partial class DownloadGzipFile
+        : IReturn<byte[]>
+    {
+        public virtual string FileName { get; set; }
+    }
+
     [Route("/lists", "GET")]
     public partial class GetLists
         : IReturn<GetLists>
@@ -1728,10 +1801,40 @@ namespace CheckWeb
         public virtual string Get { get; set; }
     }
 
+    [Route("/httpresult-dto")]
+    public partial class HttpResultDto
+        : IReturn<HttpResultDto>
+    {
+        public virtual string Name { get; set; }
+    }
+
     [Route("/index")]
     public partial class IndexPage
     {
         public virtual string PathInfo { get; set; }
+    }
+
+    public partial class InProcRequest1
+    {
+    }
+
+    public partial class InProcRequest2
+    {
+    }
+
+    [Route("/match/{Language*}")]
+    public partial class MatchLang
+        : IReturn<HelloResponse>
+    {
+        public virtual string Language { get; set; }
+    }
+
+    [Route("/match/{Language}/{Name*}")]
+    public partial class MatchName
+        : IReturn<HelloResponse>
+    {
+        public virtual string Language { get; set; }
+        public virtual string Name { get; set; }
     }
 
     public enum MyColor
@@ -1746,6 +1849,13 @@ namespace CheckWeb
         A,
         B,
         C,
+    }
+
+    [Route("/plain-dto")]
+    public partial class PlainDto
+        : IReturn<PlainDto>
+    {
+        public virtual string Name { get; set; }
     }
 
     ///<summary>
@@ -1777,10 +1887,29 @@ namespace CheckWeb
     {
     }
 
+    [Route("/reqlogstest/{Name}")]
+    public partial class RequestLogsTest
+        : IReturn<string>
+    {
+        public virtual string Name { get; set; }
+    }
+
     [Route("/return/text")]
     public partial class ReturnText
     {
         public virtual string Text { get; set; }
+    }
+
+    [Route("/set-cache")]
+    public partial class SetCache
+        : IReturn<SetCache>
+    {
+        public virtual string ETag { get; set; }
+        public virtual TimeSpan? Age { get; set; }
+        public virtual TimeSpan? MaxAge { get; set; }
+        public virtual DateTime? Expires { get; set; }
+        public virtual DateTime? LastModified { get; set; }
+        public virtual CacheControl? CacheControl { get; set; }
     }
 
     [Route("/swagger-complex", "POST")]
@@ -1855,6 +1984,17 @@ namespace CheckWeb
         [DataMember]
         [ApiMember]
         public virtual Dictionary<string, string> DictionaryString { get; set; }
+    }
+
+    [Route("/swagger/model")]
+    public partial class SwaggerModel
+        : IReturn<SwaggerModel>
+    {
+        public virtual int Int { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual DateTimeOffset DateTimeOffset { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
     }
 
     [Route("/swagger/multiattrtest", "POST")]
@@ -2021,10 +2161,23 @@ namespace CheckWeb
         public virtual string Name { get; set; }
     }
 
-    [Route("/views/request")]
-    public partial class ViewRequest
+    [Route("/restrict/mq")]
+    public partial class TestMqRestriction
+        : IReturn<TestMqRestriction>
     {
         public virtual string Name { get; set; }
+    }
+
+    [Route("/views/request")]
+    public partial class ViewRequest
+        : IReturn<ViewResponse>
+    {
+        public virtual string Name { get; set; }
+    }
+
+    public partial class ViewResponse
+    {
+        public virtual string Result { get; set; }
     }
 }
 
