@@ -298,7 +298,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty())
                 {
                     var typeDeclaration = !Config.ExportAsTypes
-                        ? "declare enum"
+                        ? "enum"
                         : "export enum";
 
                     sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}");
