@@ -41,8 +41,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "it.UnitsInStock > 0 and it.UnitPrice > 3".ParseConditionExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new AndExpression(
-                    new BinaryConditionExpression(new JsExpression("it.UnitsInStock"), JsGreaterThan.Operand, new JsConstant(0)),
-                    new BinaryConditionExpression(new JsExpression("it.UnitPrice"), JsGreaterThan.Operand, new JsConstant(3))
+                    new BinaryConditionExpression(new CallExpression("it.UnitsInStock"), JsGreaterThan.Operand, new JsConstant(0)),
+                    new BinaryConditionExpression(new CallExpression("it.UnitPrice"), JsGreaterThan.Operand, new JsConstant(3))
                 )
             ));
         }
@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(expr,
                 Is.EqualTo(new BinaryConditionExpression(
                     new UnaryExpression(JsNot.Operator, 
-                        new JsExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }}),
+                        new CallExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }}),
                     JsEquals.Operand,
                     JsConstant.True)));
         }

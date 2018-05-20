@@ -863,7 +863,7 @@ namespace ServiceStack.Templates
 
         public object EvaluateAnyBindings(object value, TemplateScopeContext scope)
         {
-            if (value is JsExpression expr)
+            if (value is CallExpression expr)
                 return EvaluateExpression(expr, scope);
             
             if (value is JsBinding valueBinding)
@@ -918,7 +918,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        private object EvaluateExpression(JsExpression expr, TemplateScopeContext scope, PageVariableFragment var = null)
+        private object EvaluateExpression(CallExpression expr, TemplateScopeContext scope, PageVariableFragment var = null)
         {
             var value = expr.IsBinding
                 ? EvaluateBinding(expr.NameString, scope)
@@ -947,7 +947,7 @@ namespace ServiceStack.Templates
             }
             
             object value = null;
-            if (binding is JsExpression expr)
+            if (binding is CallExpression expr)
             {
                 value = EvaluateToken(scope, expr);
             }
@@ -964,7 +964,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object EvaluateMethod(JsExpression expr, TemplateScopeContext scope, PageVariableFragment var=null)
+        private object EvaluateMethod(CallExpression expr, TemplateScopeContext scope, PageVariableFragment var=null)
         {
             if (expr.Name.IsNullOrEmpty())
                 throw new ArgumentNullException("expr.Name");
@@ -1043,7 +1043,7 @@ namespace ServiceStack.Templates
                 token = new JsConstant(u.Evaluate(scope));
             }
             
-            return token is JsExpression expr && expr.Args.Count > 0
+            return token is CallExpression expr && expr.Args.Count > 0
                 ? EvaluateMethod(expr, scope)
                 : EvaluateAnyBindings(token, scope);
         }

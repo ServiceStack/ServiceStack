@@ -20,17 +20,17 @@ namespace ServiceStack.Templates
         public string BindingString { get; }       
         
         public object InitialValue { get; }
-        public JsExpression InitialExpression { get; }
+        public CallExpression InitialExpression { get; }
         
-        public JsExpression[] FilterExpressions { get; set; }
+        public CallExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, object initialValue, JsBinding initialBinding, List<JsExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, object initialValue, JsBinding initialBinding, List<CallExpression> filterCommands)
         {
             OriginalText = originalText;
             InitialValue = initialValue;
-            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
+            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<CallExpression>.EmptyArray;
 
-            if (initialBinding is JsExpression initialExpr)
+            if (initialBinding is CallExpression initialExpr)
             {
                 InitialExpression = initialExpr;
             }

@@ -52,7 +52,7 @@ namespace ServiceStack.Templates
                 {
                     var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
     
-                    List<JsExpression> filterCommands = null;
+                    List<CallExpression> filterCommands = null;
     
                     literal = literal.ParseNextToken(out _, out JsBinding filterOp);
                     if (filterOp == JsBitwiseOr.Operator)
@@ -60,7 +60,7 @@ namespace ServiceStack.Templates
                         var varEndPos = 0;
                         bool foundVarEnd = false;
                     
-                        filterCommands = literal.ParseExpression<JsExpression>(
+                        filterCommands = literal.ParseExpression<CallExpression>(
                             separator: '|',
                             atEndIndex: (str, strPos) =>
                             {
@@ -166,7 +166,7 @@ namespace ServiceStack.Templates
                         var indexer = member.RightPart('[');
                         indexer.ParseNextToken(out object value, out JsBinding binding);
 
-                        if (binding is JsExpression)
+                        if (binding is CallExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'",
                                 member.Value, expr.Value);
 
