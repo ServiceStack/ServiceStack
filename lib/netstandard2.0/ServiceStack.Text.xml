@@ -144,10 +144,10 @@
             Define how property names are mapped during deserialization
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sThrowOnDeserializationError">
+        <member name="F:ServiceStack.Text.JsConfig.sThrowOnError">
             <summary>
             Gets or sets a value indicating if the framework should throw serialization exceptions
-            or continue regardless of deserialization errors. If <see langword="true"/>  the framework
+            or continue regardless of serialization errors. If <see langword="true"/>  the framework
             will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>

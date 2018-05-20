@@ -80,6 +80,12 @@
             Should UserName or Emails be saved in AuthRepository in LowerCase
             </summary>
         </member>
+        <member name="M:ServiceStack.AuthFeature.RegisterAuthProvider(ServiceStack.Auth.IAuthProvider)">
+            <summary>
+            Use a plugin to register authProvider dynamically. Your plugin can implement `IPreInitPlugin` interface
+            to call `appHost.GetPlugin&lt;AuthFeature&gt;().RegisterAuthProvider()` before the AuthFeature is registered.
+            </summary>
+        </member>
         <member name="T:ServiceStack.Auth.IManageApiKeys">
             <summary>
             The Interface Auth Repositories need to implement to support API Keys
@@ -278,6 +284,21 @@
         <member name="M:ServiceStack.Auth.IAuthProvider.IsAuthorized(ServiceStack.Auth.IAuthSession,ServiceStack.Auth.IAuthTokens,ServiceStack.Authenticate)">
             <summary>
             Determine if the current session is already authenticated with this AuthProvider
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.IAuthSession.OnRegistered(ServiceStack.Web.IRequest,ServiceStack.Auth.IAuthSession,ServiceStack.IServiceBase)">
+            <summary>
+            Called when the user is registered or on the first OAuth login 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.IAuthSession.OnAuthenticated(ServiceStack.IServiceBase,ServiceStack.Auth.IAuthSession,ServiceStack.Auth.IAuthTokens,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Called after the user has successfully authenticated 
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Auth.IAuthSession.OnLogout(ServiceStack.IServiceBase)">
+            <summary>
+            Fired before the session is removed after the /auth/logout Service is called
             </summary>
         </member>
         <member name="M:ServiceStack.Auth.IAuthSession.OnCreated(ServiceStack.Web.IRequest)">
