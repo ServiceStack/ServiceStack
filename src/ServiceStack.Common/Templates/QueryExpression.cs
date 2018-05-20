@@ -138,17 +138,17 @@ namespace ServiceStack.Templates
             return (bool)afterUnary;
         }
     }
-    public class BinaryExpression : ConditionExpression
+    public class BinaryExpression : JsToken
     {
         public BinaryExpression() {}
-        public BinaryExpression(JsToken left, JsBooleanOperand operand, JsToken right)
+        public BinaryExpression(JsToken left, JsBinaryOperator operand, JsToken right)
         {
             Left = left;
             Operand = operand;
             Right = right;
         }
 
-        public JsBooleanOperand Operand { get; set; }
+        public JsBinaryOperator Operand { get; set; }
         public JsToken Left  { get; set; }
         public JsToken Right { get; set; }
         public override string ToRawString() => JsonValue(Left) + Operand.Token + JsonValue(Right);
@@ -172,11 +172,58 @@ namespace ServiceStack.Templates
             }
         }
 
+        public object Evaluate(TemplateScopeContext scope)
+        {
+            var lhs = scope.EvaluateToken(Left);
+            var rhs = scope.EvaluateToken(Right);            
+            return Operand.Evaluate(lhs, rhs);
+        }
+    }
+
+    public class BinaryConditionExpression : ConditionExpression
+    {
+        public JsBooleanOperand Operand { get; set; }
+        public JsToken Left  { get; set; }
+        public JsToken Right { get; set; }
+        public override string ToRawString() => JsonValue(Left) + Operand.Token + JsonValue(Right);
+
+        public BinaryConditionExpression() {}
+        public BinaryConditionExpression(JsToken left, JsBooleanOperand operand, JsToken right)
+        {
+            Left = left;
+            Operand = operand;
+            Right = right;
+        }
+
         public override bool Evaluate(TemplateScopeContext scope)
         {
             var lhs = scope.EvaluateToken(Left);
-            var rhs = scope.EvaluateToken(Right);
+            var rhs = scope.EvaluateToken(Right);            
             return Operand.Test(lhs, rhs);
+        }
+
+        protected bool Equals(BinaryConditionExpression other)
+        {
+            return Equals(Operand, other.Operand) && Equals(Left, other.Left) && Equals(Right, other.Right);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((BinaryConditionExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Operand != null ? Operand.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Left != null ? Left.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Right != null ? Right.GetHashCode() : 0);
+                return hashCode;
+            }
         }
     }
 
@@ -197,18 +244,17 @@ namespace ServiceStack.Templates
         public static StringSegment ParseConditionExpression(this StringSegment literal, out ConditionExpression expr)
         {
             BooleanExpression rootExpr = null;
-            BinaryExpression lhsBinaryExpr = null, rhsBinaryExpr = null;
-            
+
             literal = literal.AdvancePastWhitespace();
             while (!literal.IsNullOrEmpty())
             {
-                literal = literal.ParseBinaryExpression(out lhsBinaryExpr);
+                literal = literal.ParseBinaryConditionExpression(out BinaryConditionExpression lhsConditionExpr);
 
                 literal = literal.AdvancePastWhitespace();
 
                 if (literal.IsNullOrEmpty() && rootExpr == null)
                 {
-                    expr = lhsBinaryExpr;
+                    expr = lhsConditionExpr;
                     return literal;
                 }
 
@@ -219,28 +265,59 @@ namespace ServiceStack.Templates
                 
                 var isOr = andOrToken.Binding.Equals(BooleanExpression.OrKeyword);
 
-                literal = literal.ParseBinaryExpression(out rhsBinaryExpr);
+                literal = literal.ParseBinaryConditionExpression(out BinaryConditionExpression rhsConditionExpr);
 
                 if (rootExpr == null)
                 {
                     rootExpr = isOr
-                        ? (BooleanExpression) new OrExpression(lhsBinaryExpr)
-                        : new AndExpression(lhsBinaryExpr);
+                        ? (BooleanExpression) new OrExpression(lhsConditionExpr)
+                        : new AndExpression(lhsConditionExpr);
                 }
 
                 if (rootExpr.MatchesBinding(andOrToken))
                 {
-                    rootExpr.Expressions.Add(rhsBinaryExpr);
+                    rootExpr.Expressions.Add(rhsConditionExpr);
                 }
                 else
                 {
                     rootExpr = isOr
-                        ? (BooleanExpression) new OrExpression(rootExpr, rhsBinaryExpr)
-                        : new AndExpression(rootExpr, rhsBinaryExpr);
+                        ? (BooleanExpression) new OrExpression(rootExpr, rhsConditionExpr)
+                        : new AndExpression(rootExpr, rhsConditionExpr);
                 }
             }
             
             expr = rootExpr;
+            return literal;
+        }
+
+        public static StringSegment ParseBinaryConditionExpression(this StringSegment literal, out BinaryConditionExpression binaryExpr)
+        {
+            literal = literal.AdvancePastWhitespace();
+            
+            literal = literal.ParseNextExpression(out JsToken lhsExpr);
+
+            if (!literal.IsNullOrEmpty())
+            {
+                literal = literal.ParseNextToken(out var value, out JsBinding binding);
+
+                if (binding is JsAssignment)
+                    binding = JsEquals.Operand;
+
+                if (!(binding is JsBooleanOperand operand))
+                    throw new ArgumentException($"Invalid syntax: Expected boolean operand but instead found '{value ?? binding}' near: {literal.SubstringWithElipsis(0,50)}");
+                
+                literal = literal.ParseNextExpression(out JsToken rhsExpr);
+
+                binaryExpr = new BinaryConditionExpression(
+                    lhsExpr,
+                    operand,
+                    rhsExpr);
+            }
+            else
+            {
+                binaryExpr = new BinaryConditionExpression(lhsExpr, JsEquals.Operand, JsConstant.True);
+            }
+
             return literal;
         }
 
@@ -252,16 +329,13 @@ namespace ServiceStack.Templates
 
             if (!literal.IsNullOrEmpty())
             {
-                object value;
-                literal = literal.ParseNextToken(out value, out JsBinding binding);
+                literal = literal.ParseNextToken(out var value, out JsBinding binding);
 
                 if (binding is JsAssignment)
                     binding = JsEquals.Operand;
 
-                var operand = binding as JsBooleanOperand;
-                
-                if (operand == null)
-                    throw new ArgumentException($"Invalid syntax: Expected boolean operand but instead found '{value ?? binding}' near: {literal.SubstringWithElipsis(0,50)}");
+                if (!(binding is JsBinaryOperator operand))
+                    throw new ArgumentException($"Invalid syntax: Expected binary operand but instead found '{value ?? binding}' near: {literal.SubstringWithElipsis(0,50)}");
                 
                 literal = literal.ParseNextExpression(out JsToken rhsExpr);
 
@@ -280,18 +354,15 @@ namespace ServiceStack.Templates
 
         public static StringSegment ParseNextExpression(this StringSegment literal, out JsToken token)
         {
-            object value1, value2;
-            JsBinding binding1, binding2;
-
             literal = literal.AdvancePastWhitespace();
             
-            literal = literal.ParseNextToken(out value1, out binding1);
+            literal = literal.ParseNextToken(out var value1, out var binding1);
 
             literal = literal.AdvancePastWhitespace();
 
             if (binding1 is JsUnaryOperator u)
             {
-                literal = literal.ParseNextToken(out value2, out binding2);
+                literal = literal.ParseNextToken(out var value2, out var binding2);
                 token = new UnaryExpression(u, value2.ToToken(binding2));
             }
             else

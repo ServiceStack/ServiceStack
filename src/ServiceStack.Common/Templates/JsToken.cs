@@ -118,7 +118,11 @@ namespace ServiceStack.Templates
         public abstract string Token { get; }
         public override string ToRawString() => Token;
     }
-    public abstract class JsBinaryOperator : JsOperator {}
+
+    public abstract class JsBinaryOperator : JsOperator
+    {
+        public abstract object Evaluate(object lhs, object rhs);
+    }
 
     public abstract class JsUnaryOperator : JsOperator
     {
@@ -130,9 +134,10 @@ namespace ServiceStack.Templates
                 : op == JsNot.Operator
                 ? op : null);
     }
-    public abstract class JsBooleanOperand : JsOperator
+    public abstract class JsBooleanOperand : JsBinaryOperator
     {
         public abstract bool Test(object lhs, object rhs);
+        public override object Evaluate(object lhs, object rhs) => Test(lhs, rhs);
     }
     public class JsGreaterThan : JsBooleanOperand
     {
@@ -195,6 +200,7 @@ namespace ServiceStack.Templates
         public static JsAssignment Operator = new JsAssignment();
         private JsAssignment(){}
         public override string Token => "=";
+        public override object Evaluate(object lhs, object rhs) => rhs;
     }
     public class JsOr : JsBooleanOperand
     {
@@ -217,41 +223,95 @@ namespace ServiceStack.Templates
         public override string Token => "!";
         public override object Evaluate(object target) => !TemplateDefaultFilters.isTrue(target);
     }
-    public class JsBitwiseOr : JsBinaryOperator
-    {
-        public static JsBitwiseOr Operator = new JsBitwiseOr();
-        private JsBitwiseOr(){}
-        public override string Token => "|";
-    }
     public class JsBitwiseAnd : JsBinaryOperator
     {
         public static JsBitwiseAnd Operator = new JsBitwiseAnd();
         private JsBitwiseAnd(){}
         public override string Token => "&";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).bitwiseAnd(lhs, rhs);
+    }
+    public class JsBitwiseOr : JsBinaryOperator
+    {
+        public static JsBitwiseOr Operator = new JsBitwiseOr();
+        private JsBitwiseOr(){}
+        public override string Token => "|";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).bitwiseOr(lhs, rhs);
+    }
+    public class JsBitwiseXOr : JsBinaryOperator
+    {
+        public static JsBitwiseXOr Operator = new JsBitwiseXOr();
+        private JsBitwiseXOr(){}
+        public override string Token => "^";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).bitwiseXOr(lhs, rhs);
+    }
+    public class JsBitwiseLeftShift : JsBinaryOperator
+    {
+        public static JsBitwiseLeftShift Operator = new JsBitwiseLeftShift();
+        private JsBitwiseLeftShift(){}
+        public override string Token => "<<";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).bitwiseLeftShift(lhs, rhs);
+    }
+    public class JsBitwiseRightShift : JsBinaryOperator
+    {
+        public static JsBitwiseRightShift Operator = new JsBitwiseRightShift();
+        private JsBitwiseRightShift(){}
+        public override string Token => ">>";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).bitwiseRightShift(lhs, rhs);
     }
     public class JsAddition : JsBinaryOperator
     {
         public static JsAddition Operator = new JsAddition();
         private JsAddition(){}
         public override string Token => "+";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).add(lhs, rhs);
     }
     public class JsSubtraction : JsBinaryOperator
     {
         public static JsSubtraction Operator = new JsSubtraction();
         private JsSubtraction(){}
         public override string Token => "-";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).sub(lhs, rhs);
     }
     public class JsMultiplication : JsBinaryOperator
     {
         public static JsMultiplication Operator = new JsMultiplication();
         private JsMultiplication(){}
         public override string Token => "*";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).mul(lhs, rhs);
     }
     public class JsDivision : JsBinaryOperator
     {
         public static JsDivision Operator = new JsDivision();
         private JsDivision(){}
         public override string Token => "\\";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).div(lhs, rhs);
+    }
+    public class JsMod : JsBinaryOperator
+    {
+        public static JsMod Operator = new JsMod();
+        private JsMod(){}
+        public override string Token => "%";
+        
+        public override object Evaluate(object lhs, object rhs) => 
+            DynamicNumber.GetNumber(lhs, rhs).mod(lhs, rhs);
     }
     public class JsMinus : JsUnaryOperator
     {
@@ -399,7 +459,7 @@ namespace ServiceStack.Templates
             ValidNumericChars = n;
 
             var o = new byte['|' + 1];
-            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['\\'] = o['|'] = o['&'] = True;
+            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['|'] = o['&'] = o['^'] = True;
             OperatorChars = o;
 
             var a = new byte['z' + 1];
@@ -707,6 +767,16 @@ namespace ServiceStack.Templates
                     binding = JsAnd.Operator;
                     return literal.Advance(2);
                 }
+                if (literal.StartsWith("<<"))
+                {
+                    binding = JsBitwiseLeftShift.Operator;
+                    return literal.Advance(2);
+                }
+                if (literal.StartsWith(">>"))
+                {
+                    binding = JsBitwiseRightShift.Operator;
+                    return literal.Advance(2);
+                }
 
                 switch (firstChar)
                 {
@@ -731,14 +801,20 @@ namespace ServiceStack.Templates
                     case '*':
                         binding = JsMultiplication.Operator;
                         return literal.Advance(1);
-                    case '\\':
+                    case '/':
                         binding = JsDivision.Operator;
+                        return literal.Advance(1);
+                    case '&':
+                        binding = JsBitwiseAnd.Operator;
                         return literal.Advance(1);
                     case '|':
                         binding = JsBitwiseOr.Operator;
                         return literal.Advance(1);
-                    case '&':
-                        binding = JsBitwiseAnd.Operator;
+                    case '^':
+                        binding = JsBitwiseXOr.Operator;
+                        return literal.Advance(1);
+                    case '%':
+                        binding = JsMod.Operator;
                         return literal.Advance(1);
                     default:
                         throw new NotSupportedException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
