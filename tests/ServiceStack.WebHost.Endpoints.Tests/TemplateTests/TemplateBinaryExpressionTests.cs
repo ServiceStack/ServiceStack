@@ -7,7 +7,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     public class TemplateBinaryExpressionTests
     {
         [Test]
-        public void Does_parse_basic_binary_arithmetic_expressions()
+        public void Does_parse_basic_binary_expressions()
         {
             BinaryExpression expr;
 
@@ -38,6 +38,114 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "1 >> 2".ToStringSegment().ParseBinaryExpression(out expr);
             Assert.That(expr, Is.EqualTo(new BinaryExpression(new JsConstant(1), JsBitwiseRightShift.Operator, new JsConstant(2))));
         }
+        
+        [Test]
+        public void Does_parse_composite_binary_expressions()
+        {
+            BinaryExpression expr;
 
+            "1 + 2 + 3".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    JsAddition.Operator, 
+                    new JsConstant(3)
+                )
+            ));
+
+            "1 + 2 + 3 + 4".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(
+                        new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                        JsAddition.Operator, 
+                        new JsConstant(3)), 
+                    JsAddition.Operator, 
+                    new JsConstant(4)
+                )
+            ));
+        }
+        
+        [Test]
+        public void Does_parse_binary_expressions_with_precedence()
+        {
+            BinaryExpression expr;
+
+            "1 + 2 * 3".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new JsConstant(1), 
+                    JsAddition.Operator, 
+                    new BinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))
+                )
+            ));
+
+            "1 + 2 * 3 - 4".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(
+                        new JsConstant(1), 
+                        JsAddition.Operator, 
+                        new BinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))), 
+                    JsSubtraction.Operator, 
+                    new JsConstant(4)
+                )
+            ));
+
+            "1 + 2 * 3 - 4 / 5".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(
+                        new JsConstant(1), 
+                        JsAddition.Operator, 
+                        new BinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))), 
+                    JsSubtraction.Operator, 
+                    new BinaryExpression(new JsConstant(4), JsDivision.Operator, new JsConstant(5)))
+                )
+            );
+        }
+
+        [Test]
+        public void Does_parse_binary_expression_with_brackets()
+        {
+            BinaryExpression expr;
+
+            "(1 + 2)".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2))
+            ));
+
+            "(1 + 2) * 3".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    JsMultiplication.Operator, 
+                    new JsConstant(3)
+                )
+            ));
+            
+            "(1 + 2) * (3 - 4)".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    JsMultiplication.Operator, 
+                    new BinaryExpression(new JsConstant(3), JsSubtraction.Operator, new JsConstant(4))
+                )
+            ));
+            
+            "(1 + 2) * ((3 - 4) / 5)".ToStringSegment().ParseBinaryExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new BinaryExpression(
+                    new BinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    JsMultiplication.Operator, 
+                    new BinaryExpression(
+                        new BinaryExpression(new JsConstant(3), JsSubtraction.Operator, new JsConstant(4)),
+                        JsDivision.Operator,
+                        new JsConstant(5)
+                    )
+                )
+            ));
+        }
+        
     }
 }

@@ -299,7 +299,7 @@ namespace ServiceStack.Templates
     {
         public static JsDivision Operator = new JsDivision();
         private JsDivision(){}
-        public override string Token => "\\";
+        public override string Token => "/";
         
         public override object Evaluate(object lhs, object rhs) => 
             DynamicNumber.GetNumber(lhs, rhs).div(lhs, rhs);
@@ -452,6 +452,42 @@ namespace ServiceStack.Templates
         private static readonly byte[] OperatorChars;
         private const byte True = 1;
 
+        public static readonly Dictionary<string, int> OperatorPrecedence = new Dictionary<string, int> {
+            {")", 0},
+            {";", 0},
+            {",", 0},
+            {"=", 0},
+            {"]", 0},
+            {"||", 1},
+            {"&&", 2},
+            {"|", 3},
+            {"^", 4},
+            {"&", 5},
+            {"==", 6},
+            {"!=", 6},
+            {"===", 6},
+            {"!==", 6},
+            {"<", 7},
+            {">", 7},
+            {"<=", 7},
+            {">=", 7},
+            {"<<", 8},
+            {">>", 8},
+            {">>>", 8},
+            {"+", 9},
+            {"-", 9},
+            {"*", 11},
+            {"/", 11},
+            {"%", 11},
+        };
+
+        public static int? GetBinaryPrecedence(string token)
+        {
+            return OperatorPrecedence.TryGetValue(token, out var precedence)
+                ? precedence
+                : 0;
+        }
+
         static JsTokenUtils()
         {
             var n = new byte['e' + 1];
@@ -522,6 +558,14 @@ namespace ServiceStack.Templates
                 return literal.Subsegment(i + 1);
 
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
+        }
+
+        public static StringSegment ParseNextJsToken(this StringSegment literal, out JsToken token) => ParseNextJsToken(literal, out token, false);
+        public static StringSegment ParseNextJsToken(this StringSegment literal, out JsToken token, bool allowWhitespaceSyntax)
+        {
+            var ret = ParseNextToken(literal, out var value, out var binding, allowWhitespaceSyntax);
+            token = value.ToToken(binding);
+            return ret;
         }
 
         public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding) => ParseNextToken(literal, out value, out binding, false);

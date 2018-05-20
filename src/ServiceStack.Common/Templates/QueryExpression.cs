@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
+using ServiceStack.Text.Json;
+
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
@@ -325,36 +328,123 @@ namespace ServiceStack.Templates
         {
             literal = literal.AdvancePastWhitespace();
             
-            literal = literal.ParseNextExpression(out JsToken lhsExpr);
+            literal = literal.ParseNextExpression(out JsToken lhs);
 
-            if (!literal.IsNullOrEmpty())
+            if (literal.IsNullOrEmpty())
             {
-                literal = literal.ParseNextToken(out var value, out JsBinding binding);
-
-                if (binding is JsAssignment)
-                    binding = JsEquals.Operand;
-
-                if (!(binding is JsBinaryOperator operand))
-                    throw new ArgumentException($"Invalid syntax: Expected binary operand but instead found '{value ?? binding}' near: {literal.SubstringWithElipsis(0,50)}");
-                
-                literal = literal.ParseNextExpression(out JsToken rhsExpr);
-
-                binaryExpr = new BinaryExpression(
-                    lhsExpr,
-                    operand,
-                    rhsExpr);
+                if (lhs is BinaryExpression lhsBinaryExpr)
+                    binaryExpr = lhsBinaryExpr;
+                else                
+                    binaryExpr = new BinaryExpression(lhs, JsEquals.Operand, JsConstant.True);
             }
             else
             {
-                binaryExpr = new BinaryExpression(lhsExpr, JsEquals.Operand, JsConstant.True);
+                literal = literal.ParseNextJsToken(out JsToken token);
+
+                if (token is JsAssignment)
+                    token = JsEquals.Operand;
+                
+                if (!(token is JsBinaryOperator op))
+                    throw new ArgumentException(
+                        $"Invalid syntax: Expected binary operand but instead found '{token}' near: {literal.SubstringWithElipsis(0, 50)}");
+
+                var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
+
+                if (prec != null && prec.Value > 0)
+                {
+                    literal = literal.ParseNextExpression(out JsToken rhs);
+
+                    var stack = new Stack<JsToken>();
+                    stack.Push(lhs);
+                    stack.Push(op);
+                    stack.Push(rhs);
+
+                    var precedences = new List<int> { prec.Value };
+
+                    while (true)
+                    {
+                        prec = literal.GetNextBinaryPrecedence();
+                        if (prec == null || prec == 0)
+                            break;
+
+                        while ((stack.Count > 2) && prec <= precedences[precedences.Count - 1])
+                        {
+                            rhs = stack.Pop();
+                            var operand = (JsBinaryOperator)stack.Pop();
+                            precedences.RemoveAt(precedences.Count - 1);
+                            lhs = stack.Pop();
+                            stack.Push(new BinaryExpression(lhs, operand, rhs));
+                        }
+
+                        literal = literal.ParseNextJsToken(out var opToken);
+                        
+                        if (literal.IsNullOrEmpty())
+                            throw new ArgumentException($"Invalid syntax: Expected expression after '{token}'");
+
+                        literal = literal.ParseNextJsToken(out token);
+                        
+                        stack.Push(opToken);
+                        stack.Push(token);
+                        precedences.Add(prec.Value);
+                    }
+
+                    var i = stack.Count - 1;
+                    var ret = stack.Pop();
+
+                    while (stack.Count > 0)
+                    {
+                        op = (JsBinaryOperator) stack.Pop();
+                        lhs = stack.Pop();
+                        ret = new BinaryExpression(lhs, op, ret);
+                    }
+
+                    binaryExpr = (BinaryExpression) ret;
+                }
+                else
+                {
+                    if (lhs is BinaryExpression lhsBinaryExpr)
+                        binaryExpr = lhsBinaryExpr;
+                    else                
+                        binaryExpr = new BinaryExpression(lhs, JsEquals.Operand, JsConstant.True);
+                }
             }
 
             return literal;
         }
 
+        static int? GetNextBinaryPrecedence(this StringSegment literal)
+        {
+            literal.ParseNextJsToken(out var token);
+
+            if (token is JsBinaryOperator binaryOp)
+            {
+                return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
+            }
+
+            return null;
+        }
+
         public static StringSegment ParseNextExpression(this StringSegment literal, out JsToken token)
         {
             literal = literal.AdvancePastWhitespace();
+
+            var c = literal.GetChar(0);
+            if (c == '(')
+            {
+                literal = literal.Advance(1);
+                literal = literal.ParseBinaryExpression(out var binaryExpr);
+                literal = literal.AdvancePastWhitespace();
+
+                c = literal.GetChar(0);
+                if (c == ')')
+                {
+                    literal = literal.Advance(1);
+                    token = binaryExpr;
+                    return literal;
+                }
+                
+                throw new ArgumentException($"Invalid syntax: Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
+            }
             
             literal = literal.ParseNextToken(out var value1, out var binding1);
 
