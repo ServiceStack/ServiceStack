@@ -350,7 +350,7 @@ namespace ServiceStack.Templates
 
                 var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
 
-                if (prec != null && prec.Value > 0)
+                if (prec > 0)
                 {
                     literal = literal.ParseNextExpression(out JsToken rhs);
 
@@ -359,12 +359,12 @@ namespace ServiceStack.Templates
                     stack.Push(op);
                     stack.Push(rhs);
 
-                    var precedences = new List<int> { prec.Value };
+                    var precedences = new List<int> { prec };
 
                     while (true)
                     {
                         prec = literal.GetNextBinaryPrecedence();
-                        if (prec == null || prec == 0)
+                        if (prec == 0)
                             break;
 
                         while ((stack.Count > 2) && prec <= precedences[precedences.Count - 1])
@@ -385,7 +385,7 @@ namespace ServiceStack.Templates
                         
                         stack.Push(opToken);
                         stack.Push(token);
-                        precedences.Add(prec.Value);
+                        precedences.Add(prec);
                     }
 
                     var i = stack.Count - 1;
@@ -412,7 +412,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        static int? GetNextBinaryPrecedence(this StringSegment literal)
+        static int GetNextBinaryPrecedence(this StringSegment literal)
         {
             literal.ParseNextJsToken(out var token);
 
@@ -421,7 +421,7 @@ namespace ServiceStack.Templates
                 return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
             }
 
-            return null;
+            return 0;
         }
 
         public static StringSegment ParseNextExpression(this StringSegment literal, out JsToken token)

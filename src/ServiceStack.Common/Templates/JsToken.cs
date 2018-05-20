@@ -481,7 +481,7 @@ namespace ServiceStack.Templates
             {"%", 11},
         };
 
-        public static int? GetBinaryPrecedence(string token)
+        public static int GetBinaryPrecedence(string token)
         {
             return OperatorPrecedence.TryGetValue(token, out var precedence)
                 ? precedence
