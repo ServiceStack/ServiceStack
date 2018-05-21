@@ -869,8 +869,8 @@ namespace ServiceStack.Templates
             if (value is JsBinding valueBinding)
                 return GetValue(valueBinding.BindingString, scope);
             
-            if (value is JsConstant constant)
-                return constant.Value;
+            if (value is JsToken token)
+                return EvaluateAnyBindings(token.Evaluate(scope), scope);
 
             if (value is Dictionary<string, object> map)
             {
@@ -1042,7 +1042,7 @@ namespace ServiceStack.Templates
             {
                 token = new JsConstant(u.Evaluate(scope));
             }
-            
+
             return token is CallExpression expr && expr.Args.Count > 0
                 ? EvaluateMethod(expr, scope)
                 : EvaluateAnyBindings(token, scope);

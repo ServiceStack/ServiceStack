@@ -45,8 +45,9 @@ namespace ServiceStack
         public static object eval(string js) => eval(js, CreateScope());
         public static object eval(string js, TemplateScopeContext scope)
         {
-            js.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            var result = scope.Evaluate(value, binding);
+            js.ParseExpression(out var token);
+            var result = scope.Evaluate(token);
+
             return result;
         }
 

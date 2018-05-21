@@ -346,45 +346,45 @@ square = 10 x 10 = 100".NormalizeNewLines()));
                 }
             }.Init();
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(true,true)' | if(or(true,true)) | raw }}")).Result, Is.EqualTo("or(true,true)"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(true,false)' | if(or(true,false)) | raw }}")).Result, Is.EqualTo("or(true,false)"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(false,false)' | if(or(false,false)) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(true,true)' | if(OR(true,true)) | raw }}")).Result, Is.EqualTo("OR(true,true)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(true,false)' | if(OR(true,false)) | raw }}")).Result, Is.EqualTo("OR(true,false)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(false,false)' | if(OR(false,false)) | raw }}")).Result, Is.EqualTo(""));
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'and(true,true)' | if(and(true,true)) | raw }}")).Result, Is.EqualTo("and(true,true)"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'and(true,false)' | if(and(true,false)) | raw }}")).Result, Is.EqualTo(""));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'and(false,false)' | if(and(false,false)) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'AND(true,true)' | if(AND(true,true)) | raw }}")).Result, Is.EqualTo("AND(true,true)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'AND(true,false)' | if(AND(true,false)) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'AND(false,false)' | if(AND(false,false)) | raw }}")).Result, Is.EqualTo(""));
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextTrue,contextTrue)' | if(or(contextTrue,contextTrue)) | raw }}")).Result, Is.EqualTo("or(contextTrue,contextTrue)"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextTrue,contextFalse)' | if(or(contextTrue,contextFalse)) | raw }}")).Result, Is.EqualTo("or(contextTrue,contextFalse)"));
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(contextFalse,contextFalse)' | if(or(contextFalse,contextFalse)) | raw }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(contextTrue,contextTrue)' | if(OR(contextTrue,contextTrue)) | raw }}")).Result, Is.EqualTo("OR(contextTrue,contextTrue)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(contextTrue,contextFalse)' | if(OR(contextTrue,contextFalse)) | raw }}")).Result, Is.EqualTo("OR(contextTrue,contextFalse)"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(contextFalse,contextFalse)' | if(OR(contextFalse,contextFalse)) | raw }}")).Result, Is.EqualTo(""));
             
-            Assert.That(new PageResult(context.OneTimePage("{{ 'or(gt(now,year2000),eq(\"foo\",bar))' | if(or(gt(now,year2000),eq(\"foo\",bar))) | raw }}")).Result, 
-                Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
+            Assert.That(new PageResult(context.OneTimePage("{{ 'OR(gt(now,year2000),eq(\"foo\",bar))' | if(OR(gt(now,year2000),eq(\"foo\",bar))) | raw }}")).Result, 
+                Is.EqualTo("OR(gt(now,year2000),eq(\"foo\",bar))"));
 
-            Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(gt(now,year2000),eq(""foo"",bar))' | 
+            Assert.That(new PageResult(context.OneTimePage(@"{{ 'OR(gt(now,year2000),eq(""foo"",bar))' | 
             if (
-                or (
+                OR (
                     gt ( now, year2000 ),
                     eq ( ""foo"",  bar )
                 )
             ) | raw }}")).Result, 
-                Is.EqualTo("or(gt(now,year2000),eq(\"foo\",bar))"));
+                Is.EqualTo("OR(gt(now,year2000),eq(\"foo\",bar))"));
 
             
-            Assert.That(new PageResult(context.OneTimePage(@"{{ 'or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))' | 
+            Assert.That(new PageResult(context.OneTimePage(@"{{ 'OR(AND(gt(now,year2000),eq(""foo"",bar)),AND(gt(now,year2000),eq(""foo"",foo)))' | 
             if ( 
-                or (
-                    and (
+                OR (
+                    AND (
                         gt ( now, year2000 ),
                         eq ( ""foo"", bar  )
                     ),
-                    and (
+                    AND (
                         gt ( now, year2000 ),
                         eq ( ""foo"", foo  )
                     )
                 ) 
             ) | raw }}")).Result, 
-                Is.EqualTo(@"or(and(gt(now,year2000),eq(""foo"",bar)),and(gt(now,year2000),eq(""foo"",foo)))"));
+                Is.EqualTo(@"OR(AND(gt(now,year2000),eq(""foo"",bar)),AND(gt(now,year2000),eq(""foo"",foo)))"));
         }
 
         [Test]

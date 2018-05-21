@@ -145,9 +145,9 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             scope.AddItemToScope(itemBinding, target);
-            var result = expr.Evaluate(scope);
+            var result = expr.EvaluateToBool(scope);
 
             return result
                 ? StopExecution.Value
@@ -186,9 +186,9 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             scope.AddItemToScope(itemBinding, target);
-            var result = expr.Evaluate(scope);
+            var result = expr.EvaluateToBool(scope);
 
             return result
                 ? target
@@ -266,8 +266,8 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
         [HandleUnknownValue] public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
 
-        public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
-        public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
+        public bool OR(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
+        public bool AND(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
         public bool equals(object target, object other) =>
             target == null || other == null

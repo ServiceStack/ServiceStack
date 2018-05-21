@@ -55,8 +55,10 @@ namespace ServiceStack.Templates
         }
 
         public override string ToString() => ToRawString();
-    }
 
+        public abstract object Evaluate(TemplateScopeContext scope);
+    }
+    
     public class JsNull : JsToken
     {
         public const string String = "null";
@@ -64,6 +66,8 @@ namespace ServiceStack.Templates
         private JsNull() {} //this is the only one
         public static JsNull Value = new JsNull();
         public override string ToRawString() => String;
+
+        public override object Evaluate(TemplateScopeContext scope) => null;
     }
 
     public class JsConstant : JsToken
@@ -85,6 +89,8 @@ namespace ServiceStack.Templates
         }
 
         public override string ToString() => ToRawString();
+
+        public override object Evaluate(TemplateScopeContext scope) => Value;
     }
 
     public class JsBinding : JsToken
@@ -111,6 +117,12 @@ namespace ServiceStack.Templates
         }
 
         public override string ToString() => ToRawString();
+        
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var ret = scope.EvaluateToken(this);
+            return ret;
+        }
     }
 
     public abstract class JsOperator : JsBinding
@@ -134,63 +146,63 @@ namespace ServiceStack.Templates
                 : op == JsNot.Operator
                 ? op : null);
     }
-    public abstract class JsBooleanOperand : JsBinaryOperator
+    public abstract class JsLogicOperator : JsBinaryOperator
     {
         public abstract bool Test(object lhs, object rhs);
         public override object Evaluate(object lhs, object rhs) => Test(lhs, rhs);
     }
-    public class JsGreaterThan : JsBooleanOperand
+    public class JsGreaterThan : JsLogicOperator
     {
-        public static JsGreaterThan Operand = new JsGreaterThan();
+        public static JsGreaterThan Operator = new JsGreaterThan();
         private JsGreaterThan(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.greaterThan(lhs, rhs);
         public override string Token => ">";
     }
-    public class JsGreaterThanEqual : JsBooleanOperand
+    public class JsGreaterThanEqual : JsLogicOperator
     {
-        public static JsGreaterThanEqual Operand = new JsGreaterThanEqual();
+        public static JsGreaterThanEqual Operator = new JsGreaterThanEqual();
         private JsGreaterThanEqual(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.greaterThanEqual(lhs, rhs);
         public override string Token => ">=";
     }
-    public class JsLessThanEqual : JsBooleanOperand
+    public class JsLessThanEqual : JsLogicOperator
     {
-        public static JsLessThanEqual Operand = new JsLessThanEqual();
+        public static JsLessThanEqual Operator = new JsLessThanEqual();
         private JsLessThanEqual(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.lessThanEqual(lhs, rhs);
         public override string Token => "<=";
     }
-    public class JsLessThan : JsBooleanOperand
+    public class JsLessThan : JsLogicOperator
     {
-        public static JsLessThan Operand = new JsLessThan();
+        public static JsLessThan Operator = new JsLessThan();
         private JsLessThan(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.lessThan(lhs, rhs);
         public override string Token => "<";
     }
-    public class JsEquals : JsBooleanOperand
+    public class JsEquals : JsLogicOperator
     {
-        public static JsEquals Operand = new JsEquals();
+        public static JsEquals Operator = new JsEquals();
         private JsEquals(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.equals(lhs, rhs);
         public override string Token => "==";
     }
-    public class JsNotEquals : JsBooleanOperand
+    public class JsNotEquals : JsLogicOperator
     {
-        public static JsNotEquals Operand = new JsNotEquals();
+        public static JsNotEquals Operator = new JsNotEquals();
         private JsNotEquals(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.notEquals(lhs, rhs);
         public override string Token => "!=";
     }
-    public class JsStrictEquals : JsBooleanOperand
+    public class JsStrictEquals : JsLogicOperator
     {
-        public static JsStrictEquals Operand = new JsStrictEquals();
+        public static JsStrictEquals Operator = new JsStrictEquals();
         private JsStrictEquals(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.equals(lhs, rhs);
         public override string Token => "===";
     }
-    public class JsStrictNotEquals : JsBooleanOperand
+    public class JsStrictNotEquals : JsLogicOperator
     {
-        public static JsStrictNotEquals Operand = new JsStrictNotEquals();
+        public static JsStrictNotEquals Operator = new JsStrictNotEquals();
         private JsStrictNotEquals(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.notEquals(lhs, rhs);
         public override string Token => "!==";
@@ -202,14 +214,14 @@ namespace ServiceStack.Templates
         public override string Token => "=";
         public override object Evaluate(object lhs, object rhs) => rhs;
     }
-    public class JsOr : JsBooleanOperand
+    public class JsOr : JsLogicOperator
     {
         public static JsOr Operator = new JsOr();
         private JsOr(){}
         public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.isTrue(lhs) || TemplateDefaultFilters.isTrue(rhs);
         public override string Token => "||";
     }
-    public class JsAnd : JsBooleanOperand
+    public class JsAnd : JsLogicOperator
     {
         public static JsAnd Operator = new JsAnd();
         private JsAnd(){}
@@ -367,6 +379,8 @@ namespace ServiceStack.Templates
         }
 
         public override int GetHashCode() => (Array != null ? Array.GetHashCode() : 0);
+
+        public override object Evaluate(TemplateScopeContext scope) => Array;
     }
 
     public class JsObject : JsToken, IEnumerable<KeyValuePair<string, object>>
@@ -391,6 +405,8 @@ namespace ServiceStack.Templates
 
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Object.GetEnumerator();
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public override object Evaluate(TemplateScopeContext scope) => Object;
     }
 
     public class JsString : JsToken
@@ -410,6 +426,8 @@ namespace ServiceStack.Templates
         }
 
         public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
+
+        public override object Evaluate(TemplateScopeContext scope) => Value;
     }
 
     public class JsNumber : JsToken
@@ -443,6 +461,15 @@ namespace ServiceStack.Templates
 
         public override string ToRawString() =>
             intValue?.ToString() ?? longValue?.ToString() ?? doubleValue?.ToString(CultureInfo.InvariantCulture) ?? "0";
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            if (intValue != null)
+                return IntValue;
+            if (longValue != null)
+                return longValue;
+            return doubleValue;
+        }
     }
 
     public static class JsTokenUtils
@@ -529,6 +556,15 @@ namespace ServiceStack.Templates
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
 
+        public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
+        {
+            var ret = token.Evaluate(scope);
+            if (ret is bool b)
+                return b;
+            
+            throw new ArgumentException($"Expected bool expression but instead received '{token}'");
+        }
+
         internal static string StripQuotes(this StringSegment arg) => arg.HasValue ? StripQuotes(arg.Value) : string.Empty;
         internal static string StripQuotes(this string arg)
         {
@@ -559,10 +595,36 @@ namespace ServiceStack.Templates
 
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
-
-        public static StringSegment ParseNextJsToken(this StringSegment literal, out JsToken token) => ParseNextJsToken(literal, out token, false);
-        public static StringSegment ParseNextJsToken(this StringSegment literal, out JsToken token, bool allowWhitespaceSyntax)
+        
+        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token) => ParseJsToken(literal, out token, false);
+        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token, bool allowWhitespaceSyntax)
         {
+            literal = literal.AdvancePastWhitespace();
+
+            if (literal.IsNullOrEmpty())
+            {
+                token = null;
+                return literal;
+            }
+            
+            var c = literal.GetChar(0);
+            if (c == '(')
+            {
+                literal = literal.Advance(1);
+                literal = literal.ParseExpression(out var bracketsExpr);
+                literal = literal.AdvancePastWhitespace();
+
+                c = literal.GetChar(0);
+                if (c == ')')
+                {
+                    literal = literal.Advance(1);
+                    token = bracketsExpr;
+                    return literal;
+                }
+                
+                throw new ArgumentException($"Invalid syntax: Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
+            }
+
             var ret = ParseNextToken(literal, out var value, out var binding, allowWhitespaceSyntax);
             token = value.ToToken(binding);
             return ret;
@@ -769,36 +831,46 @@ namespace ServiceStack.Templates
                 value = JsNull.Value;
                 return literal.Advance(4);
             }
+            if (literal.StartsWith("and") && (literal.Length == 3 || !IsValidVarNameChar(literal.GetChar(3))))
+            {
+                binding = JsAnd.Operator;
+                return literal.Advance(3);
+            }
+            if (literal.StartsWith("or") && (literal.Length == 2 || !IsValidVarNameChar(literal.GetChar(2))))
+            {
+                binding = JsOr.Operator;
+                return literal.Advance(2);
+            }
             if (firstChar.IsOperatorChar())
             {
                 if (literal.StartsWith(">="))
                 {
-                    binding = JsGreaterThanEqual.Operand;
+                    binding = JsGreaterThanEqual.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("<="))
                 {
-                    binding = JsLessThanEqual.Operand;
+                    binding = JsLessThanEqual.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("!=="))
                 {
-                    binding = JsStrictNotEquals.Operand;
+                    binding = JsStrictNotEquals.Operator;
                     return literal.Advance(3);
                 }
                 if (literal.StartsWith("!="))
                 {
-                    binding = JsNotEquals.Operand;
+                    binding = JsNotEquals.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("==="))
                 {
-                    binding = JsStrictEquals.Operand;
+                    binding = JsStrictEquals.Operator;
                     return literal.Advance(3);
                 }
                 if (literal.StartsWith("=="))
                 {
-                    binding = JsEquals.Operand;
+                    binding = JsEquals.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("||"))
@@ -825,10 +897,10 @@ namespace ServiceStack.Templates
                 switch (firstChar)
                 {
                     case '>':
-                        binding = JsGreaterThan.Operand;
+                        binding = JsGreaterThan.Operator;
                         return literal.Advance(1);
                     case '<':
-                        binding = JsLessThan.Operand;
+                        binding = JsLessThan.Operator;
                         return literal.Advance(1);
                     case '=':
                         binding = JsAssignment.Operator;

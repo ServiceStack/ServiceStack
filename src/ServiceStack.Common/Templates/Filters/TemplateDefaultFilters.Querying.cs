@@ -92,13 +92,13 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var total = 0;
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (result)
                     total++;
             }
@@ -264,8 +264,7 @@ namespace ServiceStack.Templates
 
         public object let(TemplateScopeContext scope, object target, object scopeBindings) //from filter
         {
-            var objs = target as IEnumerable;
-            if (objs != null)
+            if (target is IEnumerable objs)
             {
                 var scopedParams = scope.GetParamsWithItemBindingOnly(nameof(let), null, scopeBindings, out string itemBinding);
 
@@ -322,12 +321,12 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(first), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (result)
                     return item;
             }
@@ -343,12 +342,12 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(any), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(any), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (result)
                     return true;
             }
@@ -363,12 +362,12 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(all), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (!result)
                     return false;
             }
@@ -384,12 +383,12 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (result)
                     to.Add(item);
             }
@@ -405,12 +404,12 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(takeWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (result)
                     to.Add(item);
                 else
@@ -428,13 +427,13 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(skipWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseExpression(out var expr);
             var i = 0;
             var keepSkipping = true;
             foreach (var item in items)
             {
                 scope.AddItemToScope(itemBinding, item, i++);
-                var result = expr.Evaluate(scope);
+                var result = expr.EvaluateToBool(scope);
                 if (!result)
                     keepSkipping = false;
 

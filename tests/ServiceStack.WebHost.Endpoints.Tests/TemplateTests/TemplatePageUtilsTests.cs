@@ -356,10 +356,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             JsBinding binding;
             CallExpression expr;
 
-            "if(or(gt(1,2),lt(3,4)))".ToStringSegment().ParseNextToken(out value, out binding);
+            "if(OR(gt(1,2),lt(3,4)))".ToStringSegment().ParseNextToken(out value, out binding);
             expr = (CallExpression) binding;
 
-            Assert.That(expr.Args[0], Is.EqualTo("or(gt(1,2),lt(3,4))"));
+            Assert.That(expr.Args[0], Is.EqualTo("OR(gt(1,2),lt(3,4))"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
             expr = (CallExpression) binding;
@@ -375,14 +375,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             @"
             if (
-                or (
+                OR (
                     gt ( 1 , 2 ) ,
                     lt ( 3 , 4 )
                 )
             )".ToStringSegment().ParseNextToken(out value, out binding);
             expr = (CallExpression) binding;
 
-            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("or(gt(1,2),lt(3,4))"));
+            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("OR(gt(1,2),lt(3,4))"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
             expr = (CallExpression) binding;

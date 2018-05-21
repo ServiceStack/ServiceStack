@@ -118,6 +118,12 @@ namespace ServiceStack.Templates
             return result;
         }
 
+        public static object Evaluate(this TemplateScopeContext scope, JsToken token)
+        {
+            var result = scope.PageResult.EvaluateAnyBindings(token, scope);
+            return result;
+        }
+
         public static void InvokeAssignExpression(this TemplateScopeContext scope, string assignExpr, object target, object value)
         {
             var fn = scope.Context.GetAssignExpression(target.GetType(), assignExpr.ToStringSegment());
