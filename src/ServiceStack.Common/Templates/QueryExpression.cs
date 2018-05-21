@@ -171,9 +171,12 @@ namespace ServiceStack.Templates
         public static StringSegment ParseExpression(this string literal, out JsToken token) =>
             literal.ToStringSegment().ParseExpression(out token);
 
-        public static StringSegment ParseExpression(this StringSegment literal, out JsToken token)
+        public static StringSegment ParseExpression(this StringSegment literal, out JsToken token) =>
+            literal.ParseExpression(out token, filterExpression:false);
+
+        public static StringSegment ParseExpression(this StringSegment literal, out JsToken token, bool filterExpression)
         {
-            var peekLiteral = literal.ParseJsToken(out var token1);
+            var peekLiteral = literal.ParseJsToken(out var token1, filterExpression:filterExpression);
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
 
@@ -185,19 +188,30 @@ namespace ServiceStack.Templates
 
             if (token1 is JsUnaryOperator u)
             {
-                literal = peekLiteral.ParseJsToken(out var token2);
+                literal = peekLiteral.ParseJsToken(out var token2, filterExpression:filterExpression);
                 token = new UnaryExpression(u, token2);
                 return literal;
             }
+
+            peekLiteral = peekLiteral.AdvancePastWhitespace();
+
+            if (filterExpression && peekLiteral.Length > 2)
+            {
+                if ((peekLiteral.GetChar(0) == '|' && peekLiteral.GetChar(1) != '|') || (peekLiteral.GetChar(0) == '}' && peekLiteral.GetChar(1) == '}'))
+                {
+                    token = token1;
+                    return peekLiteral;
+                }
+            }
             
-            peekLiteral = peekLiteral.ParseJsToken(out JsToken op);
+            peekLiteral = peekLiteral.ParseJsToken(out JsToken op, filterExpression:filterExpression);
 
             if (op is JsAssignment)
                 op = JsEquals.Operator;
-
+    
             if (op is JsBinaryOperator)
             {
-                literal = literal.ParseBinaryExpression(out var expr);
+                literal = literal.ParseBinaryExpression(out var expr, filterExpression);
                 token = expr;
                 return literal;
             }
@@ -206,11 +220,11 @@ namespace ServiceStack.Templates
             return peekLiteral;
         }
         
-        public static StringSegment ParseBinaryExpression(this StringSegment literal, out JsExpression expr)
+        public static StringSegment ParseBinaryExpression(this StringSegment literal, out JsExpression expr, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
             
-            literal = literal.ParseJsToken(out JsToken lhs);
+            literal = literal.ParseJsToken(out JsToken lhs, filterExpression:filterExpression);
 
             JsExpression CreateSingleExpression(JsToken left)
             {
@@ -225,7 +239,7 @@ namespace ServiceStack.Templates
             }
             else
             {
-                literal = literal.ParseJsToken(out JsToken token);
+                literal = literal.ParseJsToken(out JsToken token, filterExpression:filterExpression);
 
                 if (token is JsAssignment)
                     token = JsEquals.Operator;
@@ -238,7 +252,7 @@ namespace ServiceStack.Templates
 
                 if (prec > 0)
                 {
-                    literal = literal.ParseJsToken(out JsToken rhs);
+                    literal = literal.ParseJsToken(out JsToken rhs, filterExpression:filterExpression);
 
                     var stack = new Stack<JsToken>();
                     stack.Push(lhs);
@@ -249,6 +263,12 @@ namespace ServiceStack.Templates
 
                     while (true)
                     {
+                        literal = literal.AdvancePastWhitespace();
+                        if (filterExpression && literal.Length > 2 && (literal.GetChar(0) == '|' && literal.GetChar(1) != '|'))
+                        {
+                            break;
+                        }
+
                         prec = literal.GetNextBinaryPrecedence();
                         if (prec == 0)
                             break;
@@ -262,12 +282,12 @@ namespace ServiceStack.Templates
                             stack.Push(CreateJsExpression(lhs, operand, rhs));
                         }
 
-                        literal = literal.ParseJsToken(out var opToken);
+                        literal = literal.ParseJsToken(out var opToken, filterExpression:filterExpression);
                         
                         if (literal.IsNullOrEmpty())
                             throw new ArgumentException($"Invalid syntax: Expected expression after '{token}'");
 
-                        literal = literal.ParseJsToken(out token);
+                        literal = literal.ParseJsToken(out token, filterExpression:filterExpression);
                         
                         stack.Push(opToken);
                         stack.Push(token);

@@ -530,13 +530,9 @@ namespace ServiceStack.Templates
 
         private async Task<object> EvaluateAsync(PageVariableFragment var, TemplateScopeContext scope, CancellationToken token=default(CancellationToken))
         {
-            var value = var.InitialValue ??
-                (var.Binding.HasValue
-                    ? GetValue(var.BindingString, scope)
-                    : var.InitialExpression != null
-                        ? EvaluateExpression(var.InitialExpression, scope, var)
-                        : null);
+            scope.ScopedParams[nameof(PageVariableFragment)] = var;
 
+            var value = var.Evaluate(scope);
             if (value == null)
             {
                 var handlesUnknownValue = HandlesUnknownValue(var);
@@ -621,7 +617,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
                             args[1 + cmdIndex] = varValue;
                         }
 
@@ -637,7 +633,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
                             args[2 + cmdIndex] = varValue;
                         }
 
@@ -658,7 +654,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
                             args[2 + cmdIndex] = varValue;
                         }
 
@@ -685,7 +681,7 @@ namespace ServiceStack.Templates
                                             for (var cmdIndex = 0; cmdIndex < var.FilterExpressions[exprIndex].Args.Count; cmdIndex++)
                                             {
                                                 var arg = var.FilterExpressions[exprIndex].Args[cmdIndex];
-                                                var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope, var), scope);
+                                                var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
                                                 args[1 + cmdIndex] = varValue;
                                             }
 
@@ -863,12 +859,6 @@ namespace ServiceStack.Templates
 
         public object EvaluateAnyBindings(object value, TemplateScopeContext scope)
         {
-            if (value is CallExpression expr)
-                return EvaluateExpression(expr, scope);
-            
-            if (value is JsBinding valueBinding)
-                return GetValue(valueBinding.BindingString, scope);
-            
             if (value is JsToken token)
                 return EvaluateAnyBindings(token.Evaluate(scope), scope);
 
@@ -918,32 +908,32 @@ namespace ServiceStack.Templates
             }
         }
 
-        private object EvaluateExpression(CallExpression expr, TemplateScopeContext scope, PageVariableFragment var = null)
+        public StringSegment ParseNextToken(TemplateScopeContext scope, StringSegment literal, out object value, out JsBinding binding)
         {
-            var value = expr.IsBinding
-                ? EvaluateBinding(expr.NameString, scope)
-                : expr.Args.Count > 0 
-                    ? EvaluateMethod(expr, scope, var) 
-                    : EvaluateBindingExpression(expr.Binding, scope, var);
-            return value;
+            try
+            {
+                return literal.ParseNextToken(out value, out binding);
+            }
+            catch (ArgumentException e)
+            {
+                if (scope.ScopedParams.TryGetValue(nameof(PageVariableFragment), out var oVar)
+                    && oVar is PageVariableFragment var && !var.OriginalText.IsNullOrEmpty())
+                {
+                    throw new Exception($"Invalid literal: {literal} in '{var.OriginalText}'", e);
+                }
+                
+                throw;
+            }
         }
 
-        private object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope, PageVariableFragment var=null)
+        internal object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope)
         {
-            object outValue;
-            JsBinding binding;
-            
-            if (var == null)
-                arg = arg.ParseNextToken(out outValue, out binding);
-            else
-                arg = var.ParseNextToken(arg, out outValue, out binding);
+            arg = ParseNextToken(scope, arg, out var outValue, out var binding);
 
             var unaryOp = JsUnaryOperator.GetUnaryOperator(binding);
             if (unaryOp != null)
             {
-                arg = var == null 
-                    ? arg.ParseNextToken(out outValue, out binding) 
-                    : var.ParseNextToken(arg, out outValue, out binding);
+                arg = ParseNextToken(scope, arg, out outValue, out binding);
             }
             
             object value = null;
@@ -964,7 +954,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        private object EvaluateMethod(CallExpression expr, TemplateScopeContext scope, PageVariableFragment var=null)
+        internal object EvaluateMethod(CallExpression expr, TemplateScopeContext scope)
         {
             if (expr.Name.IsNullOrEmpty())
                 throw new ArgumentNullException("expr.Name");
@@ -976,7 +966,7 @@ namespace ServiceStack.Templates
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scope, var);
+                    var varValue = EvaluateBindingExpression(arg, scope);
                     args[i] = varValue;
                 }
 
@@ -992,7 +982,7 @@ namespace ServiceStack.Templates
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scope, var);
+                    var varValue = EvaluateBindingExpression(arg, scope);
                     args[i + 1] = varValue;
                 }
 
@@ -1038,11 +1028,6 @@ namespace ServiceStack.Templates
 
         public object EvaluateToken(TemplateScopeContext scope, JsToken token)
         {
-            if (token is UnaryExpression u)
-            {
-                token = new JsConstant(u.Evaluate(scope));
-            }
-
             return token is CallExpression expr && expr.Args.Count > 0
                 ? EvaluateMethod(expr, scope)
                 : EvaluateAnyBindings(token, scope);
@@ -1072,12 +1057,6 @@ namespace ServiceStack.Templates
                                         : (invoker = GetContextFilterAsBinding(name, out filter)) != null
                                              ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
                                              : null;
-
-            if (value is JsBinding binding)
-            {
-                return GetValue(binding.BindingString, scope);
-            }
-            
             return value;
         }
 

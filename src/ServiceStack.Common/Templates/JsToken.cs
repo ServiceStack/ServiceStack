@@ -120,7 +120,7 @@ namespace ServiceStack.Templates
         
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var ret = scope.EvaluateToken(this);
+            var ret = scope.PageResult.GetValue(BindingString, scope);
             return ret;
         }
     }
@@ -597,7 +597,7 @@ namespace ServiceStack.Templates
         }
         
         public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token) => ParseJsToken(literal, out token, false);
-        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token, bool allowWhitespaceSyntax)
+        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -625,7 +625,7 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"Invalid syntax: Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
             }
 
-            var ret = ParseNextToken(literal, out var value, out var binding, allowWhitespaceSyntax);
+            var ret = ParseNextToken(literal, out var value, out var binding, allowWhitespaceSyntax:filterExpression);
             token = value.ToToken(binding);
             return ret;
         }
@@ -1009,7 +1009,17 @@ namespace ServiceStack.Templates
             }
             return false;
         }
-        
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var value = IsBinding
+                ? scope.PageResult.EvaluateBinding(NameString, scope)
+                : Args.Count > 0 
+                    ? scope.PageResult.EvaluateMethod(this, scope) 
+                    : scope.PageResult.EvaluateBindingExpression(Binding, scope);
+            return value;
+        }
+
         //Output different format for debugging to verify command was parsed correctly
         public virtual string ToDebugString()
         {
@@ -1075,16 +1085,16 @@ namespace ServiceStack.Templates
     public static class CallExpressionUtils
     {
         public static List<CallExpression> ParseCallExpression(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseExpression<CallExpression>(out int _, separator, atEndIndex);
+            => commandsString.ParseFilterExpression<CallExpression>(out int _, separator, atEndIndex);
 
         public static List<CallExpression> ParseCallExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseExpression<CallExpression>(out pos, separator, atEndIndex);
+            => commandsString.ParseFilterExpression<CallExpression>(out pos, separator, atEndIndex);
 
-        public static List<T> ParseExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false) 
+        public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false) 
             where T : CallExpression, new()
-            => commandsString.ParseExpression<T>(out int _, separator, atEndIndex, allowWhitespaceSensitiveSyntax);
+            => commandsString.ParseFilterExpression<T>(out int _, separator, atEndIndex, allowWhitespaceSensitiveSyntax);
 
-        public static List<T> ParseExpression<T>(this StringSegment commandsString, out int pos, char separator = ',',
+        public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, out int pos, char separator = ',',
             Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false)
             where T : CallExpression, new()
         {

@@ -200,6 +200,7 @@ namespace ServiceStack.Templates
                 FilePath = Guid.NewGuid().ToString("n") + "." + ext, 
                 TextContents = contents,
             };
+            
             var page = new TemplatePage(Context, memFile);
             page.Init().Wait(); // Safe as Memory Files are non-blocking
             return page;

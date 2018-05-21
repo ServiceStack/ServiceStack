@@ -60,7 +60,7 @@ namespace ServiceStack
     {
         public static List<Command> ParseCommands(this string commandsString)
         {
-            return commandsString.ToStringSegment().ParseExpression<Command>(',');
+            return commandsString.ToStringSegment().ParseFilterExpression<Command>(',');
         }
 
         /// <summary>

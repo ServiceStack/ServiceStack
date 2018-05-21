@@ -50,7 +50,8 @@ namespace ServiceStack.Templates
                 var isComment = text.GetChar(varStartPos) == '*';
                 if (!isComment)
                 {
-                    var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
+                    var literal = text.Subsegment(varStartPos);
+                    literal = literal.ParseExpression(out var expr, filterExpression:true);
     
                     List<CallExpression> filterCommands = null;
     
@@ -60,7 +61,7 @@ namespace ServiceStack.Templates
                         var varEndPos = 0;
                         bool foundVarEnd = false;
                     
-                        filterCommands = literal.ParseExpression<CallExpression>(
+                        filterCommands = literal.ParseFilterExpression<CallExpression>(
                             separator: '|',
                             atEndIndex: (str, strPos) =>
                             {
@@ -84,14 +85,15 @@ namespace ServiceStack.Templates
                     }
                     else
                     {
-                        literal = literal.Advance(1);
+                        if (!literal.IsNullOrEmpty())
+                            literal = literal.Advance(1);
                     }
     
                     var length = text.Length - pos - literal.Length;
                     var originalText = text.Subsegment(pos, length);
                     lastPos = pos + length;
     
-                    var varFragment = new PageVariableFragment(originalText, initialValue, initialBinding, filterCommands);
+                    var varFragment = new PageVariableFragment(originalText, expr, filterCommands);
                     to.Add(varFragment);
     
                     var newLineLen = literal.StartsWith("\n")

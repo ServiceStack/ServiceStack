@@ -16,6 +16,8 @@ namespace ServiceStack.Templates
         private byte[] originalTextBytes;
         public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
         
+        public JsToken Expression { get; }
+        
         public StringSegment Binding { get; set; }
         public string BindingString { get; }       
         
@@ -24,33 +26,37 @@ namespace ServiceStack.Templates
         
         public CallExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, object initialValue, JsBinding initialBinding, List<CallExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, JsToken expr, List<CallExpression> filterCommands)
         {
             OriginalText = originalText;
-            InitialValue = initialValue;
+            Expression = expr;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<CallExpression>.EmptyArray;
 
-            if (initialBinding is CallExpression initialExpr)
+            if (expr is JsConstant initialValue)
+            {
+                InitialValue = initialValue.Value;
+            }
+            else if (expr is JsNull)
+            {
+                InitialValue = expr;
+            }
+            else if (expr is CallExpression initialExpr)
             {
                 InitialExpression = initialExpr;
             }
-            else if (initialBinding != null)
+            else if (expr is JsBinding initialBinding)
             {
                 Binding = initialBinding.Binding;
                 BindingString = Binding.Value;
             }
         }
 
-        public StringSegment ParseNextToken(StringSegment literal, out object value, out JsBinding binding)
+        public object Evaluate(TemplateScopeContext scope)
         {
-            try
-            {
-                return literal.ParseNextToken(out value, out binding);
-            }
-            catch (ArgumentException e)
-            {
-                throw new Exception($"Invalid literal: {literal} in '{OriginalText}'", e);
-            }
+            if (Expression is JsNull)
+                return Expression;
+            
+            return Expression.Evaluate(scope);
         }
     }
 
