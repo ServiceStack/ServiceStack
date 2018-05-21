@@ -332,7 +332,7 @@ namespace ServiceStack.Templates
         public override string Token => "-";
         public override object Evaluate(object target) => target == null 
             ? 0 
-            : (target.ConvertTo<double>() * -1).ConvertTo(target.GetType());
+            : DynamicNumber.Multiply(target, -1).ConvertTo(target.GetType());
     }
 
     public class JsArray : JsToken, IEnumerable<object>
@@ -565,6 +565,15 @@ namespace ServiceStack.Templates
             throw new ArgumentException($"Expected bool expression but instead received '{token}'");
         }
 
+        public static object UnwrapValue(this JsToken token)
+        {
+            if (token is JsConstant c)
+                return c.Value;
+            if (token is LiteralExpression l)
+                return l.Value;
+            return token;
+        }
+
         internal static string StripQuotes(this StringSegment arg) => arg.HasValue ? StripQuotes(arg.Value) : string.Empty;
         internal static string StripQuotes(this string arg)
         {
@@ -676,7 +685,7 @@ namespace ServiceStack.Templates
                 
                 return literal.Advance(i + 1);
             }
-            if (firstChar >= '0' && firstChar <= '9' || (literal.Length >= 2 && (firstChar == '-' || firstChar == '+') && literal.GetChar(1).IsNumericChar()))
+            if (firstChar >= '0' && firstChar <= '9')
             {
                 i = 1;
                 var hasExponent = false;
@@ -740,8 +749,9 @@ namespace ServiceStack.Templates
                         if (literal.Length > 0 && literal.GetChar(0) == ':')
                         {
                             literal = literal.Advance(1);
-                            literal = literal.ParseNextToken(out object mapValue, out JsBinding mapValueBinding);
-                            map[mapKey] = mapValue ?? mapValueBinding;
+                            literal = literal.ParseExpression(out var mapValue);
+
+                            map[mapKey] = mapValue.UnwrapValue();
                         }
                         else //shorthand notation
                         {
@@ -783,8 +793,8 @@ namespace ServiceStack.Templates
                         break;
                     }
 
-                    literal = literal.ParseNextToken(out object mapValue, out JsBinding mapVarRef);
-                    list.Add(mapVarRef ?? mapValue);
+                    literal = literal.ParseExpression(out var listValue);
+                    list.Add(listValue.UnwrapValue());
 
                     literal = literal.AdvancePastWhitespace();
                     if (literal.IsNullOrEmpty())

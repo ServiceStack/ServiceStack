@@ -908,11 +908,11 @@ namespace ServiceStack.Templates
             }
         }
 
-        public StringSegment ParseNextToken(TemplateScopeContext scope, StringSegment literal, out object value, out JsBinding binding)
+        public StringSegment ParseExpression(TemplateScopeContext scope, StringSegment literal, out JsToken token)
         {
             try
             {
-                return literal.ParseNextToken(out value, out binding);
+                return literal.ParseExpression(out token);
             }
             catch (ArgumentException e)
             {
@@ -928,29 +928,8 @@ namespace ServiceStack.Templates
 
         internal object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope)
         {
-            arg = ParseNextToken(scope, arg, out var outValue, out var binding);
-
-            var unaryOp = JsUnaryOperator.GetUnaryOperator(binding);
-            if (unaryOp != null)
-            {
-                arg = ParseNextToken(scope, arg, out outValue, out binding);
-            }
-            
-            object value = null;
-            if (binding is CallExpression expr)
-            {
-                value = EvaluateToken(scope, expr);
-            }
-            else
-            {
-                value = binding != null 
-                    ? GetValue(binding.BindingString, scope) 
-                    : EvaluateAnyBindings(outValue, scope);
-            }
-
-            if (unaryOp != null)
-                value = unaryOp.Evaluate(value);
-            
+            arg = ParseExpression(scope, arg, out var token);
+            var value = EvaluateAnyBindings(token, scope);
             return value;
         }
 

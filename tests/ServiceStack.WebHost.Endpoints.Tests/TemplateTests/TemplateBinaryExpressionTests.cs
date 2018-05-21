@@ -148,6 +148,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_parse_unary_expression()
+        {
+            JsToken expr;
+
+            "-1".ParseExpression(out expr);
+            
+            Assert.That(expr, Is.EqualTo(new UnaryExpression(JsMinus.Operator, new JsConstant(1))));
+        }
+
+        [Test]
         public void Does_evaluate_templates_with_expressions()
         {
             var context = new TemplateContext().Init();
@@ -183,6 +193,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 | add(3) }}"), Is.EqualTo("10"));
             Assert.That(context.EvaluateTemplate("{{ (1 | 2) | add(3) }}"), Is.EqualTo("6"));
+
+            Assert.That(context.EvaluateTemplate("{{ add(1 + 2 * 3, 4) | add(-5) }}"), Is.EqualTo("6"));
+
+            Assert.That(context.EvaluateTemplate("{{ [1+2,1+2*3] | sum }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateTemplate("{{ {a:1+2*3} | get('a') }}"), Is.EqualTo("7"));
         }
 
     }

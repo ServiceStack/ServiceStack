@@ -490,8 +490,7 @@ namespace ServiceStack.Templates
             var comparer = (IComparer<object>)Comparer<object>.Default;
             if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
             {
-                var nonGenericComparer = oComparer as IComparer;
-                if (nonGenericComparer == null)
+                if (!(oComparer is IComparer nonGenericComparer))
                     throw new NotSupportedException(
                         $"'{filterName}' in '{scope.Page.VirtualPath}' expects a IComparer but received a '{oComparer.GetType()?.Name}' instead");
                 comparer = new ComparerWrapper(nonGenericComparer);
@@ -519,8 +518,7 @@ namespace ServiceStack.Templates
 
         public static IEnumerable<object> thenByInternal(string filterName, TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            var items = target as IOrderedEnumerable<object>;
-            if (items == null)
+            if (!(target is IOrderedEnumerable<object> items))
                 throw new NotSupportedException($"'{filterName}' in '{scope.Page.VirtualPath}' requires an IOrderedEnumerable but received a '{target?.GetType()?.Name}' instead");
 
             var literal = scope.AssertExpression(filterName, expression);
@@ -561,8 +559,7 @@ namespace ServiceStack.Templates
 
                 if (comparer == null)
                 {
-                    var nonGenericComparer = oComparer as IEqualityComparer;
-                    if (nonGenericComparer == null)
+                    if (!(oComparer is IEqualityComparer nonGenericComparer))
                         throw new NotSupportedException(
                             $"'{nameof(groupBy)}' in '{scope.Page.VirtualPath}' expects a IEqualityComparer but received a '{oComparer.GetType()?.Name}' instead");
                     comparer = new EqualityComparerWrapper(nonGenericComparer);

@@ -179,12 +179,22 @@ namespace ServiceStack.Templates
             var peekLiteral = literal.ParseJsToken(out var token1, filterExpression:filterExpression);
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
-
-            if (peekLiteral.IsNullOrEmpty() || peekLiteral.GetChar(0) == ')')
+            
+            if (peekLiteral.IsNullOrEmpty())
             {
                 token = token1;
                 return peekLiteral;
             }
+
+            var peekChar = peekLiteral.GetChar(0);
+            if (peekChar == ')' || peekChar == ']' || peekChar == '}' || peekChar == ',')
+            {
+                token = token1;
+                return peekLiteral;
+            }
+            
+            if (token1 is JsSubtraction)
+                token1 = JsMinus.Operator;
 
             if (token1 is JsUnaryOperator u)
             {
@@ -195,12 +205,15 @@ namespace ServiceStack.Templates
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
 
-            if (filterExpression && peekLiteral.Length > 2)
+            if (!peekLiteral.IsNullOrEmpty())
             {
-                if ((peekLiteral.GetChar(0) == '|' && peekLiteral.GetChar(1) != '|') || (peekLiteral.GetChar(0) == '}' && peekLiteral.GetChar(1) == '}'))
+                if (filterExpression && peekLiteral.Length > 2)
                 {
-                    token = token1;
-                    return peekLiteral;
+                    if ((peekLiteral.GetChar(0) == '|' && peekLiteral.GetChar(1) != '|') || (peekLiteral.GetChar(0) == '}' && peekLiteral.GetChar(1) == '}'))
+                    {
+                        token = token1;
+                        return peekLiteral;
+                    }
                 }
             }
             
