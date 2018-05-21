@@ -334,6 +334,13 @@ namespace ServiceStack.Templates
             ? 0 
             : DynamicNumber.Multiply(target, -1).ConvertTo(target.GetType());
     }
+    public class JsPlus : JsUnaryOperator
+    {
+        public static JsPlus Operator = new JsPlus();
+        private JsPlus(){}
+        public override string Token => "+";
+        public override object Evaluate(object target) => target ?? 0;
+    }
 
     public class JsArray : JsToken, IEnumerable<object>
     {

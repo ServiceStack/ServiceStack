@@ -153,8 +153,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             JsToken expr;
 
             "-1".ParseExpression(out expr);
-            
             Assert.That(expr, Is.EqualTo(new UnaryExpression(JsMinus.Operator, new JsConstant(1))));
+            "+1".ParseExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new UnaryExpression(JsPlus.Operator, new JsConstant(1))));
+            "!true".ParseExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new UnaryExpression(JsNot.Operator, new JsConstant(true))));
         }
 
         [Test]
