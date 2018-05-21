@@ -195,6 +195,8 @@ namespace ServiceStack.Templates
             
             if (token1 is JsSubtraction)
                 token1 = JsMinus.Operator;
+            if (token1 is JsAddition)
+                token1 = JsPlus.Operator;
 
             if (token1 is JsUnaryOperator u)
             {
