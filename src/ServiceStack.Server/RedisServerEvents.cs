@@ -254,7 +254,7 @@ namespace ServiceStack
         public void Register(IEventSubscription sub, Dictionary<string, string> connectArgs = null)
         {
             if (sub == null)
-                throw new ArgumentNullException("subscription");
+                throw new ArgumentNullException(nameof(sub));
 
             var info = sub.GetInfo();
             using (var redis = clientsManager.GetClient())
