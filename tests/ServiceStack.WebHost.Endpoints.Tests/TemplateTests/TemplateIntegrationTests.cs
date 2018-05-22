@@ -615,7 +615,7 @@ Kurt Cobain (27)
 Parameter name: firstName
 
 StackTrace:
-   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
+   at JsObjectExpression: {:id,:firstName}".NormalizeNewLines()));
             
             html = BaseUrl.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
@@ -626,7 +626,7 @@ StackTrace:
 <pre class=""alert alert-danger"">FormatException: Input string was not in a correct format.
 
 StackTrace:
-   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
+   at JsObjectExpression: {:id,:firstName}".NormalizeNewLines()));
         }
 
         [Test]
@@ -669,7 +669,7 @@ Amy Winehouse (27)
 Parameter name: lastName
 
 StackTrace:
-   at Expression (Dictionary`2): {id:".NormalizeNewLines()));
+   at JsObjectExpression: {:id,".NormalizeNewLines()));
         }
 
         [Test]

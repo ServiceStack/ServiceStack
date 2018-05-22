@@ -32,7 +32,7 @@ namespace ServiceStack.Templates
             Expression = expr;
             FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsCallExpression>.EmptyArray;
 
-            if (expr is JsConstant initialValue)
+            if (expr is JsLiteral initialValue)
             {
                 InitialValue = initialValue.Value;
             }
@@ -44,9 +44,9 @@ namespace ServiceStack.Templates
             {
                 InitialExpression = initialExpr;
             }
-            else if (expr is JsBinding initialBinding)
+            else if (expr is JsIdentifier initialBinding)
             {
-                Binding = initialBinding.Binding;
+                Binding = initialBinding.Name;
                 BindingString = Binding.Value;
             }
         }

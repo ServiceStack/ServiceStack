@@ -92,7 +92,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var total = 0;
             var i = 0;
             foreach (var item in items)
@@ -145,13 +145,13 @@ namespace ServiceStack.Templates
             {
                 var literal = scope.AssertExpression(filterName, expression);
                 var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
-                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+                literal.ToStringSegment().ParseJsExpression(out var token);
                 foreach (var item in items)
                 {
                     if (item == null) continue;
 
                     scope.AddItemToScope(itemBinding, item);
-                    var result = scope.Evaluate(value, binding);
+                    var result = token.Evaluate(scope);
                     if (result == null) continue;
                     if (itemType == null)
                         itemType = result.GetType();
@@ -197,7 +197,7 @@ namespace ServiceStack.Templates
                 ? (string)accumulatorName
                 : "accumulator";
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out JsToken token);
             var i = 0;
             foreach (var item in items)
             {
@@ -207,7 +207,7 @@ namespace ServiceStack.Templates
                 scope.AddItemToScope("index", i++);
                 scope.AddItemToScope(itemBinding, item);
 
-                var result = scope.Evaluate(value, binding);
+                var result = token.Evaluate(scope);
                 if (result == null) continue;
                 if (itemType == null)
                     itemType = result.GetType();
@@ -229,13 +229,13 @@ namespace ServiceStack.Templates
 
             if (itemsOrBinding is string literal)
             {
-                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+                literal.ToStringSegment().ParseJsExpression(out JsToken token);
 
                 var i = 0;
                 foreach (var a in original)
                 {
                     scope.AddItemToScope("it", a, i++);
-                    var bindValue = scope.Evaluate(value, binding);
+                    var bindValue = token.Evaluate(scope);
                     if (bindValue is IEnumerable current)
                     {
                         foreach (var b in current)
@@ -297,8 +297,8 @@ namespace ServiceStack.Templates
                         if (!(entry.Value is string bindToLiteral))
                             throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
 
-                        bindToLiteral.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-                        var bindValue = scope.Evaluate(value, binding);
+                        bindToLiteral.ToStringSegment().ParseJsExpression(out JsToken token);
+                        var bindValue = token.Evaluate(scope);
                         scope.ScopedParams[bindTo] = bindValue;
                         itemBindings[bindTo] = bindValue;
                     }
@@ -321,7 +321,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(first), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
 
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
@@ -342,7 +342,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(any), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(any), scopeOptions, out string itemBinding);
 
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
@@ -362,7 +362,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(all), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
@@ -383,7 +383,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
@@ -404,7 +404,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(takeWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             foreach (var item in items)
             {
@@ -427,7 +427,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(skipWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseExpression(out var expr);
+            literal.ParseJsExpression(out var expr);
             var i = 0;
             var keepSkipping = true;
             foreach (var item in items)
@@ -504,14 +504,14 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(filterName, expression);
             var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
             var i = 0;
 
             var comparer = GetComparer(filterName, scope, scopedParams);
 
             var sorted = filterName == nameof(orderByDescending)
-                ? items.OrderByDescending(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer)
-                : items.OrderBy(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
+                ? items.OrderByDescending(item => token.Evaluate(scope.AddItemToScope(itemBinding, item, i++)), comparer)
+                : items.OrderBy(item => token.Evaluate(scope.AddItemToScope(itemBinding, item, i++)), comparer);
 
             return sorted;
         }
@@ -524,14 +524,14 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(filterName, expression);
             var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out string itemBinding);
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
             var i = 0;
 
             var comparer = GetComparer(filterName, scope, scopedParams);
 
             var sorted = filterName == nameof(thenByDescending)
-                ? items.ThenByDescending(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer)
-                : items.ThenBy(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding), comparer);
+                ? items.ThenByDescending(item => token.Evaluate(scope.AddItemToScope(itemBinding, item, i++)), comparer)
+                : items.ThenBy(item => token.Evaluate(scope.AddItemToScope(itemBinding, item, i++)), comparer);
 
             return sorted;
         }
@@ -542,7 +542,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(groupBy), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(groupBy), scopeOptions, out string itemBinding);
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
 
             var comparer = (IEqualityComparer<object>)EqualityComparer<object>.Default;
             if (scopedParams.TryGetValue(TemplateConstants.Comparer, out object oComparer))
@@ -568,17 +568,17 @@ namespace ServiceStack.Templates
 
             if (scopedParams.TryGetValue(TemplateConstants.Map, out object map))
             {
-                ((string)map).ToStringSegment().ParseNextToken(out object mapValue, out JsBinding mapBinding);
+                ((string)map).ToStringSegment().ParseJsExpression(out var mapToken);
 
                 var result = items.GroupBy(
-                    item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding),
-                    item => scope.AddItemToScope(itemBinding, item).Evaluate(mapValue, mapBinding),
+                    item => token.Evaluate(scope.AddItemToScope(itemBinding, item)),
+                    item => mapToken.Evaluate(scope.AddItemToScope(itemBinding, item)),
                     comparer);
                 return result;
             }
             else
             {
-                var result = items.GroupBy(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding), comparer);
+                var result = items.GroupBy(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)), comparer);
                 return result;
             }
         }

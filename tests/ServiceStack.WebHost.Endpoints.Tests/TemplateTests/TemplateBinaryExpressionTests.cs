@@ -12,32 +12,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken expr;
 
-            "1 + 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2))));
+            "1 + 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2))));
 
-            "1 - 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsSubtraction.Operator, new JsConstant(2))));
+            "1 - 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsSubtraction.Operator, new JsLiteral(2))));
             
-            "1 * 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsMultiplication.Operator, new JsConstant(2))));
+            "1 * 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsMultiplication.Operator, new JsLiteral(2))));
             
-            "1 / 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsDivision.Operator, new JsConstant(2))));
+            "1 / 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsDivision.Operator, new JsLiteral(2))));
             
-            "1 & 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsBitwiseAnd.Operator, new JsConstant(2))));
+            "1 & 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsBitwiseAnd.Operator, new JsLiteral(2))));
             
-            "1 | 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsBitwiseOr.Operator, new JsConstant(2))));
+            "1 | 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsBitwiseOr.Operator, new JsLiteral(2))));
             
-            "1 ^ 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsBitwiseXOr.Operator, new JsConstant(2))));
+            "1 ^ 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsBitwiseXOr.Operator, new JsLiteral(2))));
             
-            "1 << 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsBitwiseLeftShift.Operator, new JsConstant(2))));
+            "1 << 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsBitwiseLeftShift.Operator, new JsLiteral(2))));
             
-            "1 >> 2".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsBitwiseRightShift.Operator, new JsConstant(2))));
+            "1 >> 2".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsBitwiseRightShift.Operator, new JsLiteral(2))));
         }
         
         [Test]
@@ -45,24 +45,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken expr;
 
-            "1 + 2 + 3".ParseExpression(out expr);
+            "1 + 2 + 3".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2)), 
                     JsAddition.Operator, 
-                    new JsConstant(3)
+                    new JsLiteral(3)
                 )
             ));
 
-            "1 + 2 + 3 + 4".ParseExpression(out expr);
+            "1 + 2 + 3 + 4".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
                     new JsBinaryExpression(
-                        new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                        new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2)), 
                         JsAddition.Operator, 
-                        new JsConstant(3)), 
+                        new JsLiteral(3)), 
                     JsAddition.Operator, 
-                    new JsConstant(4)
+                    new JsLiteral(4)
                 )
             ));
         }
@@ -72,36 +72,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken expr;
 
-            "1 + 2 * 3".ParseExpression(out expr);
+            "1 + 2 * 3".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
-                    new JsConstant(1), 
+                    new JsLiteral(1), 
                     JsAddition.Operator, 
-                    new JsBinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))
+                    new JsBinaryExpression(new JsLiteral(2), JsMultiplication.Operator, new JsLiteral(3))
                 )
             ));
 
-            "1 + 2 * 3 - 4".ParseExpression(out expr);
+            "1 + 2 * 3 - 4".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
                     new JsBinaryExpression(
-                        new JsConstant(1), 
+                        new JsLiteral(1), 
                         JsAddition.Operator, 
-                        new JsBinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))), 
+                        new JsBinaryExpression(new JsLiteral(2), JsMultiplication.Operator, new JsLiteral(3))), 
                     JsSubtraction.Operator, 
-                    new JsConstant(4)
+                    new JsLiteral(4)
                 )
             ));
 
-            "1 + 2 * 3 - 4 / 5".ParseExpression(out expr);
+            "1 + 2 * 3 - 4 / 5".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
                     new JsBinaryExpression(
-                        new JsConstant(1), 
+                        new JsLiteral(1), 
                         JsAddition.Operator, 
-                        new JsBinaryExpression(new JsConstant(2), JsMultiplication.Operator, new JsConstant(3))), 
+                        new JsBinaryExpression(new JsLiteral(2), JsMultiplication.Operator, new JsLiteral(3))), 
                     JsSubtraction.Operator, 
-                    new JsBinaryExpression(new JsConstant(4), JsDivision.Operator, new JsConstant(5)))
+                    new JsBinaryExpression(new JsLiteral(4), JsDivision.Operator, new JsLiteral(5)))
                 )
             );
         }
@@ -111,54 +111,92 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken expr;
 
-            "(1 + 2)".ParseExpression(out expr);
+            "(1 + 2)".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
-                new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2))
+                new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2))
             ));
 
-            "(1 + 2) * 3".ParseExpression(out expr);
+            "(1 + 2) * 3".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2)), 
                     JsMultiplication.Operator, 
-                    new JsConstant(3)
+                    new JsLiteral(3)
                 )
             ));
             
-            "(1 + 2) * (3 - 4)".ParseExpression(out expr);
+            "(1 + 2) * (3 - 4)".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2)), 
                     JsMultiplication.Operator, 
-                    new JsBinaryExpression(new JsConstant(3), JsSubtraction.Operator, new JsConstant(4))
+                    new JsBinaryExpression(new JsLiteral(3), JsSubtraction.Operator, new JsLiteral(4))
                 )
             ));
             
-            "(1 + 2) * ((3 - 4) / 5)".ParseExpression(out expr);
+            "(1 + 2) * ((3 - 4) / 5)".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsBinaryExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsAddition.Operator, new JsConstant(2)), 
+                    new JsBinaryExpression(new JsLiteral(1), JsAddition.Operator, new JsLiteral(2)), 
                     JsMultiplication.Operator, 
                     new JsBinaryExpression(
-                        new JsBinaryExpression(new JsConstant(3), JsSubtraction.Operator, new JsConstant(4)),
+                        new JsBinaryExpression(new JsLiteral(3), JsSubtraction.Operator, new JsLiteral(4)),
                         JsDivision.Operator,
-                        new JsConstant(5)
+                        new JsLiteral(5)
                     )
                 )
             ));
         }
+
+//        [Test]
+//        public void Does_parse_binary_and_logical_expressions()
+//        {
+//            JsToken expr;
+//
+//            "[1 + 2 * 3 > one && 1 * 2 < ten]".ParseExpression(out expr);
+//            
+//            Assert.That(expr, Is.EqualTo(
+//                new JsConstant(new List<object> {
+//                    new JsLogicalExpression(
+//                        new JsBinaryExpression(
+//                            new JsBinaryExpression(
+//                                new JsConstant(1),
+//                                JsAddition.Operator,
+//                                new JsBinaryExpression(
+//                                    new JsConstant(2),
+//                                    JsMultiplication.Operator, 
+//                                    new JsConstant(3)
+//                                )
+//                            ),
+//                            JsGreaterThan.Operator,
+//                            new JsIdentifier("one")                       
+//                        ),
+//                        JsAnd.Operator, 
+//                        new JsBinaryExpression(
+//                            new JsBinaryExpression(
+//                                new JsConstant(1),
+//                                JsMultiplication.Operator, 
+//                                new JsConstant(2)
+//                            ),
+//                            JsLessThan.Operator,
+//                            new JsIdentifier("ten")                       
+//                        )
+//                    )
+//                })
+//            ));
+//        }
 
         [Test]
         public void Does_parse_unary_expression()
         {
             JsToken expr;
 
-            "-1".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsMinus.Operator, new JsConstant(1))));
-            "+1".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsPlus.Operator, new JsConstant(1))));
-            "!true".ParseExpression(out expr);
-            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsNot.Operator, new JsConstant(true))));
+            "-1".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsMinus.Operator, new JsLiteral(1))));
+            "+1".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsPlus.Operator, new JsLiteral(1))));
+            "!true".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsNot.Operator, new JsLiteral(true))));
         }
 
         [Test]

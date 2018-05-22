@@ -13,28 +13,28 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_parse_basic_QueryExpressions()
         {
-            "1".ParseExpression(out var expr);
-            Assert.That(expr, Is.EqualTo(new JsConstant(1)));
+            "1".ParseJsExpression(out var expr);
+            Assert.That(expr, Is.EqualTo(new JsLiteral(1)));
 
-            "1 > 2".ParseExpression(out expr);
+            "1 > 2".ParseJsExpression(out expr);
             Assert.That(expr,
-                Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2))));
+                Is.EqualTo(new JsBinaryExpression(new JsLiteral(1), JsGreaterThan.Operator, new JsLiteral(2))));
             
-            "1 > 2 && 3 > 4".ParseExpression(out expr);
+            "1 > 2 && 3 > 4".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsLogicalExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
+                    new JsBinaryExpression(new JsLiteral(1), JsGreaterThan.Operator, new JsLiteral(2)),
                     JsAnd.Operator,
-                    new JsBinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
+                    new JsBinaryExpression(new JsLiteral(3), JsGreaterThan.Operator, new JsLiteral(4))
                 )
             ));
             
-            "1 > 2 and 3 > 4".ParseExpression(out expr);
+            "1 > 2 and 3 > 4".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsLogicalExpression(
-                    new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
+                    new JsBinaryExpression(new JsLiteral(1), JsGreaterThan.Operator, new JsLiteral(2)),
                     JsAnd.Operator,
-                    new JsBinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
+                    new JsBinaryExpression(new JsLiteral(3), JsGreaterThan.Operator, new JsLiteral(4))
                 )
             ));
         }
@@ -42,18 +42,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_parse_linq_examples()
         {
-            var it = new JsBinding("it");
+            var it = new JsIdentifier("it");
 
-            "it < 5".ParseExpression(out var expr);
+            "it < 5".ParseJsExpression(out var expr);
             Assert.That(expr,
-                Is.EqualTo(new JsBinaryExpression(it, JsLessThan.Operator, new JsConstant(5))));
+                Is.EqualTo(new JsBinaryExpression(it, JsLessThan.Operator, new JsLiteral(5))));
 
-            "it.UnitsInStock > 0 and it.UnitPrice > 3".ParseExpression(out expr);
+            "it.UnitsInStock > 0 and it.UnitPrice > 3".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsLogicalExpression(
-                    new JsBinaryExpression(new JsCallExpression("it.UnitsInStock"), JsGreaterThan.Operator, new JsConstant(0)),
+                    new JsBinaryExpression(new JsCallExpression("it.UnitsInStock"), JsGreaterThan.Operator, new JsLiteral(0)),
                     JsAnd.Operator,
-                    new JsBinaryExpression(new JsCallExpression("it.UnitPrice"), JsGreaterThan.Operator, new JsConstant(3))
+                    new JsBinaryExpression(new JsCallExpression("it.UnitPrice"), JsGreaterThan.Operator, new JsLiteral(3))
                 )
             ));
         }
@@ -61,13 +61,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_parse_not_unary_expression()
         {
-            var it = new JsBinding("it");
+            var it = new JsIdentifier("it");
 
-            "!it".ParseExpression(out var expr);
+            "!it".ParseJsExpression(out var expr);
             Assert.That(expr,
                 Is.EqualTo(new JsUnaryExpression(JsNot.Operator, it)));
 
-            "!contains(items, it)".ParseExpression(out expr);
+            "!contains(items, it)".ParseJsExpression(out expr);
             Assert.That(expr,
                 Is.EqualTo(new JsUnaryExpression(JsNot.Operator, 
                     new JsCallExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }})));

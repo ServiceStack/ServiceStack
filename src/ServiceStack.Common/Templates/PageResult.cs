@@ -476,13 +476,13 @@ namespace ServiceStack.Templates
         private async Task WriteVarAsync(TemplateScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
             if (var.BindingString != null)
-                stackTrace.Push("Expression (binding): " + var.BindingString);
+                stackTrace.Push($"Expression (binding): " + var.BindingString);
             else if (var.InitialExpression?.NameString != null)
                 stackTrace.Push("Expression (filter): " + var.InitialExpression.NameString);
             else if (var.InitialValue != null)
                 stackTrace.Push($"Expression ({var.InitialValue.GetType().Name}): " + toDebugString(var.InitialValue).SubstringWithElipsis(0, 200));
             else 
-                stackTrace.Push("Expression");
+                stackTrace.Push($"{var.Expression.GetType().Name}: " + var.Expression.ToRawString().SubstringWithElipsis(0, 200));
             
             var value = await EvaluateAsync(var, scope, token);
             if (value != IgnoreResult.Value)
@@ -519,8 +519,8 @@ namespace ServiceStack.Templates
             {
                 if (var.FilterExpressions[0].Args.Count > 0)
                 {
-                    var.FilterExpressions[0].Args[0].ParseNextToken(out object argValue, out _);
-                    scopedParams = argValue as Dictionary<string, object>;
+                    var.FilterExpressions[0].Args[0].ParseJsExpression(out var token);
+                    scopedParams = token.Evaluate(JS.CreateScope()) as Dictionary<string, object>;
                 }
             }
             return scopedParams;
@@ -621,7 +621,7 @@ namespace ServiceStack.Templates
                             args[1 + cmdIndex] = varValue;
                         }
 
-                        value = InvokeFilter(invoker, filter, args, expr.BindingString);
+                        value = InvokeFilter(invoker, filter, args, expr.NameString);
                     }
                     else if (contextFilterInvoker != null)
                     {
@@ -637,7 +637,7 @@ namespace ServiceStack.Templates
                             args[2 + cmdIndex] = varValue;
                         }
 
-                        value = InvokeFilter(contextFilterInvoker, filter, args, expr.BindingString);
+                        value = InvokeFilter(contextFilterInvoker, filter, args, expr.NameString);
                     }
                     else
                     {
@@ -908,11 +908,11 @@ namespace ServiceStack.Templates
             }
         }
 
-        public StringSegment ParseExpression(TemplateScopeContext scope, StringSegment literal, out JsToken token)
+        public StringSegment ParseJsExpression(TemplateScopeContext scope, StringSegment literal, out JsToken token)
         {
             try
             {
-                return literal.ParseExpression(out token);
+                return literal.ParseJsExpression(out token);
             }
             catch (ArgumentException e)
             {
@@ -928,7 +928,7 @@ namespace ServiceStack.Templates
 
         internal object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope)
         {
-            arg = ParseExpression(scope, arg, out var token);
+            arg = ParseJsExpression(scope, arg, out var token);
             var value = EvaluateAnyBindings(token, scope);
             return value;
         }
@@ -949,7 +949,7 @@ namespace ServiceStack.Templates
                     args[i] = varValue;
                 }
 
-                var value = InvokeFilter(invoker, filter, args, expr.BindingString);
+                var value = InvokeFilter(invoker, filter, args, expr.NameString);
                 return value;
             }
 
@@ -965,11 +965,11 @@ namespace ServiceStack.Templates
                     args[i + 1] = varValue;
                 }
 
-                var value = InvokeFilter(invoker, filter, args, expr.BindingString);
+                var value = InvokeFilter(invoker, filter, args, expr.NameString);
                 return value;
             }
 
-            throw new NotSupportedException(CreateMissingFilterErrorMessage(expr.BindingString.LeftPart('(')));
+            throw new NotSupportedException(CreateMissingFilterErrorMessage(expr.NameString.LeftPart('(')));
         }
 
         private MethodInvoker GetFilterInvoker(string name, int argsCount, out TemplateFilter filter) => GetInvoker(name, argsCount, InvokerType.Filter, out filter);

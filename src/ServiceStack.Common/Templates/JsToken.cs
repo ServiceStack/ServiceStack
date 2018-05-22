@@ -31,32 +31,43 @@ namespace ServiceStack.Templates
 
         public static JsToken Create(StringSegment js)
         {
-            js.ParseNextToken(out object value, out JsBinding binding);
+            js.ParseJsExpression(out var token);
             
-            if (binding != null)
-                return binding;
+            return token;
 
-            if (value is string s)
-                return new JsString(s);
-            if (value is int i)
-                return new JsNumber(i);
-            if (value is long l)
-                return new JsNumber(l);
-            if (value is double d)
-                return new JsNumber(d);
-            if (value is List<object> list)
-                return new JsArray(list);
-            if (value is Dictionary<string,object> map)
-                return new JsObject(map);
-            if (value is null || value == JsNull.Value)
-                return JsNull.Value;
-
-            throw new NotSupportedException($"Unknown value JsToken '{value}'");
+//            if (token != null)
+//                return token;
+//
+//            if (value is string s)
+//                return new JsString(s);
+//            if (value is int i)
+//                return new JsNumber(i);
+//            if (value is long l)
+//                return new JsNumber(l);
+//            if (value is double d)
+//                return new JsNumber(d);
+//            if (value is List<object> list)
+//                return new JsArray(list);
+//            if (value is Dictionary<string,object> map)
+//                return new JsObject(map);
+//            if (value is null || value == JsNull.Value)
+//                return JsNull.Value;
+//
+//            throw new NotSupportedException($"Unknown value JsToken '{value}'");
         }
 
         public override string ToString() => ToRawString();
 
         public abstract object Evaluate(TemplateScopeContext scope);
+
+        public static object UnwrapValue(JsToken token)
+        {
+            if (token is JsLiteral literal)
+                return literal.Value;
+            if (token is JsLiteralExpression literalExp)
+                return UnwrapValue(literalExp.Value);
+            return null;
+        }
     }
     
     public class JsNull : JsToken
@@ -70,65 +81,264 @@ namespace ServiceStack.Templates
         public override object Evaluate(TemplateScopeContext scope) => null;
     }
 
-    public class JsConstant : JsToken
+    public class JsLiteral : JsToken
     {
-        public static JsConstant True = new JsConstant(true);
-        public static JsConstant False = new JsConstant(false);
+        public static JsLiteral True = new JsLiteral(true);
+        public static JsLiteral False = new JsLiteral(false);
         
         public object Value { get; }
-        public JsConstant(object value) => Value = value;
+        public JsLiteral(object value) => Value = value;
         public override string ToRawString() => JsonValue(Value);
 
         public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
-        protected bool Equals(JsConstant other) => Equals(Value, other.Value);
+        protected bool Equals(JsLiteral other) => Equals(Value, other.Value);
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && Equals((JsConstant) obj);
+            return obj.GetType() == this.GetType() && Equals((JsLiteral) obj);
         }
 
         public override string ToString() => ToRawString();
 
         public override object Evaluate(TemplateScopeContext scope) => Value;
     }
-
-    public class JsBinding : JsToken
+    
+    public class JsLiteralExpression : JsExpression
     {
-        public virtual StringSegment Binding { get; }
+        public JsToken Value { get; }
+        public override string ToRawString() => JsonValue(Value);
+        public JsLiteralExpression(JsToken target)
+        {
+            Value = target;
+        }
 
-        private string bindingString;
-        public virtual string BindingString => bindingString ?? (bindingString = Binding.HasValue ? Binding.Value : null);
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var result = scope.EvaluateToken(Value);
+            return result;
+        }
 
-        public JsBinding(){}
-        public JsBinding(string binding) => Binding = binding.ToStringSegment();
-        public JsBinding(StringSegment binding) => Binding = binding;
-        public override string ToRawString() => ":" + Binding;
-
-        protected bool Equals(JsBinding other) => string.Equals(Binding, other.Binding);
-        public override int GetHashCode() => Binding.GetHashCode();
+        protected bool Equals(JsLiteralExpression other)
+        {
+            return Equals(Value, other.Value);
+        }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsBinding) obj);
+            return Equals((JsLiteralExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Value != null ? Value.GetHashCode() : 0);
+        }
+    }
+
+    public class JsIdentifier : JsToken
+    {
+        public StringSegment Name { get; }
+
+        private string nameString;
+        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
+
+        public JsIdentifier(string name) => Name = name.ToStringSegment();
+        public JsIdentifier(StringSegment name) => Name = name;
+        public override string ToRawString() => ":" + Name;
+
+        protected bool Equals(JsIdentifier other) => string.Equals(Name, other.Name);
+        public override int GetHashCode() => Name.GetHashCode();
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsIdentifier) obj);
         }
 
         public override string ToString() => ToRawString();
         
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var ret = scope.PageResult.GetValue(BindingString, scope);
+            var ret = scope.PageResult.GetValue(NameString, scope);
             return ret;
         }
     }
 
-    public abstract class JsOperator : JsBinding
+    public class JsArrayExpression : JsToken
+    {
+        public JsToken[] Elements { get; }
+
+        public JsArrayExpression(params JsToken[] elements) => Elements = elements.ToArray();
+        public JsArrayExpression(IEnumerable<JsToken> elements) : this(elements.ToArray()) {}
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var to = new List<object>();
+            foreach (var element in Elements)
+            {
+                var value = element.Evaluate(scope);
+                to.Add(value);
+            }
+            return to;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("[");
+            for (var i = 0; i < Elements.Length; i++)
+            {
+                if (i > 0) 
+                    sb.Append(",");
+                
+                var element = Elements[i];
+                sb.Append(element.ToRawString());
+            }
+            sb.Append("]");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        protected bool Equals(JsArrayExpression other)
+        {
+            return Elements.EquivalentTo(other.Elements);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsArrayExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Elements != null ? Elements.GetHashCode() : 0);
+        }
+    }
+
+    public class JsObjectExpression : JsToken
+    {
+        public JsProperty[] Properties { get; }
+
+        public JsObjectExpression(params JsProperty[] properties) => Properties = properties;
+        public JsObjectExpression(IEnumerable<JsProperty> properties) : this(properties.ToArray()) {}
+
+        public static string GetKey(JsToken token)
+        {
+            if (token is JsLiteral literalKey)
+                return literalKey.Value.ToString();
+            if (token is JsIdentifier identifierKey)
+                return identifierKey.NameString;
+            if (token is JsLiteralExpression literalExp)
+                return GetKey(literalExp.Value);
+            
+            throw new ArgumentException($"Invalid Key. Expected a Literal or Identifier but was '{token}'");
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var to = new Dictionary<string, object>();
+            foreach (var prop in Properties)
+            {
+                var keyString = GetKey(prop.Key);
+                var value = prop.Value.Evaluate(scope);
+                to[keyString] = value;
+            }
+            return to;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("{");
+            for (var i = 0; i < Properties.Length; i++)
+            {
+                if (i > 0) 
+                    sb.Append(",");
+                
+                var prop = Properties[i];
+                sb.Append(prop.Key.ToRawString());
+                if (!prop.Shorthand)
+                {
+                    sb.Append(":");
+                    sb.Append(prop.Value.ToRawString());
+                }
+            }
+            sb.Append("}");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        protected bool Equals(JsObjectExpression other)
+        {
+            return Properties.EquivalentTo(other.Properties);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsObjectExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Properties != null ? Properties.GetHashCode() : 0);
+        }
+    }
+
+    public class JsProperty
+    {
+        public JsToken Key { get; }
+        public JsToken Value { get; }
+        public bool Shorthand { get; }
+
+        public JsProperty(JsToken key, JsToken value) : this(key, value, false){}
+        public JsProperty(JsToken key, JsToken value, bool shorthand)
+        {
+            Key = key;
+            Value = value;
+            Shorthand = shorthand;
+        }
+
+        protected bool Equals(JsProperty other)
+        {
+            return Equals(Key, other.Key) && 
+                   Equals(Value, other.Value) && 
+                   Shorthand == other.Shorthand;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsProperty) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Key != null ? Key.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Value != null ? Value.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Shorthand.GetHashCode();
+                return hashCode;
+            }
+        }
+    }
+
+    public abstract class JsOperator : JsToken
     {
         public abstract string Token { get; }
         public override string ToRawString() => Token;
+        public override object Evaluate(TemplateScopeContext scope) => this;
     }
 
     public abstract class JsBinaryOperator : JsOperator
@@ -139,7 +349,7 @@ namespace ServiceStack.Templates
     public abstract class JsUnaryOperator : JsOperator
     {
         public abstract object Evaluate(object target);
-        public static JsUnaryOperator GetUnaryOperator(JsBinding op) => 
+        public static JsUnaryOperator GetUnaryOperator(JsOperator op) => 
             (JsUnaryOperator) (
                 op == JsSubtraction.Operator 
                 ? JsMinus.Operator 
@@ -574,7 +784,7 @@ namespace ServiceStack.Templates
 
         public static object UnwrapValue(this JsToken token)
         {
-            if (token is JsConstant c)
+            if (token is JsLiteral c)
                 return c.Value;
             if (token is JsLiteralExpression l)
                 return l.Value;
@@ -627,7 +837,7 @@ namespace ServiceStack.Templates
             if (c == '(')
             {
                 literal = literal.Advance(1);
-                literal = literal.ParseExpression(out var bracketsExpr);
+                literal = literal.ParseJsExpression(out var bracketsExpr);
                 literal = literal.AdvancePastWhitespace();
 
                 c = literal.GetChar(0);
@@ -641,17 +851,8 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"Invalid syntax: Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
             }
 
-            var ret = ParseNextToken(literal, out var value, out var binding, allowWhitespaceSyntax:filterExpression);
-            token = value.ToToken(binding);
-            return ret;
-        }
-
-        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding) => ParseNextToken(literal, out value, out binding, false);
-        public static StringSegment ParseNextToken(this StringSegment literal, out object value, out JsBinding binding, bool allowWhitespaceSyntax)
-        {
-            binding = null;
-            value = null;
-            var c = (char) 0;
+            token = null;
+            c = (char) 0;
 
             if (literal.IsNullOrEmpty())
                 return TypeConstants.EmptyStringSegment;
@@ -675,7 +876,7 @@ namespace ServiceStack.Templates
                     throw new ArgumentException($"Unterminated string literal: {literal}");
 
                 var str = literal.Substring(1, i - 1);
-                value = str;
+                token = new JsLiteral(str);
 
                 if (hasEscapeChar)
                 {
@@ -687,7 +888,7 @@ namespace ServiceStack.Templates
                         if (ch != '\\' || (j + 1 >= str.Length || str[j + 1] != firstChar))
                             sb.Append(ch);
                     }
-                    value = StringBuilderCache.ReturnAndFree(sb);
+                    token = new JsLiteral(StringBuilderCache.ReturnAndFree(sb));
                 }
                 
                 return literal.Advance(i + 1);
@@ -721,15 +922,15 @@ namespace ServiceStack.Templates
 
                 //don't convert into ternary to avoid Type coercion
                 if (hasDecimal || hasExponent)
-                    value = numLiteral.TryParseDouble(out double d) ? d : default(double);
+                    token = new JsLiteral(numLiteral.TryParseDouble(out double d) ? d : default(double));
                 else
-                    value = numLiteral.ParseSignedInteger();
+                    token = new JsLiteral(numLiteral.ParseSignedInteger());
 
                 return literal.Advance(i);
             }
             if (firstChar == '{')
             {
-                var map = new Dictionary<string, object>();
+                var props = new List<JsProperty>();
 
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
@@ -741,33 +942,31 @@ namespace ServiceStack.Templates
                         break;
                     }
 
-                    literal = literal.ParseNextToken(out object mapKeyString, out JsBinding mapKeyVar);
-                        
-                    if (mapKeyVar is JsCallExpression)
-                        throw new NotSupportedException($"CallExpression '{mapKeyVar?.Binding}' is not a valid Object key.");
-                    
-                    var mapKey = mapKeyVar != null
-                        ? mapKeyVar.Binding.Value
-                        : (string) mapKeyString;
+                    literal = literal.ParseJsToken(out var mapKeyToken);
 
-                    if (mapKey != null)
+                    if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsIdentifier)) 
+                        throw new NotSupportedException($"'{mapKeyToken}' is not a valid Object key, expected literal or identifier.");
+
+                    JsToken mapValueToken;
+                    bool shorthand = false;
+
+                    literal = literal.AdvancePastWhitespace();
+                    if (literal.Length > 0 && literal.GetChar(0) == ':')
                     {
-                        literal = literal.AdvancePastWhitespace();
-                        if (literal.Length > 0 && literal.GetChar(0) == ':')
-                        {
-                            literal = literal.Advance(1);
-                            literal = literal.ParseExpression(out var mapValue);
+                        literal = literal.Advance(1);
+                        literal = literal.ParseJsExpression(out mapValueToken);
 
-                            map[mapKey] = mapValue.UnwrapValue();
-                        }
-                        else //shorthand notation
-                        {
-                            if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
-                                throw new ArgumentException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
-                            
-                            map[mapKey] = new JsBinding(mapKey);
-                        }
                     }
+                    else 
+                    {
+                        shorthand = true;
+                        if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
+                            throw new ArgumentException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
+                            
+                        mapValueToken = mapKeyToken;
+                    }
+                    
+                    props.Add(new JsProperty(mapKeyToken, mapValueToken, shorthand));
 
                     literal = literal.AdvancePastWhitespace();
                     if (literal.IsNullOrEmpty())
@@ -783,12 +982,12 @@ namespace ServiceStack.Templates
                     literal = literal.AdvancePastWhitespace();
                 }
 
-                value = map;
+                token = new JsObjectExpression(props);
                 return literal;
             }
             if (firstChar == '[')
             {
-                var list = new List<object>();
+                var elements = new List<JsToken>();
 
                 literal = literal.Advance(1);
                 while (!literal.IsNullOrEmpty())
@@ -800,8 +999,8 @@ namespace ServiceStack.Templates
                         break;
                     }
 
-                    literal = literal.ParseExpression(out var listValue);
-                    list.Add(listValue.UnwrapValue());
+                    literal = literal.ParseJsExpression(out var listValue);
+                    elements.Add(listValue);
 
                     literal = literal.AdvancePastWhitespace();
                     if (literal.IsNullOrEmpty())
@@ -830,124 +1029,124 @@ namespace ServiceStack.Templates
 
                 literal = literal.AdvancePastWhitespace();
 
-                value = list;
+                token = new JsArrayExpression(elements);
                 return literal;
             }
             if (literal.StartsWith("true") && (literal.Length == 4 || !IsValidVarNameChar(literal.GetChar(4))))
             {
-                value = true;
+                token = JsLiteral.True;
                 return literal.Advance(4);
             }
             if (literal.StartsWith("false") && (literal.Length == 5 || !IsValidVarNameChar(literal.GetChar(5))))
             {
-                value = false;
+                token = JsLiteral.False;
                 return literal.Advance(5);
             }
             if (literal.StartsWith("null") && (literal.Length == 4 || !IsValidVarNameChar(literal.GetChar(4))))
             {
-                value = JsNull.Value;
+                token = JsNull.Value;
                 return literal.Advance(4);
             }
             if (literal.StartsWith("and") && (literal.Length == 3 || !IsValidVarNameChar(literal.GetChar(3))))
             {
-                binding = JsAnd.Operator;
+                token = JsAnd.Operator;
                 return literal.Advance(3);
             }
             if (literal.StartsWith("or") && (literal.Length == 2 || !IsValidVarNameChar(literal.GetChar(2))))
             {
-                binding = JsOr.Operator;
+                token = JsOr.Operator;
                 return literal.Advance(2);
             }
             if (firstChar.IsOperatorChar())
             {
                 if (literal.StartsWith(">="))
                 {
-                    binding = JsGreaterThanEqual.Operator;
+                    token = JsGreaterThanEqual.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("<="))
                 {
-                    binding = JsLessThanEqual.Operator;
+                    token = JsLessThanEqual.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("!=="))
                 {
-                    binding = JsStrictNotEquals.Operator;
+                    token = JsStrictNotEquals.Operator;
                     return literal.Advance(3);
                 }
                 if (literal.StartsWith("!="))
                 {
-                    binding = JsNotEquals.Operator;
+                    token = JsNotEquals.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("==="))
                 {
-                    binding = JsStrictEquals.Operator;
+                    token = JsStrictEquals.Operator;
                     return literal.Advance(3);
                 }
                 if (literal.StartsWith("=="))
                 {
-                    binding = JsEquals.Operator;
+                    token = JsEquals.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("||"))
                 {
-                    binding = JsOr.Operator;
+                    token = JsOr.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("&&"))
                 {
-                    binding = JsAnd.Operator;
+                    token = JsAnd.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("<<"))
                 {
-                    binding = JsBitwiseLeftShift.Operator;
+                    token = JsBitwiseLeftShift.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith(">>"))
                 {
-                    binding = JsBitwiseRightShift.Operator;
+                    token = JsBitwiseRightShift.Operator;
                     return literal.Advance(2);
                 }
 
                 switch (firstChar)
                 {
                     case '>':
-                        binding = JsGreaterThan.Operator;
+                        token = JsGreaterThan.Operator;
                         return literal.Advance(1);
                     case '<':
-                        binding = JsLessThan.Operator;
+                        token = JsLessThan.Operator;
                         return literal.Advance(1);
                     case '=':
-                        binding = JsAssignment.Operator;
+                        token = JsAssignment.Operator;
                         return literal.Advance(1);
                     case '!':
-                        binding = JsNot.Operator;
+                        token = JsNot.Operator;
                         return literal.Advance(1);
                     case '+':
-                        binding = JsAddition.Operator;
+                        token = JsAddition.Operator;
                         return literal.Advance(1);
                     case '-':
-                        binding = JsSubtraction.Operator;
+                        token = JsSubtraction.Operator;
                         return literal.Advance(1);
                     case '*':
-                        binding = JsMultiplication.Operator;
+                        token = JsMultiplication.Operator;
                         return literal.Advance(1);
                     case '/':
-                        binding = JsDivision.Operator;
+                        token = JsDivision.Operator;
                         return literal.Advance(1);
                     case '&':
-                        binding = JsBitwiseAnd.Operator;
+                        token = JsBitwiseAnd.Operator;
                         return literal.Advance(1);
                     case '|':
-                        binding = JsBitwiseOr.Operator;
+                        token = JsBitwiseOr.Operator;
                         return literal.Advance(1);
                     case '^':
-                        binding = JsBitwiseXOr.Operator;
+                        token = JsBitwiseXOr.Operator;
                         return literal.Advance(1);
                     case '%':
-                        binding = JsMod.Operator;
+                        token = JsMod.Operator;
                         return literal.Advance(1);
                     default:
                         throw new NotSupportedException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
@@ -959,12 +1158,12 @@ namespace ServiceStack.Templates
             var isExpression = false;
             var hadWhitespace = false;
             while (i < literal.Length && IsValidVarNameChar(c = literal.GetChar(i)) || 
-                   (isExpression = c.IsBindingExpressionChar() || (allowWhitespaceSyntax && c == ':')))
+                   (isExpression = c.IsBindingExpressionChar() || (filterExpression && c == ':')))
             {
                 if (isExpression)
                 {
                     literal = literal.ParseCallExpression(out JsCallExpression expr);
-                    binding = expr;
+                    token = expr;
                     return literal;
                 }
                 
@@ -980,12 +1179,12 @@ namespace ServiceStack.Templates
                     break;
             }
 
-            binding = new JsBinding(literal.Subsegment(0, i).TrimEnd());
+            token = new JsIdentifier(literal.Subsegment(0, i).TrimEnd());
             return literal.Advance(i);
         }
     }
 
-    public class JsCallExpression : JsBinding
+    public class JsCallExpression : JsToken
     {
         public JsCallExpression()
         {
@@ -1033,7 +1232,7 @@ namespace ServiceStack.Templates
                 ? scope.PageResult.EvaluateBinding(NameString, scope)
                 : Args.Count > 0 
                     ? scope.PageResult.EvaluateMethod(this, scope) 
-                    : scope.PageResult.EvaluateBindingExpression(Binding, scope);
+                    : scope.PageResult.EvaluateBindingExpression(Name, scope);
             return value;
         }
 
@@ -1066,16 +1265,13 @@ namespace ServiceStack.Templates
         
         public override string ToRawString() => (":" + ToString()).EncodeJson();
 
-        public override string BindingString => OriginalString ?? ToString();
-
-        public string GetDisplayName() => (BindingString ?? NameString ?? "").Replace('′', '"');
+        public string GetDisplayName() => (NameString ?? "").Replace('′', '"');
 
         protected bool Equals(JsCallExpression other)
         {
-            return base.Equals(other) 
-               && Name.Equals(other.Name) 
-               && Args.EquivalentTo(other.Args) 
-               && Original.Equals(other.Original);
+            return string.Equals(nameString, other.nameString) && 
+                   string.Equals(originalString, other.originalString) && 
+                   isBinding == other.isBinding;
         }
 
         public override bool Equals(object obj)
@@ -1090,10 +1286,9 @@ namespace ServiceStack.Templates
         {
             unchecked
             {
-                int hashCode = base.GetHashCode();
-                hashCode = (hashCode * 397) ^ Name.GetHashCode();
-                hashCode = (hashCode * 397) ^ (Args != null ? Args.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Original.GetHashCode();
+                var hashCode = (nameString != null ? nameString.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (originalString != null ? originalString.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ isBinding.GetHashCode();
                 return hashCode;
             }
         }

@@ -9,8 +9,8 @@ namespace ServiceStack
     {
         public static object parse(string json)
         {
-            json.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            return value;
+            json.ToStringSegment().ParseJsToken(out var token);
+            return token.Evaluate(JS.CreateScope());
         }
 
         public static string stringify(object value) => value.ToJson();
@@ -25,8 +25,8 @@ namespace ServiceStack
         {
             JsonTypeSerializer.Instance.ObjectDeserializer = segment =>
             {
-                segment.ParseNextToken(out object value, out _);
-                return value;
+                segment.ParseJsExpression(out var token);
+                return token.Evaluate(CreateScope());
             };
         }
 
@@ -45,16 +45,16 @@ namespace ServiceStack
         public static object eval(string js) => eval(js, CreateScope());
         public static object eval(string js, TemplateScopeContext scope)
         {
-            js.ParseExpression(out var token);
+            js.ParseJsExpression(out var token);
             var result = scope.Evaluate(token);
 
             return result;
         }
 
-        public static object value(string js)
+        public static JsToken ast(string js)
         {
-            js.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            return value;
+            js.ParseJsExpression(out var token);
+            return token;
         }
     }
 }

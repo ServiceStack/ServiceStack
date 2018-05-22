@@ -1156,9 +1156,9 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ 'arg' | parseJson }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ `'arg'` | parseJson }}"), Is.EqualTo("arg"));
             Assert.That(context.EvaluateTemplate("{{ '{a:1}' | parseJson | get: a }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ '{a:arg}' | parseJson | get: a }}"), Is.EqualTo(":arg"));
+            Assert.That(context.EvaluateTemplate("{{ '{a:arg}' | parseJson | get: a }}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ '[1]' | parseJson | get(0) }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ '[{a:arg}]' | parseJson | get(0) | get:a }}"), Is.EqualTo(":arg"));
+            Assert.That(context.EvaluateTemplate("{{ '[{a:arg}]' | parseJson | get(0) | get:a }}"), Is.EqualTo(""));
         }
 
         [Test]

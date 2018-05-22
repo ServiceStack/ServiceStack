@@ -229,12 +229,8 @@ namespace ServiceStack.Templates
         {
             if (valueOrBinding is string literal)
             {
-                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-
-                var oValue = binding != null
-                    ? scope.EvaluateToken(binding)
-                    : value;
-
+                literal.ToStringSegment().ParseJsExpression(out var token);
+                var oValue = token.Evaluate(scope);
                 return oValue.ConvertTo(returnType);
             }
             

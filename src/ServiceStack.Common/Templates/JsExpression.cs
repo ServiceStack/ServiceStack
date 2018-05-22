@@ -18,22 +18,22 @@ namespace ServiceStack.Templates
 
     public static class JsExpressionUtils
     {
-        public static JsToken ToToken(this object value, JsBinding binding)
+        public static JsToken ToToken(this object value, JsToken binding)
         {
             if (binding != null)
                 return binding;
             if (value is JsToken t)
                 return t;
-            return new JsConstant(value);
+            return new JsLiteral(value);
         }
         
-        public static StringSegment ParseExpression(this string literal, out JsToken token) =>
-            literal.ToStringSegment().ParseExpression(out token);
+        public static StringSegment ParseJsExpression(this string literal, out JsToken token) =>
+            literal.ToStringSegment().ParseJsExpression(out token);
 
-        public static StringSegment ParseExpression(this StringSegment literal, out JsToken token) =>
-            literal.ParseExpression(out token, filterExpression:false);
+        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token) =>
+            literal.ParseJsExpression(out token, filterExpression:false);
 
-        public static StringSegment ParseExpression(this StringSegment literal, out JsToken token, bool filterExpression)
+        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token, bool filterExpression)
         {
             var peekLiteral = literal.ParseJsToken(out var token1, filterExpression:filterExpression);
 
