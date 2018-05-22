@@ -22,15 +22,15 @@ namespace ServiceStack.Templates
         public string BindingString { get; }       
         
         public object InitialValue { get; }
-        public CallExpression InitialExpression { get; }
+        public JsCallExpression InitialExpression { get; }
         
-        public CallExpression[] FilterExpressions { get; set; }
+        public JsCallExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, JsToken expr, List<CallExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, JsToken expr, List<JsCallExpression> filterCommands)
         {
             OriginalText = originalText;
             Expression = expr;
-            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<CallExpression>.EmptyArray;
+            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsCallExpression>.EmptyArray;
 
             if (expr is JsConstant initialValue)
             {
@@ -40,7 +40,7 @@ namespace ServiceStack.Templates
             {
                 InitialValue = expr;
             }
-            else if (expr is CallExpression initialExpr)
+            else if (expr is JsCallExpression initialExpr)
             {
                 InitialExpression = initialExpr;
             }

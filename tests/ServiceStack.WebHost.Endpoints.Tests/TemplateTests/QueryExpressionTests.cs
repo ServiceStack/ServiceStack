@@ -18,23 +18,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             "1 > 2".ParseExpression(out expr);
             Assert.That(expr,
-                Is.EqualTo(new BinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2))));
+                Is.EqualTo(new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2))));
             
             "1 > 2 && 3 > 4".ParseExpression(out expr);
             Assert.That(expr, Is.EqualTo(
-                new LogicalExpression(
-                    new BinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
+                new JsLogicalExpression(
+                    new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
                     JsAnd.Operator,
-                    new BinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
+                    new JsBinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
                 )
             ));
             
             "1 > 2 and 3 > 4".ParseExpression(out expr);
             Assert.That(expr, Is.EqualTo(
-                new LogicalExpression(
-                    new BinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
+                new JsLogicalExpression(
+                    new JsBinaryExpression(new JsConstant(1), JsGreaterThan.Operator, new JsConstant(2)),
                     JsAnd.Operator,
-                    new BinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
+                    new JsBinaryExpression(new JsConstant(3), JsGreaterThan.Operator, new JsConstant(4))
                 )
             ));
         }
@@ -46,14 +46,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             "it < 5".ParseExpression(out var expr);
             Assert.That(expr,
-                Is.EqualTo(new BinaryExpression(it, JsLessThan.Operator, new JsConstant(5))));
+                Is.EqualTo(new JsBinaryExpression(it, JsLessThan.Operator, new JsConstant(5))));
 
             "it.UnitsInStock > 0 and it.UnitPrice > 3".ParseExpression(out expr);
             Assert.That(expr, Is.EqualTo(
-                new LogicalExpression(
-                    new BinaryExpression(new CallExpression("it.UnitsInStock"), JsGreaterThan.Operator, new JsConstant(0)),
+                new JsLogicalExpression(
+                    new JsBinaryExpression(new JsCallExpression("it.UnitsInStock"), JsGreaterThan.Operator, new JsConstant(0)),
                     JsAnd.Operator,
-                    new BinaryExpression(new CallExpression("it.UnitPrice"), JsGreaterThan.Operator, new JsConstant(3))
+                    new JsBinaryExpression(new JsCallExpression("it.UnitPrice"), JsGreaterThan.Operator, new JsConstant(3))
                 )
             ));
         }
@@ -65,12 +65,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             "!it".ParseExpression(out var expr);
             Assert.That(expr,
-                Is.EqualTo(new UnaryExpression(JsNot.Operator, it)));
+                Is.EqualTo(new JsUnaryExpression(JsNot.Operator, it)));
 
             "!contains(items, it)".ParseExpression(out expr);
             Assert.That(expr,
-                Is.EqualTo(new UnaryExpression(JsNot.Operator, 
-                    new CallExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }})));
+                Is.EqualTo(new JsUnaryExpression(JsNot.Operator, 
+                    new JsCallExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }})));
         }
 
     }

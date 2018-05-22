@@ -12,152 +12,11 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
-    public class LogicalExpression : JsExpression
-    {
-        public JsLogicOperator Operand { get; set; }
-        public JsToken Left  { get; set; }
-        public JsToken Right { get; set; }
-        public override string ToRawString() => "(" + JsonValue(Left) + Operand.Token + JsonValue(Right) + ")";
-
-        public LogicalExpression() {}
-        public LogicalExpression(JsToken left, JsLogicOperator operand, JsToken right)
-        {
-            Left = left;
-            Operand = operand;
-            Right = right;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var lhs = scope.EvaluateToken(Left);
-            var rhs = scope.EvaluateToken(Right);            
-            return Operand.Test(lhs, rhs);
-        }
-
-        protected bool Equals(LogicalExpression other)
-        {
-            return Equals(Operand, other.Operand) && Equals(Left, other.Left) && Equals(Right, other.Right);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((LogicalExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (Operand != null ? Operand.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Left != null ? Left.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Right != null ? Right.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-    }
-
-    public class UnaryExpression : JsExpression
-    {
-        public JsUnaryOperator Op { get; set; }
-        public JsToken Target { get; set; }
-        public override string ToRawString() => Op.Token + JsonValue(Target);
-        public UnaryExpression() {}
-        public UnaryExpression(JsUnaryOperator op, JsToken target)
-        {
-            Op = op;
-            Target = target;
-        }
-        protected bool Equals(UnaryExpression other) => Equals(Op, other.Op) && Equals(Target, other.Target);
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((UnaryExpression) obj);
-        }
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Op != null ? Op.GetHashCode() : 0) * 397) ^ (Target != null ? Target.GetHashCode() : 0);
-            }
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var result = scope.EvaluateToken(Target);
-            var afterUnary = Op.Evaluate(result);
-            return afterUnary;
-        }
-    }
-
     public abstract class JsExpression : JsToken
     {
     }
-    
-    public class BinaryExpression : JsExpression
-    {
-        public BinaryExpression() {}
-        public BinaryExpression(JsToken left, JsBinaryOperator operand, JsToken right)
-        {
-            Left = left;
-            Operand = operand;
-            Right = right;
-        }
 
-        public JsBinaryOperator Operand { get; set; }
-        public JsToken Left  { get; set; }
-        public JsToken Right { get; set; }
-        public override string ToRawString() => "(" + JsonValue(Left) + Operand.Token + JsonValue(Right) + ")";
-
-        protected bool Equals(BinaryExpression other) => Equals(Operand, other.Operand) && Equals(Left, other.Left) && Equals(Right, other.Right);
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((BinaryExpression) obj);
-        }
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (Operand != null ? Operand.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Left != null ? Left.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Right != null ? Right.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var lhs = scope.EvaluateToken(Left);
-            var rhs = scope.EvaluateToken(Right);            
-            return Operand.Evaluate(lhs, rhs);
-        }
-    }
-
-    public class LiteralExpression : JsExpression
-    {
-        public JsToken Value { get; set; }
-        public override string ToRawString() => JsonValue(Value);
-        public LiteralExpression() {}
-        public LiteralExpression(JsToken target)
-        {
-            Value = target;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var result = scope.EvaluateToken(Value);
-            return result;
-        }
-    }
-
-    public static class QueryExpression
+    public static class JsExpressionUtils
     {
         public static JsToken ToToken(this object value, JsBinding binding)
         {
@@ -201,7 +60,7 @@ namespace ServiceStack.Templates
             if (token1 is JsUnaryOperator u)
             {
                 literal = peekLiteral.ParseJsToken(out var token2, filterExpression:filterExpression);
-                token = new UnaryExpression(u, token2);
+                token = new JsUnaryExpression(u, token2);
                 return literal;
             }
 
@@ -245,7 +104,7 @@ namespace ServiceStack.Templates
             {
                 if (left is JsExpression jsExpr)
                     return jsExpr;
-                return new LiteralExpression(left);
+                return new JsLiteralExpression(left);
             }
 
             if (literal.IsNullOrEmpty())
@@ -333,11 +192,11 @@ namespace ServiceStack.Templates
         public static JsExpression CreateJsExpression(JsToken lhs, JsBinaryOperator op, JsToken rhs)
         {
             if (op is JsAnd opAnd)
-                return new LogicalExpression(lhs, opAnd, rhs);
+                return new JsLogicalExpression(lhs, opAnd, rhs);
             if (op is JsOr opOr)
-                return new LogicalExpression(lhs, opOr, rhs);
+                return new JsLogicalExpression(lhs, opOr, rhs);
             
-            return new BinaryExpression(lhs, op, rhs);
+            return new JsBinaryExpression(lhs, op, rhs);
         }
 
         static int GetNextBinaryPrecedence(this StringSegment literal)

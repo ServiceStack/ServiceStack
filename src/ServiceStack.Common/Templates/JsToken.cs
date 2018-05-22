@@ -576,7 +576,7 @@ namespace ServiceStack.Templates
         {
             if (token is JsConstant c)
                 return c.Value;
-            if (token is LiteralExpression l)
+            if (token is JsLiteralExpression l)
                 return l.Value;
             return token;
         }
@@ -743,7 +743,7 @@ namespace ServiceStack.Templates
 
                     literal = literal.ParseNextToken(out object mapKeyString, out JsBinding mapKeyVar);
                         
-                    if (mapKeyVar is CallExpression)
+                    if (mapKeyVar is JsCallExpression)
                         throw new NotSupportedException($"CallExpression '{mapKeyVar?.Binding}' is not a valid Object key.");
                     
                     var mapKey = mapKeyVar != null
@@ -963,7 +963,7 @@ namespace ServiceStack.Templates
             {
                 if (isExpression)
                 {
-                    literal = literal.ParseCallExpression(out CallExpression expr);
+                    literal = literal.ParseCallExpression(out JsCallExpression expr);
                     binding = expr;
                     return literal;
                 }
@@ -985,15 +985,15 @@ namespace ServiceStack.Templates
         }
     }
 
-    public class CallExpression : JsBinding
+    public class JsCallExpression : JsBinding
     {
-        public CallExpression()
+        public JsCallExpression()
         {
             Args = new List<StringSegment>();
         }
         
-        public CallExpression(string name) : this() => Name = name.ToStringSegment();
-        public CallExpression(StringSegment name) : this() => Name = name;
+        public JsCallExpression(string name) : this() => Name = name.ToStringSegment();
+        public JsCallExpression(StringSegment name) : this() => Name = name;
 
         public StringSegment Name { get; set; }
 
@@ -1012,7 +1012,7 @@ namespace ServiceStack.Templates
 
         public virtual int IndexOfMethodEnd(StringSegment commandString, int pos) => pos;
 
-        private static bool DetectBinding(CallExpression cmd)
+        private static bool DetectBinding(JsCallExpression cmd)
         {
             var i = 0;
             char c;
@@ -1070,7 +1070,7 @@ namespace ServiceStack.Templates
 
         public string GetDisplayName() => (BindingString ?? NameString ?? "").Replace('′', '"');
 
-        protected bool Equals(CallExpression other)
+        protected bool Equals(JsCallExpression other)
         {
             return base.Equals(other) 
                && Name.Equals(other.Name) 
@@ -1083,7 +1083,7 @@ namespace ServiceStack.Templates
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((CallExpression) obj);
+            return Equals((JsCallExpression) obj);
         }
 
         public override int GetHashCode()
@@ -1101,19 +1101,19 @@ namespace ServiceStack.Templates
 
     public static class CallExpressionUtils
     {
-        public static List<CallExpression> ParseCallExpression(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseFilterExpression<CallExpression>(out int _, separator, atEndIndex);
+        public static List<JsCallExpression> ParseCallExpression(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
+            => commandsString.ParseFilterExpression<JsCallExpression>(out int _, separator, atEndIndex);
 
-        public static List<CallExpression> ParseCallExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseFilterExpression<CallExpression>(out pos, separator, atEndIndex);
+        public static List<JsCallExpression> ParseCallExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
+            => commandsString.ParseFilterExpression<JsCallExpression>(out pos, separator, atEndIndex);
 
         public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false) 
-            where T : CallExpression, new()
+            where T : JsCallExpression, new()
             => commandsString.ParseFilterExpression<T>(out int _, separator, atEndIndex, allowWhitespaceSensitiveSyntax);
 
         public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, out int pos, char separator = ',',
             Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false)
-            where T : CallExpression, new()
+            where T : JsCallExpression, new()
         {
             var to = new List<T>();
             List<StringSegment> args = null;
@@ -1397,7 +1397,7 @@ namespace ServiceStack.Templates
             return TypeConstants.EmptyStringSegment;
         }
         
-        public static StringSegment ParseCallExpression(this StringSegment literal, out CallExpression binding)
+        public static StringSegment ParseCallExpression(this StringSegment literal, out JsCallExpression binding)
         {
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
@@ -1466,7 +1466,7 @@ namespace ServiceStack.Templates
                     if (endStringPos == -1)
                         throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{literal.SubstringWithElipsis(i,50)}'");
 
-                    binding = new CallExpression(literal.Subsegment(0, i).Trim());
+                    binding = new JsCallExpression(literal.Subsegment(0, i).Trim());
 
                     var originalArgs = literal.Substring(i + 1, endStringPos - i - 1);
                     var rewrittenArgs = "′" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("′", "\\′") + "′)";
@@ -1478,7 +1478,7 @@ namespace ServiceStack.Templates
                 if (c == '(')
                 {
                     var pos = i + 1;
-                    binding = new CallExpression(literal.Subsegment(0, i).Trim());
+                    binding = new JsCallExpression(literal.Subsegment(0, i).Trim());
                     literal = ParseArguments(literal.Subsegment(pos), out List<StringSegment> args);
                     binding.Args = args;
                     return literal.Advance(1);
@@ -1508,12 +1508,12 @@ namespace ServiceStack.Templates
 
                 if (!(c.IsValidVarNameChar() || c.IsBindingExpressionChar()))
                 {
-                    binding = new CallExpression(literal.Subsegment(lastPos, i - lastPos).Trim());
+                    binding = new JsCallExpression(literal.Subsegment(lastPos, i - lastPos).Trim());
                     return literal.Advance(i);
                 }
             }
 
-            binding = new CallExpression(literal.Subsegment(0, literal.Length));
+            binding = new JsCallExpression(literal.Subsegment(0, literal.Length));
             return TypeConstants.EmptyStringSegment;
         }
         

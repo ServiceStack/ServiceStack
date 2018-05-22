@@ -933,7 +933,7 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        internal object EvaluateMethod(CallExpression expr, TemplateScopeContext scope)
+        internal object EvaluateMethod(JsCallExpression expr, TemplateScopeContext scope)
         {
             if (expr.Name.IsNullOrEmpty())
                 throw new ArgumentNullException("expr.Name");
@@ -1007,7 +1007,7 @@ namespace ServiceStack.Templates
 
         public object EvaluateToken(TemplateScopeContext scope, JsToken token)
         {
-            return token is CallExpression expr && expr.Args.Count > 0
+            return token is JsCallExpression expr && expr.Args.Count > 0
                 ? EvaluateMethod(expr, scope)
                 : EvaluateAnyBindings(token, scope);
         }

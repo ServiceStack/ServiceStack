@@ -294,12 +294,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "[a,b,c]".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }));
             "[a.Id,b.Name]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new[]{ new CallExpression("a.Id"), new CallExpression("b.Name") }));
+            Assert.That(value, Is.EquivalentTo(new[]{ new JsCallExpression("a.Id"), new JsCallExpression("b.Name") }));
             "{ x: a.Id, y: b.Name }".ToStringSegment().ParseNextToken(out value, out binding);
             Assert.That(value, Is.EquivalentTo(new Dictionary<string, object>
             {
-                { "x", new CallExpression("a.Id") },
-                { "y", new CallExpression("b.Name") },
+                { "x", new JsCallExpression("a.Id") },
+                { "y", new JsCallExpression("b.Name") },
             }));
             
             "['a',\"b\",`c`]".ToStringSegment().ParseNextToken(out value, out binding);
@@ -354,21 +354,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             object value;
             JsBinding binding;
-            CallExpression expr;
+            JsCallExpression expr;
 
             "if(OR(gt(1,2),lt(3,4)))".ToStringSegment().ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
 
             Assert.That(expr.Args[0], Is.EqualTo("OR(gt(1,2),lt(3,4))"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
             
             Assert.That(expr.Args[0], Is.EqualTo("gt(1,2)"));
             Assert.That(expr.Args[1], Is.EqualTo("lt(3,4)"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
             Assert.That(expr.Args[0], Is.EqualTo("1"));
             Assert.That(expr.Args[1], Is.EqualTo("2"));
             
@@ -380,18 +380,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     lt ( 3 , 4 )
                 )
             )".ToStringSegment().ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
 
             Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("OR(gt(1,2),lt(3,4))"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
             
             Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("gt(1,2)"));
             Assert.That(expr.Args[1].RemoveAllWhitespace(), Is.EqualTo("lt(3,4)"));
 
             expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (CallExpression) binding;
+            expr = (JsCallExpression) binding;
             Assert.That(expr.Args[0], Is.EqualTo("1"));
             Assert.That(expr.Args[1], Is.EqualTo("2"));
         }
@@ -434,7 +434,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             JsBinding binding;
 
             var literal = "it.Id = 0".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((CallExpression)binding).Name, Is.EqualTo("it.Id"));
+            Assert.That(((JsCallExpression)binding).Name, Is.EqualTo("it.Id"));
             literal = literal.ParseNextToken(out value, out binding);
             Assert.That(binding, Is.EqualTo(JsAssignment.Operator));
             literal = literal.ParseNextToken(out value, out binding);
@@ -491,9 +491,9 @@ products
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
             {
-                new CallExpression("c.CustomerId"),
-                new CallExpression("o.OrderId"),
-                new CallExpression("o.OrderDate"),
+                new JsCallExpression("c.CustomerId"),
+                new JsCallExpression("o.OrderId"),
+                new JsCallExpression("o.OrderDate"),
             }));
             
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}"));
@@ -515,9 +515,9 @@ products
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
             {
-                new CallExpression("c.CustomerId"),
-                new CallExpression("o.OrderId"),
-                new CallExpression("o.OrderDate"),
+                new JsCallExpression("c.CustomerId"),
+                new JsCallExpression("o.OrderId"),
+                new JsCallExpression("o.OrderDate"),
             }));
             
             var newLine = (PageStringFragment) fragments[1];
@@ -531,7 +531,7 @@ products
             JsBinding binding;
 
             "mod(it,3) != 0".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(binding, Is.EqualTo(new CallExpression("mod") { 
+            Assert.That(binding, Is.EqualTo(new JsCallExpression("mod") { 
                 Args = {
                     "it".ToStringSegment(),
                     "3".ToStringSegment(),
@@ -609,16 +609,16 @@ products
         {
             object value;
             JsBinding binding;
-            CallExpression fn;
+            JsCallExpression fn;
             
             "fn()".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((CallExpression)binding).Name, Is.EqualTo("fn"));
+            Assert.That(((JsCallExpression)binding).Name, Is.EqualTo("fn"));
             "fn({})".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((CallExpression)binding).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)binding).Args.Count, Is.EqualTo(1));
             "fn({ })".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((CallExpression)binding).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)binding).Args.Count, Is.EqualTo(1));
             "fn({  })".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((CallExpression)binding).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)binding).Args.Count, Is.EqualTo(1));
         }
 
 

@@ -15,7 +15,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack
 {
-    public class Command : CallExpression
+    public class Command : JsCallExpression
     {
         public StringSegment Suffix { get; set; }
 
