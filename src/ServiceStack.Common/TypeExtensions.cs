@@ -86,13 +86,16 @@ namespace ServiceStack
             var paramArgs = Expression.Parameter(typeof(object[]), "args");
             var exprArgs = new Expression[pi.Length];
 
+            var convertFromMethod = typeof(TypeExtensions).GetStaticMethod(nameof(ConvertFromObject));
+
             for (int i = 0; i < pi.Length; i++)
             {
                 var index = Expression.Constant(i);
                 var paramType = pi[i].ParameterType;
                 var paramAccessorExp = Expression.ArrayIndex(paramArgs, index);
                 var paramCastExp = Expression.Convert(paramAccessorExp, paramType);
-                exprArgs[i] = paramCastExp;
+                var convertParam = convertFromMethod.MakeGenericMethod(paramType);
+                exprArgs[i] = Expression.Call(convertParam, paramAccessorExp);
             }
 
             var newExp = Expression.New(ctor, exprArgs);
