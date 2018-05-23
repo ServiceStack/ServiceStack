@@ -248,7 +248,7 @@ namespace ServiceStack.Templates
             foreach (var fragment in varFragments)
             {
                 var filter = fragment.FilterExpressions?.FirstOrDefault();
-                if (filter?.NameString == "partial")
+                if (filter?.Name == "partial")
                 {
                     if (fragment.InitialValue is string partialPath)
                     {
@@ -263,7 +263,7 @@ namespace ServiceStack.Templates
                         }
                     }
                 }
-                else if (filter?.NameString != null && Context.FileFilterNames.Contains(filter?.NameString))
+                else if (filter?.Name != null && Context.FileFilterNames.Contains(filter?.Name))
                 {
                     if (fragment.InitialValue is string filePath)
                     {
@@ -273,7 +273,7 @@ namespace ServiceStack.Templates
                 }
                 
                 var lastFilter = fragment.FilterExpressions?.LastOrDefault();
-                if (lastFilter?.NameString == "selectPartial")
+                if (lastFilter?.Name == "selectPartial")
                 {
                     if (lastFilter.Arguments.FirstOrDefault() is JsLiteral argLiteral && argLiteral.Value is string partialArg)
                     {

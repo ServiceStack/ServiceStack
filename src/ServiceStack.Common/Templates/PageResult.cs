@@ -276,8 +276,8 @@ namespace ServiceStack.Templates
         {
             return HaltExecution || SkipFilterExecution && (var.BindingString != null 
                ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString)
-               : var.InitialExpression?.NameString == null || 
-                 !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.NameString));
+               : var.InitialExpression?.Name == null || 
+                 !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
 
         public TemplateContext Context => Page?.Context ?? CodePage.Context;
@@ -477,8 +477,8 @@ namespace ServiceStack.Templates
         {
             if (var.BindingString != null)
                 stackTrace.Push($"Expression (binding): " + var.BindingString);
-            else if (var.InitialExpression?.NameString != null)
-                stackTrace.Push("Expression (filter): " + var.InitialExpression.NameString);
+            else if (var.InitialExpression?.Name != null)
+                stackTrace.Push("Expression (filter): " + var.InitialExpression.Name);
             else if (var.InitialValue != null)
                 stackTrace.Push($"Expression ({var.InitialValue.GetType().Name}): " + toDebugString(var.InitialValue).SubstringWithElipsis(0, 200));
             else 
@@ -583,7 +583,7 @@ namespace ServiceStack.Templates
 
                 try
                 {
-                    var filterName = expr.NameString;
+                    var filterName = expr.Name;
                     var invoker = GetFilterInvoker(filterName, 1 + expr.Arguments.Length, out TemplateFilter filter);
                     var contextFilterInvoker = invoker == null
                         ? GetContextFilterInvoker(filterName, 2 + expr.Arguments.Length, out filter)
@@ -613,7 +613,7 @@ namespace ServiceStack.Templates
                             args[1 + cmdIndex] = varValue;
                         }
 
-                        value = InvokeFilter(invoker, filter, args, expr.NameString);
+                        value = InvokeFilter(invoker, filter, args, expr.Name);
                     }
                     else if (contextFilterInvoker != null)
                     {
@@ -629,7 +629,7 @@ namespace ServiceStack.Templates
                             args[2 + cmdIndex] = varValue;
                         }
 
-                        value = InvokeFilter(contextFilterInvoker, filter, args, expr.NameString);
+                        value = InvokeFilter(contextFilterInvoker, filter, args, expr.Name);
                     }
                     else
                     {
@@ -666,7 +666,7 @@ namespace ServiceStack.Templates
                                     {
                                         stream.Position = 0;
 
-                                        contextBlockInvoker = GetContextBlockInvoker(var.FilterExpressions[exprIndex].NameString, 1 + var.FilterExpressions[exprIndex].Arguments.Length, out filter);
+                                        contextBlockInvoker = GetContextBlockInvoker(var.FilterExpressions[exprIndex].Name, 1 + var.FilterExpressions[exprIndex].Arguments.Length, out filter);
                                         if (contextBlockInvoker != null)
                                         {
                                             args[0] = useScope;
@@ -681,9 +681,9 @@ namespace ServiceStack.Templates
                                         }
                                         else
                                         {
-                                            var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].NameString);
+                                            var transformer = GetFilterTransformer(var.FilterExpressions[exprIndex].Name);
                                             if (transformer == null)
-                                                throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].NameString}' in page '{Page.VirtualPath}'");
+                                                throw new NotSupportedException($"Could not find FilterTransformer '{var.FilterExpressions[exprIndex].Name}' in page '{Page.VirtualPath}'");
 
                                             stream = await transformer(stream);
                                             useScope = useScope.ScopeWithStream(stream);
@@ -777,7 +777,7 @@ namespace ServiceStack.Templates
         {
             if (var.FilterExpressions.Length > 0)
             {
-                var filterName = var.FilterExpressions[0].NameString;
+                var filterName = var.FilterExpressions[0].Name;
                 var filterArgs = 1 + var.FilterExpressions[0].Arguments.Length;
                 return TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) 
                     || Context.TemplateFilters.Any(x => x.HandlesUnknownValue(filterName, filterArgs));

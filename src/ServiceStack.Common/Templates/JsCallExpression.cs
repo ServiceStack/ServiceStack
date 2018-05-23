@@ -19,10 +19,8 @@ namespace ServiceStack.Templates
             Arguments = arguments;
         }
 
-        public StringSegment Name => Callee is JsIdentifier identifier ? identifier.Name : default(StringSegment);
-
         private string nameString;
-        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
+        public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.NameString : null);
 
         public override object Evaluate(TemplateScopeContext scope)
         {
@@ -34,7 +32,9 @@ namespace ServiceStack.Templates
             
             var result = scope.PageResult;
 
-            var invoker = result.GetFilterInvoker(NameString, Arguments.Length, out var filter);
+            var name = Name;
+
+            var invoker = result.GetFilterInvoker(name, Arguments.Length, out var filter);
             if (invoker != null)
             {
                 var args = new object[Arguments.Length];
@@ -45,11 +45,11 @@ namespace ServiceStack.Templates
                     args[i] = varValue;
                 }
 
-                var value = result.InvokeFilter(invoker, filter, args, NameString);
+                var value = result.InvokeFilter(invoker, filter, args, name);
                 return value;
             }
 
-            invoker = result.GetContextFilterInvoker(NameString, Arguments.Length + 1, out filter);
+            invoker = result.GetContextFilterInvoker(name, Arguments.Length + 1, out filter);
             if (invoker != null)
             {
                 var args = new object[Arguments.Length + 1];
@@ -61,11 +61,11 @@ namespace ServiceStack.Templates
                     args[i + 1] = varValue;
                 }
 
-                var value = result.InvokeFilter(invoker, filter, args, NameString);
+                var value = result.InvokeFilter(invoker, filter, args, name);
                 return value;
             }
 
-            throw new NotSupportedException(result.CreateMissingFilterErrorMessage(NameString.LeftPart('(')));
+            throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
         }
 
         public override string ToString() => ToRawString();
@@ -82,7 +82,7 @@ namespace ServiceStack.Templates
             return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
         }
 
-        public string GetDisplayName() => (NameString ?? "").Replace('′', '"');
+        public string GetDisplayName() => (Name ?? "").Replace('′', '"');
 
         protected bool Equals(JsCallExpression other)
         {
