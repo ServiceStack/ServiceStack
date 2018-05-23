@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -54,39 +54,46 @@ namespace ServiceStack.Templates
                     literal = literal.ParseJsExpression(out var expr, filterExpression:true);
     
                     List<JsCallExpression> filterCommands = null;
-    
-                    literal = literal.ParseJsToken(out var filterOp);
-                    if (filterOp == JsBitwiseOr.Operator)
+
+                    if (!literal.StartsWith("}}"))
                     {
-                        var varEndPos = 0;
-                        bool foundVarEnd = false;
-                    
-                        filterCommands = literal.ParseFilterExpression<JsCallExpression>(
-                            separator: '|',
-                            atEndIndex: (str, strPos) =>
-                            {
-                                while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
-                                    strPos++;
-    
-                                if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
+                        literal = literal.ParseJsToken(out var filterOp);
+                        if (filterOp == JsBitwiseOr.Operator)
+                        {
+                            var varEndPos = 0;
+                            bool foundVarEnd = false;
+                        
+                            filterCommands = literal.ParseFilterExpression<JsCallExpression>(
+                                separator: '|',
+                                atEndIndex: (str, strPos) =>
                                 {
-                                    foundVarEnd = true;
-                                    varEndPos = varEndPos + 1 + strPos + 1;
-                                    return strPos;
-                                }
-                                return null;
-                            },
-                            allowWhitespaceSensitiveSyntax: true);
-                    
-                        if (!foundVarEnd)
-                            throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
-    
-                        literal = literal.Advance(varEndPos);
+                                    while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
+                                        strPos++;
+        
+                                    if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
+                                    {
+                                        foundVarEnd = true;
+                                        varEndPos = varEndPos + 1 + strPos + 1;
+                                        return strPos;
+                                    }
+                                    return null;
+                                },
+                                allowWhitespaceSensitiveSyntax: true);
+                        
+                            if (!foundVarEnd)
+                                throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
+        
+                            literal = literal.Advance(varEndPos);
+                        }
+                        else
+                        {
+                            if (!literal.IsNullOrEmpty())
+                                literal = literal.Advance(1);
+                        }
                     }
                     else
                     {
-                        if (!literal.IsNullOrEmpty())
-                            literal = literal.Advance(1);
+                        literal = literal.Advance(2);
                     }
     
                     var length = text.Length - pos - literal.Length;
@@ -134,6 +141,25 @@ namespace ServiceStack.Templates
         public static IRawString ToRawString(this StringSegment value) => 
             new RawString(value.HasValue ? value.Value : "");
 
+        public static ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
+
+        public static Func<TemplateScopeContext, object, object> GetMemberExpression(Type targetType, StringSegment expression)
+        {
+            if (targetType == null)
+                throw new ArgumentNullException(nameof(targetType));
+            if (expression.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(expression));
+
+            var key = targetType.FullName + ':' + expression;
+
+            if (BinderCache.TryGetValue(key, out var fn))
+                return fn;
+
+            BinderCache[key] = fn = Compile(targetType, expression);
+
+            return fn;
+        }
+        
         public static Func<TemplateScopeContext, object, object> Compile(Type type, StringSegment expr)
         {
             var scope = Expression.Parameter(typeof(TemplateScopeContext), "scope");
@@ -293,7 +319,7 @@ namespace ServiceStack.Templates
                 var indexExpr = propItemExpr.Arguments[0];
                 body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
             }
-            else if (body is System.Linq.Expressions.BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
+            else if (body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
             {
                 var arrayInstance = binaryExpr.Left;
                 var indexExpr = binaryExpr.Right;

@@ -46,7 +46,7 @@ namespace ServiceStack
         public static object eval(string js, TemplateScopeContext scope)
         {
             js.ParseJsExpression(out var token);
-            var result = scope.Evaluate(token);
+            var result = token.Evaluate(scope);
 
             return result;
         }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ServiceStack.Text;
@@ -27,35 +26,6 @@ namespace ServiceStack.Templates
             return value.ToString();
         }
 
-        public static JsToken Create(string js) => Create(js.ToStringSegment());
-
-        public static JsToken Create(StringSegment js)
-        {
-            js.ParseJsExpression(out var token);
-            
-            return token;
-
-//            if (token != null)
-//                return token;
-//
-//            if (value is string s)
-//                return new JsString(s);
-//            if (value is int i)
-//                return new JsNumber(i);
-//            if (value is long l)
-//                return new JsNumber(l);
-//            if (value is double d)
-//                return new JsNumber(d);
-//            if (value is List<object> list)
-//                return new JsArray(list);
-//            if (value is Dictionary<string,object> map)
-//                return new JsObject(map);
-//            if (value is null || value == JsNull.Value)
-//                return JsNull.Value;
-//
-//            throw new NotSupportedException($"Unknown value JsToken '{value}'");
-        }
-
         public override string ToString() => ToRawString();
 
         public abstract object Evaluate(TemplateScopeContext scope);
@@ -64,10 +34,8 @@ namespace ServiceStack.Templates
         {
             if (token is JsLiteral literal)
                 return literal.Value;
-            if (token is JsLiteralExpression literalExp)
-                return UnwrapValue(literalExp.Value);
             return null;
-        }
+        }        
     }
     
     public class JsNull : JsToken
@@ -102,40 +70,6 @@ namespace ServiceStack.Templates
         public override string ToString() => ToRawString();
 
         public override object Evaluate(TemplateScopeContext scope) => Value;
-    }
-    
-    public class JsLiteralExpression : JsExpression
-    {
-        public JsToken Value { get; }
-        public override string ToRawString() => JsonValue(Value);
-        public JsLiteralExpression(JsToken target)
-        {
-            Value = target;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var result = scope.EvaluateToken(Value);
-            return result;
-        }
-
-        protected bool Equals(JsLiteralExpression other)
-        {
-            return Equals(Value, other.Value);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsLiteralExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Value != null ? Value.GetHashCode() : 0);
-        }
     }
 
     public class JsIdentifier : JsToken
@@ -235,8 +169,6 @@ namespace ServiceStack.Templates
                 return literalKey.Value.ToString();
             if (token is JsIdentifier identifierKey)
                 return identifierKey.NameString;
-            if (token is JsLiteralExpression literalExp)
-                return GetKey(literalExp.Value);
             
             throw new ArgumentException($"Invalid Key. Expected a Literal or Identifier but was '{token}'");
         }
@@ -496,8 +428,17 @@ namespace ServiceStack.Templates
         private JsAddition(){}
         public override string Token => "+";
         
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).add(lhs, rhs);
+        public override object Evaluate(object lhs, object rhs)
+        {
+            if (lhs is string || rhs is string)
+            {
+                var lhsString = lhs.ConvertTo<string>();
+                var rhsString = rhs.ConvertTo<string>();
+                return string.Concat(lhsString, rhsString);
+            }
+            
+            return DynamicNumber.GetNumber(lhs, rhs).add(lhs, rhs);
+        }
     }
     public class JsSubtraction : JsBinaryOperator
     {
@@ -552,149 +493,20 @@ namespace ServiceStack.Templates
         public override object Evaluate(object target) => target ?? 0;
     }
 
-    public class JsArray : JsToken, IEnumerable<object>
-    {
-        public object[] Array { get; }
-        public JsArray(IEnumerable array) => Array = array.Cast<object>().ToArray();
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate().Append('[');
-            foreach (var item in Array)
-            {
-                sb.Append(JsonValue(item));
-            }
-            sb.Append(']');
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        protected bool Equals(JsArray other)
-        {
-            if (Array == null || other.Array == null)
-                return Array == other.Array;
-
-            if (Array.Length != other.Array.Length)
-                return false;
-
-            for (var i = 0; i < Array.Length; i++)
-            {
-                if (!Equals(Array[i], other.Array[i]))
-                    return false;
-            }
-            return true;
-        }
-
-        public IEnumerator<object> GetEnumerator() => ((IEnumerable<object>)Array).GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsArray) obj);
-        }
-
-        public override int GetHashCode() => (Array != null ? Array.GetHashCode() : 0);
-
-        public override object Evaluate(TemplateScopeContext scope) => Array;
-    }
-
-    public class JsObject : JsToken, IEnumerable<KeyValuePair<string, object>>
-    {
-        public Dictionary<string, object> Object { get; }
-        public JsObject(Dictionary<string, object> obj) => Object = obj;
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate().Append("{");
-            foreach (var entry in Object)
-            {
-                sb.Append('"')
-                    .Append(entry.Key)
-                    .Append('"')
-                    .Append(":")
-                    .Append(JsonValue(entry.Value));
-            }
-            sb.Append("}");
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public IEnumerator<KeyValuePair<string, object>> GetEnumerator() => Object.GetEnumerator();
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-
-        public override object Evaluate(TemplateScopeContext scope) => Object;
-    }
-
-    public class JsString : JsToken
-    {
-        public string Value { get; }
-        public JsString(string value) => Value = value;
-        public override string ToRawString() => Value.EncodeJson();
-
-        protected bool Equals(JsString other) => string.Equals(Value, other.Value);
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsString) obj);
-        }
-
-        public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
-
-        public override object Evaluate(TemplateScopeContext scope) => Value;
-    }
-
-    public class JsNumber : JsToken
-    {
-        public int IntValue =>
-            intValue.GetValueOrDefault((int) longValue.GetValueOrDefault((long) doubleValue.GetValueOrDefault(0)));
-
-        public long LongValue =>
-            longValue.GetValueOrDefault((long) doubleValue.GetValueOrDefault(intValue.GetValueOrDefault(0)));
-
-        public double DoubleValue =>
-            doubleValue.GetValueOrDefault(longValue.GetValueOrDefault(intValue.GetValueOrDefault(0)));
-
-        private int? intValue;
-        private long? longValue;
-        private double? doubleValue;
-
-        public JsNumber(int intValue) => this.intValue = intValue;
-        public JsNumber(long longValue) => this.longValue = longValue;
-        public JsNumber(double doubleValue) => this.doubleValue = doubleValue;
-
-        public JsNumber(object numValue)
-        {
-            if (numValue is int i)
-                intValue = i;
-            else if (numValue is long l)
-                longValue = l;
-            else if (numValue is double d)
-                doubleValue = d;
-        }
-
-        public override string ToRawString() =>
-            intValue?.ToString() ?? longValue?.ToString() ?? doubleValue?.ToString(CultureInfo.InvariantCulture) ?? "0";
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            if (intValue != null)
-                return IntValue;
-            if (longValue != null)
-                return longValue;
-            return doubleValue;
-        }
-    }
-
     public static class JsTokenUtils
     {
         private static readonly byte[] ValidNumericChars;
         private static readonly byte[] ValidVarNameChars;
         private static readonly byte[] OperatorChars;
         private const byte True = 1;
+        
+        public static readonly HashSet<char> ExpressionTerminator = new HashSet<char> {
+            ')',
+            '}',
+            ';',
+            ',',
+            ']',
+        };
 
         public static readonly Dictionary<string, int> OperatorPrecedence = new Dictionary<string, int> {
             {")", 0},
@@ -780,15 +592,6 @@ namespace ServiceStack.Templates
                 return b;
             
             throw new ArgumentException($"Expected bool expression but instead received '{token}'");
-        }
-
-        public static object UnwrapValue(this JsToken token)
-        {
-            if (token is JsLiteral c)
-                return c.Value;
-            if (token is JsLiteralExpression l)
-                return l.Value;
-            return token;
         }
 
         internal static string StripQuotes(this StringSegment arg) => arg.HasValue ? StripQuotes(arg.Value) : string.Empty;
@@ -1032,31 +835,6 @@ namespace ServiceStack.Templates
                 token = new JsArrayExpression(elements);
                 return literal;
             }
-            if (literal.StartsWith("true") && (literal.Length == 4 || !IsValidVarNameChar(literal.GetChar(4))))
-            {
-                token = JsLiteral.True;
-                return literal.Advance(4);
-            }
-            if (literal.StartsWith("false") && (literal.Length == 5 || !IsValidVarNameChar(literal.GetChar(5))))
-            {
-                token = JsLiteral.False;
-                return literal.Advance(5);
-            }
-            if (literal.StartsWith("null") && (literal.Length == 4 || !IsValidVarNameChar(literal.GetChar(4))))
-            {
-                token = JsNull.Value;
-                return literal.Advance(4);
-            }
-            if (literal.StartsWith("and") && (literal.Length == 3 || !IsValidVarNameChar(literal.GetChar(3))))
-            {
-                token = JsAnd.Operator;
-                return literal.Advance(3);
-            }
-            if (literal.StartsWith("or") && (literal.Length == 2 || !IsValidVarNameChar(literal.GetChar(2))))
-            {
-                token = JsOr.Operator;
-                return literal.Advance(2);
-            }
             if (firstChar.IsOperatorChar())
             {
                 if (literal.StartsWith(">="))
@@ -1153,39 +931,292 @@ namespace ServiceStack.Templates
                 }
             }
 
-            // name
-            i = 1;
-            var isExpression = false;
-            var hadWhitespace = false;
-            while (i < literal.Length && IsValidVarNameChar(c = literal.GetChar(i)) || 
-                   (isExpression = c.IsBindingExpressionChar() || (filterExpression && c == ':')))
+            // identifier
+            var preIdentifierLiteral = literal;
+
+            literal = literal.ParseIdentifier(out var node);
+
+            literal = literal.AdvancePastWhitespace();
+            if (!literal.IsNullOrEmpty())
             {
-                if (isExpression)
+                c = literal.GetChar(i);
+                if (c == '.' || c == '[')
                 {
-                    literal = literal.ParseCallExpression(out JsCallExpression expr);
-                    token = expr;
+                    while (true)
+                    {
+                        literal = literal.Advance(1);
+
+                        if (c == '.')
+                        {
+                            literal = literal.AdvancePastWhitespace();
+                            literal = literal.ParseIdentifier(out var property);
+                            node = new JsMemberExpression(node, property, computed: false);
+                        }
+                        else if (c == '[')
+                        {
+                            literal = literal.AdvancePastWhitespace();
+                            literal = literal.ParseJsExpression(out var property);
+                            node = new JsMemberExpression(node, property, computed: true);
+
+                            literal = literal.AdvancePastWhitespace();
+                            if (literal.IsNullOrEmpty() || literal.GetChar(0) != ']')
+                                throw new ArgumentException(
+                                    $"Invalid Syntax: expected ']' but was '{literal.GetChar(0)}'");
+
+                            literal = literal.Advance(1);
+                        }
+
+                        literal = literal.AdvancePastWhitespace();
+                        
+                        if (literal.IsNullOrWhiteSpace())
+                            break;
+
+                        c = literal.GetChar(0);
+                        if (c == '(')
+                            throw new ArgumentException("Invalid Syntax: call expression found on member expression. Only filters can be invoked.");
+                        
+                        if (!(c == '.' || c == '['))
+                            break;
+                    }
+                }
+                else if (c == '(' || (filterExpression && c == ':'))
+                {
+                    literal = preIdentifierLiteral.ParseCallExpression(out var callExpr);
+                    token = callExpr;
                     return literal;
                 }
-                
-                i++;
+            }
 
-                while (i < literal.Length && literal.GetChar(i).IsWhiteSpace()) // advance past whitespace
-                {
+            token = node;
+            return literal;
+        }
+
+        internal static StringSegment ParseIdentifier(this StringSegment literal, out JsToken token)
+        {
+            var i = 0;
+
+            var c = literal.GetChar(i);
+            if (!c.IsValidVarNameChar())
+                throw new ArgumentException($"Invalid Syntax: expected start of identifier but was '{c}'");
+
+            i++;
+            
+            while (i < literal.Length)
+            {
+                c = literal.GetChar(i);
+
+                if (IsValidVarNameChar(c))
                     i++;
-                    hadWhitespace = true;
-                }
-                
-                if (hadWhitespace && (i >= literal.Length || !literal.GetChar(i).IsBindingExpressionChar()))
+                else
                     break;
             }
 
-            token = new JsIdentifier(literal.Subsegment(0, i).TrimEnd());
-            return literal.Advance(i);
+            var identifier = literal.Subsegment(0, i).TrimEnd();
+            literal = literal.Advance(i);
+            
+            if (identifier.Equals("true"))
+                token = JsLiteral.True;
+            else if (identifier.Equals("false"))
+                token = JsLiteral.False;
+            else if (identifier.Equals("null"))
+                token = JsNull.Value;
+            else if (identifier.Equals("and"))
+                token = JsAnd.Operator;
+            else if (identifier.Equals("or"))
+                token = JsOr.Operator;
+            else
+                token = new JsIdentifier(identifier);
+
+            return literal;
+        }
+        
+    }
+
+    public class JsMemberExpression : JsToken
+    {
+        public JsToken Object { get; }
+        public JsToken Property { get; }
+        public bool Computed { get; } //indexer
+
+        public JsMemberExpression(JsToken @object, JsToken property) : this(@object, property, false) {}
+        public JsMemberExpression(JsToken @object, JsToken property, bool computed)
+        {
+            Object = @object;
+            Property = property;
+            Computed = computed;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.Append(Object.ToRawString());
+            if (Computed)
+            {
+                sb.Append("[");
+                sb.Append(Property.ToRawString());
+                sb.Append("]");
+            }
+            else
+            {
+                sb.Append(".");
+                sb.Append(Property.ToRawString());
+            }
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var targetValue = Object.Evaluate(scope);
+            var ret = GetValue(targetValue, scope);
+            
+            // returning `null` indicates the property does not exist and will render the original expression instead of empty string
+//            if (ret == null)
+//                return JsNull.Value; // treat as empty expression
+
+            return ret;
+        }
+
+        private object GetValue(object targetValue, TemplateScopeContext scope)
+        {
+            if (targetValue == null || targetValue == JsNull.Value)
+                return JsNull.Value;
+            var targetType = targetValue.GetType();
+            try 
+            { 
+                object propValue(string name)
+                {
+                    var memberFn = TypeProperties.Get(targetType).GetPublicGetter(name)
+                                   ?? TypeFields.Get(targetType).GetPublicGetter(name);
+    
+                    if (memberFn != null)
+                    {
+                        return memberFn(targetValue);
+                    }
+
+                    var indexerMethod = targetType.GetInstanceMethod("get_Item");
+                    if (indexerMethod != null)
+                    {
+                        var fn = indexerMethod.GetInvoker();
+                        var ret = fn(targetValue, name);
+                        return ret ?? JsNull.Value;
+                    }
+                    
+                    throw new ArgumentException($"'{targetType.Name}' does not have a '{name}' property or field");
+                }
+
+                if (!Computed)
+                {
+                    if (Property is JsIdentifier identifier)
+                    {
+                        var ret = propValue(identifier.NameString);
+
+                        // Don't emit member expression on null KeyValuePair
+                        if (ret == null && targetType.Name == "KeyValuePair`2")
+                            return JsNull.Value; 
+                        
+                        return ret;
+                    }
+                }
+                else
+                {
+                    var indexValue = Property.Evaluate(scope);
+                    if (indexValue == null)
+                        return JsNull.Value;
+
+                    if (targetType.IsArray)
+                    {
+                        var array = (Array)targetValue;
+                        if (indexValue is long l)
+                            return array.GetValue(l);
+                        var intValue = indexValue.ConvertTo<int>();
+                        return array.GetValue(intValue);
+                    }
+                    if (targetValue is IDictionary dict)
+                    {
+                        var ret = dict[indexValue];
+                        return ret ?? JsNull.Value;
+                    }
+                    if (indexValue is string propName)
+                    {
+                        return propValue(propName);
+                    }
+                    if (targetValue is IList list)
+                    {
+                        var intValue = indexValue.ConvertTo<int>();
+                        return list[intValue];
+                    }
+                    if (targetValue is IEnumerable e)
+                    {
+                        var intValue = indexValue.ConvertTo<int>();
+                        var i = 0;
+                        foreach (var item in e)
+                        {
+                            if (i++ == intValue)
+                                return item;                        
+                        }
+                        return null;
+                    }
+                    if (DynamicNumber.IsNumber(indexValue.GetType()))
+                    {
+                        var indexerMethod = targetType.GetInstanceMethod("get_Item");
+                        if (indexerMethod != null)
+                        {
+                            var fn = indexerMethod.GetInvoker();
+                            var ret = fn(targetValue, indexValue);
+                            return ret ?? JsNull.Value;
+                        }
+                    }
+                }
+            }
+            catch (KeyNotFoundException)
+            {
+                return JsNull.Value;
+            }
+            catch (Exception ex)
+            {
+                var exResult = scope.PageResult.Format.OnExpressionException(scope.PageResult, ex);
+                if (exResult != null)
+                    return exResult;
+
+                var expr = ToRawString();
+                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr, ex);
+            }
+            
+            throw new NotSupportedException($"'{targetValue.GetType()}' does not support access by '{Property}'");
+        }
+
+        protected bool Equals(JsMemberExpression other)
+        {
+            return Equals(Object, other.Object) && 
+                   Equals(Property, other.Property) && 
+                   Computed == other.Computed;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsMemberExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Object != null ? Object.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Property != null ? Property.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Computed.GetHashCode();
+                return hashCode;
+            }
         }
     }
 
     public class JsCallExpression : JsToken
     {
+        public JsToken Callee { get; }
+        public JsToken[] Arguments { get; }
+        
         public JsCallExpression()
         {
             Args = new List<StringSegment>();
@@ -1203,36 +1234,13 @@ namespace ServiceStack.Templates
 
         public StringSegment Original { get; set; }
 
-        private string originalString;
-        public string OriginalString => originalString ?? (originalString = Original.HasValue ? Original.Value : null);
-
-        private bool? isBinding = null;
-        public bool IsBinding => (bool)(isBinding ?? (isBinding = DetectBinding(this)));
-
         public virtual int IndexOfMethodEnd(StringSegment commandString, int pos) => pos;
-
-        private static bool DetectBinding(JsCallExpression cmd)
-        {
-            var i = 0;
-            char c;
-            var isBinding = false;
-            while (i < cmd.Name.Length && 
-                   ((c = cmd.Name.GetChar(i)).IsValidVarNameChar() || (isBinding = (c == '.' || c == '[' || c.IsWhiteSpace()))))
-            {
-                if (isBinding)
-                    return true;
-                i++;
-            }
-            return false;
-        }
 
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var value = IsBinding
-                ? scope.PageResult.EvaluateBinding(NameString, scope)
-                : Args.Count > 0 
-                    ? scope.PageResult.EvaluateMethod(this, scope) 
-                    : scope.PageResult.EvaluateBindingExpression(Name, scope);
+            var value = Args.Count > 0 
+                ? scope.PageResult.EvaluateMethod(this, scope) 
+                : scope.PageResult.EvaluateExpression(Name, scope);
             return value;
         }
 
@@ -1269,9 +1277,7 @@ namespace ServiceStack.Templates
 
         protected bool Equals(JsCallExpression other)
         {
-            return string.Equals(nameString, other.nameString) && 
-                   string.Equals(originalString, other.originalString) && 
-                   isBinding == other.isBinding;
+            return string.Equals(nameString, other.nameString);
         }
 
         public override bool Equals(object obj)
@@ -1287,8 +1293,6 @@ namespace ServiceStack.Templates
             unchecked
             {
                 var hashCode = (nameString != null ? nameString.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (originalString != null ? originalString.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ isBinding.GetHashCode();
                 return hashCode;
             }
         }

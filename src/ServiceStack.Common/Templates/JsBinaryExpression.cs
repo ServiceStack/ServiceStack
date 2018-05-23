@@ -2,8 +2,6 @@
 {
     public class JsBinaryExpression : JsExpression
     {
-        public JsBinaryExpression() { }
-
         public JsBinaryExpression(JsToken left, JsBinaryOperator operand, JsToken right)
         {
             Left = left;
@@ -40,8 +38,8 @@
 
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var lhs = scope.EvaluateToken(Left);
-            var rhs = scope.EvaluateToken(Right);
+            var lhs = Left.Evaluate(scope);
+            var rhs = Right.Evaluate(scope);
             return Operand.Evaluate(lhs, rhs);
         }
     }

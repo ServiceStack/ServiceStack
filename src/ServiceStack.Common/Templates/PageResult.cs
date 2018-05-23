@@ -538,20 +538,12 @@ namespace ServiceStack.Templates
                 var handlesUnknownValue = HandlesUnknownValue(var);
                 if (!handlesUnknownValue)
                 {
-                    if (var.InitialExpression != null && var.InitialExpression.IsBinding)
+                    if (var.Expression is JsMemberExpression memberExpr)
                     {
-                        var expr = var.InitialExpression.NameString;
-                        expr = expr.Trim();
-                        var pos = expr.IndexOfAny(VarDelimiters, 0);
-                        if (pos > 0)
-                        {
-                            var target = expr.Substring(0, pos);
-
-                            //allow nested null bindings from an existing target to evaluate to an empty string 
-                            var targetValue = GetValue(target, scope);
-                            if (targetValue != null)
-                                return string.Empty;
-                        }
+                        //allow nested null bindings from an existing target to evaluate to an empty string 
+                        var targetValue = memberExpr.Object.Evaluate(scope);
+                        if (targetValue != null)
+                            return string.Empty;
                     }
 
                     if (!var.Binding.HasValue)
@@ -580,7 +572,7 @@ namespace ServiceStack.Templates
             if (value == JsNull.Value)
                 value = null;
 
-            value = EvaluateAnyBindings(value, scope);
+            value = EvaluateIfToken(value, scope);
             
             for (var i = 0; i < var.FilterExpressions.Length; i++)
             {
@@ -617,7 +609,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
+                            var varValue = EvaluateIfToken(EvaluateExpression(arg, scope), scope);
                             args[1 + cmdIndex] = varValue;
                         }
 
@@ -633,7 +625,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
+                            var varValue = EvaluateIfToken(EvaluateExpression(arg, scope), scope);
                             args[2 + cmdIndex] = varValue;
                         }
 
@@ -654,7 +646,7 @@ namespace ServiceStack.Templates
                         for (var cmdIndex = 0; cmdIndex < expr.Args.Count; cmdIndex++)
                         {
                             var arg = expr.Args[cmdIndex];
-                            var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
+                            var varValue = EvaluateIfToken(EvaluateExpression(arg, scope), scope);
                             args[2 + cmdIndex] = varValue;
                         }
 
@@ -681,7 +673,7 @@ namespace ServiceStack.Templates
                                             for (var cmdIndex = 0; cmdIndex < var.FilterExpressions[exprIndex].Args.Count; cmdIndex++)
                                             {
                                                 var arg = var.FilterExpressions[exprIndex].Args[cmdIndex];
-                                                var varValue = EvaluateAnyBindings(EvaluateBindingExpression(arg, scope), scope);
+                                                var varValue = EvaluateIfToken(EvaluateExpression(arg, scope), scope);
                                                 args[1 + cmdIndex] = varValue;
                                             }
 
@@ -857,34 +849,6 @@ namespace ServiceStack.Templates
         private MethodInvoker GetFilterAsBinding(string name, out TemplateFilter filter) => GetFilterInvoker(name, 0, out filter);
         private MethodInvoker GetContextFilterAsBinding(string name, out TemplateFilter filter) => GetContextFilterInvoker(name, 1, out filter);
 
-        public object EvaluateAnyBindings(object value, TemplateScopeContext scope)
-        {
-            if (value is JsToken token)
-                return EvaluateAnyBindings(token.Evaluate(scope), scope);
-
-            if (value is Dictionary<string, object> map)
-            {
-                var clone = new Dictionary<string, object>();
-                var keys = map.Keys.ToArray();
-                foreach (var key in keys)
-                {
-                    var entryValue = map[key];
-                    clone[key] = EvaluateAnyBindings(entryValue, scope);
-                }
-                return clone;
-            }
-            if (value is List<object> list)
-            {
-                var clone = new List<object>();
-                foreach (var item in list)
-                {
-                    clone.Add(EvaluateAnyBindings(item, scope));
-                }
-                return clone;
-            }
-            return value;
-        }
-
         private object InvokeFilter(MethodInvoker invoker, TemplateFilter filter, object[] args, string binding)
         {
             if (invoker == null)
@@ -926,10 +890,13 @@ namespace ServiceStack.Templates
             }
         }
 
-        internal object EvaluateBindingExpression(StringSegment arg, TemplateScopeContext scope)
+        public TemplateScopeContext CreateScope(Stream outputStream=null) => 
+            new TemplateScopeContext(this, outputStream ?? MemoryStreamFactory.GetStream(), null);
+
+        internal object EvaluateExpression(StringSegment arg, TemplateScopeContext scope)
         {
             arg = ParseJsExpression(scope, arg, out var token);
-            var value = EvaluateAnyBindings(token, scope);
+            var value = EvaluateIfToken(token, scope);
             return value;
         }
 
@@ -945,7 +912,7 @@ namespace ServiceStack.Templates
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scope);
+                    var varValue = EvaluateExpression(arg, scope);
                     args[i] = varValue;
                 }
 
@@ -961,7 +928,7 @@ namespace ServiceStack.Templates
                 for (var i = 0; i < expr.Args.Count; i++)
                 {
                     var arg = expr.Args[i];
-                    var varValue = EvaluateBindingExpression(arg, scope);
+                    var varValue = EvaluateExpression(arg, scope);
                     args[i + 1] = varValue;
                 }
 
@@ -1005,11 +972,12 @@ namespace ServiceStack.Templates
             return null;
         }
 
-        public object EvaluateToken(TemplateScopeContext scope, JsToken token)
+        public object EvaluateIfToken(object value, TemplateScopeContext scope)
         {
-            return token is JsCallExpression expr && expr.Args.Count > 0
-                ? EvaluateMethod(expr, scope)
-                : EvaluateAnyBindings(token, scope);
+            if (value is JsToken token)
+                return token.Evaluate(scope);
+
+            return value;
         }
 
         internal object GetValue(string name, TemplateScopeContext scope)
@@ -1037,50 +1005,6 @@ namespace ServiceStack.Templates
                                              ? InvokeFilter(invoker, filter, new object[]{ scope }, name)
                                              : null;
             return value;
-        }
-
-        private static readonly char[] VarDelimiters = { '.', '[', ' ' };
-
-        public object EvaluateBinding(string expr, TemplateScopeContext scope = default(TemplateScopeContext))
-        {
-            if (string.IsNullOrWhiteSpace(expr))
-                return null;
-            
-            AssertInit();
-            
-            expr = expr.Trim();
-            var pos = expr.IndexOfAny(VarDelimiters, 0);
-            if (pos == -1)
-                return GetValue(expr, scope);
-            
-            var target = expr.Substring(0, pos);
-
-            var targetValue = GetValue(target, scope);
-            if (targetValue == null)
-                return null;
-
-            if (targetValue == JsNull.Value)
-                return JsNull.Value;
-            
-            var fn = Context.GetExpressionBinder(targetValue.GetType(), expr.ToStringSegment());
-
-            try
-            {
-                var value = fn(scope, targetValue);
-                return value;
-            }
-            catch (KeyNotFoundException)
-            {
-                return JsNull.Value;
-            }
-            catch (Exception ex)
-            {
-                var exResult = Format.OnExpressionException(this, ex);
-                if (exResult != null)
-                    return exResult;
-                
-                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr, ex);
-            }
         }
 
         public string ResultOutput => resultOutput;

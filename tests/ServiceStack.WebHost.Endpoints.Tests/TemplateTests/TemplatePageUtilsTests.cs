@@ -330,12 +330,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "[a,b,c]".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsIdentifier("a"),new JsIdentifier("b"),new JsIdentifier("c"))));
             "[a.Id,b.Name]".ParseJsExpression(out token);
-            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsCallExpression("a.Id"), new JsCallExpression("b.Name"))));
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(
+                new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("Id")),
+                new JsMemberExpression(new JsIdentifier("b"), new JsIdentifier("Name"))
+            )));
             "{ x: a.Id, y: b.Name }".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(
                 new JsObjectExpression(
-                    new JsProperty(new JsIdentifier("x"), new JsCallExpression("a.Id")),
-                    new JsProperty(new JsIdentifier("y"), new JsCallExpression("b.Name"))
+                    new JsProperty(new JsIdentifier("x"), new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("Id"))),
+                    new JsProperty(new JsIdentifier("y"), new JsMemberExpression(new JsIdentifier("b"), new JsIdentifier("Name")))
                 )
             ));
             "['a',\"b\",`c`]".ParseJsExpression(out token);
@@ -518,7 +521,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             JsToken token;
 
             var literal = "it.Id = 0".ToStringSegment().ParseJsToken(out token);
-            Assert.That(((JsCallExpression)token).Name, Is.EqualTo("it.Id"));
+            Assert.That(token, Is.EqualTo(new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("Id"))));
             literal = literal.ParseJsToken(out token);
             Assert.That(token, Is.EqualTo(JsAssignment.Operator));
             literal = literal.ParseJsToken(out token);
@@ -574,9 +577,9 @@ products
 
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
-                new JsCallExpression("c.CustomerId"),
-                new JsCallExpression("o.OrderId"),
-                new JsCallExpression("o.OrderDate")
+                new JsMemberExpression(new JsIdentifier("c"), new JsIdentifier("CustomerId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderDate"))
             )));
             
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}"));
@@ -597,9 +600,9 @@ products
 
             var varFragment = (PageVariableFragment) fragments[0];
             Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
-                new JsCallExpression("c.CustomerId"),
-                new JsCallExpression("o.OrderId"),
-                new JsCallExpression("o.OrderDate")
+                new JsMemberExpression(new JsIdentifier("c"), new JsIdentifier("CustomerId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderDate"))
             )));
             
             var newLine = (PageStringFragment) fragments[1];

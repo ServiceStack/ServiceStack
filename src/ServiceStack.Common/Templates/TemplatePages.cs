@@ -202,8 +202,15 @@ namespace ServiceStack.Templates
             };
             
             var page = new TemplatePage(Context, memFile);
-            page.Init().Wait(); // Safe as Memory Files are non-blocking
-            return page;
+            try
+            {
+                page.Init().Wait(); // Safe as Memory Files are non-blocking
+                return page;
+            }
+            catch (AggregateException e)
+            {
+                throw e.UnwrapIfSingleException();
+            }
         }
         
         public DateTime GetLastModified(TemplatePage page)

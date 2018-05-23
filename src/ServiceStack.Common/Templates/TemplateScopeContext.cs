@@ -44,6 +44,12 @@ namespace ServiceStack.Templates
         {
             return scope.PageResult.GetValue(name, scope);
         }
+
+        public static object EvaluateExpression(this TemplateScopeContext scope, string expr) //used in test only
+        {
+            expr.ParseJsExpression(out var token);
+            return token.Evaluate(scope);
+        }
         
         public static TemplateScopeContext CreateScopedContext(this TemplateScopeContext scope, string template, Dictionary<string, object> scopeParams = null, bool cachePage=true)
         {
@@ -102,26 +108,6 @@ namespace ServiceStack.Templates
         public static async Task WritePageAsync(this TemplateScopeContext scope, TemplatePage page, TemplateCodePage codePage, Dictionary<string, object> pageParams, CancellationToken token = default(CancellationToken))
         {
             await scope.PageResult.WritePageAsync(page, codePage, scope.ScopeWithParams(pageParams), token);
-        }
-
-        public static object EvaluateToken(this TemplateScopeContext scope, JsToken token)
-        {
-            var result = scope.PageResult.EvaluateToken(scope, token);
-            return result;
-        }
-
-        public static object Evaluate(this TemplateScopeContext scope, object value, JsToken token)
-        {
-            var result = token != null
-                ? scope.PageResult.EvaluateToken(scope, token)
-                : scope.PageResult.EvaluateAnyBindings(value, scope);
-            return result;
-        }
-
-        public static object Evaluate(this TemplateScopeContext scope, JsToken token)
-        {
-            var result = scope.PageResult.EvaluateAnyBindings(token, scope);
-            return result;
         }
 
         public static void InvokeAssignExpression(this TemplateScopeContext scope, string assignExpr, object target, object value)

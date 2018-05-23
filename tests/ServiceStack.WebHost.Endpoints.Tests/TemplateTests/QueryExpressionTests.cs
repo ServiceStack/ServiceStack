@@ -13,7 +13,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_parse_basic_QueryExpressions()
         {
-            "1".ParseJsExpression(out var expr);
+            JsToken expr;
+            
+            "1".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(new JsLiteral(1)));
 
             "1 > 2".ParseJsExpression(out expr);
@@ -51,9 +53,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "it.UnitsInStock > 0 and it.UnitPrice > 3".ParseJsExpression(out expr);
             Assert.That(expr, Is.EqualTo(
                 new JsLogicalExpression(
-                    new JsBinaryExpression(new JsCallExpression("it.UnitsInStock"), JsGreaterThan.Operator, new JsLiteral(0)),
+                    new JsBinaryExpression(
+                        new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("UnitsInStock")), 
+                        JsGreaterThan.Operator, 
+                        new JsLiteral(0)
+                    ),
                     JsAnd.Operator,
-                    new JsBinaryExpression(new JsCallExpression("it.UnitPrice"), JsGreaterThan.Operator, new JsLiteral(3))
+                    new JsBinaryExpression(
+                        new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("UnitPrice")), 
+                        JsGreaterThan.Operator, 
+                        new JsLiteral(3)
+                    )
                 )
             ));
         }

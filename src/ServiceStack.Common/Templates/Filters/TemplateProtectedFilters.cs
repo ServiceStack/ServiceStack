@@ -350,8 +350,6 @@ namespace ServiceStack.Templates
                     return Context.Cache;
                 case "ExpiringCache":
                     return Context.ExpiringCache;
-                case "BinderCache":
-                    return Context.BinderCache;
                 case "AssignExpressionCache":
                     return Context.AssignExpressionCache;
                 case "PathMappings":

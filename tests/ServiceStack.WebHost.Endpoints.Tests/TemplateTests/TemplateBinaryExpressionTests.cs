@@ -148,43 +148,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             ));
         }
 
-//        [Test]
-//        public void Does_parse_binary_and_logical_expressions()
-//        {
-//            JsToken expr;
-//
-//            "[1 + 2 * 3 > one && 1 * 2 < ten]".ParseExpression(out expr);
-//            
-//            Assert.That(expr, Is.EqualTo(
-//                new JsConstant(new List<object> {
-//                    new JsLogicalExpression(
-//                        new JsBinaryExpression(
-//                            new JsBinaryExpression(
-//                                new JsConstant(1),
-//                                JsAddition.Operator,
-//                                new JsBinaryExpression(
-//                                    new JsConstant(2),
-//                                    JsMultiplication.Operator, 
-//                                    new JsConstant(3)
-//                                )
-//                            ),
-//                            JsGreaterThan.Operator,
-//                            new JsIdentifier("one")                       
-//                        ),
-//                        JsAnd.Operator, 
-//                        new JsBinaryExpression(
-//                            new JsBinaryExpression(
-//                                new JsConstant(1),
-//                                JsMultiplication.Operator, 
-//                                new JsConstant(2)
-//                            ),
-//                            JsLessThan.Operator,
-//                            new JsIdentifier("ten")                       
-//                        )
-//                    )
-//                })
-//            ));
-//        }
+        [Test]
+        public void Does_parse_binary_and_logical_expressions()
+        {
+            JsToken expr;
+
+            "[1 + 2 * 3 > one && 1 * 2 < ten]".ParseJsExpression(out expr);
+            
+            Assert.That(expr, Is.EqualTo(
+                new JsArrayExpression(
+                    new JsLogicalExpression(
+                        new JsBinaryExpression(
+                            new JsBinaryExpression(
+                                new JsLiteral(1),
+                                JsAddition.Operator,
+                                new JsBinaryExpression(
+                                    new JsLiteral(2),
+                                    JsMultiplication.Operator, 
+                                    new JsLiteral(3)
+                                )
+                            ),
+                            JsGreaterThan.Operator,
+                            new JsIdentifier("one")                       
+                        ),
+                        JsAnd.Operator, 
+                        new JsBinaryExpression(
+                            new JsBinaryExpression(
+                                new JsLiteral(1),
+                                JsMultiplication.Operator, 
+                                new JsLiteral(2)
+                            ),
+                            JsLessThan.Operator,
+                            new JsIdentifier("ten")                       
+                        )
+                    )
+                ))
+            );
+        }
 
         [Test]
         public void Does_parse_unary_expression()

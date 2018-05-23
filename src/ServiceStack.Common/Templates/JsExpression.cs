@@ -18,15 +18,6 @@ namespace ServiceStack.Templates
 
     public static class JsExpressionUtils
     {
-        public static JsToken ToToken(this object value, JsToken binding)
-        {
-            if (binding != null)
-                return binding;
-            if (value is JsToken t)
-                return t;
-            return new JsLiteral(value);
-        }
-        
         public static StringSegment ParseJsExpression(this string literal, out JsToken token) =>
             literal.ToStringSegment().ParseJsExpression(out token);
 
@@ -46,7 +37,7 @@ namespace ServiceStack.Templates
             }
 
             var peekChar = peekLiteral.GetChar(0);
-            if (peekChar == ')' || peekChar == ']' || peekChar == '}' || peekChar == ',')
+            if (JsTokenUtils.ExpressionTerminator.Contains(peekChar))
             {
                 token = token1;
                 return peekLiteral;
@@ -104,7 +95,8 @@ namespace ServiceStack.Templates
             {
                 if (left is JsExpression jsExpr)
                     return jsExpr;
-                return new JsLiteralExpression(left);
+                
+                throw new ArgumentException($"Invalid Syntax: Expected Expression but was '{left}'");
             }
 
             if (literal.IsNullOrEmpty())
@@ -201,11 +193,18 @@ namespace ServiceStack.Templates
 
         static int GetNextBinaryPrecedence(this StringSegment literal)
         {
-            literal.ParseJsToken(out var token);
-
-            if (token is JsBinaryOperator binaryOp)
+            if (!literal.IsNullOrEmpty())
             {
-                return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
+                var c = literal.GetChar(0);
+                if (!JsTokenUtils.ExpressionTerminator.Contains(c))
+                {
+                    literal.ParseJsToken(out var token);
+    
+                    if (token is JsBinaryOperator binaryOp)
+                    {
+                        return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
+                    }
+                }
             }
 
             return 0;

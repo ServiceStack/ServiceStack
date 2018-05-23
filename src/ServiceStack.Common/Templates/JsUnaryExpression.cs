@@ -2,10 +2,9 @@
 {
     public class JsUnaryExpression : JsExpression
     {
-        public JsUnaryOperator Op { get; set; }
-        public JsToken Target { get; set; }
+        public JsUnaryOperator Op { get; }
+        public JsToken Target { get; }
         public override string ToRawString() => Op.Token + JsonValue(Target);
-        public JsUnaryExpression() { }
 
         public JsUnaryExpression(JsUnaryOperator op, JsToken target)
         {
@@ -33,7 +32,7 @@
 
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var result = scope.EvaluateToken(Target);
+            var result = Target.Evaluate(scope);
             var afterUnary = Op.Evaluate(result);
             return afterUnary;
         }

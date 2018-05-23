@@ -7,8 +7,6 @@
         public JsToken Right { get; set; }
         public override string ToRawString() => "(" + JsonValue(Left) + Operand.Token + JsonValue(Right) + ")";
 
-        public JsLogicalExpression() { }
-
         public JsLogicalExpression(JsToken left, JsLogicOperator operand, JsToken right)
         {
             Left = left;
@@ -18,8 +16,8 @@
 
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var lhs = scope.EvaluateToken(Left);
-            var rhs = scope.EvaluateToken(Right);
+            var lhs = Left.Evaluate(scope);
+            var rhs = Right.Evaluate(scope);
             return Operand.Test(lhs, rhs);
         }
 
