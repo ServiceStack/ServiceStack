@@ -53,37 +53,35 @@ namespace ServiceStack.Templates
                     var literal = text.Subsegment(varStartPos);
                     literal = literal.ParseJsExpression(out var expr, filterExpression:true);
     
-                    List<JsCallExpression> filterCommands = null;
+                    var filters = new List<JsCallExpression>();
 
                     if (!literal.StartsWith("}}"))
                     {
                         literal = literal.ParseJsToken(out var filterOp);
                         if (filterOp == JsBitwiseOr.Operator)
                         {
-                            var varEndPos = 0;
-                            bool foundVarEnd = false;
-                        
-                            filterCommands = literal.ParseFilterExpression<JsCallExpression>(
-                                separator: '|',
-                                atEndIndex: (str, strPos) =>
+                            while (true)
+                            {
+                                literal = literal.ParseJsCallExpression(out var filter, filterExpression:true);
+                            
+                                filters.Add(filter);
+
+                                literal = literal.AdvancePastWhitespace();
+
+                                if (literal.IsNullOrEmpty())
+                                    throw new SyntaxErrorException("Unterminated filter expression");
+
+                                if (literal.StartsWith("}}"))
                                 {
-                                    while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
-                                        strPos++;
-        
-                                    if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
-                                    {
-                                        foundVarEnd = true;
-                                        varEndPos = varEndPos + 1 + strPos + 1;
-                                        return strPos;
-                                    }
-                                    return null;
-                                },
-                                allowWhitespaceSensitiveSyntax: true);
-                        
-                            if (!foundVarEnd)
-                                throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
-        
-                            literal = literal.Advance(varEndPos);
+                                    literal = literal.Advance(2);
+                                    break;
+                                }
+                                
+                                if (literal.GetChar(0) != '|')
+                                    throw new SyntaxErrorException($"Expected filter separator '|' but was '{literal.GetChar(0)}'");
+
+                                literal = literal.Advance(1);
+                            }
                         }
                         else
                         {
@@ -100,7 +98,7 @@ namespace ServiceStack.Templates
                     var originalText = text.Subsegment(pos, length);
                     lastPos = pos + length;
     
-                    var varFragment = new PageVariableFragment(originalText, expr, filterCommands);
+                    var varFragment = new PageVariableFragment(originalText, expr, filters);
                     to.Add(varFragment);
     
                     var newLineLen = literal.StartsWith("\n")
@@ -108,6 +106,7 @@ namespace ServiceStack.Templates
                         : literal.StartsWith("\r\n")
                             ? 2
                             : 0;
+                    
                     if (newLineLen > 0)
                     {
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();

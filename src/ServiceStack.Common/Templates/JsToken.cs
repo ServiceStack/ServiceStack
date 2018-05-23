@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -266,233 +265,6 @@ namespace ServiceStack.Templates
         }
     }
 
-    public abstract class JsOperator : JsToken
-    {
-        public abstract string Token { get; }
-        public override string ToRawString() => Token;
-        public override object Evaluate(TemplateScopeContext scope) => this;
-    }
-
-    public abstract class JsBinaryOperator : JsOperator
-    {
-        public abstract object Evaluate(object lhs, object rhs);
-    }
-
-    public abstract class JsUnaryOperator : JsOperator
-    {
-        public abstract object Evaluate(object target);
-        public static JsUnaryOperator GetUnaryOperator(JsOperator op) => 
-            (JsUnaryOperator) (
-                op == JsSubtraction.Operator 
-                ? JsMinus.Operator 
-                : op == JsNot.Operator
-                ? op : null);
-    }
-    public abstract class JsLogicOperator : JsBinaryOperator
-    {
-        public abstract bool Test(object lhs, object rhs);
-        public override object Evaluate(object lhs, object rhs) => Test(lhs, rhs);
-    }
-    public class JsGreaterThan : JsLogicOperator
-    {
-        public static JsGreaterThan Operator = new JsGreaterThan();
-        private JsGreaterThan(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.greaterThan(lhs, rhs);
-        public override string Token => ">";
-    }
-    public class JsGreaterThanEqual : JsLogicOperator
-    {
-        public static JsGreaterThanEqual Operator = new JsGreaterThanEqual();
-        private JsGreaterThanEqual(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.greaterThanEqual(lhs, rhs);
-        public override string Token => ">=";
-    }
-    public class JsLessThanEqual : JsLogicOperator
-    {
-        public static JsLessThanEqual Operator = new JsLessThanEqual();
-        private JsLessThanEqual(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.lessThanEqual(lhs, rhs);
-        public override string Token => "<=";
-    }
-    public class JsLessThan : JsLogicOperator
-    {
-        public static JsLessThan Operator = new JsLessThan();
-        private JsLessThan(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.lessThan(lhs, rhs);
-        public override string Token => "<";
-    }
-    public class JsEquals : JsLogicOperator
-    {
-        public static JsEquals Operator = new JsEquals();
-        private JsEquals(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.equals(lhs, rhs);
-        public override string Token => "==";
-    }
-    public class JsNotEquals : JsLogicOperator
-    {
-        public static JsNotEquals Operator = new JsNotEquals();
-        private JsNotEquals(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.notEquals(lhs, rhs);
-        public override string Token => "!=";
-    }
-    public class JsStrictEquals : JsLogicOperator
-    {
-        public static JsStrictEquals Operator = new JsStrictEquals();
-        private JsStrictEquals(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.equals(lhs, rhs);
-        public override string Token => "===";
-    }
-    public class JsStrictNotEquals : JsLogicOperator
-    {
-        public static JsStrictNotEquals Operator = new JsStrictNotEquals();
-        private JsStrictNotEquals(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.Instance.notEquals(lhs, rhs);
-        public override string Token => "!==";
-    }
-    public class JsAssignment : JsBinaryOperator
-    {
-        public static JsAssignment Operator = new JsAssignment();
-        private JsAssignment(){}
-        public override string Token => "=";
-        public override object Evaluate(object lhs, object rhs) => rhs;
-    }
-    public class JsOr : JsLogicOperator
-    {
-        public static JsOr Operator = new JsOr();
-        private JsOr(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.isTrue(lhs) || TemplateDefaultFilters.isTrue(rhs);
-        public override string Token => "||";
-    }
-    public class JsAnd : JsLogicOperator
-    {
-        public static JsAnd Operator = new JsAnd();
-        private JsAnd(){}
-        public override bool Test(object lhs, object rhs) => TemplateDefaultFilters.isTrue(lhs) && TemplateDefaultFilters.isTrue(rhs);
-        public override string Token => "&&";
-    }
-    public class JsNot : JsUnaryOperator
-    {
-        public static JsNot Operator = new JsNot();
-        private JsNot(){}
-        public override string Token => "!";
-        public override object Evaluate(object target) => !TemplateDefaultFilters.isTrue(target);
-    }
-    public class JsBitwiseAnd : JsBinaryOperator
-    {
-        public static JsBitwiseAnd Operator = new JsBitwiseAnd();
-        private JsBitwiseAnd(){}
-        public override string Token => "&";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseAnd(lhs, rhs);
-    }
-    public class JsBitwiseOr : JsBinaryOperator
-    {
-        public static JsBitwiseOr Operator = new JsBitwiseOr();
-        private JsBitwiseOr(){}
-        public override string Token => "|";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseOr(lhs, rhs);
-    }
-    public class JsBitwiseXOr : JsBinaryOperator
-    {
-        public static JsBitwiseXOr Operator = new JsBitwiseXOr();
-        private JsBitwiseXOr(){}
-        public override string Token => "^";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseXOr(lhs, rhs);
-    }
-    public class JsBitwiseLeftShift : JsBinaryOperator
-    {
-        public static JsBitwiseLeftShift Operator = new JsBitwiseLeftShift();
-        private JsBitwiseLeftShift(){}
-        public override string Token => "<<";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseLeftShift(lhs, rhs);
-    }
-    public class JsBitwiseRightShift : JsBinaryOperator
-    {
-        public static JsBitwiseRightShift Operator = new JsBitwiseRightShift();
-        private JsBitwiseRightShift(){}
-        public override string Token => ">>";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseRightShift(lhs, rhs);
-    }
-    public class JsAddition : JsBinaryOperator
-    {
-        public static JsAddition Operator = new JsAddition();
-        private JsAddition(){}
-        public override string Token => "+";
-        
-        public override object Evaluate(object lhs, object rhs)
-        {
-            if (lhs is string || rhs is string)
-            {
-                var lhsString = lhs.ConvertTo<string>();
-                var rhsString = rhs.ConvertTo<string>();
-                return string.Concat(lhsString, rhsString);
-            }
-            
-            return DynamicNumber.GetNumber(lhs, rhs).add(lhs, rhs);
-        }
-    }
-    public class JsSubtraction : JsBinaryOperator
-    {
-        public static JsSubtraction Operator = new JsSubtraction();
-        private JsSubtraction(){}
-        public override string Token => "-";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).sub(lhs, rhs);
-    }
-    public class JsMultiplication : JsBinaryOperator
-    {
-        public static JsMultiplication Operator = new JsMultiplication();
-        private JsMultiplication(){}
-        public override string Token => "*";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).mul(lhs, rhs);
-    }
-    public class JsDivision : JsBinaryOperator
-    {
-        public static JsDivision Operator = new JsDivision();
-        private JsDivision(){}
-        public override string Token => "/";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).div(lhs, rhs);
-    }
-    public class JsMod : JsBinaryOperator
-    {
-        public static JsMod Operator = new JsMod();
-        private JsMod(){}
-        public override string Token => "%";
-        
-        public override object Evaluate(object lhs, object rhs) => 
-            DynamicNumber.GetNumber(lhs, rhs).mod(lhs, rhs);
-    }
-    public class JsMinus : JsUnaryOperator
-    {
-        public static JsMinus Operator = new JsMinus();
-        private JsMinus(){}
-        public override string Token => "-";
-        public override object Evaluate(object target) => target == null 
-            ? 0 
-            : DynamicNumber.Multiply(target, -1).ConvertTo(target.GetType());
-    }
-    public class JsPlus : JsUnaryOperator
-    {
-        public static JsPlus Operator = new JsPlus();
-        private JsPlus(){}
-        public override string Token => "+";
-        public override object Evaluate(object target) => target ?? 0;
-    }
-
     public static class JsTokenUtils
     {
         private static readonly byte[] ValidNumericChars;
@@ -651,7 +423,7 @@ namespace ServiceStack.Templates
                     return literal;
                 }
                 
-                throw new ArgumentException($"Invalid syntax: Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
+                throw new SyntaxErrorException($"Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
             }
 
             token = null;
@@ -676,7 +448,7 @@ namespace ServiceStack.Templates
                 }
 
                 if (i >= literal.Length || literal.GetChar(i) != firstChar)
-                    throw new ArgumentException($"Unterminated string literal: {literal}");
+                    throw new SyntaxErrorException($"Unterminated string literal: {literal}");
 
                 var str = literal.Substring(1, i - 1);
                 token = new JsLiteral(str);
@@ -748,7 +520,7 @@ namespace ServiceStack.Templates
                     literal = literal.ParseJsToken(out var mapKeyToken);
 
                     if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsIdentifier)) 
-                        throw new NotSupportedException($"'{mapKeyToken}' is not a valid Object key, expected literal or identifier.");
+                        throw new SyntaxErrorException($"'{mapKeyToken}' is not a valid Object key, expected literal or identifier.");
 
                     JsToken mapValueToken;
                     bool shorthand = false;
@@ -764,7 +536,7 @@ namespace ServiceStack.Templates
                     {
                         shorthand = true;
                         if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
-                            throw new ArgumentException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
+                            throw new SyntaxErrorException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
                             
                         mapValueToken = mapKeyToken;
                     }
@@ -790,47 +562,7 @@ namespace ServiceStack.Templates
             }
             if (firstChar == '[')
             {
-                var elements = new List<JsToken>();
-
-                literal = literal.Advance(1);
-                while (!literal.IsNullOrEmpty())
-                {
-                    literal = literal.AdvancePastWhitespace();
-                    if (literal.GetChar(0) == ']')
-                    {
-                        literal = literal.Advance(1);
-                        break;
-                    }
-
-                    literal = literal.ParseJsExpression(out var listValue);
-                    elements.Add(listValue);
-
-                    literal = literal.AdvancePastWhitespace();
-                    if (literal.IsNullOrEmpty())
-                        break;
-                    
-                    if (literal.GetChar(0) == ']')
-                    {
-                        literal = literal.Advance(1);
-                        break;
-                    }
-
-                    literal = literal.AdvancePastWhitespace();
-                    c = literal.GetChar(0);
-                    if (c == ']')
-                    {
-                        literal = literal.Advance(1);
-                        break;
-                    }
-                    
-                    if (c != ',')
-                        throw new ArgumentException($"Unterminated array literal near: {literal.SubstringWithElipsis(0, 50)}");
-                    
-                    literal = literal.Advance(1);
-                    literal = literal.AdvancePastWhitespace();
-                }
-
-                literal = literal.AdvancePastWhitespace();
+                literal = literal.ParseArguments(out var elements, termination: ']');
 
                 token = new JsArrayExpression(elements);
                 return literal;
@@ -927,7 +659,7 @@ namespace ServiceStack.Templates
                         token = JsMod.Operator;
                         return literal.Advance(1);
                     default:
-                        throw new NotSupportedException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
+                        throw new SyntaxErrorException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
                 }
             }
 
@@ -960,8 +692,7 @@ namespace ServiceStack.Templates
 
                             literal = literal.AdvancePastWhitespace();
                             if (literal.IsNullOrEmpty() || literal.GetChar(0) != ']')
-                                throw new ArgumentException(
-                                    $"Invalid Syntax: expected ']' but was '{literal.GetChar(0)}'");
+                                throw new SyntaxErrorException($"Expected ']' but was '{literal.GetChar(0)}'");
 
                             literal = literal.Advance(1);
                         }
@@ -973,7 +704,7 @@ namespace ServiceStack.Templates
 
                         c = literal.GetChar(0);
                         if (c == '(')
-                            throw new ArgumentException("Invalid Syntax: call expression found on member expression. Only filters can be invoked.");
+                            throw new SyntaxErrorException("Call expression found on member expression. Only filters can be invoked.");
                         
                         if (!(c == '.' || c == '['))
                             break;
@@ -981,7 +712,7 @@ namespace ServiceStack.Templates
                 }
                 else if (c == '(' || (filterExpression && c == ':'))
                 {
-                    literal = preIdentifierLiteral.ParseCallExpression(out var callExpr);
+                    literal = preIdentifierLiteral.ParseJsCallExpression(out var callExpr, filterExpression:filterExpression);
                     token = callExpr;
                     return literal;
                 }
@@ -995,9 +726,14 @@ namespace ServiceStack.Templates
         {
             var i = 0;
 
+            literal = literal.AdvancePastWhitespace();
+
+            if (literal.IsNullOrEmpty())
+                throw new SyntaxErrorException("Expected identifier before end");
+
             var c = literal.GetChar(i);
             if (!c.IsValidVarNameChar())
-                throw new ArgumentException($"Invalid Syntax: expected start of identifier but was '{c}'");
+                throw new SyntaxErrorException($"Expected start of identifier but was '{c}'");
 
             i++;
             
@@ -1032,689 +768,99 @@ namespace ServiceStack.Templates
         
     }
 
-    public class JsMemberExpression : JsToken
-    {
-        public JsToken Object { get; }
-        public JsToken Property { get; }
-        public bool Computed { get; } //indexer
-
-        public JsMemberExpression(JsToken @object, JsToken property) : this(@object, property, false) {}
-        public JsMemberExpression(JsToken @object, JsToken property, bool computed)
-        {
-            Object = @object;
-            Property = property;
-            Computed = computed;
-        }
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate();
-            sb.Append(Object.ToRawString());
-            if (Computed)
-            {
-                sb.Append("[");
-                sb.Append(Property.ToRawString());
-                sb.Append("]");
-            }
-            else
-            {
-                sb.Append(".");
-                sb.Append(Property.ToRawString());
-            }
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var targetValue = Object.Evaluate(scope);
-            var ret = GetValue(targetValue, scope);
-            
-            // returning `null` indicates the property does not exist and will render the original expression instead of empty string
-//            if (ret == null)
-//                return JsNull.Value; // treat as empty expression
-
-            return ret;
-        }
-
-        private object GetValue(object targetValue, TemplateScopeContext scope)
-        {
-            if (targetValue == null || targetValue == JsNull.Value)
-                return JsNull.Value;
-            var targetType = targetValue.GetType();
-            try 
-            { 
-                object propValue(string name)
-                {
-                    var memberFn = TypeProperties.Get(targetType).GetPublicGetter(name)
-                                   ?? TypeFields.Get(targetType).GetPublicGetter(name);
-    
-                    if (memberFn != null)
-                    {
-                        return memberFn(targetValue);
-                    }
-
-                    var indexerMethod = targetType.GetInstanceMethod("get_Item");
-                    if (indexerMethod != null)
-                    {
-                        var fn = indexerMethod.GetInvoker();
-                        var ret = fn(targetValue, name);
-                        return ret ?? JsNull.Value;
-                    }
-                    
-                    throw new ArgumentException($"'{targetType.Name}' does not have a '{name}' property or field");
-                }
-
-                if (!Computed)
-                {
-                    if (Property is JsIdentifier identifier)
-                    {
-                        var ret = propValue(identifier.NameString);
-
-                        // Don't emit member expression on null KeyValuePair
-                        if (ret == null && targetType.Name == "KeyValuePair`2")
-                            return JsNull.Value; 
-                        
-                        return ret;
-                    }
-                }
-                else
-                {
-                    var indexValue = Property.Evaluate(scope);
-                    if (indexValue == null)
-                        return JsNull.Value;
-
-                    if (targetType.IsArray)
-                    {
-                        var array = (Array)targetValue;
-                        if (indexValue is long l)
-                            return array.GetValue(l);
-                        var intValue = indexValue.ConvertTo<int>();
-                        return array.GetValue(intValue);
-                    }
-                    if (targetValue is IDictionary dict)
-                    {
-                        var ret = dict[indexValue];
-                        return ret ?? JsNull.Value;
-                    }
-                    if (indexValue is string propName)
-                    {
-                        return propValue(propName);
-                    }
-                    if (targetValue is IList list)
-                    {
-                        var intValue = indexValue.ConvertTo<int>();
-                        return list[intValue];
-                    }
-                    if (targetValue is IEnumerable e)
-                    {
-                        var intValue = indexValue.ConvertTo<int>();
-                        var i = 0;
-                        foreach (var item in e)
-                        {
-                            if (i++ == intValue)
-                                return item;                        
-                        }
-                        return null;
-                    }
-                    if (DynamicNumber.IsNumber(indexValue.GetType()))
-                    {
-                        var indexerMethod = targetType.GetInstanceMethod("get_Item");
-                        if (indexerMethod != null)
-                        {
-                            var fn = indexerMethod.GetInvoker();
-                            var ret = fn(targetValue, indexValue);
-                            return ret ?? JsNull.Value;
-                        }
-                    }
-                }
-            }
-            catch (KeyNotFoundException)
-            {
-                return JsNull.Value;
-            }
-            catch (Exception ex)
-            {
-                var exResult = scope.PageResult.Format.OnExpressionException(scope.PageResult, ex);
-                if (exResult != null)
-                    return exResult;
-
-                var expr = ToRawString();
-                throw new BindingExpressionException($"Could not evaluate expression '{expr}'", null, expr, ex);
-            }
-            
-            throw new NotSupportedException($"'{targetValue.GetType()}' does not support access by '{Property}'");
-        }
-
-        protected bool Equals(JsMemberExpression other)
-        {
-            return Equals(Object, other.Object) && 
-                   Equals(Property, other.Property) && 
-                   Computed == other.Computed;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsMemberExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (Object != null ? Object.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Property != null ? Property.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Computed.GetHashCode();
-                return hashCode;
-            }
-        }
-    }
-
-    public class JsCallExpression : JsToken
-    {
-        public JsToken Callee { get; }
-        public JsToken[] Arguments { get; }
-        
-        public JsCallExpression()
-        {
-            Args = new List<StringSegment>();
-        }
-        
-        public JsCallExpression(string name) : this() => Name = name.ToStringSegment();
-        public JsCallExpression(StringSegment name) : this() => Name = name;
-
-        public StringSegment Name { get; set; }
-
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
-
-        public List<StringSegment> Args { get; internal set; }
-
-        public StringSegment Original { get; set; }
-
-        public virtual int IndexOfMethodEnd(StringSegment commandString, int pos) => pos;
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var value = Args.Count > 0 
-                ? scope.PageResult.EvaluateMethod(this, scope) 
-                : scope.PageResult.EvaluateExpression(Name, scope);
-            return value;
-        }
-
-        //Output different format for debugging to verify command was parsed correctly
-        public virtual string ToDebugString()
-        {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append('|');
-                sb.Append(arg);
-            }
-            return $"[{Name}:{StringBuilderCacheAlt.ReturnAndFree(sb)}]";
-        }
-
-        public override string ToString()
-        {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append(',');
-                sb.Append(JsonValue(arg));
-            }
-            return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
-        }
-
-        public StringSegment ToStringSegment() => ToString().ToStringSegment();
-        
-        public override string ToRawString() => (":" + ToString()).EncodeJson();
-
-        public string GetDisplayName() => (NameString ?? "").Replace('′', '"');
-
-        protected bool Equals(JsCallExpression other)
-        {
-            return string.Equals(nameString, other.nameString);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsCallExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (nameString != null ? nameString.GetHashCode() : 0);
-                return hashCode;
-            }
-        }
-    }
-
     public static class CallExpressionUtils
     {
-        public static List<JsCallExpression> ParseCallExpression(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseFilterExpression<JsCallExpression>(out int _, separator, atEndIndex);
-
-        public static List<JsCallExpression> ParseCallExpression(this StringSegment commandsString, out int pos, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null) 
-            => commandsString.ParseFilterExpression<JsCallExpression>(out pos, separator, atEndIndex);
-
-        public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, char separator = ',', Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false) 
-            where T : JsCallExpression, new()
-            => commandsString.ParseFilterExpression<T>(out int _, separator, atEndIndex, allowWhitespaceSensitiveSyntax);
-
-        public static List<T> ParseFilterExpression<T>(this StringSegment commandsString, out int pos, char separator = ',',
-            Func<StringSegment, int, int?> atEndIndex = null, bool allowWhitespaceSensitiveSyntax = false)
-            where T : JsCallExpression, new()
+        public static StringSegment ParseJsCallExpression(this StringSegment literal, out JsCallExpression expression, bool filterExpression=false)
         {
-            var to = new List<T>();
-            List<StringSegment> args = null;
-            pos = 0;
-
-            if (commandsString.IsNullOrEmpty())
-                return to;
-
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBackTickQuotes = false;
-            var inPrimeQuotes = false;
-            var inBrackets = false;
-
-            var endBlockPos = commandsString.Length;
-            var cmd = new T();
-
-            try
-            {
-                for (var i = 0; i < commandsString.Length; i++)
-                {
-                    var c = commandsString.GetChar(i);
-                    if (c.IsWhiteSpace())
-                        continue;
-
-                    if (inDoubleQuotes)
-                    {
-                        if (c == '"')
-                            inDoubleQuotes = false;
-                        continue;
-                    }
-                    if (inSingleQuotes)
-                    {
-                        if (c == '\'')
-                            inSingleQuotes = false;
-                        continue;
-                    }
-                    if (inBackTickQuotes)
-                    {
-                        if (c == '`')
-                            inBackTickQuotes = false;
-                        continue;
-                    }
-                    if (inPrimeQuotes)
-                    {
-                        if (c == '′')
-                            inPrimeQuotes = false;
-                        continue;
-                    }
-                    switch (c)
-                    {
-                        case '"':
-                            inDoubleQuotes = true;
-                            continue;
-                        case '\'':
-                            inSingleQuotes = true;
-                            continue;
-                        case '`':
-                            inBackTickQuotes = true;
-                            continue;
-                        case '′':
-                            inPrimeQuotes = true;
-                            continue;
-                    }
-
-                    if (c.IsOperatorChar() && // don't take precedence over '|' seperator 
-                        (c != separator || (i + 1 < commandsString.Length && commandsString.GetChar(i + 1).IsOperatorChar())))
-                    {
-                        cmd.Name = commandsString.Subsegment(0, i).TrimEnd();
-                        pos = i;
-                        if (cmd.Name.HasValue)
-                            to.Add(cmd);
-                        return to;
-                    }
-
-                    if (allowWhitespaceSensitiveSyntax && c == ':')
-                    {
-                        // replace everything after ':' up till new line and rewrite as single string to method
-                        var endStringPos = commandsString.IndexOf("\n", i);
-                        var endStatementPos = commandsString.IndexOf("}}", i);
-
-                        if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
-                            endStringPos = endStatementPos;
-                        
-                        if (endStringPos == -1)
-                            throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithElipsis(i,50)}'");
-
-                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
-                        
-                        var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
-                        var rewrittenArgs = "′" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("′", "\\′") + "′)";
-                        ParseArguments(rewrittenArgs.ToStringSegment(), out args);
-                        cmd.Args = args;
-                        
-                        i = endStringPos == endStatementPos 
-                            ? endStatementPos - 2  //move cursor back before var block terminator 
-                            : endStringPos;
-
-                        pos = i + 1;
-                        continue;
-                    }
-
-                    if (c == '(')
-                    {
-                        inBrackets = true;
-                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
-                        pos = i + 1;
-
-                        var literal = commandsString.Subsegment(pos);
-                        var literalRemaining = ParseArguments(literal, out args);
-                        cmd.Args = args;
-                        var endPos = literal.Length - literalRemaining.Length;
-                        
-                        i += endPos;
-                        pos = i + 1;
-                        continue;
-                    }
-                    if (c == ')')
-                    {
-                        inBrackets = false;
-                        pos = i + 1;
-
-                        pos = cmd.IndexOfMethodEnd(commandsString, pos);
-                        continue;
-                    }
-
-                    if (inBrackets && c == ',')
-                    {
-                        var arg = commandsString.Subsegment(pos, i - pos).Trim();
-                        cmd.Args.Add(arg);
-                        pos = i + 1;
-                    }
-                    else if (c == separator)
-                    {
-                        if (!cmd.Name.HasValue)
-                            cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
-
-                        to.Add(cmd);
-                        cmd = new T();
-                        pos = i + 1;
-                    }
-                    
-                    var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
-                    if (atEndIndexPos != null)
-                    {
-                        endBlockPos = atEndIndexPos.Value;
-                        break;
-                    }
-                }
-
-                var remaining = commandsString.Subsegment(pos, endBlockPos - pos);
-                if (!remaining.Trim().IsNullOrEmpty())
-                {
-                    pos += remaining.Length;
-                    cmd.Name = remaining.Trim();
-                }
-
-                if (!cmd.Name.IsNullOrEmpty())
-                    to.Add(cmd);
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"Illegal syntax near '{commandsString.Value.SafeSubstring(pos - 10, 50)}...'", e);
-            }
-
-            return to;
-        }
-
-        // ( {args} , {args} )
-        //   ^
-        public static StringSegment ParseArguments(StringSegment argsString, out List<StringSegment> args)
-        {
-            var to = new List<StringSegment>();
-
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBackTickQuotes = false;
-            var inPrimeQuotes = false;
-            var inBrackets = 0;
-            var inParens = 0;
-            var inBraces = 0;
-            var lastPos = 0;
-
-            for (var i = 0; i < argsString.Length; i++)
-            {
-                var c = argsString.GetChar(i);
-                if (inDoubleQuotes)
-                {
-                    if (c == '"')
-                        inDoubleQuotes = false;
-                    continue;
-                }
-                if (inSingleQuotes)
-                {
-                    if (c == '\'')
-                        inSingleQuotes = false;
-                    continue;
-                }
-                if (inBackTickQuotes)
-                {
-                    if (c == '`')
-                        inBackTickQuotes = false;
-                    continue;
-                }
-                if (inPrimeQuotes)
-                {
-                    if (c == '′')
-                        inPrimeQuotes = false;
-                    continue;
-                }
-                if (inBrackets > 0)
-                {
-                    if (c == '[')
-                        ++inBrackets;
-                    else if (c == ']')
-                        --inBrackets;
-                    continue;
-                }
-                if (inBraces > 0)
-                {
-                    if (c == '{')
-                        ++inBraces;
-                    else if (c == '}')
-                        --inBraces;
-                    continue;
-                }
-                if (inParens > 0)
-                {
-                    if (c == '(')
-                        ++inParens;
-                    else if (c == ')')
-                        --inParens;
-                    continue;
-                }
-
-                switch (c)
-                {
-                    case '"':
-                        inDoubleQuotes = true;
-                        continue;
-                    case '\'':
-                        inSingleQuotes = true;
-                        continue;
-                    case '`':
-                        inBackTickQuotes = true;
-                        continue;
-                    case '′':
-                        inPrimeQuotes = true;
-                        continue;
-                    case '[':
-                        inBrackets++;
-                        continue;
-                    case '{':
-                        inBraces++;
-                        continue;
-                    case '(':
-                        inParens++;
-                        continue;
-                    case ',':
-                    {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                        to.Add(arg);
-                        lastPos = i + 1;
-                        continue;
-                    }
-                    case ')':
-                    {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
-                        if (!arg.IsNullOrEmpty())
-                        {
-                            to.Add(arg);
-                        }
-
-                        args = to;
-                        return argsString.Advance(i);
-                    }
-                }
-            }
+            literal = literal.ParseIdentifier(out var token);
             
-            args = to;
-            return TypeConstants.EmptyStringSegment;
-        }
-        
-        public static StringSegment ParseCallExpression(this StringSegment literal, out JsCallExpression binding)
-        {
-            var inDoubleQuotes = false;
-            var inSingleQuotes = false;
-            var inBackTickQuotes = false;
-            var inPrimeQuotes = false;
-            var inBrackets = 0;
-            var inBraces = 0;
-            var lastPos = 0;
+            if (!(token is JsIdentifier identifier))
+                throw new SyntaxErrorException($"Expected identifier but instead found '{token}'");
 
-            for (var i = 0; i < literal.Length; i++)
+            literal = literal.AdvancePastWhitespace();
+
+            if (literal.IsNullOrEmpty() || literal.GetChar(0) != '(')
             {
-                var c = literal.GetChar(i);
-                if (c.IsWhiteSpace())
-                    continue;
-                
-                if (inDoubleQuotes)
+                var isWhitespaceSyntax = filterExpression && literal.GetChar(0) == ':';
+                if (isWhitespaceSyntax)
                 {
-                    if (c == '"')
-                        inDoubleQuotes = false;
-                    continue;
-                }
-                if (inSingleQuotes)
-                {
-                    if (c == '\'')
-                        inSingleQuotes = false;
-                    continue;
-                }
-                if (inBackTickQuotes)
-                {
-                    if (c == '`')
-                        inBackTickQuotes = false;
-                    continue;
-                }
-                if (inPrimeQuotes)
-                {
-                    if (c == '′')
-                        inPrimeQuotes = false;
-                    continue;
-                }
-                if (inBrackets > 0)
-                {
-                    if (c == '[')
-                        ++inBrackets;
-                    if (c == ']')
-                        --inBrackets;
-                    continue;
-                }
-                if (inBraces > 0)
-                {
-                    if (c == '{')
-                        ++inBraces;
-                    if (c == '}')
-                        --inBraces;
-                    continue;
-                }
-                
-                if (c == ':') //whitespace sensitive syntax
-                {
+                    literal = literal.Advance(1);
+                    
                     // replace everything after ':' up till new line and rewrite as single string to method
-                    var endStringPos = literal.IndexOf("\n", i);
-                    var endStatementPos = literal.IndexOf("}}", i);
-
+                    var endStringPos = literal.IndexOf("\n");
+                    var endStatementPos = literal.IndexOf("}}");
+    
                     if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
                         endStringPos = endStatementPos;
-                        
+                            
                     if (endStringPos == -1)
-                        throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{literal.SubstringWithElipsis(i,50)}'");
+                        throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{literal.SubstringWithElipsis(0,50)}'");
 
-                    binding = new JsCallExpression(literal.Subsegment(0, i).Trim());
-
-                    var originalArgs = literal.Substring(i + 1, endStringPos - i - 1);
-                    var rewrittenArgs = "′" + originalArgs.Trim().Replace("{","{{").Replace("}","}}").Replace("′", "\\′") + "′)";
-                    ParseArguments(rewrittenArgs.ToStringSegment(), out List<StringSegment> args);
-                    binding.Args = args;
+                    var originalArg = literal.Subsegment(0, endStringPos).Trim().ToString();
+                    var rewrittenArgs = originalArg.Replace("{","{{").Replace("}","}}");
+                    var strArg = new JsLiteral(rewrittenArgs);
+    
+                    expression = new JsCallExpression(identifier, strArg);
                     return literal.Subsegment(endStringPos);
                 }
                 
-                if (c == '(')
-                {
-                    var pos = i + 1;
-                    binding = new JsCallExpression(literal.Subsegment(0, i).Trim());
-                    literal = ParseArguments(literal.Subsegment(pos), out List<StringSegment> args);
-                    binding.Args = args;
-                    return literal.Advance(1);
-                }
-
-                switch (c)
-                {
-                    case '"':
-                        inDoubleQuotes = true;
-                        continue;
-                    case '\'':
-                        inSingleQuotes = true;
-                        continue;
-                    case '`':
-                        inBackTickQuotes = true;
-                        continue;
-                    case '′':
-                        inPrimeQuotes = true;
-                        continue;
-                    case '[':
-                        inBrackets++;
-                        continue;
-                    case '{':
-                        inBraces++;
-                        continue;
-                }
-
-                if (!(c.IsValidVarNameChar() || c.IsBindingExpressionChar()))
-                {
-                    binding = new JsCallExpression(literal.Subsegment(lastPos, i - lastPos).Trim());
-                    return literal.Advance(i);
-                }
+                expression = new JsCallExpression(identifier);
+                return literal;
             }
 
-            binding = new JsCallExpression(literal.Subsegment(0, literal.Length));
-            return TypeConstants.EmptyStringSegment;
+            literal.Advance(1);
+
+            literal = literal.ParseArguments(out var args, termination: ')');
+            
+            expression = new JsCallExpression(identifier, args.ToArray());
+            return literal;
         }
-        
+
+        internal static StringSegment ParseArguments(this StringSegment literal, out List<JsToken> arguments, char termination)
+        {
+            arguments = new List<JsToken>();
+
+            literal = literal.Advance(1);
+            while (!literal.IsNullOrEmpty())
+            {
+                literal = literal.AdvancePastWhitespace();
+                if (literal.GetChar(0) == termination)
+                {
+                    literal = literal.Advance(1);
+                    break;
+                }
+
+                literal = literal.ParseJsExpression(out var listValue);
+                arguments.Add(listValue);
+
+                literal = literal.AdvancePastWhitespace();
+                if (literal.IsNullOrEmpty())
+                    break;
+                    
+                if (literal.GetChar(0) == termination)
+                {
+                    literal = literal.Advance(1);
+                    break;
+                }
+
+                literal = literal.AdvancePastWhitespace();
+                var c = literal.GetChar(0);
+                if (c == termination)
+                {
+                    literal = literal.Advance(1);
+                    break;
+                }
+                    
+                if (c != ',')
+                    throw new ArgumentException($"Unterminated arguments expression near: {literal.SubstringWithElipsis(0, 50)}");
+                    
+                literal = literal.Advance(1);
+                literal = literal.AdvancePastWhitespace();
+            }
+
+            literal = literal.AdvancePastWhitespace();
+
+            return literal;
+        }
     }
 }

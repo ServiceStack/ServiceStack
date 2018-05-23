@@ -275,17 +275,19 @@ namespace ServiceStack.Templates
                 var lastFilter = fragment.FilterExpressions?.LastOrDefault();
                 if (lastFilter?.NameString == "selectPartial")
                 {
-                    var partialArg = lastFilter.Args.FirstOrDefault().StripQuotes();
-                    if (!string.IsNullOrEmpty(partialArg))
+                    if (lastFilter.Arguments.FirstOrDefault() is JsLiteral argLiteral && argLiteral.Value is string partialArg)
                     {
-                        Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
-                        maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
-
-                        if (partialPage?.HasInit == true)
+                        if (!string.IsNullOrEmpty(partialArg))
                         {
-                            var partialLastModified = GetLastModifiedPage(partialPage);
-                            if (partialLastModified > maxLastModified)
-                                maxLastModified = partialLastModified;
+                            Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                            maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
+
+                            if (partialPage?.HasInit == true)
+                            {
+                                var partialLastModified = GetLastModifiedPage(partialPage);
+                                if (partialLastModified > maxLastModified)
+                                    maxLastModified = partialLastModified;
+                            }
                         }
                     }
                 }

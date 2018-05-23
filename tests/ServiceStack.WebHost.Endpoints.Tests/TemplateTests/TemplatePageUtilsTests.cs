@@ -56,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
 
             fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter() }}</h1>");
@@ -66,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -114,8 +114,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment2.FilterExpressions[0].Args[0], Is.EqualTo("1"));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsLiteral(1)));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -134,12 +134,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(5));
-            Assert.That(varFragment2.FilterExpressions[0].Args[0], Is.EqualTo("1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[1], Is.EqualTo("2.2"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[2], Is.EqualTo("'a'"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[3], Is.EqualTo("\"b\""));
-            Assert.That(varFragment2.FilterExpressions[0].Args[4], Is.EqualTo("true"));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(5));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsLiteral(1)));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[1], Is.EqualTo(new JsLiteral(2.2)));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[2], Is.EqualTo(new JsLiteral("a")));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[3], Is.EqualTo(new JsLiteral("b")));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[4], Is.EqualTo(JsLiteral.True));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -159,19 +159,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(3));
 
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
 
             Assert.That(varFragment2.FilterExpressions[1].Name, Is.EqualTo("filter2"));
-            Assert.That(varFragment2.FilterExpressions[1].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment2.FilterExpressions[2].Args[0], Is.EqualTo("1"));
+            Assert.That(varFragment2.FilterExpressions[1].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterExpressions[1].Arguments[0], Is.EqualTo(new JsLiteral(1)));
 
             Assert.That(varFragment2.FilterExpressions[2].Name, Is.EqualTo("filter3"));
-            Assert.That(varFragment2.FilterExpressions[2].Args.Count, Is.EqualTo(5));
-            Assert.That(varFragment2.FilterExpressions[2].Args[0], Is.EqualTo("1"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[1], Is.EqualTo("2.2"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[2], Is.EqualTo("'a'"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[3], Is.EqualTo("\"b\""));
-            Assert.That(varFragment2.FilterExpressions[2].Args[4], Is.EqualTo("true"));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments.Length, Is.EqualTo(5));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[0], Is.EqualTo(new JsLiteral(1)));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[1], Is.EqualTo(new JsLiteral(2.2)));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[2], Is.EqualTo(new JsLiteral("a")));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[3], Is.EqualTo(new JsLiteral("b")));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[4], Is.EqualTo(JsLiteral.True));
 
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
@@ -194,7 +194,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
 
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>\n<p>"));
 
@@ -202,8 +202,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment4.Binding, Is.EqualTo("content"));
             Assert.That(varFragment4.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment4.FilterExpressions[0].Name, Is.EqualTo("filter2"));
-            Assert.That(varFragment4.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment4.FilterExpressions[0].Args[0], Is.EqualTo("a"));
+            Assert.That(varFragment4.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment4.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsIdentifier("a")));
 
             Assert.That(strFragment5.Value, Is.EqualTo("</p>"));
         }
@@ -225,8 +225,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ ' - {{it}}' | forEach(items) | markdown }}"));
             Assert.That(varFragment.FilterExpressions.Length, Is.EqualTo(2));
             Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("forEach"));
-            Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo("items"));
+            Assert.That(varFragment.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsIdentifier("items")));
             Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo("markdown"));
         }
 
@@ -238,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ array(['a',1,'c']) }}"));
             Assert.That(varFragment.InitialExpression.Name, Is.EqualTo("array"));
-            Assert.That(varFragment.InitialExpression.Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment.InitialExpression.Arguments.Length, Is.EqualTo(1));
         }
 
         [Test]
@@ -431,23 +431,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Can_parse_method_binding_expressions()
         {
             JsToken token;
-            JsCallExpression expr;
 
             "if(OR(gt(1,2),lt(3,4)))".ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
-
-            Assert.That(expr.Args[0], Is.EqualTo("OR(gt(1,2),lt(3,4))"));
-
-            expr.Args[0].ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
             
-            Assert.That(expr.Args[0], Is.EqualTo("gt(1,2)"));
-            Assert.That(expr.Args[1], Is.EqualTo("lt(3,4)"));
-
-            expr.Args[0].ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
-            Assert.That(expr.Args[0], Is.EqualTo("1"));
-            Assert.That(expr.Args[1], Is.EqualTo("2"));
+            Assert.That(token, Is.EqualTo(
+                new JsCallExpression(
+                    new JsIdentifier("if"),
+                    new JsCallExpression(
+                        new JsIdentifier("OR"),
+                        new JsCallExpression(
+                            new JsIdentifier("gt"),
+                            new JsLiteral(1),
+                            new JsLiteral(2)
+                        ),
+                        new JsCallExpression(
+                            new JsIdentifier("lt"),
+                            new JsLiteral(3),
+                            new JsLiteral(4)
+                        )
+                    )
+                )
+            ));
             
 
             @"
@@ -457,20 +461,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     lt ( 3 , 4 )
                 )
             )".ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
 
-            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("OR(gt(1,2),lt(3,4))"));
-
-            expr.Args[0].ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
-            
-            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("gt(1,2)"));
-            Assert.That(expr.Args[1].RemoveAllWhitespace(), Is.EqualTo("lt(3,4)"));
-
-            expr.Args[0].ParseJsExpression(out token);
-            expr = (JsCallExpression) token;
-            Assert.That(expr.Args[0], Is.EqualTo("1"));
-            Assert.That(expr.Args[1], Is.EqualTo("2"));
+            Assert.That(token, Is.EqualTo(
+                new JsCallExpression(
+                    new JsIdentifier("if"),
+                    new JsCallExpression(
+                        new JsIdentifier("OR"),
+                        new JsCallExpression(
+                            new JsIdentifier("gt"),
+                            new JsLiteral(1),
+                            new JsLiteral(2)
+                        ),
+                        new JsCallExpression(
+                            new JsIdentifier("lt"),
+                            new JsLiteral(3),
+                            new JsLiteral(4)
+                        )
+                    )
+                )
+            ));
         }
 
         [Test]
@@ -551,21 +560,25 @@ products
             Assert.That(fragments1.Count, Is.EqualTo(1));
             var varFragment1 = fragments1[0] as PageVariableFragment;
             Assert.That(varFragment1.FilterExpressions[0].Name, Is.EqualTo("where"));
-            Assert.That(varFragment1.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment1.FilterExpressions[0].Args[0], Is.EqualTo("′it.UnitsInStock = 0′"));
+            Assert.That(varFragment1.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[0].Arguments[0], Is.EqualTo(
+                new JsLiteral("it.UnitsInStock = 0")
+            ));
             Assert.That(varFragment1.FilterExpressions[1].Name, Is.EqualTo("select"));
-            Assert.That(varFragment1.FilterExpressions[1].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment1.FilterExpressions[1].Args[0], Is.EqualTo("′{{ it.productName | raw }} is sold out!\\n′"));
+            Assert.That(varFragment1.FilterExpressions[1].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[1].Arguments[0], Is.EqualTo(
+                new JsLiteral("{{ it.productName | raw }} is sold out!\\n")
+            ));
 
             foreach (var fragments in new[]{ fragments2, fragments3 })
             {
                 var varFragment = fragments[0] as PageVariableFragment;
                 Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo(varFragment1.FilterExpressions[0].Name));
-                Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[0].Args.Count));
-                Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo(varFragment1.FilterExpressions[0].Args[0]));
+                Assert.That(varFragment.FilterExpressions[0].Arguments.Length, Is.EqualTo(varFragment1.FilterExpressions[0].Arguments.Length));
+                Assert.That(varFragment.FilterExpressions[0].Arguments[0], Is.EqualTo(varFragment1.FilterExpressions[0].Arguments[0]));
                 Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo(varFragment1.FilterExpressions[1].Name));
-                Assert.That(varFragment.FilterExpressions[1].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[1].Args.Count));
-                Assert.That(varFragment.FilterExpressions[1].Args[0], Is.EqualTo(varFragment1.FilterExpressions[1].Args[0]));
+                Assert.That(varFragment.FilterExpressions[1].Arguments.Length, Is.EqualTo(varFragment1.FilterExpressions[1].Arguments.Length));
+                Assert.That(varFragment.FilterExpressions[1].Arguments[0], Is.EqualTo(varFragment1.FilterExpressions[1].Arguments[0]));
             }
         }
 
@@ -607,24 +620,6 @@ products
             
             var newLine = (PageStringFragment) fragments[1];
             Assert.That(newLine.Value, Is.EqualTo("\n"));
-        }
-
-        [Test]
-        public void Can_parse_expressions_with_methods()
-        {
-            "mod(it,3) != 0".ParseJsExpression(out var token);
-            Assert.That(token, Is.EqualTo(
-                new JsBinaryExpression(
-                    (new JsCallExpression("mod") { 
-                        Args = {
-                            "it".ToStringSegment(),
-                            "3".ToStringSegment(),
-                        }
-                    }),
-                    JsNotEquals.Operator, 
-                    new JsLiteral(0)
-                )
-            ));
         }
 
         [Test]
@@ -695,18 +690,16 @@ products
         [Test]
         public void Can_parse_empty_arguments()
         {
-            object value;
             JsToken token;
-            JsCallExpression fn;
             
             "fn()".ParseJsExpression(out token);
             Assert.That(((JsCallExpression)token).Name, Is.EqualTo("fn"));
             "fn({})".ParseJsExpression(out token);
-            Assert.That(((JsCallExpression)token).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
             "fn({ })".ParseJsExpression(out token);
-            Assert.That(((JsCallExpression)token).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
             "fn({  })".ParseJsExpression(out token);
-            Assert.That(((JsCallExpression)token).Args.Count, Is.EqualTo(1));
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
         }
 
 

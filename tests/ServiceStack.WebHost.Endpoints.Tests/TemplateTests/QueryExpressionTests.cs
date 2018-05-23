@@ -78,9 +78,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo(new JsUnaryExpression(JsNot.Operator, it)));
 
             "!contains(items, it)".ParseJsExpression(out expr);
-            Assert.That(expr,
-                Is.EqualTo(new JsUnaryExpression(JsNot.Operator, 
-                    new JsCallExpression("contains") { Args = { "items".ToStringSegment(), "it".ToStringSegment() }})));
+            Assert.That(expr, Is.EqualTo(new JsUnaryExpression(JsNot.Operator, 
+                new JsCallExpression(
+                    new JsIdentifier("contains"),
+                    new JsIdentifier("items"),
+                    new JsIdentifier("it")
+                ))));
         }
 
     }
