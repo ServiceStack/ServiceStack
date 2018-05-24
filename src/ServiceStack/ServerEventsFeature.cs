@@ -33,7 +33,11 @@ namespace ServiceStack
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
-        public Action<IResponse, string> WriteEvent { get; set; }
+
+        [Obsolete("Renamed to WriteEventAsync")]
+        public Action<IResponse, string> WriteEvent { get; private set; }
+        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
+
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
@@ -46,11 +50,11 @@ namespace ServiceStack
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
 
-            WriteEvent = (res, frame) =>
+            WriteEventAsync = async (res, frame) =>
             {
                 var bytes = frame.ToUtf8Bytes();
-                res.OutputStream.WriteAsync(bytes, 0, bytes.Length)
-                    .Then(_ => res.OutputStream.FlushAsync());
+                await res.OutputStream.WriteAsync(bytes, 0, bytes.Length);
+                await res.FlushAsync();
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -417,7 +421,7 @@ namespace ServiceStack
         {
             this.response = response;
             this.Meta = new Dictionary<string, string>();
-            this.WriteEvent = HostContext.GetPlugin<ServerEventsFeature>().WriteEvent;
+            this.WriteEventAsync = HostContext.GetPlugin<ServerEventsFeature>().WriteEventAsync;
         }
 
         public void UpdateChannels(string[] channels)
@@ -429,7 +433,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
-        public Action<IResponse, string> WriteEvent { get; set; }
+        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
@@ -447,37 +451,52 @@ namespace ServiceStack
             PublishRaw(frame);
         }
 
+        readonly AsyncLock mutex = new AsyncLock();
+        private async Task WriteAsync(IResponse response, string frame)
+        {
+            using (await mutex.LockAsync())
+            {
+                await WriteEventAsync(response, frame);
+            }
+        }
+
         public void PublishRaw(string frame)
         {
             if (response.IsClosed) return;
 
-            try
-            {
-                lock (response)
+            WriteAsync(response, frame)
+                .ContinueWith(t =>
                 {
-                    WriteEvent(response, frame);
+                    if (t.IsFaulted || t.IsCanceled)
+                    {
+                        var ex = t.IsFaulted ? t.Exception.InnerExceptions.FirstOrDefault() : null;
+                        if (ex != null)
+                        {
+                            Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
+                            OnError?.Invoke(this, ex);
+                        }
 
-                    OnPublish?.Invoke(this, response, frame);
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
-                OnError?.Invoke(this, ex);
+                        if (Env.IsMono)
+                        {
+                            // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
+                            try
+                            {
+                                // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
+                                response.OutputStream.Close();
+                            }
+                            catch (Exception innerEx)
+                            {
+                                Log.Error("OutputStream.Close()", innerEx);
+                            }
+                        }
 
-                // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
-                try
-                {
-                    // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
-                    response.OutputStream.Close();
-                }
-                catch(Exception innerEx)
-                {
-                    Log.Error("OutputStream.Close()", innerEx);
-                }
-
-                Unsubscribe();
-            }
+                        Unsubscribe();
+                    }
+                    else
+                    {
+                        OnPublish?.Invoke(this, response, frame);
+                    }
+                });
         }
 
         public void Pulse()
