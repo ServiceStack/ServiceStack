@@ -270,15 +270,31 @@ namespace ServiceStack.Templates
         private static readonly byte[] ValidNumericChars;
         private static readonly byte[] ValidVarNameChars;
         private static readonly byte[] OperatorChars;
+        private static readonly byte[] ExpressionTerminatorChars;
         private const byte True = 1;
         
-        public static readonly HashSet<char> ExpressionTerminator = new HashSet<char> {
-            ')',
-            '}',
-            ';',
-            ',',
-            ']',
-        };
+        static JsTokenUtils()
+        {
+            var n = new byte['e' + 1];
+            n['0'] = n['1'] = n['2'] = n['3'] = n['4'] = n['5'] = n['6'] = n['7'] = n['8'] = n['9'] = n['.'] = True;
+            ValidNumericChars = n;
+
+            var o = new byte['~' + 1];
+            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['%'] = o['|'] = o['&'] = o['^'] = o['~'] = True;
+            OperatorChars = o;
+
+            var e = new byte['}' + 1];
+            e[')'] = e['}'] = e[';'] = e[','] = e[']'] = e[':'] = True;
+            ExpressionTerminatorChars = e;
+
+            var a = new byte['z' + 1];
+            for (var i = (int) '0'; i < a.Length; i++)
+            {
+                if (i >= 'A' && i <= 'Z' || i >= 'a' && i <= 'z' || i >= '0' && i <= '9' || i == '_')
+                    a[i] = True;
+            }
+            ValidVarNameChars = a;
+        }
 
         public static readonly Dictionary<string, int> OperatorPrecedence = new Dictionary<string, int> {
             {")", 0},
@@ -309,31 +325,8 @@ namespace ServiceStack.Templates
             {"%", 11},
         };
 
-        public static int GetBinaryPrecedence(string token)
-        {
-            return OperatorPrecedence.TryGetValue(token, out var precedence)
-                ? precedence
-                : 0;
-        }
-
-        static JsTokenUtils()
-        {
-            var n = new byte['e' + 1];
-            n['0'] = n['1'] = n['2'] = n['3'] = n['4'] = n['5'] = n['6'] = n['7'] = n['8'] = n['9'] = n['.'] = True;
-            ValidNumericChars = n;
-
-            var o = new byte['|' + 1];
-            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['%'] = o['|'] = o['&'] = o['^'] = True;
-            OperatorChars = o;
-
-            var a = new byte['z' + 1];
-            for (var i = (int) '0'; i < a.Length; i++)
-            {
-                if (i >= 'A' && i <= 'Z' || i >= 'a' && i <= 'z' || i >= '0' && i <= '9' || i == '_')
-                    a[i] = True;
-            }
-            ValidVarNameChars = a;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int GetBinaryPrecedence(string token) => OperatorPrecedence.TryGetValue(token, out var precedence) ? precedence : 0;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNumericChar(this char c) => c < ValidNumericChars.Length && ValidNumericChars[c] == True;
@@ -345,7 +338,25 @@ namespace ServiceStack.Templates
         public static bool IsOperatorChar(this char c) => c < OperatorChars.Length && OperatorChars[c] == True;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsBindingExpressionChar(this char c) => c == '.' || c == '(' || c == '[';
+        public static bool IsExpressionTerminatorChar(this char c) => c < ExpressionTerminatorChars.Length && ExpressionTerminatorChars[c] == True;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static JsUnaryOperator GetUnaryOperator(this char c)
+        {
+            switch (c)
+            {
+                case '-':
+                    return JsMinus.Operator;
+                case '+':
+                    return JsPlus.Operator;
+                case '!':
+                    return JsNot.Operator;
+                case '~':
+                    return JsBitwiseNot.Operator;
+            }
+
+            return null;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static StringSegment AdvancePastWhitespace(this StringSegment literal)
@@ -355,6 +366,21 @@ namespace ServiceStack.Templates
                 i++;
 
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool FirstCharEquals(this StringSegment literal, char c) => 
+            !literal.IsNullOrEmpty() && literal.GetChar(0) == c;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char SafeGetChar(this StringSegment literal, int index) =>
+            index < literal.Length ? literal.GetChar(index) : default(char);
+
+        public static string DebugFirstChar(this StringSegment literal)
+        {
+            return literal.IsNullOrEmpty()
+                ? "<end>"
+                : $"'{literal.GetChar(0)}'";
         }
 
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
@@ -567,158 +593,193 @@ namespace ServiceStack.Templates
                 token = new JsArrayExpression(elements);
                 return literal;
             }
+
+            var unaryOp = firstChar.GetUnaryOperator();
+            if (unaryOp != null && literal.SafeGetChar(1).IsValidVarNameChar())
+            {
+                literal = literal.Advance(1);
+                literal = literal.ParseJsToken(out var arg);
+                token = new JsUnaryExpression(unaryOp, arg);
+                return literal;
+            }
+            
+            // identifier
+            var preIdentifierLiteral = literal;
+
+            literal = literal.ParseIdentifier(out var node);
+
+            if (!(node is JsOperator))
+            {
+                literal = literal.AdvancePastWhitespace();
+                if (!literal.IsNullOrEmpty())
+                {
+                    c = literal.GetChar(i);
+                    if (c == '.' || c == '[')
+                    {
+                        while (true)
+                        {
+                            literal = literal.Advance(1);
+    
+                            if (c == '.')
+                            {
+                                literal = literal.AdvancePastWhitespace();
+                                literal = literal.ParseIdentifier(out var property);
+                                node = new JsMemberExpression(node, property, computed: false);
+                            }
+                            else if (c == '[')
+                            {
+                                literal = literal.AdvancePastWhitespace();
+                                literal = literal.ParseJsExpression(out var property);
+                                node = new JsMemberExpression(node, property, computed: true);
+    
+                                literal = literal.AdvancePastWhitespace();
+                                if (literal.IsNullOrEmpty() || literal.GetChar(0) != ']')
+                                    throw new SyntaxErrorException($"Expected ']' but was '{literal.GetChar(0)}'");
+    
+                                literal = literal.Advance(1);
+                            }
+    
+                            literal = literal.AdvancePastWhitespace();
+                            
+                            if (literal.IsNullOrWhiteSpace())
+                                break;
+    
+                            c = literal.GetChar(0);
+                            if (c == '(')
+                                throw new SyntaxErrorException("Call expression found on member expression. Only filters can be invoked.");
+                            
+                            if (!(c == '.' || c == '['))
+                                break;
+                        }
+                    }
+                    else if (c == '(' || (filterExpression && c == ':'))
+                    {
+                        literal = preIdentifierLiteral.ParseJsCallExpression(out var callExpr, filterExpression:filterExpression);
+                        token = callExpr;
+                        return literal;
+                    }
+                }
+            }
+
+            token = node;
+            return literal;
+        }
+
+        internal static StringSegment ParseJsBinaryOperator(this StringSegment literal, out JsBinaryOperator op)
+        {
+            literal = literal.AdvancePastWhitespace();
+            op = null;
+            
+            if (literal.IsNullOrEmpty())
+                return literal;
+            
+            var firstChar = literal.GetChar(0);
             if (firstChar.IsOperatorChar())
             {
+                if (literal.StartsWith("!=="))
+                {
+                    op = JsStrictNotEquals.Operator;
+                    return literal.Advance(3);
+                }
+                if (literal.StartsWith("==="))
+                {
+                    op = JsStrictEquals.Operator;
+                    return literal.Advance(3);
+                }
+
                 if (literal.StartsWith(">="))
                 {
-                    token = JsGreaterThanEqual.Operator;
+                    op = JsGreaterThanEqual.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("<="))
                 {
-                    token = JsLessThanEqual.Operator;
+                    op = JsLessThanEqual.Operator;
                     return literal.Advance(2);
-                }
-                if (literal.StartsWith("!=="))
-                {
-                    token = JsStrictNotEquals.Operator;
-                    return literal.Advance(3);
                 }
                 if (literal.StartsWith("!="))
                 {
-                    token = JsNotEquals.Operator;
+                    op = JsNotEquals.Operator;
                     return literal.Advance(2);
-                }
-                if (literal.StartsWith("==="))
-                {
-                    token = JsStrictEquals.Operator;
-                    return literal.Advance(3);
                 }
                 if (literal.StartsWith("=="))
                 {
-                    token = JsEquals.Operator;
+                    op = JsEquals.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("||"))
                 {
-                    token = JsOr.Operator;
+                    op = JsOr.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("&&"))
                 {
-                    token = JsAnd.Operator;
+                    op = JsAnd.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith("<<"))
                 {
-                    token = JsBitwiseLeftShift.Operator;
+                    op = JsBitwiseLeftShift.Operator;
                     return literal.Advance(2);
                 }
                 if (literal.StartsWith(">>"))
                 {
-                    token = JsBitwiseRightShift.Operator;
+                    op = JsBitwiseRightShift.Operator;
                     return literal.Advance(2);
                 }
 
                 switch (firstChar)
                 {
                     case '>':
-                        token = JsGreaterThan.Operator;
+                        op = JsGreaterThan.Operator;
                         return literal.Advance(1);
                     case '<':
-                        token = JsLessThan.Operator;
+                        op = JsLessThan.Operator;
                         return literal.Advance(1);
                     case '=':
-                        token = JsAssignment.Operator;
-                        return literal.Advance(1);
-                    case '!':
-                        token = JsNot.Operator;
+                        op = JsEquals.Operator;
                         return literal.Advance(1);
                     case '+':
-                        token = JsAddition.Operator;
+                        op = JsAddition.Operator;
                         return literal.Advance(1);
                     case '-':
-                        token = JsSubtraction.Operator;
+                        op = JsSubtraction.Operator;
                         return literal.Advance(1);
                     case '*':
-                        token = JsMultiplication.Operator;
+                        op = JsMultiplication.Operator;
                         return literal.Advance(1);
                     case '/':
-                        token = JsDivision.Operator;
+                        op = JsDivision.Operator;
                         return literal.Advance(1);
                     case '&':
-                        token = JsBitwiseAnd.Operator;
+                        op = JsBitwiseAnd.Operator;
                         return literal.Advance(1);
                     case '|':
-                        token = JsBitwiseOr.Operator;
+                        op = JsBitwiseOr.Operator;
                         return literal.Advance(1);
                     case '^':
-                        token = JsBitwiseXOr.Operator;
+                        op = JsBitwiseXOr.Operator;
                         return literal.Advance(1);
                     case '%':
-                        token = JsMod.Operator;
+                        op = JsMod.Operator;
                         return literal.Advance(1);
                     default:
                         throw new SyntaxErrorException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
                 }
             }
 
-            // identifier
-            var preIdentifierLiteral = literal;
-
-            literal = literal.ParseIdentifier(out var node);
-
-            literal = literal.AdvancePastWhitespace();
-            if (!literal.IsNullOrEmpty())
+            if (literal.StartsWith("and"))
             {
-                c = literal.GetChar(i);
-                if (c == '.' || c == '[')
-                {
-                    while (true)
-                    {
-                        literal = literal.Advance(1);
-
-                        if (c == '.')
-                        {
-                            literal = literal.AdvancePastWhitespace();
-                            literal = literal.ParseIdentifier(out var property);
-                            node = new JsMemberExpression(node, property, computed: false);
-                        }
-                        else if (c == '[')
-                        {
-                            literal = literal.AdvancePastWhitespace();
-                            literal = literal.ParseJsExpression(out var property);
-                            node = new JsMemberExpression(node, property, computed: true);
-
-                            literal = literal.AdvancePastWhitespace();
-                            if (literal.IsNullOrEmpty() || literal.GetChar(0) != ']')
-                                throw new SyntaxErrorException($"Expected ']' but was '{literal.GetChar(0)}'");
-
-                            literal = literal.Advance(1);
-                        }
-
-                        literal = literal.AdvancePastWhitespace();
-                        
-                        if (literal.IsNullOrWhiteSpace())
-                            break;
-
-                        c = literal.GetChar(0);
-                        if (c == '(')
-                            throw new SyntaxErrorException("Call expression found on member expression. Only filters can be invoked.");
-                        
-                        if (!(c == '.' || c == '['))
-                            break;
-                    }
-                }
-                else if (c == '(' || (filterExpression && c == ':'))
-                {
-                    literal = preIdentifierLiteral.ParseJsCallExpression(out var callExpr, filterExpression:filterExpression);
-                    token = callExpr;
-                    return literal;
-                }
+                op = JsAnd.Operator;
+                return literal.Advance(3);
             }
 
-            token = node;
+            if (literal.StartsWith("or"))
+            {
+                op = JsOr.Operator;
+                return literal.Advance(2);
+            }
+
             return literal;
         }
 

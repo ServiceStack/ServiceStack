@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
-using ServiceStack.Text.Json;
 
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
@@ -12,9 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
-    public abstract class JsExpression : JsToken
-    {
-    }
+    public abstract class JsExpression : JsToken {}
 
     public static class JsExpressionUtils
     {
@@ -37,21 +31,28 @@ namespace ServiceStack.Templates
             }
 
             var peekChar = peekLiteral.GetChar(0);
-            if (JsTokenUtils.ExpressionTerminator.Contains(peekChar))
+            if (peekChar.IsExpressionTerminatorChar())
             {
                 token = token1;
                 return peekLiteral;
             }
-            
-            if (token1 is JsSubtraction)
-                token1 = JsMinus.Operator;
-            if (token1 is JsAddition)
-                token1 = JsPlus.Operator;
 
-            if (token1 is JsUnaryOperator u)
+            var isConditionalExpression = peekChar == '?';
+            if (isConditionalExpression)
             {
-                literal = peekLiteral.ParseJsToken(out var token2, filterExpression:filterExpression);
-                token = new JsUnaryExpression(u, token2);
+                literal = peekLiteral.Advance(1);
+
+                literal = literal.ParseJsExpression(out var consequent);
+                literal = literal.AdvancePastWhitespace();
+                
+                if (!literal.FirstCharEquals(':'))
+                    throw new SyntaxErrorException($"Expected ':' but was {literal.DebugFirstChar()}");
+
+                literal = literal.Advance(1);
+
+                literal = literal.ParseJsExpression(out var alternate);
+                
+                token = new JsConditionalExpression(token1, consequent, alternate);
                 return literal;
             }
 
@@ -61,7 +62,9 @@ namespace ServiceStack.Templates
             {
                 if (filterExpression && peekLiteral.Length > 2)
                 {
-                    if ((peekLiteral.GetChar(0) == '|' && peekLiteral.GetChar(1) != '|') || (peekLiteral.GetChar(0) == '}' && peekLiteral.GetChar(1) == '}'))
+                    var char1 = peekLiteral.GetChar(0);
+                    var char2 = peekLiteral.GetChar(1);
+                    if ((char1 == '|' && char2 != '|') || (char1 == '}' && char2 == '}'))
                     {
                         token = token1;
                         return peekLiteral;
@@ -69,12 +72,8 @@ namespace ServiceStack.Templates
                 }
             }
             
-            peekLiteral = peekLiteral.ParseJsToken(out JsToken op, filterExpression:filterExpression);
-
-            if (op is JsAssignment)
-                op = JsEquals.Operator;
-    
-            if (op is JsBinaryOperator)
+            peekLiteral = peekLiteral.ParseJsBinaryOperator(out var op);
+            if (op != null)
             {
                 literal = literal.ParseBinaryExpression(out var expr, filterExpression);
                 token = expr;
@@ -105,14 +104,10 @@ namespace ServiceStack.Templates
             }
             else
             {
-                literal = literal.ParseJsToken(out JsToken token, filterExpression:filterExpression);
+                literal = literal.ParseJsBinaryOperator(out var op);
 
-                if (token is JsAssignment)
-                    token = JsEquals.Operator;
-                
-                if (!(token is JsBinaryOperator op))
-                    throw new ArgumentException(
-                        $"Invalid syntax: Expected binary operand but instead found '{token}' near: {literal.SubstringWithElipsis(0, 50)}");
+                if (op == null)
+                    throw new SyntaxErrorException($"Expected binary operator near: {literal.SubstringWithElipsis(0, 50)}");
 
                 var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
 
@@ -148,14 +143,14 @@ namespace ServiceStack.Templates
                             stack.Push(CreateJsExpression(lhs, operand, rhs));
                         }
 
-                        literal = literal.ParseJsToken(out var opToken, filterExpression:filterExpression);
+                        literal = literal.ParseJsBinaryOperator(out op);
                         
                         if (literal.IsNullOrEmpty())
-                            throw new ArgumentException($"Invalid syntax: Expected expression after '{token}'");
+                            throw new SyntaxErrorException($"Expected expression near: '{literal.SubstringWithElipsis(0,40)}'");
 
-                        literal = literal.ParseJsToken(out token, filterExpression:filterExpression);
+                        literal = literal.ParseJsToken(out var token, filterExpression:filterExpression);
                         
-                        stack.Push(opToken);
+                        stack.Push(op);
                         stack.Push(token);
                         precedences.Add(prec);
                     }
@@ -193,18 +188,11 @@ namespace ServiceStack.Templates
 
         static int GetNextBinaryPrecedence(this StringSegment literal)
         {
-            if (!literal.IsNullOrEmpty())
+            if (!literal.IsNullOrEmpty() && !literal.GetChar(0).IsExpressionTerminatorChar())
             {
-                var c = literal.GetChar(0);
-                if (!JsTokenUtils.ExpressionTerminator.Contains(c))
-                {
-                    literal.ParseJsToken(out var token);
-    
-                    if (token is JsBinaryOperator binaryOp)
-                    {
-                        return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
-                    }
-                }
+                literal.ParseJsBinaryOperator(out var binaryOp);
+                if (binaryOp != null)
+                    return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
             }
 
             return 0;

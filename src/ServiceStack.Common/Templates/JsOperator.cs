@@ -15,14 +15,6 @@ namespace ServiceStack.Templates
     public abstract class JsUnaryOperator : JsOperator
     {
         public abstract object Evaluate(object target);
-
-        public static JsUnaryOperator GetUnaryOperator(JsOperator op) =>
-            (JsUnaryOperator) (
-                op == JsSubtraction.Operator
-                    ? JsMinus.Operator
-                    : op == JsNot.Operator
-                        ? op
-                        : null);
     }
 
     public abstract class JsLogicOperator : JsBinaryOperator
@@ -161,6 +153,14 @@ namespace ServiceStack.Templates
 
         public override object Evaluate(object lhs, object rhs) =>
             DynamicNumber.GetNumber(lhs, rhs).bitwiseXOr(lhs, rhs);
+    }
+
+    public class JsBitwiseNot : JsUnaryOperator
+    {
+        public static JsBitwiseNot Operator = new JsBitwiseNot();
+        private JsBitwiseNot() { }
+        public override string Token => "~";
+        public override object Evaluate(object target) => DynamicNumber.Get(target).bitwiseNot(target);
     }
 
     public class JsBitwiseLeftShift : JsBinaryOperator

@@ -2,17 +2,17 @@
 {
     public class JsUnaryExpression : JsExpression
     {
-        public JsUnaryOperator Op { get; }
-        public JsToken Target { get; }
-        public override string ToRawString() => Op.Token + JsonValue(Target);
+        public JsUnaryOperator Operator { get; }
+        public JsToken Argument { get; }
+        public override string ToRawString() => Operator.Token + JsonValue(Argument);
 
-        public JsUnaryExpression(JsUnaryOperator op, JsToken target)
+        public JsUnaryExpression(JsUnaryOperator @operator, JsToken argument)
         {
-            Op = op;
-            Target = target;
+            Operator = @operator;
+            Argument = argument;
         }
 
-        protected bool Equals(JsUnaryExpression other) => Equals(Op, other.Op) && Equals(Target, other.Target);
+        protected bool Equals(JsUnaryExpression other) => Equals(Operator, other.Operator) && Equals(Argument, other.Argument);
 
         public override bool Equals(object obj)
         {
@@ -26,14 +26,14 @@
         {
             unchecked
             {
-                return ((Op != null ? Op.GetHashCode() : 0) * 397) ^ (Target != null ? Target.GetHashCode() : 0);
+                return ((Operator != null ? Operator.GetHashCode() : 0) * 397) ^ (Argument != null ? Argument.GetHashCode() : 0);
             }
         }
 
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var result = Target.Evaluate(scope);
-            var afterUnary = Op.Evaluate(result);
+            var result = Argument.Evaluate(scope);
+            var afterUnary = Operator.Evaluate(result);
             return afterUnary;
         }
     }

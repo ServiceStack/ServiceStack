@@ -30,6 +30,8 @@ namespace ServiceStack.Templates
             return ParseTemplatePage(new StringSegment(text));
         }
 
+        private const char FilterSep = '|';
+
         public static List<PageFragment> ParseTemplatePage(StringSegment text)
         {
             var to = new List<PageFragment>();
@@ -57,9 +59,11 @@ namespace ServiceStack.Templates
 
                     if (!literal.StartsWith("}}"))
                     {
-                        literal = literal.ParseJsToken(out var filterOp);
-                        if (filterOp == JsBitwiseOr.Operator)
+                        literal = literal.AdvancePastWhitespace();
+                        if (literal.FirstCharEquals(FilterSep))
                         {
+                            literal = literal.Advance(1);
+                            
                             while (true)
                             {
                                 literal = literal.ParseJsCallExpression(out var filter, filterExpression:true);
@@ -77,8 +81,8 @@ namespace ServiceStack.Templates
                                     break;
                                 }
                                 
-                                if (literal.GetChar(0) != '|')
-                                    throw new SyntaxErrorException($"Expected filter separator '|' but was '{literal.GetChar(0)}'");
+                                if (!literal.FirstCharEquals(FilterSep))
+                                    throw new SyntaxErrorException($"Expected filter separator '|' but was {literal.DebugFirstChar()}");
 
                                 literal = literal.Advance(1);
                             }

@@ -529,12 +529,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken token;
 
-            var literal = "it.Id = 0".ToStringSegment().ParseJsToken(out token);
-            Assert.That(token, Is.EqualTo(new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("Id"))));
-            literal = literal.ParseJsToken(out token);
-            Assert.That(token, Is.EqualTo(JsAssignment.Operator));
-            literal = literal.ParseJsToken(out token);
-            Assert.That(token, Is.EqualTo(new JsLiteral(0)));
+            "it.Id = 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsBinaryExpression(
+                    new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("Id")),
+                    JsEquals.Operator,
+                    new JsLiteral(0)
+                )
+            ));
         }
 
         [Test]
