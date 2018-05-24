@@ -24,7 +24,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_expressions_with_methods()
         {
-            "mod(it,3) != 0".ParseJsExpression(out var token);
+            JsToken token;
+            
+            "mod(it,3) != 0".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(
                 new JsBinaryExpression(
                     new JsCallExpression(
@@ -36,7 +38,46 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     new JsLiteral(0)
                 )
             ));
+
+            "{ a: add(it % add(it + 1, 1 | it)) }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsObjectExpression(
+                new JsProperty(
+                    new JsIdentifier("a"),
+                    new JsCallExpression(
+                        new JsIdentifier("add"),
+                        new JsBinaryExpression(
+                            new JsIdentifier("it"),
+                            JsMod.Operator,
+                            new JsCallExpression(
+                                new JsIdentifier("add"),
+                                new JsBinaryExpression(
+                                    new JsIdentifier("it"),
+                                    JsAddition.Operator,
+                                    new JsLiteral(1)
+                                ),
+                                new JsBinaryExpression(
+                                    new JsLiteral(1),
+                                    JsBitwiseOr.Operator,
+                                    new JsIdentifier("it")
+                                )
+                            )
+                        )
+                    )
+                )
+            )));
         }
-        
+
+        [Test]
+        public void Does_evaluate_nested_call_expressions()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["it"] = 10
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ { a: add(it % 3,1) * 2, b: 2 * 3 + incr(4 + decr(5)) } | values | sum | currency }}"), 
+                Is.EqualTo("$19.00"));
+        }
     }
 }

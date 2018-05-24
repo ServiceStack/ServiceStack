@@ -323,7 +323,7 @@ namespace ServiceStack.Templates
             ValidNumericChars = n;
 
             var o = new byte['|' + 1];
-            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['|'] = o['&'] = o['^'] = True;
+            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['%'] = o['|'] = o['&'] = o['^'] = True;
             OperatorChars = o;
 
             var a = new byte['z' + 1];
