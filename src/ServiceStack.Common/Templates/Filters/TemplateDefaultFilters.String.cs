@@ -111,8 +111,11 @@ namespace ServiceStack.Templates
         public string substring(string text, int startIndex) => text.SafeSubstring(startIndex);
         public string substring(string text, int startIndex, int length) => text.SafeSubstring(startIndex, length);
 
-        public string substringWithElipsis(string text, int length) => text.SubstringWithElipsis(0, length);
-        public string substringWithElipsis(string text, int startIndex, int length) => text.SubstringWithElipsis(startIndex, length);
+        [Obsolete("typo")] public string substringWithElipsis(string text, int length) => text.SubstringWithEllipsis(0, length);
+        [Obsolete("typo")] public string substringWithElipsis(string text, int startIndex, int length) => text.SubstringWithEllipsis(startIndex, length);
+
+        public string substringWithEllipsis(string text, int length) => text.SubstringWithEllipsis(0, length);
+        public string substringWithEllipsis(string text, int startIndex, int length) => text.SubstringWithEllipsis(startIndex, length);
 
         public string leftPart(string text, string needle) => text.LeftPart(needle);
         public string rightPart(string text, string needle) => text.RightPart(needle);
