@@ -559,7 +559,10 @@ namespace ServiceStack.Templates
         public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
         public DateTime toDateTime(object target) => target.ConvertTo<DateTime>();
+        public DateTime date(int year, int month, int day) => new DateTime(year, month, day);
+        public DateTime date(int year, int month, int day, int hour, int min, int secs) => new DateTime(year, month, day, hour, min, secs);
         public TimeSpan toTimeSpan(object target) => target.ConvertTo<TimeSpan>();
+        public TimeSpan time(int days, int hours, int mins, int secs) => new TimeSpan(days, hours, mins, secs);
 
         public List<string> toKeys(object target)
         {
