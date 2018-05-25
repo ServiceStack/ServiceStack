@@ -562,6 +562,7 @@ namespace ServiceStack.Templates
         public DateTime date(int year, int month, int day) => new DateTime(year, month, day);
         public DateTime date(int year, int month, int day, int hour, int min, int secs) => new DateTime(year, month, day, hour, min, secs);
         public TimeSpan toTimeSpan(object target) => target.ConvertTo<TimeSpan>();
+        public TimeSpan time(int hours, int mins, int secs) => new TimeSpan(0, hours, mins, secs);
         public TimeSpan time(int days, int hours, int mins, int secs) => new TimeSpan(days, hours, mins, secs);
 
         public List<string> toKeys(object target)
