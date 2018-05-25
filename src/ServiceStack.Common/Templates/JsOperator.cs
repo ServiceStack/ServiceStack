@@ -132,7 +132,7 @@ namespace ServiceStack.Templates
         public override string Token => "&";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseAnd(lhs, rhs);
+            DynamicNumber.BitwiseAnd(lhs, rhs);
     }
 
     public class JsBitwiseOr : JsBinaryOperator
@@ -142,7 +142,7 @@ namespace ServiceStack.Templates
         public override string Token => "|";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseOr(lhs, rhs);
+            DynamicNumber.BitwiseOr(lhs, rhs);
     }
 
     public class JsBitwiseXOr : JsBinaryOperator
@@ -152,7 +152,7 @@ namespace ServiceStack.Templates
         public override string Token => "^";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseXOr(lhs, rhs);
+            DynamicNumber.BitwiseXOr(lhs, rhs);
     }
 
     public class JsBitwiseNot : JsUnaryOperator
@@ -170,7 +170,7 @@ namespace ServiceStack.Templates
         public override string Token => "<<";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseLeftShift(lhs, rhs);
+            DynamicNumber.BitwiseLeftShift(lhs, rhs);
     }
 
     public class JsBitwiseRightShift : JsBinaryOperator
@@ -180,7 +180,7 @@ namespace ServiceStack.Templates
         public override string Token => ">>";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).bitwiseRightShift(lhs, rhs);
+            DynamicNumber.BitwiseRightShift(lhs, rhs);
     }
 
     public class JsAddition : JsBinaryOperator
@@ -198,7 +198,7 @@ namespace ServiceStack.Templates
                 return string.Concat(lhsString, rhsString);
             }
 
-            return DynamicNumber.GetNumber(lhs, rhs).add(lhs, rhs);
+            return DynamicNumber.Add(lhs, rhs);
         }
     }
 
@@ -209,7 +209,7 @@ namespace ServiceStack.Templates
         public override string Token => "-";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).sub(lhs, rhs);
+            DynamicNumber.Subtract(lhs, rhs);
     }
 
     public class JsMultiplication : JsBinaryOperator
@@ -219,7 +219,7 @@ namespace ServiceStack.Templates
         public override string Token => "*";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).mul(lhs, rhs);
+            DynamicNumber.Multiply(lhs, rhs);
     }
 
     public class JsDivision : JsBinaryOperator
@@ -229,7 +229,7 @@ namespace ServiceStack.Templates
         public override string Token => "/";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).div(lhs, rhs);
+            DynamicNumber.Divide(lhs, rhs.ConvertTo<double>());
     }
 
     public class JsMod : JsBinaryOperator
@@ -239,7 +239,7 @@ namespace ServiceStack.Templates
         public override string Token => "%";
 
         public override object Evaluate(object lhs, object rhs) =>
-            DynamicNumber.GetNumber(lhs, rhs).mod(lhs, rhs);
+            DynamicNumber.Mod(lhs, rhs);
     }
 
     public class JsMinus : JsUnaryOperator

@@ -207,6 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{ 1 + 2 }}"), Is.EqualTo("3"));
             Assert.That(context.EvaluateTemplate("{{ 1 - 2 }}"), Is.EqualTo("-1"));
             Assert.That(context.EvaluateTemplate("{{ 1 * 2 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 1 / 2 }}"), Is.EqualTo("0.5"));
             Assert.That(context.EvaluateTemplate("{{ 1 / 2.0 }}"), Is.EqualTo("0.5"));
             Assert.That(context.EvaluateTemplate("{{ 1 & 2 }}"), Is.EqualTo("0"));
             //Needs to be in brackets so it's not considered as different filter expressions
@@ -220,6 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 }}"), Is.EqualTo("7"));
             Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 / 5 }}"), Is.EqualTo("6.2"));
             Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 / 5.0 }}"), Is.EqualTo("6.2"));
             
             Assert.That(context.EvaluateTemplate("{{ (1 + 2) }}"), Is.EqualTo("3"));
