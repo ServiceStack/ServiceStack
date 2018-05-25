@@ -88,19 +88,13 @@ namespace ServiceStack.Templates
         {
             literal = literal.AdvancePastWhitespace();
             
-            literal = literal.ParseJsToken(out JsToken lhs, filterExpression:filterExpression);
-
-            JsExpression CreateSingleExpression(JsToken left)
-            {
-                if (left is JsExpression jsExpr)
-                    return jsExpr;
-                
-                throw new ArgumentException($"Invalid Syntax: Expected Expression but was '{left}'");
-            }
+            literal = literal.ParseJsToken(out var lhs, filterExpression:filterExpression);
 
             if (literal.IsNullOrEmpty())
             {
-                expr = CreateSingleExpression(lhs);
+                expr = lhs is JsExpression jsExpr
+                    ? jsExpr
+                    : throw new SyntaxErrorException($"Expected Expression but was {lhs.DebugToken()}");
             }
             else
             {
@@ -110,7 +104,6 @@ namespace ServiceStack.Templates
                     throw new SyntaxErrorException($"Expected binary operator near: {literal.SubstringWithElipsis(0, 50)}");
 
                 var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
-
                 if (prec > 0)
                 {
                     literal = literal.ParseJsToken(out JsToken rhs, filterExpression:filterExpression);
@@ -169,7 +162,9 @@ namespace ServiceStack.Templates
                 }
                 else
                 {
-                    expr = CreateSingleExpression(lhs);
+                    expr = lhs is JsExpression jsExpr
+                        ? jsExpr
+                        : throw new SyntaxErrorException($"Expected Expression but was {lhs.DebugToken()}");
                 }
             }
 

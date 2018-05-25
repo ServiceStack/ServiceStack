@@ -169,7 +169,7 @@ namespace ServiceStack.Templates
             if (token is JsIdentifier identifierKey)
                 return identifierKey.NameString;
             
-            throw new ArgumentException($"Invalid Key. Expected a Literal or Identifier but was '{token}'");
+            throw new SyntaxErrorException($"Invalid Key. Expected a Literal or Identifier but was {token.DebugToken()}");
         }
 
         public override object Evaluate(TemplateScopeContext scope)
@@ -375,13 +375,22 @@ namespace ServiceStack.Templates
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this StringSegment literal, int index) =>
             index < literal.Length ? literal.GetChar(index) : default(char);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsEnd(this char c) => c == default(char);
 
-        public static string DebugFirstChar(this StringSegment literal)
+        internal static string DebugFirstChar(this StringSegment literal)
         {
             return literal.IsNullOrEmpty()
                 ? "<end>"
                 : $"'{literal.GetChar(0)}'";
         }
+
+        internal static string DebugChar(this char c) => c == 0 ? "'<end>'" : $"'{c}'";
+
+        internal static string DebugToken(this JsToken token) => $"'{token}'";
+
+        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithElipsis(0, 50)}'";     
 
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
         {
@@ -389,10 +398,9 @@ namespace ServiceStack.Templates
             if (ret is bool b)
                 return b;
             
-            throw new ArgumentException($"Expected bool expression but instead received '{token}'");
+            throw new SyntaxErrorException($"Expected bool expression but instead received {token.DebugToken()}");
         }
 
-        internal static string StripQuotes(this StringSegment arg) => arg.HasValue ? StripQuotes(arg.Value) : string.Empty;
         internal static string StripQuotes(this string arg)
         {
             if (arg == null || arg.Length < 2)
@@ -441,15 +449,14 @@ namespace ServiceStack.Templates
                 literal = literal.ParseJsExpression(out var bracketsExpr);
                 literal = literal.AdvancePastWhitespace();
 
-                c = literal.GetChar(0);
-                if (c == ')')
+                if (literal.FirstCharEquals(')'))
                 {
                     literal = literal.Advance(1);
                     token = bracketsExpr;
                     return literal;
                 }
                 
-                throw new SyntaxErrorException($"Expected ')' but instead found '{c}': {literal.SubstringWithElipsis(0, 50)}");
+                throw new SyntaxErrorException($"Expected ')' but instead found {literal.DebugFirstChar()} near: {literal.DebugLiteral()}");
             }
 
             token = null;
@@ -546,7 +553,7 @@ namespace ServiceStack.Templates
                     literal = literal.ParseJsToken(out var mapKeyToken);
 
                     if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsIdentifier)) 
-                        throw new SyntaxErrorException($"'{mapKeyToken}' is not a valid Object key, expected literal or identifier.");
+                        throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal or identifier.");
 
                     JsToken mapValueToken;
                     bool shorthand = false;
@@ -562,7 +569,7 @@ namespace ServiceStack.Templates
                     {
                         shorthand = true;
                         if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
-                            throw new SyntaxErrorException($"Unterminated object literal near: {literal.SubstringWithElipsis(0, 50)}");
+                            throw new SyntaxErrorException($"Unterminated object literal near: {literal.DebugLiteral()}");
                             
                         mapValueToken = mapKeyToken;
                     }
@@ -633,8 +640,8 @@ namespace ServiceStack.Templates
                                 node = new JsMemberExpression(node, property, computed: true);
     
                                 literal = literal.AdvancePastWhitespace();
-                                if (literal.IsNullOrEmpty() || literal.GetChar(0) != ']')
-                                    throw new SyntaxErrorException($"Expected ']' but was '{literal.GetChar(0)}'");
+                                if (!literal.FirstCharEquals(']'))
+                                    throw new SyntaxErrorException($"Expected ']' but was {literal.DebugFirstChar()}");
     
                                 literal = literal.Advance(1);
                             }
@@ -764,7 +771,7 @@ namespace ServiceStack.Templates
                         op = JsMod.Operator;
                         return literal.Advance(1);
                     default:
-                        throw new SyntaxErrorException($"Invalid Operator found near: '{literal.SubstringWithElipsis(0, 50)}'");
+                        throw new SyntaxErrorException($"Invalid Operator found near: {literal.DebugLiteral()}");
                 }
             }
 
@@ -785,18 +792,13 @@ namespace ServiceStack.Templates
 
         internal static StringSegment ParseIdentifier(this StringSegment literal, out JsToken token)
         {
-            var i = 0;
-
             literal = literal.AdvancePastWhitespace();
 
-            if (literal.IsNullOrEmpty())
-                throw new SyntaxErrorException("Expected identifier before end");
-
-            var c = literal.GetChar(i);
+            var c = literal.SafeGetChar(0);
             if (!c.IsValidVarNameChar())
-                throw new SyntaxErrorException($"Expected start of identifier but was '{c}'");
+                throw new SyntaxErrorException($"Expected start of identifier but was {c.DebugChar()}");
 
-            i++;
+            var i = 1;
             
             while (i < literal.Length)
             {
@@ -836,7 +838,7 @@ namespace ServiceStack.Templates
             literal = literal.ParseIdentifier(out var token);
             
             if (!(token is JsIdentifier identifier))
-                throw new SyntaxErrorException($"Expected identifier but instead found '{token}'");
+                throw new SyntaxErrorException($"Expected identifier but instead found {token.DebugToken()}");
 
             literal = literal.AdvancePastWhitespace();
 
@@ -855,7 +857,7 @@ namespace ServiceStack.Templates
                         endStringPos = endStatementPos;
                             
                     if (endStringPos == -1)
-                        throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{literal.SubstringWithElipsis(0,50)}'");
+                        throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near {literal.DebugLiteral()}");
 
                     var originalArg = literal.Subsegment(0, endStringPos).Trim().ToString();
                     var rewrittenArgs = originalArg.Replace("{","{{").Replace("}","}}");
@@ -905,15 +907,15 @@ namespace ServiceStack.Templates
                 }
 
                 literal = literal.AdvancePastWhitespace();
-                var c = literal.GetChar(0);
-                if (c == termination)
+                var c = literal.SafeGetChar(0);
+                if (c.IsEnd() || c == termination)
                 {
                     literal = literal.Advance(1);
                     break;
                 }
                     
                 if (c != ',')
-                    throw new ArgumentException($"Unterminated arguments expression near: {literal.SubstringWithElipsis(0, 50)}");
+                    throw new SyntaxErrorException($"Unterminated arguments expression near: {literal.DebugLiteral()}");
                     
                 literal = literal.Advance(1);
                 literal = literal.AdvancePastWhitespace();
