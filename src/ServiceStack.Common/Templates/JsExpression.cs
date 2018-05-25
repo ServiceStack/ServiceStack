@@ -18,41 +18,25 @@ namespace ServiceStack.Templates
         public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token) =>
             literal.ParseJsExpression(out token, filterExpression:false);
 
+        private const char ConditionalExpressionTestChar = '?';
+
         public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token, bool filterExpression)
         {
             var peekLiteral = literal.ParseJsToken(out var token1, filterExpression:filterExpression);
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
             
-            if (peekLiteral.IsNullOrEmpty())
+            var peekChar = peekLiteral.SafeGetChar(0);
+            if (literal.IsNullOrEmpty() || peekChar.IsExpressionTerminatorChar())
             {
                 token = token1;
                 return peekLiteral;
             }
 
-            var peekChar = peekLiteral.GetChar(0);
-            if (peekChar.IsExpressionTerminatorChar())
+            if (peekChar == ConditionalExpressionTestChar)
             {
-                token = token1;
-                return peekLiteral;
-            }
-
-            var isConditionalExpression = peekChar == '?';
-            if (isConditionalExpression)
-            {
-                literal = peekLiteral.Advance(1);
-
-                literal = literal.ParseJsExpression(out var consequent);
-                literal = literal.AdvancePastWhitespace();
-                
-                if (!literal.FirstCharEquals(':'))
-                    throw new SyntaxErrorException($"Expected ':' but was {literal.DebugFirstChar()}");
-
-                literal = literal.Advance(1);
-
-                literal = literal.ParseJsExpression(out var alternate);
-                
-                token = new JsConditionalExpression(token1, consequent, alternate);
+                literal = peekLiteral.ParseJsConditionalExpression(token1, out var expression);
+                token = expression;
                 return literal;
             }
 
@@ -77,13 +61,40 @@ namespace ServiceStack.Templates
             {
                 literal = literal.ParseBinaryExpression(out var expr, filterExpression);
                 token = expr;
+
+                literal = literal.AdvancePastWhitespace();
+                if (literal.FirstCharEquals(ConditionalExpressionTestChar))
+                {
+                    literal = literal.ParseJsConditionalExpression(expr, out var conditionalExpr);
+                    token = conditionalExpr;
+                    return literal;
+                }
+                
                 return literal;
             }
 
             token = token1;
             return peekLiteral;
         }
-        
+
+        private static StringSegment ParseJsConditionalExpression(this StringSegment literal, JsToken test, out JsConditionalExpression expression)
+        {
+            literal = literal.Advance(1);
+
+            literal = literal.ParseJsExpression(out var consequent);
+            literal = literal.AdvancePastWhitespace();
+
+            if (!literal.FirstCharEquals(':'))
+                throw new SyntaxErrorException($"Expected Conditional ':' but was {literal.DebugFirstChar()}");
+
+            literal = literal.Advance(1);
+
+            literal = literal.ParseJsExpression(out var alternate);
+
+            expression = new JsConditionalExpression(test, consequent, alternate);
+            return literal;
+        }
+
         public static StringSegment ParseBinaryExpression(this StringSegment literal, out JsExpression expr, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();

@@ -145,6 +145,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     )
                 )
             )));
+
+            "1 + 2 > subtract(3, 4) ? 'YES' : 'NO'".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsConditionalExpression(
+                new JsBinaryExpression(
+                    new JsBinaryExpression(
+                        new JsLiteral(1),
+                        JsAddition.Operator,
+                        new JsLiteral(2)
+                    ), 
+                    JsGreaterThan.Operator, 
+                    new JsCallExpression(
+                        new JsIdentifier("subtract"),
+                        new JsLiteral(3),
+                        new JsLiteral(4)
+                    )
+                ), 
+                new JsLiteral("YES"),
+                new JsLiteral("NO")
+            )));
         }
 
         [Test]
@@ -163,6 +182,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{ true ? 1 : 0 }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ false ? 1 : 0 }}"), Is.EqualTo("0"));
             Assert.That(context.EvaluateTemplate("{{ (1 < 2) ? 3 + 4 : -5 + (add(6,a) + 7) }}"), Is.EqualTo("7"));
+            Assert.That(context.EvaluateTemplate("{{ 1 + 2 > subtract(3, 4) ? 'YES' : 'NO' }}"), Is.EqualTo("YES"));
         }
     }
 }
