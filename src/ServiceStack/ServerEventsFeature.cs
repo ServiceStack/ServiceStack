@@ -34,9 +34,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
 
-        [Obsolete("Renamed to WriteEventAsync")]
         public Action<IResponse, string> WriteEvent { get; private set; }
-        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
 
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
@@ -50,11 +48,11 @@ namespace ServiceStack
             UnRegisterPath = "/event-unregister";
             SubscribersPath = "/event-subscribers";
 
-            WriteEventAsync = async (res, frame) =>
+            WriteEvent = (res, frame) =>
             {
                 var bytes = frame.ToUtf8Bytes();
-                await res.OutputStream.WriteAsync(bytes, 0, bytes.Length);
-                await res.FlushAsync();
+                res.OutputStream.Write(bytes, 0, bytes.Length);
+                res.Flush();
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -421,7 +419,8 @@ namespace ServiceStack
         {
             this.response = response;
             this.Meta = new Dictionary<string, string>();
-            this.WriteEventAsync = HostContext.GetPlugin<ServerEventsFeature>().WriteEventAsync;
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            this.WriteEvent = feature.WriteEvent;
         }
 
         public void UpdateChannels(string[] channels)
@@ -433,7 +432,7 @@ namespace ServiceStack
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription> OnDispose { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
-        public Func<IResponse, string, Task> WriteEventAsync { get; set; }
+        public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
@@ -442,61 +441,56 @@ namespace ServiceStack
             Publish(selector, null);
         }
 
-        public void Publish(string selector, string message)
+        private string CreateFrame(string selector, string message)
         {
             var msg = message ?? "";
             var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
-                      + "data: " + selector + " " + msg + "\n\n";
-
-            PublishRaw(frame);
+                        + "data: " + selector + " " + msg + "\n\n";
+            return frame;
         }
 
-        readonly AsyncLock mutex = new AsyncLock();
-        private async Task WriteAsync(IResponse response, string frame)
-        {
-            using (await mutex.LockAsync())
-            {
-                await WriteEventAsync(response, frame);
-            }
-        }
+        public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
 
         public void PublishRaw(string frame)
         {
             if (response.IsClosed) return;
 
-            WriteAsync(response, frame)
-                .ContinueWith(t =>
+            lock (response)
+            {
+                try 
+                { 
+                    WriteEvent(response, frame);
+                }
+                catch (Exception ex)
                 {
-                    if (t.IsFaulted || t.IsCanceled)
-                    {
-                        var ex = t.IsFaulted ? t.Exception.InnerExceptions.FirstOrDefault() : null;
-                        if (ex != null)
-                        {
-                            Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
-                            OnError?.Invoke(this, ex);
-                        }
+                    HandleWriteException(response, frame, ex);
+                }
+            }
+        }
 
-                        if (Env.IsMono)
-                        {
-                            // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
-                            try
-                            {
-                                // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
-                                response.OutputStream.Close();
-                            }
-                            catch (Exception innerEx)
-                            {
-                                Log.Error("OutputStream.Close()", innerEx);
-                            }
-                        }
+        private void HandleWriteException(IResponse response, string frame, Exception ex)
+        {
+            if (ex != null)
+            {
+                Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
+                OnError?.Invoke(this, ex);
+            }
 
-                        Unsubscribe();
-                    }
-                    else
-                    {
-                        OnPublish?.Invoke(this, response, frame);
-                    }
-                });
+            if (Env.IsMono)
+            {
+                // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
+                try
+                {
+                    // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
+                    response.OutputStream.Close();
+                }
+                catch (Exception innerEx)
+                {
+                    Log.Error("OutputStream.Close()", innerEx);
+                }
+            }
+
+            Unsubscribe();
         }
 
         public void Pulse()

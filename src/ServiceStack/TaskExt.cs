@@ -86,6 +86,4 @@ namespace ServiceStack
             public void Dispose() { m_toRelease.m_semaphore.Release(); }
         }
     }
-
-
 }
