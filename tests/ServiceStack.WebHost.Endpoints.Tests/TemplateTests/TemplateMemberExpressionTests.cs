@@ -55,6 +55,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 ),
                 computed:true
             )));
+
+            "toDateTime('2001-01-01').Day".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsMemberExpression(
+                new JsCallExpression(
+                    new JsIdentifier("toDateTime"),
+                    new JsLiteral("2001-01-01")
+                ),
+                new JsIdentifier("Day")
+            )));
+
+            "[toDateTime('2001-01-01')][0].Day".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsMemberExpression(
+                new JsMemberExpression(
+                    new JsArrayExpression(
+                        new JsCallExpression(
+                            new JsIdentifier("toDateTime"),
+                            new JsLiteral("2001-01-01")
+                        )
+                    ), 
+                    new JsLiteral(0),
+                    computed:true
+                ), 
+                new JsIdentifier("Day")
+            )));
         }
 
         class A
@@ -154,6 +178,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{ a.ArrayStrings[1+1] }}"), Is.EqualTo("C"));
             Assert.That(context.EvaluateTemplate("{{ a.ListStrings[1+1] }}"), Is.EqualTo("C"));
             Assert.That(context.EvaluateTemplate("{{ a['Pr' + 'op'].Name }}"), Is.EqualTo("prop"));
+        }
+
+        [Test]
+        public void Can_evaluate_MemberExpression_of_Method()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ toDateTime('2001-01-01').Day }}"), Is.EqualTo("1"));
+        }
+
+        [Test]
+        public void Can_evaluate_MemberExpression_of_Array()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ [toDateTime('2001-01-01')][0].Day }}"), Is.EqualTo("1"));
         }
 
         [Test]

@@ -595,6 +595,7 @@ namespace ServiceStack.Templates
             }
             if (firstChar == '[')
             {
+                literal = literal.Advance(1);
                 literal = literal.ParseArguments(out var elements, termination: ']');
 
                 token = new JsArrayExpression(elements);
@@ -611,64 +612,68 @@ namespace ServiceStack.Templates
             }
             
             // identifier
-            var preIdentifierLiteral = literal;
-
             literal = literal.ParseIdentifier(out var node);
 
             if (!(node is JsOperator))
             {
-                literal = literal.AdvancePastWhitespace();
-                if (!literal.IsNullOrEmpty())
-                {
-                    c = literal.GetChar(i);
-                    if (c == '.' || c == '[')
-                    {
-                        while (true)
-                        {
-                            literal = literal.Advance(1);
-    
-                            if (c == '.')
-                            {
-                                literal = literal.AdvancePastWhitespace();
-                                literal = literal.ParseIdentifier(out var property);
-                                node = new JsMemberExpression(node, property, computed: false);
-                            }
-                            else if (c == '[')
-                            {
-                                literal = literal.AdvancePastWhitespace();
-                                literal = literal.ParseJsExpression(out var property);
-                                node = new JsMemberExpression(node, property, computed: true);
-    
-                                literal = literal.AdvancePastWhitespace();
-                                if (!literal.FirstCharEquals(']'))
-                                    throw new SyntaxErrorException($"Expected ']' but was {literal.DebugFirstChar()}");
-    
-                                literal = literal.Advance(1);
-                            }
-    
-                            literal = literal.AdvancePastWhitespace();
-                            
-                            if (literal.IsNullOrWhiteSpace())
-                                break;
-    
-                            c = literal.GetChar(0);
-                            if (c == '(')
-                                throw new SyntaxErrorException("Call expression found on member expression. Only filters can be invoked.");
-                            
-                            if (!(c == '.' || c == '['))
-                                break;
-                        }
-                    }
-                    else if (c == '(' || (filterExpression && c == ':'))
-                    {
-                        literal = preIdentifierLiteral.ParseJsCallExpression(out var callExpr, filterExpression:filterExpression);
-                        token = callExpr;
-                        return literal;
-                    }
-                }
+                literal = literal.ParseJsMemberExpression(ref node, filterExpression);
             }
 
             token = node;
+            return literal;
+        }
+        
+        internal static StringSegment ParseJsMemberExpression(this StringSegment literal, ref JsToken node, bool filterExpression)
+        {
+            literal = literal.AdvancePastWhitespace();
+
+            if (literal.IsNullOrEmpty())
+                return literal;
+            
+            var c = literal.GetChar(0);
+
+            while (c == '.' || c == '[' || c == '(' || (filterExpression && c == ':'))
+            {
+                literal = literal.Advance(1);
+
+                if (c == '.')
+                {
+                    literal = literal.AdvancePastWhitespace();
+                    literal = literal.ParseIdentifier(out var property);
+                    node = new JsMemberExpression(node, property, computed: false);
+                }
+                else if (c == '[')
+                {
+                    literal = literal.AdvancePastWhitespace();
+                    literal = literal.ParseJsExpression(out var property);
+                    node = new JsMemberExpression(node, property, computed: true);
+
+                    literal = literal.AdvancePastWhitespace();
+                    if (!literal.FirstCharEquals(']'))
+                        throw new SyntaxErrorException($"Expected ']' but was {literal.DebugFirstChar()}");
+
+                    literal = literal.Advance(1);
+                }
+                else if (c == '(')
+                {
+                    literal = literal.ParseArguments(out var args, termination: ')');
+                    node = new JsCallExpression(node, args.ToArray());
+                }
+                else if (filterExpression && c == ':')
+                {
+                    literal = literal.ParseWhitespaceArgument(out var argument);
+                    node = new JsCallExpression(node, argument);
+                    return literal;
+                }
+
+                literal = literal.AdvancePastWhitespace();
+                    
+                if (literal.IsNullOrEmpty())
+                    break;
+
+                c = literal.GetChar(0);
+            }
+
             return literal;
         }
 
@@ -833,6 +838,8 @@ namespace ServiceStack.Templates
 
     public static class CallExpressionUtils
     {
+        private const char WhitespaceArgument = ':'; 
+        
         public static StringSegment ParseJsCallExpression(this StringSegment literal, out JsCallExpression expression, bool filterExpression=false)
         {
             literal = literal.ParseIdentifier(out var token);
@@ -842,36 +849,21 @@ namespace ServiceStack.Templates
 
             literal = literal.AdvancePastWhitespace();
 
-            if (literal.IsNullOrEmpty() || literal.GetChar(0) != '(')
+            if (literal.FirstCharEquals(WhitespaceArgument))
             {
-                var isWhitespaceSyntax = filterExpression && literal.GetChar(0) == ':';
-                if (isWhitespaceSyntax)
-                {
-                    literal = literal.Advance(1);
-                    
-                    // replace everything after ':' up till new line and rewrite as single string to method
-                    var endStringPos = literal.IndexOf("\n");
-                    var endStatementPos = literal.IndexOf("}}");
-    
-                    if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
-                        endStringPos = endStatementPos;
-                            
-                    if (endStringPos == -1)
-                        throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near {literal.DebugLiteral()}");
-
-                    var originalArg = literal.Subsegment(0, endStringPos).Trim().ToString();
-                    var rewrittenArgs = originalArg.Replace("{","{{").Replace("}","}}");
-                    var strArg = new JsLiteral(rewrittenArgs);
-    
-                    expression = new JsCallExpression(identifier, strArg);
-                    return literal.Subsegment(endStringPos);
-                }
-                
-                expression = new JsCallExpression(identifier);
+                literal = literal.Advance(1);
+                literal = literal.ParseWhitespaceArgument(out var argument);
+                expression = new JsCallExpression(identifier, argument);
                 return literal;
             }
 
-            literal.Advance(1);
+            if (!literal.FirstCharEquals('('))
+            {
+                expression = new JsCallExpression(identifier);
+                return literal;
+            }
+            
+            literal = literal.Advance(1);
 
             literal = literal.ParseArguments(out var args, termination: ')');
             
@@ -879,11 +871,30 @@ namespace ServiceStack.Templates
             return literal;
         }
 
+        internal static StringSegment ParseWhitespaceArgument(this StringSegment literal, out JsToken argument)
+        {
+            // replace everything after ':' up till new line and rewrite as single string to method
+            var endStringPos = literal.IndexOf("\n");
+            var endStatementPos = literal.IndexOf("}}");
+    
+            if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
+                endStringPos = endStatementPos;
+                            
+            if (endStringPos == -1)
+                throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near {literal.DebugLiteral()}");
+
+            var originalArg = literal.Subsegment(0, endStringPos).Trim().ToString();
+            var rewrittenArgs = originalArg.Replace("{","{{").Replace("}","}}");
+            var strArg = new JsLiteral(rewrittenArgs);
+
+            argument = strArg;
+            return literal.Subsegment(endStringPos);
+        }
+
         internal static StringSegment ParseArguments(this StringSegment literal, out List<JsToken> arguments, char termination)
         {
             arguments = new List<JsToken>();
 
-            literal = literal.Advance(1);
             while (!literal.IsNullOrEmpty())
             {
                 literal = literal.AdvancePastWhitespace();

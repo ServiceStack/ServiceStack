@@ -79,7 +79,7 @@ namespace ServiceStack.Templates
                     sb.Append(',');
                 sb.Append(arg.ToRawString());
             }
-            return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
+            return $"{Callee.ToRawString()}({StringBuilderCacheAlt.ReturnAndFree(sb)})";
         }
 
         public string GetDisplayName() => (Name ?? "").Replace('′', '"');

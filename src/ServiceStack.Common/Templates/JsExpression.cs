@@ -22,20 +22,20 @@ namespace ServiceStack.Templates
 
         public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token, bool filterExpression)
         {
-            var peekLiteral = literal.ParseJsToken(out var token1, filterExpression:filterExpression);
+            var peekLiteral = literal.ParseJsToken(out var node, filterExpression:filterExpression);
 
             peekLiteral = peekLiteral.AdvancePastWhitespace();
             
             var peekChar = peekLiteral.SafeGetChar(0);
             if (literal.IsNullOrEmpty() || peekChar.IsExpressionTerminatorChar())
             {
-                token = token1;
+                token = node;
                 return peekLiteral;
             }
 
             if (peekChar == ConditionalExpressionTestChar)
             {
-                literal = peekLiteral.ParseJsConditionalExpression(token1, out var expression);
+                literal = peekLiteral.ParseJsConditionalExpression(node, out var expression);
                 token = expression;
                 return literal;
             }
@@ -50,7 +50,7 @@ namespace ServiceStack.Templates
                     var char2 = peekLiteral.GetChar(1);
                     if ((char1 == '|' && char2 != '|') || (char1 == '}' && char2 == '}'))
                     {
-                        token = token1;
+                        token = node;
                         return peekLiteral;
                     }
                 }
@@ -73,8 +73,10 @@ namespace ServiceStack.Templates
                 return literal;
             }
 
-            token = token1;
-            return peekLiteral;
+            literal = peekLiteral.ParseJsMemberExpression(ref node, filterExpression);
+
+            token = node;
+            return literal;
         }
 
         private static StringSegment ParseJsConditionalExpression(this StringSegment literal, JsToken test, out JsConditionalExpression expression)

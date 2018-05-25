@@ -551,7 +551,29 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         }
 
         [Test]
-        public void Does_not_allow_invoking_method_on_binding_expression()
+        public void Does_parse_MemberExpression_methods()
+        {
+            JsToken token;
+
+            "model.GetName()".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsCallExpression(
+                new JsMemberExpression(new JsIdentifier("model"), new JsIdentifier("GetName"))
+            )));
+
+            "model.Nested.GetName()".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsCallExpression(
+                new JsMemberExpression(
+                    new JsMemberExpression(
+                        new JsIdentifier("model"),
+                        new JsIdentifier("Nested")
+                    ), 
+                    new JsIdentifier("GetName")
+                )
+            )));
+        }
+
+        [Test]
+        public void Does_not_allow_invoking_method_on_MemberExpression()
         {
             var context = new TemplateContext().Init();
 
@@ -562,7 +584,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 var r = new PageResult(context.OneTimePage("{{ model.GetName() }}")){ Model = model }.Result;
                 Assert.Fail("Should throw");
             }
-            catch (ArgumentException e)
+            catch (BindingExpressionException e)
             {
                 e.Message.Print();
             }
@@ -572,7 +594,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 var r = new PageResult(context.OneTimePage("{{ model.Nested.GetName() }}")){ Model = model }.Result;
                 Assert.Fail("Should throw");
             }
-            catch (ArgumentException e)
+            catch (BindingExpressionException e)
             {
                 e.Message.Print();
             }
