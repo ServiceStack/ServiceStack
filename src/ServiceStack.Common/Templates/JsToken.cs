@@ -796,7 +796,7 @@ namespace ServiceStack.Templates
 
             var c = literal.SafeGetChar(0);
             if (!c.IsValidVarNameChar())
-                throw new SyntaxErrorException($"Expected start of identifier but was {c.DebugChar()}");
+                throw new SyntaxErrorException($"Expected start of identifier but was {c.DebugChar()} near: {literal.DebugLiteral()}");
 
             var i = 1;
             

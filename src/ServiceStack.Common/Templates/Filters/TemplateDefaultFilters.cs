@@ -703,7 +703,8 @@ namespace ServiceStack.Templates
                 var items = target.AssertEnumerable(nameof(@do));
 
                 var i = 0;
-                foreach (var item in items)
+                var eagerItems = items.ToArray(); // assign on array expression can't be within enumerable 
+                foreach (var item in eagerItems)
                 {
                     scope.AddItemToScope(itemBinding, item, i++);
                     var result = token.Evaluate(scope);

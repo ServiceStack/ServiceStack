@@ -42,12 +42,28 @@ namespace ServiceStack.Templates
         {
             var targetValue = Object.Evaluate(scope);
             var ret = GetValue(targetValue, scope);
-
-            // returning `null` indicates the property does not exist and will render the original expression instead of empty string
-//            if (ret == null)
-//                return JsNull.Value; // treat as empty expression
-
             return ret;
+        }
+
+        private static object PropValue(object targetValue, Type targetType, string name)
+        {
+            var memberFn = TypeProperties.Get(targetType).GetPublicGetter(name)
+                           ?? TypeFields.Get(targetType).GetPublicGetter(name);
+
+            if (memberFn != null)
+            {
+                return memberFn(targetValue);
+            }
+
+            var indexerMethod = targetType.GetInstanceMethod("get_Item");
+            if (indexerMethod != null)
+            {
+                var fn = indexerMethod.GetInvoker();
+                var ret = fn(targetValue, name);
+                return ret ?? JsNull.Value;
+            }
+
+            throw new ArgumentException($"'{targetType.Name}' does not have a '{name}' property or field");
         }
 
         private object GetValue(object targetValue, TemplateScopeContext scope)
@@ -55,34 +71,14 @@ namespace ServiceStack.Templates
             if (targetValue == null || targetValue == JsNull.Value)
                 return JsNull.Value;
             var targetType = targetValue.GetType();
+
             try
             {
-                object propValue(string name)
-                {
-                    var memberFn = TypeProperties.Get(targetType).GetPublicGetter(name)
-                                   ?? TypeFields.Get(targetType).GetPublicGetter(name);
-
-                    if (memberFn != null)
-                    {
-                        return memberFn(targetValue);
-                    }
-
-                    var indexerMethod = targetType.GetInstanceMethod("get_Item");
-                    if (indexerMethod != null)
-                    {
-                        var fn = indexerMethod.GetInvoker();
-                        var ret = fn(targetValue, name);
-                        return ret ?? JsNull.Value;
-                    }
-
-                    throw new ArgumentException($"'{targetType.Name}' does not have a '{name}' property or field");
-                }
-
                 if (!Computed)
                 {
                     if (Property is JsIdentifier identifier)
                     {
-                        var ret = propValue(identifier.NameString);
+                        var ret = PropValue(targetValue, targetType, identifier.NameString);
 
                         // Don't emit member expression on null KeyValuePair
                         if (ret == null && targetType.Name == "KeyValuePair`2")
@@ -112,7 +108,7 @@ namespace ServiceStack.Templates
                     }
                     if (indexValue is string propName)
                     {
-                        return propValue(propName);
+                        return PropValue(targetValue, targetType, propName);
                     }
                     if (targetValue is IList list)
                     {

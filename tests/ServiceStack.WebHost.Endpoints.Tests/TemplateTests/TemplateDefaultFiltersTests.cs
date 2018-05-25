@@ -667,6 +667,23 @@ result={{ result }}
         }
 
         [Test]
+        public void Can_assign_to_array_index()
+        {
+            var context = new TemplateContext {
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1,2,3,4,5] | assignTo: numbers }}
+{{ numbers | do: assign('numbers[index]', multiply(numbers[index], numbers[index])) }}
+{{ numbers | join }}").Trim(), Is.EqualTo("1,4,9,16,25"));
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1,2,3,4,5] | assignTo: numbers }}
+{{ numbers | do: assign('numbers[index]', numbers[index] * numbers[index]) }}
+{{ numbers | join }}").Trim(), Is.EqualTo("1,4,9,16,25"));
+        }
+
+        [Test]
         public void Can_assign_to_variables_in_partials()
         {
             var context = new TemplateContext
