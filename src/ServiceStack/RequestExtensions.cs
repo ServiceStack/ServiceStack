@@ -1,10 +1,12 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.IO;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack
@@ -45,7 +47,7 @@ namespace ServiceStack
 
         public static string GetHeader(this IRequest request, string headerName)
         {
-            return request.Headers.Get(headerName);
+            return request?.Headers.Get(headerName);
         }
 
         public static string GetParamInRequestHeader(this IRequest request, string name)
@@ -65,6 +67,7 @@ namespace ServiceStack
         /// <param name="request"></param>
         /// <param name="dto"></param>
         /// <returns></returns>
+        [Obsolete("Use ToOptimizedResultAsync")]
         public static object ToOptimizedResult(this IRequest request, object dto)
         {
             var httpResult = dto as IHttpResult;
@@ -82,7 +85,45 @@ namespace ServiceStack
             {
                 using (httpResult?.ResultScope?.Invoke())
                 {
-                    HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream).Wait();
+                    using (var msBuffer = MemoryStreamFactory.GetStream())
+                    {
+                        HostContext.ContentTypes.SerializeToStreamAsync(request, dto, msBuffer).Wait();
+                        msBuffer.Position = 0;
+                        msBuffer.CopyTo(compressionStream);
+                    }
+                    compressionStream.Close();
+                }
+
+                var compressedBytes = ms.ToArray();
+                return new CompressedResult(compressedBytes, compressionType, request.ResponseContentType)
+                {
+                    Status = request.Response.StatusCode
+                };
+            }
+        }
+
+        /// <summary>
+        /// Returns the optimized result for the IRequestContext. 
+        /// Does not use or store results in any cache.
+        /// </summary>
+        public static async Task<object> ToOptimizedResultAsync(this IRequest request, object dto)
+        {
+            var httpResult = dto as IHttpResult;
+            if (httpResult != null)
+                dto = httpResult.Response;
+
+            request.Response.Dto = dto;
+
+            var compressionType = request.GetCompressionType();
+            if (compressionType == null)
+                return HostContext.ContentTypes.SerializeToString(request, dto);
+
+            using (var ms = new MemoryStream())
+            using (var compressionStream = GetCompressionStream(ms, compressionType))
+            {
+                using (httpResult?.ResultScope?.Invoke())
+                {
+                    await HostContext.ContentTypes.SerializeToStreamAsync(request, dto, compressionStream);
                     compressionStream.Close();
                 }
 

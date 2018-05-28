@@ -17,10 +17,7 @@ namespace ServiceStack.RabbitMq
             this.queue = queue;
         }
 
-        public SharedQueue<BasicGetResult> Queue
-        {
-            get { return queue; }
-        }
+        public SharedQueue<BasicGetResult> Queue => queue;
 
         public override void OnCancel()
         {

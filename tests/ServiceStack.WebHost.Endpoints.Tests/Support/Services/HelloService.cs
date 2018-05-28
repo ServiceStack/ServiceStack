@@ -23,9 +23,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
     /// Create your Web Service implementation 
     public class HelloService : IService
     {
-        public object Any(Hello request)
-        {
-            return new HelloResponse { Result = "Hello, " + request.Name };
-        }
+        public object Any(Hello request) => new HelloResponse { Result = "Hello, " + request.Name };
     }
 }

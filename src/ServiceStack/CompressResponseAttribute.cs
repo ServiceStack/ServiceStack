@@ -31,13 +31,11 @@ namespace ServiceStack
             var responseBytes = src as byte[];
             if (responseBytes == null)
             {
-                var rawStr = src as string;
-                if (rawStr != null)
+                if (src is string rawStr)
                     responseBytes = rawStr.ToUtf8Bytes();
                 else
                 {
-                    var stream = src as Stream;
-                    if (stream != null)
+                    if (src is Stream stream)
                         responseBytes = stream.ReadFully();
                 }
             }

@@ -21,10 +21,7 @@ namespace ServiceStack.RabbitMq
         public bool AutoReconnect { get; set; }
 
         private int status;
-        public int Status
-        {
-            get { return status; }
-        }
+        public int Status => status;
 
         private Thread bgThread;
         private int timesStarted = 0;
@@ -33,24 +30,14 @@ namespace ServiceStack.RabbitMq
         public Action<RabbitMqWorker, Exception> errorHandler { get; set; }
 
         private DateTime lastMsgProcessed;
-        public DateTime LastMsgProcessed
-        {
-            get { return lastMsgProcessed; }
-        }
+        public DateTime LastMsgProcessed => lastMsgProcessed;
 
         private int totalMessagesProcessed;
-        public int TotalMessagesProcessed
-        {
-            get { return totalMessagesProcessed; }
-        }
+        public int TotalMessagesProcessed => totalMessagesProcessed;
 
         // TODO: RabbitMqWorker.MsgNotificationsReceived is never referenced and will always return zero.
         //private int msgNotificationsReceived;
-        public int MsgNotificationsReceived
-        {
-            //get { return msgNotificationsReceived; }
-            get { return 0; }
-        }
+        public int MsgNotificationsReceived => 0;
 
         public RabbitMqWorker(RabbitMqMessageFactory mqFactory,
             IMessageHandler messageHandler, string queueName,
@@ -69,17 +56,7 @@ namespace ServiceStack.RabbitMq
             return new RabbitMqWorker(mqFactory, messageHandler, QueueName, errorHandler, AutoReconnect);
         }
 
-        public IMessageQueueClient MqClient
-        {
-            get
-            {
-                if (mqClient == null)
-                {
-                    mqClient = mqFactory.CreateMessageQueueClient();
-                }
-                return mqClient;
-            }
-        }
+        public IMessageQueueClient MqClient => mqClient ?? (mqClient = mqFactory.CreateMessageQueueClient());
 
         private IModel GetChannel()
         {
@@ -104,7 +81,7 @@ namespace ServiceStack.RabbitMq
                 //Should only be 1 thread past this point
                 bgThread = new Thread(Run)
                 {
-                    Name = "{0}: {1}".Fmt(GetType().Name, QueueName),
+                    Name = $"{GetType().Name}: {QueueName}",
                     IsBackground = true,
                 };
                 bgThread.Start();
@@ -149,8 +126,7 @@ namespace ServiceStack.RabbitMq
 
                 Stop();
 
-                if (this.errorHandler != null) 
-                    this.errorHandler(this, ex);
+                errorHandler?.Invoke(this, ex);
             }
             finally
             {
@@ -240,10 +216,7 @@ namespace ServiceStack.RabbitMq
                 {
                     var e = consumer.Queue.Dequeue();
 
-                    if (mqFactory.GetMessageFilter != null)
-                    {
-                        mqFactory.GetMessageFilter(QueueName, e);
-                    }
+                    mqFactory.GetMessageFilter?.Invoke(QueueName, e);
 
                     messageHandler.ProcessMessage(mqClient, e);
                 }

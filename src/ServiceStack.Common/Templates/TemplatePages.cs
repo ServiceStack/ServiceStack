@@ -200,9 +200,17 @@ namespace ServiceStack.Templates
                 FilePath = Guid.NewGuid().ToString("n") + "." + ext, 
                 TextContents = contents,
             };
+            
             var page = new TemplatePage(Context, memFile);
-            page.Init().Wait(); // Safe as Memory Files are non-blocking
-            return page;
+            try
+            {
+                page.Init().Wait(); // Safe as Memory Files are non-blocking
+                return page;
+            }
+            catch (AggregateException e)
+            {
+                throw e.UnwrapIfSingleException();
+            }
         }
         
         public DateTime GetLastModified(TemplatePage page)
@@ -240,7 +248,7 @@ namespace ServiceStack.Templates
             foreach (var fragment in varFragments)
             {
                 var filter = fragment.FilterExpressions?.FirstOrDefault();
-                if (filter?.NameString == "partial")
+                if (filter?.Name == "partial")
                 {
                     if (fragment.InitialValue is string partialPath)
                     {
@@ -255,7 +263,7 @@ namespace ServiceStack.Templates
                         }
                     }
                 }
-                else if (filter?.NameString != null && Context.FileFilterNames.Contains(filter?.NameString))
+                else if (filter?.Name != null && Context.FileFilterNames.Contains(filter?.Name))
                 {
                     if (fragment.InitialValue is string filePath)
                     {
@@ -265,19 +273,21 @@ namespace ServiceStack.Templates
                 }
                 
                 var lastFilter = fragment.FilterExpressions?.LastOrDefault();
-                if (lastFilter?.NameString == "selectPartial")
+                if (lastFilter?.Name == "selectPartial")
                 {
-                    var partialArg = lastFilter.Args.FirstOrDefault().StripQuotes();
-                    if (!string.IsNullOrEmpty(partialArg))
+                    if (lastFilter.Arguments.FirstOrDefault() is JsLiteral argLiteral && argLiteral.Value is string partialArg)
                     {
-                        Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
-                        maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
-
-                        if (partialPage?.HasInit == true)
+                        if (!string.IsNullOrEmpty(partialArg))
                         {
-                            var partialLastModified = GetLastModifiedPage(partialPage);
-                            if (partialLastModified > maxLastModified)
-                                maxLastModified = partialLastModified;
+                            Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                            maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
+
+                            if (partialPage?.HasInit == true)
+                            {
+                                var partialLastModified = GetLastModifiedPage(partialPage);
+                                if (partialLastModified > maxLastModified)
+                                    maxLastModified = partialLastModified;
+                            }
                         }
                     }
                 }

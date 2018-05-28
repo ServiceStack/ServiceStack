@@ -88,40 +88,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public void Can_Change_Typed_Urls_with_TypedUrlResolver()
         {
             var client = CreateClient("http://example.org/api", typedUrlResolver:
-                (meta, httpMethod, dto) => meta.BaseUri.Replace("example.org", dto.GetType().Name + ".example.org")
+                (meta, httpMethod, dto) => meta.BaseUri.Replace("example.org", dto.GetType().Name.ToLower() + ".example.org")
                         .CombineWith(dto.ToUrl(httpMethod, meta.Format)));
 
             var response = client.Get(new DummyRequest());
-            Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyrequest.example.org/api/test"));
 
             response = client.Send(new DummySendGet());
-            Assert.That(response.Url, Is.EqualTo("http://DummySendGet.example.org/api/testsend"));
+            Assert.That(response.Url, Is.EqualTo("http://dummysendget.example.org/api/testsend"));
 
             response = client.Get(new DummyFallback());
-            Assert.That(response.Url, Is.EqualTo("http://DummyFallback.example.org/api/json/reply/DummyFallback"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyfallback.example.org/api/json/reply/DummyFallback"));
 
             response = client.Post(new DummyRequest());
-            Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyrequest.example.org/api/test"));
         }
 
         [Test]
         public async Task Can_Change_Typed_Urls_with_TypedUrlResolver_Async()
         {
             var client = CreateClient("http://example.org/api", typedUrlResolver:
-                (meta, httpMethod, dto) => meta.BaseUri.Replace("example.org", dto.GetType().Name + ".example.org")
+                (meta, httpMethod, dto) => meta.BaseUri.Replace("example.org", dto.GetType().Name.ToLower() + ".example.org")
                         .CombineWith(dto.ToUrl(httpMethod, meta.Format)));
 
             var response = await client.DeleteAsync(new DummyRequest());
-            Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyrequest.example.org/api/test"));
 
             response = await client.SendAsync(new DummySendGet());
-            Assert.That(response.Url, Is.EqualTo("http://DummySendGet.example.org/api/testsend"));
+            Assert.That(response.Url, Is.EqualTo("http://dummysendget.example.org/api/testsend"));
 
             response = await client.DeleteAsync(new DummyFallback());
-            Assert.That(response.Url, Is.EqualTo("http://DummyFallback.example.org/api/json/reply/DummyFallback"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyfallback.example.org/api/json/reply/DummyFallback"));
 
             response = await client.PutAsync(new DummyRequest());
-            Assert.That(response.Url, Is.EqualTo("http://DummyRequest.example.org/api/test"));
+            Assert.That(response.Url, Is.EqualTo("http://dummyrequest.example.org/api/test"));
         }
     }
 

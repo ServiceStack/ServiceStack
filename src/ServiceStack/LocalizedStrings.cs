@@ -61,7 +61,6 @@
         public static string ShouldNotRegisterAuthSession = "AuthSession's are rehydrated from ICacheClient and should not be registered in IOC's when not in HostContext.TestMode";
         public static string ApiKeyRequiresSecureConnection = "Sending ApiKey over insecure connection forbidden when RequireSecureConnection=true";
         public static string JwtRequiresSecureConnection = "Sending JWT over insecure connection forbidden when RequireSecureConnection=true";
-        public static string InvalidSignature = "Invalid Signature";
         public static string TokenInvalidated = "Token has been invalidated";
         public static string TokenExpired = "Token has expired";
         public static string TokenInvalid = "Token is invalid";

@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 },
                 issuer: jwtProvider.Issuer,
                 expireIn: jwtProvider.ExpireTokensIn,
-                audience: jwtProvider.Audience,
+                audiences: jwtProvider.Audiences,
                 roles: new[] {"TheRole"},
                 permissions: new[] {"ThePermission"});
 
@@ -135,7 +135,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             var url = Config.ListeningOn.CombineWith(request.ToGetUrl())
                 .AddQueryParam(Keywords.TokenCookie, authResponse.BearerToken);
 
-            var response = url.PostToUrl(null, accept: MimeTypes.Json)
+            var response = url.PostJsonToUrl("{}")
                 .FromJson<SecuredResponse>();
 
             Assert.That(response.Result, Is.EqualTo(request.Name));
@@ -268,7 +268,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 
         private static string CreateExpiredToken()
         {
-            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProvider.Name);
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProviderReader.Name);
             jwtProvider.CreatePayloadFilter = (jwtPayload, session) =>
                 jwtPayload["exp"] = DateTime.UtcNow.AddSeconds(-1).ToUnixTime().ToString();
 
@@ -457,8 +457,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public void Can_Auto_reconnect_with_RefreshToken_in_OnAuthenticationRequired_after_expired_token()
         {
             var client = GetClient();
-            var serviceClient = client as JsonServiceClient;
-            if (serviceClient == null) //OnAuthenticationRequired not implemented in JsonHttpClient
+            if (!(client is JsonServiceClient serviceClient)) //OnAuthenticationRequired not implemented in JsonHttpClient
                 return;
 
             var called = 0;
@@ -542,5 +541,75 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             Assert.That(response.RefreshToken, Is.Null);
         }
 
+        [Test]
+        public void Can_validate_valid_token()
+        {
+            var authClient = GetClient();
+            var jwt = authClient.Send(new Authenticate
+            {
+                provider = "credentials",
+                UserName = Username,
+                Password = Password,
+            }).BearerToken;
+
+            var jwtProvider = AuthenticateService.GetJwtAuthProvider();
+            Assert.That(jwtProvider.IsJwtValid(jwt));
+
+            var jwtPayload = jwtProvider.GetValidJwtPayload(jwt);
+            Assert.That(jwtPayload, Is.Not.Null);
+            Assert.That(jwtPayload["preferred_username"], Is.EqualTo(Username));
+        }
+
+        [Test]
+        public void Does_not_validate_invalid_token()
+        {
+            var expiredJwt = CreateExpiredToken();
+
+            var jwtProvider = AuthenticateService.GetJwtAuthProvider();
+            Assert.That(jwtProvider.IsJwtValid(expiredJwt), Is.False);
+
+            Assert.That(jwtProvider.GetValidJwtPayload(expiredJwt), Is.Null);
+        }
+
+        [Test]
+        public void Does_validate_multiple_audiences()
+        {
+            var jwtProvider = (JwtAuthProvider)AuthenticateService.GetAuthProvider(JwtAuthProviderReader.Name);
+
+            string CreateJwtWithAudiences(params string[] audiences)
+            {
+                var header = JwtAuthProvider.CreateJwtHeader(jwtProvider.HashAlgorithm);
+                var body = JwtAuthProvider.CreateJwtPayload(new AuthUserSession
+                    {
+                        UserAuthId = "1",
+                        DisplayName = "Test",
+                        Email = "as@if.com",
+                        IsAuthenticated = true,
+                    },
+                    issuer: jwtProvider.Issuer,
+                    expireIn: jwtProvider.ExpireTokensIn,
+                    audiences: audiences);
+
+                var jwtToken = JwtAuthProvider.CreateJwt(header, body, jwtProvider.GetHashAlgorithm());
+                return jwtToken;
+            }
+
+            jwtProvider.Audiences = new List<string> { "foo", "bar" };
+            var jwtNoAudience = CreateJwtWithAudiences();
+            Assert.That(jwtProvider.IsJwtValid(jwtNoAudience));
+
+            var jwtWrongAudience = CreateJwtWithAudiences("qux");
+            Assert.That(!jwtProvider.IsJwtValid(jwtWrongAudience));
+            
+            var jwtPartialAudienceMatch = CreateJwtWithAudiences("bar","qux");
+            Assert.That(jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+
+            jwtProvider.Audience = "foo";
+            Assert.That(!jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+
+            jwtProvider.Audience = null;
+            Assert.That(jwtProvider.IsJwtValid(jwtPartialAudienceMatch));
+        }
+        
     }
 }

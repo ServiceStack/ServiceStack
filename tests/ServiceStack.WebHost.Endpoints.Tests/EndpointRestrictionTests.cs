@@ -219,9 +219,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Can_access_from_MQ()
+        public void Can_access_MessageQueueRestriction_from_MQ()
         {
             ShouldAllowAccessWhen<MessageQueueRestriction>(RequestAttributes.Localhost | RequestAttributes.MessageQueue | RequestAttributes.HttpPost);
+        }
+
+        [Test]
+        public void Can_not_access_MessageQueueRestriction_from_HTTP()
+        {
+            ShouldDenyAccessWhen<MessageQueueRestriction>(RequestAttributes.Localhost | RequestAttributes.Http | RequestAttributes.HttpPost);
         }
 
         [Ignore("TODO: Ignore reason")]

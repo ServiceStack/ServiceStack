@@ -255,7 +255,8 @@ namespace ServiceStack.Api.Swagger
             {typeof(double), SwaggerType.Double},
             {typeof(decimal), SwaggerType.Double},
             {typeof(string), SwaggerType.String},
-            {typeof(DateTime), SwaggerType.Date}
+            {typeof(DateTime), SwaggerType.Date},
+            {typeof(DateTimeFormat), SwaggerType.Date},
         };
 
         private static bool IsSwaggerScalarType(Type type)

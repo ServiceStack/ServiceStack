@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
@@ -15,13 +14,11 @@
     <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
-
   <ItemGroup>
     <None Include="App.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
@@ -40,20 +37,17 @@
     <ProjectReference Include="..\..\src\ServiceStack.Wire\ServiceStack.Wire.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
   </ItemGroup>
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.106" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.108" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
     <Reference Include="System.Net" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
@@ -61,8 +55,7 @@
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.SqlServer.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
-
-    <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
+  <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
    https://github.com/nunit/dotnet-test-nunit/issues/91 
    To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
    -->
@@ -70,20 +63,15 @@
     <OutputType>Exe</OutputType>
     <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
     <PackageReference Include="NUnitLite" Version="3.8.1" />
   </ItemGroup>
-
-
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0" />
-
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.1" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
@@ -92,11 +80,9 @@
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.SqlServer.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
   </ItemGroup>
-
   <ItemGroup>
     <None Update="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
     </None>
   </ItemGroup>
-
 </Project>

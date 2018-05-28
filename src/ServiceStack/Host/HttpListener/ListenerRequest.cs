@@ -45,10 +45,10 @@ namespace ServiceStack.Host.HttpListener
             var mode = HostContext.Config.HandlerFactoryPath;
 
             string pathInfo;
-            var pos = request.RawUrl.IndexOf("?", StringComparison.Ordinal);
+            var pos = RawUrl.IndexOf("?", StringComparison.Ordinal);
             if (pos != -1)
             {
-                var path = request.RawUrl.Substring(0, pos);
+                var path = RawUrl.Substring(0, pos);
                 pathInfo = HttpRequestExtensions.GetPathInfo(
                     path,
                     mode,
@@ -56,7 +56,7 @@ namespace ServiceStack.Host.HttpListener
             }
             else
             {
-                pathInfo = request.RawUrl;
+                pathInfo = RawUrl;
             }
 
             pathInfo = pathInfo.UrlDecode();
@@ -95,7 +95,8 @@ namespace ServiceStack.Host.HttpListener
             return reader.ReadToEnd();
         }
 
-        public string RawUrl => request.RawUrl;
+        private string rawUrl;
+        public string RawUrl => rawUrl ?? (rawUrl = request.RawUrl.Replace("//", "/"));
 
         public string AbsoluteUri => request.Url.AbsoluteUri.TrimEnd('/');
 
@@ -128,10 +129,7 @@ namespace ServiceStack.Host.HttpListener
         private string responseContentType;
         public string ResponseContentType
         {
-            get
-            {
-                return responseContentType ?? (responseContentType = this.GetResponseContentType());
-            }
+            get => responseContentType ?? (responseContentType = this.GetResponseContentType());
             set
             {
                 this.responseContentType = value;
@@ -196,8 +194,8 @@ namespace ServiceStack.Host.HttpListener
         public Encoding contentEncoding;
         public Encoding ContentEncoding
         {
-            get { return contentEncoding ?? request.ContentEncoding; }
-            set { contentEncoding = value; }
+            get => contentEncoding ?? request.ContentEncoding;
+            set => contentEncoding = value;
         }
 
         public Uri UrlReferrer => request.UrlReferrer;
@@ -218,13 +216,10 @@ namespace ServiceStack.Host.HttpListener
 
         public bool UseBufferedStream
         {
-            get { return BufferedStream != null; }
-            set
-            {
-                BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
-                    : null;
-            }
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                : null;
         }
 
         public MemoryStream BufferedStream { get; set; }
@@ -262,8 +257,7 @@ namespace ServiceStack.Host.HttpListener
 
         static Stream GetSubStream(Stream stream)
         {
-            var other = stream as MemoryStream;
-            if (other != null)
+            if (stream is MemoryStream other)
             {
                 try
                 {

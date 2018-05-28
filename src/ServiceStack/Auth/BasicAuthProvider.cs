@@ -23,7 +23,7 @@ namespace ServiceStack.Auth
             var httpReq = authService.Request;
             var basicAuth = httpReq.GetBasicAuthUserAndPassword();
             if (basicAuth == null)
-                throw HttpError.Unauthorized(ErrorMessages.InvalidBasicAuthCredentials);
+                throw HttpError.Unauthorized(ErrorMessages.InvalidBasicAuthCredentials.Localize(authService.Request));
 
             var userName = basicAuth.Value.Key;
             var password = basicAuth.Value.Value;

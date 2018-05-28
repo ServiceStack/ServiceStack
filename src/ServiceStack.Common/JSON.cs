@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ServiceStack.Templates;
 using ServiceStack.Text;
+using ServiceStack.Text.Json;
 
 namespace ServiceStack
 {
@@ -8,8 +9,8 @@ namespace ServiceStack
     {
         public static object parse(string json)
         {
-            json.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            return value;
+            json.ToStringSegment().ParseJsToken(out var token);
+            return token.Evaluate(JS.CreateScope());
         }
 
         public static string stringify(object value) => value.ToJson();
@@ -17,6 +18,20 @@ namespace ServiceStack
 
     public static class JS
     {
+        /// <summary>
+        /// Configure ServiceStack.Text JSON Serializer to use Templates JS parsing
+        /// </summary>
+        public static void Configure()
+        {
+            JsonTypeSerializer.Instance.ObjectDeserializer = segment =>
+            {
+                segment.ParseJsExpression(out var token);
+                return token.Evaluate(CreateScope());
+            };
+        }
+
+        public static void UnConfigure() => JsonTypeSerializer.Instance.ObjectDeserializer = null;
+
         public static TemplateScopeContext CreateScope(Dictionary<string, object> args = null, TemplateFilter functions = null)
         {
             var context = new TemplateContext();
@@ -30,15 +45,16 @@ namespace ServiceStack
         public static object eval(string js) => eval(js, CreateScope());
         public static object eval(string js, TemplateScopeContext scope)
         {
-            js.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            var result = scope.Evaluate(value, binding);
+            js.ParseJsExpression(out var token);
+            var result = token.Evaluate(scope);
+
             return result;
         }
 
-        public static object value(string js)
+        public static JsToken ast(string js)
         {
-            js.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            return value;
+            js.ParseJsExpression(out var token);
+            return token;
         }
     }
 }

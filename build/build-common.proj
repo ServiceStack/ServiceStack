@@ -1,0 +1,86 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <Import Project="$(MSBuildProjectDirectory)/build.tasks" />
+
+  <PropertyGroup>
+    <MajorVersion Condition="$(MajorVersion) == ''">5</MajorVersion>
+    <MinorVersion Condition="$(MinorVersion) == ''">0</MinorVersion>
+    <PatchVersion Condition="$(PatchVersion) == ''">$(BUILD_NUMBER)</PatchVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <BuildSolutionDir>$(MSBuildProjectDirectory)/..</BuildSolutionDir>
+    <SrcDir>$(BuildSolutionDir)/src</SrcDir>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <Version>$(MajorVersion).$(MinorVersion).$(PatchVersion).0</Version>
+    <PackageVersion>$(MajorVersion).$(MinorVersion).$(PatchVersion)</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DoBuildSolutionsDependsOn>
+      BeforeBuildSolutions;
+      BuildSolutions
+    </DoBuildSolutionsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)" />
+
+  <Target Name="TeamCityBuild">
+    <CallTarget Targets="UpdateVersion" />
+    <CallTarget Targets="Default" />
+  </Target>
+
+  <Target Name="BeforeBuildSolutions">
+    <Message Text="*****Before building solution*****" Importance="high"/>
+    <CallTarget Targets="UpdateVersion" />
+  </Target>
+
+  <Target Name="BuildSolutions">
+  </Target>
+
+  <Target Name="UpdateVersion">
+    <ItemGroup>
+      <!-- Add Version to AssemblyFileVersion -->
+      <RegexTransform Include="$(SrcDir)/**/AssemblyInfo.cs">
+        <Find>AssemblyFileVersion\(\"\d+\.\d+\.\d+\.\d+\"\)</Find>
+        <ReplaceWith>AssemblyFileVersion("$(Version)")</ReplaceWith>
+      </RegexTransform>
+    </ItemGroup>
+
+    <RegexTransform Items="@(RegexTransform)" />
+  </Target>
+
+  <Target Name="BuildCommon">
+
+    <!-- ServiceStack.Interfaces -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Client -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.HttpClient -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+            Targets="Build"
+            Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.Common -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+    <!-- ServiceStack -->
+
+    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
+             Targets="Build"
+             Properties="Version=$(PackageVersion);Configuration=$(Configuration)" />
+
+  </Target>
+
+</Project>

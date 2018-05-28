@@ -37,6 +37,8 @@ namespace ServiceStack.Host
 
         public void Add(Type serviceType, Type requestType, Type responseType)
         {
+            if (requestType.IsArray) return; //Custom AutoBatched requests
+            
             this.ServiceTypes.Add(serviceType);
             this.RequestTypes.Add(requestType);
 
@@ -92,8 +94,7 @@ namespace ServiceStack.Host
         {
             foreach (var restPath in restPaths)
             {
-                Operation operation;
-                if (!OperationsMap.TryGetValue(restPath.RequestType, out operation))
+                if (!OperationsMap.TryGetValue(restPath.RequestType, out var operation))
                     continue;
 
                 operation.Routes.Add(restPath);
@@ -130,9 +131,8 @@ namespace ServiceStack.Host
         {
             if (operationType == null)
                 return null;
-            
-            Operation op;
-            OperationsMap.TryGetValue(operationType, out op);
+
+            OperationsMap.TryGetValue(operationType, out var op);
             return op;
         }
 
@@ -148,9 +148,8 @@ namespace ServiceStack.Host
 
         public Type GetOperationType(string operationTypeName)
         {
-            Operation operation;
             var opName = operationTypeName.ToLowerInvariant();
-            if (!OperationNamesMap.TryGetValue(opName, out operation))
+            if (!OperationNamesMap.TryGetValue(opName, out var operation))
             {
                 var arrayPos = opName.LastIndexOf('[');
                 if (arrayPos >= 0)
@@ -263,8 +262,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             if (operation.RequestType.ExcludesFeature(Feature.Metadata)) return false;
@@ -291,8 +289,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -312,8 +309,7 @@ namespace ServiceStack.Host
             if (HostContext.Config != null && !HostContext.Config.EnableAccessRestrictions)
                 return true;
 
-            Operation operation;
-            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out operation);
+            OperationNamesMap.TryGetValue(operationName.ToLowerInvariant(), out var operation);
             if (operation == null) return false;
 
             var canCall = HasImplementation(operation, format);
@@ -359,6 +355,47 @@ namespace ServiceStack.Host
                 AddReferencedTypes(to, op.ResponseType);
             }
             return to;
+        }
+
+        public RestPath FindRoute(string pathInfo, string method = HttpMethods.Get)
+        {
+            var route = RestHandler.FindMatchingRestPath(method, pathInfo, out _);
+            return (RestPath)route;
+        }
+
+        public object CreateRequestFromUrl(string relativeOrAbsoluteUrl, string method = HttpMethods.Get)
+        {
+            var relativeUrl = relativeOrAbsoluteUrl.StartsWith("http:")
+                              || relativeOrAbsoluteUrl.StartsWith("https:")
+                ? relativeOrAbsoluteUrl.RightPart("://").RightPart("/")
+                : relativeOrAbsoluteUrl;
+
+            if (!relativeUrl.StartsWith("/"))
+                relativeUrl = "/" + relativeUrl;
+            
+            var parts = relativeUrl.SplitOnFirst("?");
+            var pathInfo = parts[0];
+
+            var route = FindRoute(pathInfo, method);
+            if (route == null)
+                throw new ArgumentException($"No matching route found for path {method} '{pathInfo}'");
+
+            Dictionary<string, string> query = null;
+            if (parts.Length == 2)
+            {
+                query = new Dictionary<string, string>();
+                var qs = parts[1];
+                var qsParts = qs.Split('&');
+                foreach (var qsPart in qsParts)
+                {
+                    var kvp = qsPart.SplitOnFirst("=");
+                    if (kvp.Length == 1) continue;
+                    query[kvp[0]] = kvp[1].UrlDecode();
+                }
+            }
+
+            var requestDto = route.CreateRequest(pathInfo, query, route.RequestType.CreateInstance());
+            return requestDto;
         }
 
         private void AddReferencedTypes(HashSet<Type> to, Type type)

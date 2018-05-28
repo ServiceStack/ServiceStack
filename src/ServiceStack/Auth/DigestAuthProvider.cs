@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -101,7 +102,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword);
+            throw HttpError.Unauthorized(ErrorMessages.InvalidUsernameOrPassword.Localize(authService.Request));
         }
 
         public override IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
@@ -152,14 +153,14 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        public override Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             var digestHelper = new DigestAuthFunctions();
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(
                 HttpHeaders.WwwAuthenticate,
                 $"{Provider} realm=\"{AuthRealm}\", nonce=\"{digestHelper.GetNonce(httpReq.UserHostAddress, PrivateKey)}\", qop=\"auth\"");
-            httpRes.EndRequest();
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
         public void PreAuthenticate(IRequest req, IResponse res)

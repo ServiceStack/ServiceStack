@@ -64,8 +64,7 @@ namespace ServiceStack.NativeTypes.CSharp
                 }
             }
 
-            Func<string,string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -144,8 +143,7 @@ namespace ServiceStack.NativeTypes.CSharp
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -276,9 +274,9 @@ namespace ServiceStack.NativeTypes.CSharp
                     var implStr = options.ImplementsFn();
                     if (!string.IsNullOrEmpty(implStr))
                         inheritsList.Add(implStr);
-
-                    type.Implements.Each(x => inheritsList.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => inheritsList.Add(Type(x)));
 
                 var makeExtensible = Config.MakeDataContractsExtensible && type.Inherits == null;
                 if (makeExtensible)
@@ -448,7 +446,7 @@ namespace ServiceStack.NativeTypes.CSharp
             if (value == null)
                 return "null";
             if (alias == "string")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
             return value;
         }
 

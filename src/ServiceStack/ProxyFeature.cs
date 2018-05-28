@@ -1,5 +1,6 @@
 ﻿using ServiceStack.Web;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -34,6 +35,10 @@ namespace ServiceStack
         /// Inspect or Transform the downstream HTTP Response Body that's returned
         /// </summary>
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
+        
+        public HashSet<string> IgnoreResponseHeaders = new HashSet<string> {
+            HttpHeaders.TransferEncoding
+        };
 
         /// <summary>
         /// Required filters to specify which requests to proxy and which url to use.
@@ -60,6 +65,7 @@ namespace ServiceStack
                     ProxyResponseFilter = ProxyResponseFilter,
                     TransformRequest = TransformRequest,
                     TransformResponse = TransformResponse,
+                    IgnoreResponseHeaders = IgnoreResponseHeaders,
                 }
                 : null);
         }
@@ -74,6 +80,7 @@ namespace ServiceStack
         public Action<IHttpResponse, HttpWebResponse> ProxyResponseFilter { get; set; }
         public Func<IHttpRequest, Stream, Task<Stream>> TransformRequest { get; set; }
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
+        public HashSet<string> IgnoreResponseHeaders { get; set; }
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
@@ -162,6 +169,9 @@ namespace ServiceStack
 
             foreach (var header in webRes.Headers.AllKeys)
             {
+                if (IgnoreResponseHeaders.Contains(header))
+                    continue;
+
                 var value = webRes.Headers[header];
                 res.AddHeader(header, value);
             }
@@ -173,7 +183,7 @@ namespace ServiceStack
             {
                 if (TransformResponse != null)
                     responseStream = await TransformResponse(res, responseStream) ?? responseStream;
-
+    
                 using (responseStream)
                 {
                     await responseStream.CopyToAsync(res.OutputStream);

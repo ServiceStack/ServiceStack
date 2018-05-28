@@ -425,43 +425,45 @@ Brackets in Layout < & >
                 Args = { ["pageResultArg"] = pageResultArg }
             }.Init();
 
+            var scope = result.CreateScope();
+
             object value;
 
-            value = result.EvaluateBinding("key");
+            value = scope.EvaluateExpression("key");
             Assert.That(value, Is.EqualTo("the-key"));
-            value = result.EvaluateBinding("Prop");
+            value = scope.EvaluateExpression("Prop");
             Assert.That(value, Is.EqualTo(model.Prop));
 
-            value = result.EvaluateBinding("model.Prop");
+            value = scope.EvaluateExpression("model.Prop");
             Assert.That(value, Is.EqualTo(model.Prop));
-            value = result.EvaluateBinding("model.Object.Prop");
+            value = scope.EvaluateExpression("model.Object.Prop");
             Assert.That(value, Is.EqualTo(model.Object.Prop));
-            value = result.EvaluateBinding("model.Object.Object.Prop");
+            value = scope.EvaluateExpression("model.Object.Object.Prop");
             Assert.That(value, Is.EqualTo(model.Object.Object.Prop));
-            value = result.EvaluateBinding("model.Object.AltNested.Field");
+            value = scope.EvaluateExpression("model.Object.AltNested.Field");
             Assert.That(value, Is.EqualTo(model.Object.AltNested.Field));
-            value = result.EvaluateBinding("model[0].Prop");
+            value = scope.EvaluateExpression("model[0].Prop");
             Assert.That(value, Is.EqualTo(model[0].Prop));
-            value = result.EvaluateBinding("model[0].Object.Prop");
+            value = scope.EvaluateExpression("model[0].Object.Prop");
             Assert.That(value, Is.EqualTo(model[0].Object.Prop));
-            value = result.EvaluateBinding("model.List[0]");
+            value = scope.EvaluateExpression("model.List[0]");
             Assert.That(value, Is.EqualTo(model.List[0]));
-            value = result.EvaluateBinding("model.List[0].Prop");
+            value = scope.EvaluateExpression("model.List[0].Prop");
             Assert.That(value, Is.EqualTo(model.List[0].Prop));
-            value = result.EvaluateBinding("model.List[0].Object.Prop");
+            value = scope.EvaluateExpression("model.List[0].Object.Prop");
             Assert.That(value, Is.EqualTo(model.List[0].Object.Prop));
-            value = result.EvaluateBinding("model.Dictionary[\"map-key\"].Prop");
+            value = scope.EvaluateExpression("model.Dictionary[\"map-key\"].Prop");
             Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Prop));
-            value = result.EvaluateBinding("model.Dictionary['map-key'].Object.Prop");
+            value = scope.EvaluateExpression("model.Dictionary['map-key'].Object.Prop");
             Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Object.Prop));
-            value = result.EvaluateBinding("model.Dictionary['map-key'].Object.AltNested.Field");
+            value = scope.EvaluateExpression("model.Dictionary['map-key'].Object.AltNested.Field");
             Assert.That(value, Is.EqualTo(model.Dictionary["map-key"].Object.AltNested.Field));
-            value = result.EvaluateBinding("Object.AltNested.Field");
+            value = scope.EvaluateExpression("Object.AltNested.Field");
             Assert.That(value, Is.EqualTo(model.Object.AltNested.Field));
             
-            value = result.EvaluateBinding("pageResultArg.Object.Prop");
+            value = scope.EvaluateExpression("pageResultArg.Object.Prop");
             Assert.That(value, Is.EqualTo(pageResultArg.Object.Prop));
-            value = result.EvaluateBinding("pageResultArg.AltNested.Field");
+            value = scope.EvaluateExpression("pageResultArg.AltNested.Field");
             Assert.That(value, Is.EqualTo(pageResultArg.AltNested.Field));
         }
 
@@ -549,7 +551,29 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         }
 
         [Test]
-        public void Does_not_allow_invoking_method_on_binding_expression()
+        public void Does_parse_MemberExpression_methods()
+        {
+            JsToken token;
+
+            "model.GetName()".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsCallExpression(
+                new JsMemberExpression(new JsIdentifier("model"), new JsIdentifier("GetName"))
+            )));
+
+            "model.Nested.GetName()".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsCallExpression(
+                new JsMemberExpression(
+                    new JsMemberExpression(
+                        new JsIdentifier("model"),
+                        new JsIdentifier("Nested")
+                    ), 
+                    new JsIdentifier("GetName")
+                )
+            )));
+        }
+
+        [Test]
+        public void Does_not_allow_invoking_method_on_MemberExpression()
         {
             var context = new TemplateContext().Init();
 

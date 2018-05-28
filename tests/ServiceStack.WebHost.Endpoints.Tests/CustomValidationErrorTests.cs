@@ -278,8 +278,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public static string GetResponseBody(this Exception ex)
         {
-            var webEx = ex as WebException;
-            if (webEx == null || webEx.Status != WebExceptionStatus.ProtocolError) return null;
+            if (!(ex is WebException webEx) || webEx.Status != WebExceptionStatus.ProtocolError)
+                return null;
 
             var errorResponse = ((HttpWebResponse)webEx.Response);
             using (var reader = new StreamReader(errorResponse.GetResponseStream()))

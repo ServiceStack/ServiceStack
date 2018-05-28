@@ -53,8 +53,6 @@ namespace ServiceStack.Templates
 
         public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
 
-        public ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
-
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 
         public ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>> CodePageInvokers { get; } = new ConcurrentDictionary<Type, Tuple<MethodInfo, MethodInvoker>>();
@@ -346,23 +344,6 @@ namespace ServiceStack.Templates
             return this;
         }
 
-        public Func<TemplateScopeContext, object, object> GetExpressionBinder(Type targetType, StringSegment expression)
-        {
-            if (targetType == null)
-                throw new ArgumentNullException(nameof(targetType));
-            if (expression.IsNullOrWhiteSpace())
-                throw new ArgumentNullException(nameof(expression));
-
-            var key = targetType.FullName + ':' + expression;
-
-            if (BinderCache.TryGetValue(key, out Func<TemplateScopeContext, object, object> fn))
-                return fn;
-
-            BinderCache[key] = fn = TemplatePageUtils.Compile(targetType, expression);
-
-            return fn;
-        }
-        
         public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, StringSegment expression)
         {
             if (targetType == null)
@@ -372,7 +353,7 @@ namespace ServiceStack.Templates
 
             var key = targetType.FullName + ':' + expression;
 
-            if (AssignExpressionCache.TryGetValue(key, out Action<TemplateScopeContext, object, object> fn))
+            if (AssignExpressionCache.TryGetValue(key, out var fn))
                 return fn;
 
             AssignExpressionCache[key] = fn = TemplatePageUtils.CompileAssign(targetType, expression);

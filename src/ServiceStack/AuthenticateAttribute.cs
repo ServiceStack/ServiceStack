@@ -71,6 +71,9 @@ namespace ServiceStack
 
             PreAuthenticate(req, authProviders);
 
+            if (res.IsClosed)
+                return;
+
             var session = req.GetSession();
             if (session == null || !authProviders.Any(x => session.IsAuthorized(x.Provider)))
             {
@@ -87,8 +90,12 @@ namespace ServiceStack
             if (!req.Items.ContainsKey(Keywords.HasPreAuthenticated))
             {
                 req.Items[Keywords.HasPreAuthenticated] = true;
-                authProviders.OfType<IAuthWithRequest>()
-                    .Each(x => x.PreAuthenticate(req, req.Response));
+                foreach (var authWithRequest in authProviders.OfType<IAuthWithRequest>())
+                {
+                    authWithRequest.PreAuthenticate(req, req.Response);
+                    if (req.Response.IsClosed)
+                        return;
+                }
             }
         }
 

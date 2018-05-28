@@ -7,7 +7,7 @@ namespace ServiceStack.VirtualPath
 {
     public class FileSystemMapping : AbstractVirtualPathProviderBase
     {
-        protected DirectoryInfo RootDirInfo;
+        protected readonly DirectoryInfo RootDirInfo;
         protected FileSystemVirtualDirectory RootDir;
         public string Alias { get; private set; }
 
@@ -43,7 +43,7 @@ namespace ServiceStack.VirtualPath
         public string GetRealVirtualPath(string virtualPath)
         {
             virtualPath = virtualPath.TrimStart('/');
-            return virtualPath.StartsWith(Alias)
+            return virtualPath.StartsWith(Alias, StringComparison.OrdinalIgnoreCase)
                 ? virtualPath.Substring(Alias.Length)
                 : null;
         }
@@ -58,7 +58,7 @@ namespace ServiceStack.VirtualPath
 
         public override IVirtualDirectory GetDirectory(string virtualPath)
         {
-            if (virtualPath == Alias)
+            if (virtualPath.EqualsIgnoreCase(Alias))
                 return RootDir;
 
             var nodePath = GetRealVirtualPath(virtualPath);

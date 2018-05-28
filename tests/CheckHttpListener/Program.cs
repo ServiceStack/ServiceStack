@@ -50,15 +50,18 @@ namespace CheckHttpListener
             Plugins.Add(new AdminFeature());
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new [] { new BasicAuthProvider(AppSettings) })
+                new[] { new BasicAuthProvider(AppSettings) })
             {
-                ServiceRoutes = new Dictionary<Type, string[]> {
-                  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
-                }
+                //ServiceRoutes = new Dictionary<Type, string[]> {
+                //  { typeof(AuthenticateService), new[] { "/api/auth", "/api/auth/{provider}" } },
+                //}
             });
+
+            Plugins.Add(new RequestLogsFeature());
 
             SetConfig(new HostConfig
             {
+                HandlerFactoryPath = "api",
                 CompressFilesWithExtensions = { "html", "js" },
                 DebugMode = true
             });
@@ -92,7 +95,7 @@ namespace CheckHttpListener
     {
         private static void Main(string[] args)
         {
-            var baseUrl = "http://localhost:8000/TestSite/";
+            var baseUrl = "http://localhost:8000/";
             var appHost = new AppSelfHost()
                 .Init()
                 .Start(baseUrl);

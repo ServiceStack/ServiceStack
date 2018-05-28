@@ -96,8 +96,7 @@ namespace ServiceStack
 
         public string ConnectionDisplayName => ConnectionInfo != null ? ConnectionInfo.DisplayName : "(not connected)";
 
-        private string eventStreamPath;
-        public string EventStreamUri { get; private set; }
+        public Func<string, string> ResolveStreamUrl { get; set; }
 
         public string BaseUri
         {
@@ -111,8 +110,7 @@ namespace ServiceStack
                 this.eventStreamPath = value.CombineWith("event-stream");
                 BuildEventStreamUri();
 
-                var meta = this.ServiceClient as IServiceClientMeta;
-                if (meta != null)
+                if (this.ServiceClient is IServiceClientMeta meta)
                     meta.BaseUri = value;
             }
         }
@@ -120,21 +118,38 @@ namespace ServiceStack
         private string[] channels;
         public string[] Channels
         {
-            get { return channels; }
+            get => channels;
             set
             {
-                if (value == null)
-                    throw new ArgumentNullException("channels");
-
-                this.channels = value;
+                this.channels = value ?? throw new ArgumentNullException(nameof(channels));
                 BuildEventStreamUri();
             }
         }
 
         private void BuildEventStreamUri()
         {
-            this.EventStreamUri = this.eventStreamPath
+            this.EventStreamUri = this.EventStreamPath
                 .AddQueryParam("channels", string.Join(",", this.channels));
+        }
+
+        private string eventStreamPath;
+        public string EventStreamPath
+        {
+            get => eventStreamPath;
+            set
+            {
+                eventStreamPath = value?.StartsWith("/") == true
+                    ? (BaseUri ?? "").CombineWith(value)
+                    : value;
+                BuildEventStreamUri();
+            }
+        }
+
+        private string eventStreamUri;
+        public string EventStreamUri
+        {
+            get => ResolveStreamUrl != null ? ResolveStreamUrl(eventStreamUri) : eventStreamUri;
+            private set => eventStreamUri = value;
         }
 
         public IServiceClient ServiceClient { get; set; }
@@ -165,8 +180,8 @@ namespace ServiceStack
 
             this.Resolver = new NewInstanceResolver();
             this.ReceiverTypes = new List<Type>();
-            this.Handlers = new Dictionary<string, ServerEventCallback>();
-            this.NamedReceivers = new Dictionary<string, ServerEventCallback>();
+            this.Handlers = new ConcurrentDictionary<string, ServerEventCallback>();
+            this.NamedReceivers = new ConcurrentDictionary<string, ServerEventCallback>();
         }
 
         public ServerEventsClient Start()
@@ -193,7 +208,7 @@ namespace ServiceStack
                 EventStreamRequestFilter?.Invoke(httpReq);
 
                 response = (HttpWebResponse)PclExport.Instance.GetResponse(httpReq);
-                var stream = response.GetResponseStream();
+                var stream = response.ResponseStream();
 
                 buffer = new byte[BufferSize];
                 cancel = new CancellationTokenSource();
@@ -570,6 +585,7 @@ namespace ServiceStack
         }
 
         private ServerEventMessage currentMsg;
+
         void ProcessLine(string line)
         {
             if (line == null) return;
@@ -641,8 +657,7 @@ namespace ServiceStack
                             ProcessOnHeartbeatMessage(e);
                             return;
                         default:
-                            ServerEventCallback cb;
-                            if (Handlers.TryGetValue(e.Target, out cb))
+                            if (Handlers.TryGetValue(e.Target, out var cb))
                             {
                                 cb(this, e);
                             }
@@ -654,8 +669,7 @@ namespace ServiceStack
                     RaiseEvent(e.Target, e);
                 }
 
-                ServerEventCallback receiver;
-                NamedReceivers.TryGetValue(e.Op, out receiver);
+                NamedReceivers.TryGetValue(e.Op, out var receiver);
                 receiver?.Invoke(this, e);
             }
 
@@ -778,8 +792,7 @@ namespace ServiceStack
         {
             lock (listeners)
             {
-                List<Action<ServerEventMessage>> handlers;
-                if (!listeners.TryGetValue(eventName, out handlers))
+                if (!listeners.TryGetValue(eventName, out var handlers))
                 {
                     listeners[eventName] = handlers = new List<Action<ServerEventMessage>>();
                 }
@@ -794,8 +807,7 @@ namespace ServiceStack
         {
             lock (listeners)
             {
-                List<Action<ServerEventMessage>> handlers;
-                if (listeners.TryGetValue(eventName, out handlers))
+                if (listeners.TryGetValue(eventName, out var handlers))
                 {
                     handlers.Remove(handler);
                 }
@@ -804,12 +816,42 @@ namespace ServiceStack
             return this;
         }
 
+        public ServerEventsClient RemoveListeners(string eventName)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    handlers.Clear();
+            }
+
+            return this;
+        }
+
+        public bool HasListener(string eventName, Action<ServerEventMessage> handler)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    return handlers.Contains(handler);
+            }
+            return false;
+        }
+
+        public bool HasListeners(string eventName)
+        {
+            lock (listeners)
+            {
+                if (listeners.TryGetValue(eventName, out var handlers))
+                    return handlers.Any();
+            }
+            return false;
+        }
+
         public void RaiseEvent(string eventName, ServerEventMessage message)
         {
             lock (listeners)
             {
-                List<Action<ServerEventMessage>> handlers;
-                if (listeners.TryGetValue(eventName, out handlers))
+                if (listeners.TryGetValue(eventName, out var handlers))
                 {
                     foreach (var handler in handlers)
                     {
@@ -824,6 +866,25 @@ namespace ServiceStack
                     }
                 }
             }
+        }
+
+        public void RemoveAllListeners()
+        {
+            lock (listeners)
+            {
+                listeners.Clear();
+            }
+        }
+
+        /// <summary>
+        /// Removes all registered Handlers, Named Receivers and Listeners
+        /// </summary>
+        public void RemoveAllRegistrations()
+        {
+            Handlers.Clear();
+            NamedReceivers.Clear();
+            ReceiverTypes.Clear();
+            RemoveAllListeners();
         }
 
         public virtual string GetStatsDescription()
@@ -1008,7 +1069,7 @@ namespace ServiceStack
         internal static Task ObserveTaskExceptions(this Task t)
         {
             if (t.IsFaulted)
-                t.Exception.Handle(x => true);
+                t.Exception?.Handle(x => true);
             return t;
         }
     }

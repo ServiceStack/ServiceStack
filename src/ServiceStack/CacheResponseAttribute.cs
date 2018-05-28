@@ -145,6 +145,7 @@ namespace ServiceStack
 
             var res = req.Response;
             var cache = cacheInfo.LocalCache ? HostContext.AppHost.GetMemoryCacheClient(req) : HostContext.AppHost.GetCacheClient(req);
+            var cacheControl = HostContext.GetPlugin<HttpCacheFeature>().BuildCacheControlHeader(cacheInfo);
 
             DateTime? lastModified = null;
 
@@ -154,6 +155,9 @@ namespace ServiceStack
                 lastModified = cache.Get<DateTime?>(cacheInfo.LastModifiedKey());
                 if (req.HasValidCache(lastModified))
                 {
+                    if (cacheControl != null)
+                        res.AddHeader(HttpHeaders.CacheControl, cacheControl);
+
                     res.EndNotModified();
                     return true;
                 }
@@ -174,7 +178,6 @@ namespace ServiceStack
                 if (cacheInfo.VaryByUser)
                     res.AddHeader(HttpHeaders.Vary, "Cookie");
 
-                var cacheControl = HostContext.GetPlugin<HttpCacheFeature>().BuildCacheControlHeader(cacheInfo);
                 if (cacheControl != null)
                     res.AddHeader(HttpHeaders.CacheControl, cacheControl);
 

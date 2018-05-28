@@ -8,11 +8,10 @@
     <owners>ServiceStack</owners>
     <summary>Opensource .NET and Mono REST Web Services framework</summary>
     <description>
-        Binaries for the ServiceStack web framework.
-
-        A simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services and web apps that's intuitive and Easy to use!
-
-        To get started see: https://servicestack.net/getting-started
+      ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services 
+      and web apps that's intuitive and Easy to use!
+      
+      To get started see: https://servicestack.net/getting-started
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
@@ -31,6 +30,7 @@
         <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />

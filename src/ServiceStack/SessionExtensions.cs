@@ -300,8 +300,7 @@ namespace ServiceStack
 
         public static void DeleteSessionCookies(this IResponse response)
         {
-            var httpRes = response as IHttpResponse;
-            if (httpRes == null) return;
+            if (!(response is IHttpResponse httpRes)) return;
             httpRes.Cookies.DeleteCookie(Keywords.SessionId);
             httpRes.Cookies.DeleteCookie(Keywords.PermanentSessionId);
             httpRes.Cookies.DeleteCookie(HttpHeaders.XUserAuthId);
@@ -315,8 +314,7 @@ namespace ServiceStack
 
         public static void GenerateNewSessionCookies(this IRequest req, IAuthSession session)
         {
-            var httpRes = req.Response as IHttpResponse;
-            if (httpRes == null)
+            if (!(req.Response is IHttpResponse httpRes))
                 return;
 
             var sessionId = req.GetSessionId();

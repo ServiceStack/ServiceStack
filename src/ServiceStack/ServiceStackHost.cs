@@ -3,6 +3,7 @@
 
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -189,6 +190,8 @@ namespace ServiceStack
 
             Service.GlobalResolver = Instance = this;
 
+            RegisterLicenseKey(AppSettings.GetNullableString("servicestack:license"));
+
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
@@ -236,6 +239,14 @@ namespace ServiceStack
             HttpHandlerFactory.Init();
 
             return this;
+        }
+
+        protected virtual void RegisterLicenseKey(string licenseKeyText)
+        {
+            if (!string.IsNullOrEmpty(licenseKeyText))
+            {
+                Licensing.RegisterLicense(licenseKeyText);
+            }
         }
 
         protected void PopulateArrayFilters()
@@ -538,6 +549,23 @@ namespace ServiceStack
             return httpRes.WriteErrorToResponse(httpReq, httpReq.ResponseContentType, operationName, errorMessage, ex, statusCode);
         }
 
+        public virtual async Task HandleShortCircuitedErrors(IRequest req, IResponse res, object requestDto)
+        {
+            var httpError = new HttpError(res.StatusCode, res.StatusDescription);
+            var response = await OnServiceException(req, requestDto, httpError);
+            if (response != null)
+            {
+                await res.EndHttpHandlerRequestAsync(afterHeaders: async httpRes =>
+                {
+                    await ContentTypes.SerializeToStreamAsync(req, response, httpRes.OutputStream);
+                });
+            }
+            else
+            {
+                res.EndRequest();
+            }
+        }
+
         public virtual void OnStartupException(Exception ex)
         {
             if (Config.StrictMode == true)
@@ -690,6 +718,9 @@ namespace ServiceStack
             {
                 Container.Register<IAuthRepository>(c => c.Resolve<IUserAuthRepository>());
             }
+
+            if (Config.UseJsObject)
+                JS.Configure();
 
             if (config.LogUnobservedTaskExceptions)
             {
@@ -1109,6 +1140,7 @@ namespace ServiceStack
                     Container = null;
                 }
 
+                JS.UnConfigure();
                 JsConfig.Reset(); //Clears Runtime Attributes
 
                 Instance = null;

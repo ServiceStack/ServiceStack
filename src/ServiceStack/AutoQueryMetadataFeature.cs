@@ -239,7 +239,7 @@ namespace ServiceStack
                     if (config.OnlyShowAnnotatedServices)
                     {
                         var serviceAttrs = op.Request.Attributes.Safe();
-                        var attr = serviceAttrs.FirstOrDefault(x => x.Name + "Attribute" == typeof(AutoQueryViewerAttribute).Name);
+                        var attr = serviceAttrs.FirstOrDefault(x => x.Name + "Attribute" == nameof(AutoQueryViewerAttribute));
                         if (attr == null)
                             continue;
                     }

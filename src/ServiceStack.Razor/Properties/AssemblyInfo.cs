@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyCompany("ServiceStack, Inc.")]
 [assembly: AssemblyProduct("ServiceStack")]
-[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2017")]
+[assembly: AssemblyCopyright("Copyright (c) ServiceStack 2018")]
 [assembly: AssemblyTrademark("ServiceStack")]
 [assembly: AssemblyCulture("")]
 

@@ -63,9 +63,9 @@ namespace ServiceStack.Host
 
         public string Path { get; }
 
-        public string Summary { get; private set; }
+        public string Summary { get; set; }
 
-        public string Notes { get; private set; }
+        public string Notes { get; set; }
         
         public string MatchRule { get; private set; }
 

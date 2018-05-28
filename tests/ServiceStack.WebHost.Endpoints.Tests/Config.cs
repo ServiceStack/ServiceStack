@@ -6,6 +6,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public static readonly string ServiceStackBaseUri = Environment.GetEnvironmentVariable("CI_BASEURI") ?? "http://localhost:20000";
         public static readonly string AbsoluteBaseUri = ServiceStackBaseUri + "/";
+        
+        public static readonly string HostNameBaseUrl = "http://DESKTOP-BCS76J0:20000/"; //Allow fiddler
+        public static readonly string AnyHostBaseUrl = "http://*:20000/"; //Allow capturing by fiddler
+
         public static readonly string ListeningOn = ServiceStackBaseUri + "/";
         public static readonly string RabbitMQConnString = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
         public static readonly string SqlServerConnString = Environment.GetEnvironmentVariable("CI_SQLSERVER") ?? "Server=localhost;Database=test;User Id=test;Password=test;";

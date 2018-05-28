@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Host;
@@ -199,7 +200,7 @@ namespace ServiceStack.Auth
                     throw HttpError.Unauthorized("User for ApiKey does not exist");
 
                 if (IsAccountLocked(authRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
                 PopulateSession(authRepo as IUserAuthRepository, userAuth, session);
 
@@ -263,7 +264,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        protected virtual void ValidateApiKey(ApiKey apiKey)
+        public virtual void ValidateApiKey(ApiKey apiKey)
         {
             if (apiKey == null)
                 throw HttpError.NotFound("ApiKey does not exist");
@@ -275,10 +276,10 @@ namespace ServiceStack.Auth
                 throw HttpError.Forbidden("ApiKey has expired");
         }
 
-        private void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
+        public void PreAuthenticateWithApiKey(IRequest req, IResponse res, ApiKey apiKey)
         {
             if (RequireSecureConnection && !req.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             ValidateApiKey(apiKey);
 
@@ -288,7 +289,7 @@ namespace ServiceStack.Auth
                 var session = req.GetCacheClient().Get<IAuthSession>(apiSessionKey);
 
                 if (session != null)
-                    session = HostContext.AppHost.OnSessionFilter(session, session.Id);
+                    session = HostContext.AppHost.OnSessionFilter(req, session, session.Id);
 
                 if (session != null)
                 {
@@ -326,8 +327,7 @@ namespace ServiceStack.Auth
             if (authRepo == null)
                 throw new NotSupportedException("ApiKeyAuthProvider requires a registered IAuthRepository");
 
-            var apiRepo = authRepo as IManageApiKeys;
-            if (apiRepo == null)
+            if (!(authRepo is IManageApiKeys apiRepo))
                 throw new NotSupportedException(authRepo.GetType().Name + " does not implement IManageApiKeys");
 
             foreach (var registerService in ServiceRoutes)
@@ -346,12 +346,12 @@ namespace ServiceStack.Auth
             }
         }
 
-        public override void OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
+        public override Task OnFailedAuthentication(IAuthSession session, IRequest httpReq, IResponse httpRes)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             //Needs to be 'Basic ' in order for HttpWebRequest to accept challenge and send NetworkCredentials
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"Basic realm=\"{this.AuthRealm}\"");
-            httpRes.EndRequest();
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpReq, httpRes, httpReq.Dto);
         }
 
         public List<ApiKey> GenerateNewApiKeys(string userId, params string[] environments)
@@ -486,8 +486,7 @@ namespace ServiceStack
             if (req == null)
                 return null;
 
-            object oApiKey;
-            return req.Items.TryGetValue(Keywords.ApiKey, out oApiKey)
+            return req.Items.TryGetValue(Keywords.ApiKey, out var oApiKey)
                 ? oApiKey as ApiKey
                 : null;
         }
@@ -496,7 +495,7 @@ namespace ServiceStack
         {
             var apiKeyAuth = (ApiKeyAuthProvider)AuthenticateService.GetAuthProvider(AuthenticateService.ApiKeyProvider);
             if (apiKeyAuth.RequireSecureConnection && !req.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.ApiKeyRequiresSecureConnection.Localize(req));
 
             return apiKeyAuth;
         }

@@ -25,8 +25,13 @@ namespace ServiceStack.NativeTypes.Swift
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
-            //"ServiceStackClient", //Required when using Swift Package Manager, not in Xcode
+            "ServiceStack", //Required when referencing ServiceStack.framework in CocoaPods, Carthage or SwiftPM
         };
+
+        public static Func<string, string> EnumNameStrategy { get; set; } = CSharpStyleEnums;
+
+        public static string CSharpStyleEnums(string enumName) => enumName;
+        public static string SwiftStyleEnums(string enumName) => enumName.ToCamelCase();
 
         public static ConcurrentDictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
@@ -60,7 +65,7 @@ namespace ServiceStack.NativeTypes.Swift
         public string GetCode(MetadataTypes metadata, IRequest request)
         {
             var typeNamespaces = new HashSet<string>();
-            RemoveIgnoredTypes(metadata);
+            var includeList = RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -68,32 +73,31 @@ namespace ServiceStack.NativeTypes.Swift
                 ? Config.DefaultImports
                 : DefaultImports;
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
             var sbExt = new StringBuilderWrapper(new StringBuilder());
             sb.AppendLine("/* Options:");
             sb.AppendLine("Date: {0}".Fmt(DateTime.Now.ToString("s").Replace("T", " ")));
-            sb.AppendLine("SwiftVersion: 3.0");
+            sb.AppendLine("SwiftVersion: 4.0");
             sb.AppendLine("Version: {0}".Fmt(Env.ServiceStackVersion));
             sb.AppendLine("Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")));
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
 
-            sb.AppendLine("{0}BaseClass: {1}".Fmt(defaultValue("BaseClass"), Config.BaseClass));
-            sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(defaultValue("AddModelExtensions"), Config.AddModelExtensions));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(defaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}BaseClass: {1}".Fmt(DefaultValue("BaseClass"), Config.BaseClass));
+            sb.AppendLine("{0}AddModelExtensions: {1}".Fmt(DefaultValue("AddModelExtensions"), Config.AddModelExtensions));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeGenericBaseTypes: {1}".Fmt(DefaultValue("ExcludeGenericBaseTypes"), Config.ExcludeGenericBaseTypes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -132,7 +136,7 @@ namespace ServiceStack.NativeTypes.Swift
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
+            defaultImports.Each(x => sb.AppendLine($"import {x}"));
 
             //ServiceStack core interfaces
             foreach (var type in allTypes)
@@ -143,8 +147,7 @@ namespace ServiceStack.NativeTypes.Swift
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -213,10 +216,11 @@ namespace ServiceStack.NativeTypes.Swift
             typeof(ErrorResponse).Name,
         };
 
-        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
+            return includeList;
         }
 
         private string AppendType(ref StringBuilderWrapper sb, ref StringBuilderWrapper sbExt, MetadataType type, string lastNS,
@@ -242,7 +246,7 @@ namespace ServiceStack.NativeTypes.Swift
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                sb.AppendLine("public enum {0} : Int".Fmt(Type(type.Name, type.GenericArgs)));
+                sb.AppendLine($"public enum {Type(type.Name, type.GenericArgs)} : Int");
                 sb.AppendLine("{");
                 sb = sb.Indent();
 
@@ -250,11 +254,11 @@ namespace ServiceStack.NativeTypes.Swift
                 {
                     for (var i = 0; i < type.EnumNames.Count; i++)
                     {
-                        var name = type.EnumNames[i];
-                        var value = type.EnumValues != null ? type.EnumValues[i] : null;
+                        var name = EnumNameStrategy(type.EnumNames[i]);
+                        var value = type.EnumValues?[i];
                         sb.AppendLine(value == null
-                            ? "case {0}".Fmt(name)
-                            : "case {0} = {1}".Fmt(name, value));
+                            ? $"case {name}"
+                            : $"case {name} = {value}");
                     }
                 }
 
@@ -275,7 +279,7 @@ namespace ServiceStack.NativeTypes.Swift
                     var baseType = Type(type.Inherits).InheritedType();
 
                     //Swift requires re-declaring base type generics definition on super type
-                    var genericDefPos = baseType.IndexOf("<");
+                    var genericDefPos = baseType.IndexOf("<", StringComparison.Ordinal);
                     if (genericDefPos >= 0)
                     {
                         //Need to declare BaseType is JsonSerializable
@@ -299,9 +303,8 @@ namespace ServiceStack.NativeTypes.Swift
                     //Swift doesn't support Generic Interfaces like IReturn<T> 
                     //Converting them into protocols with typealiases instead 
                     ExtractTypeAliases(options, typeAliases, extends, ref sbExt);
-
-                    type.Implements.Each(x => extends.Add(Type(x)));
                 }
+                type.Implements.Each(x => extends.Add(Type(x)));
 
                 if (type.IsInterface())
                 {
@@ -528,7 +531,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch self {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case .{0}: return \"{0}\"".Fmt(name));
+                var swiftName = EnumNameStrategy(name);
+                sbExt.AppendLine($"case .{swiftName}: return \"{name}\"");
             }
             sbExt.AppendLine("}");
             sbExt = sbExt.UnIndent();
@@ -541,7 +545,8 @@ namespace ServiceStack.NativeTypes.Swift
             sbExt.AppendLine("switch strValue {");
             foreach (var name in type.EnumNames)
             {
-                sbExt.AppendLine("case \"{0}\": return .{0}".Fmt(name));
+                var swiftName = EnumNameStrategy(name);
+                sbExt.AppendLine($"case \"{name}\": return .{swiftName}");
             }
             sbExt.AppendLine("default: return nil");
 
@@ -695,7 +700,7 @@ namespace ServiceStack.NativeTypes.Swift
             if (value == null)
                 return "null";
             if (alias == "string" || type == "String")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
 
             if (value.StartsWith("typeof("))
             {

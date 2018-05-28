@@ -129,7 +129,18 @@ namespace ServiceStack
         }
         private bool disableAutoCompression;
 
-        public string RequestCompressionType { get; set; }
+
+        private string requestCompressionType;
+
+        public string RequestCompressionType
+        {
+            get => requestCompressionType;
+            set
+            {
+                requestCompressionType = value;
+                asyncClient.RequestCompressionType = value;
+            }
+        }
 
         /// <summary>
         /// The user name for basic authentication
@@ -756,7 +767,7 @@ namespace ServiceStack
                 {
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(contentType))
                     {
-                        var bytes = errorResponse.GetResponseStream().ReadFully();
+                        var bytes = errorResponse.ResponseStream().ReadFully();
                         var stream = MemoryStreamFactory.GetStream(bytes);
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();
                         serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
@@ -766,7 +777,7 @@ namespace ServiceStack
                     }
                     else
                     {
-                        serviceEx.ResponseBody = errorResponse.GetResponseStream().ToUtf8String();
+                        serviceEx.ResponseBody = errorResponse.ResponseStream().ToUtf8String();
                     }
                 }
                 catch (Exception innerEx)
@@ -940,7 +951,7 @@ namespace ServiceStack
             using (var response = webRequest.GetResponse())
             {
                 ApplyWebResponseFilters(response);
-                using (var stream = response.GetResponseStream())
+                using (var stream = response.ResponseStream())
                     return stream.ReadFully();
             }
         }
@@ -1306,6 +1317,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Get(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
@@ -1314,6 +1326,7 @@ namespace ServiceStack
         /// <summary>
         /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Get(url)) { ... }
         /// </summary>
+        [Obsolete("Use: using (client.Get<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public virtual HttpWebResponse Get(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
@@ -1362,11 +1375,20 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
         }
 
+        
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Delete(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Delete(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Delete<HttpWebResponse>(relativeOrAbsoluteUrl) { }")]
         public virtual HttpWebResponse Delete(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
@@ -1393,6 +1415,10 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Post(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Post<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Post(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
@@ -1418,6 +1444,10 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Put(url)) { ... }
+        /// </summary>
+        [Obsolete("Use: using (client.Put<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Put(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
@@ -1444,6 +1474,7 @@ namespace ServiceStack
             Send<byte[]>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
         }
 
+        [Obsolete("Use: using (client.Patch<HttpWebResponse>(requestDto) { }")]
         public virtual HttpWebResponse Patch(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
@@ -1470,12 +1501,18 @@ namespace ServiceStack
             Send<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+        /// </summary>
         public virtual HttpWebResponse CustomMethod(string httpVerb, object requestDto)
         {
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
             return Send<HttpWebResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.CustomMethod(method,dto)) { ... }
+        /// </summary>
         public virtual HttpWebResponse CustomMethod(string httpVerb, string relativeOrAbsoluteUrl, object requestDto)
         {
             if (!HttpMethods.AllVerbs.Contains(httpVerb.ToUpper()))
@@ -1505,16 +1542,25 @@ namespace ServiceStack
         }
 
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(IReturn requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveTypedUrl(HttpMethods.Head, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(object requestDto)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveTypedUrl(HttpMethods.Head, requestDto), requestDto);
         }
 
+        /// <summary>
+        /// APIs returning HttpWebResponse must be explicitly Disposed, e.g using (var res = client.Head(request)) { ... }
+        /// </summary>
         public virtual HttpWebResponse Head(string relativeOrAbsoluteUrl)
         {
             return Send<HttpWebResponse>(HttpMethods.Head, ResolveUrl(HttpMethods.Head, relativeOrAbsoluteUrl), null);
@@ -1744,10 +1790,6 @@ namespace ServiceStack
 
         protected TResponse GetResponse<TResponse>(WebResponse webResponse)
         {
-#if NETSTANDARD2_0
-            var compressionType = webResponse.Headers[HttpHeaders.ContentEncoding];
-#endif
-
             //Callee Needs to dispose of response manually
             if (typeof(TResponse) == typeof(HttpWebResponse) && webResponse is HttpWebResponse)
             {
@@ -1755,18 +1797,10 @@ namespace ServiceStack
             }
             if (typeof(TResponse) == typeof(Stream))
             {
-#if NETSTANDARD2_0
-                return (TResponse)(object)webResponse.GetResponseStream().Decompress(compressionType);
-#else
-                return (TResponse)(object)webResponse.GetResponseStream();
-#endif
+                return (TResponse)(object)webResponse.ResponseStream();
             }
 
-#if NETSTANDARD2_0
-            using (var responseStream = webResponse.GetResponseStream().Decompress(compressionType))
-#else
-            using (var responseStream = webResponse.GetResponseStream())
-#endif
+            using (var responseStream = webResponse.ResponseStream())
             {
                 if (typeof(TResponse) == typeof(string))
                 {
@@ -1790,6 +1824,15 @@ namespace ServiceStack
 
     public static partial class ServiceClientExtensions
     {
+        public static Stream ResponseStream(this WebResponse webRes)
+        {
+#if NETSTANDARD2_0
+            return webRes.GetResponseStream().Decompress(webRes.Headers[HttpHeaders.ContentEncoding]);
+#else
+            return webRes.GetResponseStream();
+#endif
+        }
+
         public static TResponse PostFile<TResponse>(this IRestClient client,
             string relativeOrAbsoluteUrl, FileInfo fileToUpload, string mimeType)
         {

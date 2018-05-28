@@ -13,11 +13,7 @@ namespace ServiceStack.ProtoBuf
         }
 
         private static RuntimeTypeModel model;
-
-        public static RuntimeTypeModel Model
-        {
-            get { return model ?? (model = TypeModel.Create()); }
-        }
+        public static RuntimeTypeModel Model => model ?? (model = TypeModel.Create());
 
         public static void Serialize(IRequest requestContext, object dto, Stream outputStream)
         {
@@ -33,6 +29,11 @@ namespace ServiceStack.ProtoBuf
         {
             var obj = Model.Deserialize(fromStream, null, type);
             return obj;
+        }
+
+        public string GetProto(Type type)
+        {
+            return Model.GetSchema(type);
         }
     }
 }

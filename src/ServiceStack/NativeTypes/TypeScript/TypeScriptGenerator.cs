@@ -50,7 +50,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"IDictionary", "any"},
         };
         private static string declaredEmptyString = "\"\"";
-        private static Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
+        private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
         {
             {"String", declaredEmptyString},
             {"string", declaredEmptyString},
@@ -86,53 +86,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             return types.OrderTypesByDeps();
         }
 
-        private void AddTypeToSortedList(List<MetadataType> allTypes, List<MetadataType> sortedTypes, MetadataType metadataType)
-        {
-            if (sortedTypes.Contains(metadataType))
-                return;
-
-            if (metadataType == null)
-                return;
-
-            if (metadataType.Inherits == null)
-            {
-                sortedTypes.Add(metadataType);
-                return;
-            }
-
-            var inheritedMetadataType = FindMetadataTypeByMetadataTypeName(allTypes, metadataType.Inherits);
-            // Find and add base class first
-            AddTypeToSortedList(allTypes,sortedTypes, inheritedMetadataType);
-
-            if (!sortedTypes.Contains(metadataType))
-                sortedTypes.Add(metadataType);
-        }
-
-        private MetadataType FindMetadataTypeByMetadataTypeName(List<MetadataType> allTypes,
-            MetadataTypeName metadataTypeName)
-        {
-            if (metadataTypeName == null)
-                return null;
-            var metaDataType = allTypes.Where(x => x.Name == metadataTypeName.Name &&
-                                                   x.Namespace == metadataTypeName.Namespace)
-                .FirstNonDefault();
-            return metaDataType;
-        }
-
-        private List<MetadataType> CreateSortedTypeList(List<MetadataType> allTypes)
-        {
-            List<MetadataType> result = new List<MetadataType>();
-            foreach (var metadataType in allTypes)
-            {
-                AddTypeToSortedList(allTypes,result,metadataType);
-            }
-            return result;
-        }
-
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -142,8 +99,7 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             var globalNamespace = Config.GlobalNamespace;
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string defaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -176,16 +132,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             var responseTypes = metadata.Operations
                 .Where(x => x.Response != null)
                 .Select(x => x.Response).ToHashSet();
+            var types = metadata.Types.CreateSortedTypeList();
 
-            // Base Types need to be written first
-            var types = CreateSortedTypeList(metadata.Types);
-
-            allTypes = new List<MetadataType>();
-            allTypes.AddRange(types);
-            allTypes.AddRange(responseTypes);
-            allTypes.AddRange(requestTypes);
-            allTypes.RemoveAll(x => x.IgnoreType(Config));
-
+            allTypes = metadata.GetAllTypesOrdered();
+            allTypes.RemoveAll(x => x.IgnoreType(Config, includeList));
             allTypes = FilterTypes(allTypes);
 
             //TypeScript doesn't support reusing same type name with different generic airity
@@ -220,8 +170,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -373,8 +322,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                                 returnType = "Object";
 
                             // This is to avoid invalid syntax such as "return new string()"
-                            string replaceReturnType;
-                            if (primitiveDefaultValues.TryGetValue(returnType, out replaceReturnType))
+                            if (primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType))
                                 returnType = replaceReturnType;
 
                             responseTypeExpression = replaceReturnType == null ?
@@ -386,9 +334,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                             responseTypeExpression = "createResponse() {}";
                         }
                     }
-
-                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
+
+                type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
                 var extend = extends.Count > 0
@@ -547,7 +495,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (value == null)
                 return "null";
             if (alias == "string" || type == "String")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
 
             if (value.StartsWith("typeof("))
             {
@@ -633,8 +581,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (arrParts.Length > 1)
                 return "{0}[]".Fmt(TypeAlias(arrParts[0]));
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type);
         }

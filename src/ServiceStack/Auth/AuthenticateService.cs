@@ -202,7 +202,7 @@ namespace ServiceStack.Auth
                 session = this.GetSession();
 
                 if (request.provider == null && !session.IsAuthenticated)
-                    throw HttpError.Unauthorized(ErrorMessages.NotAuthenticated);
+                    throw HttpError.Unauthorized(ErrorMessages.NotAuthenticated.Localize(Request));
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl

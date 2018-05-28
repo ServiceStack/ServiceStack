@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Funq;
@@ -14,6 +15,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class AutoQueryDataServiceTests : AutoQueryDataTests
     {
+        static AutoQueryDataServiceTests()
+        {
+#if NET45
+            //https://githubengineering.com/crypto-removal-notice/
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+#endif
+        }
+
         public override ServiceStackHost CreateAppHost()
         {
             return new AutoQueryDataServiceAppHost();
@@ -36,6 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             GetGithubRepos.ApiCalls = 0;
             QueryResponse<GithubRepo> response;
+
             response = client.Get(new QueryGitHubRepos { Organization = "ServiceStack" });
             Assert.That(response.Results.Count, Is.GreaterThan(20));
             Assert.That(GetGithubRepos.ApiCalls, Is.EqualTo(1));
@@ -97,6 +108,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public override void Configure(Container container)
         {
+#if NET45
+            //https://githubengineering.com/crypto-removal-notice/
+            ServicePointManager.Expect100Continue = true;
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+#endif
+
             base.Configure(container);
 
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);

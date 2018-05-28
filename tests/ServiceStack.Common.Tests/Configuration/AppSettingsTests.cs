@@ -37,6 +37,8 @@ namespace ServiceStack.Common.Tests
                 {"BadDictionaryKey", "A1,B:"},
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
+                {"Email:From", "test@email.com"},
+                {"Email:Subject", "The Subject"},
             };
 
             var configurationBuilder = new ConfigurationBuilder();
@@ -45,6 +47,22 @@ namespace ServiceStack.Common.Tests
             var appSettings = new NetCoreAppSettings(config);
             return appSettings;
         }
+
+        public class EmailConfig
+        {
+            public string From { get; set; }
+            public string Subject { get; set; }
+        }
+
+        [Test]
+        public void Can_populate_typed_config()
+        {
+            var appSettings = GetAppSettings();
+            var emailConfig = appSettings.Get<EmailConfig>("Email");
+            Assert.That(emailConfig.From, Is.EqualTo("test@email.com"));
+            Assert.That(emailConfig.Subject, Is.EqualTo("The Subject"));
+        }
+
     }
 #endif
 
@@ -475,6 +493,20 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             var badKeys = appSettings.GetAllKeys().Where(x => x.Matches("Bad*"));
 
             Assert.That(badKeys, Is.EquivalentTo(new[] { "BadIntegerKey", "BadDictionaryKey" }));
+        }
+ 
+        [Test]
+        public void Can_set_and_get_strings()
+        {
+            var exampleUrl = "https://www.example.org";
+            var appSettings = GetAppSettings();
+            appSettings.Set("url", exampleUrl);
+            var url = appSettings.Get<string>("url");
+            
+            Assert.That(url, Is.EqualTo(exampleUrl));
+
+            url = appSettings.GetString("url");
+            Assert.That(url, Is.EqualTo(exampleUrl));
         }
     }
 }

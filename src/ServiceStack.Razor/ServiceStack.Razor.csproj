@@ -35,6 +35,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
+    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Support" />

@@ -168,7 +168,9 @@ namespace ServiceStack.Host
         private void LogRequest(IRequest req, object requestDto, object response)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
-            if (requestLogger != null && !req.Items.ContainsKey(Keywords.HasLogged))
+            if (requestLogger != null 
+                && !req.IsInProcessRequest()
+                && !req.Items.ContainsKey(Keywords.HasLogged))
             {
                 try
                 {

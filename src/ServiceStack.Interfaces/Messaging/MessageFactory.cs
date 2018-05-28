@@ -14,8 +14,7 @@ namespace ServiceStack.Messaging
 
         public static IMessage Create(object response)
         {
-            var responseMessage = response as IMessage;
-            if (responseMessage != null)
+            if (response is IMessage responseMessage)
                 return responseMessage;
 
             if (response == null) return null;
@@ -28,16 +27,10 @@ namespace ServiceStack.Messaging
                 return factoryFn(response);
 
             var genericMessageType = typeof(Message<>).MakeGenericType(type);
-#if NETFX_CORE || NETSTANDARD1_1 || PORTABLE7
-            var mi = genericMessageType.GetRuntimeMethods().First(p => p.Name.Equals("Create"));
-            factoryFn = (MessageFactoryDelegate)mi.CreateDelegate(
-                typeof(MessageFactoryDelegate));
-#else
             var mi = genericMessageType.GetMethod("Create",
                 BindingFlags.Public | BindingFlags.Static);
             factoryFn = (MessageFactoryDelegate)Delegate.CreateDelegate(
                 typeof(MessageFactoryDelegate), mi);
-#endif
 
             lock (CacheFn) CacheFn[type] = factoryFn;
 
@@ -92,11 +85,7 @@ namespace ServiceStack.Messaging
 
         public override string ToString()
         {
-            return string.Format("CreatedDate={0}, Id={1}, Type={2}, Retry={3}",
-                this.CreatedDate,
-                this.Id.ToString("N"),
-                typeof(T).Name,
-                this.RetryAttempts);
+            return $"CreatedDate={this.CreatedDate}, Id={this.Id:N}, Type={typeof(T).Name}, Retry={this.RetryAttempts}";
         }
 
     }

@@ -55,14 +55,14 @@ namespace ServiceStack.Messaging
 
         public override string ToString()
         {
-            var sb = new StringBuilder("Stats for " + Name);
-            sb.AppendLine("\n---------------");
-            sb.AppendFormat("\nTotalNormalMessagesReceived: {0}", TotalNormalMessagesReceived);
-            sb.AppendFormat("\nTotalPriorityMessagesReceived: {0}", TotalPriorityMessagesReceived);
-            sb.AppendFormat("\nTotalProcessed: {0}", TotalMessagesProcessed);
-            sb.AppendFormat("\nTotalRetries: {0}", TotalRetries);
-            sb.AppendFormat("\nTotalFailed: {0}", TotalMessagesFailed);
-            sb.AppendFormat("\nLastMessageProcessed: {0}", LastMessageProcessed.HasValue ? LastMessageProcessed.Value.ToString() : "");
+            var sb = new StringBuilder();
+            sb.AppendLine($"STATS for {Name}:").AppendLine();            
+            sb.AppendLine($"  TotalNormalMessagesReceived:    {TotalNormalMessagesReceived}");
+            sb.AppendLine($"  TotalPriorityMessagesReceived:  {TotalPriorityMessagesReceived}");
+            sb.AppendLine($"  TotalProcessed:                 {TotalMessagesProcessed}");
+            sb.AppendLine($"  TotalRetries:                   {TotalRetries}");
+            sb.AppendLine($"  TotalFailed:                    {TotalMessagesFailed}");
+            sb.AppendLine($"  LastMessageProcessed:           {LastMessageProcessed?.ToString() ?? ""}");
             return sb.ToString();
         }
     }

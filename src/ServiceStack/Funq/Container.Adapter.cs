@@ -293,8 +293,7 @@ namespace Funq
 
         public object TryResolve(Type type)
         {
-            Func<Container, object> fn;
-            if (tryResolveCache.TryGetValue(type, out fn))
+            if (tryResolveCache.TryGetValue(type, out var fn))
                 return fn(this);
 
             var mi = typeof(Container).GetMethods(BindingFlags.Public | BindingFlags.Instance)

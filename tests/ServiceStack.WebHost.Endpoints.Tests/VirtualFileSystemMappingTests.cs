@@ -38,11 +38,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    [TestFixture]
-    public class VirtualFileSystemMappingTests
+    public class VirtualFileSystemMappingTests : VirtualFileSystemMappingTestsBase
     {
-        protected ServiceStackHost appHost;
-
         class AppHost : AppSelfHostBase
         {
             public AppHost()
@@ -61,10 +58,55 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [OneTimeSetUp]
-        public void TestFixtureSetUp()
+        protected override ServiceStackHost CreateAppHost() => new AppHost();
+    }
+    
+    public class VirtualFileSystemMappingPluginTests : VirtualFileSystemMappingTestsBase
+    {
+        public class VfsPlugin1 : IPlugin, IPreInitPlugin
         {
-            appHost = new AppHost();
+            public void Configure(IAppHost appHost)
+            {
+                appHost.AddVirtualFileSources.Add(new FileSystemMapping("vfs1", appHost.MapProjectPath("~/App_Data/mount1")));
+            }
+
+            public void Register(IAppHost appHost) {}
+        }
+        
+        public class VfsPlugin2 : IPlugin, IPreInitPlugin
+        {
+            public void Configure(IAppHost appHost)
+            {
+                appHost.AddVirtualFileSources.Add(new FileSystemMapping("vfs2", appHost.MapProjectPath("~/App_Data/mount2")));
+            }
+
+            public void Register(IAppHost appHost) {}
+        }
+        
+        class AppHost : AppSelfHostBase
+        {
+            public AppHost()
+                : base(nameof(VirtualFileSystemMappingPluginTests), typeof(FileSystemMappingService).Assembly) { }
+
+            public override void Configure(Container container)
+            {
+                Plugins.Add(new VfsPlugin1());
+                Plugins.Add(new VfsPlugin2());
+            }
+        }
+
+        protected override ServiceStackHost CreateAppHost() => new AppHost();
+    }
+    
+    [TestFixture]
+    public abstract class VirtualFileSystemMappingTestsBase
+    {
+        protected readonly ServiceStackHost appHost;
+        protected abstract ServiceStackHost CreateAppHost();
+
+        public VirtualFileSystemMappingTestsBase()
+        {
+            appHost = CreateAppHost();
             var dirPath = ClearFolders();
 
             Directory.CreateDirectory(dirPath.AppendPath("mount1", "dir1"));
@@ -146,6 +188,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(contents, Is.EqualTo("MOUNT1"));
 
             contents = Config.ListeningOn.AppendPath("vfs2", "dir2", "nested-file.txt").GetStringFromUrl();
+            Assert.That(contents, Is.EqualTo("NESTED MOUNT2"));
+        }
+
+        [Test]
+        public void Can_resolve_mapped_files_directly_case_insenstive()
+        {
+            var url = Config.ListeningOn.AppendPath("VFS1", "file.txt");
+            var contents = url.GetStringFromUrl();
+            Assert.That(contents, Is.EqualTo("MOUNT1"));
+
+            contents = Config.ListeningOn.AppendPath("VFS2", "dir2", "nested-file.txt").GetStringFromUrl();
             Assert.That(contents, Is.EqualTo("NESTED MOUNT2"));
         }
     }

@@ -142,7 +142,7 @@ namespace ServiceStack.Auth
                 };
             }
 
-            throw HttpError.Unauthorized(ErrorMessages.WindowsAuthFailed);
+            throw HttpError.Unauthorized(ErrorMessages.WindowsAuthFailed.Localize(authService.Request));
         }
 
         protected override IAuthRepository GetAuthRepository(IRequest req)

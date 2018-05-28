@@ -1,9 +1,11 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ServiceStack.WebHost.Endpoints.Tests.Support.Services;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -33,7 +35,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public Stream RequestStream { get; set; }
     }
 
-    public class RawRequestService : IService
+    [Route("/rawsvg/{Letter}", "GET")]
+    public class RawSvg
+    {
+        public string Letter { get; set; }
+    }
+
+    public class RawRequestService : Service
     {
         public object Any(RawRequest request)
         {
@@ -52,6 +60,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var xml = request.RequestStream.ReadFully().FromUtf8Bytes();
             return xml;
         }
+
+        private const string SvgTemplate = @"<svg width=""100"" height=""100"" xmlns=""http://www.w3.org/2000/svg"">
+ <g>
+  <rect x=""0"" y=""0"" width=""100"" height=""100"" id=""canvas_background"" fill=""#999999""/>
+ </g>
+ <g>
+  <text x=""50%"" y=""60%"" alignment-baseline=""middle"" text-anchor=""middle"" fill=""#ffffff"" font-size=""80"" font-family=""Helvetica, Arial, sans-serif"" font-weight=""bold"">LETTER</text>
+ </g>
+</svg>";
+
+        public object Get(RawSvg request)
+        {
+            Response.ContentType = MimeTypes.GetMimeType("svg");
+            return SvgTemplate.Replace("LETTER", (request.Letter ?? "A").Substring(0, 1).ToUpper());
+        }
     }
 
     [TestFixture]
@@ -67,8 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        private ServiceStackHost appHost;
-
+        private readonly ServiceStackHost appHost;
         public RawRequestTests()
         {
             appHost = new AppHost()
@@ -142,6 +164,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             Assert.That(responseXml, Is.EqualTo(xml));
         }
+
+        [Test]
+        public void Can_download_svg()
+        {
+            var requestUrl = Config.ServiceStackBaseUri + "/rawsvg/M";
+            var svg = requestUrl.GetStringFromUrl(
+                accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8",
+                responseFilter: res => Assert.That(res.ContentType, Does.StartWith(MimeTypes.ImageSvg)));
+
+            Assert.That(svg, Does.Contain(">M</text>"));
+        }
+
     }
 
 }

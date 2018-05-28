@@ -14,6 +14,7 @@ using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Messaging;
+using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -591,5 +592,7 @@ namespace ServiceStack.Razor
                 "</div>";
             return html;
         }
+
+        public IOrmLiteDialectProvider DialectProvider => OrmLiteConfig.DialectProvider;
     }
 }

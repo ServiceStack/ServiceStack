@@ -225,9 +225,9 @@ namespace ServiceStack
             NotifyRedis("notify.username." + userName, selector, message, channel);
         }
 
-        public void NotifySession(string sspid, string selector, object message, string channel = null)
+        public void NotifySession(string sessionId, string selector, object message, string channel = null)
         {
-            NotifyRedis("notify.session." + sspid, selector, message, channel);
+            NotifyRedis("notify.session." + sessionId, selector, message, channel);
         }
 
         public SubscriptionInfo GetSubscriptionInfo(string id)
@@ -254,7 +254,7 @@ namespace ServiceStack
         public void Register(IEventSubscription sub, Dictionary<string, string> connectArgs = null)
         {
             if (sub == null)
-                throw new ArgumentNullException("subscription");
+                throw new ArgumentNullException(nameof(sub));
 
             var info = sub.GetInfo();
             using (var redis = clientsManager.GetClient())

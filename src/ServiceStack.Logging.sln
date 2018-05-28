@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.EventLog", "ServiceStack.Logging.EventLog\ServiceStack.Logging.EventLog.csproj", "{D920BA88-E394-4C75-94E3-78D7298A8457}"
 EndProject
@@ -21,10 +21,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{CA7CF53F
 		..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec = ..\NuGet\ServiceStack.Logging.Elmah\servicestack.logging.elmah.nuspec
 		..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec = ..\NuGet\ServiceStack.Logging.EntLib5\servicestack.logging.entlib5.nuspec
 		..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec = ..\NuGet\ServiceStack.Logging.EventLog\servicestack.logging.eventlog.nuspec
+		..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec
 		..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net\servicestack.logging.log4net.nuspec
 		..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec = ..\NuGet\ServiceStack.Logging.NLog\servicestack.logging.nlog.nuspec
 		..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec = ..\NuGet\ServiceStack.Logging.Serilog\servicestack.logging.serilog.nuspec
 		..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec = ..\NuGet\ServiceStack.Logging.Slack\servicestack.logging.slack.nuspec
+		..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec = ..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Logging.EntLib5", "ServiceStack.Logging.EntLib5\ServiceStack.Logging.EntLib5.csproj", "{EDD72ADC-327C-4152-B84B-B48552311534}"
@@ -157,9 +159,9 @@ Global
 		{55942102-033A-4DA8-A6AF-1DB7B2F34A2D} = {671EE5B0-9B6E-4307-912E-C3E003AA04CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45;packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45
-		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35;packages\Unity.Interception.2.1.505.2\lib\NET35;packages\EnterpriseLibrary.Common.5.0.505.0\lib\NET35;packages\EnterpriseLibrary.Logging.5.0.505.1\lib\NET35;packages\Unity.2.1.505.0\lib\NET35;packages\Unity.Interception.2.1.505.0\lib\NET35
 		SolutionGuid = {866E4EA2-3A17-4BE4-B756-5FBFFD93ABCF}
+		EnterpriseLibraryConfigurationToolBinariesPath = packages\Unity.2.1.505.2\lib\NET35;packages\Unity.Interception.2.1.505.2\lib\NET35;packages\EnterpriseLibrary.Common.5.0.505.0\lib\NET35;packages\EnterpriseLibrary.Logging.5.0.505.1\lib\NET35;packages\Unity.2.1.505.0\lib\NET35;packages\Unity.Interception.2.1.505.0\lib\NET35
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.Common.6.0.1304.0\lib\NET45;packages\EnterpriseLibrary.Logging.6.0.1304.0\lib\NET45
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = ServiceStack.Logging.EventLog\ServiceStack.Logging.EventLog.csproj

@@ -224,7 +224,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class RegenerateApiKeys : IPost, IReturn<GetApiKeysResponse>
+    public class RegenerateApiKeys : IPost, IReturn<RegenerateApiKeysResponse>
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
     }
@@ -259,6 +259,9 @@ namespace ServiceStack
         public Dictionary<string, string> Meta { get; set; }
 
         [DataMember(Order = 2)]
+        public string AccessToken { get; set; }
+
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 

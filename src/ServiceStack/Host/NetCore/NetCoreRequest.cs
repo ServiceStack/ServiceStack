@@ -131,7 +131,11 @@ namespace ServiceStack.Host.NetCore
                     // from Cookie.Name, but the Cookie constructor will throw for these names.
                     try
                     {
-                        cookie = new Cookie(httpCookie.Key, httpCookie.Value);
+                        var name = httpCookie.Key.StartsWith("$")
+                            ? httpCookie.Key.Substring(1)
+                            : httpCookie.Key;
+
+                        cookie = new Cookie(name, httpCookie.Value);
                     }
                     catch (Exception ex)
                     {
@@ -187,7 +191,7 @@ namespace ServiceStack.Host.NetCore
 
         public string AbsoluteUri => request.GetDisplayUrl();
 
-        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress.ToString();
+        public string UserHostAddress => request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
         public string Authorization => request.Headers[HttpHeaders.Authorization];
 
@@ -208,23 +212,24 @@ namespace ServiceStack.Host.NetCore
         {
             get
             {
-                if (files != null)
+                if (files?.Length > 0 && files[0] != null) // During Debugging VS.NET initializes field to T[null]
                     return files;
 
                 if (!request.HasFormContentType)                    
                     return new IHttpFile[0];
 
-                files = new IHttpFile[request.Form.Files.Count];
-                for (var i=0; i< request.Form.Files.Count; i++)
+                var filesCount = request.Form.Files.Count;
+                files = new IHttpFile[filesCount];
+                for (var i=0; i<filesCount; i++)
                 {
-                    var file = request.Form.Files[i];
-                    var fileStream = file.OpenReadStream();
+                    var uploadedFile = request.Form.Files[i];
+                    var fileStream = uploadedFile.OpenReadStream();
                     files[i] = new HttpFile
                     {
-                        ContentLength = file.Length,
-                        ContentType = file.ContentType,
-                        FileName = file.FileName,
-                        Name = file.Name,
+                        ContentLength = uploadedFile.Length,
+                        ContentType = uploadedFile.ContentType,
+                        FileName = uploadedFile.FileName,
+                        Name = uploadedFile.Name,
                         InputStream = fileStream,
                     };
                     context.Response.RegisterForDispose(fileStream);

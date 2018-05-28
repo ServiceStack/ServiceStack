@@ -37,7 +37,6 @@ namespace ServiceStack
                 EmbeddedResourceSources = new List<Assembly>(),
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
                 EmbeddedResourceTreatAsFiles = new HashSet<string>(),
-                LogFactory = new NullLogFactory(),
                 EnableAccessRestrictions = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
                 HandlerFactoryPath = ServiceStackPath,
@@ -92,12 +91,15 @@ namespace ServiceStack
                     "js", "ts", "tsx", "jsx", "css", "htm", "html", "shtm", "txt", "xml", "rss", "csv", "pdf",
                     "jpg", "jpeg", "gif", "png", "bmp", "ico", "tif", "tiff", "svg",
                     "avi", "divx", "m3u", "mov", "mp3", "mpeg", "mpg", "qt", "vob", "wav", "wma", "wmv",
-                    "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map"
+                    "flv", "swf", "xap", "xaml", "ogg", "ogv", "mp4", "webm", "eot", "ttf", "woff", "woff2", "map",
+                    "xls", "xla", "xlsx", "xltx", "doc", "dot", "docx", "dotx", "ppt", "pps", "ppa", "pptx", "potx", 
+                    "dll", "wasm"
                 },
                 CompressFilesWithExtensions = new HashSet<string>(),
                 AllowFilePaths = new List<string>
                 {
-                    "jspm_packages/**/*.json"
+                    "jspm_packages/**/*.json", //JSPM
+                    ".well-known/**/*",        //LetsEncrypt
                 },
                 ForbiddenPaths = new List<string>(),
                 DebugAspNetHostEnvironment = Env.IsMono ? "FastCGI" : "IIS7",
@@ -162,6 +164,7 @@ namespace ServiceStack
                 },
                 FallbackRestPath = null,
                 UseHttpsLinks = false,
+                UseJsObject = true,
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
                 EnableOptimizations = false,
@@ -169,7 +172,6 @@ namespace ServiceStack
                 UseCamelCase = true,
                 EnableOptimizations = true,
 #endif
-                DisableChunkedEncoding = false
             };
 
             Platform.Instance.InitHostConifg(config);
@@ -191,7 +193,6 @@ namespace ServiceStack
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.SoapServiceName = instance.SoapServiceName;
             this.XmlWriterSettings = instance.XmlWriterSettings;
-            this.LogFactory = instance.LogFactory;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.WebHostUrl = instance.WebHostUrl;
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
@@ -250,8 +251,8 @@ namespace ServiceStack
             this.AdminAuthSecret = instance.AdminAuthSecret;
             this.UseHttpsLinks = instance.UseHttpsLinks;
             this.UseCamelCase = instance.UseCamelCase;
+            this.UseJsObject = instance.UseJsObject;
             this.EnableOptimizations = instance.EnableOptimizations;
-            this.DisableChunkedEncoding = instance.DisableChunkedEncoding;
         }
 
         public string WsdlServiceNamespace { get; set; }
@@ -306,7 +307,6 @@ namespace ServiceStack
         public ServiceEndpointsMetadataConfig ServiceEndpointsMetadataConfig { get; set; }
         public string SoapServiceName { get; set; }
         public XmlWriterSettings XmlWriterSettings { get; set; }
-        public ILogFactory LogFactory { get; set; }
         public bool EnableAccessRestrictions { get; set; }
         public bool UseBclJsonSerializers { get; set; }
         public Regex IsMobileRegex { get; set; }
@@ -317,6 +317,13 @@ namespace ServiceStack
         public bool WriteErrorsToResponse { get; set; }
         public bool DisposeDependenciesAfterUse { get; set; }
         public bool LogUnobservedTaskExceptions { get; set; }
+
+        [Obsolete("Use LogManager.LogFactory")]
+        public ILogFactory LogFactory
+        {
+            get => LogManager.LogFactory;
+            set => LogManager.LogFactory = value;
+        }
 
         public Dictionary<string, string> HtmlReplaceTokens { get; set; }
 
@@ -369,10 +376,8 @@ namespace ServiceStack
         public bool UseHttpsLinks { get; set; }
 
         public bool UseCamelCase { get; set; }
+        public bool UseJsObject { get; set; }
         public bool EnableOptimizations { get; set; }
-
-        //Disables chunked encoding on Kestrel Server
-        public bool DisableChunkedEncoding { get; set; }
 
         public string AdminAuthSecret { get; set; }
 

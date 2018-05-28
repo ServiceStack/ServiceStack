@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
@@ -11,6 +12,8 @@ namespace ServiceStack.Razor.Compilation
     /// </summary>
     public static class CompilerServices
     {
+        public static List<Assembly> IncludeAssemblies { get; } = new List<Assembly>();
+
         private static readonly Type DynamicType = typeof(DynamicObject);
         private static readonly Type ExpandoType = typeof(ExpandoObject);
 
@@ -22,7 +25,7 @@ namespace ServiceStack.Razor.Compilation
         public static bool IsAnonymousType(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             return (type.IsClass
                      && type.IsSealed
@@ -39,7 +42,7 @@ namespace ServiceStack.Razor.Compilation
         public static bool IsDynamicType(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             return (DynamicType.IsAssignableFrom(type)
                      || ExpandoType.IsAssignableFrom(type)
@@ -54,7 +57,7 @@ namespace ServiceStack.Razor.Compilation
         public static IEnumerable<ConstructorInfo> GetConstructors(Type type)
         {
             if (type == null)
-                throw new ArgumentNullException("type");
+                throw new ArgumentNullException(nameof(type));
 
             var constructors = type
                 .GetConstructors(BindingFlags.Public | BindingFlags.Instance);
@@ -69,7 +72,17 @@ namespace ServiceStack.Razor.Compilation
         public static IEnumerable<Assembly> GetLoadedAssemblies()
         {
             var domain = AppDomain.CurrentDomain;
-            return domain.GetAssemblies();
+            var dlls = domain.GetAssemblies().ToList();
+
+            foreach (var assembly in IncludeAssemblies)
+            {
+                if (dlls.All(x => x != assembly))
+                {
+                    dlls.Add(assembly);
+                }
+            }
+
+            return dlls;
         }
     }
 }

@@ -91,6 +91,8 @@ namespace ServiceStack
         public string BaseUri { get; set; }
         public bool DisableAutoCompression { get; set; }
 
+        public string RequestCompressionType { get; set; }
+
         public string UserName { get; set; }
 
         public string Password { get; set; }
@@ -213,6 +215,11 @@ namespace ServiceStack
             else if (this.AlwaysSendBasicAuthHeader)
                 webReq.AddBasicAuth(this.UserName, this.Password);
 
+            if (!DisableAutoCompression)
+            {
+                PclExport.Instance.AddCompression(webReq);
+            }
+
             ApplyWebRequestFilters(webReq);
 
             try
@@ -220,6 +227,9 @@ namespace ServiceStack
                 if (HttpUtils.HasRequestBody(webReq.Method))
                 {
                     webReq.ContentType = ContentType;
+
+                   if (RequestCompressionType != null)
+                        webReq.Headers[HttpHeaders.ContentEncoding] = RequestCompressionType;
 
                     using (var requestStream = await webReq.GetRequestStreamAsync().ConfigureAwait(false))
                     {
@@ -251,7 +261,7 @@ namespace ServiceStack
                     if (returningWebResponse)
                         return Complete((T) (object) webRes);
 
-                    var responseStream = GetResponseStream(webRes);
+                    var responseStream = webRes.ResponseStream();
 
                     var responseBodyLength = webRes.ContentLength;
                     var bufferRead = new byte[BufferSize];
@@ -403,15 +413,6 @@ namespace ServiceStack
             }
         }
 
-        private static Stream GetResponseStream(WebResponse webRes)
-        {
-#if NETSTANDARD2_0
-            return webRes.GetResponseStream().Decompress(webRes.Headers[HttpHeaders.ContentEncoding]);
-#else
-            return webRes.GetResponseStream();
-#endif
-        }
-
         private Exception HandleResponseError<TResponse>(Exception exception, string url, object request)
         {
             var webEx = exception as WebException;
@@ -434,7 +435,7 @@ namespace ServiceStack
 
                 try
                 {
-                    using (var stream = errorResponse.GetResponseStream())
+                    using (var stream = errorResponse.ResponseStream())
                     {
                         var bytes = stream.ReadFully();
                         serviceEx.ResponseBody = bytes.FromUtf8Bytes();

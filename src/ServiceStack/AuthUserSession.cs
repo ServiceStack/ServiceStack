@@ -7,7 +7,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     [DataContract]
-    public class AuthUserSession : IAuthSession, IMeta
+    public class AuthUserSession : IAuthSessionExtended, IMeta
     {
         public AuthUserSession()
         {
@@ -102,6 +102,9 @@ namespace ServiceStack
         public virtual void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) { }
         public virtual void OnLogout(IServiceBase authService) {}
         public virtual void OnCreated(IRequest httpReq) {}
+
+        public virtual void OnLoad(IRequest httpReq) {}
+        public virtual IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo) => null;
     }
 
     public class WebSudoAuthUserSession : AuthUserSession, IWebSudoAuthSession

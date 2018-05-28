@@ -8,6 +8,7 @@ using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
+using ServiceStack.OrmLite;
 using ServiceStack.Razor.Compilation;
 using ServiceStack.Razor.Managers;
 using ServiceStack.Web;
@@ -29,6 +30,7 @@ namespace ServiceStack.Razor
             this.DefaultPageName = "default.cshtml";
             this.PageBaseType = typeof(ViewPage);
             this.LiveReloadFactory = CreateLiveReload;
+            CompilerServices.IncludeAssemblies.Add(typeof(OrmLiteConfig).Assembly);
 
             Deny = new List<Predicate<string>> {
                 DenyPathsWithLeading_,

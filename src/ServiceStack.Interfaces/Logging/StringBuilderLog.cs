@@ -1,4 +1,3 @@
-#if !NETFX_CORE
 using System;
 using System.Text;
 
@@ -10,7 +9,7 @@ namespace ServiceStack.Logging
     /// </summary>
     public class StringBuilderLogFactory : ILogFactory
     {
-        private StringBuilder sb;
+        private readonly StringBuilder sb;
         private readonly bool debugEnabled;
 
         public StringBuilderLogFactory(bool debugEnabled = true)
@@ -68,7 +67,7 @@ namespace ServiceStack.Logging
         /// </summary>
         private void Log(object message, Exception exception)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            var msg = message?.ToString() ?? string.Empty;
             if (exception != null)
             {
                 msg += ", Exception: " + exception.Message;
@@ -82,7 +81,7 @@ namespace ServiceStack.Logging
         /// </summary>
         private void LogFormat(object message, params object[] args)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            var msg = message?.ToString() ?? string.Empty;
             lock (logs)
             {
                 logs.AppendFormat(msg, args);
@@ -96,7 +95,7 @@ namespace ServiceStack.Logging
         /// <param name="message">The message.</param>
         private void Log(object message)
         {
-            string msg = message == null ? string.Empty : message.ToString();
+            var msg = message?.ToString() ?? string.Empty;
             lock (logs)
             {
                 logs.AppendLine(msg);
@@ -179,4 +178,3 @@ namespace ServiceStack.Logging
         }
     }
 }
-#endif

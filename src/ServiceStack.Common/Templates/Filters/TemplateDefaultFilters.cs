@@ -145,9 +145,9 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseJsExpression(out var expr);
             scope.AddItemToScope(itemBinding, target);
-            var result = expr.Evaluate(scope);
+            var result = expr.EvaluateToBool(scope);
 
             return result
                 ? StopExecution.Value
@@ -186,9 +186,9 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseConditionExpression(out ConditionExpression expr);
+            literal.ParseJsExpression(out var expr);
             scope.AddItemToScope(itemBinding, target);
-            var result = expr.Evaluate(scope);
+            var result = expr.EvaluateToBool(scope);
 
             return result
                 ? target
@@ -266,8 +266,8 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
         [HandleUnknownValue] public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
 
-        public bool or(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
-        public bool and(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
+        public bool OR(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
+        public bool AND(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
 
         public bool equals(object target, object other) =>
             target == null || other == null
@@ -558,6 +558,12 @@ namespace ServiceStack.Templates
         public double toDouble(object target) => target.ConvertTo<double>();
         public decimal toDecimal(object target) => target.ConvertTo<decimal>();
         public bool toBool(object target) => target.ConvertTo<bool>();
+        public DateTime toDateTime(object target) => target.ConvertTo<DateTime>();
+        public DateTime date(int year, int month, int day) => new DateTime(year, month, day);
+        public DateTime date(int year, int month, int day, int hour, int min, int secs) => new DateTime(year, month, day, hour, min, secs);
+        public TimeSpan toTimeSpan(object target) => target.ConvertTo<TimeSpan>();
+        public TimeSpan time(int hours, int mins, int secs) => new TimeSpan(0, hours, mins, secs);
+        public TimeSpan time(int days, int hours, int mins, int secs) => new TimeSpan(days, hours, mins, secs);
 
         public List<string> toKeys(object target)
         {
@@ -652,9 +658,9 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(toDictionary), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
 
-            return items.ToDictionary(item => scope.AddItemToScope(itemBinding, item).Evaluate(value, binding));
+            return items.ToDictionary(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)));
         }
 
         public IRawString typeName(object target) => (target?.GetType().Name ?? "null").ToRawString();
@@ -678,8 +684,8 @@ namespace ServiceStack.Templates
         public object @do(TemplateScopeContext scope, object expression)
         {
             var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-            var result = scope.Evaluate(value, binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
+            var result = token.Evaluate(scope);
 
             return IgnoreResult.Value;
         }
@@ -694,23 +700,24 @@ namespace ServiceStack.Templates
 
             var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
             var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
                 var items = target.AssertEnumerable(nameof(@do));
 
                 var i = 0;
-                foreach (var item in items)
+                var eagerItems = items.ToArray(); // assign on array expression can't be within enumerable 
+                foreach (var item in eagerItems)
                 {
                     scope.AddItemToScope(itemBinding, item, i++);
-                    var result = scope.Evaluate(value, binding);
+                    var result = token.Evaluate(scope);
                 }
             }
             else
             {
                 scope.AddItemToScope(itemBinding, target);
-                var result = scope.Evaluate(value, binding);
+                var result = token.Evaluate(scope);
             }
 
             return TypeConstants.EmptyTask;
@@ -750,15 +757,15 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(map), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
 
-            literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
+            literal.ToStringSegment().ParseJsExpression(out var token);
 
             if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
                 var i = 0;
-                return items.Map(item => scope.AddItemToScope(itemBinding, item, i++).Evaluate(value, binding));
+                return items.Map(item => token.Evaluate(scope.AddItemToScope(itemBinding, item, i++)));
             }
 
-            var result = scope.AddItemToScope(itemBinding, target).Evaluate(value, binding);
+            var result = token.Evaluate(scope.AddItemToScope(itemBinding, target));
             return result;
         }
 

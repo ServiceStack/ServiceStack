@@ -44,8 +44,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Npgsql, Version=3.2.5.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
-      <HintPath>..\..\src\packages\Npgsql.3.2.5\lib\net45\Npgsql.dll</HintPath>
+    <Reference Include="Npgsql, Version=3.2.7.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
+      <HintPath>..\..\src\packages\Npgsql.3.2.7\lib\net451\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="nunit.framework, Version=3.9.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\NUnit.3.9.0\lib\net45\nunit.framework.dll</HintPath>
@@ -69,8 +69,8 @@
       <HintPath>..\..\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data.SQLite, Version=1.0.106.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\System.Data.SQLite.Core.1.0.106.0\lib\net46\System.Data.SQLite.dll</HintPath>
+    <Reference Include="System.Data.SQLite, Version=1.0.108.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139">
+      <HintPath>..\..\src\packages\System.Data.SQLite.Core.1.0.108.0\lib\net46\System.Data.SQLite.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Runtime.Serialization" />
@@ -91,9 +91,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".well-known\acme-challenge\XzF9VXFuw4UMBVdiX2jDj2vykjrvEsQR8AZ8kJiaBdk" />
     <Content Include="Global.asax" />
     <Content Include="css\bootstrap.css" />
     <Content Include="css\default.css" />
+    <Content Include="img\favicon.png" />
     <Content Include="js\backbone.min.js" />
     <Content Include="js\jquery-1.7.1.min.js" />
     <Content Include="js\jsonreport.js" />
@@ -102,6 +104,9 @@
     <Content Include="Test.dtos.d.ts" />
     <Content Include="TestAuth.cshtml" />
     <Content Include="Views\Authenticate.cshtml" />
+    <Content Include="Views\TheView.cshtml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -118,6 +123,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RequestInfoTests.cs" />
     <Compile Include="SwaggerTestService.cs" />
+    <Compile Include="ViewTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="default.cshtml" />
@@ -189,6 +195,10 @@
       <Project>{22f8d050-2c96-4993-b221-da16ebc61f31}</Project>
       <Name>ServiceStack.NetFramework</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj">
+      <Project>{ef36a253-c53f-4bf3-b0ec-4d29211fa67d}</Project>
+      <Name>ServiceStack.ProtoBuf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Razor\ServiceStack.Razor.csproj">
       <Project>{d73274ae-006b-4cee-ba60-0ecf5873048d}</Project>
       <Name>ServiceStack.Razor</Name>
@@ -239,13 +249,7 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="..\..\src\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets" Condition="Exists('..\..\src\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\..\src\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\src\packages\System.Data.SQLite.Core.1.0.106.0\build\net46\System.Data.SQLite.Core.targets'))" />
-  </Target>
+  <Import Project="..\..\src\packages\System.Data.SQLite.Core.1.0.108.0\build\net46\System.Data.SQLite.Core.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

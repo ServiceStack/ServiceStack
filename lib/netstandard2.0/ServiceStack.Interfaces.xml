@@ -518,6 +518,13 @@
             Range Key Attribute used to specify which property is the RangeKey, e.g. in DynamoDb.
             </summary>
         </member>
+        <member name="T:ServiceStack.DataAnnotations.ReturnOnInsertAttribute">
+            <summary>
+            ReturnAttribute
+            Use to indicate that a property should be included in the 
+            returning/output clause of INSERT sql sentences
+            </summary>
+        </member>
         <member name="T:ServiceStack.DataAnnotations.RowVersionAttribute">
             <summary>
             Used to indicate that property is a row version incremented automatically by the database

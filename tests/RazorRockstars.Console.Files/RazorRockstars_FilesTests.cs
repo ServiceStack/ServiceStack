@@ -494,7 +494,7 @@ namespace RazorRockstars.Console.Files
 
             Assert200(Host + "/types/fsharp", "(* Options:", "open System");
             Assert200(Host + "/types/vbnet", "' Options:", "Imports System");
-            Assert200(Host + "/types/swift", "/* Options:", "import Foundation;");
+            Assert200(Host + "/types/swift", "/* Options:", "import Foundation");
             Assert200(Host + "/types/java", "/* Options:", "import java.math.*;");
             Assert200(Host + "/types/kotlin", "/* Options:", "import java.math.*");
             Assert200(Host + "/types/typescript", "/* Options:", "export interface IReturnVoid");

@@ -33,10 +33,40 @@ namespace ServiceStack.Auth
 
         bool IsAuthorized(string provider);
 
+        /// <summary>
+        /// Called when the user is registered or on the first OAuth login 
+        /// </summary>
         void OnRegistered(IRequest httpReq, IAuthSession session, IServiceBase service);
+
+        /// <summary>
+        /// Called after the user has successfully authenticated 
+        /// </summary>
         void OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo);
+        
+        /// <summary>
+        /// Fired before the session is removed after the /auth/logout Service is called
+        /// </summary>
         void OnLogout(IServiceBase authService);
+
+        /// <summary>
+        /// Fired when a new Session is created
+        /// </summary>
+        /// <param name="httpReq"></param>
         void OnCreated(IRequest httpReq);
+    }
+
+    public interface IAuthSessionExtended : IAuthSession
+    {
+        /// <summary>
+        /// Fired before Session is resolved
+        /// </summary>
+        void OnLoad(IRequest httpReq);
+
+        /// <summary>
+        /// Override with Custom Validation logic to Assert if User is allowed to Authenticate. 
+        /// Returning a non-null response invalidates Authentication with IHttpResult response returned to client.
+        /// </summary>
+        IHttpResult Validate(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo);
     }
 
     public interface IWebSudoAuthSession : IAuthSession

@@ -4,6 +4,7 @@ using System.Linq;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.NativeTypes.CSharp;
+using ServiceStack.NativeTypes.Dart;
 using ServiceStack.NativeTypes.FSharp;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.NativeTypes.Kotlin;
@@ -26,6 +27,7 @@ namespace ServiceStack.NativeTypes
         public string VbNet { get; set; }
         public string TypeScript { get; set; }
         public string TypeScriptDefinition { get; set; }
+        public string Dart { get; set; }
         public string Java { get; set; }
         public string Kotlin { get; set; }
         public string Swift { get; set; }
@@ -54,6 +56,10 @@ namespace ServiceStack.NativeTypes
     [Exclude(Feature.Soap)]
     [Route("/types/typescript.d")]
     public class TypesTypeScriptDefinition : NativeTypesBase { }
+
+    [Exclude(Feature.Soap)]
+    [Route("/types/dart")]
+    public class TypesDart : NativeTypesBase { }
 
     [Exclude(Feature.Soap)]
     [Route("/types/swift")]
@@ -126,6 +132,7 @@ namespace ServiceStack.NativeTypes
                 VbNet = new TypesVbNet().ToAbsoluteUri(),
                 TypeScript = new TypesTypeScript().ToAbsoluteUri(),
                 TypeScriptDefinition = new TypesTypeScriptDefinition().ToAbsoluteUri(),
+                Dart = new TypesDart().ToAbsoluteUri(),
                 Java = new TypesJava().ToAbsoluteUri(),
                 Kotlin = new TypesKotlin().ToAbsoluteUri(),
                 Swift = new TypesSwift().ToAbsoluteUri(),
@@ -133,10 +140,11 @@ namespace ServiceStack.NativeTypes
             return response;
         }
 
+        private string GetBaseUrl(string baseUrl) => baseUrl ?? HostContext.GetPlugin<NativeTypesFeature>().MetadataTypesConfig.BaseUrl ?? Request.GetBaseUrl();
+
         public MetadataTypes Any(TypesMetadata request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -146,8 +154,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesCSharp request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -158,8 +165,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesFSharp request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -170,8 +176,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesVbNet request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
@@ -182,8 +187,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScript request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
             typesConfig.ExportAsTypes = true;
@@ -194,76 +198,153 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesTypeScriptDefinition request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             return GenerateTypeScript(request, NativeTypesMetadata.GetConfig(request));
         }
 
         public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
         {
+            var metadataTypes = ConfigureScript(typesConfig);
+
+            var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return typeScript;
+        }
+
+        [AddHeader(ContentType = MimeTypes.PlainText)]
+        public object Any(TypesDart request)
+        {
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
+
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.ExportAsTypes = true;
+            
+            var metadataTypes = ConfigureScript(typesConfig);
+
+            if (!DartGenerator.GenerateServiceStackTypes)
+            {
+                var ignoreDartLibraryTypes = ReturnInterfaces.Map(x => x.Name);
+                ignoreDartLibraryTypes.AddRange(BuiltinInterfaces.Select(x => x.Name));
+                ignoreDartLibraryTypes.AddRange(BuiltInClientDtos.Select(x => x.Name));
+
+                metadataTypes.Operations.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Request.Name));
+                metadataTypes.Operations.Each(x => {
+                    if (x.Response != null && ignoreDartLibraryTypes.Contains(x.Response.Name))
+                    {
+                        x.Response = null;
+                    }
+                });
+                metadataTypes.Types.RemoveAll(x => ignoreDartLibraryTypes.Contains(x.Name));
+            }
+            
+            var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+    
+            var dart = new DartGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
+            return dart;
+        }
+
+        public static List<Type> ReturnInterfaces = new List<Type> {
+            typeof(IReturn<>),
+            typeof(IReturnVoid),
+        };
+
+        public static List<Type> BuiltinInterfaces = new []{
+            typeof(IGet),
+            typeof(IPost),
+            typeof(IPut),
+            typeof(IDelete),
+            typeof(IPatch),
+            typeof(IOptions),
+            typeof(IMeta),
+            typeof(IHasSessionId),
+            typeof(IHasVersion),
+        }.ToList();
+
+        public static List<Type> BuiltInClientDtos = new[] {
+            typeof(ResponseStatus),
+            typeof(ResponseError),
+            typeof(QueryBase),
+            typeof(QueryData<>),
+            typeof(QueryDb<>),
+            typeof(QueryDb<,>),
+            typeof(QueryResponse<>),
+            typeof(KeyValuePair<,>),
+            typeof(Tuple<>),
+            typeof(Tuple<,>),
+            typeof(Tuple<,,>),
+            typeof(Tuple<,,,>),
+            typeof(Authenticate),
+            typeof(AuthenticateResponse),
+            typeof(Register),
+            typeof(RegisterResponse),
+            typeof(AssignRoles),
+            typeof(AssignRolesResponse),
+            typeof(UnAssignRoles),
+            typeof(UnAssignRolesResponse),
+            typeof(CancelRequest),
+            typeof(CancelRequestResponse),
+            typeof(UpdateEventSubscriber),
+            typeof(UpdateEventSubscriberResponse),
+            typeof(GetEventSubscribers),
+            typeof(GetApiKeys),
+            typeof(GetApiKeysResponse),
+            typeof(RegenerateApiKeys),
+            typeof(RegenerateApiKeysResponse),
+            typeof(UserApiKey),
+            typeof(ConvertSessionToToken),
+            typeof(ConvertSessionToTokenResponse),
+            typeof(GetAccessToken),
+            typeof(GetAccessTokenResponse),
+        }.ToList();
+
+        private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
+        {
             //Include SS types by removing ServiceStack namespaces
             if (typesConfig.AddServiceStackTypes)
                 typesConfig.IgnoreTypesInNamespaces = new List<string>();
 
-            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
-
-            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
-
-            if (typesConfig.AddServiceStackTypes)
-            {
-                //IReturn markers are metadata properties that are not included as normal interfaces
-                var generator = ((NativeTypesMetadata)NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
-                var registerInterfaces = new List<Type>
-                {
-                    typeof(IReturn<>),
-                    typeof(IReturnVoid),
-                };
-                var builtinInterfaces = new[]
-                {
-                    typeof(IGet),
-                    typeof(IPost),
-                    typeof(IPut),
-                    typeof(IDelete),
-                    typeof(IPatch),
-                    typeof(IOptions),
-                    typeof(IMeta),
-                    typeof(IHasSessionId),
-                    typeof(IHasVersion),
-                };
-                
-                foreach (var op in metadataTypes.Operations)
-                {
-                    foreach (var typeName in op.Request.Implements.Safe())
-                    {
-                        var iface = builtinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
-                        if (iface != null)
-                        {
-                            registerInterfaces.AddIfNotExists(iface);
-                        }
-                    }
-                }
-                
-                metadataTypes.Types.InsertRange(0, registerInterfaces.Map(x => generator.ToType(x)));
-            }
-
-            ExportMissingSystemTypes(typesConfig);
-
+            typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
+            typesConfig.ExportTypes.Remove(typeof(IMeta));
+            
+            var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
-            var typeScript = new TypeScriptGenerator(typesConfig).GetCode(metadataTypes, base.Request, NativeTypesMetadata);
-            return typeScript;
+            metadataTypes.Types.RemoveAll(x => x.Name == "Service");
+
+            var returnInterfaces = new List<Type>(ReturnInterfaces);
+
+            if (typesConfig.AddServiceStackTypes)
+            {
+                //IReturn markers are metadata properties that are not included as normal interfaces
+                var generator = ((NativeTypesMetadata) NativeTypesMetadata).GetMetadataTypesGenerator(typesConfig);
+
+                var allTypes = metadataTypes.GetAllTypesOrdered();
+                var allTypeNames = allTypes.Select(x => x.Name).ToHashSet();
+                foreach (var type in allTypes)
+                {
+                    foreach (var typeName in type.Implements.Safe())
+                    {
+                        var iface = BuiltinInterfaces.FirstOrDefault(x => x.Name == typeName.Name);
+                        if (iface != null && !allTypeNames.Contains(iface.Name))
+                        {
+                            returnInterfaces.AddIfNotExists(iface);
+                        }
+                    }
+                }
+                metadataTypes.Types.InsertRange(0, returnInterfaces.Map(x => generator.ToType(x)));
+            }
+
+            return metadataTypes;
         }
 
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesSwift request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
@@ -291,8 +372,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesJava request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
@@ -313,8 +393,7 @@ namespace ServiceStack.NativeTypes
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(TypesKotlin request)
         {
-            if (request.BaseUrl == null)
-                request.BaseUrl = Request.GetBaseUrl();
+            request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
 
@@ -338,6 +417,8 @@ namespace ServiceStack.NativeTypes
                 typesConfig.ExportTypes = new HashSet<Type>();
 
             typesConfig.ExportTypes.Add(typeof(KeyValuePair<,>));
+
+            typesConfig.ExportTypes.Remove(typeof(IMeta));
         }
     }
 }

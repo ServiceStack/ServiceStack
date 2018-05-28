@@ -43,6 +43,14 @@ namespace ServiceStack.Server.Tests.Messaging
         }
     }
 
+    public class BackgroundMqServerIntroTests : MqServerIntroTests
+    {
+        public override IMessageService CreateMqServer(int retryCount = 1)
+        {
+            return new BackgroundMqService { RetryCount = retryCount };
+        }
+    }
+
     public class HelloIntro : IReturn<HelloIntroResponse>
     {
         public string Name { get; set; }
@@ -231,6 +239,38 @@ namespace ServiceStack.Server.Tests.Messaging
                 using (var mqClient = mqServer.CreateMessageQueueClient())
                 {
                     mqClient.Publish(new HelloIntro { Name = "World" });
+
+                    IMessage<HelloIntro> dlqMsg = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Dlq);
+                    mqClient.Ack(dlqMsg);
+
+                    Assert.That(called, Is.EqualTo(2));
+                    Assert.That(dlqMsg.GetBody().Name, Is.EqualTo("World"));
+                    Assert.That(dlqMsg.Error.ErrorCode, Is.EqualTo(typeof(ArgumentException).Name));
+                    Assert.That(dlqMsg.Error.Message, Is.EqualTo("Name"));
+                }
+            }
+        }
+
+        [Test]
+        public void Message_with_ReplyTo_that_throw_exceptions_are_retried_then_published_to_Request_dlq()
+        {
+            using (var mqServer = CreateMqServer(retryCount: 1))
+            {
+                var called = 0;
+                mqServer.RegisterHandler<HelloIntro>(m =>
+                {
+                    Interlocked.Increment(ref called);
+                    throw new ArgumentException("Name");
+                });
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    const string replyToMq = "mq:Hello.replyto";
+                    mqClient.Publish(new Message<HelloIntro>(new HelloIntro { Name = "World" })
+                    {
+                        ReplyTo = replyToMq
+                    });
 
                     IMessage<HelloIntro> dlqMsg = mqClient.Get<HelloIntro>(QueueNames<HelloIntro>.Dlq);
                     mqClient.Ack(dlqMsg);

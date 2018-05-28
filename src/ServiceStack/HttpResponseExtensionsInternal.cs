@@ -60,7 +60,10 @@ namespace ServiceStack
             if (result is Stream stream)
             {
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
-                stream.Position = 0;
+                if (stream.CanSeek)
+                {
+                    stream.Position = 0;
+                }
                 await stream.CopyToAsync(response.OutputStream, token);
                 if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;
@@ -173,8 +176,7 @@ namespace ServiceStack
                         if (httpResult is IHttpError httpError)
                         {
                             response.Dto = httpError.CreateErrorResponse();
-                            if (response.HandleCustomErrorHandler(request,
-                                defaultContentType, httpError.Status, response.Dto))
+                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto))
                             {
                                 return true;
                             }
@@ -319,7 +321,7 @@ namespace ServiceStack
                 }
                 catch (Exception originalEx)
                 {
-                    //.NET Core prohibuts some status codes from having a body
+                    //.NET Core prohibits some status codes from having a body
                     if (originalEx is InvalidOperationException invalidEx)
                     {
                         Log.Error(invalidEx.Message, invalidEx);
@@ -437,7 +439,7 @@ namespace ServiceStack
             var errorDto = ex.ToErrorResponse();
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
-            if (HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
+            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
                 return;
 
             if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
@@ -453,13 +455,16 @@ namespace ServiceStack
             var hold = httpRes.StatusDescription;
             var hasDefaultStatusDescription = hold == null || hold == "OK";
 
-            httpRes.StatusCode = statusCode;
+            if (!httpRes.HasStarted)
+            {
+                httpRes.StatusCode = statusCode;
 
-            httpRes.StatusDescription = hasDefaultStatusDescription
-                ? (errorMessage ?? HttpStatus.GetStatusDescription(statusCode))
-                : hold;
+                httpRes.StatusDescription = hasDefaultStatusDescription
+                    ? (errorMessage ?? HttpStatus.GetStatusDescription(statusCode))
+                    : hold;
 
-            httpRes.ApplyGlobalResponseHeaders();
+                httpRes.ApplyGlobalResponseHeaders();
+            }
 
             var serializer = HostContext.ContentTypes.GetStreamSerializerAsync(contentType ?? httpRes.ContentType);
             if (serializer != null)
@@ -468,7 +473,7 @@ namespace ServiceStack
             httpRes.EndHttpHandlerRequest(skipHeaders: true);
         }
 
-        private static bool HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
+        private static async Task<bool> HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
             string contentType, int statusCode, object errorDto)
         {
             if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
@@ -479,7 +484,7 @@ namespace ServiceStack
                 {
                     httpReq.Items["Model"] = errorDto;
                     httpReq.Items[HtmlFormat.ErrorStatusKey] = errorDto.GetResponseStatus();
-                    errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
+                    await errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                     return true;
                 }
             }
@@ -521,7 +526,7 @@ namespace ServiceStack
 
         public static bool ShouldWriteGlobalHeaders(IResponse httpRes)
         {
-            if (HostContext.Config != null && !httpRes.Items.ContainsKey("__global_headers"))
+            if (!httpRes.HasStarted && HostContext.Config != null && !httpRes.Items.ContainsKey("__global_headers"))
             {
                 httpRes.Items["__global_headers"] = true;
                 return true;

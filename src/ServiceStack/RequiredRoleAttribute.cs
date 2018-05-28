@@ -55,7 +55,7 @@ namespace ServiceStack
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
-            res.EndRequest();
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
 
         public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
@@ -115,7 +115,7 @@ namespace ServiceStack
                 ? (int)HttpStatusCode.Forbidden
                 : (int)HttpStatusCode.Unauthorized;
 
-            throw new HttpError(statusCode, ErrorMessages.InvalidRole);
+            throw new HttpError(statusCode, ErrorMessages.InvalidRole.Localize(req));
         }
 
         public static bool HasRequiredRoles(IRequest req, string[] requiredRoles)

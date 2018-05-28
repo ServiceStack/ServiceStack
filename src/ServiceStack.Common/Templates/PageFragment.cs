@@ -16,41 +16,47 @@ namespace ServiceStack.Templates
         private byte[] originalTextBytes;
         public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
         
+        public JsToken Expression { get; }
+        
         public StringSegment Binding { get; set; }
         public string BindingString { get; }       
         
         public object InitialValue { get; }
-        public JsExpression InitialExpression { get; }
+        public JsCallExpression InitialExpression { get; }
         
-        public JsExpression[] FilterExpressions { get; set; }
+        public JsCallExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, object initialValue, JsBinding initialBinding, List<JsExpression> filterCommands)
+        public PageVariableFragment(StringSegment originalText, JsToken expr, List<JsCallExpression> filterCommands)
         {
             OriginalText = originalText;
-            InitialValue = initialValue;
-            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsExpression>.EmptyArray;
+            Expression = expr;
+            FilterExpressions = filterCommands?.ToArray() ?? TypeConstants<JsCallExpression>.EmptyArray;
 
-            if (initialBinding is JsExpression initialExpr)
+            if (expr is JsLiteral initialValue)
+            {
+                InitialValue = initialValue.Value;
+            }
+            else if (expr is JsNull)
+            {
+                InitialValue = expr;
+            }
+            else if (expr is JsCallExpression initialExpr)
             {
                 InitialExpression = initialExpr;
             }
-            else if (initialBinding != null)
+            else if (expr is JsIdentifier initialBinding)
             {
-                Binding = initialBinding.Binding;
+                Binding = initialBinding.Name;
                 BindingString = Binding.Value;
             }
         }
 
-        public StringSegment ParseNextToken(StringSegment literal, out object value, out JsBinding binding)
+        public object Evaluate(TemplateScopeContext scope)
         {
-            try
-            {
-                return literal.ParseNextToken(out value, out binding);
-            }
-            catch (ArgumentException e)
-            {
-                throw new Exception($"Invalid literal: {literal} in '{OriginalText}'", e);
-            }
+            if (Expression is JsNull)
+                return Expression;
+            
+            return Expression.Evaluate(scope);
         }
     }
 

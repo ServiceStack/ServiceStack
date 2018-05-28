@@ -33,7 +33,9 @@ namespace ServiceStack
         public Action<IEventSubscription> OnSubscribe { get; set; }
         public Action<IEventSubscription> OnUnsubscribe { get; set; }
         public Action<IEventSubscription, IResponse, string> OnPublish { get; set; }
-        public Action<IResponse, string> WriteEvent { get; set; }
+
+        public Action<IResponse, string> WriteEvent { get; private set; }
+
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool NotifyChannelOfSubscriptions { get; set; }
         public bool LimitToAuthenticatedUsers { get; set; }
@@ -49,8 +51,8 @@ namespace ServiceStack
             WriteEvent = (res, frame) =>
             {
                 var bytes = frame.ToUtf8Bytes();
-                res.OutputStream.WriteAsync(bytes, 0, bytes.Length)
-                    .Then(_ => res.OutputStream.FlushAsync());
+                res.OutputStream.Write(bytes, 0, bytes.Length);
+                res.Flush();
             };
 
             IdleTimeout = TimeSpan.FromSeconds(30);
@@ -122,10 +124,7 @@ namespace ServiceStack
 
             var session = req.GetSession();
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
-            {
-                session.ReturnFailedAuthentication(req);
-                return TypeConstants.EmptyTask;
-            }
+                return session.ReturnFailedAuthentication(req);
 
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
@@ -205,7 +204,7 @@ namespace ServiceStack
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
-                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/event-subscribers/" + subscriptionId) },
+                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/".CombineWith(feature.SubscribersPath, subscriptionId)) },
                 {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
                 {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
             };
@@ -420,7 +419,8 @@ namespace ServiceStack
         {
             this.response = response;
             this.Meta = new Dictionary<string, string>();
-            this.WriteEvent = HostContext.GetPlugin<ServerEventsFeature>().WriteEvent;
+            var feature = HostContext.GetPlugin<ServerEventsFeature>();
+            this.WriteEvent = feature.WriteEvent;
         }
 
         public void UpdateChannels(string[] channels)
@@ -441,46 +441,56 @@ namespace ServiceStack
             Publish(selector, null);
         }
 
-        public void Publish(string selector, string message)
+        private string CreateFrame(string selector, string message)
         {
             var msg = message ?? "";
             var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
-                      + "data: " + selector + " " + msg + "\n\n";
-
-            PublishRaw(frame);
+                        + "data: " + selector + " " + msg + "\n\n";
+            return frame;
         }
+
+        public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
 
         public void PublishRaw(string frame)
         {
             if (response.IsClosed) return;
 
-            try
+            lock (response)
             {
-                lock (response)
-                {
+                try 
+                { 
                     WriteEvent(response, frame);
-
-                    OnPublish?.Invoke(this, response, frame);
+                }
+                catch (Exception ex)
+                {
+                    HandleWriteException(response, frame, ex);
                 }
             }
-            catch (Exception ex)
+        }
+
+        private void HandleWriteException(IResponse response, string frame, Exception ex)
+        {
+            if (ex != null)
             {
                 Log.Warn("Could not publish notification to: " + frame.SafeSubstring(0, 50), ex);
                 OnError?.Invoke(this, ex);
+            }
 
+            if (Env.IsMono)
+            {
                 // Mono: If we explicitly close OutputStream after the error socket wont leak (response.Close() doesn't work)
                 try
                 {
                     // This will throw an exception, but on Mono (Linux/OSX) the socket will leak if we not close the OutputStream
                     response.OutputStream.Close();
                 }
-                catch(Exception innerEx)
+                catch (Exception innerEx)
                 {
                     Log.Error("OutputStream.Close()", innerEx);
                 }
-
-                Unsubscribe();
             }
+
+            Unsubscribe();
         }
 
         public void Pulse()
@@ -675,9 +685,9 @@ namespace ServiceStack
             Notify(UserNameSubcriptions, userName, selector, message, channel);
         }
 
-        public void NotifySession(string sspid, string selector, object message, string channel = null)
+        public void NotifySession(string sessionId, string selector, object message, string channel = null)
         {
-            Notify(SessionSubcriptions, sspid, selector, message, channel);
+            Notify(SessionSubcriptions, sessionId, selector, message, channel);
         }
 
         protected void Notify(ConcurrentDictionary<string, ConcurrentDictionary<IEventSubscription, bool>> map,
@@ -1080,8 +1090,7 @@ namespace ServiceStack
             if (key == null || subscription == null)
                 return;
 
-            IEventSubscription inMap;
-            map.TryRemove(key, out inMap);
+            map.TryRemove(key, out _);
         }
 
         void HandleUnsubscription(IEventSubscription subscription)
@@ -1129,7 +1138,7 @@ namespace ServiceStack
 
         void NotifyUserName(string userName, string selector, object message, string channel = null);
 
-        void NotifySession(string sspid, string selector, object message, string channel = null);
+        void NotifySession(string sessionId, string selector, object message, string channel = null);
 
         SubscriptionInfo GetSubscriptionInfo(string id);
 
@@ -1248,8 +1257,7 @@ namespace ServiceStack
             if (dic == null || key == null)
                 return default(TElement);
 
-            TElement res;
-            dic.TryGetValue(key, out res);
+            dic.TryGetValue(key, out var res);
             return res;
         }
 

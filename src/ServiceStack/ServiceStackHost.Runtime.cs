@@ -77,6 +77,9 @@ namespace ServiceStack
             foreach (var authProvider in AuthenticateService.AuthWithRequestProviders)
             {
                 authProvider.PreAuthenticate(httpReq, httpRes);
+
+                if (httpRes.IsClosed)
+                    return;
             }
         }
 
@@ -558,11 +561,22 @@ namespace ServiceStack
             httpReq.Items[Keywords.Session] = session;
         }
 
+
+        [Obsolete("override OnSessionFilter(IRequest,IAuthSession,string)")]
+        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
+
         /// <summary>
         /// Inspect or modify ever new UserSession created or resolved from cache. 
         /// return null if Session is invalid to create new Session.
         /// </summary>
-        public virtual IAuthSession OnSessionFilter(IAuthSession session, string withSessionId) => session;
+        public virtual IAuthSession OnSessionFilter(IRequest req, IAuthSession session, string withSessionId)
+        {
+            if (session is IAuthSessionExtended authSession)
+            {
+                authSession.OnLoad(req);
+            }
+            return OnSessionFilter(session, withSessionId);
+        }
 
         public virtual bool AllowSetCookie(IRequest req, string cookieName)
         {
@@ -687,8 +701,13 @@ namespace ServiceStack
                 ?? Container.TryResolve<IMessageService>().MessageFactory).CreateMessageProducer();
         }
 
+        public virtual IServiceGateway GetServiceGateway() => GetServiceGateway(new BasicRequest());
+
         public virtual IServiceGateway GetServiceGateway(IRequest req)
         {
+            if (req == null)
+                throw new ArgumentNullException(nameof(req));
+
             var factory = Container.TryResolve<IServiceGatewayFactory>();
             return factory != null ? factory.GetServiceGateway(req) 
                 : Container.TryResolve<IServiceGateway>()

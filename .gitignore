@@ -52,8 +52,6 @@ requestlogs/
 *.DS_Store
 
 NuGet/
-NuGet.Pcl/
-NuGet.Signed/
 
 build/
 

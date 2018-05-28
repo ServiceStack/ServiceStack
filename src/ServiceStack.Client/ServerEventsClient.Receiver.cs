@@ -49,9 +49,9 @@ namespace ServiceStack
     {
         public IResolver Resolver { get; set; }
 
-        public Dictionary<string, ServerEventCallback> Handlers { get; set; }
-        public Dictionary<string, ServerEventCallback> NamedReceivers { get; set; }
-        public List<Type> ReceiverTypes { get; set; } 
+        public ConcurrentDictionary<string, ServerEventCallback> Handlers { get; }
+        public ConcurrentDictionary<string, ServerEventCallback> NamedReceivers { get; }
+        public List<Type> ReceiverTypes { get; } 
         public bool StrictMode { get; set; }
 
         public ServerEventsClient RegisterReceiver<T>()
@@ -65,9 +65,12 @@ namespace ServiceStack
         {
             ReceiverExec<T>.Reset();
 
-            NamedReceivers[receiverName] = CreateReceiverHandler<T>;
+            lock (NamedReceivers)
+            {
+                NamedReceivers[receiverName] = CreateReceiverHandler<T>;
 
-            ReceiverTypes.Add(typeof(T));
+                ReceiverTypes.Add(typeof(T));
+            }
 
             return this;
         }

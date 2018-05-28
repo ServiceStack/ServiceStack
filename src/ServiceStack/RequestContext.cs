@@ -51,14 +51,8 @@ namespace ServiceStack
         /// </remarks>
         public virtual IDictionary Items
         {
-            get
-            {
-                return GetItems() ?? CreateItems();
-            }
-            set
-            {
-                CreateItems(value);
-            }
+            get => GetItems() ?? CreateItems();
+            set => CreateItems(value);
         }
 
         private const string _key = "__Request.Items";
@@ -165,9 +159,8 @@ namespace ServiceStack
             if (!ServiceStackHost.Instance.Config.DisposeDependenciesAfterUse) return false;
 
             var ctxItems = Instance.Items;
-            var disposables = ctxItems[DisposableTracker.HashId] as DisposableTracker;
 
-            if (disposables != null)
+            if (ctxItems[DisposableTracker.HashId] is DisposableTracker disposables)
             {
                 disposables.Dispose();
                 ctxItems.Remove(DisposableTracker.HashId);

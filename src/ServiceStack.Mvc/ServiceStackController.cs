@@ -189,15 +189,16 @@ namespace ServiceStack.Mvc
 
         public virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
 
-        public virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
+        //don't expose public generic methods in MVC Controllers
+        protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
         public virtual void SaveSession(IAuthSession session, TimeSpan? expiresIn = null) => ServiceStackProvider.Request.SaveSession(session, expiresIn);
 
         public virtual void ClearSession() => ServiceStackProvider.ClearSession();
 
-        public virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
+        protected virtual T TryResolve<T>() => ServiceStackProvider.TryResolve<T>();
 
-        public virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
+        protected virtual T ResolveService<T>() => ServiceStackProvider.ResolveService<T>();
 
         public virtual object ForwardRequestToServiceStack(IRequest request = null) => ServiceStackProvider.Execute(request ?? ServiceStackProvider.Request);
 

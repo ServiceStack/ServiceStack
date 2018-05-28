@@ -18,7 +18,7 @@ namespace ServiceStack
         /// </summary>
         public bool VisibleInternalOnly
         {
-            get { return CanShowTo(RequestAttributes.InternalNetworkAccess); }
+            get => CanShowTo(RequestAttributes.InternalNetworkAccess);
             set
             {
                 if (value == false)
@@ -33,7 +33,7 @@ namespace ServiceStack
         /// </summary>
         public bool VisibleLocalhostOnly
         {
-            get { return CanShowTo(RequestAttributes.Localhost); }
+            get => CanShowTo(RequestAttributes.Localhost);
             set
             {
                 if (value == false)
@@ -48,7 +48,7 @@ namespace ServiceStack
         /// </summary>
         public bool LocalhostOnly
         {
-            get { return HasAccessTo(RequestAttributes.Localhost) && CanShowTo(RequestAttributes.Localhost); }
+            get => HasAccessTo(RequestAttributes.Localhost) && CanShowTo(RequestAttributes.Localhost);
             set
             {
                 if (value == false)
@@ -64,7 +64,7 @@ namespace ServiceStack
         /// </summary>
         public bool InternalOnly
         {
-            get { return HasAccessTo(RequestAttributes.InternalNetworkAccess) && CanShowTo(RequestAttributes.InternalNetworkAccess); }
+            get => HasAccessTo(RequestAttributes.InternalNetworkAccess) && CanShowTo(RequestAttributes.InternalNetworkAccess);
             set
             {
                 if (value == false)
@@ -80,7 +80,7 @@ namespace ServiceStack
         /// </summary>
         public bool ExternalOnly
         {
-            get { return HasAccessTo(RequestAttributes.External) && CanShowTo(RequestAttributes.External); }
+            get => HasAccessTo(RequestAttributes.External) && CanShowTo(RequestAttributes.External);
             set
             {
                 if (value == false)
@@ -97,16 +97,11 @@ namespace ServiceStack
         /// <value>Restrict Access to.</value>
         public RequestAttributes AccessTo
         {
-            get
-            {
-                return this.AccessibleToAny.Length == 0
-                    ? RequestAttributes.Any
-                    : this.AccessibleToAny[0];
-            }
-            set
-            {
-                this.AccessibleToAny = new[] { value };
-            }
+            get => this.AccessibleToAny.Length == 0
+                ? RequestAttributes.Any
+                : this.AccessibleToAny[0];
+
+            set => this.AccessibleToAny = new[] { value };
         }
 
         /// <summary>
@@ -121,16 +116,11 @@ namespace ServiceStack
         /// <value>Restrict metadata Visibility to.</value>
         public RequestAttributes VisibilityTo
         {
-            get
-            {
-                return this.VisibleToAny.Length == 0
-                    ? RequestAttributes.Any
-                    : this.VisibleToAny[0];
-            }
-            set
-            {
-                this.VisibleToAny = new[] { value };
-            }
+            get => this.VisibleToAny.Length == 0
+                ? RequestAttributes.Any
+                : this.VisibleToAny[0];
+
+            set => this.VisibleToAny = new[] { value };
         }
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace ServiceStack.RabbitMq
         private int retryCount;
         public int RetryCount
         {
-            get { return retryCount; }
+            get => retryCount;
             set
             {
                 if (value < 0 || value > 1)

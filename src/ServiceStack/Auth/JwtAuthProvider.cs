@@ -100,7 +100,7 @@ namespace ServiceStack.Auth
 
         public string CreateJwtBearerToken(IRequest req, IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null)
         {
-            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audience, roles, perms);
+            var jwtPayload = CreateJwtPayload(session, Issuer, ExpireTokensIn, Audiences, roles, perms);
             CreatePayloadFilter?.Invoke(jwtPayload, session);
 
             if (EncryptPayload)
@@ -141,8 +141,7 @@ namespace ServiceStack.Auth
                 {"exp", now.Add(expireRefreshTokenIn).ToUnixTime().ToString()},
             };
 
-            if (Audience != null)
-                jwtPayload["aud"] = Audience;
+            jwtPayload.SetAudience(Audiences);
 
             var hashAlgoritm = GetHashAlgorithm(req);
             var refreshToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
@@ -277,7 +276,7 @@ namespace ServiceStack.Auth
 
         public static JsonObject CreateJwtPayload(
             IAuthSession session, string issuer, TimeSpan expireIn, 
-            string audience=null,
+            IEnumerable<string> audiences=null,
             IEnumerable<string> roles=null,
             IEnumerable<string> permissions =null)
         {
@@ -290,8 +289,7 @@ namespace ServiceStack.Auth
                 {"exp", now.Add(expireIn).ToUnixTime().ToString()},
             };
 
-            if (audience != null)
-                jwtPayload["aud"] = audience;
+            jwtPayload.SetAudience(audiences?.ToList());
 
             if (!string.IsNullOrEmpty(session.Email))
                 jwtPayload["email"] = session.Email;
@@ -336,7 +334,7 @@ namespace ServiceStack.Auth
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
             if (Request.ResponseContentType.MatchesContentType(MimeTypes.Html))
                 Request.ResponseContentType = MimeTypes.Json;
@@ -351,7 +349,11 @@ namespace ServiceStack.Auth
                     Request.RemoveSession(session.Id);
             }
 
-            return new HttpResult(new ConvertSessionToTokenResponse())
+            return new HttpResult(new ConvertSessionToTokenResponse {
+                AccessToken = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse
+                    ? token
+                    : null
+            })
             {
                 Cookies = {
                     new Cookie(Keywords.TokenCookie, token, Cookies.RootPath) {
@@ -372,7 +374,7 @@ namespace ServiceStack.Auth
             var jwtAuthProvider = (JwtAuthProvider)AuthenticateService.GetRequiredJwtAuthProvider();
 
             if (jwtAuthProvider.RequireSecureConnection && !Request.IsSecureConnection)
-                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
+                throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(Request));
 
             if (string.IsNullOrEmpty(request.RefreshToken))
                 throw new ArgumentNullException(nameof(request.RefreshToken));
@@ -394,7 +396,7 @@ namespace ServiceStack.Auth
             jwtAuthProvider.AssertJwtPayloadIsValid(jwtPayload);
 
             if (jwtAuthProvider.ValidateRefreshToken != null && !jwtAuthProvider.ValidateRefreshToken(jwtPayload, Request))
-                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid, nameof(request.RefreshToken));
+                throw new ArgumentException(ErrorMessages.RefreshTokenInvalid.Localize(Request), nameof(request.RefreshToken));
 
             var userId = jwtPayload["sub"];
 
@@ -406,7 +408,7 @@ namespace ServiceStack.Auth
             {
                 session = userSessionSource.GetUserSession(userId);
                 if (session == null)
-                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
                 roles = session.Roles;
                 perms = session.Permissions;
@@ -415,10 +417,10 @@ namespace ServiceStack.Auth
             {
                 var userAuth = userRepo.GetUserAuth(userId);
                 if (userAuth == null)
-                    throw HttpError.NotFound(ErrorMessages.UserNotExists);
+                    throw HttpError.NotFound(ErrorMessages.UserNotExists.Localize(Request));
 
                 if (jwtAuthProvider.IsAccountLocked(userRepo, userAuth))
-                    throw new AuthenticationException(ErrorMessages.UserAccountLocked);
+                    throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
 
                 session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
                 jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
@@ -438,6 +440,19 @@ namespace ServiceStack.Auth
             {
                 AccessToken = accessToken
             };
+        }
+    }
+
+    internal static class JwtAuthProviderUtils
+    {
+        internal static void SetAudience(this JsonObject jwtPayload, List<string> audiences)
+        {
+            if (audiences?.Count > 0)
+            {
+                jwtPayload["aud"] = audiences.Count == 1
+                    ? audiences[0]
+                    : audiences.ToJson();
+            }
         }
     }
 }

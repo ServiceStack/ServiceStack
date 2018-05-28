@@ -88,7 +88,7 @@ namespace ServiceStack
             try 
             {
                 httpReq = new NetCoreRequest(context, operationName, RequestAttributes.None, pathInfo); 
-                httpReq.RequestAttributes = httpReq.GetAttributes();
+                httpReq.RequestAttributes = httpReq.GetAttributes() | RequestAttributes.Http;
                 httpRes = httpReq.Response;
                 handler = HttpHandlerFactory.GetHandler(httpReq);
             } 

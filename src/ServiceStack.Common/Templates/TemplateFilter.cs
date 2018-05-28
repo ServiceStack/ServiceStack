@@ -212,8 +212,7 @@ namespace ServiceStack.Templates
         {
             scope.ScopedParams[itemBinding] = item;
 
-            var explodeBindings = item as ScopeVars;
-            if (explodeBindings != null)
+            if (item is ScopeVars explodeBindings)
             {
                 foreach (var entry in explodeBindings)
                 {
@@ -230,12 +229,8 @@ namespace ServiceStack.Templates
         {
             if (valueOrBinding is string literal)
             {
-                literal.ToStringSegment().ParseNextToken(out object value, out JsBinding binding);
-
-                var oValue = binding != null
-                    ? scope.EvaluateToken(binding)
-                    : value;
-
+                literal.ToStringSegment().ParseJsExpression(out var token);
+                var oValue = token.Evaluate(scope);
                 return oValue.ConvertTo(returnType);
             }
             
@@ -246,12 +241,10 @@ namespace ServiceStack.Templates
         {
             scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage);
             codePage?.Init();
-                
-            var requiresRequest = codePage as IRequiresRequest;
-            if (requiresRequest != null)
+
+            if (codePage is IRequiresRequest requiresRequest)
             {
-                var request = scope.GetValue(TemplateConstants.Request) as IRequest;
-                if (request != null)
+                if (scope.GetValue(TemplateConstants.Request) is IRequest request)
                     requiresRequest.Request = request;
             }
         }

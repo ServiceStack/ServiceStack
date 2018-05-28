@@ -7,6 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-common.proj = ..\build\build-common.proj
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
 		..\build\build.tasks = ..\build\build.tasks
@@ -57,6 +58,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec = ..\NuGet\ServiceStack.Server.Core\servicestack.server.core.nuspec
 		..\NuGet\ServiceStack.Server\servicestack.server.nuspec = ..\NuGet\ServiceStack.Server\servicestack.server.nuspec
 		..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec = ..\NuGet\ServiceStack.Wire\servicestack.wire.nuspec
+		..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec = ..\NuGet\ServiceStack.Logging.Log4Net.Core\servicestack.logging.log4net.core.nuspec
+		..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec = ..\NuGet\ServiceStack.Logging.NLog.Core\servicestack.logging.nlog.core.nuspec
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
@@ -152,6 +155,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.NetFramework", "ServiceStack.NetFramework\ServiceStack.NetFramework.csproj", "{22F8D050-2C96-4993-B221-DA16EBC61F31}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTests", "..\tests\NetCoreTests\NetCoreTests.csproj", "{64106F66-70F4-4A5F-943A-89BEEBCF1B4B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckWebCore", "..\tests\CheckWebCore\CheckWebCore.csproj", "{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -615,6 +620,18 @@ Global
 		{64106F66-70F4-4A5F-943A-89BEEBCF1B4B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{64106F66-70F4-4A5F-943A-89BEEBCF1B4B}.Release|x86.ActiveCfg = Release|Any CPU
 		{64106F66-70F4-4A5F-943A-89BEEBCF1B4B}.Release|x86.Build.0 = Release|Any CPU
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|Mixed Platforms.ActiveCfg = Debug|Mixed Platforms
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|Mixed Platforms.Build.0 = Debug|Mixed Platforms
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|x86.ActiveCfg = Debug|x86
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Debug|x86.Build.0 = Debug|x86
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|Mixed Platforms.ActiveCfg = Release|Mixed Platforms
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|Mixed Platforms.Build.0 = Release|Mixed Platforms
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|x86.ActiveCfg = Release|x86
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -649,6 +666,7 @@ Global
 		{0428D353-CD67-481F-877A-676E3BBCF903} = {CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}
 		{CFD618DD-5DE8-42FE-8D83-CC5AB7A40FC1} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{64106F66-70F4-4A5F-943A-89BEEBCF1B4B} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {55441DE1-559F-4064-BB8F-907A9E898A6C}

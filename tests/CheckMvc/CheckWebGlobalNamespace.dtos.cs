@@ -1,5 +1,5 @@
 /* Options:
-Date: 2017-11-07 22:44:47
+Date: 2018-05-19 14:47:02
 Version: 5.00
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:55799
@@ -40,7 +40,7 @@ namespace dtos
     [Route("/api/acsprofiles", "POST,PUT,PATCH,DELETE")]
     [Route("/api/acsprofiles/{profileId}")]
     public partial class ACSProfile
-        : IReturn<acsprofileResponse>
+        : IReturn<acsprofileResponse>, IHasVersion, IHasSessionId
     {
         public virtual string profileId { get; set; }
         [Required]
@@ -117,6 +117,33 @@ namespace dtos
         public virtual string Path { get; set; }
     }
 
+    [Route("/jwt")]
+    public partial class CreateJwt
+        : AuthUserSession, IReturn<CreateJwtResponse>, IMeta
+    {
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/jwt-refresh")]
+    public partial class CreateRefreshJwt
+        : IReturn<CreateRefreshJwtResponse>
+    {
+        public virtual string UserAuthId { get; set; }
+        public virtual DateTime? JwtExpiry { get; set; }
+    }
+
+    public partial class CreateRefreshJwtResponse
+    {
+        public virtual string Token { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
     public partial class CustomRockstar
     {
         [AutoQueryViewerField(Title="Name")]
@@ -134,7 +161,7 @@ namespace dtos
     }
 
     public partial class CustomUserSession
-        : AuthUserSession
+        : AuthUserSession, IMeta
     {
         [DataMember]
         public virtual string CustomName { get; set; }
@@ -306,27 +333,27 @@ namespace dtos
 
     [AutoQueryViewer(Description="Use this option to search for Rockstars!", Title="Search for Rockstars")]
     public partial class QueryCustomRockstars
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryCustomRockstarsFilter
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/querydata/rockstars")]
     public partial class QueryDataRockstars
-        : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryData<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/query-custom/rockstars")]
     public partial class QueryFieldRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryFieldRockstars()
         {
@@ -347,13 +374,13 @@ namespace dtos
     }
 
     public partial class QueryFieldRockstarsDynamic
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryGetRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryGetRockstars()
         {
@@ -370,13 +397,13 @@ namespace dtos
     }
 
     public partial class QueryGetRockstarsDynamic
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
     }
 
     [Route("/movies")]
     public partial class QueryMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         public QueryMovies()
         {
@@ -392,34 +419,34 @@ namespace dtos
 
     [Route("/OrRockstars")]
     public partial class QueryOrRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string FirstName { get; set; }
     }
 
     public partial class QueryOverridedCustomRockstars
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryOverridedRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/pgsql/pgrockstars")]
     public partial class QueryPostgresPgRockstars
-        : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>
+        : QueryDb<PgRockstar>, IReturn<QueryResponse<PgRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/pgsql/rockstars")]
     public partial class QueryPostgresRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
@@ -427,7 +454,7 @@ namespace dtos
     [Route("/query/requestlogs")]
     [Route("/query/requestlogs/{Date}")]
     public partial class QueryRequestLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
         public virtual DateTime? Date { get; set; }
         public virtual bool ViewErrors { get; set; }
@@ -435,19 +462,19 @@ namespace dtos
 
     [Route("/customrockstars")]
     public partial class QueryRockstarAlbums
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string RockstarAlbumName { get; set; }
     }
 
     public partial class QueryRockstarAlbumsImplicit
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
     }
 
     public partial class QueryRockstarAlbumsLeftJoin
-        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>
+        : QueryDb<Rockstar, CustomRockstar>, IReturn<QueryResponse<CustomRockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
         public virtual string AlbumName { get; set; }
@@ -455,13 +482,20 @@ namespace dtos
 
     [Route("/query/rockstars")]
     public partial class QueryRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
+    {
+        public virtual int? Age { get; set; }
+    }
+
+    [Route("/query/rockstars/cached")]
+    public partial class QueryRockstarsCached
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsConventions
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public QueryRockstarsConventions()
         {
@@ -482,26 +516,26 @@ namespace dtos
     }
 
     public partial class QueryRockstarsFilter
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryRockstarsIFilter
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IFilterRockstars
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta, IFilterRockstars
     {
         public virtual int? Age { get; set; }
     }
 
     [Route("/query/rockstar-references")]
     public partial class QueryRockstarsWithReferences
-        : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>
+        : QueryDb<RockstarReference>, IReturn<QueryResponse<RockstarReference>>, IMeta
     {
         public virtual int? Age { get; set; }
     }
 
     public partial class QueryUnknownRockstars
-        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>
+        : QueryDb<Rockstar>, IReturn<QueryResponse<Rockstar>>, IMeta
     {
         public virtual int UnknownInt { get; set; }
         public virtual string UnknownProperty { get; set; }
@@ -535,12 +569,12 @@ namespace dtos
 
     [Route("/movies/search")]
     public partial class SearchMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
     }
 
     public partial class StreamMovies
-        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>
+        : QueryDb<Movie>, IReturn<QueryResponse<Movie>>, IMeta
     {
         public StreamMovies()
         {
@@ -571,22 +605,23 @@ namespace dtos
     }
 
     public partial class TodayErrorLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
+    [AutoQueryViewer(Name="Today\'s Logs", Title="Logs from Today")]
     public partial class TodayLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     public partial class YesterdayErrorLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
     public partial class YesterdayLogs
-        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>
+        : QueryData<RequestLogEntry>, IReturn<QueryResponse<RequestLogEntry>>, IMeta
     {
     }
 
@@ -651,6 +686,7 @@ namespace dtos
     }
 
     public partial class Echo
+        : IEcho
     {
         public virtual string Sentence { get; set; }
     }
@@ -774,13 +810,13 @@ namespace dtos
     }
 
     public partial class QueryPocoBase
-        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>
+        : QueryDb<OnlyDefinedInGenericType>, IReturn<QueryResponse<OnlyDefinedInGenericType>>, IMeta
     {
         public virtual int Id { get; set; }
     }
 
     public partial class QueryPocoIntoBase
-        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>
+        : QueryDb<OnlyDefinedInGenericTypeFrom, OnlyDefinedInGenericTypeInto>, IReturn<QueryResponse<OnlyDefinedInGenericTypeInto>>, IMeta
     {
         public virtual int Id { get; set; }
     }
@@ -930,9 +966,21 @@ namespace dtos
     [Flags]
     public enum EnumFlags
     {
+        Value0 = 0,
         Value1 = 1,
         Value2 = 2,
-        Value3 = 4,
+        Value3 = 3,
+        Value123 = 3,
+    }
+
+    public enum EnumStyle
+    {
+        lower,
+        UPPER,
+        PascalCase,
+        camelCase,
+        camelUPPER,
+        PascalUPPER,
     }
 
     public enum EnumType
@@ -1040,6 +1088,25 @@ namespace dtos
         public virtual List<string> Names { get; set; }
     }
 
+    ///<summary>
+    ///Multi Line Class
+    ///</summary>
+    [Api(Description="Multi \r\nLine \r\nClass")]
+    public partial class HelloAttributeStringTest
+    {
+        ///<summary>
+        ///Multi Line Property
+        ///</summary>
+        [ApiMember(Description="Multi \r\nLine \r\nProperty")]
+        public virtual string Overflow { get; set; }
+
+        ///<summary>
+        ///Some \ escaped 	  chars
+        ///</summary>
+        [ApiMember(Description="Some \\ escaped \t \n chars")]
+        public virtual string EscapedChars { get; set; }
+    }
+
     public partial class HelloBase<T>
     {
         public HelloBase()
@@ -1086,19 +1153,6 @@ namespace dtos
         }
 
         public virtual List<string> Names { get; set; }
-    }
-
-    ///<summary>
-    ///Multi Line Class
-    ///</summary>
-    [Api(Description="Multi Line Class")]
-    public partial class HelloMultiline
-    {
-        ///<summary>
-        ///Multi Line Property
-        ///</summary>
-        [ApiMember(Description="Multi Line Property")]
-        public virtual string Overflow { get; set; }
     }
 
     public partial class HelloResponse
@@ -1176,6 +1230,7 @@ namespace dtos
         public virtual EnumWithValues EnumWithValues { get; set; }
         public virtual EnumType? NullableEnumProp { get; set; }
         public virtual EnumFlags EnumFlags { get; set; }
+        public virtual EnumStyle EnumStyle { get; set; }
     }
 
     public partial class HelloWithGenericInheritance
@@ -1385,6 +1440,23 @@ namespace dtos
         public virtual int Id { get; set; }
     }
 
+    public partial class HelloAuthenticated
+        : IReturn<HelloAuthenticatedResponse>, IHasSessionId
+    {
+        public virtual string SessionId { get; set; }
+        public virtual int Version { get; set; }
+    }
+
+    public partial class HelloAuthenticatedResponse
+    {
+        public virtual int Version { get; set; }
+        public virtual string SessionId { get; set; }
+        public virtual string UserName { get; set; }
+        public virtual string Email { get; set; }
+        public virtual bool IsAuthenticated { get; set; }
+        public virtual ResponseStatus ResponseStatus { get; set; }
+    }
+
     public partial class HelloBase
     {
         public virtual int Id { get; set; }
@@ -1548,6 +1620,7 @@ namespace dtos
 
     [DataContract]
     public partial class QueryResponseTemplate<T>
+        : IMeta
     {
         public QueryResponseTemplate()
         {
@@ -1661,6 +1734,23 @@ namespace dtos
         }
     }
 
+    [Route("/defaultview/action")]
+    public partial class DefaultViewActionAttr
+    {
+    }
+
+    [Route("/defaultview/class")]
+    public partial class DefaultViewAttr
+    {
+    }
+
+    [Route("/gzip/{FileName}")]
+    public partial class DownloadGzipFile
+        : IReturn<byte[]>
+    {
+        public virtual string FileName { get; set; }
+    }
+
     [Route("/lists", "GET")]
     public partial class GetLists
         : IReturn<GetLists>
@@ -1691,10 +1781,40 @@ namespace dtos
         public virtual string Get { get; set; }
     }
 
+    [Route("/httpresult-dto")]
+    public partial class HttpResultDto
+        : IReturn<HttpResultDto>
+    {
+        public virtual string Name { get; set; }
+    }
+
     [Route("/index")]
     public partial class IndexPage
     {
         public virtual string PathInfo { get; set; }
+    }
+
+    public partial class InProcRequest1
+    {
+    }
+
+    public partial class InProcRequest2
+    {
+    }
+
+    [Route("/match/{Language*}")]
+    public partial class MatchLang
+        : IReturn<HelloResponse>
+    {
+        public virtual string Language { get; set; }
+    }
+
+    [Route("/match/{Language}/{Name*}")]
+    public partial class MatchName
+        : IReturn<HelloResponse>
+    {
+        public virtual string Language { get; set; }
+        public virtual string Name { get; set; }
     }
 
     public enum MyColor
@@ -1709,6 +1829,13 @@ namespace dtos
         A,
         B,
         C,
+    }
+
+    [Route("/plain-dto")]
+    public partial class PlainDto
+        : IReturn<PlainDto>
+    {
+        public virtual string Name { get; set; }
     }
 
     ///<summary>
@@ -1736,14 +1863,33 @@ namespace dtos
 
     [Route("/query/alltypes")]
     public partial class QueryAllTypes
-        : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>
+        : QueryDb<AllTypes>, IReturn<QueryResponse<AllTypes>>, IMeta
     {
+    }
+
+    [Route("/reqlogstest/{Name}")]
+    public partial class RequestLogsTest
+        : IReturn<string>
+    {
+        public virtual string Name { get; set; }
     }
 
     [Route("/return/text")]
     public partial class ReturnText
     {
         public virtual string Text { get; set; }
+    }
+
+    [Route("/set-cache")]
+    public partial class SetCache
+        : IReturn<SetCache>
+    {
+        public virtual string ETag { get; set; }
+        public virtual TimeSpan? Age { get; set; }
+        public virtual TimeSpan? MaxAge { get; set; }
+        public virtual DateTime? Expires { get; set; }
+        public virtual DateTime? LastModified { get; set; }
+        public virtual CacheControl? CacheControl { get; set; }
     }
 
     [Route("/swagger-complex", "POST")]
@@ -1818,6 +1964,17 @@ namespace dtos
         [DataMember]
         [ApiMember]
         public virtual Dictionary<string, string> DictionaryString { get; set; }
+    }
+
+    [Route("/swagger/model")]
+    public partial class SwaggerModel
+        : IReturn<SwaggerModel>
+    {
+        public virtual int Int { get; set; }
+        public virtual string String { get; set; }
+        public virtual DateTime DateTime { get; set; }
+        public virtual DateTimeOffset DateTimeOffset { get; set; }
+        public virtual TimeSpan TimeSpan { get; set; }
     }
 
     [Route("/swagger/multiattrtest", "POST")]
@@ -1984,10 +2141,23 @@ namespace dtos
         public virtual string Name { get; set; }
     }
 
-    [Route("/views/request")]
-    public partial class ViewRequest
+    [Route("/restrict/mq")]
+    public partial class TestMqRestriction
+        : IReturn<TestMqRestriction>
     {
         public virtual string Name { get; set; }
+    }
+
+    [Route("/views/request")]
+    public partial class ViewRequest
+        : IReturn<ViewResponse>
+    {
+        public virtual string Name { get; set; }
+    }
+
+    public partial class ViewResponse
+    {
+        public virtual string Result { get; set; }
     }
 }
 

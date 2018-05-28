@@ -82,8 +82,7 @@ namespace ServiceStack
         public static void TransmitFile(this IResponse httpRes, string filePath)
         {
 #if !NETSTANDARD2_0
-            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
-            if (aspNetRes != null)
+            if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.TransmitFile(filePath);
                 return;
@@ -101,8 +100,7 @@ namespace ServiceStack
         public static void WriteFile(this IResponse httpRes, string filePath)
         {
 #if !NETSTANDARD2_0
-            var aspNetRes = httpRes as ServiceStack.Host.AspNet.AspNetResponse;
-            if (aspNetRes != null)
+            if (httpRes is ServiceStack.Host.AspNet.AspNetResponse aspNetRes)
             {
                 aspNetRes.Response.WriteFile(filePath);
                 return;
@@ -123,36 +121,32 @@ namespace ServiceStack
             httpRes.EndRequest();
         }
 
-        public static void ReturnFailedAuthentication(this IAuthSession session, IRequest request)
+        public static Task ReturnFailedAuthentication(this IAuthSession session, IRequest request)
         {
             var authFeature = HostContext.GetPlugin<AuthFeature>();
             if (authFeature != null)
             {
-                var defaultAuth = AuthenticateService.AuthProviders.FirstOrDefault() as AuthProvider;
-                if (defaultAuth != null)
-                {
-                    defaultAuth.OnFailedAuthentication(session, request, request.Response);
-                    return;
-                }
+                if (AuthenticateService.AuthProviders.FirstOrDefault() is AuthProvider defaultAuth)
+                    return defaultAuth.OnFailedAuthentication(session, request, request.Response);
             }
-            request.Response.ReturnAuthRequired();
+            return request.Response.ReturnAuthRequired();
         }
 
-        public static void ReturnAuthRequired(this IResponse httpRes)
+        public static Task ReturnAuthRequired(this IResponse httpRes)
         {
-            httpRes.ReturnAuthRequired("Auth Required");
+            return httpRes.ReturnAuthRequired("Auth Required");
         }
 
-        public static void ReturnAuthRequired(this IResponse httpRes, string authRealm)
+        public static Task ReturnAuthRequired(this IResponse httpRes, string authRealm)
         {
-            httpRes.ReturnAuthRequired(AuthenticationHeaderType.Basic, authRealm);
+            return httpRes.ReturnAuthRequired(AuthenticationHeaderType.Basic, authRealm);
         }
 
-        public static void ReturnAuthRequired(this IResponse httpRes, AuthenticationHeaderType AuthType, string authRealm)
+        public static Task ReturnAuthRequired(this IResponse httpRes, AuthenticationHeaderType AuthType, string authRealm)
         {
             httpRes.StatusCode = (int)HttpStatusCode.Unauthorized;
             httpRes.AddHeader(HttpHeaders.WwwAuthenticate, $"{AuthType} realm=\"{authRealm}\"");
-            httpRes.EndRequest();
+            return HostContext.AppHost.HandleShortCircuitedErrors(httpRes.Request, httpRes, httpRes.Request.Dto);
         }
 
         public static void ClearCookies(this IResponse response)

@@ -85,7 +85,7 @@ namespace ServiceStack.NativeTypes.Kotlin
         public string GetCode(MetadataTypes metadata, IRequest request, INativeTypesMetadata nativeTypes)
         {
             var typeNamespaces = new HashSet<string>();
-            RemoveIgnoredTypes(metadata);
+            var includeList = RemoveIgnoredTypes(metadata);
             metadata.Types.Each(x => typeNamespaces.Add(x.Namespace));
             metadata.Operations.Each(x => typeNamespaces.Add(x.Request.Namespace));
 
@@ -107,8 +107,7 @@ namespace ServiceStack.NativeTypes.Kotlin
                 }
             }
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "//" : "";
+            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "//" : "";
 
             var sbInner = StringBuilderCache.Allocate();
             var sb = new StringBuilderWrapper(sbInner);
@@ -118,16 +117,16 @@ namespace ServiceStack.NativeTypes.Kotlin
             sb.AppendLine($"Tip: {HelpMessages.NativeTypesDtoOptionsTip.Fmt("//")}");
             sb.AppendLine($"BaseUrl: {Config.BaseUrl}");
             sb.AppendLine();
-            sb.AppendLine("{0}Package: {1}".Fmt(defaultValue("Package"), Config.Package));
-            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(defaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}DefaultImports: {1}".Fmt(defaultValue("DefaultImports"), defaultImports.Join(",")));
+            sb.AppendLine("{0}Package: {1}".Fmt(DefaultValue("Package"), Config.Package));
+            sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(DefaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}TreatTypesAsStrings: {1}".Fmt(DefaultValue("TreatTypesAsStrings"), Config.TreatTypesAsStrings.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}DefaultImports: {1}".Fmt(DefaultValue("DefaultImports"), defaultImports.Join(",")));
 
             sb.AppendLine("*/");
             sb.AppendLine();
@@ -260,10 +259,11 @@ namespace ServiceStack.NativeTypes.Kotlin
             typeof(ErrorResponse).Name,
         }; 
 
-        private void RemoveIgnoredTypes(MetadataTypes metadata)
+        private List<string> RemoveIgnoredTypes(MetadataTypes metadata)
         {
-            metadata.RemoveIgnoredTypes(Config);
+            var includeList = metadata.RemoveIgnoredTypes(Config);
             metadata.Types.RemoveAll(x => IgnoreTypeNames.Contains(x.Name));
+            return includeList;
         }
 
         private string AppendType(ref StringBuilderWrapper sb, MetadataType type, string lastNS,
@@ -351,8 +351,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                                 : $"{returnType}::class.java";
                         }
                     }
-                    type.Implements.Each(x => interfaces.Add(Type(x)));
                 }
+                type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var extend = extends.Count > 0 
                     ? " : " + extends[0] + "()"
@@ -497,7 +497,7 @@ namespace ServiceStack.NativeTypes.Kotlin
             if (value == null)
                 return "null";
             if (alias == "string" || type == "String")
-                return value.QuotedSafeValue();
+                return value.ToEscapedString();
 
             if (value.StartsWith("typeof("))
             {

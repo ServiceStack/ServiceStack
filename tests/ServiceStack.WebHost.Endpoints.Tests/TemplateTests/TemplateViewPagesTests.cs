@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
@@ -151,11 +152,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
+        public void AssertHtmlContentType(HttpWebResponse res)
+        {
+            Assert.That(res.ContentType.MatchesContentType(MimeTypes.Html), $"Expected {MimeTypes.Html} got {res.ContentType}");
+        }
+
         [Test]
         public void Does_render_TemplateViewPageResponse_on_HTML_requests()
         {
             var html = BaseUrl.CombineWith("view-pages", "test")
-                .GetStringFromUrl(accept: MimeTypes.Html);
+                .GetStringFromUrl(accept:MimeTypes.Html, responseFilter:AssertHtmlContentType);
             
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
@@ -174,8 +180,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Does_render_TemplateViewPageRequest_on_HTML_requests()
         {
             var html = BaseUrl.CombineWith("view-pages-request", "test")
-                .GetStringFromUrl(accept: MimeTypes.Html);
-            
+                .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
+
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
@@ -193,8 +199,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Does_render_TemplateViewPageNested_on_HTML_requests()
         {
             var html = BaseUrl.CombineWith("view-pages-nested", "test")
-                .GetStringFromUrl(accept: MimeTypes.Html);
-            
+                .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
+
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
@@ -212,8 +218,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Does_render_TemplateViewPageNestedSub_on_HTML_requests()
         {
             var html = BaseUrl.CombineWith("view-pages-nested-sub", "test")
-                .GetStringFromUrl(accept: MimeTypes.Html);
-            
+                .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
+
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views-nested-sub>
@@ -232,8 +238,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var html = BaseUrl.CombineWith("view-pages-custom", "test")
                 .AddQueryParam("view", "TemplateViewPageRequest")
-                .GetStringFromUrl(accept: MimeTypes.Html);
-            
+                .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
+
             Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>

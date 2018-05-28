@@ -25,14 +25,8 @@ namespace ServiceStack.Messaging
             Func<IMessage<T>, object> processMessageFn,
             Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx)
         {
-            if (messageService == null)
-                throw new ArgumentNullException(nameof(messageService));
-
-            if (processMessageFn == null)
-                throw new ArgumentNullException(nameof(processMessageFn));
-
-            this.messageService = messageService;
-            this.processMessageFn = processMessageFn;
+            this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            this.processMessageFn = processMessageFn ?? throw new ArgumentNullException(nameof(processMessageFn));
             this.processExceptionFn = processExceptionEx;
             this.RetryCount = DefaultRetryCount;
         }

@@ -53,10 +53,7 @@ namespace ServiceStack.Messaging.Redis
 
 		public void OnMessagePublished()
 		{
-			if (this.MessageService != null)
-			{
-				this.MessageService.Start();
-			}
+		    MessageService?.Start();
 		}
 
 		public void Dispose()

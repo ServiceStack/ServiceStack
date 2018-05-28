@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -30,6 +30,8 @@ namespace ServiceStack.Templates
             return ParseTemplatePage(new StringSegment(text));
         }
 
+        private const char FilterSep = '|';
+
         public static List<PageFragment> ParseTemplatePage(StringSegment text)
         {
             var to = new List<PageFragment>();
@@ -50,48 +52,57 @@ namespace ServiceStack.Templates
                 var isComment = text.GetChar(varStartPos) == '*';
                 if (!isComment)
                 {
-                    var literal = text.Subsegment(varStartPos).ParseNextToken(out object initialValue, out JsBinding initialBinding, allowWhitespaceSyntax:true);
+                    var literal = text.Subsegment(varStartPos);
+                    literal = literal.ParseJsExpression(out var expr, filterExpression:true);
     
-                    List<JsExpression> filterCommands = null;
-    
-                    literal = literal.ParseNextToken(out _, out JsBinding filterOp);
-                    if (filterOp == JsBitwiseOr.Operator)
+                    var filters = new List<JsCallExpression>();
+
+                    if (!literal.StartsWith("}}"))
                     {
-                        var varEndPos = 0;
-                        bool foundVarEnd = false;
-                    
-                        filterCommands = literal.ParseExpression<JsExpression>(
-                            separator: '|',
-                            atEndIndex: (str, strPos) =>
+                        literal = literal.AdvancePastWhitespace();
+                        if (literal.FirstCharEquals(FilterSep))
+                        {
+                            literal = literal.Advance(1);
+                            
+                            while (true)
                             {
-                                while (str.Length > strPos && str.GetChar(strPos).IsWhiteSpace())
-                                    strPos++;
-    
-                                if (str.Length > strPos + 1 && str.GetChar(strPos) == '}' && str.GetChar(strPos + 1) == '}')
+                                literal = literal.ParseJsCallExpression(out var filter, filterExpression:true);
+                            
+                                filters.Add(filter);
+
+                                literal = literal.AdvancePastWhitespace();
+
+                                if (literal.IsNullOrEmpty())
+                                    throw new SyntaxErrorException("Unterminated filter expression");
+
+                                if (literal.StartsWith("}}"))
                                 {
-                                    foundVarEnd = true;
-                                    varEndPos = varEndPos + 1 + strPos + 1;
-                                    return strPos;
+                                    literal = literal.Advance(2);
+                                    break;
                                 }
-                                return null;
-                            },
-                            allowWhitespaceSensitiveSyntax: true);
-                    
-                        if (!foundVarEnd)
-                            throw new ArgumentException($"Invalid syntax near '{text.Subsegment(pos).SubstringWithElipsis(0, 50)}'");
-    
-                        literal = literal.Advance(varEndPos);
+                                
+                                if (!literal.FirstCharEquals(FilterSep))
+                                    throw new SyntaxErrorException($"Expected filter separator '|' but was {literal.DebugFirstChar()}");
+
+                                literal = literal.Advance(1);
+                            }
+                        }
+                        else
+                        {
+                            if (!literal.IsNullOrEmpty())
+                                literal = literal.Advance(1);
+                        }
                     }
                     else
                     {
-                        literal = literal.Advance(1);
+                        literal = literal.Advance(2);
                     }
     
                     var length = text.Length - pos - literal.Length;
                     var originalText = text.Subsegment(pos, length);
                     lastPos = pos + length;
     
-                    var varFragment = new PageVariableFragment(originalText, initialValue, initialBinding, filterCommands);
+                    var varFragment = new PageVariableFragment(originalText, expr, filters);
                     to.Add(varFragment);
     
                     var newLineLen = literal.StartsWith("\n")
@@ -99,10 +110,11 @@ namespace ServiceStack.Templates
                         : literal.StartsWith("\r\n")
                             ? 2
                             : 0;
+                    
                     if (newLineLen > 0)
                     {
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
-                        var filterName = lastExpr?.NameString ?? varFragment?.InitialExpression?.NameString ?? varFragment.BindingString;
+                        var filterName = lastExpr?.Name ?? varFragment?.InitialExpression?.Name ?? varFragment.BindingString;
                         if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
                         {
                             lastPos += newLineLen;
@@ -132,6 +144,25 @@ namespace ServiceStack.Templates
         public static IRawString ToRawString(this StringSegment value) => 
             new RawString(value.HasValue ? value.Value : "");
 
+        public static ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
+
+        public static Func<TemplateScopeContext, object, object> GetMemberExpression(Type targetType, StringSegment expression)
+        {
+            if (targetType == null)
+                throw new ArgumentNullException(nameof(targetType));
+            if (expression.IsNullOrWhiteSpace())
+                throw new ArgumentNullException(nameof(expression));
+
+            var key = targetType.FullName + ':' + expression;
+
+            if (BinderCache.TryGetValue(key, out var fn))
+                return fn;
+
+            BinderCache[key] = fn = Compile(targetType, expression);
+
+            return fn;
+        }
+        
         public static Func<TemplateScopeContext, object, object> Compile(Type type, StringSegment expr)
         {
             var scope = Expression.Parameter(typeof(TemplateScopeContext), "scope");
@@ -164,31 +195,33 @@ namespace ServiceStack.Templates
                     {
                         var prop = member.LeftPart('[');
                         var indexer = member.RightPart('[');
-                        indexer.ParseNextToken(out object value, out JsBinding binding);
+                        indexer.ParseJsExpression(out var token);
 
-                        if (binding is JsExpression)
+                        if (token is JsCallExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'",
                                 member.Value, expr.Value);
 
-                        var valueExpr = binding != null
+                        var value = JsToken.UnwrapValue(token);
+
+                        var valueExpr = value == null
                             ? (Expression) Expression.Call(
                                 typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBinding)),
                                 scope,
-                                Expression.Constant(binding))
+                                Expression.Constant(token))
                             : Expression.Constant(value);
 
                         if (currType == typeof(string))
                         {
-                            body = CreateStringIndexExpression(body, binding, scope, valueExpr, ref currType);
+                            body = CreateStringIndexExpression(body, token, scope, valueExpr, ref currType);
                         }
                         else if (currType.IsArray)
                         {
-                            if (binding != null)
+                            if (token != null)
                             {
                                 var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
                                     .MakeGenericMethod(typeof(int));
                                 body = Expression.ArrayIndex(body,
-                                    Expression.Call(evalAsInt, scope, Expression.Constant(binding)));
+                                    Expression.Call(evalAsInt, scope, Expression.Constant(token)));
                             }
                             else
                             {
@@ -200,14 +233,14 @@ namespace ServiceStack.Templates
                             var pi = AssertProperty(currType, "Item", expr);
                             currType = pi.PropertyType;
 
-                            if (binding != null)
+                            if (token != null)
                             {
                                 var indexType = pi.GetGetMethod()?.GetParameters().FirstOrDefault()?.ParameterType;
                                 if (indexType != typeof(object))
                                 {
                                     var evalAsInt = typeof(TemplatePageUtils).GetStaticMethod(nameof(EvaluateBindingAs))
                                         .MakeGenericMethod(indexType);
-                                    valueExpr = Expression.Call(evalAsInt, scope, Expression.Constant(binding));
+                                    valueExpr = Expression.Call(evalAsInt, scope, Expression.Constant(token));
                                 }
                             }
 
@@ -221,7 +254,7 @@ namespace ServiceStack.Templates
 
                             if (currType == typeof(string))
                             {
-                                body = CreateStringIndexExpression(body, binding, scope, valueExpr, ref currType);
+                                body = CreateStringIndexExpression(body, token, scope, valueExpr, ref currType);
                             }
                             else
                             {
@@ -289,7 +322,7 @@ namespace ServiceStack.Templates
                 var indexExpr = propItemExpr.Arguments[0];
                 body = Expression.Call(propItemExpr.Object, mi, indexExpr, valueToAssign);
             }
-            else if (body is System.Linq.Expressions.BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
+            else if (body is BinaryExpression binaryExpr && binaryExpr.NodeType == ExpressionType.ArrayIndex)
             {
                 var arrayInstance = binaryExpr.Left;
                 var indexExpr = binaryExpr.Right;
@@ -306,7 +339,7 @@ namespace ServiceStack.Templates
             return Expression.Lambda<Action<TemplateScopeContext, object, object>>(body, scope, instance, valueToAssign).Compile();
         }
 
-        private static Expression CreateStringIndexExpression(Expression body, JsBinding binding, ParameterExpression scope,
+        private static Expression CreateStringIndexExpression(Expression body, JsToken binding, ParameterExpression scope,
             Expression valueExpr, ref Type currType)
         {
             body = Expression.Call(body, typeof(string).GetMethod("ToCharArray", Type.EmptyTypes));
@@ -325,15 +358,15 @@ namespace ServiceStack.Templates
             return body;
         }
 
-        public static object EvaluateBinding(TemplateScopeContext scope, JsBinding binding)
+        public static object EvaluateBinding(TemplateScopeContext scope, JsToken token)
         {
-            var result = scope.EvaluateToken(binding);
+            var result = token.Evaluate(scope);
             return result;
         }
 
-        public static T EvaluateBindingAs<T>(TemplateScopeContext scope, JsBinding binding)
+        public static T EvaluateBindingAs<T>(TemplateScopeContext scope, JsToken token)
         {
-            var result = EvaluateBinding(scope, binding);
+            var result = EvaluateBinding(scope, token);
             var converted = result.ConvertTo<T>();
             return converted;
         }

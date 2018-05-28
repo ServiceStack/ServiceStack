@@ -333,6 +333,18 @@ namespace ServiceStack.Host
                 var bestScore = -1;
                 foreach (var restPath in firstMatches)
                 {
+                    //Handle [Route(Matches)]
+                    if (httpReq != null)
+                    {
+                        var matchFn = restPath.GetRequestRule();
+                        if (matchFn != null)
+                        {
+                            var validRoute = matchFn(httpReq);
+                            if (!validRoute)
+                                continue;
+                        }
+                    }
+
                     var score = restPath.MatchScore(httpMethod, matchUsingPathParts);
                     if (score > bestScore)
                     {

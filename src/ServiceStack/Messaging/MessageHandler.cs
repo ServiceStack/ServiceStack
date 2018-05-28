@@ -134,7 +134,7 @@ namespace ServiceStack.Messaging
                 if (responseEx == null)
                 {
                     var responseStatus = response.GetResponseStatus();
-                    var isError = responseStatus != null && responseStatus.ErrorCode != null;
+                    var isError = responseStatus?.ErrorCode != null;
                     if (isError)
                     {
                         responseEx = new MessagingException(responseStatus, response);

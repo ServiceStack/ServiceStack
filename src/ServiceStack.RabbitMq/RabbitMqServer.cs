@@ -31,8 +31,8 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public int RetryCount
         {
-            get { return messageFactory.RetryCount; }
-            set { messageFactory.RetryCount = value; }
+            get => messageFactory.RetryCount;
+            set => messageFactory.RetryCount = value;
         }
 
         /// <summary>
@@ -40,8 +40,8 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public bool UsePolling
         {
-            get { return messageFactory.UsePolling; }
-            set { messageFactory.UsePolling = value; }
+            get => messageFactory.UsePolling;
+            set => messageFactory.UsePolling = value;
         }
 
         /// <summary>
@@ -57,14 +57,14 @@ namespace ServiceStack.RabbitMq
 
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter
         {
-            get { return messageFactory.PublishMessageFilter; }
-            set { messageFactory.PublishMessageFilter = value; }
+            get => messageFactory.PublishMessageFilter;
+            set => messageFactory.PublishMessageFilter = value;
         }
 
         public Action<string, BasicGetResult> GetMessageFilter
         {
-            get { return messageFactory.GetMessageFilter; }
-            set { messageFactory.GetMessageFilter = value; }
+            get => messageFactory.GetMessageFilter;
+            set => messageFactory.GetMessageFilter = value;
         }
 
         public Action<string, Dictionary<string,object>> CreateQueueFilter { get; set; }
@@ -97,10 +97,7 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public bool DisablePriorityQueues
         {
-            set
-            {
-                PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
-            }
+            set => PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
         }
 
         /// <summary>
@@ -114,7 +111,7 @@ namespace ServiceStack.RabbitMq
         /// </summary>
         public bool DisablePublishingResponses
         {
-            set { PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null; }
+            set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
 
         private IConnection connection;

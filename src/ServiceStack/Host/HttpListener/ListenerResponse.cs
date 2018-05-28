@@ -31,24 +31,24 @@ namespace ServiceStack.Host.HttpListener
 
         public object OriginalResponse => response;
 
-        public IRequest Request { get; private set; }
+        public IRequest Request { get; }
 
         public int StatusCode
         {
-            get { return this.response.StatusCode; }
-            set { this.response.StatusCode = value; }
+            get => this.response.StatusCode;
+            set => this.response.StatusCode = value;
         }
 
         public string StatusDescription
         {
-            get { return this.response.StatusDescription; }
-            set { this.response.StatusDescription = value; }
+            get => this.response.StatusDescription;
+            set => this.response.StatusDescription = value;
         }
 
         public string ContentType
         {
-            get { return response.ContentType; }
-            set { response.ContentType = value; }
+            get => response.ContentType;
+            set => response.ContentType = value;
         }
 
         public void AddHeader(string name, string value)
@@ -76,13 +76,10 @@ namespace ServiceStack.Host.HttpListener
 
         public bool UseBufferedStream
         {
-            get { return BufferedStream != null; }
-            set
-            {
-                BufferedStream = value
-                    ? BufferedStream ?? new MemoryStream()
-                    : null;
-            }
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? new MemoryStream()
+                : null;
         }
 
         private void FlushBufferIfAny()

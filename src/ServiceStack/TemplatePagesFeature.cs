@@ -532,8 +532,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 LayoutPage = layoutPage,
                 Model = Model,
             };
+
             try
             {
+                httpRes.ContentType = page.Format.ContentType;
                 await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
@@ -570,6 +572,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             try
             {
+                httpRes.ContentType = page.Format.ContentType;
                 await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
             }
             catch (Exception ex)
@@ -727,6 +730,24 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public static TemplatePage GetPage(this IRequest request, string virtualPath)
         {
             return HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+        }
+
+        public static PageResult GetPageResult(this IRequest request, string virtualPath, Dictionary<string,object> args=null)
+        {
+            var page = HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
+            var pageResult = new PageResult(page) {
+                Args = {
+                    ["Request"] = request   
+                }
+            };
+            if (args != null)
+            {
+                foreach (var entry in args)
+                {
+                    pageResult.Args[entry.Key] = entry.Value;
+                }
+            }
+            return pageResult;
         }
         
         public static TemplatePage OneTimePage(this IRequest request, string contents, string ext=null)

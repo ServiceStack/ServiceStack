@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -55,7 +56,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
 
             fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter() }}</h1>");
@@ -65,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
         }
 
         [Test]
@@ -94,7 +95,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -113,8 +114,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment2.FilterExpressions[0].Args[0], Is.EqualTo("1"));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsLiteral(1)));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -133,12 +134,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(5));
-            Assert.That(varFragment2.FilterExpressions[0].Args[0], Is.EqualTo("1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[1], Is.EqualTo("2.2"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[2], Is.EqualTo("'a'"));
-            Assert.That(varFragment2.FilterExpressions[0].Args[3], Is.EqualTo("\"b\""));
-            Assert.That(varFragment2.FilterExpressions[0].Args[4], Is.EqualTo("true"));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(5));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsLiteral(1)));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[1], Is.EqualTo(new JsLiteral(2.2)));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[2], Is.EqualTo(new JsLiteral("a")));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[3], Is.EqualTo(new JsLiteral("b")));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments[4], Is.EqualTo(JsLiteral.True));
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
 
@@ -158,19 +159,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(3));
 
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
 
             Assert.That(varFragment2.FilterExpressions[1].Name, Is.EqualTo("filter2"));
-            Assert.That(varFragment2.FilterExpressions[1].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment2.FilterExpressions[2].Args[0], Is.EqualTo("1"));
+            Assert.That(varFragment2.FilterExpressions[1].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment2.FilterExpressions[1].Arguments[0], Is.EqualTo(new JsLiteral(1)));
 
             Assert.That(varFragment2.FilterExpressions[2].Name, Is.EqualTo("filter3"));
-            Assert.That(varFragment2.FilterExpressions[2].Args.Count, Is.EqualTo(5));
-            Assert.That(varFragment2.FilterExpressions[2].Args[0], Is.EqualTo("1"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[1], Is.EqualTo("2.2"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[2], Is.EqualTo("'a'"));
-            Assert.That(varFragment2.FilterExpressions[2].Args[3], Is.EqualTo("\"b\""));
-            Assert.That(varFragment2.FilterExpressions[2].Args[4], Is.EqualTo("true"));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments.Length, Is.EqualTo(5));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[0], Is.EqualTo(new JsLiteral(1)));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[1], Is.EqualTo(new JsLiteral(2.2)));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[2], Is.EqualTo(new JsLiteral("a")));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[3], Is.EqualTo(new JsLiteral("b")));
+            Assert.That(varFragment2.FilterExpressions[2].Arguments[4], Is.EqualTo(JsLiteral.True));
 
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>"));
         }
@@ -193,7 +194,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment2.FilterExpressions[0].Name, Is.EqualTo("filter1"));
-            Assert.That(varFragment2.FilterExpressions[0].Args.Count, Is.EqualTo(0));
+            Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
 
             Assert.That(strFragment3.Value, Is.EqualTo("</h1>\n<p>"));
 
@@ -201,8 +202,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment4.Binding, Is.EqualTo("content"));
             Assert.That(varFragment4.FilterExpressions.Length, Is.EqualTo(1));
             Assert.That(varFragment4.FilterExpressions[0].Name, Is.EqualTo("filter2"));
-            Assert.That(varFragment4.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment4.FilterExpressions[0].Args[0], Is.EqualTo("a"));
+            Assert.That(varFragment4.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment4.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsIdentifier("a")));
 
             Assert.That(strFragment5.Value, Is.EqualTo("</p>"));
         }
@@ -224,8 +225,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ ' - {{it}}' | forEach(items) | markdown }}"));
             Assert.That(varFragment.FilterExpressions.Length, Is.EqualTo(2));
             Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo("forEach"));
-            Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo("items"));
+            Assert.That(varFragment.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment.FilterExpressions[0].Arguments[0], Is.EqualTo(new JsIdentifier("items")));
             Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo("markdown"));
         }
 
@@ -237,113 +238,190 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ array(['a',1,'c']) }}"));
             Assert.That(varFragment.InitialExpression.Name, Is.EqualTo("array"));
-            Assert.That(varFragment.InitialExpression.Args.Count, Is.EqualTo(1));
+            Assert.That(varFragment.InitialExpression.Arguments.Length, Is.EqualTo(1));
         }
 
         [Test]
         public void Can_parse_next_token()
         {
-            object value;
-            JsBinding binding;
+            JsToken token;
 
-            "a".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(binding.Binding, Is.EqualTo("a"));
-            "a2".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(binding.Binding, Is.EqualTo("a2"));
-            " a2 ".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(binding.Binding, Is.EqualTo("a2"));
-            "'a'".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo("a"));
-            "\"a\"".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo("a"));
-            "`a`".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo("a"));
-            "1".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(1));
-            "100".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(100));
-            "100.0".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(100d));
-            "1.0E+2".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(100d));
-            "1e+2".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(100d));
-            "true".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.True);
-            "false".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.False);
-            "null".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(JsNull.Value));
-            "{foo:1}".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ {"foo", 1 }}));
-            "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
-            "{ map : { bar: 'qux', b: true } }".ToStringSegment().ParseNextToken(out value, out binding);
-            var map = (Dictionary<string, object>) value;
-            Assert.That(map["map"], Is.EquivalentTo(new Dictionary<string,object>{{"bar", "qux"}, {"b", true}}));
-            "{varRef:foo}".ToStringSegment().ParseNextToken(out value, out binding);
-            map = (Dictionary<string, object>) value;
-            Assert.That(map["varRef"], Is.EqualTo(new JsBinding("foo")));
-            "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
-            "{ `foo` : 1 , `bar`: 'qux', `d`: 1.1, `b`:false, `n`:null }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "foo", 1 }, {"bar", "qux"}, {"d", 1.1d}, {"b", false}, {"n", JsNull.Value} }));
+            "a".ParseJsExpression(out token);
+            Assert.That(((JsIdentifier)token).Name, Is.EqualTo("a"));
+            "a2".ParseJsExpression(out token);
+            Assert.That(((JsIdentifier)token).Name, Is.EqualTo("a2"));
+            " a2 ".ParseJsExpression(out token);
+            Assert.That(((JsIdentifier)token).Name, Is.EqualTo("a2"));
+            "'a'".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral("a")));
+            "\"a\"".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral("a")));
+            "`a`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral("a")));
+            "1".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(1)));
+            "100".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(100)));
+            "100.0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(100d)));
+            "1.0E+2".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(100d)));
+            "1e+2".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral(100d)));
+            "true".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(JsLiteral.True));
+            "false".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(JsLiteral.False));
+            "null".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(JsNull.Value));
+            "{foo:1}".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(new JsProperty(new JsIdentifier("foo"), new JsLiteral(1)))
+            ));
+            "{ foo : 1 , bar: 'qux', d: 1.1, b:false, n:null }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsIdentifier("foo"), new JsLiteral(1)),
+                    new JsProperty(new JsIdentifier("bar"), new JsLiteral("qux")),
+                    new JsProperty(new JsIdentifier("d"), new JsLiteral(1.1)),
+                    new JsProperty(new JsIdentifier("b"), new JsLiteral(false)),
+                    new JsProperty(new JsIdentifier("n"), JsNull.Value)
+                )
+            ));
+            "{ map : { bar: 'qux', b: true } }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(
+                        new JsIdentifier("map"), 
+                        new JsObjectExpression(
+                            new JsProperty(new JsIdentifier("bar"), new JsLiteral("qux")),
+                            new JsProperty(new JsIdentifier("b"), new JsLiteral(true))
+                        )
+                    )
+                )
+            ));
+            "{varRef:foo}".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(new JsProperty(new JsIdentifier("varRef"), new JsIdentifier("foo")))
+            ));
+            "{ \"foo\" : 1 , \"bar\": 'qux', \"d\": 1.1, \"b\":false, \"n\":null }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsLiteral("foo"), new JsLiteral(1)),
+                    new JsProperty(new JsLiteral("bar"), new JsLiteral("qux")),
+                    new JsProperty(new JsLiteral("d"), new JsLiteral(1.1)),
+                    new JsProperty(new JsLiteral("b"), new JsLiteral(false)),
+                    new JsProperty(new JsLiteral("n"), JsNull.Value)
+                )
+            ));
+            "{ `foo` : 1 , `bar`: 'qux', `d`: 1.1, `b`:false, `n`:null }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsLiteral("foo"), new JsLiteral(1)),
+                    new JsProperty(new JsLiteral("bar"), new JsLiteral("qux")),
+                    new JsProperty(new JsLiteral("d"), new JsLiteral(1.1)),
+                    new JsProperty(new JsLiteral("b"), new JsLiteral(false)),
+                    new JsProperty(new JsLiteral("n"), JsNull.Value)
+                )
+            ));
 
-            "[1,2,3]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new[]{ 1, 2, 3 }));
-            "[a,b,c]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }));
-            "[a.Id,b.Name]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new[]{ new JsExpression("a.Id"), new JsExpression("b.Name") }));
-            "{ x: a.Id, y: b.Name }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string, object>
-            {
-                { "x", new JsExpression("a.Id") },
-                { "y", new JsExpression("b.Name") },
-            }));
-            
-            "['a',\"b\",`c`]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
-            " [ 'a' , \"b\"  , 'c' ] ".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new []{ "a", "b", "c" }));
-            "[ {a: 1}, {b: 2} ]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new []{ new Dictionary<string,object>{ {"a", 1} }, new Dictionary<string,object>{ {"b", 2} } }));
-            "[ {a: { 'aa': [1,2,3] } }, { b: [a,b,c] }, 3, true, null ]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new object[]
-            {
-                new Dictionary<string,object>{ {"a", new Dictionary<string,object>{ {"aa", new[]{ 1, 2, 3} } } } }, 
-                new Dictionary<string,object>{ {"b", new[]{ new JsBinding("a"), new JsBinding("b"), new JsBinding("c") }} },
-                3,
-                true,
-                JsNull.Value
-            }));
-            "{ k:'v', data: { id: 1, name: 'foo' }, k2: 'v2', k3: 'v3' }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string, object>
-            {
-                { "k", "v" },
-                { "data", new Dictionary<string,object> { { "id", 1 }, {"name", "foo"} } },
-                { "k2", "v2" },
-                { "k3", "v3" },                
-            }));
-            "[{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}]".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new[]
-            {
-                new Dictionary<string, object> { { "name", "Alice" }, { "score", 50 } },
-                new Dictionary<string, object> { { "name", "Bob" }, { "score", 40 } },
-                new Dictionary<string, object> { { "name", "Cathy" }, { "score", 45 } },
-            }));
-            
-            //{{  | assignTo: words }}
+            "[1,2,3]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral(1),new JsLiteral(2),new JsLiteral(3))));
+            "[a,b,c]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsIdentifier("a"),new JsIdentifier("b"),new JsIdentifier("c"))));
+            "[a.Id,b.Name]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(
+                new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("Id")),
+                new JsMemberExpression(new JsIdentifier("b"), new JsIdentifier("Name"))
+            )));
+            "{ x: a.Id, y: b.Name }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsIdentifier("x"), new JsMemberExpression(new JsIdentifier("a"), new JsIdentifier("Id"))),
+                    new JsProperty(new JsIdentifier("y"), new JsMemberExpression(new JsIdentifier("b"), new JsIdentifier("Name")))
+                )
+            ));
+            "['a',\"b\",`c`]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral("a"),new JsLiteral("b"),new JsLiteral("c"))));
+            " [ 'a' , \"b\"  , 'c' ] ".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral("a"),new JsLiteral("b"),new JsLiteral("c"))));
+            "[ {a: 1}, {b: 2} ]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsArrayExpression(
+                    new JsObjectExpression(
+                        new JsProperty(new JsIdentifier("a"), new JsLiteral(1))
+                    ),
+                    new JsObjectExpression(
+                        new JsProperty(new JsIdentifier("b"), new JsLiteral(2))
+                    )
+                )
+            ));
+            "[ {a: { 'aa': [1,2,3] } }, { b: [a,b,c] }, 3, true, null ]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsArrayExpression(
+                    new JsObjectExpression(
+                        new JsProperty(
+                            new JsIdentifier("a"), 
+                            new JsObjectExpression(
+                                new JsProperty(
+                                    new JsLiteral("aa"), 
+                                    new JsArrayExpression(new JsLiteral(1),new JsLiteral(2),new JsLiteral(3))
+                                )
+                            )
+                        )                        
+                    ),
+                    new JsObjectExpression(
+                        new JsProperty(
+                            new JsIdentifier("b"), 
+                            new JsArrayExpression(new JsIdentifier("a"),new JsIdentifier("b"),new JsIdentifier("c"))
+                        )                        
+                    ),
+                    new JsLiteral(3),
+                    new JsLiteral(true),
+                    JsNull.Value
+                )
+            ));
+            "{ k:'v', data: { id: 1, name: 'foo' }, k2: 'v2', k3: 'v3' }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsIdentifier("k"), new JsLiteral("v")),
+                    new JsProperty(
+                        new JsIdentifier("data"), 
+                        new JsObjectExpression(
+                            new JsProperty(new JsIdentifier("id"), new JsLiteral(1)),
+                            new JsProperty(new JsIdentifier("name"), new JsLiteral("foo"))
+                        )
+                    ),
+                    new JsProperty(new JsIdentifier("k2"), new JsLiteral("v2")),
+                    new JsProperty(new JsIdentifier("k3"), new JsLiteral("v3"))
+                )
+            ));
+            "[{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}]".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsArrayExpression(
+                    new JsObjectExpression(
+                        new JsProperty(new JsIdentifier("name"), new JsLiteral("Alice")),
+                        new JsProperty(new JsIdentifier("score"), new JsLiteral(50))
+                    ),
+                    new JsObjectExpression(
+                        new JsProperty(new JsIdentifier("name"), new JsLiteral("Bob")),
+                        new JsProperty(new JsIdentifier("score"), new JsLiteral(40))
+                    ),
+                    new JsObjectExpression(
+                        new JsProperty(new JsIdentifier("name"), new JsLiteral("Cathy")),
+                        new JsProperty(new JsIdentifier("score"), new JsLiteral(45))
+                    )
+                )
+            ));
         }
 
         [Test]
         public void Can_parse_templates_within_literals()
         {
-            object value;
-            JsBinding binding;
+            JsToken token;
 
-            "'<li>{{it}}</li>''".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo("<li>{{it}}</li>"));
+            "'<li>{{it}}</li>'".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral("<li>{{it}}</li>")));
 
             var fragments = TemplatePageUtils.ParseTemplatePage("<ul>{{ '<li>{{it}}</li>' }}</ul>");
             Assert.That(fragments.Count, Is.EqualTo(3));
@@ -352,93 +430,113 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_method_binding_expressions()
         {
-            object value;
-            JsBinding binding;
-            JsExpression expr;
+            JsToken token;
 
-            "if(or(gt(1,2),lt(3,4)))".ToStringSegment().ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
-
-            Assert.That(expr.Args[0], Is.EqualTo("or(gt(1,2),lt(3,4))"));
-
-            expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
+            "if(OR(gt(1,2),lt(3,4)))".ParseJsExpression(out token);
             
-            Assert.That(expr.Args[0], Is.EqualTo("gt(1,2)"));
-            Assert.That(expr.Args[1], Is.EqualTo("lt(3,4)"));
-
-            expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
-            Assert.That(expr.Args[0], Is.EqualTo("1"));
-            Assert.That(expr.Args[1], Is.EqualTo("2"));
+            Assert.That(token, Is.EqualTo(
+                new JsCallExpression(
+                    new JsIdentifier("if"),
+                    new JsCallExpression(
+                        new JsIdentifier("OR"),
+                        new JsCallExpression(
+                            new JsIdentifier("gt"),
+                            new JsLiteral(1),
+                            new JsLiteral(2)
+                        ),
+                        new JsCallExpression(
+                            new JsIdentifier("lt"),
+                            new JsLiteral(3),
+                            new JsLiteral(4)
+                        )
+                    )
+                )
+            ));
             
 
             @"
             if (
-                or (
+                OR (
                     gt ( 1 , 2 ) ,
                     lt ( 3 , 4 )
                 )
-            )".ToStringSegment().ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
+            )".ParseJsExpression(out token);
 
-            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("or(gt(1,2),lt(3,4))"));
-
-            expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
-            
-            Assert.That(expr.Args[0].RemoveAllWhitespace(), Is.EqualTo("gt(1,2)"));
-            Assert.That(expr.Args[1].RemoveAllWhitespace(), Is.EqualTo("lt(3,4)"));
-
-            expr.Args[0].ParseNextToken(out value, out binding);
-            expr = (JsExpression) binding;
-            Assert.That(expr.Args[0], Is.EqualTo("1"));
-            Assert.That(expr.Args[1], Is.EqualTo("2"));
+            Assert.That(token, Is.EqualTo(
+                new JsCallExpression(
+                    new JsIdentifier("if"),
+                    new JsCallExpression(
+                        new JsIdentifier("OR"),
+                        new JsCallExpression(
+                            new JsIdentifier("gt"),
+                            new JsLiteral(1),
+                            new JsLiteral(2)
+                        ),
+                        new JsCallExpression(
+                            new JsIdentifier("lt"),
+                            new JsLiteral(3),
+                            new JsLiteral(4)
+                        )
+                    )
+                )
+            ));
         }
 
         [Test]
         public void Does_support_shorthand_object_initializers()
         {
             object value;
-            JsBinding binding;
+            JsToken token;
 
-            "{key}".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "key", new JsBinding("key") }}));
-            "{ key }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "key", new JsBinding("key") }}));
-            "{ map : { key , foo: 'bar' , qux } }".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EquivalentTo(new Dictionary<string,object>{ { "map", 
-                new Dictionary<string, object>
-                {
-                    {"key", new JsBinding("key")},
-                    {"foo", "bar"},
-                    {"qux", new JsBinding("qux")},
-                } 
-            }}));
+            "{key}".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsIdentifier("key"), new JsIdentifier("key"), shorthand:true)
+                )
+            ));
+            "{ key }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(new JsIdentifier("key"), new JsIdentifier("key"), shorthand:true)
+                )
+            ));
+            "{ map : { key , foo: 'bar' , qux } }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsObjectExpression(
+                    new JsProperty(
+                        new JsIdentifier("map"), 
+                        new JsObjectExpression(
+                            new JsProperty(new JsIdentifier("key"), new JsIdentifier("key"), shorthand:true),
+                            new JsProperty(new JsIdentifier("foo"), new JsLiteral("bar")),
+                            new JsProperty(new JsIdentifier("qux"), new JsIdentifier("qux"), shorthand:true)
+                        )
+                    )
+                )
+            ));
         }
 
         [Test]
         public void Does_preserve_new_lines()
         {
-            object value;
-            JsBinding binding;
+            JsToken token;
 
-            "'a\n'".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo("a\n"));
+            "'a\n'".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsLiteral("a\n")));
         }
 
         [Test]
         public void Can_parse_boolean_logic_expressions()
         {
-            object value;
-            JsBinding binding;
+            JsToken token;
 
-            var literal = "it.Id = 0".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((JsExpression)binding).Name, Is.EqualTo("it.Id"));
-            literal = literal.ParseNextToken(out value, out binding);
-            Assert.That(binding, Is.EqualTo(JsAssignment.Operator));
-            literal = literal.ParseNextToken(out value, out binding);
-            Assert.That(value, Is.EqualTo(0));
+            "it.Id = 0".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(
+                new JsBinaryExpression(
+                    new JsMemberExpression(new JsIdentifier("it"), new JsIdentifier("Id")),
+                    JsEquals.Operator,
+                    new JsLiteral(0)
+                )
+            ));
         }
 
         [Test]
@@ -464,21 +562,25 @@ products
             Assert.That(fragments1.Count, Is.EqualTo(1));
             var varFragment1 = fragments1[0] as PageVariableFragment;
             Assert.That(varFragment1.FilterExpressions[0].Name, Is.EqualTo("where"));
-            Assert.That(varFragment1.FilterExpressions[0].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment1.FilterExpressions[0].Args[0], Is.EqualTo("′it.UnitsInStock = 0′"));
+            Assert.That(varFragment1.FilterExpressions[0].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[0].Arguments[0], Is.EqualTo(
+                new JsLiteral("it.UnitsInStock = 0")
+            ));
             Assert.That(varFragment1.FilterExpressions[1].Name, Is.EqualTo("select"));
-            Assert.That(varFragment1.FilterExpressions[1].Args.Count, Is.EqualTo(1));
-            Assert.That(varFragment1.FilterExpressions[1].Args[0], Is.EqualTo("′{{ it.productName | raw }} is sold out!\\n′"));
+            Assert.That(varFragment1.FilterExpressions[1].Arguments.Length, Is.EqualTo(1));
+            Assert.That(varFragment1.FilterExpressions[1].Arguments[0], Is.EqualTo(
+                new JsLiteral("{{ it.productName | raw }} is sold out!\\n")
+            ));
 
             foreach (var fragments in new[]{ fragments2, fragments3 })
             {
                 var varFragment = fragments[0] as PageVariableFragment;
                 Assert.That(varFragment.FilterExpressions[0].Name, Is.EqualTo(varFragment1.FilterExpressions[0].Name));
-                Assert.That(varFragment.FilterExpressions[0].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[0].Args.Count));
-                Assert.That(varFragment.FilterExpressions[0].Args[0], Is.EqualTo(varFragment1.FilterExpressions[0].Args[0]));
+                Assert.That(varFragment.FilterExpressions[0].Arguments.Length, Is.EqualTo(varFragment1.FilterExpressions[0].Arguments.Length));
+                Assert.That(varFragment.FilterExpressions[0].Arguments[0], Is.EqualTo(varFragment1.FilterExpressions[0].Arguments[0]));
                 Assert.That(varFragment.FilterExpressions[1].Name, Is.EqualTo(varFragment1.FilterExpressions[1].Name));
-                Assert.That(varFragment.FilterExpressions[1].Args.Count, Is.EqualTo(varFragment1.FilterExpressions[1].Args.Count));
-                Assert.That(varFragment.FilterExpressions[1].Args[0], Is.EqualTo(varFragment1.FilterExpressions[1].Args[0]));
+                Assert.That(varFragment.FilterExpressions[1].Arguments.Length, Is.EqualTo(varFragment1.FilterExpressions[1].Arguments.Length));
+                Assert.That(varFragment.FilterExpressions[1].Arguments[0], Is.EqualTo(varFragment1.FilterExpressions[1].Arguments[0]));
             }
         }
 
@@ -489,12 +591,11 @@ products
                 @"{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
-            Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
-            {
-                new JsExpression("c.CustomerId"),
-                new JsExpression("o.OrderId"),
-                new JsExpression("o.OrderDate"),
-            }));
+            Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
+                new JsMemberExpression(new JsIdentifier("c"), new JsIdentifier("CustomerId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderDate"))
+            )));
             
             Assert.That(varFragment.OriginalText, Is.EqualTo("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}"));
             
@@ -513,30 +614,14 @@ products
 //                "{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
-            Assert.That(varFragment.InitialValue, Is.EqualTo(new[]
-            {
-                new JsExpression("c.CustomerId"),
-                new JsExpression("o.OrderId"),
-                new JsExpression("o.OrderDate"),
-            }));
+            Assert.That(varFragment.Expression, Is.EqualTo(new JsArrayExpression(
+                new JsMemberExpression(new JsIdentifier("c"), new JsIdentifier("CustomerId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderId")),
+                new JsMemberExpression(new JsIdentifier("o"), new JsIdentifier("OrderDate"))
+            )));
             
             var newLine = (PageStringFragment) fragments[1];
             Assert.That(newLine.Value, Is.EqualTo("\n"));
-        }
-
-        [Test]
-        public void Can_parse_expressions_with_methods()
-        {
-            object value;
-            JsBinding binding;
-
-            "mod(it,3) != 0".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(binding, Is.EqualTo(new JsExpression("mod") { 
-                Args = {
-                    "it".ToStringSegment(),
-                    "3".ToStringSegment(),
-                }
-            }));
         }
 
         [Test]
@@ -607,18 +692,16 @@ products
         [Test]
         public void Can_parse_empty_arguments()
         {
-            object value;
-            JsBinding binding;
-            JsExpression fn;
+            JsToken token;
             
-            "fn()".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((JsExpression)binding).Name, Is.EqualTo("fn"));
-            "fn({})".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
-            "fn({ })".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
-            "fn({  })".ToStringSegment().ParseNextToken(out value, out binding);
-            Assert.That(((JsExpression)binding).Args.Count, Is.EqualTo(1));
+            "fn()".ParseJsExpression(out token);
+            Assert.That(((JsCallExpression)token).Name, Is.EqualTo("fn"));
+            "fn({})".ParseJsExpression(out token);
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
+            "fn({ })".ParseJsExpression(out token);
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
+            "fn({  })".ParseJsExpression(out token);
+            Assert.That(((JsCallExpression)token).Arguments.Length, Is.EqualTo(1));
         }
 
 

@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Check.ServiceInterface;
 using Check.ServiceModel;
+using Check.ServiceModel.Operations;
 using Check.ServiceModel.Types;
 using Funq;
 using ServiceStack;
@@ -22,6 +24,7 @@ using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -36,7 +39,7 @@ namespace CheckWeb
         /// Initializes a new instance of the <see cref="AppHost"/> class.
         /// </summary>
         public AppHost()
-            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) {}
+            : base("CheckWeb", typeof(ErrorsService).Assembly, typeof(HtmlServices).Assembly) { }
 
         /// <summary>
         /// Configure the Web Application host.
@@ -75,10 +78,8 @@ namespace CheckWeb
 
             Plugins.Add(new TemplatePagesFeature
             {
-                EnableDebugTemplateToAll = true
+                EnableDebugTemplateToAll = false
             });
-            
-//            Plugins.Add(new SoapFormat());
 
             //ProxyFetureTests
             Plugins.Add(new ProxyFeature(
@@ -116,6 +117,7 @@ namespace CheckWeb
             Plugins.Add(new RequestLogsFeature
             {
                 RequestLogger = new CsvRequestLogger(),
+                EnableResponseTracking = true
             });
 
             Plugins.Add(new DynamicallyRegisteredPlugin());
@@ -129,7 +131,7 @@ namespace CheckWeb
             {
                 db.DropAndCreateTable<Rockstar>();
                 db.InsertAll(GetRockstars());
-                
+
                 db.DropAndCreateTable<AllTypes>();
                 db.Insert(new AllTypes
                 {
@@ -145,7 +147,7 @@ namespace CheckWeb
                     String = "String"
                 });
             }
-            
+
             Plugins.Add(new MiniProfilerFeature());
 
             var dbFactory = (OrmLiteConnectionFactory)container.Resolve<IDbConnectionFactory>();
@@ -202,6 +204,8 @@ namespace CheckWeb
             //        }
             //    }
             //});
+            
+            Plugins.Add(new ProtoBufFormat());
         }
 
         public static Rockstar[] GetRockstars()
@@ -258,11 +262,11 @@ namespace CheckWeb
                     {
                         AuthKey = Convert.FromBase64String("3n/aJNQHPx0cLu/2dN3jWf0GSYL35QlMqgz+LH3hUyA="),
                         RequireSecureConnection = false,
-                    }, 
+                    },
                     new ApiKeyAuthProvider(AppSettings),
                     new BasicAuthProvider(AppSettings),
                 }));
-            
+
             Plugins.Add(new RegistrationFeature());
 
             var authRepo = new OrmLiteAuthRepository(container.Resolve<IDbConnectionFactory>());
@@ -305,6 +309,13 @@ namespace CheckWeb
 
             Plugins.Add(new OpenApiFeature
             {
+                ApiDeclarationFilter = api =>
+                {
+                    foreach (var path in new[] { api.Paths["/auth"], api.Paths["/auth/{provider}"] })
+                    {
+                        path.Get = path.Put = path.Delete = null;
+                    }
+                },
                 Tags =
                 {
                     new OpenApiTag
@@ -376,9 +387,9 @@ namespace CheckWeb
             return existingProviders;
         }
     }
-    
+
     [Route("/query/alltypes")]
-    public class QueryAllTypes : QueryDb<AllTypes> {}
+    public class QueryAllTypes : QueryDb<AllTypes> { }
 
     [Route("/test/html")]
     public class TestHtml : IReturn<TestHtml>
@@ -405,7 +416,7 @@ namespace CheckWeb
     }
 
     [Route("/views/request")]
-    public class ViewRequest
+    public class ViewRequest : IReturn<ViewResponse>
     {
         public string Name { get; set; }
     }
@@ -422,6 +433,11 @@ namespace CheckWeb
             var result = Gateway.Send(new TestHtml());
             return new ViewResponse { Result = request.Name };
         }
+
+        public object Get(ViewRequest[] requests)
+        {
+            return requests.Map(x => new ViewResponse {Result = x.Name}).ToArray();
+        }
     }
 
     [Route("/index")]
@@ -436,6 +452,16 @@ namespace CheckWeb
         public string Text { get; set; }
     }
 
+    [Route("/swagger/model")]
+    public class SwaggerModel : IReturn<SwaggerModel>
+    {
+        public int Int { get; set; }
+        public string String { get; set; }
+        public DateTime DateTime { get; set; }
+        public DateTimeOffset DateTimeOffset { get; set; }
+        public TimeSpan TimeSpan { get; set; }
+    }
+
     public class MyServices : Service
     {
         //Return default.html for unmatched requests so routing is handled on client
@@ -444,6 +470,164 @@ namespace CheckWeb
 
         [AddHeader(ContentType = MimeTypes.PlainText)]
         public object Any(ReturnText request) => request.Text;
+
+        public object Any(SwaggerModel request) => request;
+    }
+
+    [Route("/plain-dto")]
+    public class PlainDto : IReturn<PlainDto>
+    {
+        public string Name { get; set; }
+    }
+
+    [Route("/httpresult-dto")]
+    public class HttpResultDto : IReturn<HttpResultDto>
+    {
+        public string Name { get; set; }
+    }
+
+    public class HttpResultServices : Service
+    {
+        public object Any(PlainDto request) => request;
+
+        public object Any(HttpResultDto request) => new HttpResult(request, HttpStatusCode.Created);
+    }
+
+    [Route("/restrict/mq")]
+    [Restrict(RequestAttributes.MessageQueue)]
+    public class TestMqRestriction : IReturn<TestMqRestriction>
+    {
+        public string Name { get; set; }
+    }
+
+    public class TestRestrictionsService : Service
+    {
+        public object Any(TestMqRestriction request) => request;
+    }
+
+    [Route("/set-cache")]
+    public class SetCache : IReturn<SetCache>
+    {
+        public string ETag { get; set; }
+        public TimeSpan? Age { get; set; }
+        public TimeSpan? MaxAge { get; set; }
+        public DateTime? Expires { get; set; }
+        public DateTime? LastModified { get; set; }
+        public CacheControl? CacheControl { get; set; }
+    }
+
+    public class CacheEtagServices : Service
+    {
+        public object Any(SetCache request)
+        {
+            return new HttpResult(request)
+            {
+                Age = request.Age,
+                ETag = request.ETag,
+                MaxAge = request.MaxAge,
+                Expires = request.Expires,
+                LastModified = request.LastModified,
+                CacheControl = request.CacheControl.GetValueOrDefault(CacheControl.None),
+            };
+        }
+    }
+
+
+    [Route("/gzip/{FileName}")]
+    public class DownloadGzipFile : IReturn<byte[]>
+    {
+        public string FileName { get; set; }
+    }
+
+    public class FileServices : Service
+    {
+        public object Get(DownloadGzipFile request)
+        {
+            var filePath = HostContext.AppHost.MapProjectPath($"~/img/{request.FileName}");
+            if (Request.RequestPreferences.AcceptsGzip)
+            {
+                var targetPath = string.Concat(filePath, ".gz");
+                Compress(filePath, targetPath);
+
+                //var bs = new BufferedStream(File.OpenRead(targetPath), 8192);
+                //Response.AddHeader("Content-Type", "application/pdf");
+                //Response.AddHeader("Content-Disposition", "attachment; filename=test.pdf");
+                //return new GZipStream(bs, CompressionMode.Decompress);
+
+                return new HttpResult(new FileInfo(targetPath))
+                {
+                    Headers = {
+                        { HttpHeaders.ContentDisposition, "attachment; filename=" + request.FileName },
+                        { HttpHeaders.ContentEncoding, CompressionTypes.GZip }
+                    }
+                };
+            }
+
+            return new HttpResult(filePath)
+            {
+                Headers = {
+                    { HttpHeaders.ContentDisposition, "attachment; filename=" + request.FileName },
+                }
+            };
+        }
+
+        private void Compress(string readFrom, string writeTo)
+        {
+            byte[] b;
+            using (var f = new FileStream(readFrom, FileMode.Open))
+            {
+                b = new byte[f.Length];
+                f.Read(b, 0, (int)f.Length);
+            }
+
+            using (var fs = new FileStream(writeTo, FileMode.OpenOrCreate))
+            using (var gz = new GZipStream(fs, CompressionMode.Compress, false))
+            {
+                gz.Write(b, 0, b.Length);
+            }
+        }
+    }
+
+    [Route("/match/{Language}/{Name*}", Matches = @"PathInfo =~ \/match\/[a-z]{2}\/[A-Za-z]+$")]
+    public class MatchName : IReturn<HelloResponse>
+    {
+        public string Language { get; set; }
+        public string Name { get; set; }
+    }
+
+    [Route("/match/{Language*}", Matches = @"PathInfo =~ \/match\/[a-z]{2}$")]
+    public class MatchLang : IReturn<HelloResponse>
+    {
+        public string Language { get; set; }
+    }
+
+    public class RouteMatchServices : Service
+    {
+        public HelloResponse Any(MatchName request) => new HelloResponse { Result = request.GetType().Name };
+        public HelloResponse Any(MatchLang request) => new HelloResponse { Result = request.GetType().Name };
+    }
+    
+    [Route("/reqlogstest/{Name}")]
+    public class RequestLogsTest : IReturn<string>
+    {
+        public string Name { get; set; }
+    }
+
+    public class InProcRequest1 {}
+    public class InProcRequest2 {}
+
+    public class RequestLogsServices : Service
+    {
+        public object Any(RequestLogsTest request)
+        {
+            Gateway.Publish(new InProcRequest1());
+            Gateway.Publish(new InProcRequest2());
+
+            return "hello";
+        }
+
+        public object Any(InProcRequest1 request) => "InProcRequest1 response";
+        public object Any(InProcRequest2 request) => "InProcRequest2 response";
     }
 
     public class Global : System.Web.HttpApplication

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography;
 using ServiceStack.Configuration;
@@ -97,7 +98,24 @@ namespace ServiceStack.Auth
         /// <summary>
         /// The Audience to embed in the token. (default null)
         /// </summary>
-        public string Audience { get; set; }
+        public string Audience
+        {
+            get => Audiences.Join(",");
+            set
+            {
+                Audiences.Clear();
+                if (!string.IsNullOrEmpty(value))
+                {
+                    Audiences.Add(value);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Embed Multiple Audiences in the token. (default none)
+        /// A JWT is valid if it contains ANY audience in this List
+        /// </summary>
+        public List<string> Audiences { get; set; }
 
         /// <summary>
         /// What Id to use to identify the Key used to sign the token. (default First 3 chars of Base64 Key)
@@ -223,6 +241,16 @@ namespace ServiceStack.Auth
         /// </summary>
         public bool AllowInFormData { get; set; }
 
+        /// <summary>
+        /// Whether to automatically remove expired or invalid cookies
+        /// </summary>
+        public bool RemoveInvalidTokenCookie { get; set; }
+
+        /// <summary>
+        /// Whether to also Include Token in ConvertSessionToTokenResponse   
+        /// </summary>
+        public bool IncludeJwtInConvertSessionToTokenResponse { get; set;  }
+
         public JwtAuthProviderReader()
             : base(null, Realm, Name)
         {
@@ -241,7 +269,9 @@ namespace ServiceStack.Auth
             EncryptPayload = false;
             HashAlgorithm = "HS256";
             RequireHashAlgorithm = true;
+            RemoveInvalidTokenCookie = true;
             Issuer = "ssjwt";
+            Audiences = new List<string>();
             ExpireTokensIn = TimeSpan.FromDays(14);
             ExpireRefreshTokensIn = TimeSpan.FromDays(365);
             FallbackAuthKeys = new List<byte[]>();
@@ -254,10 +284,19 @@ namespace ServiceStack.Auth
                 EncryptPayload = appSettings.Get("jwt.EncryptPayload", EncryptPayload);
                 AllowInQueryString = appSettings.Get("jwt.AllowInQueryString", AllowInQueryString);
                 AllowInFormData = appSettings.Get("jwt.AllowInFormData", AllowInFormData);
+                IncludeJwtInConvertSessionToTokenResponse = appSettings.Get("jwt.IncludeJwtInConvertSessionToTokenResponse", IncludeJwtInConvertSessionToTokenResponse);
 
                 Issuer = appSettings.GetString("jwt.Issuer");
-                Audience = appSettings.GetString("jwt.Audience");
                 KeyId = appSettings.GetString("jwt.KeyId");
+                Audience = appSettings.GetString("jwt.Audience");
+                if (appSettings.Exists("jwt.Audiences"))
+                {
+                    var audiences = appSettings.GetList("jwt.Audiences");
+                    if (!audiences.IsEmpty())
+                    {
+                        Audiences = audiences.ToList();
+                    }
+                }
 
                 var hashAlg = appSettings.GetString("jwt.HashAlgorithm");
                 if (!string.IsNullOrEmpty(hashAlg))
@@ -347,46 +386,79 @@ namespace ServiceStack.Auth
 
             if (bearerToken != null)
             {
-                var parts = bearerToken.Split('.');
-                if (parts.Length == 3)
+                try
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
-
-                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                    if (jwtPayload == null) //not verified
-                        return;
-
-                    if (ValidateToken != null)
+                    var parts = bearerToken.Split('.');
+                    if (parts.Length == 3)
                     {
-                        if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
-                    }
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
-                    req.Items[Keywords.Session] = session;
+                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                        if (jwtPayload == null) //not verified
+                            return;
+
+                        if (ValidateToken != null)
+                        {
+                            if (!ValidateToken(jwtPayload, req))
+                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                        }
+
+                        var session = CreateSessionFromPayload(req, jwtPayload);
+                        req.Items[Keywords.Session] = session;
+                    }
+                    else if (parts.Length == 5) //Encrypted JWE Token
+                    {
+                        if (RequireSecureConnection && !req.IsSecureConnection)
+                            throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection.Localize(req));
+
+                        var jwtPayload = GetVerifiedJwtPayload(req, parts);
+                        if (jwtPayload == null) //not verified
+                            return;
+
+                        if (ValidateToken != null)
+                        {
+                            if (!ValidateToken(jwtPayload, req))
+                                throw HttpError.Forbidden(ErrorMessages.TokenInvalid.Localize(req));
+                        }
+
+                        var session = CreateSessionFromPayload(req, jwtPayload);
+                        req.Items[Keywords.Session] = session;
+                    }
                 }
-                else if (parts.Length == 5) //Encrypted JWE Token
+                catch (Exception)
                 {
-                    if (RequireSecureConnection && !req.IsSecureConnection)
-                        throw HttpError.Forbidden(ErrorMessages.JwtRequiresSecureConnection);
-
-                    var jwtPayload = GetVerifiedJwtPayload(req, parts);
-                    if (jwtPayload == null) //not verified
-                        return;
-
-                    if (ValidateToken != null)
+                    if (RemoveInvalidTokenCookie && req.Cookies.ContainsKey(Keywords.TokenCookie))
                     {
-                        if (!ValidateToken(jwtPayload, req))
-                            throw HttpError.Forbidden(ErrorMessages.TokenInvalid);
+                        (req.Response as IHttpResponse)?.Cookies.DeleteCookie(Keywords.TokenCookie);
                     }
 
-                    var session = CreateSessionFromPayload(req, jwtPayload);
-                    req.Items[Keywords.Session] = session;
+                    throw;
                 }
             }
         }
 
+        public bool IsJwtValid(string jwt) => GetValidJwtPayload(jwt) != null;
+        public bool IsJwtValid(IRequest req, string jwt) => GetValidJwtPayload(req, jwt) != null;
+
+        public JsonObject GetValidJwtPayload(string jwt) =>
+            GetValidJwtPayload(null, jwt);
+
+        /// <summary>
+        /// Return token payload which is both verified and still valid
+        /// </summary>
+        public JsonObject GetValidJwtPayload(IRequest req, string jwt)
+        {
+            var vefifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+            var invalidError = GetInvalidJwtPayloadError(vefifiedPayload);
+            return invalidError != null
+                ? null
+                : vefifiedPayload;
+        }
+        
+        /// <summary>
+        /// Return token payload which has been verified to be created using the configured encryption key.
+        /// </summary>
         public JsonObject GetVerifiedJwtPayload(IRequest req, string[] parts)
         {
             if (parts.Length == 3)
@@ -472,7 +544,7 @@ namespace ServiceStack.Auth
                 }
             }
 
-            throw new ArgumentException(ErrorMessages.TokenInvalid);
+            throw new ArgumentException(ErrorMessages.TokenInvalid.Localize(req));
         }
 
         public IAuthSession ConvertJwtToSession(IRequest req, string jwt)
@@ -506,7 +578,7 @@ namespace ServiceStack.Auth
 
             PopulateSessionFilter?.Invoke(session, jwtPayload, req);
 
-            HostContext.AppHost.OnSessionFilter(session, sessionId);
+            HostContext.AppHost.OnSessionFilter(req, session, sessionId);
             return session;
         }
 
@@ -522,26 +594,40 @@ namespace ServiceStack.Auth
 
         public void AssertJwtPayloadIsValid(JsonObject jwtPayload)
         {
+            var errorMessage = GetInvalidJwtPayloadError(jwtPayload);
+            if (errorMessage != null)
+                throw new TokenException(errorMessage);
+        }
+
+        public string GetInvalidJwtPayloadError(JsonObject jwtPayload)
+        {
             if (jwtPayload == null)
                 throw new ArgumentNullException(nameof(jwtPayload));
 
             var expiresAt = GetUnixTime(jwtPayload, "exp");
             var secondsSinceEpoch = DateTime.UtcNow.ToUnixTime();
             if (secondsSinceEpoch >= expiresAt)
-                throw new TokenException(ErrorMessages.TokenExpired);
+                return ErrorMessages.TokenExpired;
 
             if (InvalidateTokensIssuedBefore != null)
             {
                 var issuedAt = GetUnixTime(jwtPayload, "iat");
                 if (issuedAt == null || issuedAt < InvalidateTokensIssuedBefore.Value.ToUnixTime())
-                    throw new TokenException(ErrorMessages.TokenInvalidated);
+                    return ErrorMessages.TokenInvalidated;
             }
 
             if (jwtPayload.TryGetValue("aud", out var audience))
             {
-                if (audience != Audience)
-                    throw new TokenException("Invalid Audience: " + audience);
+                var jwtAudiences = audience.FromJson<List<string>>();
+                if (jwtAudiences?.Count > 0 && Audiences.Count > 0)
+                {
+                    var containsAnyAudience = jwtAudiences.Any(x => Audiences.Contains(x));
+                    if (!containsAnyAudience)
+                        return "Invalid Audience: " + audience;
+                }
             }
+
+            return null;
         }
 
         public bool VerifyPayload(IRequest req, string algorithm, byte[] bytesToSign, byte[] sentSignatureBytes)
@@ -609,9 +695,9 @@ namespace ServiceStack.Auth
                 throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
 
             if (isHmac && AuthKey == null)
-                throw new ArgumentNullException("AuthKey", "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
-            else if (isRsa && PrivateKey == null && PublicKey == null)
-                throw new ArgumentNullException("PrivateKey", "PrivateKey is Required to use JWT with " + HashAlgorithm);
+                throw new ArgumentNullException(nameof(AuthKey), "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
+            if (isRsa && PrivateKey == null && PublicKey == null)
+                throw new ArgumentNullException(nameof(PrivateKey), "PrivateKey is Required to use JWT with " + HashAlgorithm);
 
             if (KeyId == null)
                 KeyId = GetKeyId(null);

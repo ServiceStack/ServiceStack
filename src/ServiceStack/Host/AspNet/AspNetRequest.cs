@@ -35,7 +35,7 @@ namespace ServiceStack.Host.AspNet
         public AspNetRequest(HttpContextBase httpContext, string operationName = null)
             : this(httpContext, operationName, RequestAttributes.None)
         {
-            this.RequestAttributes = this.GetAttributes();
+            this.RequestAttributes = this.GetAttributes() | RequestAttributes.Http;
         }
 
         public AspNetRequest(HttpContextBase httpContext, string operationName, RequestAttributes requestAttributes)
@@ -54,7 +54,7 @@ namespace ServiceStack.Host.AspNet
 
             this.RequestPreferences = new RequestPreferences(httpContext);
 
-            if (httpContext.Items != null && httpContext.Items.Count > 0)
+            if (httpContext.Items.Count > 0)
             {
                 foreach (var key in httpContext.Items.Keys)
                 {
@@ -162,7 +162,11 @@ namespace ServiceStack.Host.AspNet
                         // from Cookie.Name, but the Cookie constructor will throw for these names.
                         try
                         {
-                            cookie = new Cookie(httpCookie.Name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
+                            var name = httpCookie.Name.StartsWith("$")
+                                ? httpCookie.Name.Substring(1)
+                                : httpCookie.Name;
+
+                            cookie = new Cookie(name, httpCookie.Value, httpCookie.Path, httpCookie.Domain)
                             {
                                 HttpOnly = httpCookie.HttpOnly,
                                 Secure = httpCookie.Secure,

@@ -66,6 +66,10 @@ namespace ServiceStack
         public bool userHasPermission(TemplateScopeContext scope, string permission) => 
             userSession(scope)?.HasPermission(permission, HostContext.AppHost.GetAuthRepository(req(scope))) == true;
 
+        public string userId(TemplateScopeContext scope) => req(scope).GetSession()?.UserAuthId;
+        public string userName(TemplateScopeContext scope) => req(scope).GetSession()?.UserAuthName ?? req(scope).GetSession()?.UserName;
+        public string userEmail(TemplateScopeContext scope) => req(scope).GetSession()?.Email;
+
         public HashSet<Type> metaAllDtos() => HostContext.Metadata.GetAllDtos();
         public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
         public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;

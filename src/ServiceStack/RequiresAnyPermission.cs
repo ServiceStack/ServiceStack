@@ -53,8 +53,8 @@ namespace ServiceStack
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
-            res.StatusDescription = ErrorMessages.InvalidPermission;
-            res.EndRequest();
+            res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
+            await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
 
         public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)

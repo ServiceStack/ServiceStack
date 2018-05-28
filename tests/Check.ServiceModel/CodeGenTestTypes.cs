@@ -107,6 +107,7 @@ namespace Check.ServiceModel.Operations
         public EnumType? NullableEnumProp { get; set; }
 
         public EnumFlags EnumFlags { get; set; }
+        public EnumStyle EnumStyle { get; set; }
     }
 
     public enum EnumType
@@ -124,9 +125,21 @@ namespace Check.ServiceModel.Operations
     [Flags]
     public enum EnumFlags
     {
+        Value0 = 0,
         Value1 = 1,
         Value2 = 2,
-        Value3 = 4,
+        Value3 = 3,
+        Value123 = Value1 | Value2 | Value3,
+    }
+
+    public enum EnumStyle
+    {
+        lower,
+        UPPER,
+        PascalCase,
+        camelCase,
+        camelUPPER,
+        PascalUPPER,
     }
 
     [Restrict(InternalOnly = true)]
@@ -188,12 +201,15 @@ namespace Check.ServiceModel.Operations
     [Api(@"Multi 
 Line 
 Class")]
-    public class HelloMultiline
+    public class HelloAttributeStringTest
     {
         [ApiMember(Description = @"Multi 
 Line 
 Property")]
         public string Overflow { get; set; }
+        
+        [ApiMember(Description = "Some \\ escaped \t \n chars")]
+        public string EscapedChars { get; set; }
     }
 
     [System.ComponentModel.Description("Description on HelloAllResponse type")]
