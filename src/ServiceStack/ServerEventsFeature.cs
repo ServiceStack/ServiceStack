@@ -438,6 +438,7 @@ namespace ServiceStack
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
+        public bool IsDisposed => isDisposed;
 
         StringBuilder buffer = new StringBuilder();
 
@@ -574,7 +575,6 @@ namespace ServiceStack
                 return;
 
             isDisposed = true;
-            OnUnsubscribe = null;
 
             bool acquiredLock = false;
             try
@@ -1175,12 +1175,12 @@ namespace ServiceStack
                 UnRegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
 
                 OnUnsubscribe?.Invoke(subscription);
-
-                subscription.Dispose();
-
-                if (NotifyChannelOfSubscriptions && subscription.Channels != null)
-                    NotifyLeave?.Invoke(subscription);
             }
+
+            subscription.Dispose();
+
+            if (NotifyChannelOfSubscriptions && subscription.Channels != null)
+                NotifyLeave?.Invoke(subscription);
         }
 
         public void Dispose()
