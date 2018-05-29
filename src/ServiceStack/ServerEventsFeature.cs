@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -406,6 +407,8 @@ namespace ServiceStack
         }
 
         private long subscribed = 1;
+        private long requestEnded = 0;
+        bool isDisposed;
 
         private readonly IResponse response;
         private long msgId;
@@ -436,39 +439,81 @@ namespace ServiceStack
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
 
-        public void Publish(string selector)
+        StringBuilder buffer = new StringBuilder();
+
+        public void Pulse()
         {
-            Publish(selector, null);
+            LastPulseAt = DateTime.UtcNow;
         }
 
-        private string CreateFrame(string selector, string message)
+        string CreateFrame(string selector, string message)
         {
             var msg = message ?? "";
             var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
-                        + "data: " + selector + " " + msg + "\n\n";
+                      + "data: " + selector + " " + msg + "\n\n";
             return frame;
+        }
+
+        public void Publish(string selector)
+        {
+            Publish(selector, null);
         }
 
         public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
 
         public void PublishRaw(string frame)
         {
-            if (response.IsClosed) return;
-
-            lock (response)
+            bool acquiredLock = false;
+            try
             {
-                try 
-                { 
-                    WriteEvent(response, frame);
-                }
-                catch (Exception ex)
+                Monitor.TryEnter(response, ref acquiredLock);
+                if (acquiredLock)
                 {
-                    HandleWriteException(response, frame, ex);
+                    if (!EndRequestIfDisposed())
+                    {
+                        var pendingWrites = GetAndResetBuffer();
+                        if (pendingWrites != null)
+                            frame = pendingWrites + frame;
+
+                        try
+                        {
+                            WriteEvent(response, frame);
+                        }
+                        catch (Exception ex)
+                        {
+                            HandleWriteException(response, frame, ex);
+                        }
+
+                        EndRequestIfDisposed();
+                    }
                 }
+                else
+                {
+                    lock (buffer)
+                        buffer.Append(frame);
+                }
+            }
+            finally
+            {
+                if (acquiredLock)
+                    Monitor.Exit(response);
             }
         }
 
-        private void HandleWriteException(IResponse response, string frame, Exception ex)
+        string GetAndResetBuffer()
+        {
+            lock (buffer)
+            {
+                if (buffer.Length == 0)
+                    return null;
+
+                var ret = buffer.ToString();
+                buffer.Length = 0;
+                return ret;
+            }
+        }
+
+        void HandleWriteException(IResponse response, string frame, Exception ex)
         {
             if (ex != null)
             {
@@ -493,9 +538,23 @@ namespace ServiceStack
             Unsubscribe();
         }
 
-        public void Pulse()
+        bool EndRequestIfDisposed()
         {
-            LastPulseAt = DateTime.UtcNow;
+            if (!isDisposed) return false;
+            if (response.IsClosed) return true;
+
+            if (Interlocked.CompareExchange(ref requestEnded, 1, 0) == 0)
+            {
+                try
+                {
+                    response.EndHttpHandlerRequest(skipHeaders: true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error ending subscription response", ex);
+                }
+            }
+            return true;
         }
 
         public void Unsubscribe()
@@ -511,18 +570,25 @@ namespace ServiceStack
 
         public void Dispose()
         {
+            if (isDisposed)
+                return;
+
+            isDisposed = true;
             OnUnsubscribe = null;
-            if (response.IsClosed) return;
+
+            bool acquiredLock = false;
             try
             {
-                lock (response)
-                {
-                    response.EndHttpHandlerRequest(skipHeaders: true);
-                }
+                Monitor.TryEnter(response, ref acquiredLock);
+                if (acquiredLock)
+                    EndRequestIfDisposed();
+
+                // else PublishRaw has it, end at end of PublishRaw or next time it's run
             }
-            catch (Exception ex)
+            finally
             {
-                Log.Error("Error ending subscription response", ex);
+                if (acquiredLock)
+                    Monitor.Exit(response);
             }
 
             OnDispose?.Invoke(this);
