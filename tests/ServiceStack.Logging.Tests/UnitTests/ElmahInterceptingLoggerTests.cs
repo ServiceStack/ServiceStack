@@ -3,6 +3,7 @@ using System.Web;
 using NUnit.Framework;
 using Rhino.Mocks;
 using ServiceStack.Logging.Elmah;
+using ServiceStack.Logging.Log4Net;
 
 namespace ServiceStack.Logging.Tests.UnitTests
 {
@@ -47,6 +48,18 @@ namespace ServiceStack.Logging.Tests.UnitTests
 			log.Warn(message);
 			log.Warn(message, ex);
 			log.WarnFormat(messageFormat, message, ex.Message);
+		}
+		
+		[Test]
+		public void Does_log_Log4Net_errors_to_Elmah()
+		{
+			var log4NetFactory = new Log4NetFactory(true);
+			LogManager.LogFactory = new ElmahLogFactory(log4NetFactory, new HttpApplication());
+
+			var log = LogManager.GetLogger(typeof(ElmahLogFactoryTests));
+			log.Error("Error log test");
+
+			LogManager.LogFactory = null;
 		}
 	}
 }
