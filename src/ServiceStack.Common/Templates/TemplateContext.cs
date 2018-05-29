@@ -52,6 +52,8 @@ namespace ServiceStack.Templates
         public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
 
         public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
+        
+        public ConcurrentDictionary<string, JsToken> JsTokenCache { get; } = new ConcurrentDictionary<string, JsToken>();
 
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 

@@ -145,7 +145,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -186,7 +186,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 

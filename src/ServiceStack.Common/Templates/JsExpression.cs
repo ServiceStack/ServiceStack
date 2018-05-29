@@ -12,6 +12,18 @@ namespace ServiceStack.Templates
 
     public static class JsExpressionUtils
     {
+        public static JsToken GetCachedJsExpression(this string expr, TemplateScopeContext scope)
+        {
+            if (scope.Context.JsTokenCache.TryGetValue(expr, out var token))
+                return token;
+
+            expr.ParseJsExpression(out token);
+            if (token != null)
+                scope.Context.JsTokenCache[expr] = token;
+
+            return token;
+        }
+        
         public static StringSegment ParseJsExpression(this string literal, out JsToken token) =>
             literal.ToStringSegment().ParseJsExpression(out token);
 

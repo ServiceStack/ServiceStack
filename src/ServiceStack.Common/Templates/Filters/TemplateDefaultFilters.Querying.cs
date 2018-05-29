@@ -92,7 +92,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var total = 0;
             var i = 0;
             foreach (var item in items)
@@ -321,7 +321,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(first), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(first), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             foreach (var item in items)
             {
@@ -342,7 +342,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(any), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(any), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             foreach (var item in items)
             {
@@ -362,7 +362,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(all), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             foreach (var item in items)
             {
@@ -383,7 +383,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(where), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             foreach (var item in items)
             {
@@ -404,7 +404,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(takeWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             foreach (var item in items)
             {
@@ -427,7 +427,7 @@ namespace ServiceStack.Templates
             var scopedParams = scope.GetParamsWithItemBinding(nameof(skipWhile), scopeOptions, out string itemBinding);
 
             var to = new List<object>();
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             var i = 0;
             var keepSkipping = true;
             foreach (var item in items)
