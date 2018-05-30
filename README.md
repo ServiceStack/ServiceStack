@@ -363,6 +363,7 @@ Each library is released under its respective licence:
   - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
   - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(License)](https://github.com/aspnet/Mvc/blob/dev/LICENSE.txt)
+  - [CoreFX](https://github.com/dotnet/corefx) [(License)](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
 
 ## Find out More
 
