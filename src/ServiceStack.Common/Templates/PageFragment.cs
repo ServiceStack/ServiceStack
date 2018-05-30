@@ -72,4 +72,35 @@ namespace ServiceStack.Templates
             Value = value;
         }
     }
+
+    public class PageStatementFragment : PageFragment
+    {
+        public StringSegment OriginalText { get; }
+        public StringSegment Name { get; }
+        public StringSegment Expression { get; }
+        public List<PageFragment> Body { get; }
+        public List<PageElseStatement> ElseStatements { get; }
+
+        public PageStatementFragment(StringSegment originalText, StringSegment name, StringSegment expression, 
+            List<PageFragment> body, List<PageElseStatement> elseStatements=null)
+        {
+            OriginalText = originalText;
+            Name = name;
+            Expression = expression;
+            Body = body;
+            ElseStatements = elseStatements ?? new List<PageElseStatement>();
+        }
+    }
+
+    public class PageElseStatement : PageFragment
+    {
+        public StringSegment Expression { get; }
+        public List<PageFragment> Body { get; }
+
+        public PageElseStatement(StringSegment expression, List<PageFragment> body)
+        {
+            Expression = expression;
+            Body = body;
+        }
+    }
 }

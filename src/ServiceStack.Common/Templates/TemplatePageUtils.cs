@@ -32,6 +32,119 @@ namespace ServiceStack.Templates
 
         private const char FilterSep = '|';
 
+        // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
+        //          ^
+        // returns    ^                         ^
+        static StringSegment ParseStatementBody(this StringSegment literal, StringSegment blockName, out List<PageFragment> body)
+        {
+            var inStatements = 0;
+            var pos = 0;
+            
+            while (true)
+            {
+                pos = literal.IndexOf("{{", pos);
+                if (pos == -1)
+                    throw new SyntaxErrorException($"End block for '{blockName}' not found.");
+
+                var c = literal.SafeGetChar(pos + 2);
+
+                if (c == '#')
+                {
+                    inStatements++;
+                    pos = literal.IndexOf("}}", pos) + 2; //end of expression                    
+                }
+                else if (c == '/')
+                {
+                    if (inStatements == 0)
+                    {
+                        literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
+                        if (name == blockName)
+                        {
+                            body = ParseTemplatePage(literal.Subsegment(0, pos));
+                            return literal.Subsegment(pos);
+                        }
+                    }
+
+                    inStatements--;
+                }
+                else if (literal.Subsegment(pos + 2).StartsWith("else"))
+                {
+                    if (inStatements == 0)
+                    {
+                        body = ParseTemplatePage(literal.Subsegment(0, pos));
+                        return literal.Subsegment(pos);
+                    }
+                }
+
+                pos += 2;
+            }
+        }
+
+        //   {{else if a=b}}  {{else}}  {{/name}}
+        //  ^
+        // returns           ^         ^
+        static StringSegment ParseElseStatement(this StringSegment literal, StringSegment blockName, out PageElseStatement statement)
+        {
+            var inStatements = 0;
+            var pos = 0;
+            statement = null;
+            var statementPos = -1;
+            var elseExpr = default(StringSegment);
+            
+            while (true)
+            {
+                pos = literal.IndexOf("{{", pos);
+                if (pos == -1)
+                    throw new SyntaxErrorException($"End block for 'else' not found.");
+
+                var c = literal.SafeGetChar(pos + 2);
+                if (c == '#')
+                {
+                    inStatements++;
+                    pos = literal.IndexOf("}}", pos) + 2; //end of expression                    
+                }
+                else if (c == '/')
+                {
+                    if (inStatements == 0)
+                    {
+                        literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
+                        if (name == blockName)
+                        {
+                            var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos));
+                            statement = new PageElseStatement(elseExpr, body);
+                            return literal.Subsegment(pos);
+                        }
+                    }
+
+                    inStatements--;
+                }
+                else if (literal.Subsegment(pos + 2).StartsWith("else"))
+                {
+                    if (inStatements == 0)
+                    {
+                        if (statementPos >= 0)
+                        {
+                            var bodyText = literal.Subsegment(statementPos, pos - statementPos);
+                            var body = ParseTemplatePage(bodyText);
+                            statement = new PageElseStatement(elseExpr, body);
+                            return literal.Subsegment(pos);
+                        }
+                        
+                        var endExprPos = literal.IndexOf("}}", pos);
+                        if (endExprPos == -1)
+                            throw new SyntaxErrorException($"End expression for 'else' not found.");
+
+                        var exprStartPos = pos + 2 + 4; //= {{else...
+
+                        elseExpr = literal.Subsegment(exprStartPos, endExprPos - exprStartPos).Trim();
+                        statementPos = endExprPos + 2;
+                    }
+                }
+
+                pos += 2;
+            }
+        }
+
         public static List<PageFragment> ParseTemplatePage(StringSegment text)
         {
             var to = new List<PageFragment>();
@@ -49,12 +162,46 @@ namespace ServiceStack.Templates
                 
                 var varStartPos = pos + 2;
 
-                var isComment = text.GetChar(varStartPos) == '*';
-                if (!isComment)
+                var firstChar = text.GetChar(varStartPos);
+                if (firstChar == '*') //comment
+                {
+                    lastPos = text.IndexOf("*}}", varStartPos) + 3;
+                }
+                else if (firstChar == '#') //block statement
+                {
+                    var literal = text.Subsegment(varStartPos + 1);
+                    literal = literal.ParseVarName(out var blockName);
+
+                    var endExprPos = literal.IndexOf("}}");
+                    if (endExprPos == -1)
+                        throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
+
+                    var blockExpr = literal.Subsegment(0, endExprPos).Trim();
+                    literal = literal.Advance(endExprPos + 2);
+
+                    literal = literal.ParseStatementBody(blockName, out var body);
+                    var elseStatements = new List<PageElseStatement>();
+
+                    while (literal.StartsWith("{{else"))
+                    {
+                        literal = literal.ParseElseStatement(blockName, out var elseStatement);
+                        elseStatements.Add(elseStatement);
+                    }
+
+                    literal = literal.Advance(2 + 1 + blockName.Length + 2);
+
+                    var length = text.Length - pos - literal.Length;
+                    var originalText = text.Subsegment(pos, length);
+                    lastPos = pos + length;
+                    
+                    var statement = new PageStatementFragment(originalText, blockName, blockExpr, body, elseStatements);
+                    to.Add(statement);
+                }
+                else
                 {
                     var literal = text.Subsegment(varStartPos);
-                    literal = literal.ParseJsExpression(out var expr, filterExpression:true);
-    
+                    literal = literal.ParseJsExpression(out var expr, filterExpression: true);
+
                     var filters = new List<JsCallExpression>();
 
                     if (!literal.StartsWith("}}"))
@@ -63,11 +210,11 @@ namespace ServiceStack.Templates
                         if (literal.FirstCharEquals(FilterSep))
                         {
                             literal = literal.Advance(1);
-                            
+
                             while (true)
                             {
-                                literal = literal.ParseJsCallExpression(out var filter, filterExpression:true);
-                            
+                                literal = literal.ParseJsCallExpression(out var filter, filterExpression: true);
+
                                 filters.Add(filter);
 
                                 literal = literal.AdvancePastWhitespace();
@@ -80,9 +227,10 @@ namespace ServiceStack.Templates
                                     literal = literal.Advance(2);
                                     break;
                                 }
-                                
+
                                 if (!literal.FirstCharEquals(FilterSep))
-                                    throw new SyntaxErrorException($"Expected filter separator '|' but was {literal.DebugFirstChar()}");
+                                    throw new SyntaxErrorException(
+                                        $"Expected filter separator '|' but was {literal.DebugFirstChar()}");
 
                                 literal = literal.Advance(1);
                             }
@@ -97,33 +245,30 @@ namespace ServiceStack.Templates
                     {
                         literal = literal.Advance(2);
                     }
-    
+
                     var length = text.Length - pos - literal.Length;
                     var originalText = text.Subsegment(pos, length);
                     lastPos = pos + length;
-    
+
                     var varFragment = new PageVariableFragment(originalText, expr, filters);
                     to.Add(varFragment);
-    
+
                     var newLineLen = literal.StartsWith("\n")
                         ? 1
                         : literal.StartsWith("\r\n")
                             ? 2
                             : 0;
-                    
+
                     if (newLineLen > 0)
                     {
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
-                        var filterName = lastExpr?.Name ?? varFragment?.InitialExpression?.Name ?? varFragment.BindingString;
+                        var filterName = lastExpr?.Name ??
+                                         varFragment?.InitialExpression?.Name ?? varFragment.BindingString;
                         if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
                         {
                             lastPos += newLineLen;
                         }
                     }
-                }
-                else
-                {
-                    lastPos = text.IndexOf("*}}", varStartPos) + 3;
                 }
             }
 

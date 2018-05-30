@@ -390,7 +390,7 @@ namespace ServiceStack.Templates
 
         internal static string DebugToken(this JsToken token) => $"'{token}'";
 
-        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithElipsis(0, 50)}'";     
+        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";     
 
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
         {
@@ -795,7 +795,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        internal static StringSegment ParseIdentifier(this StringSegment literal, out JsToken token)
+        internal static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -815,8 +815,16 @@ namespace ServiceStack.Templates
                     break;
             }
 
-            var identifier = literal.Subsegment(0, i).TrimEnd();
+            varName = literal.Subsegment(0, i).TrimEnd();
             literal = literal.Advance(i);
+
+            return literal;
+            
+        }
+
+        internal static StringSegment ParseIdentifier(this StringSegment literal, out JsToken token)
+        {
+            literal = literal.ParseVarName(out var identifier);
             
             if (identifier.Equals("true"))
                 token = JsLiteral.True;
