@@ -116,6 +116,12 @@ namespace ServiceStack
             return true;
         }
 
+        /// <summary>
+        /// Call IServerEvents.RemoveExpiredSubscriptions() after every count
+        /// </summary>
+        public static int RemoveExpiredSubscriptionsEvery { get; } = 1000;
+        private static int ConnectionsCount = 0;
+
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
@@ -127,6 +133,12 @@ namespace ServiceStack
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
                 return session.ReturnFailedAuthentication(req);
 
+            var serverEvents = req.TryResolve<IServerEvents>();
+            if ((Interlocked.Increment(ref ConnectionsCount) % RemoveExpiredSubscriptionsEvery) == 0)
+            {
+                serverEvents.RemoveExpiredSubscriptions();
+            }
+
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
             res.ApplyGlobalResponseHeaders();
@@ -137,7 +149,6 @@ namespace ServiceStack
 
             res.Flush();
 
-            var serverEvents = req.TryResolve<IServerEvents>();
             var userAuthId = session?.UserAuthId;
             var anonUserId = serverEvents.GetNextSequence("anonUser");
             var userId = userAuthId ?? ("-" + anonUserId);
