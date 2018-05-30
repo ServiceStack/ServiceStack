@@ -352,8 +352,8 @@ ServiceStack includes source code of the great libraries below for some of its c
 Each library is released under its respective licence:
 
   - [Mono](https://github.com/mono/mono) [(License)](https://github.com/mono/mono/blob/master/LICENSE)
-  - [Funq IOC](http://funq.codeplex.com) [(License)](http://funq.codeplex.com/license)
-  - [Fluent Validation](http://fluentvalidation.codeplex.com) [(License)](http://fluentvalidation.codeplex.com/license)
+  - [Funq IOC](http://funq.codeplex.com) [(License)](https://opensource.org/licenses/MS-PL)
+  - [Fluent Validation](https://github.com/JeremySkinner/FluentValidation) [(License)](https://github.com/JeremySkinner/FluentValidation/blob/master/License.txt)
   - [Mini Profiler](https://code.google.com/archive/p/mvc-mini-profiler) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [Dapper](https://code.google.com/archive/p/dapper-dot-net) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
   - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
