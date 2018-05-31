@@ -28,9 +28,14 @@ namespace ServiceStack.Templates.Blocks
             {
                 foreach (var element in collection)
                 {
-                    var itemScope = scope.ScopeWithParams(new Dictionary<string, object> {
-                        [cached.Binding] = element
-                    });
+                    // Add all properties into scope if called without explicit in argument 
+                    var scopeArgs = cached.Binding == "it" && element?.GetType().IsClass == true
+                        ? element.ToObjectDictionary()
+                        : new Dictionary<string, object>();
+
+                    scopeArgs[cached.Binding] = element;
+
+                    var itemScope = scope.ScopeWithParams(scopeArgs);
 
                     await WriteBodyAsync(itemScope, fragment, cancel);
                 }

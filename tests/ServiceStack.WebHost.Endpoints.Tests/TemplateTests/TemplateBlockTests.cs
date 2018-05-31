@@ -188,6 +188,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE MAYBE AFTER"));
         }
 
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+
+            public Person() { }
+            public Person(string name, int age)
+            {
+                Name = name;
+                Age = age;
+            }
+        }
+
+        [Test]
+        public void Does_evaluate_template_containing_with_block()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["person"] = new Person { Name = "poco", Age = 27 },
+                    ["personMap"] = new Dictionary<string, object> {
+                        ["name"] = "map",
+                        ["age"] = 27,
+                    } 
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{/with}}"), 
+                Is.EqualTo("Person poco is 27 years old"));
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with personMap}}{{name}} is {{age}} years old{{/with}}"), 
+                Is.EqualTo("Person map is 27 years old"));
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with {name:'inline',age:27} }}{{name}} is {{age}} years old{{/with}}"), 
+                Is.EqualTo("Person inline is 27 years old"));
+        }
+
         [Test]
         public void Does_evaluate_template_with_each_blocks()
         {
@@ -207,6 +243,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             Assert.That(context.EvaluateTemplate("{{#each letters}}{{#if isNumber(it)}}number {{it}} {{else}}letter {{it}} {{/if}}{{/each}}"), 
                 Is.EqualTo("letter A letter B letter C "));
+        }
+
+        [Test]
+        public void Template_each_blocks_without_in_explodes_ref_type_arguments_into_scope()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["people"] = new[]{ new Person("name1", 1),new Person("name2", 2),new Person("name3", 3) },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each people}}({{Name}},{{Age}}) {{/each}}"), 
+                Is.EqualTo("(name1,1) (name2,2) (name3,3) "));
         }
 
         [Test]
@@ -298,35 +347,6 @@ I am a partial called with the scoped argument <b>from page</b> and <b>from part
 Who can also access other arguments in scope <b>from layout</b>
 
 partialArg in page scope is <b>from page</b>"));
-        }
-
-        class Person
-        {
-            public string Name { get; set; }
-            public int Age { get; set; }
-        }
-
-        [Test]
-        public void Does_evaluate_template_containing_with_block()
-        {
-            var context = new TemplateContext {
-                Args = {
-                    ["person"] = new Person { Name = "name", Age = 27 },
-                    ["personMap"] = new Dictionary<string, object> {
-                        ["name"] = "map",
-                        ["age"] = 27,
-                    } 
-                }
-            }.Init();
-            
-            Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{/with}}"), 
-                Is.EqualTo("Person name is 27 years old"));
-            
-            Assert.That(context.EvaluateTemplate("Person {{#with personMap}}{{name}} is {{age}} years old{{/with}}"), 
-                Is.EqualTo("Person map is 27 years old"));
-            
-            Assert.That(context.EvaluateTemplate("Person {{#with {name:'inline',age:27} }}{{name}} is {{age}} years old{{/with}}"), 
-                Is.EqualTo("Person inline is 27 years old"));
         }
 
         [Test]
