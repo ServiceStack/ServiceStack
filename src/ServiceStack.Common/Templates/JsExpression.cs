@@ -12,6 +12,46 @@ namespace ServiceStack.Templates
 
     public static class JsExpressionUtils
     {
+        public static object GetJsExpressionAndEvaluate(this StringSegment expr, TemplateScopeContext scope,
+            Action ifNone = null)
+        {
+            if (expr.IsNullOrEmpty())
+            {
+                ifNone?.Invoke();
+                return null;
+            }
+
+            var token = expr.GetCachedJsExpression(scope);
+            if (token == null)
+            {
+                ifNone?.Invoke();
+                return null;
+            }
+
+            var result = token.Evaluate(scope);
+            return result;
+        }
+        
+        public static bool GetJsExpressionAndEvaluateToBool(this StringSegment expr, TemplateScopeContext scope,
+            Action ifNone = null)
+        {
+            if (expr.IsNullOrEmpty())
+            {
+                ifNone?.Invoke();
+                return false;
+            }
+
+            var token = expr.GetCachedJsExpression(scope);
+            if (token == null)
+            {
+                ifNone?.Invoke();
+                return false;
+            }
+
+            var result = token.EvaluateToBool(scope);
+            return result;
+        }
+        
         public static JsToken GetCachedJsExpression(this StringSegment expr, TemplateScopeContext scope)
             => expr.IsNullOrEmpty() ? null : GetCachedJsExpression(expr.Value, scope);
         

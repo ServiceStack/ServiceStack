@@ -28,8 +28,7 @@ namespace ServiceStack.Templates.Blocks
             {
                 literal = literal.AdvancePastWhitespace();
 
-                var argsExpr = literal.GetCachedJsExpression(scope);
-                var argValue = argsExpr?.Evaluate(scope);
+                var argValue = literal.GetJsExpressionAndEvaluate(scope);
                 var args = argValue as Dictionary<string, object>;
 
                 if (argValue != null && args == null)

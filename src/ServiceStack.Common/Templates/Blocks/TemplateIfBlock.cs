@@ -17,14 +17,8 @@ namespace ServiceStack.Templates.Blocks
         
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            if (fragment.Argument.IsNullOrEmpty())
-                throw new NotSupportedException("'if' block requires an expression");
-
-            var ifExpr = fragment.Argument.GetCachedJsExpression(scope);
-            if (ifExpr == null)
-                throw new NotSupportedException("'if' block does not have a valid expression");
-
-            var result = ifExpr.EvaluateToBool(scope);
+            var result = fragment.Argument.GetJsExpressionAndEvaluateToBool(scope,
+                ifNone: () => throw new NotSupportedException("'if' block does not have a valid expression"));
             if (result)
             {
                 await WriteBodyAsync(scope, fragment, cancel);
@@ -43,11 +37,9 @@ namespace ServiceStack.Templates.Blocks
                 if (argument.StartsWith("if "))
                     argument = argument.Advance(3);
 
-                var elseExpr = argument.GetCachedJsExpression(scope);
-                if (elseExpr == null)
-                    throw new NotSupportedException("'else if' block does not have a valid expression");
+                result = argument.GetJsExpressionAndEvaluateToBool(scope,
+                    ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression"));
 
-                result = elseExpr.EvaluateToBool(scope);
                 if (result)
                 {
                     await WriteElseAsync(scope, elseBlock, cancel);

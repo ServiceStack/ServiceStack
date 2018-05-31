@@ -11,9 +11,7 @@ namespace ServiceStack.Templates.Blocks
     {
         public override string Name => "noop";
 
-        public override Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
-        {
-            return TypeConstants.EmptyTask;
-        }
+        public override Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel) 
+            => TypeConstants.EmptyTask;
     }
 }

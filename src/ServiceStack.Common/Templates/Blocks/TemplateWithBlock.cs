@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using ServiceStack.Text;
 
 namespace ServiceStack.Templates.Blocks
 {
@@ -15,14 +14,9 @@ namespace ServiceStack.Templates.Blocks
 
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            if (fragment.Argument.IsNullOrEmpty())
-                throw new NotSupportedException("'with' block requires an expression");
+            var result = fragment.Argument.GetJsExpressionAndEvaluate(scope,
+                ifNone: () => throw new NotSupportedException("'with' block does not have a valid expression"));
 
-            var expr = fragment.Argument.GetCachedJsExpression(scope);
-            if (expr == null)
-                throw new NotSupportedException("'with' block does not have a valid expression");
-
-            var result = expr.Evaluate(scope);
             var resultAsMap = result.ToObjectDictionary();
 
             var withScope = scope.ScopeWithParams(resultAsMap);
