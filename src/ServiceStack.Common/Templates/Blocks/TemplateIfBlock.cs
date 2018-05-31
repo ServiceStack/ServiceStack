@@ -5,6 +5,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates.Blocks
 {
+    /// <summary>
+    /// Handlebars.js like if block
+    /// Usages: {{#if a > b}} max {{a}} {{/if}}
+    ///         {{#if a > b}} max {{a}} {{else}} max {{b}} {{/if}}
+    ///         {{#if a > b}} max {{a}} {{else if b > c}} max {{b}} {{else}} max {{c}} {{/if}}
+    /// </summary>
     public class TemplateIfBlock : TemplateBlock
     {
         public override string Name => "if";

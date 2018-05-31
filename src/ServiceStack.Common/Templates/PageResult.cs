@@ -58,6 +58,11 @@ namespace ServiceStack.Templates
         /// Add additional template blocks available to all pages
         /// </summary>
         public List<TemplateBlock> TemplateBlocks { get; set; }
+        
+        /// <summary>
+        /// Add additional partials available to all pages
+        /// </summary>
+        public Dictionary<string, TemplatePage> Partials { get; set; }
 
         /// <summary>
         /// Return additional HTTP Headers in HTTP Requests
@@ -135,6 +140,7 @@ namespace ServiceStack.Templates
             Args = new Dictionary<string, object>();
             TemplateFilters = new List<TemplateFilter>();
             TemplateBlocks = new List<TemplateBlock>();
+            Partials = new Dictionary<string, TemplatePage>();
             PageTransformers = new List<Func<Stream, Task<Stream>>>();
             OutputTransformers = new List<Func<Stream, Task<Stream>>>();
             FilterTransformers = new Dictionary<string, Func<Stream, Task<Stream>>>();

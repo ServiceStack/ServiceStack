@@ -390,7 +390,12 @@ namespace ServiceStack.Templates
 
         internal static string DebugToken(this JsToken token) => $"'{token}'";
 
-        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";     
+        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static StringSegment TrimFirstNewLine(this StringSegment literal) => literal.StartsWith("\r\n")
+            ? literal.Advance(2)
+            : (literal.StartsWith("\n") ? literal.Advance(1) : literal);
 
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
         {

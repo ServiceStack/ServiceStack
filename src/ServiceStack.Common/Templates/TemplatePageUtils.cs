@@ -62,7 +62,7 @@ namespace ServiceStack.Templates
                         literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
                         if (name == blockName)
                         {
-                            body = ParseTemplatePage(literal.Subsegment(0, pos));
+                            body = ParseTemplatePage(literal.Subsegment(0, pos).TrimFirstNewLine());
                             return literal.Subsegment(pos);
                         }
                     }
@@ -73,7 +73,7 @@ namespace ServiceStack.Templates
                 {
                     if (inStatements == 0)
                     {
-                        body = ParseTemplatePage(literal.Subsegment(0, pos));
+                        body = ParseTemplatePage(literal.Subsegment(0, pos).TrimFirstNewLine());
                         return literal.Subsegment(pos);
                     }
                 }
@@ -112,7 +112,7 @@ namespace ServiceStack.Templates
                         literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
                         if (name == blockName)
                         {
-                            var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos));
+                            var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos).TrimFirstNewLine());
                             statement = new PageElseBlock(elseExpr, body);
                             return literal.Subsegment(pos);
                         }
@@ -126,7 +126,7 @@ namespace ServiceStack.Templates
                     {
                         if (statementPos >= 0)
                         {
-                            var bodyText = literal.Subsegment(statementPos, pos - statementPos);
+                            var bodyText = literal.Subsegment(statementPos, pos - statementPos).TrimFirstNewLine();
                             var body = ParseTemplatePage(bodyText);
                             statement = new PageElseBlock(elseExpr, body);
                             return literal.Subsegment(pos);
@@ -191,6 +191,9 @@ namespace ServiceStack.Templates
                     }
 
                     literal = literal.Advance(2 + 1 + blockName.Length + 2);
+                    
+                    //remove new line after partial block end tag
+                    literal = literal.TrimFirstNewLine();
 
                     var length = text.Length - pos - literal.Length;
                     var originalText = text.Subsegment(pos, length);

@@ -240,6 +240,7 @@ namespace ServiceStack.Templates
             TemplateFilters.Add(new TemplateHtmlFilters());
             TemplateBlocks.Add(new TemplateIfBlock());
             TemplateBlocks.Add(new TemplateEachBlock());
+            TemplateBlocks.Add(new TemplatePartialBlock());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 

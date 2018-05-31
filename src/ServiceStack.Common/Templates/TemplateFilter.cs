@@ -239,6 +239,12 @@ namespace ServiceStack.Templates
 
         public static void TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
+            if (scope.PageResult.Partials.TryGetValue(virtualPath, out page))
+            {
+                codePage = null;
+                return;
+            }
+            
             scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage);
             codePage?.Init();
 

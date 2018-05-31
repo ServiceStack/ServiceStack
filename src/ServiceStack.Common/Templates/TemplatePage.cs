@@ -17,7 +17,7 @@ namespace ServiceStack.Templates
         public IVirtualFile File { get; }
         public StringSegment FileContents { get; private set; }
         public StringSegment BodyContents { get; private set; }
-        public Dictionary<string, object> Args { get; private set; }
+        public Dictionary<string, object> Args { get; protected set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
@@ -42,7 +42,7 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
-        public async Task<TemplatePage> Init()
+        public virtual async Task<TemplatePage> Init()
         {
             if (HasInit)
             {
@@ -146,5 +146,27 @@ namespace ServiceStack.Templates
 
             return this;
         }
+    }
+
+    public class TemplatePartialPage : TemplatePage
+    {
+        private static readonly MemoryVirtualFiles TempFiles = new MemoryVirtualFiles();
+        private static readonly InMemoryVirtualDirectory TempDir = new InMemoryVirtualDirectory(TempFiles, TemplateConstants.TempFilePath);
+
+        static IVirtualFile CreateFile(string name, string format) =>
+            new InMemoryVirtualFile(TempFiles, TempDir)
+            {
+                FilePath = name + "." + format, 
+                TextContents = "",
+            };
+
+        public TemplatePartialPage(TemplateContext context, string name, IEnumerable<PageFragment> body, string format, Dictionary<string,object> args=null)
+            : base(context, CreateFile(name, format), context.GetFormat(format))
+        {
+            PageFragments = body.ToList();
+            Args = args ?? new Dictionary<string, object>();
+        }
+
+        public override Task<TemplatePage> Init() => ((TemplatePage)this).InTask();
     }
 }

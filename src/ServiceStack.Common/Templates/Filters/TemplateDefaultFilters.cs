@@ -512,6 +512,14 @@ namespace ServiceStack.Templates
             if (page != null)
                 await page.Init();
 
+            if (page is TemplatePartialPage) // make partial block args available in scope
+            {
+                foreach (var pageArg in page.Args)
+                {
+                    pageParams[pageArg.Key] = pageArg.Value;
+                }
+            }
+
             await scope.WritePageAsync(page, codePage, pageParams);
         }
 
@@ -921,6 +929,14 @@ namespace ServiceStack.Templates
                 await page.Init();
 
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
+
+            if (page is TemplatePartialPage) // make partial block args available in scope
+            {
+                foreach (var pageArg in page.Args)
+                {
+                    pageParams[pageArg.Key] = pageArg.Value;
+                }
+            }
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {

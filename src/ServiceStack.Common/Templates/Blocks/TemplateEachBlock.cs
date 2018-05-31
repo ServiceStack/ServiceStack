@@ -7,6 +7,12 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates.Blocks
 {
+    /// <summary>
+    /// Handlebars.js like each block
+    /// Usages: {{#each collection}} {{it}} {{/each}}
+    ///         {{#each num in numbers}} {{num}} {{/each}}
+    ///         {{#each num in [1,2,3]}} {{num}} {{/each}}
+    /// </summary>
     public class TemplateEachBlock : TemplateBlock
     {
         public override string Name => "each";

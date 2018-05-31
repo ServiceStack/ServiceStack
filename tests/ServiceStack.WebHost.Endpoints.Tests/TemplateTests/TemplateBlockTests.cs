@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 
@@ -218,8 +219,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }.Init();
             
             Assert.That(context.EvaluateTemplate("{{#each num in numbers}}{{num}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            Assert.That(context.EvaluateTemplate("{{#each num in [1,2,3] }}{{num}} {{/each}}"), Is.EqualTo("1 2 3 "));
             
             Assert.That(context.EvaluateTemplate("{{#each c in letters}}{{c}} {{/each}}"), Is.EqualTo("A B C "));
+            Assert.That(context.EvaluateTemplate("{{#each c in ['A','B','C'] }}{{c}} {{/each}}"), Is.EqualTo("A B C "));
             
             Assert.That(context.EvaluateTemplate("{{#each num in numbers}}{{#if isNumber(num)}}number {{num}} {{else}}letter {{num}} {{/if}}{{/each}}"), 
                 Is.EqualTo("number 1 number 2 number 3 "));
@@ -228,5 +231,76 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("letter A letter B letter C "));
         }
 
+        [Test]
+        public void Does_evaluate_template_with_partial_block()
+        {
+            var context = new TemplateContext {
+                
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+{{ 'from layout' | assignTo: layoutArg }}
+I am a Layout with page
+{{ page }}");
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+{{#partial my_partial}}
+I am a partial called with the scoped argument <b>{{ arg }}</b>
+Who can also access other arguments in scope <b>{{ layoutArg }}</b>
+{{/partial}}
+
+I am a Page with a partial
+{{ 'my_partial' | partial({ arg: 'from page' }) }}".TrimStart());
+
+            var pageResult = new PageResult(context.GetPage("page"));
+
+            var result = pageResult.Result;
+            
+            result.Print();
+            
+            Assert.That(result.Trim(), Is.EqualTo(@"I am a Layout with page
+
+I am a Page with a partial
+I am a partial called with the scoped argument <b>from page</b>
+Who can also access other arguments in scope <b>from layout</b>"));
+        }
+
+        [Test]
+        public void Does_evaluate_template_with_partial_block_and_args()
+        {
+            var context = new TemplateContext {
+                
+            }.Init();
+            
+            context.VirtualFiles.WriteFile("_layout.html", @"
+{{ 'from layout' | assignTo: layoutArg }}
+I am a Layout with page
+{{ page }}");
+            
+            context.VirtualFiles.WriteFile("page.html", @"
+{{#partial my_partial {partialArg: 'from partial'} }}
+I am a partial called with the scoped argument <b>{{ arg }}</b> and <b>{{ partialArg }}</b>
+Who can also access other arguments in scope <b>{{ layoutArg }}</b>
+{{/partial}}
+
+{{ 'from page' | assignTo: partialArg }}
+I am a Page with a partial
+{{ 'my_partial' | partial({ arg: 'from page' }) }}
+partialArg in page scope is <b>{{ partialArg }}</b>".TrimStart());
+
+            var pageResult = new PageResult(context.GetPage("page"));
+
+            var result = pageResult.Result;
+            
+            result.Print();
+            
+            Assert.That(result.Trim(), Is.EqualTo(@"I am a Layout with page
+
+I am a Page with a partial
+I am a partial called with the scoped argument <b>from page</b> and <b>from partial</b>
+Who can also access other arguments in scope <b>from layout</b>
+
+partialArg in page scope is <b>from page</b>"));
+        }
     }
 }
