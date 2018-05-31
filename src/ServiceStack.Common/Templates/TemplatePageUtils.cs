@@ -83,7 +83,7 @@ namespace ServiceStack.Templates
         //   {{else if a=b}}  {{else}}  {{/name}}
         //  ^
         // returns           ^         ^
-        static StringSegment ParseElseStatement(this StringSegment literal, StringSegment blockName, out PageElseStatement statement)
+        static StringSegment ParseElseStatement(this StringSegment literal, StringSegment blockName, out PageElseBlock statement)
         {
             var inStatements = 0;
             var pos = 0;
@@ -111,7 +111,7 @@ namespace ServiceStack.Templates
                         if (name == blockName)
                         {
                             var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos));
-                            statement = new PageElseStatement(elseExpr, body);
+                            statement = new PageElseBlock(elseExpr, body);
                             return literal.Subsegment(pos);
                         }
                     }
@@ -126,7 +126,7 @@ namespace ServiceStack.Templates
                         {
                             var bodyText = literal.Subsegment(statementPos, pos - statementPos);
                             var body = ParseTemplatePage(bodyText);
-                            statement = new PageElseStatement(elseExpr, body);
+                            statement = new PageElseBlock(elseExpr, body);
                             return literal.Subsegment(pos);
                         }
                         
@@ -180,7 +180,7 @@ namespace ServiceStack.Templates
                     literal = literal.Advance(endExprPos + 2);
 
                     literal = literal.ParseStatementBody(blockName, out var body);
-                    var elseStatements = new List<PageElseStatement>();
+                    var elseStatements = new List<PageElseBlock>();
 
                     while (literal.StartsWith("{{else"))
                     {
@@ -194,7 +194,7 @@ namespace ServiceStack.Templates
                     var originalText = text.Subsegment(pos, length);
                     lastPos = pos + length;
                     
-                    var statement = new PageStatementFragment(originalText, blockName, blockExpr, body, elseStatements);
+                    var statement = new PageBlockFragment(originalText, blockName, blockExpr, body, elseStatements);
                     to.Add(statement);
                 }
                 else

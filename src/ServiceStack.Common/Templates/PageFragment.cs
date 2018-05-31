@@ -73,33 +73,35 @@ namespace ServiceStack.Templates
         }
     }
 
-    public class PageStatementFragment : PageFragment
+    public class PageBlockFragment : PageFragment
     {
         public StringSegment OriginalText { get; }
         public StringSegment Name { get; }
-        public StringSegment Expression { get; }
+        private string name;
+        public string NameString => name ?? (name = Name.Value);
+        public StringSegment Argument { get; }
         public List<PageFragment> Body { get; }
-        public List<PageElseStatement> ElseStatements { get; }
+        public List<PageElseBlock> ElseBlocks { get; }
 
-        public PageStatementFragment(StringSegment originalText, StringSegment name, StringSegment expression, 
-            List<PageFragment> body, List<PageElseStatement> elseStatements=null)
+        public PageBlockFragment(StringSegment originalText, StringSegment name, StringSegment argument, 
+            List<PageFragment> body, List<PageElseBlock> elseStatements=null)
         {
             OriginalText = originalText;
             Name = name;
-            Expression = expression;
+            Argument = argument;
             Body = body;
-            ElseStatements = elseStatements ?? new List<PageElseStatement>();
+            ElseBlocks = elseStatements ?? new List<PageElseBlock>();
         }
     }
 
-    public class PageElseStatement : PageFragment
+    public class PageElseBlock : PageFragment
     {
-        public StringSegment Expression { get; }
+        public StringSegment Argument { get; }
         public List<PageFragment> Body { get; }
 
-        public PageElseStatement(StringSegment expression, List<PageFragment> body)
+        public PageElseBlock(StringSegment argument, List<PageFragment> body)
         {
-            Expression = expression;
+            Argument = argument;
             Body = body;
         }
     }

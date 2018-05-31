@@ -45,9 +45,14 @@ namespace ServiceStack.Templates
 
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
+        public List<TemplateBlock> TemplateBlocks { get; } = new List<TemplateBlock>();
+
         public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
         
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
+
+        private readonly Dictionary<string, TemplateBlock> templateBlocksMap = new Dictionary<string, TemplateBlock>(); 
+        public TemplateBlock GetBlock(string name) => templateBlocksMap.TryGetValue(name, out var block) ? block : null;
 
         public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
 
@@ -298,6 +303,12 @@ namespace ServiceStack.Templates
                 InitFilter(filter);
             }
 
+            foreach (var block in TemplateBlocks)
+            {
+                InitBlock(block);
+                templateBlocksMap[block.Name] = block;
+            }
+
             var afterPlugins = Plugins.OfType<ITemplatePluginAfter>();
             foreach (var plugin in afterPlugins)
             {
@@ -316,6 +327,15 @@ namespace ServiceStack.Templates
                 filter.Pages = Pages;
         }
 
+        internal void InitBlock(TemplateBlock block)
+        {
+            if (block == null) return;
+            if (block.Context == null)
+                block.Context = this;
+            if (block.Pages == null)
+                block.Pages = Pages;
+        }
+
         public TemplateContext ScanType(Type type)
         {
             if (!type.IsAbstract)
@@ -327,6 +347,15 @@ namespace ServiceStack.Templates
                         Container.AddSingleton(type);
                         var filter = (TemplateFilter)Container.Resolve(type);
                         TemplateFilters.Add(filter);
+                    }
+                }
+                else if (typeof(TemplateBlock).IsAssignableFrom(type))
+                {
+                    if (TemplateBlocks.All(x => x?.GetType() != type))
+                    {
+                        Container.AddSingleton(type);
+                        var block = (TemplateBlock)Container.Resolve(type);
+                        TemplateBlocks.Add(block);
                     }
                 }
                 else if (typeof(TemplateCodePage).IsAssignableFrom(type))
