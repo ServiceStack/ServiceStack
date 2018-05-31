@@ -121,6 +121,70 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var result = context.EvaluateTemplate("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
             Assert.That(result, Is.EqualTo("BEFORE <b> Hi, World! </b> AFTER"));
         }
+        
+        [Test]
+        public void Does_evaluate_template_with_nested_Block_Statement()
+        {
+            var context = new TemplateContext {
+                TemplateBlocks = { new TemplateBoldBlock() },
+                Args = {
+                    ["name"] = "World"
+                }
+            }.Init();
+
+            var result = context.EvaluateTemplate("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
+            Assert.That(result, Is.EqualTo("BEFORE <b> Hi, <b>World</b>! </b> AFTER"));
+
+            var template = "BEFORE {{#bold}} Hi, {{#if a == null}}{{#bold}}{{name}}{{/bold}}{{else}}{{a}}{{/if}}! {{/bold}} AFTER";
+
+            result = context.EvaluateTemplate(template);
+            Assert.That(result, Is.EqualTo("BEFORE <b> Hi, <b>World</b>! </b> AFTER"));
+
+            context.Args["a"] = "foo";
+            result = context.EvaluateTemplate(template);
+            Assert.That(result, Is.EqualTo("BEFORE <b> Hi, foo! </b> AFTER"));
+        }
+        
+        [Test]
+        public void Does_evaluate_template_with_if_else_statement()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["a"] = 1,
+                    ["b"] = 2,
+                }
+            }.Init();
+
+            var template = "BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER";
+            
+            Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE YES AFTER"));
+
+            context.Args["a"] = 3;
+            Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE NO AFTER"));
+        }
+ 
+        [Test]
+        public void Does_evaluate_template_with_if_and_else_if_statement()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["a"] = 1,
+                    ["b"] = 2,
+                    ["c"] = 3,
+                    ["d"] = 4
+                }
+            }.Init();
+
+            var template = "BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER";
+
+            Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE YES AFTER"));
+
+            context.Args["a"] = 3;
+            Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE NO AFTER"));
+ 
+            context.Args["c"] = 5;
+            Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE MAYBE AFTER"));
+        }
 
     }
 }

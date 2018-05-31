@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
+using ServiceStack.Templates.Blocks;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 #if NETSTANDARD2_0
@@ -237,6 +238,7 @@ namespace ServiceStack.Templates
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
             TemplateFilters.Add(new TemplateHtmlFilters());
+            TemplateBlocks.Add(new TemplateIfBlock());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 

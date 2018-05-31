@@ -51,9 +51,11 @@ namespace ServiceStack.Templates
                 if (c == '#')
                 {
                     inStatements++;
-                    pos = literal.IndexOf("}}", pos) + 2; //end of expression                    
+                    pos = literal.IndexOf("}}", pos) + 2; //end of expression
+                    continue;
                 }
-                else if (c == '/')
+
+                if (c == '/')
                 {
                     if (inStatements == 0)
                     {
