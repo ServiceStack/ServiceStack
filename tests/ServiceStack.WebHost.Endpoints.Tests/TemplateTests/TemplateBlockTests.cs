@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -234,9 +235,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_template_with_partial_block()
         {
-            var context = new TemplateContext {
-                
-            }.Init();
+            var context = new TemplateContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", @"
 {{ 'from layout' | assignTo: layoutArg }}
@@ -268,9 +267,7 @@ Who can also access other arguments in scope <b>from layout</b>"));
         [Test]
         public void Does_evaluate_template_with_partial_block_and_args()
         {
-            var context = new TemplateContext {
-                
-            }.Init();
+            var context = new TemplateContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", @"
 {{ 'from layout' | assignTo: layoutArg }}
@@ -301,6 +298,43 @@ I am a partial called with the scoped argument <b>from page</b> and <b>from part
 Who can also access other arguments in scope <b>from layout</b>
 
 partialArg in page scope is <b>from page</b>"));
+        }
+
+        class Person
+        {
+            public string Name { get; set; }
+            public int Age { get; set; }
+        }
+
+        [Test]
+        public void Does_evaluate_template_containing_with_block()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["person"] = new Person { Name = "name", Age = 27 },
+                    ["personMap"] = new Dictionary<string, object> {
+                        ["name"] = "map",
+                        ["age"] = 27,
+                    } 
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{/with}}"), 
+                Is.EqualTo("Person name is 27 years old"));
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with personMap}}{{name}} is {{age}} years old{{/with}}"), 
+                Is.EqualTo("Person map is 27 years old"));
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with {name:'inline',age:27} }}{{name}} is {{age}} years old{{/with}}"), 
+                Is.EqualTo("Person inline is 27 years old"));
+        }
+
+        [Test]
+        public void Does_evaluate_template_with_noop_block()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("Remove {{#noop}} from{{/noop}}view"), Is.EqualTo("Remove view"));
         }
     }
 }
