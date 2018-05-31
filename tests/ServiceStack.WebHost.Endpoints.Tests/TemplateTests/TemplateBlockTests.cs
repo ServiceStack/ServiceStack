@@ -100,11 +100,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             public override string Name => "bold";
             
-            public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken token)
+            public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
             {
-                await scope.OutputStream.WriteAsync("<b>", token);
-                await WriteBodyAsync(scope, fragment, token);
-                await scope.OutputStream.WriteAsync("</b>", token);
+                await scope.OutputStream.WriteAsync("<b>", cancel);
+                await WriteBodyAsync(scope, fragment, cancel);
+                await scope.OutputStream.WriteAsync("</b>", cancel);
             }
         }
 
@@ -184,6 +184,48 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
  
             context.Args["c"] = 5;
             Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE MAYBE AFTER"));
+        }
+
+        [Test]
+        public void Does_evaluate_template_with_each_blocks()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new[]{ 1, 2, 3 },
+                    ["letters"] = new[]{ "A", "B", "C" },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{it}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each letters}}{{it}} {{/each}}"), Is.EqualTo("A B C "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{#if isNumber(it)}}number {{it}} {{else}}letter {{it}} {{/if}}{{/each}}"), 
+                Is.EqualTo("number 1 number 2 number 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each letters}}{{#if isNumber(it)}}number {{it}} {{else}}letter {{it}} {{/if}}{{/each}}"), 
+                Is.EqualTo("letter A letter B letter C "));
+        }
+
+        [Test]
+        public void Does_evaluate_template_with_each_in_blocks()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new[]{ 1, 2, 3 },
+                    ["letters"] = new[]{ "A", "B", "C" },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each num in numbers}}{{num}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each c in letters}}{{c}} {{/each}}"), Is.EqualTo("A B C "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each num in numbers}}{{#if isNumber(num)}}number {{num}} {{else}}letter {{num}} {{/if}}{{/each}}"), 
+                Is.EqualTo("number 1 number 2 number 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each c in letters}}{{#if isNumber(c)}}number {{c}} {{else}}letter {{c}} {{/if}}{{/each}}"), 
+                Is.EqualTo("letter A letter B letter C "));
         }
 
     }

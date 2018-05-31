@@ -284,7 +284,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        internal async Task WriteFragmentsAsync(TemplateScopeContext scope, List<PageFragment> fragments, string callTrace, CancellationToken token)
+        internal async Task WriteFragmentsAsync(TemplateScopeContext scope, IEnumerable<PageFragment> fragments, string callTrace, CancellationToken token)
         {
             stackTrace.Push(callTrace);
 

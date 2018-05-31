@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
@@ -16,16 +17,21 @@ namespace ServiceStack.Templates
         protected virtual string GetElseCallTrace(PageElseBlock fragment) => "Block: " + Name + " > Else" + 
            (fragment.Argument.IsNullOrEmpty() ? "" : " (" + fragment.Argument + ")");
 
-        public abstract Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken token);
+        public abstract Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel);
+
+        protected virtual async Task WriteAsync(TemplateScopeContext scope, PageFragment[] body, string callTrace, CancellationToken cancel)
+        {
+            await scope.PageResult.WriteFragmentsAsync(scope, body, callTrace, cancel);
+        }
 
         protected virtual async Task WriteBodyAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken token)
         {
-            await scope.PageResult.WriteFragmentsAsync(scope, fragment.Body, GetCallTrace(fragment), token);
+            await WriteAsync(scope, fragment.Body, GetCallTrace(fragment), token);
         }
 
         protected virtual async Task WriteElseAsync(TemplateScopeContext scope, PageElseBlock fragment, CancellationToken token)
         {
-            await scope.PageResult.WriteFragmentsAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
+            await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
         }
     }
 }
