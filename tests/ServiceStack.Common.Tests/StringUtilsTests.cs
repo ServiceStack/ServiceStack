@@ -13,21 +13,28 @@ namespace ServiceStack.Common.Tests
     public class StringUtilsTests
     {
         [Test]
+        public void Does_replace_outside_of_quotes()
+        {
+            Assert.That("{it}".ReplaceOutsideOfQuotes("{", "{{", "}", "}}"), Is.EqualTo("{{it}}"));
+            Assert.That("{it} '{it}'".ReplaceOutsideOfQuotes("{", "{{", "}", "}}"), Is.EqualTo("{{it}} '{it}'"));
+            Assert.That("{it} `'{it}' {it}`".ReplaceOutsideOfQuotes("{", "{{", "}", "}}"), Is.EqualTo("{{it}} `'{it}' {it}`"));
+            Assert.That("{it} `'{it}' {it}` {it}".ReplaceOutsideOfQuotes("{", "{{", "}", "}}"), Is.EqualTo("{{it}} `'{it}' {it}` {{it}}"));
+            
+            Assert.That("{ '{0:00}' | fmt(it) }\n".ReplaceOutsideOfQuotes("{", "{{", "}", "}}"), Is.EqualTo("{{ '{0:00}' | fmt(it) }}\n"));
+        }
+
+        [Test]
         public void HtmlStrip_unescapes_all_html_character_codes_correctly()
         {
             foreach (var value in Enumerable.Range(ushort.MinValue, ushort.MaxValue).Select(i => (ushort)i))
             {
-#if NETCORE
-                var expected = ((char)value).ToString();
-#else
                 var expected = ((char)value).ToString(CultureInfo.InvariantCulture);
-#endif
 
-                var decimalNotation = String.Format("&#{0};", value);
+                var decimalNotation = $"&#{value};";
                 var decimalActual = decimalNotation.StripHtml().ConvertHtmlCodes();
                 Assert.AreEqual(expected, decimalActual);
 
-                var hexNotation = String.Format("&#x{0:X};", value);
+                var hexNotation = $"&#x{value:X};";
                 var hexActual = hexNotation.StripHtml().ConvertHtmlCodes();
                 Assert.AreEqual(expected, hexActual);
             }

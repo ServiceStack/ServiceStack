@@ -373,6 +373,124 @@ namespace ServiceStack
         }
 
         /// <summary>
+        /// Multiple string replacements
+        /// </summary>
+        /// <param name="replaceStringsPairs">Even number of old and new value pairs</param>
+        public static string ReplacePairs(string str, string[] replaceStringsPairs)
+        {
+            if (replaceStringsPairs.Length < 2 || replaceStringsPairs.Length % 2 != 0)
+                throw new ArgumentException("Replacement pairs must be an even number of old and new value pairs", nameof(replaceStringsPairs));
+            
+            for (var i = 0; i < replaceStringsPairs.Length; i+=2)
+            {
+                str = str.Replace(replaceStringsPairs[i], replaceStringsPairs[i + 1]);
+            }
+            return str;
+        }
+        
+        /// <summary>
+        /// Replace string contents outside of string quotes 
+        /// </summary>
+        public static string ReplaceOutsideOfQuotes(this string str, params string[] replaceStringsPairs)
+        {
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBackTickQuotes = false;
+            var inPrimeQuotes = false;
+            var quoteStartPos = 0;
+            var chunkLastPos = 0;
+
+            var sb = StringBuilderCache.Allocate();
+
+            for (var i = 0; i < str.Length; i++)
+            {
+                var c = str[i];
+                if (i > 0 && c == '\\')
+                {
+                    switch (str[i-1]) 
+                    {
+                        case '"':
+                        case '\'':
+                        case '`':
+                        case '′':
+                            continue;
+                    }
+                }
+
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inDoubleQuotes = false;
+                    }
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inSingleQuotes = false;
+                    }
+                    continue;
+                }
+                if (inBackTickQuotes)
+                {
+                    if (c == '`')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inBackTickQuotes = false;
+                    }
+                    continue;
+                }
+                if (inPrimeQuotes)
+                {
+                    if (c == '′')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inPrimeQuotes = false;
+                    }
+                    continue;
+                }
+                
+                switch (c) 
+                {
+                    case '"':
+                    case '\'':
+                    case '`':
+                    case '′':
+                        var prevChunk = str.Substring(chunkLastPos, i-chunkLastPos);
+                        sb.Append(ReplacePairs(prevChunk, replaceStringsPairs));
+                        chunkLastPos = i;
+                        quoteStartPos = i;
+                        switch (c)
+                        {
+                            case '"':
+                                inDoubleQuotes = true;
+                                continue;
+                            case '\'':
+                                inSingleQuotes = true;
+                                continue;
+                            case '`':
+                                inBackTickQuotes = true;
+                                continue;
+                            case '′':
+                                inPrimeQuotes = true;
+                                continue;
+                        }
+                        continue;
+                }
+            }
+
+            var lastChunk = str.Substring(chunkLastPos);
+            sb.Append(ReplacePairs(lastChunk, replaceStringsPairs));
+
+            var ret = StringBuilderCache.ReturnAndFree(sb);
+            return ret;
+        }
+
+        /// <summary>
         /// Protect against XSS by cleaning non-standared User Input
         /// </summary>
         public static string SafeInput(this string text)
