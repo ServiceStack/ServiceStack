@@ -301,7 +301,7 @@ title: We encode < & >
             Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
         }
 
-        [NUnit.Framework.Ignore("Flaky when run in suite, passes when run on its own")]
+        [NUnit.Framework.Ignore("Flaky when run in suite on .NET Framework only, passes when run on its own or on .NET Core")]
         [Test]
         public void Does_limit_file_changes_checks_to_specified_time()
         {

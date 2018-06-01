@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 
@@ -12,13 +13,14 @@ namespace ServiceStack.IO
     {
         public MemoryVirtualFiles()
         {
-            this.Files = new List<InMemoryVirtualFile>();
+            this.files = new List<InMemoryVirtualFile>();
             this.rootDirectory = new InMemoryVirtualDirectory(this, null);
         }
 
         public const char DirSep = '/';
 
-        public List<InMemoryVirtualFile> Files { get; }
+        private List<InMemoryVirtualFile> files;
+        public List<InMemoryVirtualFile> Files => files;
 
         private readonly InMemoryVirtualDirectory rootDirectory;
 
@@ -80,7 +82,7 @@ namespace ServiceStack.IO
         {
             filePath = SanitizePath(filePath);
             DeleteFile(filePath);
-            this.Files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
+            AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 TextContents = textContents,
@@ -92,7 +94,7 @@ namespace ServiceStack.IO
         {
             filePath = SanitizePath(filePath);
             DeleteFile(filePath);
-            this.Files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
+            AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 ByteContents = stream.ReadFully(),
@@ -116,7 +118,7 @@ namespace ServiceStack.IO
 
             DeleteFile(filePath);
 
-            this.Files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
+            AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 TextContents = text,
@@ -135,7 +137,7 @@ namespace ServiceStack.IO
 
             DeleteFile(filePath);
 
-            this.Files.Add(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
+            AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
                 ByteContents = bytes,
@@ -143,15 +145,30 @@ namespace ServiceStack.IO
             });
         }
 
-        public void DeleteFile(string filePath)
+        public void AddFile(InMemoryVirtualFile file)
         {
-            filePath = SanitizePath(filePath);
-            this.Files.RemoveAll(x => x.FilePath == filePath);
+            List<InMemoryVirtualFile> snapshot, newFiles;
+            do
+            {
+                snapshot = files;
+                newFiles = new List<InMemoryVirtualFile>(files) { file };
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref files, newFiles, snapshot), snapshot));
         }
+
+        public void DeleteFile(string filePath) => DeleteFiles(new[]{ filePath });
 
         public void DeleteFiles(IEnumerable<string> filePaths)
         {
-            filePaths.Each(DeleteFile);
+            var sanitizedFilePaths = filePaths.Select(SanitizePath).ToHashSet();
+            
+            List<InMemoryVirtualFile> snapshot, newFiles;
+            do
+            {
+                snapshot = files;
+                newFiles = files.Where(x => !sanitizedFilePaths.Contains(x.FilePath)).ToList();
+            } while (!ReferenceEquals(
+                Interlocked.CompareExchange(ref files, newFiles, snapshot), snapshot));
         }
 
         public void DeleteFolder(string dirPath)
