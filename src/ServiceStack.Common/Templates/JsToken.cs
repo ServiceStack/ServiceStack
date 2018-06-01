@@ -402,8 +402,8 @@ namespace ServiceStack.Templates
             var ret = token.Evaluate(scope);
             if (ret is bool b)
                 return b;
-            
-            throw new SyntaxErrorException($"Expected bool expression but instead received {token.DebugToken()}");
+
+            return !TemplateDefaultFilters.isFalsy(ret);
         }
 
         internal static string StripQuotes(this string arg)

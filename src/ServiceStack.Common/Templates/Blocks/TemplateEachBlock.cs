@@ -9,7 +9,8 @@ namespace ServiceStack.Templates
 {
     /// <summary>
     /// Handlebars.js like each block
-    /// Usages: {{#each collection}} {{it}} {{/each}}
+    /// Usages: {{#each customers}} {{Name}} {{/each}}
+    ///         {{#each customers}} {{it.Name}} {{/each}}
     ///         {{#each num in numbers}} {{num}} {{/each}}
     ///         {{#each num in [1,2,3]}} {{num}} {{/each}}
     ///         {{#each numbers}} {{it}} {{else}} no numbers {{/each}}
