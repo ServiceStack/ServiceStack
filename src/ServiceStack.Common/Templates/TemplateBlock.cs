@@ -58,5 +58,21 @@ namespace ServiceStack.Templates
                 }
             }
         }
+
+        protected bool CanExportScopeArgs(object element) => element != null && !(element is string) && element.GetType().IsClass;
+    }
+
+    public class TemplateDefaultBlocks : ITemplatePlugin
+    {
+        public void Register(TemplateContext context)
+        {
+            context.TemplateBlocks.AddRange(new TemplateBlock[] {
+                new TemplateIfBlock(),
+                new TemplateEachBlock(),
+                new TemplatePartialBlock(),
+                new TemplateWithBlock(),
+                new TemplateNoopBlock(),
+            });
+        }
     }
 }

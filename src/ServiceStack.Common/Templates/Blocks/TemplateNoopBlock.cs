@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.Templates.Blocks
+namespace ServiceStack.Templates
 {
     /// <summary>
     /// Handlebars.js like noop block

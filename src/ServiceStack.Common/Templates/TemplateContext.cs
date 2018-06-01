@@ -5,13 +5,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
-using ServiceStack.Templates.Blocks;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
+
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
@@ -238,11 +236,7 @@ namespace ServiceStack.Templates
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
             TemplateFilters.Add(new TemplateHtmlFilters());
-            TemplateBlocks.Add(new TemplateIfBlock());
-            TemplateBlocks.Add(new TemplateEachBlock());
-            TemplateBlocks.Add(new TemplatePartialBlock());
-            TemplateBlocks.Add(new TemplateWithBlock());
-            TemplateBlocks.Add(new TemplateNoopBlock());
+            Plugins.Add(new TemplateDefaultBlocks());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 

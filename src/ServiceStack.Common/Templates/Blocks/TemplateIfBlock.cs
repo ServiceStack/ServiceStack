@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
-namespace ServiceStack.Templates.Blocks
+namespace ServiceStack.Templates
 {
     /// <summary>
     /// Handlebars.js like if block

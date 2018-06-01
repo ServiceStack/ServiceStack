@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
-namespace ServiceStack.Templates.Blocks
+namespace ServiceStack.Templates
 {
     /// <summary>
     /// Handlebars.js like each block
@@ -56,7 +56,7 @@ namespace ServiceStack.Templates.Blocks
                 foreach (var element in collection)
                 {
                     // Add all properties into scope if called without explicit in argument 
-                    var scopeArgs = !hasExplicitBinding && element?.GetType().IsClass == true
+                    var scopeArgs = !hasExplicitBinding && CanExportScopeArgs(element)
                         ? element.ToObjectDictionary()
                         : new Dictionary<string, object>();
 

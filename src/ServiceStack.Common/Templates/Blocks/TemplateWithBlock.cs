@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ServiceStack.Templates.Blocks
 {
     /// <summary>
     /// Handlebars.js like with block
