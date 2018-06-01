@@ -225,6 +225,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_evaluate_template_containing_with_and_else_block()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["person"] = null,
+                    ["personMap"] = new Dictionary<string, object> {
+                        ["name"] = "map",
+                        ["age"] = 27,
+                    } 
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{else}}does not exist{{/with}}"), 
+                Is.EqualTo("Person does not exist"));
+            Assert.That(context.EvaluateTemplate("Person {{#with null}}{{Name}} is {{Age}} years old{{else}}does not exist{{/with}}"), 
+                Is.EqualTo("Person does not exist"));
+            Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{else if personMap != null}}map does exist{{else}}does not exist{{/with}}"), 
+                Is.EqualTo("Person map does exist"));
+        }
+
+        [Test]
         public void Does_evaluate_template_with_each_blocks()
         {
             var context = new TemplateContext {
