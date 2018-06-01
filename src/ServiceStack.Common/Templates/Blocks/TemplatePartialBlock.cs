@@ -36,7 +36,10 @@ namespace ServiceStack.Templates.Blocks
 
                 var format = scope.Context.PageFormats.First().Extension;
                 if (args != null && args.TryGetValue("format", out var oFormat))
+                {
                     format = oFormat.ToString();
+                    args.Remove("format");
+                }
 
                 var nameString = name.Value;
                 partial = new TemplatePartialPage(scope.Context, nameString, fragment.Body, format, args);

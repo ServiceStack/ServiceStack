@@ -25,27 +25,7 @@ namespace ServiceStack.Templates.Blocks
                 return;
             }
 
-            foreach (var elseBlock in fragment.ElseBlocks)
-            {
-                if (elseBlock.Argument.IsNullOrEmpty())
-                {
-                    await WriteElseAsync(scope, elseBlock, cancel);
-                    return;
-                }
-                
-                var argument = elseBlock.Argument;
-                if (argument.StartsWith("if "))
-                    argument = argument.Advance(3);
-
-                result = argument.GetJsExpressionAndEvaluateToBool(scope,
-                    ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression"));
-
-                if (result)
-                {
-                    await WriteElseAsync(scope, elseBlock, cancel);
-                    return;
-                }
-            }
+            await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
         }
     }
 }

@@ -246,6 +246,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_evaluate_template_with_each_else_blocks()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new int[]{},
+                    ["letters"] = new[]{ "A", "B", "C" },
+                    ["people"] = new[]{ new Person("name1", 1),new Person("name2", 2),new Person("name3", 3) },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{it}} {{else}}no numbers{{/each}}"), 
+                Is.EqualTo("no numbers"));
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{it}} {{else if !isEmpty(letters)}}has letters{{else}}no numbers{{/each}}"), 
+                Is.EqualTo("has letters"));
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{it}} {{else if !isEmpty([])}}has letters{{else}}no numbers{{/each}}"), 
+                Is.EqualTo("no numbers"));
+        }
+
+        [Test]
         public void Template_each_blocks_without_in_explodes_ref_type_arguments_into_scope()
         {
             var context = new TemplateContext {

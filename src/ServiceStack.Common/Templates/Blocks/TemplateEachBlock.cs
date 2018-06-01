@@ -12,6 +12,8 @@ namespace ServiceStack.Templates.Blocks
     /// Usages: {{#each collection}} {{it}} {{/each}}
     ///         {{#each num in numbers}} {{num}} {{/each}}
     ///         {{#each num in [1,2,3]}} {{num}} {{/each}}
+    ///         {{#each numbers}} {{it}} {{else}} no numbers {{/each}}
+    ///         {{#each numbers}} {{it}} {{else if letters != null}} has letters {{else}} no numbers {{/each}}
     /// </summary>
     public class TemplateEachBlock : TemplateBlock
     {
@@ -22,48 +24,17 @@ namespace ServiceStack.Templates.Blocks
             if (string.IsNullOrEmpty(fragment.ArgumentString))
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var cached = (EachCache)scope.Context.Cache.GetOrAdd(fragment.ArgumentString, key => ParseBlock(fragment));
-
-            if (cached.Collection.Evaluate(scope) is IEnumerable collection)
-            {
-                foreach (var element in collection)
-                {
-                    // Add all properties into scope if called without explicit in argument 
-                    var scopeArgs = cached.Binding == "it" && element?.GetType().IsClass == true
-                        ? element.ToObjectDictionary()
-                        : new Dictionary<string, object>();
-
-                    scopeArgs[cached.Binding] = element;
-
-                    var itemScope = scope.ScopeWithParams(scopeArgs);
-
-                    await WriteBodyAsync(itemScope, fragment, cancel);
-                }
-            }
-        }
-
-        class EachCache
-        {
-            public readonly string Binding;
-            public readonly JsToken Collection;
-
-            public EachCache(string binding, JsToken collection)
-            {
-                Binding = binding;
-                Collection = collection;
-            }
-        }
-        
-        private EachCache ParseBlock(PageBlockFragment fragment)
-        {
             var literal = fragment.Argument.ParseJsExpression(out var token);
             if (token == null)
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
             var binding = "it";
+
+            IEnumerable collection = null;
             
             literal = literal.AdvancePastWhitespace();
-            if (literal.StartsWith("in "))
+            var hasExplicitBinding = literal.StartsWith("in "); 
+            if (hasExplicitBinding)
             {
                 if (!(token is JsIdentifier identifier))
                     throw new NotSupportedException($"'each' block expected identifier but was {token.DebugToken()}");
@@ -71,16 +42,37 @@ namespace ServiceStack.Templates.Blocks
                 binding = identifier.NameString;
                 
                 literal = literal.Advance(3);
-                literal = literal.ParseJsExpression(out token);
-                if (token == null)
-                    throw new NotSupportedException("'each' block requires the collection to iterate");
-
-                literal = literal.AdvancePastWhitespace();
-                if (!literal.IsNullOrEmpty())
-                    throw new NotSupportedException($"invalid expression in 'each' block, near: {literal.DebugLiteral()}");
+                collection = literal.GetJsExpressionAndEvaluate(scope,
+                    ifNone: () => throw new NotSupportedException("'each' block requires the collection to iterate")) as ICollection;
             }
-            
-            return new EachCache(binding, token);
+            else
+            {
+                collection = token.Evaluate(scope) as ICollection;
+            }
+
+            var index = 0;
+            if (collection != null)
+            {
+                foreach (var element in collection)
+                {
+                    // Add all properties into scope if called without explicit in argument 
+                    var scopeArgs = !hasExplicitBinding && element?.GetType().IsClass == true
+                        ? element.ToObjectDictionary()
+                        : new Dictionary<string, object>();
+
+                    scopeArgs[binding] = element;
+                    scopeArgs[nameof(index)] = index++; 
+
+                    var itemScope = scope.ScopeWithParams(scopeArgs);
+
+                    await WriteBodyAsync(itemScope, fragment, cancel);
+                }
+            }
+
+            if (index == 0)
+            {
+                await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+            }
         }
     }
 }
