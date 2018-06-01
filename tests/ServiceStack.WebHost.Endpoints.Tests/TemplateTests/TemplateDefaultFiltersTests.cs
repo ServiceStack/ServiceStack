@@ -1418,6 +1418,26 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_addToGlobal_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addToGlobal: nums }}
+{{ 2  | addToGlobal: nums }}
+{{ 3  | addToGlobal: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1]  | addToGlobal: nums }}
+{{ [2]  | addToGlobal: nums }}
+{{ [3]  | addToGlobal: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
         public void Can_addToStart_of_an_existing_collection()
         {
             var context = new TemplateContext().Init();
@@ -1426,6 +1446,19 @@ dir-file: dir/dir-file.txt
 {{ 1  | addToStart: nums }}
 {{ 2  | addToStart: nums }}
 {{ 3  | addToStart: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("3,2,1"));
+        }
+
+        [Test]
+        public void Can_addToStartGlobal_of_an_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addToStartGlobal: nums }}
+{{ 2  | addToStartGlobal: nums }}
+{{ 3  | addToStartGlobal: nums }}
 {{ nums | join }}
 ".NormalizeNewLines()), Is.EqualTo("3,2,1"));
         }
@@ -1444,6 +1477,19 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_appendToGlobal_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | appendToGlobal: string }}
+{{ 'b' | appendToGlobal: string }}
+{{ 'c' | appendToGlobal: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("abc"));
+        }
+
+        [Test]
         public void Can_prependTo_existing_string()
         {
             var context = new TemplateContext().Init();
@@ -1452,6 +1498,19 @@ dir-file: dir/dir-file.txt
 {{ 'a' | prependTo: string }}
 {{ 'b' | prependTo: string }}
 {{ 'c' | prependTo: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("cba"));
+        }
+
+        [Test]
+        public void Can_prependToGlobal_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | prependToGlobal: string }}
+{{ 'b' | prependToGlobal: string }}
+{{ 'c' | prependToGlobal: string }}
 {{ string }}
 ".NormalizeNewLines()), Is.EqualTo("cba"));
         }

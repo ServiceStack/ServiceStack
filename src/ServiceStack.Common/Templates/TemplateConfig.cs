@@ -8,11 +8,16 @@ namespace ServiceStack.Templates
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
             "assignTo",
+            "assignToGlobal",
             "assignError",
             "addTo",
+            "addToGlobal",
             "addToStart",
+            "addToStartGlobal",
             "appendTo",
+            "appendToGlobal",
             "prependTo",
+            "prependToGlobal",
             "do",
             "end",
             "throw",
