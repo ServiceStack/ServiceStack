@@ -163,18 +163,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var context = new TemplateContext {
                 Args = {
                     ["index"] = 1,
-                    ["name"] = "foo"
+                    ["name"] = "foo",
                 }
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ {alt:isOdd(index), active:'foo'==name } | htmlClass }}"), 
-                Is.EqualTo("class=\"alt active\""));
+                Is.EqualTo(" class=\"alt active\""));
             Assert.That(context.EvaluateTemplate("{{ {alt:isEven(index), active:'bar'==name } | htmlClass }}"), 
                 Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{ [isOdd(index) ? 'odd': 'even', 'foo'==name ? 'active' : ''] | htmlClass }}"), 
-                Is.EqualTo("class=\"odd active\""));
+                Is.EqualTo(" class=\"odd active\""));
             Assert.That(context.EvaluateTemplate("{{ [isOdd(index+1) ? 'odd': 'even', 'bar'==name ? 'active' : ''] | htmlClass }}"), 
-                Is.EqualTo("class=\"even\""));
+                Is.EqualTo(" class=\"even\""));
+
+            Assert.That(context.EvaluateTemplate("{{ 'hide' | if(!disclaimerAccepted) | htmlClass }}"), 
+                Is.EqualTo(" class=\"hide\""));
         }
 
     }

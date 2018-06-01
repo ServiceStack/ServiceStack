@@ -396,10 +396,15 @@ namespace ServiceStack.Templates
             return sb.ToString();
         }
 
-        public IRawString htmlClass(object target)
+        public string htmlClassList(object target)
         {
-            var sb = StringBuilderCache.Allocate();
+            if (target == null)
+                return null;
+            
+            if (target is string clsName)
+                return clsName;
 
+            var sb = StringBuilderCache.Allocate();
             if (target is Dictionary<string, object> flags)
             {
                 foreach (var entry in flags)
@@ -424,17 +429,18 @@ namespace ServiceStack.Templates
                     }
                 }
             }
-            else if (target is string clsName)
-            {
-                sb.Append(clsName);
-            }
             else if (target != null)
             {
                 throw new NotSupportedException($"{nameof(htmlClass)} expects a Dictionary, List or String argument but was '{target.GetType().Name}'");
             }
 
-            var cls = StringBuilderCache.ReturnAndFree(sb);
-            return (cls.Length > 0 ? $"class=\"{cls}\"" : "").ToRawString();
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public IRawString htmlClass(object target)
+        {
+            var cls = htmlClassList(target);
+            return (cls.Length > 0 ? $" class=\"{cls}\"" : "").ToRawString();
         }
 
         [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
