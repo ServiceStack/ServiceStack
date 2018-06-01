@@ -323,7 +323,7 @@ namespace ServiceStack.Templates
             prependToArgs(scope, value, argName, scope.ScopedParams);
 
         public IgnoreResult prependToGlobal(TemplateScopeContext scope, string value, string argName) =>
-            prependToArgs(scope, value, argName, scope.ScopedParams);
+            prependToArgs(scope, value, argName, scope.PageResult.Args);
 
         private IgnoreResult prependToArgs(TemplateScopeContext scope, string value, string argName, Dictionary<string, object> args)
         {
@@ -349,7 +349,7 @@ namespace ServiceStack.Templates
             appendToArgs(scope, value, argName, scope.ScopedParams);
 
         public IgnoreResult appendToGlobal(TemplateScopeContext scope, string value, string argName) =>
-            appendToArgs(scope, value, argName, scope.ScopedParams);
+            appendToArgs(scope, value, argName, scope.PageResult.Args);
 
         private IgnoreResult appendToArgs(TemplateScopeContext scope, string value, string argName, Dictionary<string,object> args)
         {
