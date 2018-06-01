@@ -157,5 +157,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("<select name=\"sel\"><option value=\"A\">A</option><option value=\"B\">B</option><option value=\"C\">C</option></select>"));
         }
 
+        [Test]
+        public void Does_generate_class_list_with_htmlClass()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["index"] = 1,
+                    ["name"] = "foo"
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ {alt:isOdd(index), active:'foo'==name } | htmlClass }}"), 
+                Is.EqualTo("class=\"alt active\""));
+            Assert.That(context.EvaluateTemplate("{{ {alt:isEven(index), active:'bar'==name } | htmlClass }}"), 
+                Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ [isOdd(index) ? 'odd': 'even', 'foo'==name ? 'active' : ''] | htmlClass }}"), 
+                Is.EqualTo("class=\"odd active\""));
+            Assert.That(context.EvaluateTemplate("{{ [isOdd(index+1) ? 'odd': 'even', 'bar'==name ? 'active' : ''] | htmlClass }}"), 
+                Is.EqualTo("class=\"even\""));
+        }
+
     }
 }

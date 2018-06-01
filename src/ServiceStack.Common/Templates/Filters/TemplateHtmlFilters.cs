@@ -396,6 +396,47 @@ namespace ServiceStack.Templates
             return sb.ToString();
         }
 
+        public IRawString htmlClass(object target)
+        {
+            var sb = StringBuilderCache.Allocate();
+
+            if (target is Dictionary<string, object> flags)
+            {
+                foreach (var entry in flags)
+                {
+                    if (entry.Value is bool b && b)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(" ");
+                        sb.Append(entry.Key);
+                    }
+                }
+            }
+            else if (target is List<object> list)
+            {
+                foreach (var item in list)
+                {
+                    if (item is string str && str.Length > 0)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(" ");
+                        sb.Append(str);
+                    }
+                }
+            }
+            else if (target is string clsName)
+            {
+                sb.Append(clsName);
+            }
+            else if (target != null)
+            {
+                throw new NotSupportedException($"{nameof(htmlClass)} expects a Dictionary, List or String argument but was '{target.GetType().Name}'");
+            }
+
+            var cls = StringBuilderCache.ReturnAndFree(sb);
+            return (cls.Length > 0 ? $"class=\"{cls}\"" : "").ToRawString();
+        }
+
         [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
         [HandleUnknownValue] public IRawString htmlLink(string href, Dictionary<string, object> attrs)
         {
