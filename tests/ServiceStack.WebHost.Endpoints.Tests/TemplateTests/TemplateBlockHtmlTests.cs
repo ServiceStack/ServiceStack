@@ -38,6 +38,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
+            Assert.That(context.EvaluateTemplate("{{#ul}}{{/ul}}").RemoveNewLines(), Is.EqualTo("<ul></ul>"));
+            
             Assert.That(context.EvaluateTemplate("{{#ul {class:'nav'} }} <li>item</li> {{/ul}}").RemoveNewLines(), 
                 Is.EqualTo(@"<ul class=""nav""> <li>item</li> </ul>"));
             

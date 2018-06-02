@@ -25,31 +25,9 @@ namespace ServiceStack.Templates
             if (string.IsNullOrEmpty(fragment.ArgumentString))
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var literal = fragment.Argument.ParseJsExpression(out var token);
-            if (token == null)
-                throw new NotSupportedException("'each' block requires the collection to iterate");
-
-            var binding = "it";
-
-            IEnumerable collection = null;
+            var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.ArgumentString, _ => ParseArgument(scope, fragment));
             
-            literal = literal.AdvancePastWhitespace();
-            var hasExplicitBinding = literal.StartsWith("in "); 
-            if (hasExplicitBinding)
-            {
-                if (!(token is JsIdentifier identifier))
-                    throw new NotSupportedException($"'each' block expected identifier but was {token.DebugToken()}");
-
-                binding = identifier.NameString;
-                
-                literal = literal.Advance(3);
-                collection = literal.GetJsExpressionAndEvaluate(scope,
-                    ifNone: () => throw new NotSupportedException("'each' block requires the collection to iterate")) as ICollection;
-            }
-            else
-            {
-                collection = token.Evaluate(scope) as ICollection;
-            }
+            IEnumerable collection = (IEnumerable) cache.Source.Evaluate(scope);
 
             var index = 0;
             if (collection != null)
@@ -57,11 +35,11 @@ namespace ServiceStack.Templates
                 foreach (var element in collection)
                 {
                     // Add all properties into scope if called without explicit in argument 
-                    var scopeArgs = !hasExplicitBinding && CanExportScopeArgs(element)
+                    var scopeArgs = !cache.HasExplicitBinding && CanExportScopeArgs(element)
                         ? element.ToObjectDictionary()
                         : new Dictionary<string, object>();
 
-                    scopeArgs[binding] = element;
+                    scopeArgs[cache.Binding] = element;
                     scopeArgs[nameof(index)] = index++; 
 
                     var itemScope = scope.ScopeWithParams(scopeArgs);
@@ -73,6 +51,52 @@ namespace ServiceStack.Templates
             if (index == 0)
             {
                 await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+            }
+        }
+
+        EachArg ParseArgument(TemplateScopeContext scope, PageBlockFragment fragment)
+        {
+            var literal = fragment.Argument.ParseJsExpression(out var token);
+            if (token == null)
+                throw new NotSupportedException("'each' block requires the collection to iterate");
+
+            var binding = "it";
+
+            literal = literal.AdvancePastWhitespace();
+
+            JsToken source;
+            
+            var hasExplicitBinding = literal.StartsWith("in "); 
+            if (hasExplicitBinding)
+            {
+                if (!(token is JsIdentifier identifier))
+                    throw new NotSupportedException($"'each' block expected identifier but was {token.DebugToken()}");
+
+                binding = identifier.NameString;
+                
+                literal = literal.Advance(3);
+                literal.ParseJsExpression(out source);
+                if (source == null)
+                    throw new NotSupportedException("'each' block requires the collection to iterate");
+            }
+            else
+            {
+                source = token;
+            }
+            
+            return new EachArg(binding, hasExplicitBinding, source);
+        }
+
+        class EachArg
+        {
+            public string Binding;
+            public readonly bool HasExplicitBinding;
+            public readonly JsToken Source;
+            public EachArg(string binding, bool hasExplicitBinding, JsToken source)
+            {
+                Binding = binding;
+                HasExplicitBinding = hasExplicitBinding;
+                Source = source;
             }
         }
     }
