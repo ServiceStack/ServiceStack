@@ -620,10 +620,16 @@ namespace ServiceStack.Templates
                 var quoteChar = firstChar;
                 i = 1;
                 var hasEscapeChar = false;
-                while (i < literal.Length && (
-                        (c = literal.GetChar(i)) != quoteChar || 
-                        (literal.GetChar(i - 1) == '\\' && i != literal.Length - 1)))
+                
+                while (i < literal.Length)
                 {
+                    c = literal.GetChar(i);
+                    if (c == quoteChar)
+                    {
+                        if (literal.SafeGetChar(i - 1) != '\\' || literal.SafeGetChar(i - 2) == '\\')
+                            break;
+                    }
+                    
                     i++;
                     if (!hasEscapeChar)
                         hasEscapeChar = c == '\\';

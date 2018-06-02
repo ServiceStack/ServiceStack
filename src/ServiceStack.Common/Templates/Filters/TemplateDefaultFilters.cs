@@ -598,6 +598,8 @@ namespace ServiceStack.Templates
                 ? objects.Where(x => x != null).Select(x => x.ToString()[0]).ToArray()
                 : target.ConvertTo<char[]>();
 
+        public int toCharCode(object target) => toChar(target);
+
         public byte[] toUtf8Bytes(string target) => target.ToUtf8Bytes();
         public string fromUtf8Bytes(byte[] target) => target.FromUtf8Bytes();
 
