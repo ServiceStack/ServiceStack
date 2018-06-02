@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ServiceStack.Text;
-
+using ServiceStack.Text.Json;
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
@@ -69,6 +70,159 @@ namespace ServiceStack.Templates
         public override string ToString() => ToRawString();
 
         public override object Evaluate(TemplateScopeContext scope) => Value;
+    }
+
+    public class JsTemplateLiteral : JsToken
+    {
+        public JsTemplateElement[] Quasis { get; }
+        public JsToken[] Expressions { get; }
+        
+        public JsTemplateLiteral(string cooked) 
+            : this(new []{ new JsTemplateElement(cooked, cooked, tail:true) }){}
+
+        public JsTemplateLiteral(JsTemplateElement[] quasis=null, JsToken[] expressions=null)
+        {
+            Quasis = quasis ?? TypeConstants<JsTemplateElement>.EmptyArray;
+            Expressions = expressions ?? TypeConstants<JsToken>.EmptyArray;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+
+            sb.Append("`");
+
+            for (int i = 0; i < Quasis.Length; i++)
+            {
+                var quasi = Quasis[i];
+                sb.Append(quasi.Value.Raw);
+                if (quasi.Tail)
+                    break;
+
+                var expr = Expressions[i];
+                sb.Append("${");
+                sb.Append(expr.ToRawString());
+                sb.Append("}");
+            }
+
+            sb.Append("`");
+
+            var ret = StringBuilderCache.ReturnAndFree(sb);
+            return ret;
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var sb = StringBuilderCache.Allocate();
+            
+            for (int i = 0; i < Quasis.Length; i++)
+            {
+                var quasi = Quasis[i];
+                sb.Append(quasi.Value.Cooked);
+                if (quasi.Tail)
+                    break;
+
+                var expr = Expressions[i];
+                var value = expr.Evaluate(scope);
+                sb.Append(value);
+            }
+
+            var ret = StringBuilderCache.ReturnAndFree(sb);
+            return ret;
+        }
+
+        protected bool Equals(JsTemplateLiteral other)
+        {
+            return Quasis.EquivalentTo(other.Quasis) && 
+                   Expressions.EquivalentTo(other.Expressions);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsTemplateLiteral) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Quasis != null ? Quasis.GetHashCode() : 0) * 397) ^ (Expressions != null ? Expressions.GetHashCode() : 0);
+            }
+        }
+
+        public override string ToString() => ToRawString();
+    }
+
+    public class JsTemplateElement
+    {
+        public JsTemplateElementValue Value { get; }
+        public bool Tail { get; }
+        
+        public JsTemplateElement(string raw, string cooked, bool tail=false) : 
+            this(new JsTemplateElementValue(raw, cooked), tail){}
+        
+        public JsTemplateElement(JsTemplateElementValue value, bool tail)
+        {
+            Value = value;
+            Tail = tail;
+        }
+
+        protected bool Equals(JsTemplateElement other)
+        {
+            return Equals(Value, other.Value) && Tail == other.Tail;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsTemplateElement) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Value != null ? Value.GetHashCode() : 0) * 397) ^ Tail.GetHashCode();
+            }
+        }
+    }
+
+    public class JsTemplateElementValue
+    {
+        public string Raw { get; }
+        public string Cooked { get; }
+        
+        public JsTemplateElementValue(string raw, string cooked)
+        {
+            Raw = raw;
+            Cooked = cooked;
+        }
+
+        protected bool Equals(JsTemplateElementValue other)
+        {
+            return Raw.Equals(other.Raw) && Cooked.Equals(other.Cooked);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsTemplateElementValue) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return (Raw.GetHashCode() * 397) ^ Cooked.GetHashCode();
+            }
+        }
     }
 
     public class JsIdentifier : JsToken
@@ -374,7 +528,7 @@ namespace ServiceStack.Templates
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this StringSegment literal, int index) =>
-            index < literal.Length ? literal.GetChar(index) : default(char);
+            index >= 0 && index < literal.Length ? literal.GetChar(index) : default(char);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnd(this char c) => c == default(char);
@@ -393,6 +547,10 @@ namespace ServiceStack.Templates
         internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static string CookRawString(this StringSegment str, char quoteChar) =>
+            JsonTypeSerializer.UnescapeJsString(str, quoteChar).Value;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static StringSegment TrimFirstNewLine(this StringSegment literal) => literal.StartsWith("\r\n")
             ? literal.Advance(2)
             : (literal.StartsWith("\n") ? literal.Advance(1) : literal);
@@ -404,23 +562,6 @@ namespace ServiceStack.Templates
                 return b;
 
             return !TemplateDefaultFilters.isFalsy(ret);
-        }
-
-        internal static string StripQuotes(this string arg)
-        {
-            if (arg == null || arg.Length < 2)
-                return arg;
-
-            switch (arg[0])
-            {
-                case '"':
-                case '`':
-                case '\'':
-                case '′':
-                    return arg.Substring(1, arg.Length - 2);
-            }
-
-            return arg;
         }
 
         public static StringSegment AdvancePastChar(this StringSegment literal, char delim)
@@ -476,36 +617,48 @@ namespace ServiceStack.Templates
             var firstChar = literal.GetChar(0);
             if (firstChar == '\'' || firstChar == '"' || firstChar == '`' || firstChar == '′')
             {
+                var quoteChar = firstChar;
                 i = 1;
                 var hasEscapeChar = false;
-                while (i < literal.Length && ((c = literal.GetChar(i)) != firstChar || literal.GetChar(i - 1) == '\\'))
+                while (i < literal.Length && (
+                        (c = literal.GetChar(i)) != quoteChar || 
+                        (literal.GetChar(i - 1) == '\\' && i != literal.Length - 1)))
                 {
                     i++;
                     if (!hasEscapeChar)
                         hasEscapeChar = c == '\\';
                 }
 
-                if (i >= literal.Length || literal.GetChar(i) != firstChar)
+                if (i >= literal.Length || literal.GetChar(i) != quoteChar)
                     throw new SyntaxErrorException($"Unterminated string literal: {literal}");
 
-                var str = literal.Substring(1, i - 1);
-                token = new JsLiteral(str);
+                var rawString = literal.Subsegment(1, i - 1);
 
-                if (hasEscapeChar)
+                if (quoteChar == '`')
                 {
+                    token = ParseJsTemplateLiteral(rawString);
+                }
+                else if (hasEscapeChar)
+                {
+                    //All other quoted strings use unescaped strings  
                     var sb = StringBuilderCache.Allocate();
-                    for (var j = 0; j < str.Length; j++)
+                    for (var j = 0; j < rawString.Length; j++)
                     {
                         // strip the back-slash used to escape quote char in strings
-                        var ch = str[j];
-                        if (ch != '\\' || (j + 1 >= str.Length || str[j + 1] != firstChar))
+                        var ch = rawString.GetChar(j);
+                        if (ch != '\\' || (j + 1 >= rawString.Length || rawString.GetChar(j + 1) != quoteChar))
                             sb.Append(ch);
                     }
                     token = new JsLiteral(StringBuilderCache.ReturnAndFree(sb));
                 }
+                else
+                {
+                    token = new JsLiteral(rawString.Value);                    
+                }
                 
                 return literal.Advance(i + 1);
             }
+
             if (firstChar >= '0' && firstChar <= '9')
             {
                 i = 1;
@@ -557,7 +710,7 @@ namespace ServiceStack.Templates
 
                     literal = literal.ParseJsToken(out var mapKeyToken);
 
-                    if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsIdentifier)) 
+                    if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsTemplateLiteral) && !(mapKeyToken is JsIdentifier)) 
                         throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal or identifier.");
 
                     JsToken mapValueToken;
@@ -627,7 +780,46 @@ namespace ServiceStack.Templates
             token = node;
             return literal;
         }
-        
+
+        private static JsToken ParseJsTemplateLiteral(StringSegment literal)
+        {
+            var quasis = new List<JsTemplateElement>();
+            var expressions = new List<JsToken>();
+            var lastPos = 0;
+
+            for (var i = 0; i < literal.Length; i++)
+            {
+                var c = literal.GetChar(i);
+                if (c != '$' || literal.SafeGetChar(i-1) == '\\' || literal.SafeGetChar(i+1) != '{')
+                    continue;
+
+                var lastChunk = literal.Subsegment(lastPos, i - lastPos);
+                quasis.Add(new JsTemplateElement(
+                    new JsTemplateElementValue(lastChunk.Value, lastChunk.CookRawString('`')), 
+                    tail:false));
+
+                var exprStart = literal.Subsegment(i + 2);
+                var afterExpr = exprStart.ParseJsExpression(out var expr);
+                afterExpr = afterExpr.AdvancePastWhitespace();
+                
+                if (!afterExpr.FirstCharEquals('}'))
+                    throw new SyntaxErrorException($"Expected end of template literal expression '}}' but was instead {literal.DebugFirstChar()}");
+                afterExpr = afterExpr.Advance(1);
+                
+                expressions.Add(expr);
+
+                i = lastPos = literal.Length - afterExpr.Length;
+            }
+
+            var endChunk = literal.Subsegment(lastPos);
+
+            quasis.Add(new JsTemplateElement(
+                new JsTemplateElementValue(endChunk.Value, endChunk.CookRawString('`')), 
+                tail:true));
+            
+            return new JsTemplateLiteral(quasis.ToArray(), expressions.ToArray());
+        }
+
         internal static StringSegment ParseJsMemberExpression(this StringSegment literal, ref JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();

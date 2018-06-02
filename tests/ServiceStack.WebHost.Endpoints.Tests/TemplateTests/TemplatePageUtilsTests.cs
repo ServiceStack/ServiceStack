@@ -257,7 +257,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "\"a\"".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsLiteral("a")));
             "`a`".ParseJsExpression(out token);
-            Assert.That(token, Is.EqualTo(new JsLiteral("a")));
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral("a")));
             "1".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsLiteral(1)));
             "100".ParseJsExpression(out token);
@@ -317,11 +317,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "{ `foo` : 1 , `bar`: 'qux', `d`: 1.1, `b`:false, `n`:null }".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(
                 new JsObjectExpression(
-                    new JsProperty(new JsLiteral("foo"), new JsLiteral(1)),
-                    new JsProperty(new JsLiteral("bar"), new JsLiteral("qux")),
-                    new JsProperty(new JsLiteral("d"), new JsLiteral(1.1)),
-                    new JsProperty(new JsLiteral("b"), new JsLiteral(false)),
-                    new JsProperty(new JsLiteral("n"), JsNull.Value)
+                    new JsProperty(new JsTemplateLiteral("foo"), new JsLiteral(1)),
+                    new JsProperty(new JsTemplateLiteral("bar"), new JsLiteral("qux")),
+                    new JsProperty(new JsTemplateLiteral("d"), new JsLiteral(1.1)),
+                    new JsProperty(new JsTemplateLiteral("b"), new JsLiteral(false)),
+                    new JsProperty(new JsTemplateLiteral("n"), JsNull.Value)
                 )
             ));
 
@@ -342,7 +342,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 )
             ));
             "['a',\"b\",`c`]".ParseJsExpression(out token);
-            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral("a"),new JsLiteral("b"),new JsLiteral("c"))));
+            Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral("a"),new JsLiteral("b"),new JsTemplateLiteral("c"))));
             " [ 'a' , \"b\"  , 'c' ] ".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsArrayExpression(new JsLiteral("a"),new JsLiteral("b"),new JsLiteral("c"))));
             "[ {a: 1}, {b: 2} ]".ParseJsExpression(out token);

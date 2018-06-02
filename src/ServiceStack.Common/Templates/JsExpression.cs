@@ -172,7 +172,7 @@ namespace ServiceStack.Templates
                 literal = literal.ParseJsBinaryOperator(out var op);
 
                 if (op == null)
-                    throw new SyntaxErrorException($"Expected binary operator near: {literal.SubstringWithElipsis(0, 50)}");
+                    throw new SyntaxErrorException($"Expected binary operator near: {literal.DebugLiteral()}");
 
                 var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
                 if (prec > 0)
@@ -210,7 +210,7 @@ namespace ServiceStack.Templates
                         literal = literal.ParseJsBinaryOperator(out op);
                         
                         if (literal.IsNullOrEmpty())
-                            throw new SyntaxErrorException($"Expected expression near: '{literal.SubstringWithElipsis(0,40)}'");
+                            throw new SyntaxErrorException($"Expected expression near: '{literal.DebugLiteral()}'");
 
                         literal = literal.ParseJsToken(out var token, filterExpression:filterExpression);
                         

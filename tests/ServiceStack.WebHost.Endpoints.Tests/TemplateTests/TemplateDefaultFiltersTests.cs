@@ -492,10 +492,25 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('g') }}");
             Assert.That(result, Is.EqualTo("Time: 4:05:06.007"));
 
-            result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('h\\:mm\\:ss') }}");
+            // Normal quoted strings pass string verbatim
+            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat('h\:mm\:ss') }}");
+            Assert.That(result, Is.EqualTo("Time: 4:05:06"));
+
+            // Template literals unescapes strings
+            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat(`h\\:mm\\:ss`) }}");
             Assert.That(result, Is.EqualTo("Time: 4:05:06"));
         }
-
+        
+        [Test]
+        public void Does_unescape_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{'\n'}}"), Is.EqualTo("\n"));
+            Assert.That(context.EvaluateTemplate("{{`a\nb`}}"), Is.EqualTo("a\nb"));
+            Assert.That(context.EvaluateTemplate("{{'\"'|raw}}"), Is.EqualTo("\""));
+            Assert.That(context.EvaluateTemplate("{{`\"`|raw}}"), Is.EqualTo("\""));
+        }
 
         [Test]
         public async Task Does_default_filter_dateTimeFormat()
