@@ -55,20 +55,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo(@"no items"));
         }
 
-        [Test]
-        public void Does_evaluate_ul_with_nested_html_blocks()
+        private static TemplateContext CreateContext()
         {
             var context = new TemplateContext {
                 Args = {
-                    ["items"] = new[]{ new Person("foo", 1),new Person("bar", 2),new Person("baz", 3) },
+                    ["items"] = new[] {new Person("foo", 1), new Person("bar", 2), new Person("baz", 3)},
                     ["id"] = "menu",
                     ["disclaimerAccepted"] = false,
+                    ["hasAccess"] = true,
                     ["highlight"] = "baz",
                 }
             }.Init();
+            return context;
+        }
+
+        [Test]
+        public void Does_evaluate_ul_with_nested_html_blocks()
+        {
+            var context = CreateContext();
 
             var template = @"
-{{#ul {each:items, class:['nav', !disclaimerAccepted?'blur':''], id:'ul-'+id} }}
+{{#ul {each:items, class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
     {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
         {{Name}}
     {{/li}}
@@ -91,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     </li>
 </ul>".NormalizeNewLines()));
 
-            var withoutBlock = @"
+            var withoutHtmlBlock = @"
 {{#if !isEmpty(items)}}
 <ul{{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id=""ul-{{id}}"">
 {{#each items}}
@@ -104,10 +111,61 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
    <div>no items</div>
 {{/if}}";
 
-            var withoutBlockResult = context.EvaluateTemplate(withoutBlock);
+            var withoutBlockResult = context.EvaluateTemplate(withoutHtmlBlock);
             
             Assert.That(withoutBlockResult.RemoveNewLines(), Is.EqualTo(result.RemoveNewLines()));
         }
+
+        [Test]
+        public void Does_evaluate_if_and_where_in_html_blocks()
+        {
+            var context = CreateContext();
+
+            var template = @"
+{{#ul {if:hasAccess, each:items, where:'Age >= 2', class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
+    {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
+        {{Name}}
+    {{/li}}
+{{else}}
+    <div>no items</div>
+{{/ul}}";
+
+            var result = context.EvaluateTemplate(template);
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
+<ul class=""nav blur"" id=""ul-menu"">
+    <li>
+        bar
+    </li>
+    <li class=""alt active"">
+        baz
+    </li>
+</ul>".NormalizeNewLines()));
+
+            var withoutHtmlBlock = @"
+{{ items | where: it.Age >= 2  
+   | assignTo: items }}
+{{#if !isEmpty(items)}}
+{{#if hasAccess}}
+<ul{{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id=""ul-{{id}}"">
+{{#each items}}
+    <li{{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>
+        {{Name}}
+    </li>
+{{/each}}
+</ul>
+{{/if}}
+ {{else}}
+     <div>no items</div>
+ {{/if}}".NormalizeNewLines();
+
+            var withoutBlockResult = context.EvaluateTemplate(withoutHtmlBlock);
+            withoutBlockResult.Print();
+            Assert.That(withoutBlockResult.RemoveNewLines(), Is.EqualTo(result.RemoveNewLines()));
+
+            result = context.EvaluateTemplate(template.Replace("hasAccess","!hasAccess"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@""));
+        }
+        
     }
 
 }

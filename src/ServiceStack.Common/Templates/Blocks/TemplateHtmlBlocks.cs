@@ -7,55 +7,63 @@ using System.Threading.Tasks;
 namespace ServiceStack.Templates
 {
     /* Usages:
-     *
-     * {{#ul {class:'nav'}}} <li>item</li> {{/ul}}
-     * {{#ul {each:items, class:'nav'}}} <li>{{it}}</li> {{/ul}}
-     * {{#ul {each:numbers, it:'num', class:'nav'}}} <li>{{num}}</li> {{/ul}}
-     * 
-     * {{#ul {each:items, class:['nav', !disclaimerAccepted?'blur':''], id:'ul-'+id} }}
-     *    {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
-     *      {{Name}}
-     *    {{/li}}
-     * {{else}}
-     *     <div>no items</div>
-     * {{/ul}}
-     *
-     * Equivalent to:
-     * 
-     * {{#if !isEmpty(items)}}
-     *     <ul {{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id="ul-{{id}}">
-     *     {{#each items}}
-     *         <li {{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>{{Name}}</li>
-     *     {{/each}}
-     *     </ul>
-     * {{else}}
-     *    <div>no items</div>
-     * {{/if}}
-     *
-     * Razor:
-     *
-     * @{
-     *     var persons = items as IEnumerable<Person>;
-     * }
-     * @if (persons != null && persons.Any())
-     * {
-     *     <ul id="ul-@id" class="nav @(!disclaimerAccepted ? "hide" : "")">
-     *     @{
-     *         var index = 0;
-     *     }
-     *     @foreach (var person in persons)
-     *     {
-     *         <li class="@(index++ % 2 == 1 ? "alt" : "") @(person.Name == highlight ? "active" : "")">
-     *             @person.Name
-     *         </li>
-     *     }
-     *     </ul>
-     * }
-     * else
-     * {
-     *      <div>no items</div>
-     * }
-     */
+     
+        {{#ul {class:'nav'}}} <li>item</li> {{/ul}}
+        {{#ul {each:items, class:'nav'}}} <li>{{it}}</li> {{/ul}}
+        {{#ul {each:numbers, it:'num', class:'nav'}}} <li>{{num}}</li> {{/ul}}
+
+        {{#ul {if:hasAccess, each:items, where:'Age > 27', 
+               class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
+            {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
+                {{Name}}
+            {{/li}}
+        {{else}}
+            <div>no items</div>
+        {{/ul}}
+
+    // Equivalent to:
+
+    {{ items | where: it.Age > 27  
+       | assignTo: items }}
+    {{#if !isEmpty(items)}}
+        {{#if hasAccess}}
+        <ul {{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id="ul-{{id}}">
+        {{#each items}}
+            <li {{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>{{Name}}</li>
+        {{/each}}
+        </ul>
+        {{/if}}
+     {{else}}
+         <div>no items</div>
+     {{/if}}
+
+    // Razor:
+
+    @{
+        var persons = (items as IEnumerable<Person>)?.Where(x => x.Age > 27);
+    }
+    @if (persons?.Any() == true)
+    {
+        if (hasAccess)
+        {
+            <ul id="ul-@id" class="nav @(!disclaimerAccepted ? "hide" : "")">
+                @{
+                    var index = 0;
+                }
+                @foreach (var person in persons)
+                {
+                    <li class="@(index++ % 2 == 1 ? "alt " : "" )@(person.Name == activeName ? "active" : "")">
+                        @person.Name
+                    </li>
+                }
+            </ul>
+        }
+    }
+    else
+    {
+        <div>no items</div>
+    }
+    */
     public class TemplateUlBlock : TemplateHtmlBlock
     {
         public override string Tag => "ul";
@@ -185,9 +193,26 @@ namespace ServiceStack.Templates
             IEnumerable each = null;
             var binding = "it";
             var hasExplicitBinding = false;
+            JsToken where = null;
 
             if (htmlAttrs != null)
             {
+                if (htmlAttrs.TryGetValue("if", out var oIf))
+                {
+                    if (TemplateDefaultFilters.isFalsy(oIf))
+                        return;
+                    htmlAttrs.Remove("if");
+                }
+
+                if (htmlAttrs.TryGetValue(nameof(where), out var oWhere))
+                {
+                    if (!(oWhere is string whereExpr))
+                        throw new NotSupportedException($"'where' should be a string expression but instead found '{oWhere.GetType().Name}'");
+
+                    where = whereExpr.GetCachedJsExpression(scope);
+                    htmlAttrs.Remove(nameof(where));
+                }
+                
                 if (htmlAttrs.TryGetValue(nameof(each), out var oEach))
                 {
                     hasEach = true;
@@ -236,11 +261,18 @@ namespace ServiceStack.Templates
                                 : new Dictionary<string, object>();
 
                             scopeArgs[binding] = element;
-                            scopeArgs[nameof(index)] = index++;
-
+                            scopeArgs[nameof(index)] = index;
                             var itemScope = scope.ScopeWithParams(scopeArgs);
 
+                            if (where != null)
+                            {
+                                var result = where.EvaluateToBool(itemScope);
+                                if (!result)
+                                    continue;
+                            }
+
                             await WriteBodyAsync(itemScope, fragment, cancel);
+                            index++;
                         }
 
                         await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", cancel);
