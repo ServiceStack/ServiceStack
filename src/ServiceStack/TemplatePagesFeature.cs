@@ -435,18 +435,18 @@ Session:
   - ss-opt                {{ userSessionOptions | join }}
 
 User: 
-  - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
-  - UserName              {{ userSession | select: { it.UserName } }}
-  - LastName              {{ userSession | select: { it.LastName } }}
-  - Is Admin              {{ userHasRole('Admin') }}
-  - Has Permission        {{ userHasPermission('ThePermission') }}
+  - IsAuthenticated       {{ userSession.IsAuthenticated }}
+  - UserName              {{ userSession.UserName }}
+  - LastName              {{ userSession.LastName }}
+  - Is Admin              {{ 'Admin'         | userHasRole }}
+  - Has Permission        {{ 'ThePermission' | userHasPermission }}
 
 Plugins: {{ plugins | select: \n  - { it | typeName } }}
 </pre></td><td style='width:50%'> 
 {{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
-<td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
+<td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
 </tr></table>";
         
         public object Any(TemplateMetadataDebug request)
