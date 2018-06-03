@@ -19,7 +19,6 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework="net45">
-        <dependency id="Microsoft.Net.Http" version="[2.2.29, )" />
         <dependency id="ServiceStack.Client" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
