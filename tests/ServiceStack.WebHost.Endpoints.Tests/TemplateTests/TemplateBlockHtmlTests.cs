@@ -64,6 +64,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     ["disclaimerAccepted"] = false,
                     ["hasAccess"] = true,
                     ["highlight"] = "baz",
+                    ["digits"] = new[] { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" },
                 }
             }.Init();
             return context;
@@ -164,6 +165,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             result = context.EvaluateTemplate(template.Replace("hasAccess","!hasAccess"));
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@""));
+        }
+
+        [Test]
+        public void Does_evaluate_where_expression_on_strings()
+        {
+            var context = CreateContext();
+
+            var template = @"
+{{#each d in digits where d.Length < index}}
+The word {{d}} is shorter than its value.
+{{/each}}";
+
+            var result = context.EvaluateTemplate(template);
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
+The word five is shorter than its value.
+The word six is shorter than its value.
+The word seven is shorter than its value.
+The word eight is shorter than its value.
+The word nine is shorter than its value.".NormalizeNewLines()));
         }
         
     }

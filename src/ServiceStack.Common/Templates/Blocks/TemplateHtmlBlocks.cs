@@ -8,18 +8,18 @@ namespace ServiceStack.Templates
 {
     /* Usages:
      
-        {{#ul {class:'nav'}}} <li>item</li> {{/ul}}
-        {{#ul {each:items, class:'nav'}}} <li>{{it}}</li> {{/ul}}
-        {{#ul {each:numbers, it:'num', class:'nav'}}} <li>{{num}}</li> {{/ul}}
+    {{#ul {class:'nav'}}} <li>item</li> {{/ul}}
+    {{#ul {each:items, class:'nav'}}} <li>{{it}}</li> {{/ul}}
+    {{#ul {each:numbers, it:'num', class:'nav'}}} <li>{{num}}</li> {{/ul}}
 
-        {{#ul {if:hasAccess, each:items, where:'Age > 27', 
-               class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
-            {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
-                {{Name}}
-            {{/li}}
-        {{else}}
-            <div>no items</div>
-        {{/ul}}
+    {{#ul {if:hasAccess, each:items, where:'Age > 27', 
+           class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
+        {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
+            {{Name}}
+        {{/li}}
+    {{else}}
+        <div>no items</div>
+    {{/ul}}
 
     // Equivalent to:
 
@@ -253,6 +253,7 @@ namespace ServiceStack.Templates
                         await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", cancel);
 
                         var index = 0;
+                        var whereIndex = 0;
                         foreach (var element in each)
                         {
                             // Add all properties into scope if called without explicit in argument 
@@ -261,7 +262,7 @@ namespace ServiceStack.Templates
                                 : new Dictionary<string, object>();
 
                             scopeArgs[binding] = element;
-                            scopeArgs[nameof(index)] = index;
+                            scopeArgs[nameof(index)] = whereIndex++;
                             var itemScope = scope.ScopeWithParams(scopeArgs);
 
                             if (where != null)
@@ -271,8 +272,9 @@ namespace ServiceStack.Templates
                                     continue;
                             }
 
+                            itemScope.ScopedParams[nameof(index)] = index++;
+
                             await WriteBodyAsync(itemScope, fragment, cancel);
-                            index++;
                         }
 
                         await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", cancel);

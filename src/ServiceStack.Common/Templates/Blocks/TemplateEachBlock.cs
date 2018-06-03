@@ -30,6 +30,7 @@ namespace ServiceStack.Templates
             IEnumerable collection = (IEnumerable) cache.Source.Evaluate(scope);
 
             var index = 0;
+            var whereIndex = 0;
             if (collection != null)
             {
                 foreach (var element in collection)
@@ -40,7 +41,7 @@ namespace ServiceStack.Templates
                         : new Dictionary<string, object>();
 
                     scopeArgs[cache.Binding] = element;
-                    scopeArgs[nameof(index)] = index; 
+                    scopeArgs[nameof(index)] = whereIndex++; 
                     var itemScope = scope.ScopeWithParams(scopeArgs);
 
                     if (cache.Where != null)
@@ -50,8 +51,9 @@ namespace ServiceStack.Templates
                             continue;
                     }
                     
+                    itemScope.ScopedParams[nameof(index)] = index++;
+
                     await WriteBodyAsync(itemScope, fragment, cancel);
-                    index++;
                 }
             }
 
