@@ -286,6 +286,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_evaluate_template_with_each_where_blocks()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new[]{ 1, 2, 3, 4, 5, },
+                    ["letters"] = new[]{ "A", "B", "C", "D", "E" },
+                    ["people"] = new[]{ new Person("name1", 1),new Person("name2", 2),new Person("name3", 3) },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers where isOdd(it)}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 3, #2 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each num in numbers where isOdd(num)}}#{{index}} {{num}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 3, #2 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each people where Name = 'name2' and Age = 2 }}#{{index}} {{Name}}, {{Age}}{{/each}}"), 
+                Is.EqualTo("#0 name2, 2"));
+            Assert.That(context.EvaluateTemplate("{{#each p in people where p.Name == 'name2' }}#{{index}} {{p.Name}}, {{p.Age}}{{/each}}"), 
+                Is.EqualTo("#0 name2, 2"));
+        }
+
+        [Test]
         public void Template_each_blocks_without_in_explodes_ref_type_arguments_into_scope()
         {
             var context = new TemplateContext {

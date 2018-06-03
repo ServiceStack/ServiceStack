@@ -40,11 +40,18 @@ namespace ServiceStack.Templates
                         : new Dictionary<string, object>();
 
                     scopeArgs[cache.Binding] = element;
-                    scopeArgs[nameof(index)] = index++; 
-
+                    scopeArgs[nameof(index)] = index; 
                     var itemScope = scope.ScopeWithParams(scopeArgs);
 
+                    if (cache.Where != null)
+                    {
+                        var result = cache.Where.EvaluateToBool(itemScope);
+                        if (!result)
+                            continue;
+                    }
+                    
                     await WriteBodyAsync(itemScope, fragment, cancel);
+                    index++;
                 }
             }
 
@@ -64,7 +71,7 @@ namespace ServiceStack.Templates
 
             literal = literal.AdvancePastWhitespace();
 
-            JsToken source;
+            JsToken source, where = null;
             
             var hasExplicitBinding = literal.StartsWith("in "); 
             if (hasExplicitBinding)
@@ -75,7 +82,7 @@ namespace ServiceStack.Templates
                 binding = identifier.NameString;
                 
                 literal = literal.Advance(3);
-                literal.ParseJsExpression(out source);
+                literal = literal.ParseJsExpression(out source);
                 if (source == null)
                     throw new NotSupportedException("'each' block requires the collection to iterate");
             }
@@ -83,8 +90,14 @@ namespace ServiceStack.Templates
             {
                 source = token;
             }
+
+            if (literal.StartsWith("where "))
+            {
+                literal = literal.Advance(6);
+                literal = literal.ParseJsExpression(out where);
+            }
             
-            return new EachArg(binding, hasExplicitBinding, source);
+            return new EachArg(binding, hasExplicitBinding, source, where);
         }
 
         class EachArg
@@ -92,11 +105,13 @@ namespace ServiceStack.Templates
             public string Binding;
             public readonly bool HasExplicitBinding;
             public readonly JsToken Source;
-            public EachArg(string binding, bool hasExplicitBinding, JsToken source)
+            public readonly JsToken Where;
+            public EachArg(string binding, bool hasExplicitBinding, JsToken source, JsToken where)
             {
                 Binding = binding;
                 HasExplicitBinding = hasExplicitBinding;
                 Source = source;
+                Where = where;
             }
         }
     }
