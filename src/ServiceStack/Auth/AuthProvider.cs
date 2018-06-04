@@ -33,6 +33,8 @@ namespace ServiceStack.Auth
         public Func<AuthProvider, string, string> SuccessRedirectUrlFilter = UrlFilter;
         public Func<AuthProvider, string, string> FailedRedirectUrlFilter = UrlFilter;
         public Func<AuthProvider, string, string> LogoutUrlFilter = UrlFilter;
+        
+        public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
         public static string UrlFilter(AuthProvider provider, string url)
         {
@@ -339,6 +341,9 @@ namespace ServiceStack.Auth
 
         public virtual bool IsAccountLocked(IAuthRepository authRepo, IUserAuth userAuth, IAuthTokens tokens=null)
         {
+            if (AccountLockedValidator != null)
+                return AccountLockedValidator(authRepo, userAuth, tokens);
+            
             return userAuth?.LockedDate != null;
         }
 
