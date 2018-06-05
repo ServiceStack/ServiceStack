@@ -6,19 +6,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateBlockHtmlTests
     {
-        class Person
-        {
-            public string Name { get; set; }
-            public int Age { get; set; }
-
-            public Person() { }
-            public Person(string name, int age)
-            {
-                Name = name;
-                Age = age;
-            }
-        }
-
         [Test]
         public void Does_evaluate_void_img_html_block()
         {

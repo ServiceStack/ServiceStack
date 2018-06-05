@@ -188,19 +188,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate(template), Is.EqualTo("BEFORE MAYBE AFTER"));
         }
 
-        class Person
-        {
-            public string Name { get; set; }
-            public int Age { get; set; }
-
-            public Person() { }
-            public Person(string name, int age)
-            {
-                Name = name;
-                Age = age;
-            }
-        }
-
         [Test]
         public void Does_evaluate_template_containing_with_block()
         {

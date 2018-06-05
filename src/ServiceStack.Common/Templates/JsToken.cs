@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -268,8 +269,22 @@ namespace ServiceStack.Templates
             var to = new List<object>();
             foreach (var element in Elements)
             {
-                var value = element.Evaluate(scope);
-                to.Add(value);
+                if (element is JsSpreadElement spread)
+                {
+                    var arr = spread.Argument.Evaluate(scope) as IEnumerable;
+                    if (arr == null)
+                        continue;
+
+                    foreach (var value in arr)
+                    {
+                        to.Add(value);
+                    }
+                }
+                else
+                {
+                    var value = element.Evaluate(scope);
+                    to.Add(value);
+                }
             }
             return to;
         }
@@ -331,9 +346,31 @@ namespace ServiceStack.Templates
             var to = new Dictionary<string, object>();
             foreach (var prop in Properties)
             {
-                var keyString = GetKey(prop.Key);
-                var value = prop.Value.Evaluate(scope);
-                to[keyString] = value;
+                if (prop.Key == null)
+                {
+                    if (prop.Value is JsSpreadElement spread)
+                    {
+                        var value = spread.Argument.Evaluate(scope);
+                        var obj = value.ToObjectDictionary();
+                        if (obj != null)
+                        {
+                            foreach (var entry in obj)
+                            {
+                                to[entry.Key] = entry.Value;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Object Expressions does not have a key");
+                    }
+                }
+                else
+                {
+                    var keyString = GetKey(prop.Key);
+                    var value = prop.Value.Evaluate(scope);
+                    to[keyString] = value;
+                }
             }
             return to;
         }
@@ -348,10 +385,17 @@ namespace ServiceStack.Templates
                     sb.Append(",");
                 
                 var prop = Properties[i];
-                sb.Append(prop.Key.ToRawString());
-                if (!prop.Shorthand)
+                if (prop.Key != null)
                 {
-                    sb.Append(":");
+                    sb.Append(prop.Key.ToRawString());
+                    if (!prop.Shorthand)
+                    {
+                        sb.Append(":");
+                        sb.Append(prop.Value.ToRawString());
+                    }
+                }
+                else //.... spread operator
+                {
                     sb.Append(prop.Value.ToRawString());
                 }
             }
@@ -384,7 +428,7 @@ namespace ServiceStack.Templates
         public JsToken Value { get; }
         public bool Shorthand { get; }
 
-        public JsProperty(JsToken key, JsToken value) : this(key, value, false){}
+        public JsProperty(JsToken key, JsToken value) : this(key, value, shorthand:false){}
         public JsProperty(JsToken key, JsToken value, bool shorthand)
         {
             Key = key;
@@ -416,6 +460,43 @@ namespace ServiceStack.Templates
                 hashCode = (hashCode * 397) ^ Shorthand.GetHashCode();
                 return hashCode;
             }
+        }
+    }
+
+    public class JsSpreadElement : JsToken
+    {
+        public JsToken Argument { get; }
+        public JsSpreadElement(JsToken argument)
+        {
+            Argument = argument;
+        }
+
+        protected bool Equals(JsSpreadElement other)
+        {
+            return Equals(Argument, other.Argument);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsSpreadElement) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Argument != null ? Argument.GetHashCode() : 0);
+        }
+
+        public override string ToRawString()
+        {
+            return "..." + Argument.ToRawString();
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            return Argument.Evaluate(scope);
         }
     }
 
@@ -714,31 +795,42 @@ namespace ServiceStack.Templates
                         break;
                     }
 
-                    literal = literal.ParseJsToken(out var mapKeyToken);
-
-                    if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsTemplateLiteral) && !(mapKeyToken is JsIdentifier)) 
-                        throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal or identifier.");
-
                     JsToken mapValueToken;
-                    bool shorthand = false;
 
-                    literal = literal.AdvancePastWhitespace();
-                    if (literal.Length > 0 && literal.GetChar(0) == ':')
+                    if (literal.StartsWith("..."))
                     {
-                        literal = literal.Advance(1);
+                        literal = literal.Advance(3);
                         literal = literal.ParseJsExpression(out mapValueToken);
-
+                        
+                        props.Add(new JsProperty(null, new JsSpreadElement(mapValueToken)));
                     }
-                    else 
+                    else
                     {
-                        shorthand = true;
-                        if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
-                            throw new SyntaxErrorException($"Unterminated object literal near: {literal.DebugLiteral()}");
-                            
-                        mapValueToken = mapKeyToken;
+                        literal = literal.ParseJsToken(out var mapKeyToken);
+    
+                        if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsTemplateLiteral) && !(mapKeyToken is JsIdentifier)) 
+                            throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal or identifier.");
+    
+                        bool shorthand = false;
+    
+                        literal = literal.AdvancePastWhitespace();
+                        if (literal.Length > 0 && literal.GetChar(0) == ':')
+                        {
+                            literal = literal.Advance(1);
+                            literal = literal.ParseJsExpression(out mapValueToken);
+    
+                        }
+                        else 
+                        {
+                            shorthand = true;
+                            if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
+                                throw new SyntaxErrorException($"Unterminated object literal near: {literal.DebugLiteral()}");
+                                
+                            mapValueToken = mapKeyToken;
+                        }
+                        
+                        props.Add(new JsProperty(mapKeyToken, mapValueToken, shorthand));
                     }
-                    
-                    props.Add(new JsProperty(mapKeyToken, mapValueToken, shorthand));
 
                     literal = literal.AdvancePastWhitespace();
                     if (literal.IsNullOrEmpty())
@@ -1108,6 +1200,8 @@ namespace ServiceStack.Templates
 
             while (!literal.IsNullOrEmpty())
             {
+                JsToken listValue;
+                
                 literal = literal.AdvancePastWhitespace();
                 if (literal.GetChar(0) == termination)
                 {
@@ -1115,7 +1209,20 @@ namespace ServiceStack.Templates
                     break;
                 }
 
-                literal = literal.ParseJsExpression(out var listValue);
+                if (literal.StartsWith("..."))
+                {
+                    literal = literal.Advance(3);
+                    literal = literal.ParseJsExpression(out listValue);
+                    if (!(listValue is JsIdentifier) && !(listValue is JsArrayExpression)) 
+                        throw new SyntaxErrorException($"Spread operator expected array but instead found {listValue.DebugToken()}");
+                    
+                    listValue = new JsSpreadElement(listValue);
+                }
+                else
+                {
+                    literal = literal.ParseJsExpression(out listValue);
+                }
+
                 arguments.Add(listValue);
 
                 literal = literal.AdvancePastWhitespace();

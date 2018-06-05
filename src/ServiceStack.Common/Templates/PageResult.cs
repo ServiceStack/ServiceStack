@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -623,12 +624,17 @@ namespace ServiceStack.Templates
                 try
                 {
                     var filterName = expr.Name;
-                    var invoker = GetFilterInvoker(filterName, 1 + expr.Arguments.Length, out TemplateFilter filter);
+
+                    var fnArgValues = JsCallExpression.EvaluateArgumentValues(scope, expr.Arguments);
+                    var fnArgsLength = fnArgValues.Count;
+
+
+                    var invoker = GetFilterInvoker(filterName, 1 + fnArgsLength, out TemplateFilter filter);
                     var contextFilterInvoker = invoker == null
-                        ? GetContextFilterInvoker(filterName, 2 + expr.Arguments.Length, out filter)
+                        ? GetContextFilterInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
                     var contextBlockInvoker = invoker == null && contextFilterInvoker == null
-                        ? GetContextBlockInvoker(filterName, 2 + expr.Arguments.Length, out filter)
+                        ? GetContextBlockInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
 
                     if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
@@ -642,31 +648,16 @@ namespace ServiceStack.Templates
 
                     if (invoker != null)
                     {
-                        var args = new object[1 + expr.Arguments.Length];
-                        args[0] = value;
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[1 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, value);
+                        var args = fnArgValues.ToArray();
 
                         value = InvokeFilter(invoker, filter, args, expr.Name);
                     }
                     else if (contextFilterInvoker != null)
                     {
-                        var args = new object[2 + expr.Arguments.Length];
-
-                        args[0] = scope;
-                        args[1] = value;  // filter target
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[2 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, scope);
+                        fnArgValues.Insert(1, value); // filter target
+                        var args = fnArgValues.ToArray();
 
                         value = InvokeFilter(contextFilterInvoker, filter, args, expr.Name);
                     }
@@ -674,20 +665,13 @@ namespace ServiceStack.Templates
                     {
                         var hasFilterTransformers = var.FilterExpressions.Length + i > 1;
 
-                        var args = new object[2 + expr.Arguments.Length];
                         var useScope = hasFilterTransformers
                             ? scope.ScopeWithStream(MemoryStreamFactory.GetStream())
                             : scope;
 
-                        args[0] = useScope;
-                        args[1] = value;  // filter target
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[2 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, useScope);
+                        fnArgValues.Insert(1, value); // filter target
+                        var args = fnArgValues.ToArray();
 
                         try
                         {
@@ -943,13 +927,6 @@ namespace ServiceStack.Templates
 
         public TemplateScopeContext CreateScope(Stream outputStream=null) => 
             new TemplateScopeContext(this, outputStream ?? MemoryStreamFactory.GetStream(), null);
-
-        internal object EvaluateExpression(StringSegment arg, TemplateScopeContext scope)
-        {
-            arg = ParseJsExpression(scope, arg, out var token);
-            var value = EvaluateIfToken(token, scope);
-            return value;
-        }
 
         internal MethodInvoker GetFilterInvoker(string name, int argsCount, out TemplateFilter filter) => GetInvoker(name, argsCount, InvokerType.Filter, out filter);
         internal MethodInvoker GetContextFilterInvoker(string name, int argsCount, out TemplateFilter filter) => GetInvoker(name, argsCount, InvokerType.ContextFilter, out filter);

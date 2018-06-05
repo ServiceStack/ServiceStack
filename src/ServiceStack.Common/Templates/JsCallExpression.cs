@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
@@ -21,7 +22,7 @@ namespace ServiceStack.Templates
 
         private string nameString;
         public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.NameString : null);
-
+        
         public override object Evaluate(TemplateScopeContext scope)
         {
             if (Arguments.Length == 0)
@@ -34,38 +35,50 @@ namespace ServiceStack.Templates
 
             var name = Name;
 
-            var invoker = result.GetFilterInvoker(name, Arguments.Length, out var filter);
+            var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+            var fnArgsLength = fnArgValues.Count;
+
+            var invoker = result.GetFilterInvoker(name, fnArgsLength, out var filter);
             if (invoker != null)
             {
-                var args = new object[Arguments.Length];
-                for (var i = 0; i < Arguments.Length; i++)
-                {
-                    var arg = Arguments[i];
-                    var varValue = arg.Evaluate(scope);
-                    args[i] = varValue;
-                }
-
+                var args = fnArgValues.ToArray();
                 var value = result.InvokeFilter(invoker, filter, args, name);
                 return value;
             }
 
-            invoker = result.GetContextFilterInvoker(name, Arguments.Length + 1, out filter);
+            invoker = result.GetContextFilterInvoker(name, fnArgsLength + 1, out filter);
             if (invoker != null)
             {
-                var args = new object[Arguments.Length + 1];
-                args[0] = scope;
-                for (var i = 0; i < Arguments.Length; i++)
-                {
-                    var arg = Arguments[i];
-                    var varValue = arg.Evaluate(scope);
-                    args[i + 1] = varValue;
-                }
-
+                fnArgValues.Insert(0, scope);
+                var args = fnArgValues.ToArray();
                 var value = result.InvokeFilter(invoker, filter, args, name);
                 return value;
             }
 
             throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
+        }
+
+        public static List<object> EvaluateArgumentValues(TemplateScopeContext scope, JsToken[] args)
+        {
+            var fnArgValues = new List<object>(args.Length + 2); //max size of args without spread args
+            foreach (var arg in args)
+            {
+                if (arg is JsSpreadElement spread)
+                {
+                    if (!(spread.Argument.Evaluate(scope) is IEnumerable spreadValues))
+                        continue;
+                    foreach (var argValue in spreadValues)
+                    {
+                        fnArgValues.Add(argValue);
+                    }
+                }
+                else
+                {
+                    fnArgValues.Add(arg.Evaluate(scope));
+                }
+            }
+
+            return fnArgValues;
         }
 
         public override string ToString() => ToRawString();
