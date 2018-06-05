@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.Templates
+﻿using System.Collections.Generic;
+
+namespace ServiceStack.Templates
 {
     public class JsUnaryExpression : JsExpression
     {
@@ -10,6 +12,24 @@
         {
             Operator = @operator;
             Argument = argument;
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var result = Argument.Evaluate(scope);
+            var afterUnary = Operator.Evaluate(result);
+            return afterUnary;
+        }
+ 
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["operator"] = Operator.Token,
+                ["argument"] = Argument.ToJsAst(),
+            };
+            return to;
         }
 
         protected bool Equals(JsUnaryExpression other) => Equals(Operator, other.Operator) && Equals(Argument, other.Argument);
@@ -28,13 +48,6 @@
             {
                 return ((Operator != null ? Operator.GetHashCode() : 0) * 397) ^ (Argument != null ? Argument.GetHashCode() : 0);
             }
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var result = Argument.Evaluate(scope);
-            var afterUnary = Operator.Evaluate(result);
-            return afterUnary;
         }
     }
 }

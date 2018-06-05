@@ -1,16 +1,18 @@
-﻿namespace ServiceStack.Templates
+﻿using System.Collections.Generic;
+
+namespace ServiceStack.Templates
 {
     public class JsLogicalExpression : JsExpression
     {
-        public JsLogicOperator Operand { get; set; }
+        public JsLogicOperator Operator { get; set; }
         public JsToken Left { get; set; }
         public JsToken Right { get; set; }
-        public override string ToRawString() => "(" + JsonValue(Left) + Operand.Token + JsonValue(Right) + ")";
+        public override string ToRawString() => "(" + JsonValue(Left) + Operator.Token + JsonValue(Right) + ")";
 
-        public JsLogicalExpression(JsToken left, JsLogicOperator operand, JsToken right)
+        public JsLogicalExpression(JsToken left, JsLogicOperator @operator, JsToken right)
         {
             Left = left;
-            Operand = operand;
+            Operator = @operator;
             Right = right;
         }
 
@@ -18,12 +20,12 @@
         {
             var lhs = Left.Evaluate(scope);
             var rhs = Right.Evaluate(scope);
-            return Operand.Test(lhs, rhs);
+            return Operator.Test(lhs, rhs);
         }
 
         protected bool Equals(JsLogicalExpression other)
         {
-            return Equals(Operand, other.Operand) && Equals(Left, other.Left) && Equals(Right, other.Right);
+            return Equals(Operator, other.Operator) && Equals(Left, other.Left) && Equals(Right, other.Right);
         }
 
         public override bool Equals(object obj)
@@ -38,11 +40,23 @@
         {
             unchecked
             {
-                var hashCode = (Operand != null ? Operand.GetHashCode() : 0);
+                var hashCode = (Operator != null ? Operator.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Left != null ? Left.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Right != null ? Right.GetHashCode() : 0);
                 return hashCode;
             }
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["operator"] = Operator.Token,
+                ["left"] = Left.ToJsAst(),
+                ["right"] = Right.ToJsAst(),
+            };
+            return to;
         }
     }
 }

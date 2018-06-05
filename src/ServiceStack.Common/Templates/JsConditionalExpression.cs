@@ -1,8 +1,9 @@
-﻿using ServiceStack.Text;
+﻿using System.Collections.Generic;
+using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
-    public class JsConditionalExpression : JsToken
+    public class JsConditionalExpression : JsExpression
     {
         public JsToken Test { get; }
 
@@ -26,6 +27,18 @@ namespace ServiceStack.Templates
             sb.Append(" : ");
             sb.Append(Alternate.ToRawString());
             return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["test"] = Test.ToJsAst(),
+                ["consequent"] = Consequent.ToJsAst(),
+                ["alternate"] = Alternate.ToJsAst(),
+            };
+            return to;
         }
 
         public override object Evaluate(TemplateScopeContext scope)

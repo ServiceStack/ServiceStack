@@ -8,8 +8,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace ServiceStack.Templates
 {
-    public abstract class JsExpression : JsToken {}
-
     public static class JsExpressionUtils
     {
         public static object GetJsExpressionAndEvaluate(this StringSegment expr, TemplateScopeContext scope,

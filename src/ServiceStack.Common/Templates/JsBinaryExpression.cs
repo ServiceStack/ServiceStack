@@ -1,4 +1,6 @@
-﻿namespace ServiceStack.Templates
+﻿using System.Collections.Generic;
+
+namespace ServiceStack.Templates
 {
     public class JsBinaryExpression : JsExpression
     {
@@ -41,6 +43,18 @@
             var lhs = Left.Evaluate(scope);
             var rhs = Right.Evaluate(scope);
             return Operand.Evaluate(lhs, rhs);
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["operator"] = Operand.Token,
+                ["left"] = Left.ToJsAst(),
+                ["right"] = Right.ToJsAst(),
+            };
+            return to;
         }
     }
 }

@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
-    public class JsMemberExpression : JsToken
+    public class JsMemberExpression : JsExpression
     {
         public JsToken Object { get; }
         public JsToken Property { get; }
@@ -36,6 +36,18 @@ namespace ServiceStack.Templates
                 sb.Append(Property.ToRawString());
             }
             return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["computed"] = Computed,
+                ["object"] = Object.ToJsAst(),
+                ["property"] = Property.ToJsAst(),
+            };
+            return to;
         }
 
         public override object Evaluate(TemplateScopeContext scope)
