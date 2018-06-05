@@ -128,8 +128,7 @@ namespace ServiceStack.Auth
                 var data = picture?.Object("data");
                 if (data != null)
                 {
-                    string profileUrl;
-                    if (data.TryGetValue("url", out profileUrl))
+                    if (data.TryGetValue("url", out var profileUrl))
                         tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
                 }
             }
