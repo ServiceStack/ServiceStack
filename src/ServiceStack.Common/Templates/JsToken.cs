@@ -515,7 +515,7 @@ namespace ServiceStack.Templates
             ValidNumericChars = n;
 
             var o = new byte['~' + 1];
-            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['%'] = o['|'] = o['&'] = o['^'] = o['~'] = True;
+            o['<'] = o['>'] = o['='] = o['!'] = o['+'] = o['-'] = o['*'] = o['/'] = o['%'] = o['|'] = o['&'] = o['^'] = o['~'] = o['?'] = True;
             OperatorChars = o;
 
             var e = new byte['}' + 1];
@@ -537,6 +537,7 @@ namespace ServiceStack.Templates
             {",", 0},
             {"=", 0},
             {"]", 0},
+            {"??", 1},
             {"||", 1},
             {"&&", 2},
             {"|", 3},
@@ -1019,6 +1020,11 @@ namespace ServiceStack.Templates
                     op = JsOr.Operator;
                     return literal.Advance(2);
                 }
+                if (literal.StartsWith("??"))
+                {
+                    op = JsCoalescing.Operator;
+                    return literal.Advance(2);
+                }
                 if (literal.StartsWith("&&"))
                 {
                     op = JsAnd.Operator;
@@ -1070,6 +1076,9 @@ namespace ServiceStack.Templates
                     case '%':
                         op = JsMod.Operator;
                         return literal.Advance(1);
+                    
+                    case '?': // a single '?' is not a binary operator but is an op char used in '??'
+                        return literal;
                     default:
                         throw new SyntaxErrorException($"Invalid Operator found near: {literal.DebugLiteral()}");
                 }

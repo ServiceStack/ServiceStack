@@ -87,12 +87,15 @@ namespace ServiceStack.Templates
         public override string Token => "!==";
     }
 
-    public class JsAssignment : JsBinaryOperator
+    public class JsCoalescing  : JsBinaryOperator
     {
-        public static JsAssignment Operator = new JsAssignment();
-        private JsAssignment() { }
-        public override string Token => "=";
-        public override object Evaluate(object lhs, object rhs) => rhs;
+        public static JsCoalescing Operator = new JsCoalescing();
+        private JsCoalescing() { }
+
+        public override object Evaluate(object lhs, object rhs) =>
+            TemplateDefaultFilters.isFalsy(lhs) ? rhs : lhs;
+
+        public override string Token => "??";
     }
 
     public class JsOr : JsLogicOperator
@@ -160,7 +163,7 @@ namespace ServiceStack.Templates
         public static JsBitwiseNot Operator = new JsBitwiseNot();
         private JsBitwiseNot() { }
         public override string Token => "~";
-        public override object Evaluate(object target) => DynamicNumber.Get(target).bitwiseNot(target);
+        public override object Evaluate(object target) => DynamicNumber.BitwiseNot(target);
     }
 
     public class JsBitwiseLeftShift : JsBinaryOperator

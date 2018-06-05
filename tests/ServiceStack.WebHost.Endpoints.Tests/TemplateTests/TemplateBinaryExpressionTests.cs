@@ -257,5 +257,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{ [1 + 2 * 3 > one && 1 * 2 < ten] | get(0) }}"), Is.EqualTo("True"));
         }
 
+        [Test]
+        public void Does_evaluate_Coalescing_expressions()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["a"] = null,
+                    ["b"] = 2,
+                    ["empty"] = "",
+                    ["f"] = false,
+                    ["zero"] = 0,
+                    ["t"] = true,
+                    ["one"] = 1,
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{ null ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ a ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '' ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ f ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 0 ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ zero ?? 1 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ true ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ t ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ b ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 2 ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 1 ?? 2 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ one ?? 2 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ 0 ?? 2 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateTemplate("{{ 2 ?? 0 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+        }
+
     }
 }

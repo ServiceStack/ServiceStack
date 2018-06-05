@@ -91,7 +91,8 @@ namespace ServiceStack.Templates
                 return peekLiteral;
             }
 
-            if (peekChar == ConditionalExpressionTestChar)
+            if (peekChar == ConditionalExpressionTestChar && 
+                peekLiteral.SafeGetChar(1) != ConditionalExpressionTestChar) // not ??
             {
                 literal = peekLiteral.ParseJsConditionalExpression(node, out var expression);
                 token = expression;
