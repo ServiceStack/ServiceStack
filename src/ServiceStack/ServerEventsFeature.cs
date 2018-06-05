@@ -1150,8 +1150,7 @@ namespace ServiceStack
                 if (subs == null)
                     return;
 
-                bool flag;
-                subs.TryRemove(subscription, out flag);
+                subs.TryRemove(subscription, out bool _);
             }
             catch (Exception ex)
             {
@@ -1198,6 +1197,13 @@ namespace ServiceStack
         {
             if (isDisposed) return;
             isDisposed = true;
+
+            var allSubs = Subcriptions.ValuesWithoutLock().ToArray();
+            foreach (var sub in allSubs)
+            {
+                sub.Unsubscribe();
+            }
+
             Reset();
         }
     }

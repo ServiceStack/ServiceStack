@@ -15,6 +15,7 @@ namespace ServiceStack.Templates
     ///         {{#each num in [1,2,3]}} {{num}} {{/each}}
     ///         {{#each numbers}} {{it}} {{else}} no numbers {{/each}}
     ///         {{#each numbers}} {{it}} {{else if letters != null}} has letters {{else}} no numbers {{/each}}
+    ///         {{#each n in numbers where n > 5}} {{it}} {{else}} no numbers > 5 {{/each}}
     /// </summary>
     public class TemplateEachBlock : TemplateBlock
     {
