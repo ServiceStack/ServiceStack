@@ -241,26 +241,20 @@ namespace ServiceStack.Templates
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
 
-            var culture = CultureInfo.CurrentCulture;
-            if (Equals(culture, CultureInfo.InvariantCulture))
-            {
-                culture = (CultureInfo) culture.Clone();
-                culture.NumberFormat.CurrencySymbol = "$";
-            }
             
-            Args[TemplateConstants.MaxQuota] = 10000;
-            Args[TemplateConstants.DefaultCulture] = culture;
-            Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
-            Args[TemplateConstants.DefaultDateTimeFormat] = "u";
-            Args[TemplateConstants.DefaultTimeFormat] = "h\\:mm\\:ss";
-            Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromMinutes(1);
-            Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromMinutes(1);
-            Args[TemplateConstants.DefaultIndent] = "\t";
-            Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
-            Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
-            Args[TemplateConstants.DefaultStringComparison] = StringComparison.Ordinal;
-            Args[TemplateConstants.DefaultTableClassName] = "table";
-            Args[TemplateConstants.DefaultErrorClassName] = "alert alert-danger";
+            Args[nameof(TemplateConfig.MaxQuota)] = TemplateConfig.MaxQuota;
+            Args[nameof(TemplateConfig.DefaultCulture)] = TemplateConfig.CreateCulture();
+            Args[nameof(TemplateConfig.DefaultDateFormat)] = TemplateConfig.DefaultDateFormat;
+            Args[nameof(TemplateConfig.DefaultDateTimeFormat)] = TemplateConfig.DefaultDateTimeFormat;
+            Args[nameof(TemplateConfig.DefaultTimeFormat)] = TemplateConfig.DefaultTimeFormat;
+            Args[nameof(TemplateConfig.DefaultFileCacheExpiry)] = TemplateConfig.DefaultFileCacheExpiry;
+            Args[nameof(TemplateConfig.DefaultUrlCacheExpiry)] = TemplateConfig.DefaultUrlCacheExpiry;
+            Args[nameof(TemplateConfig.DefaultIndent)] = TemplateConfig.DefaultIndent;
+            Args[nameof(TemplateConfig.DefaultNewLine)] = TemplateConfig.DefaultNewLine;
+            Args[nameof(TemplateConfig.DefaultJsConfig)] = TemplateConfig.DefaultJsConfig;
+            Args[nameof(TemplateConfig.DefaultStringComparison)] = TemplateConfig.DefaultStringComparison;
+            Args[nameof(TemplateConfig.DefaultTableClassName)] = TemplateConfig.DefaultTableClassName;
+            Args[nameof(TemplateConfig.DefaultErrorClassName)] = TemplateConfig.DefaultErrorClassName;
         }
 
         public bool HasInit { get; private set; }

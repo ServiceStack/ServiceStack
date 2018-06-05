@@ -412,7 +412,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         public async Task Does_default_filter_currency()
         {
             var context = CreateContext().Init();
-            context.Args[TemplateConstants.DefaultCulture] = new CultureInfo("en-US");
+            context.Args[nameof(TemplateConfig.DefaultCulture)] = new CultureInfo("en-US");
 
             context.VirtualFiles.WriteFile("page-default.html", "Cost: {{ 99.99 | currency }}");
             context.VirtualFiles.WriteFile("page-culture.html", "Cost: {{ 99.99 | currency(culture) | raw }}");

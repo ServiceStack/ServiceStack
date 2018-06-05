@@ -41,7 +41,7 @@ namespace ServiceStack.Templates
                         : new Dictionary<string, object>();
 
                     scopeArgs[cache.Binding] = element;
-                    scopeArgs[nameof(index)] = whereIndex++; 
+                    scopeArgs[nameof(index)] = AssertWithinMaxQuota(whereIndex++); 
                     var itemScope = scope.ScopeWithParams(scopeArgs);
 
                     if (cache.Where != null)
@@ -51,7 +51,7 @@ namespace ServiceStack.Templates
                             continue;
                     }
                     
-                    itemScope.ScopedParams[nameof(index)] = index++;
+                    itemScope.ScopedParams[nameof(index)] = AssertWithinMaxQuota(index++);
 
                     await WriteBodyAsync(itemScope, fragment, cancel);
                 }

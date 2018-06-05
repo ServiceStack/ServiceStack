@@ -60,6 +60,15 @@ namespace ServiceStack.Templates
         }
 
         protected bool CanExportScopeArgs(object element) => element != null && !(element is string) && element.GetType().IsClass;
+
+        protected int AssertWithinMaxQuota(int value)
+        {
+            var maxQuota = (int)Context.Args[nameof(TemplateConfig.MaxQuota)];
+            if (value > maxQuota)
+                throw new NotSupportedException($"{value} exceeds Max Quota of {maxQuota}. \nMaxQuota can be changed in `Context.Args[nameof(TemplateConfig.MaxQuota)]` or globally in `TemplateConfig.MaxQuota`.");
+
+            return value;
+        }
     }
 
     public class TemplateDefaultBlocks : ITemplatePlugin
