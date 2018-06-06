@@ -361,7 +361,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{#each c in letters}}{{#if isNumber(c)}}number {{c}} {{else}}letter {{c}} {{/if}}{{/each}}"), 
                 Is.EqualTo("letter A letter B letter C "));
         }
-
+        
         [Test]
         public void Does_evaluate_template_with_partial_block()
         {
@@ -461,6 +461,52 @@ partialArg in page scope is <b>from page</b>"));
             var context = new TemplateContext().Init();
             
             Assert.That(context.EvaluateTemplate("Remove {{#noop}} from{{/noop}}view"), Is.EqualTo("Remove view"));
+        }
+ 
+        public class AsyncResultsFilter : TemplateFilter
+        {
+            public Task<object> asyncInts(TemplateScopeContext scope)
+            {
+                return ((object)new object[]{1, 2, 3}).InTask();
+            }
+            
+            public Task<object> asyncDictionary(TemplateScopeContext scope)
+            {
+                return ((object)new Dictionary<string, object> { {"foo", 1}, {"bar", 2} }).InTask();
+            }
+
+            public Task<object> asyncResult(object result) => result.InTask();
+
+            public Task<object> asyncTrue() => ((object) true).InTask();
+
+            public Task<object> asyncFalse() => ((object) false).InTask();
+
+            public Task<object> asyncPerson() => ((object) new Person("foo",1)).InTask();
+        }
+
+        [Test]
+        public void Does_evaluate_async_results_in_blocks()
+        {
+            var context = new TemplateContext {
+                TemplateFilters = { new AsyncResultsFilter() },
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{#each asyncInts}}{{it}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            Assert.That(context.EvaluateTemplate("{{#each asyncResult([1,2,3])}}{{it}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            Assert.That(context.EvaluateTemplate("{{#each asyncDictionary}}({{Key}},{{Value}}) {{/each}}"), 
+                Is.EqualTo("(foo,1) (bar,2) "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each []}}{{else if asyncTrue}}does async{{else}}no async{{/each}}"), 
+                Is.EqualTo("does async"));
+            
+            Assert.That(context.EvaluateTemplate("{{#if asyncTrue}}does async{{else}}no async{{/if}}"), 
+                Is.EqualTo("does async"));
+            
+            Assert.That(context.EvaluateTemplate("{{#if asyncFalse}}no async{{else}}does async{{/if}}"), 
+                Is.EqualTo("does async"));
+
+            Assert.That(context.EvaluateTemplate("{{#with asyncPerson}}({{Name}},{{Age}}) {{/with}}"), 
+                Is.EqualTo("(foo,1) "));
         }
     }
 }

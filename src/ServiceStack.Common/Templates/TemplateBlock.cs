@@ -49,7 +49,7 @@ namespace ServiceStack.Templates
                 if (argument.StartsWith("if "))
                     argument = argument.Advance(3);
 
-                var result = argument.GetJsExpressionAndEvaluateToBool(scope,
+                var result = await argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
                     ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression"));
                 if (result)
                 {
@@ -59,7 +59,8 @@ namespace ServiceStack.Templates
             }
         }
 
-        protected bool CanExportScopeArgs(object element) => element != null && !(element is string) && element.GetType().IsClass;
+        protected bool CanExportScopeArgs(object element) => 
+            element != null && !(element is string) && (element.GetType().IsClass || element is KeyValuePair<string, object>);
 
         protected int AssertWithinMaxQuota(int value)
         {

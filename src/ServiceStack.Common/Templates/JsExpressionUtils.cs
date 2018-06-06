@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 
 #if NETSTANDARD2_0
@@ -29,9 +30,26 @@ namespace ServiceStack.Templates
             var result = token.Evaluate(scope);
             return result;
         }
-        
-        public static bool GetJsExpressionAndEvaluateToBool(this StringSegment expr, TemplateScopeContext scope,
-            Action ifNone = null)
+
+        public static Task<object> GetJsExpressionAndEvaluateAsync(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
+        {
+            if (expr.IsNullOrEmpty())
+            {
+                ifNone?.Invoke();
+                return TypeConstants.EmptyTask;
+            }
+
+            var token = expr.GetCachedJsExpression(scope);
+            if (token == null)
+            {
+                ifNone?.Invoke();
+                return TypeConstants.EmptyTask;
+            }
+
+            return token.EvaluateAsync(scope);
+        }
+
+        public static bool GetJsExpressionAndEvaluateToBool(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -48,6 +66,24 @@ namespace ServiceStack.Templates
 
             var result = token.EvaluateToBool(scope);
             return result;
+        }
+
+        public static Task<bool> GetJsExpressionAndEvaluateToBoolAsync(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
+        {
+            if (expr.IsNullOrEmpty())
+            {
+                ifNone?.Invoke();
+                return TypeConstants.FalseTask;
+            }
+
+            var token = expr.GetCachedJsExpression(scope);
+            if (token == null)
+            {
+                ifNone?.Invoke();
+                return TypeConstants.FalseTask;
+            }
+
+            return token.EvaluateToBoolAsync(scope);
         }
         
         public static JsToken GetCachedJsExpression(this StringSegment expr, TemplateScopeContext scope)

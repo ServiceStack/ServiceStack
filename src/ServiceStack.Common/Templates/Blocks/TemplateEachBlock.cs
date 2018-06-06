@@ -28,7 +28,7 @@ namespace ServiceStack.Templates
 
             var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.ArgumentString, _ => ParseArgument(scope, fragment));
             
-            IEnumerable collection = (IEnumerable) cache.Source.Evaluate(scope);
+            IEnumerable collection = (IEnumerable) await cache.Source.EvaluateAsync(scope);
 
             var index = 0;
             var whereIndex = 0;
@@ -47,7 +47,7 @@ namespace ServiceStack.Templates
 
                     if (cache.Where != null)
                     {
-                        var result = cache.Where.EvaluateToBool(itemScope);
+                        var result = await cache.Where.EvaluateToBoolAsync(itemScope);
                         if (!result)
                             continue;
                     }
@@ -105,7 +105,7 @@ namespace ServiceStack.Templates
 
         class EachArg
         {
-            public string Binding;
+            public readonly string Binding;
             public readonly bool HasExplicitBinding;
             public readonly JsToken Source;
             public readonly JsToken Where;

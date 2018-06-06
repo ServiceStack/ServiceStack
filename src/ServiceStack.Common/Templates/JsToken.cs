@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 #if NETSTANDARD2_0
@@ -31,6 +32,19 @@ namespace ServiceStack.Templates
         public override string ToString() => ToRawString();
 
         public abstract object Evaluate(TemplateScopeContext scope);
+
+        /// <summary>
+        /// Handle sync/async results if the result can be a Task  
+        /// </summary>
+        public virtual Task<object> EvaluateAsync(TemplateScopeContext scope)
+        {
+            var result = Evaluate(scope);
+            if (result is Task<object> taskObj)
+                return taskObj;
+            if (result is Task task)
+                return task.GetResult().InTask();
+            return result.InTask();
+        }
 
         public static object UnwrapValue(JsToken token)
         {
@@ -747,6 +761,18 @@ namespace ServiceStack.Templates
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
         {
             var ret = token.Evaluate(scope);
+            if (ret is bool b)
+                return b;
+
+            return !TemplateDefaultFilters.isFalsy(ret);
+        }
+
+        /// <summary>
+        /// Handle sync/async results if the result can be a Task  
+        /// </summary>
+        public static async Task<bool> EvaluateToBoolAsync(this JsToken token, TemplateScopeContext scope)
+        {
+            var ret = await token.EvaluateAsync(scope);
             if (ret is bool b)
                 return b;
 
