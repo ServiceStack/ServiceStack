@@ -398,6 +398,31 @@ partialArg in page scope is <b>from page</b>"));
         }
 
         [Test]
+        public void Can_use_partial_to_evaluate_Markdown()
+        {
+            var context = new TemplateContext {
+                Plugins = { new MarkdownTemplatePlugin() }
+            }.Init();
+
+            var result = context.EvaluateTemplate(@"
+{{#partial content}}
+ - List Item
+{{/partial}}
+
+<h1>Heading</h1>
+
+{{ 'content' | partial | markdown }}
+
+<footer>2000</footer>");
+         
+            Assert.That(result.RemoveNewLines(), Is.EqualTo(@"
+<h1>Heading</h1>
+<ul><li>List Item</li></ul>
+<footer>2000</footer>".RemoveNewLines()));
+            
+        }
+
+        [Test]
         public void Does_evaluate_template_with_noop_block()
         {
             var context = new TemplateContext().Init();

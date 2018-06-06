@@ -62,7 +62,7 @@ namespace ServiceStack
             TemplateFilters.Add(new TemplateProtectedFilters());
             TemplateFilters.Add(new TemplateInfoFilters());
             TemplateFilters.Add(new TemplateServiceStackFilters());
-            FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
+            Plugins.Add(new MarkdownTemplatePlugin { RegisterPageFormat = false });
             SkipExecutingFiltersIfError = true;
         }
 
@@ -579,6 +579,28 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             {
                 await page.Format.OnViewException(result, httpReq, ex);
             }
+        }
+    }
+
+    public class MarkdownTemplateFilter : TemplateFilter
+    {
+        public IRawString markdown(string markdown) => markdown != null 
+            ? MarkdownConfig.Transformer.Transform(markdown).ToRawString() 
+            : RawString.Empty;
+    }
+    
+    public class MarkdownTemplatePlugin : ITemplatePlugin
+    {
+        public bool RegisterPageFormat { get; set; } = true;
+
+        public void Register(TemplateContext context)
+        {
+            if (RegisterPageFormat)
+                context.PageFormats.Add(new MarkdownPageFormat());
+            
+            context.FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
+            
+            context.TemplateFilters.Add(new MarkdownTemplateFilter());
         }
     }
 
