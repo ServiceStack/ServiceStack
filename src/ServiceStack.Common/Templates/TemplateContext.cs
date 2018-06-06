@@ -257,6 +257,24 @@ namespace ServiceStack.Templates
             Args[nameof(TemplateConfig.DefaultErrorClassName)] = TemplateConfig.DefaultErrorClassName;
         }
 
+        public TemplateContext RemoveFilters(Predicate<TemplateFilter> match)
+        {
+            TemplateFilters.RemoveAll(match);
+            return this;
+        }
+
+        public TemplateContext RemoveBlocks(Predicate<TemplateBlock> match)
+        {
+            TemplateBlocks.RemoveAll(match);
+            return this;
+        }
+
+        public TemplateContext RemovePlugins(Predicate<ITemplatePlugin> match)
+        {
+            Plugins.RemoveAll(match);
+            return this;
+        }
+
         public bool HasInit { get; private set; }
 
         public TemplateContext Init()

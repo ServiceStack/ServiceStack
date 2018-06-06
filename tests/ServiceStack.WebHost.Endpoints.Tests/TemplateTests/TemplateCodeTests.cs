@@ -45,6 +45,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     public class TemplateCodeTests
     {
         [Test]
+        public void Can_remove_TemplateContext_defaults()
+        {
+            var context = new TemplateContext()
+                .RemoveFilters(x => true)
+                .RemoveBlocks(x => true)
+                .RemovePlugins(x => true)
+            .Init();
+            
+            Assert.That(context.TemplateFilters.Count, Is.EqualTo(0));
+            Assert.That(context.TemplateBlocks.Count, Is.EqualTo(0));
+            Assert.That(context.Plugins.Count, Is.EqualTo(0));
+        }
+        
+        [Test]
         public void Can_execute_CodePage()
         {
             var context = new TemplateContext
