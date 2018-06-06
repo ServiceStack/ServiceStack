@@ -204,7 +204,7 @@ namespace ServiceStack.Host.NetCore
         {
             try
             {
-                if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+                if (!HostContext.AppHost.AllowSetCookie(Request, cookie))
                     return;
 
                 var cookieOptions = cookie.ToCookieOptions();

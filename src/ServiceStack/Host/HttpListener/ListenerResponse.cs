@@ -179,7 +179,7 @@ namespace ServiceStack.Host.HttpListener
 
         public void SetCookie(Cookie cookie)
         {
-            if (!HostContext.AppHost.AllowSetCookie(Request, cookie.Name))
+            if (!HostContext.AppHost.SetCookieFilter(Request, cookie))
                 return;
 
             var cookieStr = cookie.AsHeaderValue();

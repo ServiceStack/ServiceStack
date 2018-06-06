@@ -578,7 +578,16 @@ namespace ServiceStack
             return OnSessionFilter(session, withSessionId);
         }
 
-        public virtual bool AllowSetCookie(IRequest req, string cookieName)
+        /// <summary>
+        /// Override built-in Cookies, return false to prevent the Cookie from being set.
+        /// </summary>
+        public virtual bool SetCookieFilter(IRequest req, Cookie cookie)
+        {
+            return AllowSetCookie(req, cookie.Name);
+        }
+        
+        [Obsolete("Override SetCookieFilter")]
+        protected virtual bool AllowSetCookie(IRequest req, string cookieName)
         {
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
