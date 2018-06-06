@@ -96,6 +96,10 @@ namespace ServiceStack.Templates
     {
         public override string Tag => "select";
     }
+    public class TemplateOptionBlock : TemplateHtmlBlock
+    {
+        public override string Tag => "option";
+    }
     public class TemplateTextAreaBlock : TemplateHtmlBlock
     {
         public override string Tag => "textarea";
@@ -311,6 +315,7 @@ namespace ServiceStack.Templates
                 new TemplateFormBlock(), 
                 new TemplateInputBlock(), 
                 new TemplateSelectBlock(), 
+                new TemplateOptionBlock(),
                 new TemplateTextAreaBlock(), 
                 new TemplateButtonBlock(), 
                 new TemplateTableBlock(),
