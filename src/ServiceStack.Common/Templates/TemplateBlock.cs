@@ -76,6 +76,7 @@ namespace ServiceStack.Templates
         public void Register(TemplateContext context)
         {
             context.TemplateBlocks.AddRange(new TemplateBlock[] {
+                new TemplateRawBlock(),
                 new TemplateIfBlock(),
                 new TemplateEachBlock(),
                 new TemplatePartialBlock(),

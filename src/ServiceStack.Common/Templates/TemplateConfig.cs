@@ -67,6 +67,10 @@ namespace ServiceStack.Templates
             typeof(NullReferenceException),
             typeof(ArgumentNullException),
         };
+        
+        public static HashSet<string> BlockNamessWithStringBody { get; set; } = new HashSet<string> {
+            "raw"
+        };
 
         public static int MaxQuota { get; set; } = 10000;
         public static CultureInfo DefaultCulture { get; set; } //Uses CurrentCulture by default

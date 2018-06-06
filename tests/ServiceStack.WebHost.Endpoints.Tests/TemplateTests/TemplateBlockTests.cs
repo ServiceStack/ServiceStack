@@ -97,6 +97,39 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
         }
+
+        [Test]
+        public void Does_parse_Raw_block_body_as_string()
+        {
+            var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
+            
+            Assert.That(fragments.Count, Is.EqualTo(3));
+            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            
+            var statement = fragments[1] as PageBlockFragment;
+            Assert.That(statement, Is.Not.Null);
+            Assert.That(statement.Name, Is.EqualTo("raw".ToStringSegment()));
+            Assert.That(statement.Argument, Is.EqualTo("".ToStringSegment()));
+            Assert.That(statement.Body.Length, Is.EqualTo(1));
+            
+            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo(" Hi, {{ {{ name }} }} ".ToStringSegment()));
+            
+            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+        }
+
+        [Test]
+        public void Does_evaluate_Raw_block_body_as_string()
+        {
+            var context = new TemplateContext {
+                Plugins = { new MarkdownTemplatePlugin() }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER"),
+                Is.EqualTo("BEFORE  Hi, {{ {{ name }} }}  AFTER"));
+
+            Assert.That(context.EvaluateTemplate("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
+                Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
+        }
         
         public class TemplateBoldBlock : TemplateBlock
         {

@@ -181,26 +181,48 @@ namespace ServiceStack.Templates
                     var blockExpr = literal.Subsegment(0, endExprPos).Trim();
                     literal = literal.Advance(endExprPos + 2);
 
-                    literal = literal.ParseStatementBody(blockName, out var body);
-                    var elseStatements = new List<PageElseBlock>();
-
-                    while (literal.StartsWith("{{else"))
+                    var blockNameString = blockName.Value;
+                    if (!TemplateConfig.BlockNamessWithStringBody.Contains(blockNameString))
                     {
-                        literal = literal.ParseElseStatement(blockName, out var elseStatement);
-                        elseStatements.Add(elseStatement);
+                        literal = literal.ParseStatementBody(blockName, out var body);
+                        var elseStatements = new List<PageElseBlock>();
+
+                        while (literal.StartsWith("{{else"))
+                        {
+                            literal = literal.ParseElseStatement(blockName, out var elseStatement);
+                            elseStatements.Add(elseStatement);
+                        }
+
+                        literal = literal.Advance(2 + 1 + blockName.Length + 2);
+                    
+                        //remove new line after partial block end tag
+                        literal = literal.TrimFirstNewLine();
+
+                        var length = text.Length - pos - literal.Length;
+                        var originalText = text.Subsegment(pos, length);
+                        lastPos = pos + length;
+                    
+                        var statement = new PageBlockFragment(originalText, blockName, blockExpr, body, elseStatements);
+                        to.Add(statement);
                     }
+                    else
+                    {
+                        var endBlock = "{{/" + blockNameString + "}}";
+                        var endBlockPos = literal.IndexOf(endBlock);
+                        if (endBlockPos == -1)
+                            throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
 
-                    literal = literal.Advance(2 + 1 + blockName.Length + 2);
+                        var endBlockBody = literal.Subsegment(0, endBlockPos);
+                        literal = literal.Advance(endBlockPos + endBlock.Length).TrimFirstNewLine();
+                        var body = new List<PageFragment>{ new PageStringFragment(endBlockBody) };
+                        
+                        var length = text.Length - pos - literal.Length;
+                        var originalText = text.Subsegment(pos, length);
+                        lastPos = pos + length;
                     
-                    //remove new line after partial block end tag
-                    literal = literal.TrimFirstNewLine();
-
-                    var length = text.Length - pos - literal.Length;
-                    var originalText = text.Subsegment(pos, length);
-                    lastPos = pos + length;
-                    
-                    var statement = new PageBlockFragment(originalText, blockName, blockExpr, body, elseStatements);
-                    to.Add(statement);
+                        var statement = new PageBlockFragment(originalText, blockName, blockExpr, body);
+                        to.Add(statement);
+                    }
                 }
                 else
                 {
