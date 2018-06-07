@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
+using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
@@ -120,6 +121,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_compress_RequestDto_responses_HttpClient()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
+            var response = await client.PostAsync(new CompressData
+            {
+                String = "Hello",
+                Bytes = "World".ToUtf8Bytes()
+            });
+
+            Assert.That(response.String, Is.EqualTo("Hello"));
+            Assert.That(response.Bytes, Is.EqualTo("World".ToUtf8Bytes()));
+        }
+
+        [Test]
         public void Does_compress_raw_String_responses()
         {
             var client = new JsonServiceClient(Config.ListeningOn);
@@ -132,10 +147,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_compress_raw_String_responses_HttpClient()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
+            var response = await client.PostAsync(new CompressString
+            {
+                String = "foo",
+            });
+
+            Assert.That(response, Is.EqualTo("foo"));
+        }
+
+        [Test]
         public void Does_compress_raw_Bytes_responses()
         {
             var client = new JsonServiceClient(Config.ListeningOn);
             var response = client.Post(new CompressBytes
+            {
+                Bytes = "foo".ToUtf8Bytes(),
+            });
+
+            Assert.That(response, Is.EquivalentTo("foo".ToUtf8Bytes()));
+        }
+
+        [Test]
+        public async Task Does_compress_raw_Bytes_responses_HttpClient()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
+            var response = await client.PostAsync(new CompressBytes
             {
                 Bytes = "foo".ToUtf8Bytes(),
             });
@@ -162,6 +201,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_not_compress_error_responses_HttpClient()
+        {
+            var client = new JsonHttpClient(Config.ListeningOn);
+
+            try
+            {
+                await client.PostAsync(new CompressError());
+                Assert.Fail("Should throw");
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo(404));
+                Assert.That(ex.ErrorCode, Is.EqualTo("NotFound"));
+                Assert.That(ex.ErrorMessage, Is.EqualTo("Always NotFound"));
+            }
+        }
+
+        [Test]
         public void Does_compress_using_ContenType_in_HttpResult()
         {
             var url = Config.ListeningOn.CombineWith(new CompressDtoResult { Name = "foo" }.ToGetUrl());
@@ -174,12 +231,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(xml, Does.StartWith("<?xml"));
         }
 
-#if !NETCORE //No AutomaticDecompression
+        [Test]
+        public async Task Does_compress_using_ContenType_in_HttpResult_Async()
+        {
+            var url = Config.ListeningOn.CombineWith(new CompressDtoResult { Name = "foo" }.ToGetUrl());
+
+            var xml = await url.GetJsonFromUrlAsync(responseFilter: res =>
+            {
+                Assert.That(res.ContentType, Does.StartWith(MimeTypes.Xml));
+            });
+
+            Assert.That(xml, Does.StartWith("<?xml"));
+        }
+
         [Test]
         public void Does_compress_file_returned_in_HttpResult()
         {
             var url = Config.ListeningOn.CombineWith("/compress/file.js");
             var zipBytes = url.GetBytesFromUrl(
+                requestFilter: req =>
+                {
+                    req.AutomaticDecompression = DecompressionMethods.None;
+                    req.Headers[HttpRequestHeader.AcceptEncoding] = "deflate";
+                }, responseFilter: res =>
+                {
+                    Assert.That(res.Headers[HttpResponseHeader.ContentEncoding], Is.EqualTo("deflate"));
+                });
+
+            var bytes = zipBytes.DecompressBytes("deflate");
+            Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo("console.log('foo')"));
+        }
+
+        [Test]
+        public async Task Does_compress_file_returned_in_HttpResult_Async()
+        {
+            var url = Config.ListeningOn.CombineWith("/compress/file.js");
+            var zipBytes = await url.GetBytesFromUrlAsync(
                 requestFilter: req =>
                 {
                     req.AutomaticDecompression = DecompressionMethods.None;
@@ -212,6 +299,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
+        public async Task Does_compress_static_file_in_CompressFilesWithExtensions_Async()
+        {
+            var url = Config.ListeningOn.CombineWith("/file.css");
+            var zipBytes = await url.GetBytesFromUrlAsync(
+                requestFilter: req =>
+                {
+                    req.AutomaticDecompression = DecompressionMethods.None;
+                    req.Headers[HttpRequestHeader.AcceptEncoding] = "deflate";
+                }, responseFilter: res =>
+                {
+                    Assert.That(res.Headers[HttpResponseHeader.ContentEncoding], Is.EqualTo("deflate"));
+                });
+
+            var bytes = zipBytes.DecompressBytes("deflate");
+            Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo(".foo{}"));
+        }
+
+        [Test]
         public void Does_compress_default_page_in_CompressFilesWithExtensions()
         {
             var url = Config.ListeningOn.CombineWith("/default.html");
@@ -228,6 +333,23 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var bytes = zipBytes.DecompressBytes("deflate");
             Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo("<body>foo</body>"));
         }
-#endif
+
+        [Test]
+        public async Task Does_compress_default_page_in_CompressFilesWithExtensions_Async()
+        {
+            var url = Config.ListeningOn.CombineWith("/default.html");
+            var zipBytes = await url.GetBytesFromUrlAsync(
+                requestFilter: req =>
+                {
+                    req.AutomaticDecompression = DecompressionMethods.None;
+                    req.Headers[HttpRequestHeader.AcceptEncoding] = "deflate";
+                }, responseFilter: res =>
+                {
+                    Assert.That(res.Headers[HttpResponseHeader.ContentEncoding], Is.EqualTo("deflate"));
+                });
+
+            var bytes = zipBytes.DecompressBytes("deflate");
+            Assert.That(bytes.FromUtf8Bytes(), Is.EqualTo("<body>foo</body>"));
+        }
     }
 }
