@@ -104,7 +104,7 @@ namespace ServiceStack.Templates
         private JsOr() { }
 
         public override bool Test(object lhs, object rhs) =>
-            TemplateDefaultFilters.isTrue(lhs) || TemplateDefaultFilters.isTrue(rhs);
+            !TemplateDefaultFilters.isFalsy(lhs) || !TemplateDefaultFilters.isFalsy(rhs);
 
         public override string Token => "||";
     }
@@ -115,7 +115,7 @@ namespace ServiceStack.Templates
         private JsAnd() { }
 
         public override bool Test(object lhs, object rhs) =>
-            TemplateDefaultFilters.isTrue(lhs) && TemplateDefaultFilters.isTrue(rhs);
+            !TemplateDefaultFilters.isFalsy(lhs) && !TemplateDefaultFilters.isFalsy(rhs);
 
         public override string Token => "&&";
     }
@@ -125,7 +125,7 @@ namespace ServiceStack.Templates
         public static JsNot Operator = new JsNot();
         private JsNot() { }
         public override string Token => "!";
-        public override object Evaluate(object target) => !TemplateDefaultFilters.isTrue(target);
+        public override object Evaluate(object target) => TemplateDefaultFilters.isFalsy(target);
     }
 
     public class JsBitwiseAnd : JsBinaryOperator

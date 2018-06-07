@@ -48,6 +48,8 @@ namespace ServiceStack.Templates
         public bool isOdd(int value) => !isEven(value);
 
         public static bool isTrue(object target) => target is bool b && b;
+
+        public static bool isTruthy(object target) => !isFalsy(target);
         public static bool isFalsy(object target)
         {
             if (target == null || target == JsNull.Value)

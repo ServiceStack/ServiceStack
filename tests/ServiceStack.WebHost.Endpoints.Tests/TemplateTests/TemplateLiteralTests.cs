@@ -56,6 +56,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                         )
                     ), 
                 })));
+
+            "`\"\"`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("\"\"", "\"\"", tail:true), 
+                }
+            )));
+
+            "`''`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("''", "''", tail:true), 
+                }
+            )));
         }
 
         [Test]
@@ -100,6 +114,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{`a ${b + 1} c ${incr(d + 1)}`}}"), Is.EqualTo("a 3 c 6"));
             Assert.That(context.EvaluateTemplate("{{`\n`}}"), Is.EqualTo("\n"));
             Assert.That(context.EvaluateTemplate("{{`a\n${b}`}}"), Is.EqualTo("a\n2"));
+            Assert.That(context.EvaluateTemplate("{{`\"\"` | raw}}"), Is.EqualTo("\"\""));
+            Assert.That(context.EvaluateTemplate("{{`''` | raw}}"), Is.EqualTo("''"));
+            Assert.That(context.EvaluateTemplate("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateTemplate("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
         }
     }
 }
