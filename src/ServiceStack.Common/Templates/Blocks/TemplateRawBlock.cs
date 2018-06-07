@@ -5,9 +5,9 @@ using ServiceStack.Text;
 namespace ServiceStack.Templates
 {
     /// <summary>
-    /// Special block which captures the body as a string fragment
+    /// Special block which captures the raw body as a string fragment
     ///
-    /// Usages: {{#raw}}emit verbatim{{/raw}}
+    /// Usages: {{#raw}}emit {{ verbatim }} body{{/raw}}
     ///         {{#raw varname}}assigned to varname{{/raw}}
     /// </summary>
     public class TemplateRawBlock : TemplateBlock

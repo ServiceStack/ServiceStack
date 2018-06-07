@@ -83,12 +83,21 @@ namespace ServiceStack.Templates
         public static Task WritePageAsync(this TemplateScopeContext scope) => scope.PageResult.WritePageAsync(scope.Page, scope);
 
         public static TemplateScopeContext ScopeWithParams(this TemplateScopeContext parentContext, Dictionary<string, object> scopedParams)
+            => ScopeWith(parentContext, scopedParams, parentContext.OutputStream);
+        
+        public static TemplateScopeContext ScopeWith(this TemplateScopeContext parentContext, Dictionary<string, object> scopedParams=null, Stream outputStream=null)
         {
-            if (scopedParams == null)
+            if (scopedParams == null && outputStream == null)
                 return parentContext;
+            
+            if (scopedParams == null)
+                scopedParams = parentContext.ScopedParams;
+            
+            if (outputStream == null)
+                outputStream = parentContext.OutputStream;
 
             if (parentContext.ScopedParams.Count == 0)
-                return new TemplateScopeContext(parentContext.PageResult, parentContext.OutputStream, scopedParams);
+                return new TemplateScopeContext(parentContext.PageResult, outputStream, scopedParams);
             
             var to = new Dictionary<string, object>();
             foreach (var entry in parentContext.ScopedParams)
@@ -99,7 +108,7 @@ namespace ServiceStack.Templates
             {
                 to[entry.Key] = entry.Value;
             }
-            return new TemplateScopeContext(parentContext.PageResult, parentContext.OutputStream, to);
+            return new TemplateScopeContext(parentContext.PageResult, outputStream, to);
         }
         
         public static TemplateScopeContext ScopeWithStream(this TemplateScopeContext scope, Stream stream) =>

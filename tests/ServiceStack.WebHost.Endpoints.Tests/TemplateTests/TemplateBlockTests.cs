@@ -508,5 +508,21 @@ partialArg in page scope is <b>from page</b>"));
             Assert.That(context.EvaluateTemplate("{{#with asyncPerson}}({{Name}},{{Age}}) {{/with}}"), 
                 Is.EqualTo("(foo,1) "));
         }
+
+        [Test]
+        public void Can_capture_output_with_capture_filter()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["nums"] = new[]{1,2,3}
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#capture output}}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
+                Is.EqualTo("BEFORE 1 2 3 AFTER"));
+            
+            Assert.That(context.EvaluateTemplate("{{#capture output {nums:[4,5,6] }}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
+                Is.EqualTo("BEFORE 4 5 6 AFTER"));
+        }
     }
 }

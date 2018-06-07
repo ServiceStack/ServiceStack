@@ -118,6 +118,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{`''` | raw}}"), Is.EqualTo("''"));
             Assert.That(context.EvaluateTemplate("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
             Assert.That(context.EvaluateTemplate("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
+
+            Assert.That(context.EvaluateTemplate("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
         }
     }
 }
