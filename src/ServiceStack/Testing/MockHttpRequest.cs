@@ -107,8 +107,7 @@ namespace ServiceStack.Testing
             if (InputStream == null) return null;
 
             //Keep the stream alive in-case it needs to be read twice (i.e. ContentLength)
-            rawBody = new StreamReader(InputStream).ReadToEnd();
-            InputStream.Position = 0;
+            rawBody = InputStream.ReadToEnd();
             return rawBody;
         }
 

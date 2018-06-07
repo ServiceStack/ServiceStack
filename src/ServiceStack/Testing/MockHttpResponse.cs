@@ -66,6 +66,12 @@ namespace ServiceStack.Testing
             this.IsClosed = true;
         }
 
+        public Task CloseAsync(CancellationToken token = default(CancellationToken))
+        {
+            Close();
+            return TypeConstants.EmptyTask;
+        }
+
         public void End()
         {
             Close();
@@ -81,8 +87,7 @@ namespace ServiceStack.Testing
         public string ReadAsString()
         {
             if (!IsClosed) this.OutputStream.Seek(0, SeekOrigin.Begin);
-            var bytes = ((MemoryStream)OutputStream).ToArray();
-            return bytes.FromUtf8Bytes();
+            return ((MemoryStream) OutputStream).ReadToEnd();
         }
 
         public byte[] ReadAsBytes()

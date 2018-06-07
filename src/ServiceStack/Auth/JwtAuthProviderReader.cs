@@ -513,20 +513,18 @@ namespace ServiceStack.Auth
                 Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
                 using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = new MemoryStream())
+                using (var encryptedStream = MemoryStreamFactory.GetStream())
+                using (var writer = new BinaryWriter(encryptedStream))
                 {
-                    using (var writer = new BinaryWriter(encryptedStream))
-                    {
-                        writer.Write(aadBytes);
-                        writer.Write(iv);
-                        writer.Write(cipherText);
-                        writer.Flush();
+                    writer.Write(aadBytes);
+                    writer.Write(iv);
+                    writer.Write(cipherText);
+                    writer.Flush();
 
-                        var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
+                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int)encryptedStream.Length);
 
-                        if (!calcTag.EquivalentTo(sentTag))
-                            return null;
-                    }
+                    if (!calcTag.EquivalentTo(sentTag))
+                        return null;
                 }
 
                 var aes = Aes.Create();

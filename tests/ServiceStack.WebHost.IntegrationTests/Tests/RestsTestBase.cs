@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             using (var stream = webResponse.GetResponseStream())
             {
-                var contents = new StreamReader(stream).ReadToEnd();
+                var contents = stream.ReadToEnd();
                 return contents;
             }
         }

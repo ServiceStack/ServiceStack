@@ -13,7 +13,7 @@ namespace ServiceStack.Razor
                  var writer = new StreamWriter(ms);
                  razorView.RenderChildSection(sectionName, writer);
                  writer.Flush();
-                 return ms.ToArray().FromUtf8Bytes();
+                 return ms.ReadToEnd();
              }
          }
     }

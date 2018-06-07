@@ -207,10 +207,7 @@ namespace ServiceStack.Host
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseStreamWriter(req, response, ms);
-
-                    ms.Position = 0;
-                    var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
-                    return result;
+                    return ms.ReadToEnd();
                 }
             }
 
@@ -220,11 +217,7 @@ namespace ServiceStack.Host
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseWriterAsync(req, response, ms).Wait();
-
-                    var bytes = ms.ToArray();
-                    var result = bytes.FromUtf8Bytes();
-
-                    return result;
+                    return ms.ReadToEnd();
                 }
             }
 

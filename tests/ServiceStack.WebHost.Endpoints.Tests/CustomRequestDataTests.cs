@@ -54,7 +54,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #endif
 					sw.Write("first-name=tom&item-0=blah&item-1-delete=1");
 				}
-				var response = new StreamReader(webReq.GetResponse().GetResponseStream()).ReadToEnd();
+				var response = webReq.GetResponse().GetResponseStream().ReadToEnd();
 
 				Assert.That(response, Is.EqualTo("{\"FirstName\":\"tom\",\"Item0\":\"blah\",\"Item1Delete\":\"1\"}")
 										.Or.EqualTo("{\"firstName\":\"tom\",\"item0\":\"blah\",\"item1Delete\":\"1\"}")
@@ -63,7 +63,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			catch (WebException webEx)
 			{
 				var errorWebResponse = ((HttpWebResponse)webEx.Response);
-				var errorResponse = new StreamReader(errorWebResponse.GetResponseStream()).ReadToEnd();
+				var errorResponse = errorWebResponse.GetResponseStream().ReadToEnd();
 
 				Assert.Fail(errorResponse);
 			}

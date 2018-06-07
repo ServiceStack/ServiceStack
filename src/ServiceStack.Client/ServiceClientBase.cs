@@ -767,13 +767,12 @@ namespace ServiceStack
                 {
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(contentType))
                     {
-                        var bytes = errorResponse.ResponseStream().ReadFully();
-                        var stream = MemoryStreamFactory.GetStream(bytes);
-                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
+                        var ms = errorResponse.ResponseStream().CopyToNewMemoryStream();
+                        serviceEx.ResponseBody = ms.ReadToEnd();
+                        serviceEx.ResponseDto = parseDtoFn?.Invoke(ms);
 
-                        if (stream.CanRead)
-                            stream.Dispose(); //alt ms throws when you dispose twice
+                        if (ms.CanRead)
+                            ms.Dispose(); //alt ms throws when you dispose twice
                     }
                     else
                     {
@@ -1804,10 +1803,7 @@ namespace ServiceStack
             {
                 if (typeof(TResponse) == typeof(string))
                 {
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        return (TResponse)(object)reader.ReadToEnd();
-                    }
+                    return (TResponse)(object)responseStream.ReadToEnd();
                 }
                 if (typeof(TResponse) == typeof(byte[]))
                 {

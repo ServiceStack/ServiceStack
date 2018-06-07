@@ -200,9 +200,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             HttpWebResponse response = client.Get<HttpWebResponse>("/poco/Test");
 
             using (var stream = response.GetResponseStream())
-            using (var sr = new StreamReader(stream))
             {
-                Assert.That(sr.ReadToEnd(), Does.Contain("Hello, Test"));
+                Assert.That(stream.ReadToEnd(), Does.Contain("Hello, Test"));
             }
         }
 

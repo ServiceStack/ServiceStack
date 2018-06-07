@@ -114,7 +114,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             webRequest.ContentType = "application/json";
             PclExport.Instance.GetRequestStream(webRequest).Write(formDataBytes, 0, formDataBytes.Length);
             var webResponse = webRequest.GetResponse();
-            return new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
+            return webResponse.GetResponseStream().ReadToEnd();
         }
     }
 }

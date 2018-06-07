@@ -67,9 +67,8 @@ namespace ServiceStack.Templates
         {
             string contents;
             using (var stream = File.OpenRead())
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                contents = await reader.ReadToEndAsync();
+                contents = await stream.ReadToEndAsync();
             }
 
             var lastModified = File.LastModified;

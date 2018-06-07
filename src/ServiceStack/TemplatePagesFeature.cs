@@ -614,12 +614,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public static async Task<Stream> TransformToHtml(Stream markdownStream)
         {
-            using (var reader = new StreamReader(markdownStream))
-            {
-                var md = await reader.ReadToEndAsync();
-                var html = MarkdownConfig.Transformer.Transform(md);
-                return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
-            }
+            var md = await markdownStream.ReadToEndAsync();
+            var html = MarkdownConfig.Transformer.Transform(md);
+            return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
         }
     }
 

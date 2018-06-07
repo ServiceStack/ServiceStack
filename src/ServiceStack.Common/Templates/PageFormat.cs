@@ -145,12 +145,9 @@ namespace ServiceStack.Templates
 
         public static async Task<Stream> HtmlEncodeTransformer(Stream stream)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                var contents = await reader.ReadToEndAsync();
-                var htmlEncoded = contents.HtmlEncode();
-                return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
-            }
+            var contents = await stream.ReadToEndAsync();
+            var htmlEncoded = contents.HtmlEncode();
+            return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
         }
     }
 

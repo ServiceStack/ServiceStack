@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public int? CustomerId { get; set; }
 
         [DataMember]
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
     }
 
     [DataContract]
@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public int? CustomerId { get; set; }
 
         [DataMember]
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
     }
 
     [Route("/multi-fileuploads", HttpMethods.Post)]
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
         public string RelativePath { get; set; }
         public string CustomerName { get; set; }
         public int? CustomerId { get; set; }
-        public DateTime CreatedDate { get; set; }
+        public DateTime? CreatedDate { get; set; }
     }
 
     public class MultipleFileUploadResponse : IHasResponseStatus
@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                 FileName = file.FileName,
                 ContentLength = file.ContentLength,
                 ContentType = file.ContentType,
-                Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                Contents = file.InputStream.ReadToEnd(),
                 CustomerId = request.CustomerId,
                 CustomerName = request.CustomerName,
                 CreatedDate = request.CreatedDate
@@ -126,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support.Services
                     FileName = file.FileName,
                     ContentLength = file.ContentLength,
                     ContentType = file.ContentType,
-                    Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                    Contents = file.InputStream.ReadToEnd(),
                     CustomerId = request.CustomerId,
                     CustomerName = request.CustomerName,
                     CreatedDate = request.CreatedDate

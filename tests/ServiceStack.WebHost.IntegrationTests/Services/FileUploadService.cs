@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                 FileName = file.FileName,
                 ContentLength = file.ContentLength,
                 ContentType = file.ContentType,
-                Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                Contents = file.InputStream.ReadToEnd(),
                 CustomerId = request.CustomerId,
                 CustomerName = request.CustomerName,
                 CreatedDate = request.CreatedDate

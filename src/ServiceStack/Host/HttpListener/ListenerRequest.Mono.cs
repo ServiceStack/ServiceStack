@@ -85,7 +85,7 @@ namespace ServiceStack.Host.HttpListener
             input.Position = 0;
 
             //Uncomment to debug
-            //var content = new StreamReader(ms).ReadToEnd();
+            //var content = ms.ReadToEnd();
             //Console.WriteLine(boundary + "::" + content);
             //input.Position = 0;
 

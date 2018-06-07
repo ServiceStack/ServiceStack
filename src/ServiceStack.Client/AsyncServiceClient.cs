@@ -286,25 +286,22 @@ namespace ServiceStack
                         }
                         else
                         {
-                            var reader = ms;
+                            var stream = ms;
                             try
                             {
                                 if (typeof(T) == typeof(string))
                                 {
-                                    using (var sr = new StreamReader(reader))
-                                    {
-                                        return Complete((T) (object) sr.ReadToEnd());
-                                    }
+                                    return Complete((T) (object) stream.ReadToEnd());
                                 }
                                 else if (typeof(T) == typeof(byte[]))
-                                    return Complete((T) (object) reader.ToArray());
+                                    return Complete((T) (object) stream.ToArray());
                                 else
-                                    return Complete((T) this.StreamDeserializer(typeof(T), reader));
+                                    return Complete((T) this.StreamDeserializer(typeof(T), stream));
                             }
                             finally
                             {
-                                if (reader.CanRead)
-                                    reader.Dispose(); // Not yet disposed, but could've been.
+                                if (stream.CanRead)
+                                    stream.Dispose(); // Not yet disposed, but could've been.
                             }
                         }
                     }

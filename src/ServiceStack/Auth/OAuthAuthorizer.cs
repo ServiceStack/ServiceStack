@@ -260,8 +260,7 @@ namespace ServiceStack.Auth
             catch (WebException e)
             {
                 var x = e.Response.ResponseStream();
-                var j = new System.IO.StreamReader(x);
-                Console.WriteLine(j.ReadToEnd());
+                Console.WriteLine(x.ReadToEnd());
                 Console.WriteLine(e);
                 // fallthrough for errors
             }

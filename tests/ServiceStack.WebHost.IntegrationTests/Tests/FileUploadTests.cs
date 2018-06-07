@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             AssertResponse<FileUploadResponse>((HttpWebResponse)webResponse, r =>
             {
-                var expectedContents = new StreamReader(uploadForm.OpenRead()).ReadToEnd();
+                var expectedContents = uploadForm.OpenRead().ReadToEnd();
                 Assert.That(r.Name, Is.EqualTo("upload"));
                 Assert.That(r.FileName, Is.EqualTo(uploadForm.Name));
                 Assert.That(r.ContentLength, Is.EqualTo(uploadForm.Length));
@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         {
             var uploadForm = new FileInfo("~/TestExistingDir/upload.html".MapHostAbsolutePath());
             var webRequest = (HttpWebRequest)WebRequest.Create(base.ServiceClientBaseUri + "/fileuploads/TestExistingDir/upload.html");
-            var expectedContents = new StreamReader(uploadForm.OpenRead()).ReadToEnd();
+            var expectedContents = uploadForm.OpenRead().ReadToEnd();
 
             var webResponse = webRequest.GetResponse();
             var actualContents = webResponse.ReadToEnd();
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var request = new FileUpload { CustomerId = 123, CustomerName = "Foo,Bar" };
             var response = client.PostFileWithRequest<FileUploadResponse>(Config.ServiceStackBaseUri + "/fileuploads", uploadFile, request);
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -139,7 +139,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 Config.ServiceStackBaseUri + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
                 uploadFile, request);
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));

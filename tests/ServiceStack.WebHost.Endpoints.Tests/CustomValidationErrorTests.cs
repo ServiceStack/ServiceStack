@@ -282,10 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 return null;
 
             var errorResponse = ((HttpWebResponse)webEx.Response);
-            using (var reader = new StreamReader(errorResponse.GetResponseStream()))
-            {
-                return reader.ReadToEnd();
-            }
+            return errorResponse.GetResponseStream().ReadToEnd();
         }
     }
 }

@@ -364,7 +364,7 @@ namespace ServiceStack
         public static byte[] Authenticate(byte[] encryptedBytes, byte[] authKey, byte[] iv)
         {
             using (var hmac = CreateHashAlgorithm(authKey))
-            using (var ms = new MemoryStream())
+            using (var ms = MemoryStreamFactory.GetStream())
             {
                 using (var writer = new BinaryWriter(ms))
                 {
@@ -375,11 +375,12 @@ namespace ServiceStack
                     writer.Flush();
 
                     //Authenticate all data
-                    var tag = hmac.ComputeHash(ms.ToArray());
+                    var tag = hmac.ComputeHash(ms.GetBuffer(), 0, (int)ms.Length);
                     //Postpend tag
                     writer.Write(tag);
+
+                    return ms.ToArray();
                 }
-                return ms.ToArray();
             }
         }
 

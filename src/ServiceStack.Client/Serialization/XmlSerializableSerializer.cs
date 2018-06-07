@@ -23,16 +23,12 @@ namespace ServiceStack.Serialization
                         ser.WriteObject(xw, from);
                     }
 
-                    ms.Position = 0;
-                    using (var reader = new StreamReader(ms))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return ms.ReadToEnd();
                 }
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", from.GetType().FullName), ex);
+                throw new SerializationException($"Error serializing object of type {from.GetType().FullName}", ex);
             }
         }
     }

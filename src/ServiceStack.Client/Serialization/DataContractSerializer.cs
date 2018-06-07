@@ -10,8 +10,6 @@ namespace ServiceStack.Serialization
 {
     public partial class DataContractSerializer : IStringSerializer 
     {
-        private static readonly Encoding Encoding = Encoding.UTF8;// new UTF8Encoding(true);
-
         /// <summary>
         /// Default MaxStringContentLength is 8k, and throws an exception when reached
         /// </summary>
@@ -33,7 +31,7 @@ namespace ServiceStack.Serialization
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
-                    var xw = new XmlTextWriter(ms, Encoding);
+                    var xw = new XmlTextWriter(ms, JsConfig.UTF8Encoding);
                     if (indentXml)
                     {
                         xw.Formatting = Formatting.Indented;
@@ -42,9 +40,7 @@ namespace ServiceStack.Serialization
                     serializer.WriteObject(xw, from);
                     xw.Flush();
 
-                    ms.Seek(0, SeekOrigin.Begin);
-                    var reader = new StreamReader(ms);
-                    return reader.ReadToEnd();
+                    return ms.ReadToEnd();
                 }
             }
             catch (Exception ex)
@@ -60,7 +56,7 @@ namespace ServiceStack.Serialization
 
         public void SerializeToStream(object obj, Stream stream)
         {
-            using (var xw = new XmlTextWriter(stream, Encoding))
+            using (var xw = new XmlTextWriter(stream, JsConfig.UTF8Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(obj.GetType());
                 serializer.WriteObject(xw, obj);
@@ -70,7 +66,7 @@ namespace ServiceStack.Serialization
         public void CompressToStream<XmlDto>(XmlDto from, Stream stream)
         {
             using (var deflateStream = new System.IO.Compression.DeflateStream(stream, System.IO.Compression.CompressionMode.Compress))
-            using (var xw = new XmlTextWriter(deflateStream, Encoding))
+            using (var xw = new XmlTextWriter(deflateStream, JsConfig.UTF8Encoding))
             {
                 var serializer = new System.Runtime.Serialization.DataContractSerializer(from.GetType());
                 serializer.WriteObject(xw, from);

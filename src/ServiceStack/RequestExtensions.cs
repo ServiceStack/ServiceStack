@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -255,6 +256,51 @@ namespace ServiceStack
             return req != null 
                 ? HostContext.AppHost.GetRuntimeConfig(req, name, defaultValue)
                 : defaultValue;
+        }
+    }
+
+    // Share same buffered impl/behavior across all Hosts
+    internal static class BufferedExtensions
+    {
+        internal static MemoryStream CreateBufferedStream(this IResponse response)
+        {
+            return MemoryStreamFactory.GetStream();
+        }
+
+        internal static MemoryStream CreateBufferedStream(this Stream stream)
+        {
+            return stream.CopyToNewMemoryStream();
+        }
+
+        internal static string ReadBufferedStreamToEnd(this MemoryStream stream)
+        {
+            return stream.ReadToEnd();
+        }
+
+        internal static void FlushBufferIfAny(this IResponse response, MemoryStream buffer, Stream output)
+        {
+            if (buffer == null)
+                return;
+
+            try {
+                response.SetContentLength(buffer.Length); //safe to set Length in Buffered Response
+            } catch {}
+
+            buffer.WriteTo(output);
+            buffer.SetLength(buffer.Position = 0); //reset
+        }
+
+        internal static async Task FlushBufferIfAnyAsync(this IResponse response, MemoryStream buffer, Stream output, CancellationToken token=default(CancellationToken))
+        {
+            if (buffer == null)
+                return;
+
+            try {
+                response.SetContentLength(buffer.Length); //safe to set Length in Buffered Response
+            } catch {}
+
+            await buffer.WriteToAsync(output, token: token);
+            buffer.SetLength(buffer.Position = 0); //reset
         }
     }
 }

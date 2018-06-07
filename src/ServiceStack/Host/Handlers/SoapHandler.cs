@@ -292,18 +292,15 @@ namespace ServiceStack.Host.Handlers
 
         protected static Message GetRequestMessage(Stream inputStream, MessageVersion msgVersion)
         {
-            using (var sr = new StreamReader(inputStream))
-            {
-                var requestXml = sr.ReadToEnd();
+            var requestXml = inputStream.ReadToEnd();
 
-                var doc = new XmlDocument();
-                doc.LoadXml(requestXml);
+            var doc = new XmlDocument();
+            doc.LoadXml(requestXml);
 
-                var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
-                    msgVersion);
+            var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                msgVersion);
 
-                return msg;
-            }
+            return msg;
         }
 
         protected Type GetRequestType(Message requestMsg, string xml)

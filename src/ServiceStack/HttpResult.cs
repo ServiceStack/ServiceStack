@@ -274,10 +274,8 @@ namespace ServiceStack
                     {
                         if (ResponseStream is MemoryStream ms)
                         {
-                            var bytes = ms.ToArray();
-                            response.SetContentLength(bytes.Length + paddingLength);
-
-                            await responseStream.WriteAsync(bytes, 0, bytes.Length, token); //Write Sync to MemoryStream
+                            response.SetContentLength(ms.Length + paddingLength);
+                            await ms.WriteToAsync(responseStream, token:token); 
                             return;
                         }
                     }

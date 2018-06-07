@@ -34,7 +34,7 @@ namespace ServiceStack.Server.Tests
 
                 Plugins.Add(new ProxyFeature(
                     matchingRequests: req => req.PathInfo.StartsWith("/techstacks"),
-                    resolveUrl: req => "http://techstacks.io" + req.RawUrl.Replace("/techstacks", "/"))
+                    resolveUrl: req => "https://www.techstacks.io" + req.RawUrl.Replace("/techstacks", "/"))
                 {
                     TransformRequest = TransformRequest,
                     TransformResponse = TransformResponse,
@@ -59,13 +59,10 @@ namespace ServiceStack.Server.Tests
                 var reqReplace = req.QueryString["reqReplace"];
                 if (reqReplace != null)
                 {
-                    using (var reader = new StreamReader(reqStream, Encoding.UTF8))
-                    {
-                        var reqBody = await reader.ReadToEndAsync();
-                        var parts = reqReplace.SplitOnFirst(',');
-                        var replacedBody = reqBody.Replace(parts[0], parts[1]);
-                        return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
-                    }
+                    var reqBody = await reqStream.ReadToEndAsync();
+                    var parts = reqReplace.SplitOnFirst(',');
+                    var replacedBody = reqBody.Replace(parts[0], parts[1]);
+                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
                 }
                 return reqStream;
             }
@@ -76,13 +73,10 @@ namespace ServiceStack.Server.Tests
                 var resReplace = req.QueryString["resReplace"];
                 if (resReplace != null)
                 {
-                    using (var reader = new StreamReader(resStream, Encoding.UTF8))
-                    {
-                        var resBody = await reader.ReadToEndAsync();
-                        var parts = resReplace.SplitOnFirst(',');
-                        var replacedBody = resBody.Replace(parts[0], parts[1]);
-                        return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
-                    }
+                    var resBody = await resStream.ReadToEndAsync();
+                    var parts = resReplace.SplitOnFirst(',');
+                    var replacedBody = resBody.Replace(parts[0], parts[1]);
+                    return MemoryStreamFactory.GetStream(replacedBody.ToUtf8Bytes());
                 }
                 return resStream;
             }

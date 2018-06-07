@@ -205,7 +205,7 @@ namespace ServiceStack.Razor.Managers
                 if (httpRes.IsClosed)
                     return null;
 
-                var childBody = ms.ToArray().FromUtf8Bytes();
+                var childBody = ms.ReadToEnd();
 
                 var layoutName = layout();
                 if (!string.IsNullOrEmpty(layoutName))
