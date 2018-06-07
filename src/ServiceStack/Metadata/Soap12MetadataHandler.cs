@@ -1,6 +1,7 @@
 #if !NETSTANDARD2_0
 
 using System;
+using System.IO;
 using ServiceStack.Serialization;
 using ServiceStack.Web;
 
@@ -26,7 +27,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             return soapEnvelope;
         }
 
-        protected override void RenderOperation(System.Web.UI.HtmlTextWriter writer, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml, ServiceStack.Host.Operation operation)
+        protected override void RenderOperation(Stream output, IRequest httpReq, string operationName, string requestMessage, string responseMessage, string metadataHtml, ServiceStack.Host.Operation operation)
         {
             var operationControl = new Soap12OperationControl
             {
@@ -49,7 +50,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 operationControl.ContentFormat = this.ContentFormat;
             }
 
-            operationControl.Render(writer);
+            operationControl.Render(output);
         }
     }
 }

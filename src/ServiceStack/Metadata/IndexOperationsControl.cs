@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Web.UI;
 using ServiceStack.Host;
 using ServiceStack.Templates;
@@ -7,7 +8,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
 {
-    public class IndexOperationsControl : System.Web.UI.Control
+    public class IndexOperationsControl 
     {
         public IRequest Request { get; set; }
         public string Title { get; set; }
@@ -118,7 +119,7 @@ namespace ServiceStack.Metadata
             return icons;
         }
 
-        protected override void Render(HtmlTextWriter output)
+        public void Render(Stream output)
         {
             var operationsPart = new TableTemplate
             {

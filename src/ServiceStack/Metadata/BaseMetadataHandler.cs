@@ -24,12 +24,8 @@ namespace ServiceStack.Metadata
             if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
                 return TypeConstants.EmptyTask;
 
-            using (var sw = new StreamWriter(httpRes.OutputStream))
-            {
-                var writer = new HtmlTextWriter(sw);
-               httpRes.ContentType = "text/html; charset=utf-8";
-               ProcessOperations(writer, httpReq, httpRes);
-            }
+            httpRes.ContentType = "text/html; charset=utf-8";
+            ProcessOperations(httpRes.OutputStream, httpReq, httpRes);
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);
 
@@ -52,7 +48,7 @@ namespace ServiceStack.Metadata
             return CreateMessage(type);
         }
 
-        protected virtual void ProcessOperations(HtmlTextWriter writer, IRequest httpReq, IResponse httpRes)
+        protected virtual void ProcessOperations(Stream writer, IRequest httpReq, IResponse httpRes)
         {
             var operationName = httpReq.QueryString["op"];
 
@@ -214,7 +210,7 @@ namespace ServiceStack.Metadata
             sb.Append("</table>");
         }
 
-        protected void RenderOperations(HtmlTextWriter writer, IRequest httpReq, ServiceMetadata metadata)
+        protected virtual void RenderOperations(Stream output, IRequest httpReq, ServiceMetadata metadata)
         {
             var defaultPage = new IndexOperationsControl
             {
@@ -229,7 +225,7 @@ namespace ServiceStack.Metadata
             var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
             metadataFeature?.IndexPageFilter?.Invoke(defaultPage);
 
-            defaultPage.RenderControl(writer);
+            defaultPage.Render(output);
         }
 
         private string ConvertToHtml(string text)
@@ -257,7 +253,7 @@ namespace ServiceStack.Metadata
 
         protected abstract string CreateMessage(Type dtoType);
 
-        protected virtual void RenderOperation(HtmlTextWriter writer, IRequest httpReq, string operationName,
+        protected virtual void RenderOperation(Stream output, IRequest httpReq, string operationName,
             string requestMessage, string responseMessage, string metadataHtml, Operation operation)
         {
             var operationControl = new OperationControl
@@ -284,7 +280,7 @@ namespace ServiceStack.Metadata
 
             var metadataFeature = HostContext.GetPlugin<MetadataFeature>();
             metadataFeature?.DetailPageFilter?.Invoke(operationControl);
-            operationControl.Render(writer);
+            operationControl.Render(output);
         }
 
     }
