@@ -195,19 +195,6 @@ namespace ServiceStack.Host.AspNet
         private NameValueCollection formData;
         public NameValueCollection FormData => formData ?? (formData = request.Form);
 
-        public string GetRawBody()
-        {
-            if (BufferedStream != null)
-            {
-                return BufferedStream.ToArray().FromUtf8Bytes();
-            }
-
-            using (var reader = new StreamReader(InputStream))
-            {
-                return reader.ReadToEnd();
-            }
-        }
-
         public string RawUrl => request.RawUrl;
 
         public string AbsoluteUri
@@ -294,16 +281,24 @@ namespace ServiceStack.Host.AspNet
         
         public string UrlHostName => request.GetUrlHostName();
 
+        public MemoryStream BufferedStream { get; set; }
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
+
         public bool UseBufferedStream
         {
             get => BufferedStream != null;
             set => BufferedStream = value
-                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                ? BufferedStream ?? request.InputStream.CreateBufferedStream()
                 : null;
         }
 
-        public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
+        public string GetRawBody()
+        {
+            if (BufferedStream != null)
+                return BufferedStream.ReadBufferedStreamToEnd();
+
+            return InputStream.ReadToEnd();
+        }
 
         public long ContentLength => request.ContentLength;
 

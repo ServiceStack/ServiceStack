@@ -55,17 +55,6 @@ namespace ServiceStack.Host.NetCore
             return this.TryResolveInternal<T>();
         }
 
-        public string GetRawBody()
-        {
-            if (BufferedStream != null)
-            {
-                return BufferedStream.ToArray().FromUtf8Bytes();
-            }
-
-            request.EnableRewind();
-            return request.Body.ReadFully().FromUtf8Bytes();
-        }
-
         public object OriginalRequest => request;
 
         private IResponse response;
@@ -177,16 +166,6 @@ namespace ServiceStack.Host.NetCore
             }
         }
 
-        public bool UseBufferedStream
-        {
-            get => BufferedStream != null;
-            set => BufferedStream = value
-                ? BufferedStream ?? new MemoryStream(request.Body.ReadFully())
-                : null;
-        }
-
-        public MemoryStream BufferedStream { get; set; }
-
         public string RawUrl => request.Path.Value + request.QueryString;
 
         public string AbsoluteUri => request.GetDisplayUrl();
@@ -203,7 +182,27 @@ namespace ServiceStack.Host.NetCore
 
         public string OriginalPathInfo { get; }
 
+        public MemoryStream BufferedStream { get; set; }
         public Stream InputStream => this.GetInputStream(BufferedStream ?? request.Body);
+
+        public bool UseBufferedStream
+        {
+            get => BufferedStream != null;
+            set => BufferedStream = value
+                ? BufferedStream ?? request.Body.CreateBufferedStream()
+                : null;
+        }
+
+        public string GetRawBody()
+        {
+            if (BufferedStream != null)
+            {
+                request.EnableRewind();
+                return BufferedStream.ReadBufferedStreamToEnd();
+            }
+
+            return request.Body.ReadToEnd();
+        }
 
         public long ContentLength => request.ContentLength.GetValueOrDefault();
 

@@ -47,6 +47,8 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
+//            EnableBuffering();
+            
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/Views/TestErrorNotFound");
 
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
@@ -338,6 +340,15 @@ namespace CheckWeb
             //    LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
             //});
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
+        }
+
+        public void EnableBuffering()
+        {
+            PreRequestFilters.Add((req, res) =>
+            {
+                req.UseBufferedStream = true;
+                res.UseBufferedStream = true;
+            });
         }
 
         public override List<IVirtualPathProvider> GetVirtualFileSources()

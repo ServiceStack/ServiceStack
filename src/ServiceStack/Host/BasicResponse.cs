@@ -44,8 +44,7 @@ namespace ServiceStack.Host
 
         public string GetHeader(string name)
         {
-            string value;
-            this.Headers.TryGetValue(name, out value);
+            this.Headers.TryGetValue(name, out var value);
             return value;
         }
 
@@ -72,6 +71,12 @@ namespace ServiceStack.Host
             IsClosed = true;
             if (ms != null && ms.CanWrite)
                 ms.Dispose();
+        }
+
+        public Task CloseAsync(CancellationToken token = default(CancellationToken))
+        {
+            Close();
+            return TypeConstants.EmptyTask;
         }
 
         public void End()

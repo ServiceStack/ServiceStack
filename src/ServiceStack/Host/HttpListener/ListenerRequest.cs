@@ -84,17 +84,6 @@ namespace ServiceStack.Host.HttpListener
 
         public object Dto { get; set; }
 
-        public string GetRawBody()
-        {
-            if (BufferedStream != null)
-            {
-                return BufferedStream.ToArray().FromUtf8Bytes();
-            }
-
-            var reader = new StreamReader(InputStream);
-            return reader.ReadToEnd();
-        }
-
         private string rawUrl;
         public string RawUrl => rawUrl ?? (rawUrl = request.RawUrl.Replace("//", "/"));
 
@@ -214,16 +203,24 @@ namespace ServiceStack.Host.HttpListener
             }
         }
 
+        public MemoryStream BufferedStream { get; set; }
+        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
+
         public bool UseBufferedStream
         {
             get => BufferedStream != null;
             set => BufferedStream = value
-                ? BufferedStream ?? new MemoryStream(request.InputStream.ReadFully())
+                ? BufferedStream ?? request.InputStream.CreateBufferedStream()
                 : null;
         }
 
-        public MemoryStream BufferedStream { get; set; }
-        public Stream InputStream => this.GetInputStream(BufferedStream ?? request.InputStream);
+        public string GetRawBody()
+        {
+            if (BufferedStream != null)
+                return BufferedStream.ReadBufferedStreamToEnd();
+
+            return InputStream.ReadToEnd();
+        }
 
         public long ContentLength => request.ContentLength64;
 
