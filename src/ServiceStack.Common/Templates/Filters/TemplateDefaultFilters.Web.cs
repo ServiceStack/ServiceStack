@@ -30,5 +30,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object ifHttpDelete(TemplateScopeContext scope) => isHttpDelete(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope, object ignoreTarget) => ifHttpPatch(scope);
         [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope) => isHttpPatch(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+ 
+        public string httpMethod(TemplateScopeContext scope) => req(scope)?.Verb;
+        public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
+        public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
     }
 }
