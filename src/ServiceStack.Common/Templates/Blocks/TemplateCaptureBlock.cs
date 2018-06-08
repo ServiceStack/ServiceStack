@@ -14,6 +14,7 @@ namespace ServiceStack.Templates
     ///
     /// Usages: {{#capture output}} {{#each args}} - [{{it}}](/path?arg={{it}}) {{/each}} {{/capture}}
     ///         {{#capture output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
+    ///         {{#capture appendTo output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
     /// </summary>
     public class TemplateCaptureBlock : TemplateBlock
     {
@@ -21,7 +22,18 @@ namespace ServiceStack.Templates
 
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            var literal = fragment.Argument.ParseVarName(out var name);
+            if (fragment.Argument.IsNullOrWhiteSpace())
+                throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
+            
+            var literal = fragment.Argument.AdvancePastWhitespace();
+            bool appendTo = false;
+            if (literal.StartsWith("appendTo "))
+            {
+                appendTo = true;
+                literal = literal.Advance("appendTo ".Length);
+            }
+                
+            literal = literal.ParseVarName(out var name);
             if (name.IsNullOrEmpty())
                 throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
 
@@ -35,14 +47,21 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException("Any 'capture' argument must be an Object Dictionary");
 
             
-            var nameString = name.Value;
-
             var ms = MemoryStreamFactory.GetStream();
             var useScope = scope.ScopeWith(scopeArgs, ms);
 
             await WriteBodyAsync(useScope, fragment, cancel);
 
             var capturedOutput = ms.ReadToEnd();
+
+            var nameString = name.Value;
+            if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
+                && oVar is string existingString)
+            {
+                scope.PageResult.Args[nameString] = existingString + capturedOutput;
+                return;
+            }
+            
             scope.PageResult.Args[nameString] = capturedOutput;
         }
     }

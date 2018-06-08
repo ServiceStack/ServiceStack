@@ -130,6 +130,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
         }
+
+        [Test]
+        public void Does_evaluate_Raw_block_body_and_appendTo_string()
+        {
+            var context = new TemplateContext {
+                Plugins = { new MarkdownTemplatePlugin() }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("BEFORE {{#raw appendTo md}}# Heading{{/raw}}{{#raw appendTo md}} Appended{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
+                Is.EqualTo("BEFORE  AFTER <h1>Heading Appended</h1>"));
+        }
         
         public class TemplateBoldBlock : TemplateBlock
         {
@@ -510,7 +521,7 @@ partialArg in page scope is <b>from page</b>"));
         }
 
         [Test]
-        public void Can_capture_output_with_capture_filter()
+        public void Can_capture_output_with_capture_block()
         {
             var context = new TemplateContext {
                 Args = {
@@ -523,6 +534,22 @@ partialArg in page scope is <b>from page</b>"));
             
             Assert.That(context.EvaluateTemplate("{{#capture output {nums:[4,5,6] }}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
                 Is.EqualTo("BEFORE 4 5 6 AFTER"));
+        }
+
+        [Test]
+        public void Can_capture_and_appendTo_output_with_capture_block()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["nums"] = new[]{1,2,3}
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#capture appendTo output}} INIT{{/capture}}{{#capture appendTo output}}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
+                Is.EqualTo("BEFORE INIT 1 2 3 AFTER"));
+            
+            Assert.That(context.EvaluateTemplate("{{#capture appendTo output}} INIT{{/capture}}{{#capture appendTo output {nums:[4,5,6] }}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
+                Is.EqualTo("BEFORE INIT 4 5 6 AFTER"));
         }
     }
 }
