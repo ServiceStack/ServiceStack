@@ -70,6 +70,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     new JsTemplateElement("''", "''", tail:true), 
                 }
             )));
+
+            @"`""#key"".replace(/\\s+/g,'')`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement(
+                        "\"#key\".replace(/\\\\s+/g,'')", 
+                        "\"#key\".replace(/\\s+/g,'')", 
+                        tail:true), 
+                }
+            )));
         }
 
         [Test]
@@ -88,11 +98,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
             @"`\\`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
-                new[] { new JsTemplateElement(@"\\",@"\", tail:true) })));
+                new[] { new JsTemplateElement("\\\\","\\", tail:true) })));
             
             @"`\\ \n`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
                 new[] { new JsTemplateElement(@"\\ \n","\\ \n", tail:true) })));
+        }
+
+        [Test]
+        public void Can_evaluate_TemplateLiterals_with_escape_chars()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"{{ `\\` }}"), 
+                Is.EqualTo(@"\"));
+            
+            Assert.That(context.EvaluateTemplate(@"{{ `\\ \n` }}"), 
+                Is.EqualTo("\\ \n"));
+            
+            Assert.That(context.EvaluateTemplate(@"{{ `""#key"".replace(/\\s+/g,'')` | raw }}"), 
+                Is.EqualTo(@"""#key"".replace(/\s+/g,'')"));
         }
 
         [Test]
