@@ -32,12 +32,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {{ null | assignTo: arg }}
 {{ arg | do: assign('doArg', 2) }}
 {{ doArg }}
-").Trim(), Is.EqualTo("{{ doArg }}"));
+").Trim(), Is.EqualTo(""));
             
             Assert.That(context.EvaluateTemplate(@"
 {{ noArg | do: assign('doArg', 2) }}
 {{ doArg }}
-").Trim(), Is.EqualTo("{{ doArg }}"));
+").Trim(), Is.EqualTo(""));
         }
         
         [Test]

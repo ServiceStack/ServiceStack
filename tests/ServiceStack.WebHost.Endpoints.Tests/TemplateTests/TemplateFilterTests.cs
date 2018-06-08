@@ -216,10 +216,10 @@ pageArg: 2
 
             var page = context.OneTimePage("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}");
             
-            Assert.That(new PageResult(page).Result, Is.EqualTo("{{ '.' | repeat(3) }}---"));
+            Assert.That(new PageResult(page).Result, Is.EqualTo("---"));
             
             Assert.That(new PageResult(page){ ExcludeFiltersNamed = {"repeating"} }.Result, 
-                Is.EqualTo("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}"));
+                Is.EqualTo(""));
         }
 
         [Test]

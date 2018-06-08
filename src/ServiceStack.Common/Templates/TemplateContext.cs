@@ -405,7 +405,8 @@ namespace ServiceStack.Templates
             return fn;
         }
 
-        protected static byte[] DefaultOnUnhandledExpression(PageVariableFragment var) => var.OriginalTextBytes;
+        protected static byte[] DefaultOnUnhandledExpression(PageVariableFragment var) => 
+            TemplateConfig.HideUnknownExpressions ? null : var.OriginalTextBytes;
 
         public void Dispose()
         {

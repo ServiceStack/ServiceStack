@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Reflection;
+using Funq;
+using NUnit.Framework;
 using ServiceStack.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -90,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             @"'\\'".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsLiteral(@"\\")));
         }
-
+         
         [Test]
         public void Can_parse_TemplateLiterals_with_escape_chars()
         {

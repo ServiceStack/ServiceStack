@@ -6,6 +6,8 @@ namespace ServiceStack.Templates
 {
     public static class TemplateConfig
     {
+        public static bool HideUnknownExpressions { get; set; } = true;
+        
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
             "assignTo",

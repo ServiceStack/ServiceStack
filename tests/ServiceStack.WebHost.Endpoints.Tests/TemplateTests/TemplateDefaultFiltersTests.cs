@@ -773,7 +773,7 @@ pageMetaTitle: page meta title
 <header>
 layout num = 1
 pageMetaTitle = page meta title
-inlinePageTitle = {{ inlinePageTitle }}
+inlinePageTitle = 
 pageResultTitle = page result title
 </header>
 <h3>partial num = 110</h3> 

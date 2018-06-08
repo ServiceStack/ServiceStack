@@ -88,13 +88,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             context.VirtualFiles.WriteFile("index.txt", "file contents");
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
-                Is.EqualTo("{{ 'index.txt' | includeFile }}"));
+                Is.EqualTo(""));
 
             var feature = new TemplatePagesFeature().Init();
             feature.VirtualFiles.WriteFile("index.txt", "file contents");
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
-                Is.EqualTo("{{ 'index.txt' | includeFile }}"));
+                Is.EqualTo(""));
         }
 
         [Test]
@@ -234,7 +234,7 @@ includFile = {{ 'file.txt' | includeFile }}
 ");
             
             Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(), Is.EqualTo(@"
-includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
+includeUrl = 
 includFile = File Contents
 ".NormalizeNewLines()));
         }
