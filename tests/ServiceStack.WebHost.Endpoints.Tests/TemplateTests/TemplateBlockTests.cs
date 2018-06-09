@@ -372,6 +372,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{#each c in letters}}{{#if isNumber(c)}}number {{c}} {{else}}letter {{c}} {{/if}}{{/each}}"), 
                 Is.EqualTo("letter A letter B letter C "));
         }
+
+        [Test]
+        public void Does_export_scope_args_of_all_KeyValuePairs()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new Dictionary<string,int> { ["a"] = 1, ["b"] = 2, ["c"] = 3},
+                    ["letters"] = new Dictionary<string,string> { ["a"] = "A", ["b"] = "B", ["c"] = "C"},
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{Key}}={{Value}} {{/each}}"), 
+                Is.EqualTo("a=1 b=2 c=3 "));
+            Assert.That(context.EvaluateTemplate("{{#each {a:1,b:2,c:3} }}{{Key}}={{Value}} {{/each}}"), 
+                Is.EqualTo("a=1 b=2 c=3 "));
+            Assert.That(context.EvaluateTemplate("{{#each letters}}{{Key}}={{Value}} {{/each}}"), 
+                Is.EqualTo("a=A b=B c=C "));            
+        }
         
         [Test]
         public void Does_evaluate_template_with_partial_block()
