@@ -49,6 +49,7 @@ namespace ServiceStack
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
                 DebugMode = false,
+                StrictMode = Env.StrictMode,
                 DefaultDocuments = new List<string> {
                     "default.htm",
                     "default.html",
@@ -276,13 +277,8 @@ namespace ServiceStack
         public bool AllowRouteContentTypeExtensions { get; set; }
         public bool DebugMode { get; set; }
 
-        private bool? strictMode;
-        public bool? StrictMode
-        {
-            get => strictMode;
-            set => Env.StrictMode = (strictMode = value).GetValueOrDefault();
-        }
-        
+        public bool? StrictMode { get; set; }
+
         public string DebugAspNetHostEnvironment { get; set; }
         public string DebugHttpListenerHostEnvironment { get; set; }
         public List<string> DefaultDocuments { get; private set; }
