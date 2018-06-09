@@ -241,7 +241,7 @@ namespace ServiceStack.Templates
                 }
             }
 
-            var attrString = scope.Context.HtmlFilters.htmlAttrs(htmlAttrs);
+            var attrString = scope.Context.HtmlFilters.htmlAttrsList(htmlAttrs);
 
             if (TemplateHtmlFilters.VoidElements.Contains(Tag)) //e.g. img, input, br, etc
             {

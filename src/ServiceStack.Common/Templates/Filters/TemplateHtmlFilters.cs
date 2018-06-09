@@ -370,7 +370,7 @@ namespace ServiceStack.Templates
             return html.ToRawString();
         }
 
-        public string htmlAttrs(Dictionary<string, object> attrs)
+        public string htmlAttrsList(Dictionary<string, object> attrs)
         {
             if (attrs == null || attrs.Count == 0)
                 return string.Empty;
@@ -389,11 +389,27 @@ namespace ServiceStack.Templates
                     : key == "htmlFor"
                         ? "for"
                         : key;
-                
-                sb.Append(' ').Append(useKey).Append('=').Append('"').Append(value?.ToString().HtmlEncode()).Append('"');
+
+                if (value is bool boolAttr)
+                {
+                    if (boolAttr) // only emit attr name if value == true
+                    {
+                        sb.Append(' ').Append(useKey);
+                    }
+                }
+                else
+                {
+                    sb.Append(' ').Append(useKey).Append('=').Append('"').Append(value?.ToString().HtmlEncode()).Append('"');
+                }
             }
             
             return sb.ToString();
+        }
+
+        public IRawString htmlAttrs(object target)
+        {
+            var attrs = htmlAttrsList(target as Dictionary<string, object>);
+            return (attrs.Length > 0 ? attrs : "").ToRawString();
         }
 
         public string htmlClassList(object target)
@@ -481,7 +497,7 @@ namespace ServiceStack.Templates
                     : null;
             }
             
-            var attrString = htmlAttrs(attrs);            
+            var attrString = htmlAttrsList(attrs);            
             return VoidElements.Contains(tag)
                 ? $"<{tag}{attrString}>".ToRawString()
                 : $"<{tag}{attrString}>{innerHtml}</{tag}>".ToRawString();

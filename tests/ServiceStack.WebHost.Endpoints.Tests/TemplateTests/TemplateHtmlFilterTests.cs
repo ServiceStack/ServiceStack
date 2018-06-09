@@ -180,5 +180,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo(" class=\"hide\""));
         }
 
+        [Test]
+        public void HtmlAttrs_with_bool_only_emits_name()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("<option {{ {selected:true,test:'val'} | htmlAttrs }}>"), 
+                Is.EqualTo("<option  selected test=\"val\">"));
+
+            Assert.That(context.EvaluateTemplate("<option {{ {selected:false,test:'val'} | htmlAttrs }}>"), 
+                Is.EqualTo("<option  test=\"val\">"));
+        }
+
     }
 }
