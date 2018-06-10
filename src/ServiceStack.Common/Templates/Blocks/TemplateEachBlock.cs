@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Text;
@@ -31,30 +32,89 @@ namespace ServiceStack.Templates
             IEnumerable collection = (IEnumerable) await cache.Source.EvaluateAsync(scope);
 
             var index = 0;
-            var whereIndex = 0;
             if (collection != null)
             {
-                foreach (var element in collection)
+                if (cache.Where != null || cache.OrderBy != null || cache.OrderByDescending != null ||
+                    cache.Skip != null || cache.Take != null)
                 {
-                    // Add all properties into scope if called without explicit in argument 
-                    var scopeArgs = !cache.HasExplicitBinding && CanExportScopeArgs(element)
-                        ? element.ToObjectDictionary()
-                        : new Dictionary<string, object>();
-
-                    scopeArgs[cache.Binding] = element;
-                    scopeArgs[nameof(index)] = AssertWithinMaxQuota(whereIndex++); 
-                    var itemScope = scope.ScopeWithParams(scopeArgs);
-
-                    if (cache.Where != null)
+                    var filteredResults = new List<Dictionary<string, object>>();
+                    foreach (var element in collection)
                     {
-                        var result = await cache.Where.EvaluateToBoolAsync(itemScope);
-                        if (!result)
-                            continue;
-                    }
-                    
-                    itemScope.ScopedParams[nameof(index)] = AssertWithinMaxQuota(index++);
+                        // Add all properties into scope if called without explicit in argument 
+                        var scopeArgs = !cache.HasExplicitBinding && CanExportScopeArgs(element)
+                            ? element.ToObjectDictionary()
+                            : new Dictionary<string, object>();
 
-                    await WriteBodyAsync(itemScope, fragment, cancel);
+                        scopeArgs[cache.Binding] = element;
+                        scopeArgs[nameof(index)] = AssertWithinMaxQuota(index++); 
+                        var itemScope = scope.ScopeWithParams(scopeArgs);
+
+                        if (cache.Where != null)
+                        {
+                            var result = await cache.Where.EvaluateToBoolAsync(itemScope);
+                            if (!result)
+                                continue;
+                        }
+                        
+                        filteredResults.Add(scopeArgs);
+                    }
+
+                    IEnumerable<Dictionary<string, object>> selectedResults = filteredResults;
+
+                    var i = 0;
+                    var comparer = (IComparer<object>)Comparer<object>.Default;
+                    if (cache.OrderBy != null)
+                    {
+                        selectedResults = selectedResults.OrderBy(scopeArgs =>
+                        {
+                            scopeArgs[nameof(index)] = i++;
+                            return cache.OrderBy.Evaluate(scope.ScopeWithParams(scopeArgs));
+                        }, comparer);
+                    }
+                    else if (cache.OrderByDescending != null)
+                    {
+                        selectedResults = selectedResults.OrderByDescending(scopeArgs =>
+                        {
+                            scopeArgs[nameof(index)] = i++;
+                            return cache.OrderByDescending.Evaluate(scope.ScopeWithParams(scopeArgs));
+                        }, comparer);
+                    }
+
+                    if (cache.Skip != null)
+                    {
+                        var skip = cache.Skip.Evaluate(scope).ConvertTo<int>();
+                        selectedResults = selectedResults.Skip(skip);
+                    }
+
+                    if (cache.Take != null)
+                    {
+                        var take = cache.Take.Evaluate(scope).ConvertTo<int>();
+                        selectedResults = selectedResults.Take(take);
+                    }
+
+                    index = 0;
+                    foreach (var scopeArgs in selectedResults)
+                    {
+                        var itemScope = scope.ScopeWithParams(scopeArgs);
+                        itemScope.ScopedParams[nameof(index)] = index++;
+                        await WriteBodyAsync(itemScope, fragment, cancel);
+                    }
+                }
+                else
+                {
+                    foreach (var element in collection)
+                    {
+                        // Add all properties into scope if called without explicit in argument 
+                        var scopeArgs = !cache.HasExplicitBinding && CanExportScopeArgs(element)
+                            ? element.ToObjectDictionary()
+                            : new Dictionary<string, object>();
+    
+                        scopeArgs[cache.Binding] = element;
+                        scopeArgs[nameof(index)] = AssertWithinMaxQuota(index++);
+                        var itemScope = scope.ScopeWithParams(scopeArgs);
+    
+                        await WriteBodyAsync(itemScope, fragment, cancel);
+                    }
                 }
             }
 
@@ -74,7 +134,8 @@ namespace ServiceStack.Templates
 
             literal = literal.AdvancePastWhitespace();
 
-            JsToken source, where = null;
+            JsToken source, where, orderBy, orderByDescending, skip, take;
+            where = orderBy = orderByDescending = skip = take = null;
             
             var hasExplicitBinding = literal.StartsWith("in "); 
             if (hasExplicitBinding)
@@ -96,11 +157,40 @@ namespace ServiceStack.Templates
 
             if (literal.StartsWith("where "))
             {
-                literal = literal.Advance(6);
+                literal = literal.Advance("where ".Length);
                 literal = literal.ParseJsExpression(out where);
             }
+
+            literal = literal.AdvancePastWhitespace();
+            if (literal.StartsWith("orderby "))
+            {
+                literal = literal.Advance("orderby ".Length);
+                literal = literal.ParseJsExpression(out orderBy);
+
+                literal = literal.AdvancePastWhitespace();
+                if (literal.StartsWith("descending"))
+                {
+                    literal = literal.Advance("descending".Length);
+                    orderByDescending = orderBy;
+                    orderBy = null;
+                }
+            }
+
+            literal = literal.AdvancePastWhitespace();
+            if (literal.StartsWith("skip "))
+            {
+                literal = literal.Advance("skip ".Length);
+                literal = literal.ParseJsExpression(out skip);
+            }
+
+            literal = literal.AdvancePastWhitespace();
+            if (literal.StartsWith("take "))
+            {
+                literal = literal.Advance("take ".Length);
+                literal = literal.ParseJsExpression(out take);
+            }
             
-            return new EachArg(binding, hasExplicitBinding, source, where);
+            return new EachArg(binding, hasExplicitBinding, source, where, orderBy, orderByDescending, skip, take);
         }
 
         class EachArg
@@ -109,12 +199,22 @@ namespace ServiceStack.Templates
             public readonly bool HasExplicitBinding;
             public readonly JsToken Source;
             public readonly JsToken Where;
-            public EachArg(string binding, bool hasExplicitBinding, JsToken source, JsToken where)
+            public readonly JsToken OrderBy;
+            public readonly JsToken OrderByDescending;
+            public readonly JsToken Skip;
+            public readonly JsToken Take;
+            
+            public EachArg(string binding, bool hasExplicitBinding, JsToken source, JsToken where, 
+                JsToken orderBy, JsToken orderByDescending, JsToken skip, JsToken take)
             {
                 Binding = binding;
                 HasExplicitBinding = hasExplicitBinding;
                 Source = source;
                 Where = where;
+                OrderBy = orderBy;
+                OrderByDescending = orderByDescending;
+                Skip = skip;
+                Take = take;
             }
         }
     }

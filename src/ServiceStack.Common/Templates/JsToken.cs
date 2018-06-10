@@ -1217,13 +1217,13 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (literal.StartsWith("and"))
+            if (literal.StartsWith("and") && literal.SafeGetChar(3).IsWhiteSpace())
             {
                 op = JsAnd.Operator;
                 return literal.Advance(3);
             }
 
-            if (literal.StartsWith("or"))
+            if (literal.StartsWith("or") && literal.SafeGetChar(2).IsWhiteSpace())
             {
                 op = JsOr.Operator;
                 return literal.Advance(2);

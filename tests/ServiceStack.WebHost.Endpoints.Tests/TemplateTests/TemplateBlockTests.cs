@@ -338,6 +338,51 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_evaluate_template_with_each_blocks_containing_LINQ_expressions()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new[]{ 4, 5, 1, 3, 2, },
+                    ["letters"] = new[]{ "C", "D", "B", "E", "A" },
+                    ["people"] = new[]{ new Person("name3", 3),new Person("name2", 4),new Person("name1", 5),new Person("name5", 1),new Person("name4", 2) },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers orderby it descending}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 5, #1 4, #2 3, #3 2, #4 1, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers where isOdd(it) orderby it descending}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 5, #1 3, #2 1, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers orderby it}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 2, #2 3, #3 4, #4 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers where isOdd(it) orderby it}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 3, #2 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each n in numbers orderby n}}#{{index}} {{n}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 2, #2 3, #3 4, #4 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each n in numbers where isOdd(n) orderby n}}#{{index}} {{n}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 3, #2 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers where it % 2 == 1 orderby it skip 1}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 3, #1 5, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers where it % 2 == 1 orderby it take 2}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 1, #1 3, "));
+            Assert.That(context.EvaluateTemplate("{{#each numbers where it % 2 == 1 orderby it skip 1 take 1}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 3, "));
+
+            Assert.That(context.EvaluateTemplate("{{#each letters orderby it}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 A, #1 B, #2 C, #3 D, #4 E, "));
+            Assert.That(context.EvaluateTemplate("{{#each letters where it > 'A' orderby it skip 1 take 2}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 C, #1 D, "));
+            Assert.That(context.EvaluateTemplate("{{#each letters where index > 0 orderby it skip 1 take 2}}#{{index}} {{it}}, {{/each}}"), 
+                Is.EqualTo("#0 B, #1 D, "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each people where Name > 'name2' orderby Age take 2}}#{{index}} {{Name}}, {{Age}} {{/each}}"), 
+                Is.EqualTo("#0 name5, 1 #1 name4, 2 "));
+            Assert.That(context.EvaluateTemplate("{{#each p in people where p.Name > 'name2' orderby p.Age take 2}}#{{index}} {{p.Name}}, {{p.Age}} {{/each}}"), 
+                Is.EqualTo("#0 name5, 1 #1 name4, 2 "));
+            Assert.That(context.EvaluateTemplate("{{#each p in people where p.Name > 'name2' orderby p.Age descending skip 1 take 2}}#{{index}} {{p.Name}}, {{p.Age}} {{/each}}"), 
+                Is.EqualTo("#0 name4, 2 #1 name5, 1 "));
+        }
+
+        [Test]
         public void Template_each_blocks_without_in_explodes_ref_type_arguments_into_scope()
         {
             var context = new TemplateContext {
