@@ -70,7 +70,7 @@ namespace ServiceStack.Templates
             typeof(ArgumentNullException),
         };
         
-        public static HashSet<string> BlockNamessWithStringBody { get; set; } = new HashSet<string> {
+        public static HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
             "raw"
         };
 

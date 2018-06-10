@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
@@ -579,44 +580,6 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             {
                 await page.Format.OnViewException(result, httpReq, ex);
             }
-        }
-    }
-
-    public class MarkdownTemplateFilter : TemplateFilter
-    {
-        public IRawString markdown(string markdown) => markdown != null 
-            ? MarkdownConfig.Transformer.Transform(markdown).ToRawString() 
-            : RawString.Empty;
-    }
-    
-    public class MarkdownTemplatePlugin : ITemplatePlugin
-    {
-        public bool RegisterPageFormat { get; set; } = true;
-
-        public void Register(TemplateContext context)
-        {
-            if (RegisterPageFormat)
-                context.PageFormats.Add(new MarkdownPageFormat());
-            
-            context.FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
-            
-            context.TemplateFilters.Add(new MarkdownTemplateFilter());
-        }
-    }
-
-    public class MarkdownPageFormat : PageFormat
-    {
-        public MarkdownPageFormat()
-        {
-            Extension = "md";
-            ContentType = MimeTypes.MarkdownText;
-        }
-
-        public static async Task<Stream> TransformToHtml(Stream markdownStream)
-        {
-            var md = await markdownStream.ReadToEndAsync();
-            var html = MarkdownConfig.Transformer.Transform(md);
-            return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
         }
     }
 

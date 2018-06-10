@@ -61,10 +61,10 @@ namespace ServiceStack.Templates
 
                     IEnumerable<Dictionary<string, object>> selectedResults = filteredResults;
 
-                    var i = 0;
                     var comparer = (IComparer<object>)Comparer<object>.Default;
                     if (cache.OrderBy != null)
                     {
+                        var i = 0;
                         selectedResults = selectedResults.OrderBy(scopeArgs =>
                         {
                             scopeArgs[nameof(index)] = i++;
@@ -73,6 +73,7 @@ namespace ServiceStack.Templates
                     }
                     else if (cache.OrderByDescending != null)
                     {
+                        var i = 0;
                         selectedResults = selectedResults.OrderByDescending(scopeArgs =>
                         {
                             scopeArgs[nameof(index)] = i++;

@@ -132,6 +132,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_evaluate_Markdown_block_body_as_string()
+        {
+            var context = new TemplateContext {
+                Plugins = { new MarkdownTemplatePlugin() }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("BEFORE {{#markdown}}# Heading{{/markdown}} AFTER").RemoveNewLines(),
+                Is.EqualTo("BEFORE <h1>Heading</h1> AFTER"));
+
+            Assert.That(context.EvaluateTemplate("BEFORE {{#markdown md}}# Heading{{/markdown}} AFTER {{ md }}").NormalizeNewLines(),
+                Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
+        }
+
+        [Test]
         public void Does_evaluate_Raw_block_body_and_appendTo_string()
         {
             var context = new TemplateContext {

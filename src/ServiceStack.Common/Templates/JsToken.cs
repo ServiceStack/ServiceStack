@@ -1232,7 +1232,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        internal static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
+        public static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
         {
             literal = literal.AdvancePastWhitespace();
 
