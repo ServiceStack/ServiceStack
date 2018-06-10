@@ -209,7 +209,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             catch (WebException webEx)
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var body = errorResponse.GetResponseStream().ReadToEnd();
                 Assert.That(body, Does.StartWith(
                     "{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\"")); //inc stacktrace
             }
@@ -227,7 +227,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             catch (WebException webEx)
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var body = errorResponse.GetResponseStream().ReadToEnd();
                 Assert.That(body, Is.EqualTo("{}"));
             }
         }
@@ -243,7 +243,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             catch (WebException webEx)
             {
                 var errorResponse = ((HttpWebResponse)webEx.Response);
-                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var body = errorResponse.GetResponseStream().ReadToEnd();
                 Assert.That(body, Does.StartWith("{\"responseStatus\":{\"errorCode\":\"CustomException\",\"message\":\"User Defined Error\""));
             }
         }
@@ -263,7 +263,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 //IIS doesn't allow overriding of StatusDescription
                 //Assert.That(errorResponse.StatusDescription, Is.EqualTo("HeaderErrorCode"));
 
-                var body = errorResponse.GetResponseStream().ReadFully().FromUtf8Bytes();
+                var body = errorResponse.GetResponseStream().ReadToEnd();
                 var customResponse = body.FromJson<CustomFieldHttpErrorResponse>();
                 var errorStatus = customResponse.ResponseStatus;
                 Assert.That(errorStatus.ErrorCode, Is.EqualTo("StatusErrorCode"));
