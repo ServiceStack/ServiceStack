@@ -540,9 +540,15 @@ namespace ServiceStack.Templates
         private Task assignToArgs(TemplateScopeContext scope, string argName, Dictionary<string, object> args) //from context filter
         {
             var ms = (MemoryStream)scope.OutputStream;
-            var value = ms.ReadFully().FromUtf8Bytes();
+            var value = ms.ReadToEnd();
             scope.ScopedParams[argName] = value;
             ms.SetLength(0); //just capture output, don't write anything to the ResponseStream
+            return TypeConstants.EmptyTask;
+        }
+
+        public Task buffer(TemplateScopeContext scope, object target)
+        {
+            var ms = (MemoryStream)scope.OutputStream;
             return TypeConstants.EmptyTask;
         }
 

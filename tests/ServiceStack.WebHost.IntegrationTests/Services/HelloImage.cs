@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
                 image.Save(ms, imgFormat);
 
                 ms.Position = 0;
-                await ms.CopyToAsync(responseStream, token);
+                await ms.WriteToAsync(responseStream, token);
             }
         }
     }

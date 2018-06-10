@@ -190,7 +190,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(responseStream);
+                    await stream.WriteToAsync(responseStream, token);
                 }
 
                 stackTrace.Pop();
@@ -447,7 +447,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream);
                 }
 
                 stackTrace.Pop();
@@ -484,7 +484,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream);
                 }
             }
         }
@@ -716,7 +716,7 @@ namespace ServiceStack.Templates
                                     if (stream.CanRead)
                                     {
                                         stream.Position = 0;
-                                        await stream.CopyToAsync(scope.OutputStream);
+                                        await stream.WriteToAsync(scope.OutputStream);
                                     }
                                 }
                             }
