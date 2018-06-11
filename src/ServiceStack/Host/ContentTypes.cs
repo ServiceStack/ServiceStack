@@ -150,8 +150,11 @@ namespace ServiceStack.Host
                 case byte[] bytes:
                     await stream.WriteAsync(bytes, 0, bytes.Length);
                     break;
-                case Stream input:
+                case MemoryStream input:
                     await input.WriteToAsync(stream);
+                    break;
+                case Stream input:
+                    await input.CopyToAsync(stream);
                     break;
 #if !NETSTANDARD2_0
                 case System.Drawing.Image img:
