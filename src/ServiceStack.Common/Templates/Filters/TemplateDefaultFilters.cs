@@ -748,10 +748,7 @@ namespace ServiceStack.Templates
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(toDictionary));
-            var literal = scope.AssertExpression(nameof(toDictionary), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
-
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
             return items.ToDictionary(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)));
         }

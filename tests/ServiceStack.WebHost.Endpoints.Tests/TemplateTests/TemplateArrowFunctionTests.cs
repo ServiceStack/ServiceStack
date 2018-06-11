@@ -27,6 +27,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 )
             )));
 
+            "a=>a+1".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsArrowFunctionExpression(
+                new JsIdentifier("a"),
+                new JsBinaryExpression(
+                    new JsIdentifier("a"), 
+                    JsAddition.Operator,
+                    new JsLiteral(1)
+                )
+            )));
+
             "(a,b) => a + b".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsArrowFunctionExpression(
                 new[]
@@ -111,7 +121,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(context.EvaluateTemplate("{{ people | let => { a: it.Name, b: it.Age * 2 } | select: ({a},{b}), }}"),  
                 Is.EqualTo("(name1,2),(name2,4),(name3,6),"));
+        }
 
+        [Test]
+        public void Does_evaluate_toDictionary_Arrow_Expressions()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"{{ [{name:'Alice',score:50},{name:'Bob',score:40},{name:'Cathy',score:45}] | assignTo=>scoreRecords }}
+Bob's score: {{ scoreRecords 
+   | toDictionary => it.name
+   | map => it.Bob
+   | select: { it.name } = { it.score }
+}}"), Is.EqualTo("Bob's score: Bob = 40"));
+        }
+
+        [Test]
+        public void Does_evaluate_reduce_ArrowExpression()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
+{{ attemptedWithdrawals 
+   | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
+            { initialValue: 100.0, })
+   | select: Ending balance: { it }. }}"), 
+                Is.EqualTo("Ending balance: 20."));
         }
     }
 }

@@ -539,7 +539,7 @@ namespace ServiceStack.Templates
         {
             literal = literal.AdvancePastWhitespace();
             
-            if (!literal.StartsWith("=>") || !literal.SafeGetChar(2).IsWhiteSpace())
+            if (!literal.StartsWith("=>"))
                 throw new SyntaxErrorException($"Expected '=>' but instead found {literal.DebugFirstChar()} near: {literal.DebugLiteral()}");
 
             literal = literal.Advance(2);

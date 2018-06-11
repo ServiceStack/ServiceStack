@@ -183,37 +183,39 @@ namespace ServiceStack.Templates
         {
             var items = target.AssertEnumerable(nameof(reduce));
             Type itemType = null;
+            
+            if (!(expression is JsArrowFunctionExpression arrowExpr))
+                throw new NotSupportedException($"{nameof(reduce)} expects an arrow expression but was instead '{expression.GetType().Name}'");
 
-            var literal = scope.AssertExpression(nameof(reduce), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(reduce), scopeOptions, out string itemBinding);
+            if (arrowExpr.Params.Length != 2)
+                throw new NotSupportedException($"{nameof(reduce)} expects 2 params but was instead {arrowExpr.Params.Length}");
+
+            var accumulatorBinding = arrowExpr.Params[0].NameString;
+            var itemBinding = arrowExpr.Params[1].NameString;
+            var expr = arrowExpr.Body;
+            
+            var scopedParams = scopeOptions as Dictionary<string, object> ?? new Dictionary<string, object>();
+            
             var accumulator = scopedParams.TryGetValue("initialValue", out object initialValue)
                 ? initialValue.ConvertTo<double>()
                 : 1;
 
-            var bindAccumlator = scopedParams.TryGetValue("accumulator", out object accumulatorName)
-                ? (string)accumulatorName
-                : "accumulator";
-
-            literal.ToStringSegment().ParseJsExpression(out JsToken token);
             var i = 0;
             foreach (var item in items)
             {
                 if (item == null) continue;
 
-                scope.AddItemToScope(bindAccumlator, accumulator);
+                scope.AddItemToScope(accumulatorBinding, accumulator);
                 scope.AddItemToScope("index", i++);
                 scope.AddItemToScope(itemBinding, item);
 
-                var result = token.Evaluate(scope);
+                var result = expr.Evaluate(scope);
                 if (result == null) continue;
                 if (itemType == null)
                     itemType = result.GetType();
 
                 accumulator = result.ConvertTo<double>();
             }
-
-            if (expression == null && itemType == null)
-                itemType = target.GetType().FirstGenericType()?.GetGenericArguments().FirstOrDefault();
 
             return itemType == null || itemType == typeof(double)
                 ? accumulator

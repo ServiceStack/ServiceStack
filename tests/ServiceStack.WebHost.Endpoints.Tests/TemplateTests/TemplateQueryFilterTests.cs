@@ -1873,7 +1873,7 @@ Category: Grains/Cereals, AveragePrice: 20.25
             Assert.That(context.EvaluateTemplate(@"
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
-   | reduce: multiply(accumulator, it)
+   | reduce((accumulator,it) => accumulator * it)
    | select: Total product of all numbers: { it | format('#.####') }. }} 
 ").NormalizeNewLines(),
                 
@@ -1887,8 +1887,8 @@ Total product of all numbers: 88.3308".NormalizeNewLines()));
             Assert.That(context.EvaluateTemplate(@"
 {{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
-   | reduce('iif(lessThan(balance, nextWithdrawal), balance, subtract(balance, nextWithdrawal))', 
-            { initialValue: 100.0, it: 'nextWithdrawal', accumulator: 'balance' })
+   | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
+            { initialValue: 100.0, })
    | select: Ending balance: { it }. }} 
 ").NormalizeNewLines(),
                 

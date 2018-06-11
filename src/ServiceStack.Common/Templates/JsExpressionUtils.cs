@@ -133,7 +133,7 @@ namespace ServiceStack.Templates
                 return literal;
             }
 
-            if (node is JsIdentifier identifier && peekLiteral.StartsWith("=>") && peekLiteral.SafeGetChar(2).IsWhiteSpace())
+            if (node is JsIdentifier identifier && peekLiteral.StartsWith("=>"))
             {
                 literal = peekLiteral.ParseArrowExpressionBody(new[]{ identifier }, out var arrowExpr);
                 token = arrowExpr;
