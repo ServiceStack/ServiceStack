@@ -631,20 +631,34 @@ namespace ServiceStack
         {
             var dbFactory = Container.TryResolve<IDbConnectionFactory>();
 
-            ConnectionInfo connInfo;
-            if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+            if (req != null)
             {
-                if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
-                    throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+                ConnectionInfo connInfo;
+                if ((connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+                {
+                    if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                        throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
-                if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
-                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
+                    if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
+                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
 
-                if (connInfo.ConnectionString != null)
-                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+                    if (connInfo.ConnectionString != null)
+                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
 
-                if (connInfo.NamedConnection != null)
-                    return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+                    if (connInfo.NamedConnection != null)
+                        return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+                }
+                else
+                {
+                    var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
+                    if (namedConnectionAttr != null)
+                    {
+                        if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                            throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+
+                        return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name);
+                    }
+                }
             }
 
             return dbFactory.OpenDbConnection();
