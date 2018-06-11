@@ -814,10 +814,7 @@ namespace ServiceStack.Templates
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
         public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            var literal = scope.AssertExpression(nameof(map), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
-
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
             if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
@@ -828,7 +825,7 @@ namespace ServiceStack.Templates
             var result = token.Evaluate(scope.AddItemToScope(itemBinding, target));
             return result;
         }
-
+        
         public object scopeVars(object target)
         {
             if (isNull(target))

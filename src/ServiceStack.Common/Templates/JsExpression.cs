@@ -372,6 +372,91 @@ namespace ServiceStack.Templates
         {
             return (Argument != null ? Argument.GetHashCode() : 0);
         }
-    }    
+    }
+
+    public class JsArrowFunctionExpression : JsExpression
+    {
+        public JsIdentifier[] Params { get; }
+        public JsToken Body { get; }
+
+        public JsArrowFunctionExpression(JsIdentifier param, JsToken body) : this(new[] {param}, body) {}
+        public JsArrowFunctionExpression(JsIdentifier[] @params, JsToken body)
+        {
+            Params = @params;
+            Body = body;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+
+            sb.Append("(");
+            for (var i = 0; i < Params.Length; i++)
+            {
+                var identifier = Params[i];
+                if (i > 0)
+                    sb.Append(",");
+
+                sb.Append(identifier.NameString);
+            }
+            sb.Append(") => ");
+
+            sb.Append(Body.ToRawString());
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var args = new Dictionary<string, object>();
+            foreach (var param in Params)
+            {
+                args[param.NameString] = param.Evaluate(scope);
+            }
+
+            var exprScope = scope.ScopeWithParams(args);
+            var ret = Body.Evaluate(exprScope);
+            return ret;
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["id"] = null,
+            };
+            var args = new List<object>();
+            to["params"] = args;
+
+            foreach (var param in Params)
+            {
+                args.Add(param.ToJsAst());
+            }
+
+            to["body"] = Body.ToJsAst();
+            return to;
+        }
+
+        protected bool Equals(JsArrowFunctionExpression other)
+        {
+            return Params.EquivalentTo(other.Params) && Equals(Body, other.Body);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsArrowFunctionExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Params != null ? Params.GetHashCode() : 0) * 397) ^ (Body != null ? Body.GetHashCode() : 0);
+            }
+        }
+    }
     
 }

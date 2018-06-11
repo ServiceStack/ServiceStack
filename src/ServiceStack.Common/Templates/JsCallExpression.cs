@@ -72,6 +72,10 @@ namespace ServiceStack.Templates
                         fnArgValues.Add(argValue);
                     }
                 }
+                else if (arg is JsArrowFunctionExpression arrowFn)
+                {
+                    fnArgValues.Add(arrowFn);
+                }
                 else
                 {
                     fnArgValues.Add(arg.Evaluate(scope));

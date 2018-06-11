@@ -628,7 +628,6 @@ namespace ServiceStack.Templates
                     var fnArgValues = JsCallExpression.EvaluateArgumentValues(scope, expr.Arguments);
                     var fnArgsLength = fnArgValues.Count;
 
-
                     var invoker = GetFilterInvoker(filterName, 1 + fnArgsLength, out TemplateFilter filter);
                     var contextFilterInvoker = invoker == null
                         ? GetContextFilterInvoker(filterName, 2 + fnArgsLength, out filter)

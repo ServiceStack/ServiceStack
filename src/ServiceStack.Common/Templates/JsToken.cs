@@ -269,6 +269,36 @@ namespace ServiceStack.Templates
                     token = bracketsExpr;
                     return literal;
                 }
+
+                if (literal.FirstCharEquals(',') && bracketsExpr is JsIdentifier param1) // (a,b,c) => ...
+                {
+                    literal = literal.Advance(1);
+                    var args = new List<JsIdentifier> { param1, };
+                    while (true)
+                    {
+                        literal = literal.AdvancePastWhitespace();
+                        literal = literal.ParseIdentifier(out var arg);
+                        if (!(arg is JsIdentifier param))
+                            throw new SyntaxErrorException($"Expected identifier but was instead '{arg.DebugToken()}', near: {literal.DebugLiteral()}");
+
+                        args.Add(param);
+
+                        literal = literal.AdvancePastWhitespace();
+                        
+                        if (literal.FirstCharEquals(')'))
+                            break;
+                        
+                        if (!literal.FirstCharEquals(','))
+                            throw new SyntaxErrorException($"Expected ',' or ')' but was instead '{literal.DebugFirstChar()}', near: {literal.DebugLiteral()}");
+                            
+                        literal = literal.Advance(1);
+                    }
+
+                    literal = literal.Advance(1);
+                    literal = literal.ParseArrowExpressionBody(args.ToArray(), out var expr);
+                    token = expr;
+                    return literal;
+                }
                 
                 throw new SyntaxErrorException($"Expected ')' but instead found {literal.DebugFirstChar()} near: {literal.DebugLiteral()}");
             }
@@ -505,6 +535,19 @@ namespace ServiceStack.Templates
             return new JsTemplateLiteral(quasis.ToArray(), expressions.ToArray());
         }
 
+        internal static StringSegment ParseArrowExpressionBody(this StringSegment literal, JsIdentifier[] args, out JsArrowFunctionExpression token)
+        {
+            literal = literal.AdvancePastWhitespace();
+            
+            if (!literal.StartsWith("=>") || !literal.SafeGetChar(2).IsWhiteSpace())
+                throw new SyntaxErrorException($"Expected '=>' but instead found {literal.DebugFirstChar()} near: {literal.DebugLiteral()}");
+
+            literal = literal.Advance(2);
+            literal = literal.ParseJsExpression(out var body, filterExpression:true);
+            token = new JsArrowFunctionExpression(args, body);
+            return literal;
+        }
+
         internal static StringSegment ParseJsMemberExpression(this StringSegment literal, ref JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
@@ -541,11 +584,22 @@ namespace ServiceStack.Templates
                     literal = literal.ParseArguments(out var args, termination: ')');
                     node = new JsCallExpression(node, args.ToArray());
                 }
-                else if (filterExpression && c == ':')
+                else if (filterExpression)
                 {
-                    literal = literal.ParseWhitespaceArgument(out var argument);
-                    node = new JsCallExpression(node, argument);
-                    return literal;
+                    if (c == ':')
+                    {
+                        literal = literal.ParseWhitespaceArgument(out var argument);
+                        node = new JsCallExpression(node, argument);
+                        return literal;
+                    }
+
+                    var peekLiteral = literal.AdvancePastWhitespace();
+                    if (peekLiteral.StartsWith("=>"))
+                    {
+                        literal = peekLiteral.ParseArrowExpressionBody(new[]{ new JsIdentifier("it") }, out var arrowExpr);
+                        node = arrowExpr;
+                        return literal;
+                    }
                 }
 
                 literal = literal.AdvancePastWhitespace();
@@ -752,6 +806,13 @@ namespace ServiceStack.Templates
                 literal = literal.Advance(1);
                 literal = literal.ParseWhitespaceArgument(out var argument);
                 expression = new JsCallExpression(identifier, argument);
+                return literal;
+            }
+            
+            if (literal.StartsWith("=>"))
+            {
+                literal = literal.ParseArrowExpressionBody(new[]{ new JsIdentifier("it") }, out var arrowExpr);
+                expression = new JsCallExpression(identifier, arrowExpr);
                 return literal;
             }
 

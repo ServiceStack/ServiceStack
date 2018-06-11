@@ -175,6 +175,21 @@ namespace ServiceStack.Templates
             return literal;
         }
 
+        public static JsToken AssertExpression(this TemplateScopeContext scope, string filterName, object expression, object scopeOptions, out string itemBinding)
+        {
+            if (expression is JsArrowFunctionExpression arrowExpr)
+            {
+                itemBinding = arrowExpr.Params[0].NameString;
+                return arrowExpr.Body;
+            }
+            
+            var literal = scope.AssertExpression(filterName, expression);
+            var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out itemBinding);
+
+            var token = literal.GetCachedJsExpression(scope);
+            return token;
+        }
+
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>
             GetParamsWithItemBinding(scope, filterName, null, scopedParams, out itemBinding);
 
