@@ -103,6 +103,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{ [3,2,1] | orderBy => it | join }}"),  Is.EqualTo("1,2,3"));
 
             Assert.That(context.EvaluateTemplate("{{ [1,2,3] | map => it * it | assignTo => values }}{{ values | sum }}"),  Is.EqualTo("14"));
+
+            Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | join('') }}"),  Is.EqualTo("abc"));
+
+            Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | concat }}"),  Is.EqualTo("abc"));
         }
 
         [Test]

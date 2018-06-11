@@ -597,12 +597,22 @@ namespace ServiceStack.Templates
             }
         }
 
+        public bool equivalentTo(IEnumerable<object> target, IEnumerable<object> items) => target.EquivalentTo(items);
         public IEnumerable<object> distinct(IEnumerable<object> items) => items.Distinct();
         public IEnumerable<object> union(IEnumerable<object> target, IEnumerable<object> items) => target.Union(items);
-        public IEnumerable<object> concat(IEnumerable<object> target, IEnumerable<object> items) => target.Concat(items);
         public IEnumerable<object> intersect(IEnumerable<object> target, IEnumerable<object> items) => target.Intersect(items);
         public IEnumerable<object> except(IEnumerable<object> target, IEnumerable<object> items) => target.Except(items);
-        public bool equivalentTo(IEnumerable<object> target, IEnumerable<object> items) => target.EquivalentTo(items);
+        public IEnumerable<object> concat(IEnumerable<object> target, IEnumerable<object> items) => target.Concat(items);
+
+        public string concat(IEnumerable<string> target)
+        {
+            var sb = StringBuilderCache.Allocate();
+            foreach (var str in target)
+            {
+                sb.Append(str);
+            }
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
 
         public object get(object target, object key)
         {
