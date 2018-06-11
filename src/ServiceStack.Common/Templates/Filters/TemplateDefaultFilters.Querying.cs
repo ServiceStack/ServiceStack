@@ -225,15 +225,22 @@ namespace ServiceStack.Templates
         public List<object[]> zip(TemplateScopeContext scope, IEnumerable original, object itemsOrBinding)
         {
             var to = new List<object[]>();
+            string literal = itemsOrBinding as string;
+            var arrowExpr = itemsOrBinding as JsArrowFunctionExpression;
 
-            if (itemsOrBinding is string literal)
+            if (literal != null || arrowExpr != null)
             {
-                var token = literal.GetCachedJsExpression(scope);
+                var token = literal != null 
+                    ? literal.GetCachedJsExpression(scope)
+                    : arrowExpr.Body;
+                var binding = arrowExpr != null
+                    ? arrowExpr.Params[0].NameString
+                    : "it";
 
                 var i = 0;
                 foreach (var a in original)
                 {
-                    scope.AddItemToScope("it", a, i++);
+                    scope.AddItemToScope(binding, a, i++);
                     var bindValue = token.Evaluate(scope);
                     if (bindValue is IEnumerable current)
                     {
