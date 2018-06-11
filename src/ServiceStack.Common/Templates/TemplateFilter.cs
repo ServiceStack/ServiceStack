@@ -171,7 +171,7 @@ namespace ServiceStack.Templates
         public static string AssertExpression(this TemplateScopeContext scope, string filterName, object expression)
         {
             if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
+                throw new NotSupportedException($"'{filterName}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
             return literal;
         }
 
