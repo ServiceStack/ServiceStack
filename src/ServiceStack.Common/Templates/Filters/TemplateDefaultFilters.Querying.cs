@@ -263,8 +263,19 @@ namespace ServiceStack.Templates
         {
             if (target is IEnumerable objs)
             {
-                var scopedParams = scope.GetParamsWithItemBindingOnly(nameof(let), null, scopeBindings, out string itemBinding);
+                string itemBinding;
+                Dictionary<string, object> scopedParams = null;
 
+                var arrowExpr = scopeBindings as JsArrowFunctionExpression;
+                if (arrowExpr != null)
+                {
+                    itemBinding = arrowExpr.Params[0].NameString;
+                }
+                else
+                {
+                    scopedParams = scope.GetParamsWithItemBindingOnly(nameof(@let), null, scopeBindings, out itemBinding);
+                }
+                
                 var to = new List<ScopeVars>();
                 var i = 0;
                 foreach (var item in objs)
@@ -288,17 +299,33 @@ namespace ServiceStack.Templates
                         }
                     }
 
-                    foreach (var entry in scopedParams)
+                    if (arrowExpr != null)
                     {
-                        var bindTo = entry.Key;
-                        if (!(entry.Value is string bindToLiteral))
-                            throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
-
-                        bindToLiteral.ToStringSegment().ParseJsExpression(out JsToken token);
-                        var bindValue = token.Evaluate(scope);
-                        scope.ScopedParams[bindTo] = bindValue;
-                        itemBindings[bindTo] = bindValue;
+                        var value = arrowExpr.Body.Evaluate(scope);
+                        if (value is Dictionary<string, object> bindingVars)
+                        {
+                            foreach (var bindingVar in bindingVars)
+                            {
+                                itemBindings[bindingVar.Key] = bindingVar.Value;
+                            }
+                        }
                     }
+                    else
+                    {
+                        foreach (var entry in scopedParams)
+                        {
+                            var bindTo = entry.Key;
+                            if (!(entry.Value is string bindToLiteral))
+                                throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
+    
+                            bindToLiteral.ParseJsExpression(out JsToken token);
+                            
+                            var bindValue = token.Evaluate(scope);
+                            scope.ScopedParams[bindTo] = bindValue;
+                            itemBindings[bindTo] = bindValue;
+                        }
+                    }
+
                     to.Add(itemBindings);
                 }
 
