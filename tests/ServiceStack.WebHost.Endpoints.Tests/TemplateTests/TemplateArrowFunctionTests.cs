@@ -121,6 +121,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(context.EvaluateTemplate("{{ people | let => { a: it.Name, b: it.Age * 2 } | select: ({a},{b}), }}"),  
                 Is.EqualTo("(name1,2),(name2,4),(name3,6),"));
+            
+            Assert.That(context.EvaluateTemplate("{{ people | let => { it.Name, it.Age } | select: ({Name},{Age}), }}"),  
+                Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
+            
+            Assert.That(context.EvaluateTemplate("{{ people | map => { it.Name, it.Age } | select: ({it.Name},{it.Age}), }}"),  
+                Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
         }
 
         [Test]

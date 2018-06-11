@@ -179,6 +179,8 @@ namespace ServiceStack.Templates
                 return literalKey.Value.ToString();
             if (token is JsIdentifier identifierKey)
                 return identifierKey.NameString;
+            if (token is JsMemberExpression memberExpr && memberExpr.Property is JsIdentifier prop)
+                return prop.NameString;
             
             throw new SyntaxErrorException($"Invalid Key. Expected a Literal or Identifier but was {token.DebugToken()}");
         }
