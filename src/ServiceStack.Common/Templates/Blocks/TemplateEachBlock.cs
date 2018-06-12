@@ -29,7 +29,9 @@ namespace ServiceStack.Templates
 
             var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.ArgumentString, _ => ParseArgument(scope, fragment));
             
-            IEnumerable collection = (IEnumerable) await cache.Source.EvaluateAsync(scope);
+            var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
+                ? (IEnumerable)syncResult
+                : (IEnumerable)(await asyncResult);
 
             var index = 0;
             if (collection != null)

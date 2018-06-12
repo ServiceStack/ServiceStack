@@ -33,20 +33,7 @@ namespace ServiceStack.Templates
         public override string ToString() => ToRawString();
 
         public abstract object Evaluate(TemplateScopeContext scope);
-
-        /// <summary>
-        /// Handle sync/async results if the result can be a Task  
-        /// </summary>
-        public virtual Task<object> EvaluateAsync(TemplateScopeContext scope)
-        {
-            var result = Evaluate(scope);
-            if (result is Task<object> taskObj)
-                return taskObj;
-            if (result is Task task)
-                return task.GetResult().InTask();
-            return result.InTask();
-        }
-
+            
         public static object UnwrapValue(JsToken token)
         {
             if (token is JsLiteral literal)
@@ -221,7 +208,7 @@ namespace ServiceStack.Templates
         }
 
         /// <summary>
-        /// Handle sync/async results if the result can be a Task  
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
         /// </summary>
         public static async Task<bool> EvaluateToBoolAsync(this JsToken token, TemplateScopeContext scope)
         {
@@ -230,6 +217,70 @@ namespace ServiceStack.Templates
                 return b;
 
             return !TemplateDefaultFilters.isFalsy(ret);
+        }
+
+        /// <summary>
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// </summary>
+        public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope, out bool? result, out Task<bool> asyncResult)
+        {
+            if (token.Evaluate(scope, out var oResult, out var oAsyncResult))
+            {
+                result = oResult is bool b ? b : !TemplateDefaultFilters.isFalsy(oResult);
+                asyncResult = null;
+                return true;
+            }
+
+            result = null;
+
+            var tcs = new TaskCompletionSource<bool>();
+            oAsyncResult.ContinueWith(t => tcs.SetResult(!TemplateDefaultFilters.isFalsy(t.Result)), TaskContinuationOptions.OnlyOnRanToCompletion);
+            oAsyncResult.ContinueWith(t => tcs.SetException(t.Exception.InnerExceptions), TaskContinuationOptions.OnlyOnFaulted);
+            oAsyncResult.ContinueWith(t => tcs.SetCanceled(), TaskContinuationOptions.OnlyOnCanceled);
+            asyncResult = tcs.Task;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// </summary>
+        public static Task<object> EvaluateAsync(this JsToken token, TemplateScopeContext scope)
+        {
+            var result = token.Evaluate(scope);
+            if (result is Task<object> taskObj)
+                return taskObj;
+            if (result is Task task)
+                return task.GetResult().InTask();
+            return result.InTask();
+        }
+
+        /// <summary>
+        /// Evaluate then set asyncResult if Result was async, otherwise set result.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="result"></param>
+        /// <param name="asyncResult"></param>
+        /// <returns>true if result was synchronous otherwise false</returns>
+        public static bool Evaluate(this JsToken token, TemplateScopeContext scope, out object result, out Task<object> asyncResult)
+        {
+            result = token.Evaluate(scope);
+            if (result is Task<object> taskObj)
+            {
+                asyncResult = taskObj;
+                result = null;
+            }
+            else if (result is Task task)
+            {
+                asyncResult = task.GetResult().InTask();
+                result = null;
+            }
+            else
+            {
+                asyncResult = null;
+                return true;
+            }
+            return false;
         }
 
         public static StringSegment AdvancePastChar(this StringSegment literal, char delim)
