@@ -212,7 +212,9 @@ namespace ServiceStack.Templates
                 else
                 {
                     var keyString = GetKey(prop.Key);
-                    var value = prop.Value.Evaluate(scope);
+                    var value = prop.Value is JsArrowFunctionExpression arrowExpr 
+                        ? arrowExpr
+                        : prop.Value.Evaluate(scope);
                     to[keyString] = value;
                 }
             }

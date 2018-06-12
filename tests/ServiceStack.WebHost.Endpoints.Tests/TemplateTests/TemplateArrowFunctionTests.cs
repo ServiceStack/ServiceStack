@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Collections.Generic;
+using NUnit.Framework;
 using ServiceStack.Templates;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -79,6 +81,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                         new JsIdentifier("b")
                     )
                 ))));
+
+            "{ k: a => 1 }".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsObjectExpression(
+                new JsProperty(
+                    new JsIdentifier("k"),
+                    new JsArrowFunctionExpression(
+                        new JsIdentifier("a"),
+                        new JsLiteral(1)
+                    )
+                ))));
         }
 
         [Test]
@@ -147,7 +159,7 @@ Bob's score: {{ scoreRecords
         }
 
         [Test]
-        public void Does_evaluate_reduce_ArrowExpression()
+        public void Does_evaluate_reduce_Arrow_Expressions()
         {
             var context = new TemplateContext().Init();
             
@@ -157,6 +169,34 @@ Bob's score: {{ scoreRecords
             { initialValue: 100.0, })
    | select: Ending balance: { it }. }}"), 
                 Is.EqualTo("Ending balance: 20."));
+        }
+        
+        public class AnagramEqualityComparer : IEqualityComparer<string> 
+        {
+            public bool Equals(string x, string y) => GetCanonicalString(x) == GetCanonicalString(y);
+            public int GetHashCode(string obj) => GetCanonicalString(obj).GetHashCode();
+            private string GetCanonicalString(string word) 
+            {
+                var wordChars = word.ToCharArray();
+                Array.Sort(wordChars);
+                return new string(wordChars);
+            }
+        }
+
+        [Test]
+        public void Does_evaluate_groupBy_Arrow_Expressions()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["anagramComparer"] = new AnagramEqualityComparer()
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate(@"{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
+{{#each groupBy(anagrams, w => trim(w), { map: x => upper(x), comparer: anagramComparer }) }}{{it | json}}{{/each}}"),
+                Is.EqualTo(@"[""FROM   "","" FORM  ""]["" SALT"",""  LAST   ""]["" EARN "","" NEAR ""]"));
         }
     }
 }

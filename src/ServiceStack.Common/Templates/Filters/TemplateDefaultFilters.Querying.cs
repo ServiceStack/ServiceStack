@@ -580,13 +580,24 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (scopedParams.TryGetValue(TemplateConstants.Map, out object map))
+            if (scopedParams.TryGetValue(TemplateConstants.Map, out object map) && map != null)
             {
-                ((string)map).ToStringSegment().ParseJsExpression(out var mapToken);
+                var mapBinding = itemBinding;
+                JsToken mapExpr;
+                if (map is string mapStr)
+                {
+                    mapStr.ParseJsExpression(out mapExpr);
+                }
+                else if (map is JsArrowFunctionExpression arrowExpr)
+                {
+                    mapBinding = arrowExpr.Params[0].NameString;
+                    mapExpr = arrowExpr.Body;
+                }
+                else throw new NotSupportedException($"map expression in '{nameof(groupBy)}' must be a string or arrow expression");
 
                 var result = items.GroupBy(
                     item => expr.Evaluate(scope.AddItemToScope(itemBinding, item)),
-                    item => mapToken.Evaluate(scope.AddItemToScope(itemBinding, item)),
+                    item => mapExpr.Evaluate(scope.AddItemToScope(mapBinding, item)),
                     comparer);
                 return result;
             }
