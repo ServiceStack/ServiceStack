@@ -444,7 +444,7 @@ User:
 
 Plugins: {{ plugins | select: \n  - { it | typeName } }}
 </pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
+{{ meta.Operations | take(10) | map => {Request:it.Name, Response:it.ResponseType.Name, Service:it.ServiceType.Name} | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
