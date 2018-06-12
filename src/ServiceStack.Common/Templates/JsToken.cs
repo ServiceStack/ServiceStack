@@ -574,7 +574,8 @@ namespace ServiceStack.Templates
                 
                 expressions.Add(expr);
 
-                i = lastPos = literal.Length - afterExpr.Length;
+                lastPos = literal.Length - afterExpr.Length;
+                i = lastPos - 1;
             }
 
             var endChunk = literal.Subsegment(lastPos);
