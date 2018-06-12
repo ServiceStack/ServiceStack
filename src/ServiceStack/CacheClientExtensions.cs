@@ -16,10 +16,7 @@ namespace ServiceStack
                 cacheClient.Set(cacheKey, value);
         }
 
-        private static string DateCacheKey(string cacheKey)
-        {
-            return cacheKey + ".created";
-        }
+        private static string DateCacheKey(string cacheKey) => cacheKey + ".created";
 
         public static DateTime? GetDate(this IRequest req)
         {
@@ -27,8 +24,7 @@ namespace ServiceStack
             if (date == null)
                 return null;
 
-            DateTime value;
-            if (!DateTime.TryParse(date, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out value))
+            if (!DateTime.TryParse(date, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out var value))
                 return null;
 
             return value;
@@ -40,8 +36,7 @@ namespace ServiceStack
             if (ifModifiedSince == null)
                 return null;
 
-            DateTime value;
-            if (!DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out value))
+            if (!DateTime.TryParse(ifModifiedSince, new DateTimeFormatInfo(), DateTimeStyles.RoundtripKind, out var value))
                 return null;
 
             return value;
@@ -230,10 +225,13 @@ namespace ServiceStack
                 {
                     var serializedCacheKey = GetCacheKeyForSerialized(cacheKey, serializedExt, null);
                     allCacheKeys.Add(serializedCacheKey);
+                    allCacheKeys.Add(DateCacheKey(serializedCacheKey));
 
                     foreach (var compressionType in CompressionTypes.AllCompressionTypes)
                     {
-                        allCacheKeys.Add(GetCacheKeyForCompressed(serializedCacheKey, compressionType));
+                        var compressedCacheKey = GetCacheKeyForCompressed(serializedCacheKey, compressionType);
+                        allCacheKeys.Add(compressedCacheKey);
+                        allCacheKeys.Add(DateCacheKey(compressedCacheKey));
                     }
                 }
             }
