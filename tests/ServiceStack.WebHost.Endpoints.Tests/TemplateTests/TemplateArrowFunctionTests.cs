@@ -198,5 +198,23 @@ Bob's score: {{ scoreRecords
 {{#each groupBy(anagrams, w => trim(w), { map: x => upper(x), comparer: anagramComparer }) }}{{it | json}}{{/each}}"),
                 Is.EqualTo(@"[""FROM   "","" FORM  ""]["" SALT"",""  LAST   ""]["" EARN "","" NEAR ""]"));
         }
+
+        class MyFilter : TemplateFilter
+        {
+            public double pow(double arg1, double arg2) => arg1 / arg2;
+        }
+
+        [Test]
+        public void Can_Invoke_Arrow_Expressions()
+        {
+            var context = new TemplateContext().Init();
+
+            "(a,b) => pow(a,2) + pow(b,2)".ParseJsExpression(out var token);
+            var arrowExpr = (JsArrowFunctionExpression) token;
+            
+            Assert.That(arrowExpr.Invoke(2,4), Is.EqualTo(20));
+            
+            Assert.That(arrowExpr.Invoke(JS.CreateScope(functions: new MyFilter()), 2,4), Is.EqualTo(3));
+        }
     }
 }

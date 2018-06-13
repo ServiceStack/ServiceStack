@@ -212,9 +212,7 @@ namespace ServiceStack.Templates
                 else
                 {
                     var keyString = GetKey(prop.Key);
-                    var value = prop.Value is JsArrowFunctionExpression arrowExpr 
-                        ? arrowExpr
-                        : prop.Value.Evaluate(scope);
+                    var value = prop.Value.Evaluate(scope);
                     to[keyString] = value;
                 }
             }
@@ -409,12 +407,19 @@ namespace ServiceStack.Templates
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
-        public override object Evaluate(TemplateScopeContext scope)
+        public override object Evaluate(TemplateScopeContext scope) => this;
+
+        public object Invoke(params object[] @params) => Invoke(JS.CreateScope(), @params);
+        public object Invoke(TemplateScopeContext scope, params object[] @params)
         {
             var args = new Dictionary<string, object>();
-            foreach (var param in Params)
+            for (var i = 0; i < Params.Length; i++)
             {
-                args[param.NameString] = param.Evaluate(scope);
+                if (@params.Length < i)
+                    break;
+
+                var param = Params[i];
+                args[param.NameString] = @params[i];
             }
 
             var exprScope = scope.ScopeWithParams(args);
