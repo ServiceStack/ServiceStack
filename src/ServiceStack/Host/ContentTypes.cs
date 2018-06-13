@@ -156,6 +156,8 @@ namespace ServiceStack.Host
                 case Stream input:
                     await input.CopyToAsync(stream);
                     break;
+                case ErrorResponse errorDto:  //ignore writing ErrorResponse bodies for unknown content types
+                    break;
 #if !NETSTANDARD2_0
                 case System.Drawing.Image img:
                     img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
