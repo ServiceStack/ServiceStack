@@ -13,7 +13,8 @@ namespace ServiceStack.Templates
     {{#ul {each:numbers, it:'num', class:'nav'}}} <li>{{num}}</li> {{/ul}}
 
     {{#ul {if:hasAccess, each:items, where:'Age > 27', 
-           class:['nav', !disclaimerAccepted?'blur':''], id:`ul-${id}`} }}
+           class:['nav', !disclaimerAccepted ? 'blur' : ''], 
+           id:`ul-${id}`, selected:true} }}
         {{#li {class: {alt:isOdd(index), active:Name==highlight} }}
             {{Name}}
         {{/li}}
@@ -23,11 +24,10 @@ namespace ServiceStack.Templates
 
     // Equivalent to:
 
-    {{ items | where: it.Age > 27  
-       | assignTo: items }}
+    {{ items | where => it.Age > 27 | assignTo: items }}
     {{#if !isEmpty(items)}}
         {{#if hasAccess}}
-        <ul {{ ['nav', !disclaimerAccepted?'blur':''] | htmlClass }} id="ul-{{id}}">
+        <ul {{ ['nav', !disclaimerAccepted ? 'blur' : ''] | htmlClass }} id="ul-{{id}}">
         {{#each items}}
             <li {{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>{{Name}}</li>
         {{/each}}
