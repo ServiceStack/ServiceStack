@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
+
 #if NETSTANDARD2_0
 using Microsoft.Extensions.Primitives;
 #endif
@@ -32,20 +33,7 @@ namespace ServiceStack.Templates
         public override string ToString() => ToRawString();
 
         public abstract object Evaluate(TemplateScopeContext scope);
-
-        /// <summary>
-        /// Handle sync/async results if the result can be a Task  
-        /// </summary>
-        public virtual Task<object> EvaluateAsync(TemplateScopeContext scope)
-        {
-            var result = Evaluate(scope);
-            if (result is Task<object> taskObj)
-                return taskObj;
-            if (result is Task task)
-                return task.GetResult().InTask();
-            return result.InTask();
-        }
-
+            
         public static object UnwrapValue(JsToken token)
         {
             if (token is JsLiteral literal)
@@ -54,13 +42,6 @@ namespace ServiceStack.Templates
         }
     }
 
-    public abstract class JsExpression : JsToken
-    {
-        public abstract Dictionary<string, object> ToJsAst();
-
-        public virtual string ToJsAstType() => GetType().ToJsAstType();
-    }
-    
     public class JsNull : JsToken
     {
         public const string String = "null";
@@ -72,547 +53,6 @@ namespace ServiceStack.Templates
         public override object Evaluate(TemplateScopeContext scope) => null;
     }
 
-    public class JsIdentifier : JsExpression
-    {
-        public StringSegment Name { get; }
-
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
-
-        public JsIdentifier(string name) => Name = name.ToStringSegment();
-        public JsIdentifier(StringSegment name) => Name = name;
-        public override string ToRawString() => ":" + Name;
-        
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var ret = scope.PageResult.GetValue(NameString, scope);
-            return ret;
-        }
-
-        protected bool Equals(JsIdentifier other) => string.Equals(Name, other.Name);
-
-        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object> {
-            ["type"] = ToJsAstType(),
-            ["name"] = NameString,
-        };
-
-        public override int GetHashCode() => Name.GetHashCode();
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsIdentifier) obj);
-        }
-
-        public override string ToString() => ToRawString();
-    }
-
-    public class JsLiteral : JsExpression
-    {
-        public static JsLiteral True = new JsLiteral(true);
-        public static JsLiteral False = new JsLiteral(false);
-        
-        public object Value { get; }
-        public JsLiteral(object value) => Value = value;
-        public override string ToRawString() => JsonValue(Value);
-
-        public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
-        protected bool Equals(JsLiteral other) => Equals(Value, other.Value);
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && Equals((JsLiteral) obj);
-        }
-
-        public override string ToString() => ToRawString();
-
-        public override object Evaluate(TemplateScopeContext scope) => Value;
-
-        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object> {
-            ["type"] = ToJsAstType(),
-            ["value"] = Value,
-            ["raw"] = JsonValue(Value),
-        };
-    }
-
-    public class JsTemplateLiteral : JsExpression
-    {
-        public JsTemplateElement[] Quasis { get; }
-        public JsToken[] Expressions { get; }
-        
-        public JsTemplateLiteral(string cooked) 
-            : this(new []{ new JsTemplateElement(cooked, cooked, tail:true) }){}
-
-        public JsTemplateLiteral(JsTemplateElement[] quasis=null, JsToken[] expressions=null)
-        {
-            Quasis = quasis ?? TypeConstants<JsTemplateElement>.EmptyArray;
-            Expressions = expressions ?? TypeConstants<JsToken>.EmptyArray;
-        }
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate();
-
-            sb.Append("`");
-
-            for (int i = 0; i < Quasis.Length; i++)
-            {
-                var quasi = Quasis[i];
-                sb.Append(quasi.Value.Raw);
-                if (quasi.Tail)
-                    break;
-
-                var expr = Expressions[i];
-                sb.Append("${");
-                sb.Append(expr.ToRawString());
-                sb.Append("}");
-            }
-
-            sb.Append("`");
-
-            var ret = StringBuilderCache.ReturnAndFree(sb);
-            return ret;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var sb = StringBuilderCache.Allocate();
-            
-            for (int i = 0; i < Quasis.Length; i++)
-            {
-                var quasi = Quasis[i];
-                sb.Append(quasi.Value.Cooked);
-                if (quasi.Tail)
-                    break;
-
-                var expr = Expressions[i];
-                var value = expr.Evaluate(scope);
-                sb.Append(value);
-            }
-
-            var ret = StringBuilderCache.ReturnAndFree(sb);
-            return ret;
-        }
-
-        public override Dictionary<string, object> ToJsAst()
-        {
-            var to = new Dictionary<string, object> {
-                ["type"] = ToJsAstType(),
-            };
-
-            var quasiType = typeof(JsTemplateElement).ToJsAstType();
-            var quasis = new List<object>();
-            foreach (var quasi in Quasis)
-            {
-                quasis.Add(new Dictionary<string, object> {
-                    ["type"] = quasiType,
-                    ["value"] = new Dictionary<string, object> {
-                        ["raw"] = quasi.Value.Raw,
-                        ["cooked"] = quasi.Value.Cooked,
-                    },
-                    ["tail"] = quasi.Tail,
-                });
-            }
-            to["quasis"] = quasis;
-
-            var expressions = new List<object>();
-            foreach (var expression in Expressions)
-            {
-                expressions.Add(expression.ToJsAst());
-            }
-            to["expressions"] = expressions;
-
-            return to;
-        }
-
-        protected bool Equals(JsTemplateLiteral other)
-        {
-            return Quasis.EquivalentTo(other.Quasis) && 
-                   Expressions.EquivalentTo(other.Expressions);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsTemplateLiteral) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Quasis != null ? Quasis.GetHashCode() : 0) * 397) ^ (Expressions != null ? Expressions.GetHashCode() : 0);
-            }
-        }
-
-        public override string ToString() => ToRawString();
-    }
-
-    public class JsTemplateElement
-    {
-        public JsTemplateElementValue Value { get; }
-        public bool Tail { get; }
-        
-        public JsTemplateElement(string raw, string cooked, bool tail=false) : 
-            this(new JsTemplateElementValue(raw, cooked), tail){}
-        
-        public JsTemplateElement(JsTemplateElementValue value, bool tail)
-        {
-            Value = value;
-            Tail = tail;
-        }
-
-        protected bool Equals(JsTemplateElement other)
-        {
-            return Equals(Value, other.Value) && Tail == other.Tail;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsTemplateElement) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Value != null ? Value.GetHashCode() : 0) * 397) ^ Tail.GetHashCode();
-            }
-        }
-    }
-
-    public class JsTemplateElementValue
-    {
-        public string Raw { get; }
-        public string Cooked { get; }
-        
-        public JsTemplateElementValue(string raw, string cooked)
-        {
-            Raw = raw;
-            Cooked = cooked;
-        }
-
-        protected bool Equals(JsTemplateElementValue other)
-        {
-            return Raw.Equals(other.Raw) && Cooked.Equals(other.Cooked);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsTemplateElementValue) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return (Raw.GetHashCode() * 397) ^ Cooked.GetHashCode();
-            }
-        }
-    }
-
-    public class JsArrayExpression : JsExpression
-    {
-        public JsToken[] Elements { get; }
-
-        public JsArrayExpression(params JsToken[] elements) => Elements = elements.ToArray();
-        public JsArrayExpression(IEnumerable<JsToken> elements) : this(elements.ToArray()) {}
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var to = new List<object>();
-            foreach (var element in Elements)
-            {
-                if (element is JsSpreadElement spread)
-                {
-                    var arr = spread.Argument.Evaluate(scope) as IEnumerable;
-                    if (arr == null)
-                        continue;
-
-                    foreach (var value in arr)
-                    {
-                        to.Add(value);
-                    }
-                }
-                else
-                {
-                    var value = element.Evaluate(scope);
-                    to.Add(value);
-                }
-            }
-            return to;
-        }
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate();
-            sb.Append("[");
-            for (var i = 0; i < Elements.Length; i++)
-            {
-                if (i > 0) 
-                    sb.Append(",");
-                
-                var element = Elements[i];
-                sb.Append(element.ToRawString());
-            }
-            sb.Append("]");
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public override Dictionary<string, object> ToJsAst()
-        {
-            var elements = new List<object>();
-            var to = new Dictionary<string, object>
-            {
-                ["type"] = ToJsAstType(),
-                ["elements"] = elements
-            };
-
-            foreach (var element in Elements)
-            {
-                elements.Add(element.ToJsAst());
-            }
-
-            return to;
-        }
-
-        protected bool Equals(JsArrayExpression other)
-        {
-            return Elements.EquivalentTo(other.Elements);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsArrayExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Elements != null ? Elements.GetHashCode() : 0);
-        }
-    }
-
-    public class JsObjectExpression : JsExpression
-    {
-        public JsProperty[] Properties { get; }
-
-        public JsObjectExpression(params JsProperty[] properties) => Properties = properties;
-        public JsObjectExpression(IEnumerable<JsProperty> properties) : this(properties.ToArray()) {}
-
-        public static string GetKey(JsToken token)
-        {
-            if (token is JsLiteral literalKey)
-                return literalKey.Value.ToString();
-            if (token is JsIdentifier identifierKey)
-                return identifierKey.NameString;
-            
-            throw new SyntaxErrorException($"Invalid Key. Expected a Literal or Identifier but was {token.DebugToken()}");
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            var to = new Dictionary<string, object>();
-            foreach (var prop in Properties)
-            {
-                if (prop.Key == null)
-                {
-                    if (prop.Value is JsSpreadElement spread)
-                    {
-                        var value = spread.Argument.Evaluate(scope);
-                        var obj = value.ToObjectDictionary();
-                        if (obj != null)
-                        {
-                            foreach (var entry in obj)
-                            {
-                                to[entry.Key] = entry.Value;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        throw new NotSupportedException("Object Expressions does not have a key");
-                    }
-                }
-                else
-                {
-                    var keyString = GetKey(prop.Key);
-                    var value = prop.Value.Evaluate(scope);
-                    to[keyString] = value;
-                }
-            }
-            return to;
-        }
-
-        public override string ToRawString()
-        {
-            var sb = StringBuilderCache.Allocate();
-            sb.Append("{");
-            for (var i = 0; i < Properties.Length; i++)
-            {
-                if (i > 0) 
-                    sb.Append(",");
-                
-                var prop = Properties[i];
-                if (prop.Key != null)
-                {
-                    sb.Append(prop.Key.ToRawString());
-                    if (!prop.Shorthand)
-                    {
-                        sb.Append(":");
-                        sb.Append(prop.Value.ToRawString());
-                    }
-                }
-                else //.... spread operator
-                {
-                    sb.Append(prop.Value.ToRawString());
-                }
-            }
-            sb.Append("}");
-            return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public override Dictionary<string, object> ToJsAst()
-        {
-            var properties = new List<object>();
-            var to = new Dictionary<string, object>
-            {
-                ["type"] = ToJsAstType(),
-                ["properties"] = properties
-            };
-
-            var propType = typeof(JsProperty).ToJsAstType();
-            foreach (var prop in Properties)
-            {
-                properties.Add(new Dictionary<string, object> {
-                    ["type"] = propType,
-                    ["key"] = prop.Key?.ToJsAst(), 
-                    ["computed"] = false, //syntax not supported: { ["a" + 1]: 2 }
-                    ["value"] = prop.Value.ToJsAst(), 
-                    ["kind"] = "init",
-                    ["method"] = false,
-                    ["shorthand"] = prop.Shorthand,
-                });
-            }
-
-            return to;
-        }
-
-        protected bool Equals(JsObjectExpression other)
-        {
-            return Properties.EquivalentTo(other.Properties);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsObjectExpression) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Properties != null ? Properties.GetHashCode() : 0);
-        }
-    }
-
-    public class JsProperty
-    {
-        public JsToken Key { get; }
-        public JsToken Value { get; }
-        public bool Shorthand { get; }
-
-        public JsProperty(JsToken key, JsToken value) : this(key, value, shorthand:false){}
-        public JsProperty(JsToken key, JsToken value, bool shorthand)
-        {
-            Key = key;
-            Value = value;
-            Shorthand = shorthand;
-        }
-
-        protected bool Equals(JsProperty other)
-        {
-            return Equals(Key, other.Key) && 
-                   Equals(Value, other.Value) && 
-                   Shorthand == other.Shorthand;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsProperty) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                var hashCode = (Key != null ? Key.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ (Value != null ? Value.GetHashCode() : 0);
-                hashCode = (hashCode * 397) ^ Shorthand.GetHashCode();
-                return hashCode;
-            }
-        }
-    }
-
-    public class JsSpreadElement : JsExpression
-    {
-        public JsToken Argument { get; }
-        public JsSpreadElement(JsToken argument)
-        {
-            Argument = argument;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope)
-        {
-            return Argument.Evaluate(scope);
-        }
-
-        public override string ToRawString()
-        {
-            return "..." + Argument.ToRawString();
-        }
-
-        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object>
-        {
-            ["type"] = ToJsAstType(),
-            ["argument"] = Argument.ToJsAst()
-        };
-
-        protected bool Equals(JsSpreadElement other)
-        {
-            return Equals(Argument, other.Argument);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((JsSpreadElement) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (Argument != null ? Argument.GetHashCode() : 0);
-        }
-    }
 
     public static class JsTokenUtils
     {
@@ -768,7 +208,7 @@ namespace ServiceStack.Templates
         }
 
         /// <summary>
-        /// Handle sync/async results if the result can be a Task  
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
         /// </summary>
         public static async Task<bool> EvaluateToBoolAsync(this JsToken token, TemplateScopeContext scope)
         {
@@ -777,6 +217,70 @@ namespace ServiceStack.Templates
                 return b;
 
             return !TemplateDefaultFilters.isFalsy(ret);
+        }
+
+        /// <summary>
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// </summary>
+        public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope, out bool? result, out Task<bool> asyncResult)
+        {
+            if (token.Evaluate(scope, out var oResult, out var oAsyncResult))
+            {
+                result = oResult is bool b ? b : !TemplateDefaultFilters.isFalsy(oResult);
+                asyncResult = null;
+                return true;
+            }
+
+            result = null;
+
+            var tcs = new TaskCompletionSource<bool>();
+            oAsyncResult.ContinueWith(t => tcs.SetResult(!TemplateDefaultFilters.isFalsy(t.Result)), TaskContinuationOptions.OnlyOnRanToCompletion);
+            oAsyncResult.ContinueWith(t => tcs.SetException(t.Exception.InnerExceptions), TaskContinuationOptions.OnlyOnFaulted);
+            oAsyncResult.ContinueWith(t => tcs.SetCanceled(), TaskContinuationOptions.OnlyOnCanceled);
+            asyncResult = tcs.Task;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+        /// </summary>
+        public static Task<object> EvaluateAsync(this JsToken token, TemplateScopeContext scope)
+        {
+            var result = token.Evaluate(scope);
+            if (result is Task<object> taskObj)
+                return taskObj;
+            if (result is Task task)
+                return task.GetResult().InTask();
+            return result.InTask();
+        }
+
+        /// <summary>
+        /// Evaluate then set asyncResult if Result was async, otherwise set result.
+        /// </summary>
+        /// <param name="scope"></param>
+        /// <param name="result"></param>
+        /// <param name="asyncResult"></param>
+        /// <returns>true if result was synchronous otherwise false</returns>
+        public static bool Evaluate(this JsToken token, TemplateScopeContext scope, out object result, out Task<object> asyncResult)
+        {
+            result = token.Evaluate(scope);
+            if (result is Task<object> taskObj)
+            {
+                asyncResult = taskObj;
+                result = null;
+            }
+            else if (result is Task task)
+            {
+                asyncResult = task.GetResult().InTask();
+                result = null;
+            }
+            else
+            {
+                asyncResult = null;
+                return true;
+            }
+            return false;
         }
 
         public static StringSegment AdvancePastChar(this StringSegment literal, char delim)
@@ -814,6 +318,36 @@ namespace ServiceStack.Templates
                 {
                     literal = literal.Advance(1);
                     token = bracketsExpr;
+                    return literal;
+                }
+
+                if (literal.FirstCharEquals(',') && bracketsExpr is JsIdentifier param1) // (a,b,c) => ...
+                {
+                    literal = literal.Advance(1);
+                    var args = new List<JsIdentifier> { param1, };
+                    while (true)
+                    {
+                        literal = literal.AdvancePastWhitespace();
+                        literal = literal.ParseIdentifier(out var arg);
+                        if (!(arg is JsIdentifier param))
+                            throw new SyntaxErrorException($"Expected identifier but was instead '{arg.DebugToken()}', near: {literal.DebugLiteral()}");
+
+                        args.Add(param);
+
+                        literal = literal.AdvancePastWhitespace();
+                        
+                        if (literal.FirstCharEquals(')'))
+                            break;
+                        
+                        if (!literal.FirstCharEquals(','))
+                            throw new SyntaxErrorException($"Expected ',' or ')' but was instead '{literal.DebugFirstChar()}', near: {literal.DebugLiteral()}");
+                            
+                        literal = literal.Advance(1);
+                    }
+
+                    literal = literal.Advance(1);
+                    literal = literal.ParseArrowExpressionBody(args.ToArray(), out var expr);
+                    token = expr;
                     return literal;
                 }
                 
@@ -941,9 +475,9 @@ namespace ServiceStack.Templates
                     else
                     {
                         literal = literal.ParseJsToken(out var mapKeyToken);
-    
-                        if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsTemplateLiteral) && !(mapKeyToken is JsIdentifier)) 
-                            throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal or identifier.");
+
+                        if (!(mapKeyToken is JsLiteral) && !(mapKeyToken is JsTemplateLiteral) && !(mapKeyToken is JsIdentifier) && !(mapKeyToken is JsMemberExpression)) 
+                            throw new SyntaxErrorException($"{mapKeyToken.DebugToken()} is not a valid Object key, expected literal, identifier or member expression.");
     
                         bool shorthand = false;
     
@@ -1040,7 +574,8 @@ namespace ServiceStack.Templates
                 
                 expressions.Add(expr);
 
-                i = lastPos = literal.Length - afterExpr.Length;
+                lastPos = literal.Length - afterExpr.Length;
+                i = lastPos - 1;
             }
 
             var endChunk = literal.Subsegment(lastPos);
@@ -1050,6 +585,19 @@ namespace ServiceStack.Templates
                 tail:true));
             
             return new JsTemplateLiteral(quasis.ToArray(), expressions.ToArray());
+        }
+
+        internal static StringSegment ParseArrowExpressionBody(this StringSegment literal, JsIdentifier[] args, out JsArrowFunctionExpression token)
+        {
+            literal = literal.AdvancePastWhitespace();
+            
+            if (!literal.StartsWith("=>"))
+                throw new SyntaxErrorException($"Expected '=>' but instead found {literal.DebugFirstChar()} near: {literal.DebugLiteral()}");
+
+            literal = literal.Advance(2);
+            literal = literal.ParseJsExpression(out var body, filterExpression:true);
+            token = new JsArrowFunctionExpression(args, body);
+            return literal;
         }
 
         internal static StringSegment ParseJsMemberExpression(this StringSegment literal, ref JsToken node, bool filterExpression)
@@ -1088,11 +636,22 @@ namespace ServiceStack.Templates
                     literal = literal.ParseArguments(out var args, termination: ')');
                     node = new JsCallExpression(node, args.ToArray());
                 }
-                else if (filterExpression && c == ':')
+                else if (filterExpression)
                 {
-                    literal = literal.ParseWhitespaceArgument(out var argument);
-                    node = new JsCallExpression(node, argument);
-                    return literal;
+                    if (c == ':')
+                    {
+                        literal = literal.ParseWhitespaceArgument(out var argument);
+                        node = new JsCallExpression(node, argument);
+                        return literal;
+                    }
+
+                    var peekLiteral = literal.AdvancePastWhitespace();
+                    if (peekLiteral.StartsWith("=>"))
+                    {
+                        literal = peekLiteral.ParseArrowExpressionBody(new[]{ new JsIdentifier("it") }, out var arrowExpr);
+                        node = arrowExpr;
+                        return literal;
+                    }
                 }
 
                 literal = literal.AdvancePastWhitespace();
@@ -1217,13 +776,13 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (literal.StartsWith("and"))
+            if (literal.StartsWith("and") && literal.SafeGetChar(3).IsWhiteSpace())
             {
                 op = JsAnd.Operator;
                 return literal.Advance(3);
             }
 
-            if (literal.StartsWith("or"))
+            if (literal.StartsWith("or") && literal.SafeGetChar(2).IsWhiteSpace())
             {
                 op = JsOr.Operator;
                 return literal.Advance(2);
@@ -1232,7 +791,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        internal static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
+        public static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -1299,6 +858,13 @@ namespace ServiceStack.Templates
                 literal = literal.Advance(1);
                 literal = literal.ParseWhitespaceArgument(out var argument);
                 expression = new JsCallExpression(identifier, argument);
+                return literal;
+            }
+            
+            if (literal.StartsWith("=>"))
+            {
+                literal = literal.ParseArrowExpressionBody(new[]{ new JsIdentifier("it") }, out var arrowExpr);
+                expression = new JsCallExpression(identifier, arrowExpr);
                 return literal;
             }
 

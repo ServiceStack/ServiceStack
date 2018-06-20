@@ -137,7 +137,7 @@ namespace ServiceStack
                 using (inputStream)
                 using (var requestStream = await webReq.GetRequestStreamAsync())
                 {
-                    await inputStream.CopyToAsync(requestStream);
+                    await inputStream.WriteToAsync(requestStream);
                 }
             }
             var res = (IHttpResponse)httpReq.Response;
@@ -186,7 +186,7 @@ namespace ServiceStack
     
                 using (responseStream)
                 {
-                    await responseStream.CopyToAsync(res.OutputStream);
+                    await responseStream.WriteToAsync(res.OutputStream);
                 }
             }
 

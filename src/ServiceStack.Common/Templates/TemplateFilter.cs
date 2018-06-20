@@ -171,8 +171,23 @@ namespace ServiceStack.Templates
         public static string AssertExpression(this TemplateScopeContext scope, string filterName, object expression)
         {
             if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
+                throw new NotSupportedException($"'{filterName}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
             return literal;
+        }
+
+        public static JsToken AssertExpression(this TemplateScopeContext scope, string filterName, object expression, object scopeOptions, out string itemBinding)
+        {
+            if (expression is JsArrowFunctionExpression arrowExpr)
+            {
+                itemBinding = arrowExpr.Params[0].NameString;
+                return arrowExpr.Body;
+            }
+            
+            var literal = scope.AssertExpression(filterName, expression);
+            var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out itemBinding);
+
+            var token = literal.GetCachedJsExpression(scope);
+            return token;
         }
 
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>

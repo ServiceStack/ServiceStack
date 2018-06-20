@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
@@ -443,7 +444,7 @@ User:
 
 Plugins: {{ plugins | select: \n  - { it | typeName } }}
 </pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
+{{ meta.Operations | take(10) | map => {Request:it.Name, Response:it.ResponseType.Name, Service:it.ServiceType.Name} | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
@@ -579,44 +580,6 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             {
                 await page.Format.OnViewException(result, httpReq, ex);
             }
-        }
-    }
-
-    public class MarkdownTemplateFilter : TemplateFilter
-    {
-        public IRawString markdown(string markdown) => markdown != null 
-            ? MarkdownConfig.Transformer.Transform(markdown).ToRawString() 
-            : RawString.Empty;
-    }
-    
-    public class MarkdownTemplatePlugin : ITemplatePlugin
-    {
-        public bool RegisterPageFormat { get; set; } = true;
-
-        public void Register(TemplateContext context)
-        {
-            if (RegisterPageFormat)
-                context.PageFormats.Add(new MarkdownPageFormat());
-            
-            context.FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
-            
-            context.TemplateFilters.Add(new MarkdownTemplateFilter());
-        }
-    }
-
-    public class MarkdownPageFormat : PageFormat
-    {
-        public MarkdownPageFormat()
-        {
-            Extension = "md";
-            ContentType = MimeTypes.MarkdownText;
-        }
-
-        public static async Task<Stream> TransformToHtml(Stream markdownStream)
-        {
-            var md = await markdownStream.ReadToEndAsync();
-            var html = MarkdownConfig.Transformer.Transform(md);
-            return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
         }
     }
 

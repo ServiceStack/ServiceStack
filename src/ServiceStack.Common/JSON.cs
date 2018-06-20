@@ -36,7 +36,7 @@ namespace ServiceStack
         {
             var context = new TemplateContext();
             if (functions != null)
-                context.TemplateFilters.Add(functions);
+                context.TemplateFilters.Insert(0, functions);
 
             context.Init();
             return new TemplateScopeContext(new PageResult(context.OneTimePage("")), null, args);

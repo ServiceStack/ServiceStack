@@ -82,6 +82,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                         tail:true), 
                 }
             )));
+            
+            "`${a}${b}`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("",""),
+                    new JsTemplateElement("",""),
+                    new JsTemplateElement("","", tail:true),
+                },
+                new[] { new JsIdentifier("a"), new JsIdentifier("b") })));
+
         }
 
         [Test]

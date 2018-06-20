@@ -60,7 +60,7 @@ namespace ServiceStack.Templates
         }
 
         protected bool CanExportScopeArgs(object element) => 
-            element != null && !(element is string) && (element.GetType().IsClass || element is KeyValuePair<string, object>);
+            element != null && !(element is string) && (element.GetType().IsClass || element.GetType().Name == "KeyValuePair`2");
 
         protected int AssertWithinMaxQuota(int value)
         {

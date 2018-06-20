@@ -64,7 +64,7 @@ namespace ServiceStack
                 {
                     stream.Position = 0;
                 }
-                await stream.CopyToAsync(response.OutputStream, token);
+                await stream.WriteToAsync(response.OutputStream, token);
                 if (bodySuffix != null) await response.OutputStream.WriteAsync(bodySuffix, token);
                 return true;
             }

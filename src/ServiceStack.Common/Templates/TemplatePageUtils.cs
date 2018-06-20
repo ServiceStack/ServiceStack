@@ -182,7 +182,7 @@ namespace ServiceStack.Templates
                     literal = literal.Advance(endExprPos + 2);
 
                     var blockNameString = blockName.Value;
-                    if (!TemplateConfig.BlockNamessWithStringBody.Contains(blockNameString))
+                    if (!TemplateConfig.DontEvaluateBlocksNamed.Contains(blockNameString))
                     {
                         literal = literal.ParseStatementBody(blockName, out var body);
                         var elseStatements = new List<PageElseBlock>();
