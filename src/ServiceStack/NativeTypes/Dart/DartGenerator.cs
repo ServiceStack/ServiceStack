@@ -704,11 +704,6 @@ namespace ServiceStack.NativeTypes.Dart
                 return;
             existingTypeInfos.Add(dartType);
 
-            if (dartType == "Map<String,List<Map<String,Poco>>>")
-            {
-                dartType.Print();
-            }
-
             if (factoryFn == null)
                 factoryFn = $"() => new {dartType}()"; 
             

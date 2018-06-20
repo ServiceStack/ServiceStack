@@ -160,7 +160,11 @@ namespace ServiceStack.NativeTypes
             void registerTypeFn(Type t)
             {
                 if (t.IsArray || t == typeof(Array))
-                    return;
+                {
+                    t = t.GetElementType();
+                    if (t == null)
+                        return;
+                }
 
                 considered.Add(t);
                 queue.Enqueue(t);
