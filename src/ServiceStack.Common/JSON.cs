@@ -23,9 +23,9 @@ namespace ServiceStack
         /// </summary>
         public static void Configure()
         {
-            JsonTypeSerializer.Instance.ObjectDeserializer = segment =>
+            JsonTypeSerializer.Instance.ObjectDeserializer = span =>
             {
-                segment.ParseJsExpression(out var token);
+                span.ToStringSegment().ParseJsExpression(out var token);
                 return token.Evaluate(CreateScope());
             };
         }

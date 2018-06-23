@@ -191,7 +191,7 @@ namespace ServiceStack.Templates
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string CookRawString(this StringSegment str, char quoteChar) =>
-            JsonTypeSerializer.UnescapeJsString(str, quoteChar).Value;
+            JsonTypeSerializer.UnescapeJsString(str.SpanValue(), quoteChar).Value();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static StringSegment TrimFirstNewLine(this StringSegment literal) => literal.StartsWith("\r\n")

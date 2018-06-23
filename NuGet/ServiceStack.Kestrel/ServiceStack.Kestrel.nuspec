@@ -28,7 +28,7 @@
         <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
         <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
+        <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
       </group>
     </dependencies>
   </metadata>

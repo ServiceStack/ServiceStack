@@ -18,7 +18,7 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
+        <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
         <dependency id="System.ServiceModel.Primitives" version="[4.4.0, )" />
         <dependency id="System.Collections.Specialized" version="[4.3.0, )" />
