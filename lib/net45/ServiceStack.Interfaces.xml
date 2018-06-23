@@ -2213,6 +2213,11 @@
             When used in a request or response filter, no more filters or processing is done on this request.
             </summary>
         </member>
+        <member name="M:ServiceStack.Web.IResponse.CloseAsync(System.Threading.CancellationToken)">
+            <summary>
+            Close this Response Output Stream Async
+            </summary>
+        </member>
         <member name="M:ServiceStack.Web.IResponse.End">
             <summary>
             Calls Response.End() on ASP.NET HttpResponse otherwise is an alias for Close().
@@ -2228,8 +2233,6 @@
             <summary>
             Flush this Response Output Stream Async
             </summary>
-            <param name="token"></param>
-            <returns></returns>
         </member>
         <member name="P:ServiceStack.Web.IResponse.IsClosed">
             <summary>

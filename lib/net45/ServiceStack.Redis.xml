@@ -48,12 +48,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Redis.BufferPool">
-            <summary>
-            Courtesy of @marcgravell
-            http://code.google.com/p/protobuf-net/source/browse/trunk/protobuf-net/BufferPool.cs
-            </summary>
-        </member>
         <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
             <summary>
             A complete redis command, with method to send command, receive response, and run callback on success or failure
