@@ -930,7 +930,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         {
             var context = new TemplateContext
             {
-                OnUnhandledExpression = var => var.OriginalTextBytes
+                OnUnhandledExpression = var => var.OriginalTextUtf8
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo("{{ unknownArg | lower }}"));
@@ -965,7 +965,6 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         public static string RemoveNewLines(this string text) => text.Trim().Replace("\r", "").Replace("\n", "");
         
         static readonly Regex whitespace = new Regex(@"\s+", RegexOptions.Compiled);
-        public static string RemoveAllWhitespace(this StringSegment text) => whitespace.Replace(text.Value, "");
         public static string RemoveAllWhitespace(this string text) => whitespace.Replace(text, "");
     }
 }

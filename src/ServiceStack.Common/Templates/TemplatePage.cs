@@ -6,17 +6,14 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.Templates
 {
     public class TemplatePage
     {
         public IVirtualFile File { get; }
-        public StringSegment FileContents { get; private set; }
-        public StringSegment BodyContents { get; private set; }
+        public ReadOnlyMemory<char> FileContents { get; private set; }
+        public ReadOnlyMemory<char> BodyContents { get; private set; }
         public Dictionary<string, object> Args { get; protected set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
@@ -72,12 +69,12 @@ namespace ServiceStack.Templates
             }
 
             var lastModified = File.LastModified;
-            var fileContents = contents.ToStringSegment();
+            var fileContents = contents.AsMemory();
             var pageVars = new Dictionary<string, object>();
 
             var pos = 0;
             var bodyContents = fileContents;
-            fileContents.AdvancePastWhitespace().TryReadLine(out StringSegment line, ref pos);
+            fileContents.AdvancePastWhitespace().TryReadLine(out ReadOnlyMemory<char> line, ref pos);
             if (line.StartsWith(Format.ArgsPrefix))
             {
                 while (fileContents.TryReadLine(out line, ref pos))
@@ -89,12 +86,12 @@ namespace ServiceStack.Templates
                     if (line.StartsWith(Format.ArgsSuffix))
                         break;
 
-                    var kvp = line.SplitOnFirst(':');
-                    pageVars[kvp[0].Trim().ToString()] = kvp.Length > 1 ? kvp[1].Trim().ToString() : "";
+                    line.SplitOnFirst(':', out var first, out var last);
+                    pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
                 
                 //When page has variables body starts from first non whitespace after variable's end  
-                bodyContents = fileContents.SafeSubsegment(pos).AdvancePastWhitespace();
+                bodyContents = fileContents.SafeSlice(pos).AdvancePastWhitespace();
             }
 
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
@@ -104,7 +101,7 @@ namespace ServiceStack.Templates
 
             foreach (var fragment in pageFragments)
             {
-                if (fragment is PageVariableFragment var && var.BindingString == TemplateConstants.Page)
+                if (fragment is PageVariableFragment var && var.Binding == TemplateConstants.Page)
                 {
                     IsLayout = true;
                     break;

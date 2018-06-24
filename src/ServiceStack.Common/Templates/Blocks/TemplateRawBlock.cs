@@ -20,19 +20,19 @@ namespace ServiceStack.Templates
         {
             var strFragment = (PageStringFragment)fragment.Body[0];
 
-            if (!string.IsNullOrWhiteSpace(fragment.Argument))
+            if (!fragment.Argument.IsNullOrWhiteSpace())
             {
                 Capture(scope, fragment, strFragment);
             }
             else
             {
-                await scope.OutputStream.WriteAsync(strFragment.Value, cancel);
+                await scope.OutputStream.WriteAsync(strFragment.Value.Span, cancel);
             }
         }
 
         private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
         {
-            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
+            var literal = fragment.Argument.Span.AdvancePastWhitespace();
             bool appendTo = false;
             if (literal.StartsWith("appendTo "))
             {
@@ -45,11 +45,11 @@ namespace ServiceStack.Templates
             if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
                          && oVar is string existingString)
             {
-                scope.PageResult.Args[nameString] = existingString + strFragment.Value.Value;
+                scope.PageResult.Args[nameString] = existingString + strFragment.Value;
                 return;
             }
 
-            scope.PageResult.Args[nameString] = strFragment.Value.Value;
+            scope.PageResult.Args[nameString] = strFragment.Value.ToString();
         }
     }
 }

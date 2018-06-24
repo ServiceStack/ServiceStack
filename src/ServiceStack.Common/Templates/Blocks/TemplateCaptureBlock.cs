@@ -23,10 +23,10 @@ namespace ServiceStack.Templates
         //Extract Span out of async method 
         private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(TemplateScopeContext scope, PageBlockFragment fragment)
         {
-            if (string.IsNullOrWhiteSpace(fragment.Argument))
+            if (fragment.Argument.IsNullOrWhiteSpace())
                 throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
             
-            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
+            var literal = fragment.Argument.AdvancePastWhitespace();
             bool appendTo = false;
             if (literal.StartsWith("appendTo "))
             {
@@ -47,7 +47,7 @@ namespace ServiceStack.Templates
             if (argValue != null && scopeArgs == null)
                 throw new NotSupportedException("Any 'capture' argument must be an Object Dictionary");
 
-            return (name.Value(), scopeArgs, appendTo);
+            return (name.ToString(), scopeArgs, appendTo);
         }
 
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)

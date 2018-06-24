@@ -348,6 +348,8 @@ namespace ServiceStack.Templates
             {
                 case "Cache":
                     return Context.Cache;
+                case "CacheMemory":
+                    return Context.CacheMemory;
                 case "ExpiringCache":
                     return Context.ExpiringCache;
                 case "JsTokenCache":
@@ -366,7 +368,7 @@ namespace ServiceStack.Templates
             if (cacheNames is string strName)
             {
                 caches = strName.EqualsIgnoreCase("all")
-                    ? new List<string> {"Cache", "ExpiringCache", "BinderCache", "AssignExpressionCache", "PathMappings"}
+                    ? new List<string> {"Cache", "CacheMemory", "ExpiringCache", "BinderCache", "JsTokenCache", "AssignExpressionCache", "PathMappings"}
                     : new List<string> {strName};
             }
             else if (cacheNames is IEnumerable<string> nameList)

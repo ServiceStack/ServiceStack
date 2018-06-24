@@ -121,7 +121,7 @@ namespace ServiceStack.Templates
 
         public static void InvokeAssignExpression(this TemplateScopeContext scope, string assignExpr, object target, object value)
         {
-            var fn = scope.Context.GetAssignExpression(target.GetType(), assignExpr.ToStringSegment());
+            var fn = scope.Context.GetAssignExpression(target.GetType(), assignExpr.AsMemory());
 
             try
             {

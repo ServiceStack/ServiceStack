@@ -17,7 +17,7 @@ namespace ServiceStack.Templates
         
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            var result = await fragment.Argument.AsSpan().GetJsExpressionAndEvaluateToBoolAsync(scope,
+            var result = await fragment.Argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
                 ifNone: () => throw new NotSupportedException("'if' block does not have a valid expression"));
             if (result)
             {

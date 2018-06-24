@@ -263,11 +263,11 @@ namespace ServiceStack.Templates
 
                     if (fragment is PageStringFragment str)
                     {
-                        await outputStream.WriteAsync(str.ValueBytes, token);
+                        await outputStream.WriteAsync(str.ValueUtf8, token);
                     }
                     else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
                     {
-                        if (var.Binding.Equals(TemplateConstants.Page))
+                        if (var.Binding?.Equals(TemplateConstants.Page) == true)
                         {
                             await WritePageAsync(Page, CodePage, pageScope, token);
                         }
@@ -302,7 +302,7 @@ namespace ServiceStack.Templates
 
                 if (fragment is PageStringFragment str)
                 {
-                    await scope.OutputStream.WriteAsync(str.ValueBytes, token);
+                    await scope.OutputStream.WriteAsync(str.ValueUtf8, token);
                 }
                 else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
                 {
@@ -320,8 +320,8 @@ namespace ServiceStack.Templates
 
         public bool ShouldSkipFilterExecution(PageVariableFragment var)
         {
-            return HaltExecution || SkipFilterExecution && (var.BindingString != null 
-               ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString)
+            return HaltExecution || SkipFilterExecution && (var.Binding != null 
+               ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
                : var.InitialExpression?.Name == null || 
                  !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
@@ -515,8 +515,8 @@ namespace ServiceStack.Templates
 
         private async Task WriteVarAsync(TemplateScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
-            if (var.BindingString != null)
-                stackTrace.Push($"Expression (binding): " + var.BindingString);
+            if (var.Binding != null)
+                stackTrace.Push($"Expression (binding): " + var.Binding);
             else if (var.InitialExpression?.Name != null)
                 stackTrace.Push("Expression (filter): " + var.InitialExpression.Name);
             else if (var.InitialValue != null)
@@ -535,7 +535,7 @@ namespace ServiceStack.Templates
                 else
                 {
                     var bytes = Context.OnUnhandledExpression(var);
-                    if (bytes != null && bytes.Length > 0)
+                    if (bytes.Length > 0)
                         await scope.OutputStream.WriteAsync(bytes, token);
                 }
             }
@@ -586,20 +586,20 @@ namespace ServiceStack.Templates
                             return string.Empty;
                     }
 
-                    if (!var.Binding.HasValue)
+                    if (var.Binding == null)
                         return null;
 
-                    var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
+                    var hasFilterAsBinding = GetFilterAsBinding(var.Binding, out TemplateFilter filter);
                     if (hasFilterAsBinding != null)
                     {
-                        value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.BindingString);
+                        value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Binding);
                     }
                     else
                     {
-                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.BindingString, out filter);
+                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.Binding, out filter);
                         if (hasContexFilterAsBinding != null)
                         {
-                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.BindingString);
+                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.Binding);
                         }
                         else
                         {

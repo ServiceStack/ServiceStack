@@ -27,7 +27,7 @@ namespace ServiceStack.Templates
     {
         public static List<PageFragment> ParseTemplatePage(string text)
         {
-            return ParseTemplatePage(new StringSegment(text));
+            return ParseTemplatePage(text.AsMemory());
         }
 
         private const char FilterSep = '|';
@@ -35,7 +35,7 @@ namespace ServiceStack.Templates
         // {{#name}}  {{else if a=b}}  {{else}}  {{/name}}
         //          ^
         // returns    ^                         ^
-        static StringSegment ParseStatementBody(this StringSegment literal, StringSegment blockName, out List<PageFragment> body)
+        static ReadOnlyMemory<char> ParseStatementBody(this ReadOnlyMemory<char> literal, ReadOnlyMemory<char> blockName, out List<PageFragment> body)
         {
             var inStatements = 0;
             var pos = 0;
@@ -59,22 +59,22 @@ namespace ServiceStack.Templates
                 {
                     if (inStatements == 0)
                     {
-                        literal.Subsegment(pos + 2 + 1).AsSpan().ParseVarName(out var name);
+                        literal.Slice(pos + 2 + 1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            body = ParseTemplatePage(literal.Subsegment(0, pos).TrimFirstNewLine());
-                            return literal.Subsegment(pos);
+                            body = ParseTemplatePage(literal.Slice(0, pos).TrimFirstNewLine());
+                            return literal.Slice(pos);
                         }
                     }
 
                     inStatements--;
                 }
-                else if (literal.Subsegment(pos + 2).StartsWith("else"))
+                else if (literal.Slice(pos + 2).StartsWith("else"))
                 {
                     if (inStatements == 0)
                     {
-                        body = ParseTemplatePage(literal.Subsegment(0, pos).TrimFirstNewLine());
-                        return literal.Subsegment(pos);
+                        body = ParseTemplatePage(literal.Slice(0, pos).TrimFirstNewLine());
+                        return literal.Slice(pos);
                     }
                 }
 
@@ -85,13 +85,13 @@ namespace ServiceStack.Templates
         //   {{else if a=b}}  {{else}}  {{/name}}
         //  ^
         // returns           ^         ^
-        static StringSegment ParseElseStatement(this StringSegment literal, StringSegment blockName, out PageElseBlock statement)
+        static ReadOnlyMemory<char> ParseElseStatement(this ReadOnlyMemory<char> literal, string blockName, out PageElseBlock statement)
         {
             var inStatements = 0;
             var pos = 0;
             statement = null;
             var statementPos = -1;
-            var elseExpr = default(StringSegment);
+            var elseExpr = default(ReadOnlyMemory<char>);
             
             while (true)
             {
@@ -109,27 +109,27 @@ namespace ServiceStack.Templates
                 {
                     if (inStatements == 0)
                     {
-                        literal.Subsegment(pos + 2 + 1).AsSpan().ParseVarName(out var name);
+                        literal.Slice(pos + 2 + 1).ParseVarName(out var name);
                         if (name.EqualsOrdinal(blockName))
                         {
-                            var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos).TrimFirstNewLine());
+                            var body = ParseTemplatePage(literal.Slice(statementPos, pos - statementPos).TrimFirstNewLine());
                             statement = new PageElseBlock(elseExpr, body);
-                            return literal.Subsegment(pos);
+                            return literal.Slice(pos);
                         }
                     }
 
                     inStatements--;
                 }
-                else if (literal.Subsegment(pos + 2).StartsWith("else"))
+                else if (literal.Slice(pos + 2).StartsWith("else"))
                 {
                     if (inStatements == 0)
                     {
                         if (statementPos >= 0)
                         {
-                            var bodyText = literal.Subsegment(statementPos, pos - statementPos).TrimFirstNewLine();
+                            var bodyText = literal.Slice(statementPos, pos - statementPos).TrimFirstNewLine();
                             var body = ParseTemplatePage(bodyText);
                             statement = new PageElseBlock(elseExpr, body);
-                            return literal.Subsegment(pos);
+                            return literal.Slice(pos);
                         }
                         
                         var endExprPos = literal.IndexOf("}}", pos);
@@ -138,7 +138,7 @@ namespace ServiceStack.Templates
 
                         var exprStartPos = pos + 2 + 4; //= {{else...
 
-                        elseExpr = literal.Subsegment(exprStartPos, endExprPos - exprStartPos).Trim();
+                        elseExpr = literal.Slice(exprStartPos, endExprPos - exprStartPos).Trim();
                         statementPos = endExprPos + 2;
                     }
                 }
@@ -147,7 +147,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        public static List<PageFragment> ParseTemplatePage(StringSegment text)
+        public static List<PageFragment> ParseTemplatePage(ReadOnlyMemory<char> text)
         {
             var to = new List<PageFragment>();
 
@@ -158,33 +158,33 @@ namespace ServiceStack.Templates
             var lastPos = 0;
             while ((pos = text.IndexOf("{{", lastPos)) != -1)
             {
-                var block = text.Subsegment(lastPos, pos - lastPos);
+                var block = text.Slice(lastPos, pos - lastPos);
                 if (!block.IsNullOrEmpty())
                     to.Add(new PageStringFragment(block));
                 
                 var varStartPos = pos + 2;
 
-                var firstChar = text.GetChar(varStartPos);
+                var firstChar = text.Span[varStartPos];
                 if (firstChar == '*') //comment
                 {
                     lastPos = text.IndexOf("*}}", varStartPos) + 3;
                 }
                 else if (firstChar == '#') //block statement
                 {
-                    var literal = text.Subsegment(varStartPos + 1);
-                    literal = literal.AsSpan().ParseVarName(out var blockNameSpan).ToStringSegment();
+                    var literal = text.Slice(varStartPos + 1);
+                    literal = literal.ParseVarName(out var blockNameSpan);
 
-                    var blockName = blockNameSpan.Value();
+                    var blockName = blockNameSpan.ToString();
                     var endExprPos = literal.IndexOf("}}");
                     if (endExprPos == -1)
                         throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
 
-                    var blockExpr = literal.Subsegment(0, endExprPos).Trim();
+                    var blockExpr = literal.Slice(0, endExprPos).Trim();
                     literal = literal.Advance(endExprPos + 2);
 
                     if (!TemplateConfig.DontEvaluateBlocksNamed.Contains(blockName))
                     {
-                        literal = literal.ParseStatementBody(blockName, out var body);
+                        literal = literal.ParseStatementBody(blockNameSpan, out var body);
                         var elseStatements = new List<PageElseBlock>();
 
                         while (literal.StartsWith("{{else"))
@@ -199,7 +199,7 @@ namespace ServiceStack.Templates
                         literal = literal.TrimFirstNewLine();
 
                         var length = text.Length - pos - literal.Length;
-                        var originalText = text.Subsegment(pos, length);
+                        var originalText = text.Slice(pos, length);
                         lastPos = pos + length;
                     
                         var statement = new PageBlockFragment(originalText, blockName, blockExpr, body, elseStatements);
@@ -212,12 +212,12 @@ namespace ServiceStack.Templates
                         if (endBlockPos == -1)
                             throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
 
-                        var endBlockBody = literal.Subsegment(0, endBlockPos);
+                        var endBlockBody = literal.Slice(0, endBlockPos);
                         literal = literal.Advance(endBlockPos + endBlock.Length).TrimFirstNewLine();
                         var body = new List<PageFragment>{ new PageStringFragment(endBlockBody) };
                         
                         var length = text.Length - pos - literal.Length;
-                        var originalText = text.Subsegment(pos, length);
+                        var originalText = text.Slice(pos, length);
                         lastPos = pos + length;
                     
                         var statement = new PageBlockFragment(originalText, blockName, blockExpr, body);
@@ -226,8 +226,8 @@ namespace ServiceStack.Templates
                 }
                 else
                 {
-                    var literal = text.Subsegment(varStartPos);
-                    literal = literal.AsSpan().ParseJsExpression(out var expr, filterExpression: true).ToStringSegment();
+                    var literal = text.Slice(varStartPos).Span;
+                    literal = literal.ParseJsExpression(out var expr, filterExpression: true);
 
                     var filters = new List<JsCallExpression>();
 
@@ -240,7 +240,7 @@ namespace ServiceStack.Templates
 
                             while (true)
                             {
-                                literal = literal.AsSpan().ParseJsCallExpression(out var filter, filterExpression: true).ToStringSegment();
+                                literal = literal.ParseJsCallExpression(out var filter, filterExpression: true);
 
                                 filters.Add(filter);
 
@@ -274,7 +274,7 @@ namespace ServiceStack.Templates
                     }
 
                     var length = text.Length - pos - literal.Length;
-                    var originalText = text.Subsegment(pos, length);
+                    var originalText = text.Slice(pos, length);
                     lastPos = pos + length;
 
                     var varFragment = new PageVariableFragment(originalText, expr, filters);
@@ -290,7 +290,7 @@ namespace ServiceStack.Templates
                     {
                         var lastExpr = varFragment.FilterExpressions?.LastOrDefault();
                         var filterName = lastExpr?.Name ??
-                                         varFragment?.InitialExpression?.Name ?? varFragment.BindingString;
+                                         varFragment?.InitialExpression?.Name ?? varFragment.Binding;
                         if (filterName != null && TemplateConfig.RemoveNewLineAfterFiltersNamed.Contains(filterName))
                         {
                             lastPos += newLineLen;
@@ -301,7 +301,7 @@ namespace ServiceStack.Templates
 
             if (lastPos != text.Length)
             {
-                var lastBlock = lastPos == 0 ? text : text.Subsegment(lastPos);
+                var lastBlock = lastPos == 0 ? text : text.Slice(lastPos);
                 to.Add(new PageStringFragment(lastBlock));
             }
 
@@ -314,7 +314,7 @@ namespace ServiceStack.Templates
         
         public static ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
 
-        public static Func<TemplateScopeContext, object, object> GetMemberExpression(Type targetType, StringSegment expression)
+        public static Func<TemplateScopeContext, object, object> GetMemberExpression(Type targetType, ReadOnlyMemory<char> expression)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
@@ -331,7 +331,7 @@ namespace ServiceStack.Templates
             return fn;
         }
         
-        public static Func<TemplateScopeContext, object, object> Compile(Type type, StringSegment expr)
+        public static Func<TemplateScopeContext, object, object> Compile(Type type, ReadOnlyMemory<char> expr)
         {
             var scope = Expression.Parameter(typeof(TemplateScopeContext), "scope");
             var param = Expression.Parameter(typeof(object), "instance");
@@ -341,7 +341,7 @@ namespace ServiceStack.Templates
             return Expression.Lambda<Func<TemplateScopeContext, object, object>>(body, scope, param).Compile();
         }
 
-        private static Expression CreateBindingExpression(Type type, StringSegment expr, ParameterExpression scope, ParameterExpression instance)
+        private static Expression CreateBindingExpression(Type type, ReadOnlyMemory<char> expr, ParameterExpression scope, ParameterExpression instance)
         {
             Expression body = Expression.Convert(instance, type);
 
@@ -349,25 +349,26 @@ namespace ServiceStack.Templates
 
             var pos = 0;
             var depth = 0;
-            while (expr.TryReadPart(".", out StringSegment member, ref pos))
+            var delim = ".".AsMemory();
+            while (expr.TryReadPart(delim, out ReadOnlyMemory<char> member, ref pos))
             {
                 try
                 {
                     if (member.IndexOf('(') >= 0)
                         throw new BindingExpressionException(
                             $"Calling methods in '{expr}' is not allowed in binding expressions, use a filter instead.",
-                            member.Value, expr.Value);
+                            member.ToString(), expr.ToString());
 
                     var indexerPos = member.IndexOf('[');
                     if (indexerPos >= 0)
                     {
                         var prop = member.LeftPart('[');
                         var indexer = member.RightPart('[');
-                        indexer.AsSpan().ParseJsExpression(out var token);
+                        indexer.Span.ParseJsExpression(out var token);
 
                         if (token is JsCallExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'",
-                                member.Value, expr.Value);
+                                member.ToString(), expr.ToString());
 
                         var value = JsToken.UnwrapValue(token);
 
@@ -416,9 +417,9 @@ namespace ServiceStack.Templates
                         }
                         else
                         {
-                            var pi = AssertProperty(currType, prop.Value, expr);
+                            var pi = AssertProperty(currType, prop.ToString(), expr);
                             currType = pi.PropertyType;
-                            body = Expression.PropertyOrField(body, prop.Value);
+                            body = Expression.PropertyOrField(body, prop.ToString());
 
                             if (currType == typeof(string))
                             {
@@ -436,7 +437,7 @@ namespace ServiceStack.Templates
                     {
                         if (depth >= 1)
                         {
-                            var memberName = member.Value;
+                            var memberName = member.ToString();
                             if (typeof(IDictionary).IsAssignableFrom(currType))
                             {
                                 var pi = AssertProperty(currType, "Item", expr);
@@ -470,14 +471,14 @@ namespace ServiceStack.Templates
                 }
                 catch (Exception e)
                 {
-                    throw new BindingExpressionException($"Could not compile '{member}' from expression '{expr}'", member.Value,
-                        expr.Value, e);
+                    throw new BindingExpressionException($"Could not compile '{member}' from expression '{expr}'", 
+                        member.ToString(), expr.ToString(), e);
                 }
             }
             return body;
         }
 
-        public static Action<TemplateScopeContext, object, object> CompileAssign(Type type, StringSegment expr)
+        public static Action<TemplateScopeContext, object, object> CompileAssign(Type type, ReadOnlyMemory<char> expr)
         {
             var scope = Expression.Parameter(typeof(TemplateScopeContext), "scope");
             var instance = Expression.Parameter(typeof(object), "instance");
@@ -501,7 +502,7 @@ namespace ServiceStack.Templates
             }
             else
             {
-                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.Value);
+                throw new BindingExpressionException($"Assignment expression for '{expr}' not supported yet", "valueToAssign", expr.ToString());
             }
 
             return Expression.Lambda<Action<TemplateScopeContext, object, object>>(body, scope, instance, valueToAssign).Compile();
@@ -539,7 +540,7 @@ namespace ServiceStack.Templates
             return converted;
         }
 
-        private static PropertyInfo AssertProperty(Type currType, string prop, StringSegment expr)
+        private static PropertyInfo AssertProperty(Type currType, string prop, ReadOnlyMemory<char> expr)
         {
             var pi = currType.GetProperty(prop);
             if (pi == null)

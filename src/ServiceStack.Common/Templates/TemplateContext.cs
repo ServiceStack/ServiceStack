@@ -55,9 +55,11 @@ namespace ServiceStack.Templates
 
         public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
 
+        public ConcurrentDictionary<ReadOnlyMemory<char>, object> CacheMemory { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, object>();
+
         public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
         
-        public ConcurrentDictionary<string, JsToken> JsTokenCache { get; } = new ConcurrentDictionary<string, JsToken>();
+        public ConcurrentDictionary<ReadOnlyMemory<char>, JsToken> JsTokenCache { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, JsToken>();
 
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 
@@ -95,7 +97,7 @@ namespace ServiceStack.Templates
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
-        public Func<PageVariableFragment, byte[]> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
+        public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
 
         public TemplatePage GetPage(string virtualPath)
         {
@@ -388,7 +390,7 @@ namespace ServiceStack.Templates
             return this;
         }
 
-        public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, StringSegment expression)
+        public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, ReadOnlyMemory<char> expression)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
@@ -405,8 +407,8 @@ namespace ServiceStack.Templates
             return fn;
         }
 
-        protected static byte[] DefaultOnUnhandledExpression(PageVariableFragment var) => 
-            TemplateConfig.HideUnknownExpressions ? null : var.OriginalTextBytes;
+        protected static ReadOnlyMemory<byte> DefaultOnUnhandledExpression(PageVariableFragment var) => 
+            TemplateConfig.HideUnknownExpressions ? null : var.OriginalTextUtf8;
 
         public void Dispose()
         {

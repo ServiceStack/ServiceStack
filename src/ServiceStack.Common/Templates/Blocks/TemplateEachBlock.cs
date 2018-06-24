@@ -25,10 +25,10 @@ namespace ServiceStack.Templates
 
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            if (string.IsNullOrEmpty(fragment.Argument))
+            if (fragment.Argument.IsNullOrEmpty())
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.Argument, _ => ParseArgument(scope, fragment));
+            var cache = (EachArg)scope.Context.CacheMemory.GetOrAdd(fragment.Argument, _ => ParseArgument(scope, fragment));
             
             var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
                 ? (IEnumerable)syncResult
@@ -130,7 +130,7 @@ namespace ServiceStack.Templates
 
         EachArg ParseArgument(TemplateScopeContext scope, PageBlockFragment fragment)
         {
-            var literal = fragment.Argument.ParseJsExpression(out var token);
+            var literal = fragment.Argument.Span.ParseJsExpression(out var token);
             if (token == null)
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 

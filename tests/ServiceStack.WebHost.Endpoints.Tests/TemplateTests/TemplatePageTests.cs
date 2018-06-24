@@ -277,7 +277,7 @@ title: We encode < & >
 
             Assert.That(page.Args["layout"], Is.EqualTo("alt-layout.html"));
             Assert.That(page.Args["title"], Is.EqualTo("Variable Layout"));
-            Assert.That(((PageStringFragment)page.PageFragments[0]).Value, Is.EqualTo("<h1>Variable Page</h1>"));
+            Assert.That(((PageStringFragment)page.PageFragments[0]).Value.ToString(), Is.EqualTo("<h1>Variable Page</h1>"));
         }
 
         [Test]
@@ -294,11 +294,11 @@ title: We encode < & >
             var varFragment4 = (PageVariableFragment)page.PageFragments[3];
             var strFragment5 = (PageStringFragment)page.PageFragments[4];
 
-            Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
+            Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<html><head><title>"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
-            Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body id='layout'>"));
+            Assert.That(strFragment3.Value.ToString(), Is.EqualTo("</title></head><body id='layout'>"));
             Assert.That(varFragment4.Binding, Is.EqualTo("page"));
-            Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
+            Assert.That(strFragment5.Value.ToString(), Is.EqualTo("</body></html>"));
         }
 
         [NUnit.Framework.Ignore("Flaky when run in suite on .NET Framework only, passes when run on its own or on .NET Core")]

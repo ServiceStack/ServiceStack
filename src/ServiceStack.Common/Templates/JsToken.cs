@@ -144,30 +144,15 @@ namespace ServiceStack.Templates
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static StringSegment AdvancePastWhitespace(this StringSegment literal)
-        {
-            var i = 0;
-            while (i < literal.Length && literal.GetChar(i).IsWhiteSpace())
-                i++;
-
-            return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool FirstCharEquals(this StringSegment literal, char c) => 
-            !literal.IsNullOrEmpty() && literal.GetChar(0) == c;
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool FirstCharEquals(this ReadOnlySpan<char> literal, char c) => 
             !literal.IsNullOrEmpty() && literal[0] == c;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static char SafeGetChar(this StringSegment literal, int index) =>
-            index >= 0 && index < literal.Length ? literal.GetChar(index) : default(char);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this ReadOnlySpan<char> literal, int index) =>
             index >= 0 && index < literal.Length ? literal[index] : default(char);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char SafeGetChar(this ReadOnlyMemory<char> literal, int index) => literal.Span.SafeGetChar(index);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnd(this char c) => c == default(char);
@@ -179,34 +164,26 @@ namespace ServiceStack.Templates
             ? expression.ToJsAst()
             : throw new NotSupportedException(token.GetType().Name + " is not a JsExpression");
 
-        internal static string DebugFirstChar(this StringSegment literal)
-        {
-            return literal.IsNullOrEmpty()
-                ? "<end>"
-                : $"'{literal.GetChar(0)}'";
-        }
+        internal static string DebugFirstChar(this ReadOnlySpan<char> literal) => literal.IsNullOrEmpty()
+            ? "<end>"
+            : $"'{literal[0]}'";
 
-        internal static string DebugFirstChar(this ReadOnlySpan<char> literal)
-        {
-            return literal.IsNullOrEmpty()
-                ? "<end>"
-                : $"'{literal[0]}'";
-        }
+        internal static string DebugFirstChar(this ReadOnlyMemory<char> literal) => literal.Span.DebugFirstChar();
 
         internal static string DebugChar(this char c) => c == 0 ? "'<end>'" : $"'{c}'";
 
         internal static string DebugToken(this JsToken token) => $"'{token}'";
-
-        internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
         
         internal static string DebugLiteral(this ReadOnlySpan<char> literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
+        
+        internal static string DebugLiteral(this ReadOnlyMemory<char> literal) => $"'{literal.Span.SubstringWithEllipsis(0, 50)}'";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static string CookRawString(this ReadOnlySpan<char> str, char quoteChar) =>
             JsonTypeSerializer.UnescapeJsString(str, quoteChar).Value() ?? "";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static StringSegment TrimFirstNewLine(this StringSegment literal) => literal.StartsWith("\r\n")
+        internal static ReadOnlyMemory<char> TrimFirstNewLine(this ReadOnlyMemory<char> literal) => literal.StartsWith("\r\n")
             ? literal.Advance(2)
             : (literal.StartsWith("\n") ? literal.Advance(1) : literal);
 
@@ -294,19 +271,6 @@ namespace ServiceStack.Templates
             }
             return false;
         }
-
-        public static StringSegment AdvancePastChar(this StringSegment literal, char delim)
-        {
-            var i = 0;
-            var c = (char) 0;
-            while (i < literal.Length && (c = literal.GetChar(i)) != delim)
-                i++;
-
-            if (c == delim)
-                return literal.Subsegment(i + 1);
-
-            return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
-        }
         
         public static ReadOnlySpan<char> ParseJsToken(this ReadOnlySpan<char> literal, out JsToken token) => ParseJsToken(literal, out token, false);
         public static ReadOnlySpan<char> ParseJsToken(this ReadOnlySpan<char> literal, out JsToken token, bool filterExpression)
@@ -319,7 +283,7 @@ namespace ServiceStack.Templates
                 return literal;
             }
             
-            var c = literal.GetChar(0);
+            var c = literal[0];
             if (c == '(')
             {
                 literal = literal.Advance(1);
@@ -370,12 +334,12 @@ namespace ServiceStack.Templates
             c = (char) 0;
 
             if (literal.IsNullOrEmpty())
-                return TypeConstants.EmptyStringSegment;
+                return default;
 
             var i = 0;
             literal = literal.AdvancePastWhitespace();
 
-            var firstChar = literal.GetChar(0);
+            var firstChar = literal[0];
             if (firstChar == '\'' || firstChar == '"' || firstChar == '`' || firstChar == '′')
             {
                 var quoteChar = firstChar;
@@ -815,7 +779,7 @@ namespace ServiceStack.Templates
             
             while (i < literal.Length)
             {
-                c = literal.GetChar(i);
+                c = literal[i];
 
                 if (IsValidVarNameChar(c))
                     i++;
@@ -827,7 +791,33 @@ namespace ServiceStack.Templates
             literal = literal.Advance(i);
 
             return literal;
+        }
+
+        public static ReadOnlyMemory<char> ParseVarName(this ReadOnlyMemory<char> literal, out ReadOnlyMemory<char> varName)
+        {
+            literal = literal.AdvancePastWhitespace();
+
+            var c = literal.SafeGetChar(0);
+            if (!c.IsValidVarNameChar())
+                throw new SyntaxErrorException($"Expected start of identifier but was {c.DebugChar()} near: {literal.DebugLiteral()}");
+
+            var i = 1;
             
+            var span = literal.Span;
+            while (i < span.Length)
+            {
+                c = span[i];
+
+                if (IsValidVarNameChar(c))
+                    i++;
+                else
+                    break;
+            }
+
+            varName = literal.Slice(0, i).TrimEnd();
+            literal = literal.Advance(i);
+
+            return literal;
         }
 
         internal static ReadOnlySpan<char> ParseIdentifier(this ReadOnlySpan<char> literal, out JsToken token)

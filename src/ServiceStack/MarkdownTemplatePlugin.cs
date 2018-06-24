@@ -41,23 +41,23 @@ namespace ServiceStack
         {
             var strFragment = (PageStringFragment)fragment.Body[0];
 
-            if (!string.IsNullOrWhiteSpace(fragment.Argument))
+            if (!fragment.Argument.IsNullOrWhiteSpace())
             {
                 Capture(scope, fragment, strFragment);
             }
             else
             {
-                await scope.OutputStream.WriteAsync(MarkdownConfig.Transform(strFragment.Value.Value), cancel);
+                await scope.OutputStream.WriteAsync(MarkdownConfig.Transform(strFragment.ValueString), cancel);
             }
         }
 
         private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
         {
-            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
+            var literal = fragment.Argument.AdvancePastWhitespace();
 
             literal = literal.ParseVarName(out var name);
-            var nameString = name.Value();
-            scope.PageResult.Args[nameString] = MarkdownConfig.Transform(strFragment.Value.Value).ToRawString();
+            var nameString = name.ToString();
+            scope.PageResult.Args[nameString] = MarkdownConfig.Transform(strFragment.ValueString).ToRawString();
         }
     }
 

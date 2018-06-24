@@ -11,8 +11,7 @@ namespace ServiceStack.Templates
 {
     public static class JsExpressionUtils
     {
-        public static object GetJsExpressionAndEvaluate(this ReadOnlySpan<char> expr, TemplateScopeContext scope,
-            Action ifNone = null)
+        public static object GetJsExpressionAndEvaluate(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -31,7 +30,7 @@ namespace ServiceStack.Templates
             return result;
         }
 
-        public static Task<object> GetJsExpressionAndEvaluateAsync(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
+        public static Task<object> GetJsExpressionAndEvaluateAsync(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -49,7 +48,7 @@ namespace ServiceStack.Templates
             return token.EvaluateAsync(scope);
         }
 
-        public static bool GetJsExpressionAndEvaluateToBool(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
+        public static bool GetJsExpressionAndEvaluateToBool(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -68,7 +67,7 @@ namespace ServiceStack.Templates
             return result;
         }
 
-        public static Task<bool> GetJsExpressionAndEvaluateToBoolAsync(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
+        public static Task<bool> GetJsExpressionAndEvaluateToBoolAsync(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -86,23 +85,23 @@ namespace ServiceStack.Templates
             return token.EvaluateToBoolAsync(scope);
         }
         
-        public static JsToken GetCachedJsExpression(this ReadOnlySpan<char> expr, TemplateScopeContext scope)
-            => expr.IsNullOrEmpty() ? null : GetCachedJsExpression(expr.Value(), scope);
-        
-        public static JsToken GetCachedJsExpression(this string expr, TemplateScopeContext scope)
+        public static JsToken GetCachedJsExpression(this ReadOnlyMemory<char> expr, TemplateScopeContext scope)
         {
-            if (expr == null)
+            if (expr.IsEmpty)
                 return null;
             
             if (scope.Context.JsTokenCache.TryGetValue(expr, out var token))
                 return token;
 
-            expr.ParseJsExpression(out token);
+            expr.Span.ParseJsExpression(out token);
             if (token != null)
                 scope.Context.JsTokenCache[expr] = token;
 
             return token;
         }
+
+        public static JsToken GetCachedJsExpression(this string expr, TemplateScopeContext scope) =>
+            GetCachedJsExpression(expr.AsMemory(), scope);
         
         public static ReadOnlySpan<char> ParseJsExpression(this string literal, out JsToken token) =>
             literal.AsSpan().ParseJsExpression(out token);

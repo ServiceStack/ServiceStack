@@ -49,7 +49,7 @@ namespace ServiceStack.Templates
                 if (argument.StartsWith("if "))
                     argument = argument.Advance(3);
 
-                var result = await argument.AsSpan().GetJsExpressionAndEvaluateToBoolAsync(scope,
+                var result = await argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
                     ifNone: () => throw new NotSupportedException("'else if' block does not have a valid expression"));
                 if (result)
                 {

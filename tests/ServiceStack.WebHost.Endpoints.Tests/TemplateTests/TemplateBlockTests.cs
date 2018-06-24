@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,18 +18,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#bold}} Hi, {{name}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
-            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
             
             var statement = fragments[1] as PageBlockFragment;
             Assert.That(statement, Is.Not.Null);
-            Assert.That(statement.Name, Is.EqualTo("bold".ToStringSegment()));
-            Assert.That(statement.Argument, Is.EqualTo("".ToStringSegment()));
+            Assert.That(statement.Name, Is.EqualTo("bold"));
+            Assert.That(statement.Argument.ToString(), Is.EqualTo(""));
             
-            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo(" Hi, ".ToStringSegment()));
-            Assert.That(((PageVariableFragment)statement.Body[1]).Binding, Is.EqualTo("name".ToStringSegment()));
-            Assert.That(((PageStringFragment)statement.Body[2]).Value, Is.EqualTo("! ".ToStringSegment()));
+            Assert.That(((PageStringFragment)statement.Body[0]).Value.ToString(), Is.EqualTo(" Hi, "));
+            Assert.That(((PageVariableFragment)statement.Body[1]).Binding, Is.EqualTo("name"));
+            Assert.That(((PageStringFragment)statement.Body[2]).Value.ToString(), Is.EqualTo("! "));
 
-            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[2]).Value.ToString(), Is.EqualTo(" AFTER"));
         }
 
         [Test]
@@ -37,18 +38,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#if a < b}}YES{{else}}NO{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
-            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
             
             var statement = fragments[1] as PageBlockFragment;
             Assert.That(statement, Is.Not.Null);
-            Assert.That(statement.Name, Is.EqualTo("if".ToStringSegment()));
-            Assert.That(statement.Argument, Is.EqualTo("a < b".ToStringSegment()));            
-            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo("YES".ToStringSegment()));
+            Assert.That(statement.Name, Is.EqualTo("if"));
+            Assert.That(statement.Argument.ToString(), Is.EqualTo("a < b"));            
+            Assert.That(((PageStringFragment)statement.Body[0]).Value.ToString(), Is.EqualTo("YES"));
 
-            Assert.That(statement.ElseBlocks[0].Argument, Is.EqualTo("".ToStringSegment()));            
-            Assert.That(((PageStringFragment)statement.ElseBlocks[0].Body[0]).Value, Is.EqualTo("NO".ToStringSegment()));            
+            Assert.That(statement.ElseBlocks[0].Argument.ToString(), Is.EqualTo(""));            
+            Assert.That(((PageStringFragment)statement.ElseBlocks[0].Body[0]).Value.ToString(), Is.EqualTo("NO"));            
             
-            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[2]).Value.ToString(), Is.EqualTo(" AFTER"));
         }
 
         [Test]
@@ -57,21 +58,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#if a < b}}YES{{else if c < d}}NO{{else}}MAYBE{{/if}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
-            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
             
             var statement = fragments[1] as PageBlockFragment;
             Assert.That(statement, Is.Not.Null);
-            Assert.That(statement.Name, Is.EqualTo("if".ToStringSegment()));
-            Assert.That(statement.Argument, Is.EqualTo("a < b".ToStringSegment()));            
-            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo("YES".ToStringSegment()));
+            Assert.That(statement.Name, Is.EqualTo("if"));
+            Assert.That(statement.Argument.ToString(), Is.EqualTo("a < b"));            
+            Assert.That(((PageStringFragment)statement.Body[0]).Value.ToString(), Is.EqualTo("YES"));
 
-            Assert.That(statement.ElseBlocks[0].Argument, Is.EqualTo("if c < d".ToStringSegment()));            
-            Assert.That(((PageStringFragment)statement.ElseBlocks[0].Body[0]).Value, Is.EqualTo("NO".ToStringSegment()));            
+            Assert.That(statement.ElseBlocks[0].Argument.ToString(), Is.EqualTo("if c < d"));            
+            Assert.That(((PageStringFragment)statement.ElseBlocks[0].Body[0]).Value.ToString(), Is.EqualTo("NO"));            
 
-            Assert.That(statement.ElseBlocks[1].Argument, Is.EqualTo("".ToStringSegment()));            
-            Assert.That(((PageStringFragment)statement.ElseBlocks[1].Body[0]).Value, Is.EqualTo("MAYBE".ToStringSegment()));            
+            Assert.That(statement.ElseBlocks[1].Argument.ToString(), Is.EqualTo(""));            
+            Assert.That(((PageStringFragment)statement.ElseBlocks[1].Body[0]).Value.ToString(), Is.EqualTo("MAYBE"));            
             
-            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[2]).Value.ToString(), Is.EqualTo(" AFTER"));
         }
         
         [Test]
@@ -80,22 +81,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#bold}} Hi, {{#bold}}{{name}}{{/bold}}! {{/bold}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
-            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
             
             var statement = fragments[1] as PageBlockFragment;
             Assert.That(statement, Is.Not.Null);
-            Assert.That(statement.Name, Is.EqualTo("bold".ToStringSegment()));
-            Assert.That(statement.Argument, Is.EqualTo("".ToStringSegment()));
+            Assert.That(statement.Name, Is.EqualTo("bold"));
+            Assert.That(statement.Argument.ToString(), Is.EqualTo(""));
             
-            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo(" Hi, ".ToStringSegment()));
+            Assert.That(((PageStringFragment)statement.Body[0]).Value.ToString(), Is.EqualTo(" Hi, "));
 
             var nested = (PageBlockFragment) statement.Body[1];             
-            Assert.That(nested.Name, Is.EqualTo("bold".ToStringSegment()));
-            Assert.That(((PageVariableFragment)nested.Body[0]).Binding, Is.EqualTo("name".ToStringSegment()));
+            Assert.That(nested.Name, Is.EqualTo("bold"));
+            Assert.That(((PageVariableFragment)nested.Body[0]).Binding, Is.EqualTo("name"));
             
-            Assert.That(((PageStringFragment)statement.Body[2]).Value, Is.EqualTo("! ".ToStringSegment()));
+            Assert.That(((PageStringFragment)statement.Body[2]).Value.ToString(), Is.EqualTo("! "));
 
-            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[2]).Value.ToString(), Is.EqualTo(" AFTER"));
         }
 
         [Test]
@@ -104,17 +105,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var fragments = TemplatePageUtils.ParseTemplatePage("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER");
             
             Assert.That(fragments.Count, Is.EqualTo(3));
-            Assert.That(((PageStringFragment)fragments[0]).Value, Is.EqualTo("BEFORE ".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[0]).Value.ToString(), Is.EqualTo("BEFORE "));
             
             var statement = fragments[1] as PageBlockFragment;
             Assert.That(statement, Is.Not.Null);
-            Assert.That(statement.Name, Is.EqualTo("raw".ToStringSegment()));
-            Assert.That(statement.Argument, Is.EqualTo("".ToStringSegment()));
+            Assert.That(statement.Name, Is.EqualTo("raw"));
+            Assert.That(statement.Argument.ToString(), Is.EqualTo(""));
             Assert.That(statement.Body.Length, Is.EqualTo(1));
             
-            Assert.That(((PageStringFragment)statement.Body[0]).Value, Is.EqualTo(" Hi, {{ {{ name }} }} ".ToStringSegment()));
+            Assert.That(((PageStringFragment)statement.Body[0]).Value.ToString(), Is.EqualTo(" Hi, {{ {{ name }} }} "));
             
-            Assert.That(((PageStringFragment)fragments[2]).Value, Is.EqualTo(" AFTER".ToStringSegment()));
+            Assert.That(((PageStringFragment)fragments[2]).Value.ToString(), Is.EqualTo(" AFTER"));
         }
 
         [Test]
