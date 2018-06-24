@@ -338,8 +338,7 @@ namespace ServiceStack
 
         public Func<QueryDataContext, IQueryDataSource> GetDataSource(Type type)
         {
-            Func<QueryDataContext, IQueryDataSource> source;
-            DataSources.TryGetValue(type, out source);
+            DataSources.TryGetValue(type, out var source);
             return source;
         }
 
@@ -353,9 +352,9 @@ namespace ServiceStack
             foreach (var cmd in commands)
             {
                 if (cmd.Args.Count == 0)
-                    cmd.Args.Add(new StringSegment("*"));
+                    cmd.Args.Add("*".AsMemory());
 
-                var result = ctx.Db.SelectAggregate(ctx.Query, cmd.Name.ToString(), cmd.Args.ToStringList());
+                var result = ctx.Db.SelectAggregate(ctx.Query, cmd.Name, cmd.Args.ToStringList());
                 if (result == null)
                     continue;
 
@@ -783,17 +782,17 @@ namespace ServiceStack
             var totalCommand = commands.FirstOrDefault(x => x.Name.EqualsIgnoreCase("Total"));
             if (totalCommand != null)
             {
-                totalCommand.Name = "COUNT".ToStringSegment();
+                totalCommand.Name = "COUNT";
             }
 
             var totalRequested = commands.Any(x =>
                 x.Name.EqualsIgnoreCase("COUNT") &&
-                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0].Equals("*"))));
+                (x.Args.Count == 0 || (x.Args.Count == 1 && x.Args[0].EqualsOrdinal("*"))));
 
             if (IncludeTotal || totalRequested)
             {
                 if (!totalRequested)
-                    commands.Add(new Command { Name = "COUNT".ToStringSegment(), Args = { "*".ToStringSegment() } });
+                    commands.Add(new Command { Name = "COUNT", Args = { "*".AsMemory() } });
 
                 foreach (var responseFilter in ResponseFilters)
                 {
