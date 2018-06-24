@@ -359,9 +359,9 @@
             The BackOff multiplier failed Auto Retries starts from (default 10ms)
             </summary>
         </member>
-        <member name="F:ServiceStack.Redis.RedisConfig.BufferLength">
+        <member name="P:ServiceStack.Redis.RedisConfig.BufferLength">
             <summary>
-            The Byte Buffer Size to combine Redis Operations within (default 1450 bytes)
+            The Byte Buffer Size to combine Redis Operations within (1450 bytes)
             </summary>
         </member>
         <member name="F:ServiceStack.Redis.RedisConfig.BufferPoolMaxSize">
