@@ -59,8 +59,8 @@ namespace ServiceStack.Templates
                 {
                     if (inStatements == 0)
                     {
-                        literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
-                        if (name == blockName)
+                        literal.Subsegment(pos + 2 + 1).AsSpan().ParseVarName(out var name);
+                        if (name.EqualsOrdinal(blockName))
                         {
                             body = ParseTemplatePage(literal.Subsegment(0, pos).TrimFirstNewLine());
                             return literal.Subsegment(pos);
@@ -109,8 +109,8 @@ namespace ServiceStack.Templates
                 {
                     if (inStatements == 0)
                     {
-                        literal.Subsegment(pos + 2 + 1).ParseVarName(out var name);
-                        if (name == blockName)
+                        literal.Subsegment(pos + 2 + 1).AsSpan().ParseVarName(out var name);
+                        if (name.EqualsOrdinal(blockName))
                         {
                             var body = ParseTemplatePage(literal.Subsegment(statementPos, pos - statementPos).TrimFirstNewLine());
                             statement = new PageElseBlock(elseExpr, body);
@@ -172,8 +172,9 @@ namespace ServiceStack.Templates
                 else if (firstChar == '#') //block statement
                 {
                     var literal = text.Subsegment(varStartPos + 1);
-                    literal = literal.ParseVarName(out var blockName);
+                    literal = literal.AsSpan().ParseVarName(out var blockNameSpan).ToStringSegment();
 
+                    var blockName = blockNameSpan.Value();
                     var endExprPos = literal.IndexOf("}}");
                     if (endExprPos == -1)
                         throw new SyntaxErrorException($"Unterminated '{blockName}' block expression, near '{literal.DebugLiteral()}'" );
@@ -181,8 +182,7 @@ namespace ServiceStack.Templates
                     var blockExpr = literal.Subsegment(0, endExprPos).Trim();
                     literal = literal.Advance(endExprPos + 2);
 
-                    var blockNameString = blockName.Value;
-                    if (!TemplateConfig.DontEvaluateBlocksNamed.Contains(blockNameString))
+                    if (!TemplateConfig.DontEvaluateBlocksNamed.Contains(blockName))
                     {
                         literal = literal.ParseStatementBody(blockName, out var body);
                         var elseStatements = new List<PageElseBlock>();
@@ -207,7 +207,7 @@ namespace ServiceStack.Templates
                     }
                     else
                     {
-                        var endBlock = "{{/" + blockNameString + "}}";
+                        var endBlock = "{{/" + blockName + "}}";
                         var endBlockPos = literal.IndexOf(endBlock);
                         if (endBlockPos == -1)
                             throw new SyntaxErrorException($"Unterminated end block '{endBlock}'");
@@ -227,7 +227,7 @@ namespace ServiceStack.Templates
                 else
                 {
                     var literal = text.Subsegment(varStartPos);
-                    literal = literal.ParseJsExpression(out var expr, filterExpression: true);
+                    literal = literal.AsSpan().ParseJsExpression(out var expr, filterExpression: true).ToStringSegment();
 
                     var filters = new List<JsCallExpression>();
 
@@ -240,7 +240,7 @@ namespace ServiceStack.Templates
 
                             while (true)
                             {
-                                literal = literal.ParseJsCallExpression(out var filter, filterExpression: true);
+                                literal = literal.AsSpan().ParseJsCallExpression(out var filter, filterExpression: true).ToStringSegment();
 
                                 filters.Add(filter);
 
@@ -312,10 +312,6 @@ namespace ServiceStack.Templates
         public static IRawString ToRawString(this string value) => 
             new RawString(value ?? "");
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IRawString ToRawString(this StringSegment value) => 
-            new RawString(value.HasValue ? value.Value : "");
-
         public static ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
 
         public static Func<TemplateScopeContext, object, object> GetMemberExpression(Type targetType, StringSegment expression)
@@ -367,7 +363,7 @@ namespace ServiceStack.Templates
                     {
                         var prop = member.LeftPart('[');
                         var indexer = member.RightPart('[');
-                        indexer.ParseJsExpression(out var token);
+                        indexer.AsSpan().ParseJsExpression(out var token);
 
                         if (token is JsCallExpression)
                             throw new BindingExpressionException($"Only constant binding expressions are supported: '{expr}'",

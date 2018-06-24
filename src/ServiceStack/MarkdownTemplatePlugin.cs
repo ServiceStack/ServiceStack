@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Templates;
@@ -40,18 +41,23 @@ namespace ServiceStack
         {
             var strFragment = (PageStringFragment)fragment.Body[0];
 
-            if (!fragment.Argument.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(fragment.Argument))
             {
-                var literal = fragment.Argument.AdvancePastWhitespace();
-                
-                literal = literal.ParseVarName(out var name);
-                var nameString = name.Value;
-                scope.PageResult.Args[nameString] = MarkdownConfig.Transform(strFragment.Value.Value).ToRawString(); 
+                Capture(scope, fragment, strFragment);
             }
             else
             {
                 await scope.OutputStream.WriteAsync(MarkdownConfig.Transform(strFragment.Value.Value), cancel);
             }
+        }
+
+        private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
+        {
+            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
+
+            literal = literal.ParseVarName(out var name);
+            var nameString = name.Value();
+            scope.PageResult.Args[nameString] = MarkdownConfig.Transform(strFragment.Value.Value).ToRawString();
         }
     }
 

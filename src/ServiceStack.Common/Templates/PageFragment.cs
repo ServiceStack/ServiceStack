@@ -76,14 +76,9 @@ namespace ServiceStack.Templates
     public class PageBlockFragment : PageFragment
     {
         public StringSegment OriginalText { get; }
-        public StringSegment Name { get; }
-        private string name;
-        
-        public string NameString => name ?? (name = Name.Value);
-        public StringSegment Argument { get; }
+        public string Name { get; }
 
-        private string argument;
-        public string ArgumentString => argument ?? (argument = Argument.HasValue ? Argument.Value : null);
+        public string Argument { get; }
         
         public PageFragment[] Body { get; }
         public PageElseBlock[] ElseBlocks { get; }
@@ -92,8 +87,8 @@ namespace ServiceStack.Templates
             List<PageFragment> body, List<PageElseBlock> elseStatements=null)
         {
             OriginalText = originalText;
-            Name = name;
-            Argument = argument;
+            Name = name.Value;
+            Argument = argument.Value;
             Body = body.ToArray();
             ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
         }

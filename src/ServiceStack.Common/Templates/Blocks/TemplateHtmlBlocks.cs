@@ -192,7 +192,7 @@ namespace ServiceStack.Templates
         
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            var htmlAttrs = fragment.Argument.GetJsExpressionAndEvaluate(scope) as Dictionary<string, object>;
+            var htmlAttrs = fragment.Argument.AsSpan().GetJsExpressionAndEvaluate(scope) as Dictionary<string, object>;
             var hasEach = false;
             IEnumerable each = null;
             var binding = "it";

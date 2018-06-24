@@ -25,10 +25,10 @@ namespace ServiceStack.Templates
 
         public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
         {
-            if (string.IsNullOrEmpty(fragment.ArgumentString))
+            if (string.IsNullOrEmpty(fragment.Argument))
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.ArgumentString, _ => ParseArgument(scope, fragment));
+            var cache = (EachArg)scope.Context.Cache.GetOrAdd(fragment.Argument, _ => ParseArgument(scope, fragment));
             
             var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
                 ? (IEnumerable)syncResult
@@ -147,7 +147,7 @@ namespace ServiceStack.Templates
                 if (!(token is JsIdentifier identifier))
                     throw new NotSupportedException($"'each' block expected identifier but was {token.DebugToken()}");
 
-                binding = identifier.NameString;
+                binding = identifier.Name;
                 
                 literal = literal.Advance(3);
                 literal = literal.ParseJsExpression(out source);

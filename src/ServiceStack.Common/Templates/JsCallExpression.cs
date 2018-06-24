@@ -21,7 +21,7 @@ namespace ServiceStack.Templates
         }
 
         private string nameString;
-        public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.NameString : null);
+        public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
         
         public override object Evaluate(TemplateScopeContext scope)
         {

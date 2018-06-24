@@ -1,10 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
@@ -52,7 +48,6 @@ namespace ServiceStack.Templates
 
         public override object Evaluate(TemplateScopeContext scope) => null;
     }
-
 
     public static class JsTokenUtils
     {
@@ -163,8 +158,16 @@ namespace ServiceStack.Templates
             !literal.IsNullOrEmpty() && literal.GetChar(0) == c;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool FirstCharEquals(this ReadOnlySpan<char> literal, char c) => 
+            !literal.IsNullOrEmpty() && literal[0] == c;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this StringSegment literal, int index) =>
             index >= 0 && index < literal.Length ? literal.GetChar(index) : default(char);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static char SafeGetChar(this ReadOnlySpan<char> literal, int index) =>
+            index >= 0 && index < literal.Length ? literal[index] : default(char);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsEnd(this char c) => c == default(char);
@@ -183,15 +186,24 @@ namespace ServiceStack.Templates
                 : $"'{literal.GetChar(0)}'";
         }
 
+        internal static string DebugFirstChar(this ReadOnlySpan<char> literal)
+        {
+            return literal.IsNullOrEmpty()
+                ? "<end>"
+                : $"'{literal[0]}'";
+        }
+
         internal static string DebugChar(this char c) => c == 0 ? "'<end>'" : $"'{c}'";
 
         internal static string DebugToken(this JsToken token) => $"'{token}'";
 
         internal static string DebugLiteral(this StringSegment literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
+        
+        internal static string DebugLiteral(this ReadOnlySpan<char> literal) => $"'{literal.SubstringWithEllipsis(0, 50)}'";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static string CookRawString(this StringSegment str, char quoteChar) =>
-            JsonTypeSerializer.UnescapeJsString(str.SpanValue(), quoteChar).Value();
+        internal static string CookRawString(this ReadOnlySpan<char> str, char quoteChar) =>
+            JsonTypeSerializer.UnescapeJsString(str, quoteChar).Value() ?? "";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static StringSegment TrimFirstNewLine(this StringSegment literal) => literal.StartsWith("\r\n")
@@ -296,8 +308,8 @@ namespace ServiceStack.Templates
             return i == 0 ? literal : literal.Subsegment(i < literal.Length ? i : literal.Length);
         }
         
-        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token) => ParseJsToken(literal, out token, false);
-        public static StringSegment ParseJsToken(this StringSegment literal, out JsToken token, bool filterExpression)
+        public static ReadOnlySpan<char> ParseJsToken(this ReadOnlySpan<char> literal, out JsToken token) => ParseJsToken(literal, out token, false);
+        public static ReadOnlySpan<char> ParseJsToken(this ReadOnlySpan<char> literal, out JsToken token, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -384,10 +396,10 @@ namespace ServiceStack.Templates
                         hasEscapeChar = c == '\\';
                 }
 
-                if (i >= literal.Length || literal.GetChar(i) != quoteChar)
-                    throw new SyntaxErrorException($"Unterminated string literal: {literal}");
+                if (i >= literal.Length || literal[i] != quoteChar)
+                    throw new SyntaxErrorException($"Unterminated string literal: {literal.ToString()}");
 
-                var rawString = literal.Subsegment(1, i - 1);
+                var rawString = literal.Slice(1, i - 1);
 
                 if (quoteChar == '`')
                 {
@@ -400,15 +412,15 @@ namespace ServiceStack.Templates
                     for (var j = 0; j < rawString.Length; j++)
                     {
                         // strip the back-slash used to escape quote char in strings
-                        var ch = rawString.GetChar(j);
-                        if (ch != '\\' || (j + 1 >= rawString.Length || rawString.GetChar(j + 1) != quoteChar))
+                        var ch = rawString[j];
+                        if (ch != '\\' || (j + 1 >= rawString.Length || rawString[j + 1] != quoteChar))
                             sb.Append(ch);
                     }
                     token = new JsLiteral(StringBuilderCache.ReturnAndFree(sb));
                 }
                 else
                 {
-                    token = new JsLiteral(rawString.Value);                    
+                    token = new JsLiteral(rawString.Value());                    
                 }
                 
                 return literal.Advance(i + 1);
@@ -420,7 +432,7 @@ namespace ServiceStack.Templates
                 var hasExponent = false;
                 var hasDecimal = false;
 
-                while (i < literal.Length && IsNumericChar(c = literal.GetChar(i)) ||
+                while (i < literal.Length && IsNumericChar(c = literal[i]) ||
                        (hasExponent = (c == 'e' || c == 'E')))
                 {
                     if (c == '.')
@@ -432,14 +444,14 @@ namespace ServiceStack.Templates
                     {
                         i += 2; // [e+1]0
 
-                        while (i < literal.Length && IsNumericChar(literal.GetChar(i)))
+                        while (i < literal.Length && IsNumericChar(literal[i]))
                             i++;
 
                         break;
                     }
                 }
 
-                var numLiteral = literal.Subsegment(0, i);
+                var numLiteral = literal.Slice(0, i);
 
                 //don't convert into ternary to avoid Type coercion
                 if (hasDecimal || hasExponent)
@@ -457,7 +469,7 @@ namespace ServiceStack.Templates
                 while (!literal.IsNullOrEmpty())
                 {
                     literal = literal.AdvancePastWhitespace();
-                    if (literal.GetChar(0) == '}')
+                    if (literal[0] == '}')
                     {
                         literal = literal.Advance(1);
                         break;
@@ -482,7 +494,7 @@ namespace ServiceStack.Templates
                         bool shorthand = false;
     
                         literal = literal.AdvancePastWhitespace();
-                        if (literal.Length > 0 && literal.GetChar(0) == ':')
+                        if (literal.Length > 0 && literal[0] == ':')
                         {
                             literal = literal.Advance(1);
                             literal = literal.ParseJsExpression(out mapValueToken);
@@ -491,7 +503,7 @@ namespace ServiceStack.Templates
                         else 
                         {
                             shorthand = true;
-                            if (literal.Length == 0 || (c = literal.GetChar(0)) != ',' && c != '}')
+                            if (literal.Length == 0 || (c = literal[0]) != ',' && c != '}')
                                 throw new SyntaxErrorException($"Unterminated object literal near: {literal.DebugLiteral()}");
                                 
                             mapValueToken = mapKeyToken;
@@ -504,7 +516,7 @@ namespace ServiceStack.Templates
                     if (literal.IsNullOrEmpty())
                         break;
 
-                    if (literal.GetChar(0) == '}')
+                    if (literal[0] == '}')
                     {
                         literal = literal.Advance(1);
                         break;
@@ -547,7 +559,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        private static JsToken ParseJsTemplateLiteral(StringSegment literal)
+        private static JsToken ParseJsTemplateLiteral(ReadOnlySpan<char> literal)
         {
             var quasis = new List<JsTemplateElement>();
             var expressions = new List<JsToken>();
@@ -555,16 +567,16 @@ namespace ServiceStack.Templates
 
             for (var i = 0; i < literal.Length; i++)
             {
-                var c = literal.GetChar(i);
+                var c = literal[i];
                 if (c != '$' || literal.SafeGetChar(i-1) == '\\' || literal.SafeGetChar(i+1) != '{')
                     continue;
 
-                var lastChunk = literal.Subsegment(lastPos, i - lastPos);
+                var lastChunk = literal.Slice(lastPos, i - lastPos);
                 quasis.Add(new JsTemplateElement(
-                    new JsTemplateElementValue(lastChunk.Value, lastChunk.CookRawString('`')), 
+                    new JsTemplateElementValue(lastChunk.ToString(), lastChunk.CookRawString('`')), 
                     tail:false));
 
-                var exprStart = literal.Subsegment(i + 2);
+                var exprStart = literal.Slice(i + 2);
                 var afterExpr = exprStart.ParseJsExpression(out var expr);
                 afterExpr = afterExpr.AdvancePastWhitespace();
                 
@@ -578,16 +590,16 @@ namespace ServiceStack.Templates
                 i = lastPos - 1;
             }
 
-            var endChunk = literal.Subsegment(lastPos);
+            var endChunk = literal.Slice(lastPos);
 
             quasis.Add(new JsTemplateElement(
-                new JsTemplateElementValue(endChunk.Value, endChunk.CookRawString('`')), 
+                new JsTemplateElementValue(endChunk.ToString(), endChunk.CookRawString('`')), 
                 tail:true));
             
             return new JsTemplateLiteral(quasis.ToArray(), expressions.ToArray());
         }
 
-        internal static StringSegment ParseArrowExpressionBody(this StringSegment literal, JsIdentifier[] args, out JsArrowFunctionExpression token)
+        internal static ReadOnlySpan<char> ParseArrowExpressionBody(this ReadOnlySpan<char> literal, JsIdentifier[] args, out JsArrowFunctionExpression token)
         {
             literal = literal.AdvancePastWhitespace();
             
@@ -600,7 +612,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        internal static StringSegment ParseJsMemberExpression(this StringSegment literal, ref JsToken node, bool filterExpression)
+        internal static ReadOnlySpan<char> ParseJsMemberExpression(this ReadOnlySpan<char> literal, ref JsToken node, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -659,13 +671,13 @@ namespace ServiceStack.Templates
                 if (literal.IsNullOrEmpty())
                     break;
 
-                c = literal.GetChar(0);
+                c = literal[0];
             }
 
             return literal;
         }
 
-        internal static StringSegment ParseJsBinaryOperator(this StringSegment literal, out JsBinaryOperator op)
+        internal static ReadOnlySpan<char> ParseJsBinaryOperator(this ReadOnlySpan<char> literal, out JsBinaryOperator op)
         {
             literal = literal.AdvancePastWhitespace();
             op = null;
@@ -673,7 +685,7 @@ namespace ServiceStack.Templates
             if (literal.IsNullOrEmpty())
                 return literal;
             
-            var firstChar = literal.GetChar(0);
+            var firstChar = literal[0];
             if (firstChar.IsOperatorChar())
             {
                 if (literal.StartsWith("!=="))
@@ -791,7 +803,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        public static StringSegment ParseVarName(this StringSegment literal, out StringSegment varName)
+        public static ReadOnlySpan<char> ParseVarName(this ReadOnlySpan<char> literal, out ReadOnlySpan<char> varName)
         {
             literal = literal.AdvancePastWhitespace();
 
@@ -811,26 +823,26 @@ namespace ServiceStack.Templates
                     break;
             }
 
-            varName = literal.Subsegment(0, i).TrimEnd();
+            varName = literal.Slice(0, i).TrimEnd();
             literal = literal.Advance(i);
 
             return literal;
             
         }
 
-        internal static StringSegment ParseIdentifier(this StringSegment literal, out JsToken token)
+        internal static ReadOnlySpan<char> ParseIdentifier(this ReadOnlySpan<char> literal, out JsToken token)
         {
             literal = literal.ParseVarName(out var identifier);
             
-            if (identifier.Equals("true"))
+            if (identifier.EqualsOrdinal("true"))
                 token = JsLiteral.True;
-            else if (identifier.Equals("false"))
+            else if (identifier.EqualsOrdinal("false"))
                 token = JsLiteral.False;
-            else if (identifier.Equals("null"))
+            else if (identifier.EqualsOrdinal("null"))
                 token = JsNull.Value;
-            else if (identifier.Equals("and"))
+            else if (identifier.EqualsOrdinal("and"))
                 token = JsAnd.Operator;
-            else if (identifier.Equals("or"))
+            else if (identifier.EqualsOrdinal("or"))
                 token = JsOr.Operator;
             else
                 token = new JsIdentifier(identifier);
@@ -844,7 +856,7 @@ namespace ServiceStack.Templates
     {
         private const char WhitespaceArgument = ':'; 
         
-        public static StringSegment ParseJsCallExpression(this StringSegment literal, out JsCallExpression expression, bool filterExpression=false)
+        public static ReadOnlySpan<char> ParseJsCallExpression(this ReadOnlySpan<char> literal, out JsCallExpression expression, bool filterExpression=false)
         {
             literal = literal.ParseIdentifier(out var token);
             
@@ -882,7 +894,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        internal static StringSegment ParseWhitespaceArgument(this StringSegment literal, out JsToken argument)
+        internal static ReadOnlySpan<char> ParseWhitespaceArgument(this ReadOnlySpan<char> literal, out JsToken argument)
         {
             // replace everything after ':' up till new line and rewrite as single string to method
             var endStringPos = literal.IndexOf("\n");
@@ -894,15 +906,15 @@ namespace ServiceStack.Templates
             if (endStringPos == -1)
                 throw new SyntaxErrorException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near {literal.DebugLiteral()}");
 
-            var originalArg = literal.Subsegment(0, endStringPos).Trim().ToString();
+            var originalArg = literal.Slice(0, endStringPos).Trim().ToString();
             var rewrittenArgs = originalArg.Replace("{","{{").Replace("}","}}");
             var strArg = new JsLiteral(rewrittenArgs);
 
             argument = strArg;
-            return literal.Subsegment(endStringPos);
+            return literal.Slice(endStringPos);
         }
 
-        internal static StringSegment ParseArguments(this StringSegment literal, out List<JsToken> arguments, char termination)
+        internal static ReadOnlySpan<char> ParseArguments(this ReadOnlySpan<char> literal, out List<JsToken> arguments, char termination)
         {
             arguments = new List<JsToken>();
 
@@ -911,7 +923,7 @@ namespace ServiceStack.Templates
                 JsToken listValue;
                 
                 literal = literal.AdvancePastWhitespace();
-                if (literal.GetChar(0) == termination)
+                if (literal[0] == termination)
                 {
                     literal = literal.Advance(1);
                     break;
@@ -937,7 +949,7 @@ namespace ServiceStack.Templates
                 if (literal.IsNullOrEmpty())
                     break;
                     
-                if (literal.GetChar(0) == termination)
+                if (literal[0] == termination)
                 {
                     literal = literal.Advance(1);
                     break;

@@ -20,31 +20,36 @@ namespace ServiceStack.Templates
         {
             var strFragment = (PageStringFragment)fragment.Body[0];
 
-            if (!fragment.Argument.IsNullOrWhiteSpace())
+            if (!string.IsNullOrWhiteSpace(fragment.Argument))
             {
-                var literal = fragment.Argument.AdvancePastWhitespace();
-                bool appendTo = false;
-                if (literal.StartsWith("appendTo "))
-                {
-                    appendTo = true;
-                    literal = literal.Advance("appendTo ".Length);
-                }
-                
-                literal = literal.ParseVarName(out var name);
-                var nameString = name.Value;
-                if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
-                    && oVar is string existingString)
-                {
-                    scope.PageResult.Args[nameString] = existingString + strFragment.Value.Value;
-                    return;
-                }
-                
-                scope.PageResult.Args[nameString] = strFragment.Value.Value; 
+                Capture(scope, fragment, strFragment);
             }
             else
             {
                 await scope.OutputStream.WriteAsync(strFragment.Value, cancel);
             }
+        }
+
+        private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
+        {
+            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
+            bool appendTo = false;
+            if (literal.StartsWith("appendTo "))
+            {
+                appendTo = true;
+                literal = literal.Advance("appendTo ".Length);
+            }
+
+            literal = literal.ParseVarName(out var name);
+            var nameString = name.Value();
+            if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
+                         && oVar is string existingString)
+            {
+                scope.PageResult.Args[nameString] = existingString + strFragment.Value.Value;
+                return;
+            }
+
+            scope.PageResult.Args[nameString] = strFragment.Value.Value;
         }
     }
 }

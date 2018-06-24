@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
@@ -9,7 +10,7 @@ namespace ServiceStack
     {
         public static object parse(string json)
         {
-            json.ToStringSegment().ParseJsToken(out var token);
+            json.AsSpan().ParseJsToken(out var token);
             return token.Evaluate(JS.CreateScope());
         }
 
@@ -25,7 +26,7 @@ namespace ServiceStack
         {
             JsonTypeSerializer.Instance.ObjectDeserializer = span =>
             {
-                span.ToStringSegment().ParseJsExpression(out var token);
+                span.ParseJsExpression(out var token);
                 return token.Evaluate(CreateScope());
             };
         }

@@ -11,7 +11,7 @@ namespace ServiceStack.Templates
 {
     public static class JsExpressionUtils
     {
-        public static object GetJsExpressionAndEvaluate(this StringSegment expr, TemplateScopeContext scope,
+        public static object GetJsExpressionAndEvaluate(this ReadOnlySpan<char> expr, TemplateScopeContext scope,
             Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
@@ -31,7 +31,7 @@ namespace ServiceStack.Templates
             return result;
         }
 
-        public static Task<object> GetJsExpressionAndEvaluateAsync(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
+        public static Task<object> GetJsExpressionAndEvaluateAsync(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -49,7 +49,7 @@ namespace ServiceStack.Templates
             return token.EvaluateAsync(scope);
         }
 
-        public static bool GetJsExpressionAndEvaluateToBool(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
+        public static bool GetJsExpressionAndEvaluateToBool(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -68,7 +68,7 @@ namespace ServiceStack.Templates
             return result;
         }
 
-        public static Task<bool> GetJsExpressionAndEvaluateToBoolAsync(this StringSegment expr, TemplateScopeContext scope, Action ifNone = null)
+        public static Task<bool> GetJsExpressionAndEvaluateToBoolAsync(this ReadOnlySpan<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -86,8 +86,8 @@ namespace ServiceStack.Templates
             return token.EvaluateToBoolAsync(scope);
         }
         
-        public static JsToken GetCachedJsExpression(this StringSegment expr, TemplateScopeContext scope)
-            => expr.IsNullOrEmpty() ? null : GetCachedJsExpression(expr.Value, scope);
+        public static JsToken GetCachedJsExpression(this ReadOnlySpan<char> expr, TemplateScopeContext scope)
+            => expr.IsNullOrEmpty() ? null : GetCachedJsExpression(expr.Value(), scope);
         
         public static JsToken GetCachedJsExpression(this string expr, TemplateScopeContext scope)
         {
@@ -104,15 +104,15 @@ namespace ServiceStack.Templates
             return token;
         }
         
-        public static StringSegment ParseJsExpression(this string literal, out JsToken token) =>
-            literal.ToStringSegment().ParseJsExpression(out token);
+        public static ReadOnlySpan<char> ParseJsExpression(this string literal, out JsToken token) =>
+            literal.AsSpan().ParseJsExpression(out token);
 
-        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token) =>
+        public static ReadOnlySpan<char> ParseJsExpression(this ReadOnlySpan<char> literal, out JsToken token) =>
             literal.ParseJsExpression(out token, filterExpression:false);
 
         private const char ConditionalExpressionTestChar = '?';
 
-        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token, bool filterExpression)
+        public static ReadOnlySpan<char> ParseJsExpression(this ReadOnlySpan<char> literal, out JsToken token, bool filterExpression)
         {
             var peekLiteral = literal.ParseJsToken(out var node, filterExpression:filterExpression);
 
@@ -146,8 +146,8 @@ namespace ServiceStack.Templates
             {
                 if (filterExpression && peekLiteral.Length > 2)
                 {
-                    var char1 = peekLiteral.GetChar(0);
-                    var char2 = peekLiteral.GetChar(1);
+                    var char1 = peekLiteral[0];
+                    var char2 = peekLiteral[1];
                     if ((char1 == '|' && char2 != '|') || (char1 == '}' && char2 == '}'))
                     {
                         token = node;
@@ -179,7 +179,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        private static StringSegment ParseJsConditionalExpression(this StringSegment literal, JsToken test, out JsConditionalExpression expression)
+        private static ReadOnlySpan<char> ParseJsConditionalExpression(this ReadOnlySpan<char> literal, JsToken test, out JsConditionalExpression expression)
         {
             literal = literal.Advance(1);
 
@@ -197,7 +197,7 @@ namespace ServiceStack.Templates
             return literal;
         }
 
-        public static StringSegment ParseBinaryExpression(this StringSegment literal, out JsExpression expr, bool filterExpression)
+        public static ReadOnlySpan<char> ParseBinaryExpression(this ReadOnlySpan<char> literal, out JsExpression expr, bool filterExpression)
         {
             literal = literal.AdvancePastWhitespace();
             
@@ -231,7 +231,7 @@ namespace ServiceStack.Templates
                     while (true)
                     {
                         literal = literal.AdvancePastWhitespace();
-                        if (filterExpression && literal.Length > 2 && (literal.GetChar(0) == '|' && literal.GetChar(1) != '|'))
+                        if (filterExpression && literal.Length > 2 && (literal[0] == '|' && literal[1] != '|'))
                         {
                             break;
                         }
@@ -294,9 +294,9 @@ namespace ServiceStack.Templates
             return new JsBinaryExpression(lhs, op, rhs);
         }
 
-        static int GetNextBinaryPrecedence(this StringSegment literal)
+        static int GetNextBinaryPrecedence(this ReadOnlySpan<char> literal)
         {
-            if (!literal.IsNullOrEmpty() && !literal.GetChar(0).IsExpressionTerminatorChar())
+            if (!literal.IsNullOrEmpty() && !literal[0].IsExpressionTerminatorChar())
             {
                 literal.ParseJsBinaryOperator(out var binaryOp);
                 if (binaryOp != null)

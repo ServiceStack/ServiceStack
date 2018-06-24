@@ -190,8 +190,8 @@ namespace ServiceStack.Templates
             if (arrowExpr.Params.Length != 2)
                 throw new NotSupportedException($"{nameof(reduce)} expects 2 params but was instead {arrowExpr.Params.Length}");
 
-            var accumulatorBinding = arrowExpr.Params[0].NameString;
-            var itemBinding = arrowExpr.Params[1].NameString;
+            var accumulatorBinding = arrowExpr.Params[0].Name;
+            var itemBinding = arrowExpr.Params[1].Name;
             var expr = arrowExpr.Body;
             
             var scopedParams = scopeOptions as Dictionary<string, object> ?? new Dictionary<string, object>();
@@ -234,7 +234,7 @@ namespace ServiceStack.Templates
                     ? literal.GetCachedJsExpression(scope)
                     : arrowExpr.Body;
                 var binding = arrowExpr != null
-                    ? arrowExpr.Params[0].NameString
+                    ? arrowExpr.Params[0].Name
                     : "it";
 
                 var i = 0;
@@ -278,7 +278,7 @@ namespace ServiceStack.Templates
                 var arrowExpr = scopeBindings as JsArrowFunctionExpression;
                 if (arrowExpr != null)
                 {
-                    itemBinding = arrowExpr.Params[0].NameString;
+                    itemBinding = arrowExpr.Params[0].Name;
                 }
                 else
                 {
@@ -590,7 +590,7 @@ namespace ServiceStack.Templates
                 }
                 else if (map is JsArrowFunctionExpression arrowExpr)
                 {
-                    mapBinding = arrowExpr.Params[0].NameString;
+                    mapBinding = arrowExpr.Params[0].Name;
                     mapExpr = arrowExpr.Body;
                 }
                 else throw new NotSupportedException($"map expression in '{nameof(groupBy)}' must be a string or arrow expression");

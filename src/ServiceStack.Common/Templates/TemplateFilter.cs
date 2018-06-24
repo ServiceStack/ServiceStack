@@ -179,7 +179,7 @@ namespace ServiceStack.Templates
         {
             if (expression is JsArrowFunctionExpression arrowExpr)
             {
-                itemBinding = arrowExpr.Params[0].NameString;
+                itemBinding = arrowExpr.Params[0].Name;
                 return arrowExpr.Body;
             }
             
@@ -244,7 +244,7 @@ namespace ServiceStack.Templates
         {
             if (valueOrBinding is string literal)
             {
-                literal.ToStringSegment().ParseJsExpression(out var token);
+                literal.ParseJsExpression(out var token);
                 var oValue = token.Evaluate(scope);
                 return oValue.ConvertTo(returnType);
             }

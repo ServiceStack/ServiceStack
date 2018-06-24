@@ -19,18 +19,15 @@ namespace ServiceStack.Templates
     
     public class JsIdentifier : JsExpression
     {
-        public StringSegment Name { get; }
+        public string Name { get; }
 
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
-
-        public JsIdentifier(string name) => Name = name.ToStringSegment();
-        public JsIdentifier(StringSegment name) => Name = name;
+        public JsIdentifier(string name) => Name = name;
+        public JsIdentifier(ReadOnlySpan<char> name) => Name = name.Value();
         public override string ToRawString() => ":" + Name;
         
         public override object Evaluate(TemplateScopeContext scope)
         {
-            var ret = scope.PageResult.GetValue(NameString, scope);
+            var ret = scope.PageResult.GetValue(Name, scope);
             return ret;
         }
 
@@ -38,7 +35,7 @@ namespace ServiceStack.Templates
 
         public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object> {
             ["type"] = ToJsAstType(),
-            ["name"] = NameString,
+            ["name"] = Name,
         };
 
         public override int GetHashCode() => Name.GetHashCode();
@@ -178,9 +175,9 @@ namespace ServiceStack.Templates
             if (token is JsLiteral literalKey)
                 return literalKey.Value.ToString();
             if (token is JsIdentifier identifierKey)
-                return identifierKey.NameString;
+                return identifierKey.Name;
             if (token is JsMemberExpression memberExpr && memberExpr.Property is JsIdentifier prop)
-                return prop.NameString;
+                return prop.Name;
             
             throw new SyntaxErrorException($"Invalid Key. Expected a Literal or Identifier but was {token.DebugToken()}");
         }
@@ -399,7 +396,7 @@ namespace ServiceStack.Templates
                 if (i > 0)
                     sb.Append(",");
 
-                sb.Append(identifier.NameString);
+                sb.Append(identifier.Name);
             }
             sb.Append(") => ");
 
@@ -419,7 +416,7 @@ namespace ServiceStack.Templates
                     break;
 
                 var param = Params[i];
-                args[param.NameString] = @params[i];
+                args[param.Name] = @params[i];
             }
 
             var exprScope = scope.ScopeWithParams(args);

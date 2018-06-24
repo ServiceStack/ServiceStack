@@ -90,7 +90,7 @@ namespace ServiceStack.Templates
                 {
                     if (Property is JsIdentifier identifier)
                     {
-                        var ret = PropValue(targetValue, targetType, identifier.NameString);
+                        var ret = PropValue(targetValue, targetType, identifier.Name);
 
                         // Don't emit member expression on null KeyValuePair
                         if (ret == null && targetType.Name == "KeyValuePair`2")

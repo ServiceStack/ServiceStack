@@ -570,7 +570,7 @@ namespace ServiceStack.Templates
                 if (!(arrowExpr.Body is JsIdentifier identifier))
                     throw new NotSupportedException($"{filterName} expression must return an identifer");
 
-                return identifier.NameString;
+                return identifier.Name;
             }
 
             if (argExpr is string varName)
@@ -774,7 +774,7 @@ namespace ServiceStack.Templates
         public object @do(TemplateScopeContext scope, object expression)
         {
             var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            literal.AsSpan().ParseJsExpression(out var token);
             var result = token.Evaluate(scope);
 
             return IgnoreResult.Value;
@@ -790,7 +790,7 @@ namespace ServiceStack.Templates
 
             var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
             var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            literal.AsSpan().ParseJsExpression(out var token);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {

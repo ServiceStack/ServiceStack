@@ -20,12 +20,13 @@ namespace ServiceStack.Templates
     {
         public override string Name => "capture";
 
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        //Extract Span out of async method 
+        private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(TemplateScopeContext scope, PageBlockFragment fragment)
         {
-            if (fragment.Argument.IsNullOrWhiteSpace())
+            if (string.IsNullOrWhiteSpace(fragment.Argument))
                 throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
             
-            var literal = fragment.Argument.AdvancePastWhitespace();
+            var literal = fragment.Argument.AsSpan().AdvancePastWhitespace();
             bool appendTo = false;
             if (literal.StartsWith("appendTo "))
             {
@@ -46,6 +47,12 @@ namespace ServiceStack.Templates
             if (argValue != null && scopeArgs == null)
                 throw new NotSupportedException("Any 'capture' argument must be an Object Dictionary");
 
+            return (name.Value(), scopeArgs, appendTo);
+        }
+
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        {
+            var (name, scopeArgs, appendTo) = Parse(scope, fragment);
             
             var ms = MemoryStreamFactory.GetStream();
             var useScope = scope.ScopeWith(scopeArgs, ms);
@@ -54,15 +61,14 @@ namespace ServiceStack.Templates
 
             var capturedOutput = ms.ReadToEnd();
 
-            var nameString = name.Value;
-            if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
+            if (appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
                 && oVar is string existingString)
             {
-                scope.PageResult.Args[nameString] = existingString + capturedOutput;
+                scope.PageResult.Args[name] = existingString + capturedOutput;
                 return;
             }
             
-            scope.PageResult.Args[nameString] = capturedOutput;
+            scope.PageResult.Args[name] = capturedOutput;
         }
     }
 }

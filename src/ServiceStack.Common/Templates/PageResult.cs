@@ -278,7 +278,7 @@ namespace ServiceStack.Templates
                     }
                     else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
                     {
-                        var block = GetBlock(blockFragment.NameString);
+                        var block = GetBlock(blockFragment.Name);
                         await block.WriteAsync(pageScope, blockFragment, token);
                     }
                 }
@@ -310,7 +310,7 @@ namespace ServiceStack.Templates
                 }
                 else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
                 {
-                    var block = GetBlock(blockFragment.NameString);
+                    var block = GetBlock(blockFragment.Name);
                     await block.WriteAsync(scope, blockFragment, token);
                 }
             }
@@ -321,9 +321,9 @@ namespace ServiceStack.Templates
         public bool ShouldSkipFilterExecution(PageVariableFragment var)
         {
             return HaltExecution || SkipFilterExecution && (var.BindingString != null 
-                       ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString)
-                       : var.InitialExpression?.Name == null || 
-                         !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
+               ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString)
+               : var.InitialExpression?.Name == null || 
+                 !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
         }
 
         public bool ShouldSkipFilterExecution(PageBlockFragment var)
@@ -894,7 +894,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        public StringSegment ParseJsExpression(TemplateScopeContext scope, StringSegment literal, out JsToken token)
+        public ReadOnlySpan<char> ParseJsExpression(TemplateScopeContext scope, ReadOnlySpan<char> literal, out JsToken token)
         {
             try
             {
@@ -905,7 +905,7 @@ namespace ServiceStack.Templates
                 if (scope.ScopedParams.TryGetValue(nameof(PageVariableFragment), out var oVar)
                     && oVar is PageVariableFragment var && !var.OriginalText.IsNullOrEmpty())
                 {
-                    throw new Exception($"Invalid literal: {literal} in '{var.OriginalText}'", e);
+                    throw new Exception($"Invalid literal: {literal.ToString()} in '{var.OriginalText}'", e);
                 }
                 
                 throw;
