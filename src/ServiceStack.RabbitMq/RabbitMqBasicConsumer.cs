@@ -1,5 +1,4 @@
-﻿
-using RabbitMQ.Client;
+﻿using RabbitMQ.Client;
 using RabbitMQ.Util;
 
 namespace ServiceStack.RabbitMq
@@ -8,7 +7,7 @@ namespace ServiceStack.RabbitMq
     {
         readonly SharedQueue<BasicGetResult> queue;
 
-        public RabbitMqBasicConsumer(IModel model) 
+        public RabbitMqBasicConsumer(IModel model)
             : this(model, new SharedQueue<BasicGetResult>()) { }
 
         public RabbitMqBasicConsumer(IModel model, SharedQueue<BasicGetResult> queue)
