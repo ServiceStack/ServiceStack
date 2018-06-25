@@ -121,7 +121,7 @@ namespace ServiceStack.Host
             }
         }
 
-        public static Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath)
+        public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath)
         {
             using (Profiler.Current.Step("Deserialize Request"))
             {
@@ -133,10 +133,10 @@ namespace ServiceStack.Host
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("CreateRequestAsync/requestParams:" + string.Join(",", requestParams.Keys));
 
-                var taskResponse = HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
-                    CreateRequestAsync(httpReq, restPath, requestParams));
+                var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
+                    await CreateRequestAsync(httpReq, restPath, requestParams));
 
-                return taskResponse;
+                return ret;
             }
         }
 
