@@ -260,7 +260,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = client.Put<GetCustomerResponse>(requestPath, bytes);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
-            Stream ms = new MemoryStream(bytes);
+            Stream ms = bytes.InMemoryStream();
             response = client.Post<GetCustomerResponse>(requestPath, ms);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
         }
@@ -282,7 +282,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = await client.PutAsync<GetCustomerResponse>(requestPath, bytes);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
-            Stream ms = new MemoryStream(bytes);
+            Stream ms = bytes.InMemoryStream();
             response = await client.PostAsync<GetCustomerResponse>(requestPath, ms);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
         }
@@ -305,7 +305,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             response = await httpClient.PutAsync<GetCustomerResponse>(requestPath, bytes);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
 
-            Stream ms = new MemoryStream(bytes);
+            Stream ms = bytes.InMemoryStream();
             response = await httpClient.PostAsync<GetCustomerResponse>(requestPath, ms);
             Assert.That(response.Customer.Id, Is.EqualTo(5));
         }

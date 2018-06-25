@@ -645,7 +645,7 @@ namespace ServiceStack.Common.Tests
                     contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
-                    requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
+                    requestBody == null ? null : Encoding.UTF8.GetBytes(requestBody).InMemoryStream(),
                     formData.ToNameValueCollection()
                 );
 
@@ -663,11 +663,9 @@ namespace ServiceStack.Common.Tests
                 response = DtoUtils.CreateErrorResponse(request, ex);
             }
 
-            var httpRes = response as IHttpResult;
-            if (httpRes != null)
+            if (response is IHttpResult httpRes)
             {
-                var httpError = httpRes as IHttpError;
-                if (httpError != null)
+                if (httpRes is IHttpError httpError)
                 {
                     throw new WebServiceException(httpError.Message) {
                         StatusCode = httpError.Status,
@@ -724,7 +722,7 @@ namespace ServiceStack.Common.Tests
                     contentType,
                     pathInfo,
                     queryString.ToNameValueCollection(),
-                    requestBody == null ? null : new MemoryStream(Encoding.UTF8.GetBytes(requestBody)),
+                    requestBody == null ? null : Encoding.UTF8.GetBytes(requestBody).InMemoryStream(),
                     formData.ToNameValueCollection()
                 );
 

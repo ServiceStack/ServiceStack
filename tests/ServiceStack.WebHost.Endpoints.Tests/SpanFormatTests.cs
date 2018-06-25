@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -53,6 +54,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             appHost = new AppHost()
                 .Init()
                 .Start(Config.ListeningOn);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            appHost.Dispose();
+            DefaultMemory.Configure();
         }
 
         [Test]

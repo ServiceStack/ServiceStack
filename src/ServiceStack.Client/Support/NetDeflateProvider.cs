@@ -40,7 +40,7 @@ namespace ServiceStack.Support
 
         public byte[] InflateBytes(byte[] gzBuffer)
         {
-            using (var compressedStream = new MemoryStream(gzBuffer))
+            using (var compressedStream = gzBuffer.InMemoryStream())
             using (var zipStream = new DeflateStream(compressedStream, CompressionMode.Decompress))
             {
                 return zipStream.ReadFully();

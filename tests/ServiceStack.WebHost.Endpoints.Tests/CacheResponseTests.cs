@@ -215,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var jsv = request.ToJsv();
             var bytes = jsv.ToUtf8Bytes();
-            var ms = new MemoryStream(bytes);
+            var ms = bytes.InMemoryStream();
             return ms;
         }
     }

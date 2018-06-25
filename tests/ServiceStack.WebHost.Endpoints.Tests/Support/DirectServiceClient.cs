@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
                 try
                 {
                     var deserializer = HostContext.ContentTypes.GetStreamDeserializer(httpReq.ResponseContentType);
-                    webEx.ResponseDto = deserializer(typeof(TResponse), new MemoryStream(httpRes.ReadAsBytes()));
+                    webEx.ResponseDto = deserializer(typeof(TResponse), httpRes.ReadAsBytes().InMemoryStream());
                 }
                 catch (Exception ex)
                 {
