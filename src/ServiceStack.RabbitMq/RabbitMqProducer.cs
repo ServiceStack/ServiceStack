@@ -17,8 +17,7 @@ namespace ServiceStack.RabbitMq
         public Action<string, BasicGetResult> GetMessageFilter { get; set; }
         //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
         //http://www.rabbitmq.com/amqp-0-9-1-reference.html
-        public uint PrefetchCount { get; set; } = 20;
-        public ushort PrefetchSize { get; set; } = 0;
+        public ushort PrefetchCount { get; set; } = 20;
 
         private IConnection connection;
         public IConnection Connection
@@ -41,7 +40,9 @@ namespace ServiceStack.RabbitMq
                 if (channel == null || !channel.IsOpen)
                 {
                     channel = Connection.OpenChannel();
-                    channel.BasicQos(PrefetchCount, PrefetchSize, global: false);
+                    //prefetch size is no supported by RabbitMQ
+                    //http://www.rabbitmq.com/specification.html#method-status-basic.qos
+                    channel.BasicQos(prefetchSize: 0, prefetchCount: PrefetchCount, global: false);
                 }
                 return channel;
             }
