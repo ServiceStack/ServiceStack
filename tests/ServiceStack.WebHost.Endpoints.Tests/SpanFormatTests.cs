@@ -42,13 +42,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #if NETCORE
                 ServiceStack.Memory.NetCoreMemory.Configure();
 #endif
-                
-                Plugins.Add(new SpanFormats());
+      
+                if (!Plugins.Any(x => x is SpanFormats)) //Registered by default
+                    Plugins.Add(new SpanFormats()); 
             }
         }
 
-        private ServiceStackHost appHost;
-        
+        private readonly ServiceStackHost appHost;
+
         public SpanFormatTests()
         {
             appHost = new AppHost()

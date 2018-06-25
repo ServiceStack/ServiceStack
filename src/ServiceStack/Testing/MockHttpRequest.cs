@@ -84,8 +84,8 @@ namespace ServiceStack.Testing
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType ?? this.ContentType ?? MimeTypes.Json; }
-            set { responseContentType = value; }
+            get => responseContentType ?? this.ContentType ?? MimeTypes.Json;
+            set => responseContentType = value;
         }
 
         public bool HasExplicitResponseContentType { get; private set; }
