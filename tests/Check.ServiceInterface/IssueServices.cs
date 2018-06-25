@@ -113,8 +113,7 @@ namespace Check.ServiceInterface
     {
         public object Get(ObjectId request)
         {
-            int data;
-            int.TryParse(request.objectName ?? "-1", out data);
+            int.TryParse(request.objectName ?? "-1", out var data);
             return new IntegerResponse { data =  data };
         }
     }

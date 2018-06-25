@@ -134,15 +134,15 @@ namespace ServiceStack.Host
                     Log.DebugFormat("CreateRequestAsync/requestParams:" + string.Join(",", requestParams.Keys));
 
                 var taskResponse = HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
-                    CreateRequest(httpReq, restPath, requestParams));
+                    CreateRequestAsync(httpReq, restPath, requestParams));
 
                 return taskResponse;
             }
         }
 
-        public static object CreateRequest(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
+        public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
         {
-            var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType);
 
             return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }

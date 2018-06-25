@@ -22,7 +22,7 @@ namespace ServiceStack.Host.Handlers
 
         public RequestAttributes ContentTypeAttribute { get; set; }
 
-        public Task<object> CreateRequestAsync(IRequest req, string operationName)
+        public async Task<object> CreateRequestAsync(IRequest req, string operationName)
         {
             var requestType = GetOperationType(operationName);
 
@@ -31,17 +31,14 @@ namespace ServiceStack.Host.Handlers
             using (Profiler.Current.Step("Deserialize Request"))
             {
                 var requestDto = GetCustomRequestFromBinder(req, requestType)
-                    ?? (DeserializeHttpRequest(requestType, req, HandlerContentType)
+                    ?? (await DeserializeHttpRequestAsync(requestType, req, HandlerContentType)
                     ?? requestType.CreateInstance());
 
-                return appHost.ApplyRequestConvertersAsync(req, requestDto);
+                return await appHost.ApplyRequestConvertersAsync(req, requestDto);
             }
         }
 
-        public override bool RunAsAsync()
-        {
-            return true;
-        }
+        public override bool RunAsAsync() => true;
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {

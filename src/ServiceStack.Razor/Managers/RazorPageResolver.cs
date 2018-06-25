@@ -264,7 +264,7 @@ namespace ServiceStack.Razor.Managers
             if (hasModel.ModelType == typeof(DynamicRequestObject))
                 dto = new DynamicRequestObject(httpReq, dto);
 
-            var model = dto ?? DeserializeHttpRequest(hasModel.ModelType, httpReq, httpReq.ContentType);
+            var model = dto ?? DeserializeHttpRequestAsync(hasModel.ModelType, httpReq, httpReq.ContentType).GetResult();
 
             if (model.GetType().IsAnonymousType())
             {

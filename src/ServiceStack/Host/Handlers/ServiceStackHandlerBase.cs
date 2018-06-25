@@ -157,7 +157,7 @@ namespace ServiceStack.Host.Handlers
             return batchedResponses;
         }
 
-        public static object DeserializeHttpRequest(Type operationType, IRequest httpReq, string contentType)
+        public static Task<object> DeserializeHttpRequestAsync(Type operationType, IRequest httpReq, string contentType)
         {
             var httpMethod = httpReq.Verb;
             var queryString = httpReq.QueryString;
@@ -166,20 +166,19 @@ namespace ServiceStack.Host.Handlers
             if (!hasRequestBody
                 && (httpMethod == HttpMethods.Get || httpMethod == HttpMethods.Delete || httpMethod == HttpMethods.Options))
             {
-                return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
+                return KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType).InTask();
             }
 
             var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
-                return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType);
+                return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType).InTask();
             }
 
-            var request = CreateContentTypeRequest(httpReq, operationType, contentType);
-            return request;
+            return CreateContentTypeRequestAsync(httpReq, operationType, contentType);
         }
 
-        protected static object CreateContentTypeRequest(IRequest httpReq, Type requestType, string contentType)
+        protected static Task<object> CreateContentTypeRequestAsync(IRequest httpReq, Type requestType, string contentType)
         {
             try
             {
@@ -199,7 +198,7 @@ namespace ServiceStack.Host.Handlers
 
                     if (hasContentBody)
                     {
-                        var deserializer = HostContext.ContentTypes.GetStreamDeserializer(contentType);
+                        var deserializer = HostContext.ContentTypes.GetStreamDeserializerAsync(contentType);
                         if (deserializer != null)
                         {
                             return deserializer(requestType, httpReq.InputStream);
@@ -212,7 +211,7 @@ namespace ServiceStack.Host.Handlers
                 var msg = $"Could not deserialize '{contentType}' request using {requestType}'\nError: {ex}";
                 throw new SerializationException(msg, ex);
             }
-            return requestType.CreateInstance(); //Return an empty DTO, even for empty request bodies
+            return requestType.CreateInstance().InTask(); //Return an empty DTO, even for empty request bodies
         }
 
         protected static object GetCustomRequestFromBinder(IRequest httpReq, Type requestType)

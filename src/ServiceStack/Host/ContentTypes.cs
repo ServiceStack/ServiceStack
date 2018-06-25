@@ -89,8 +89,11 @@ namespace ServiceStack.Host
             var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
             ContentTypeFormats[format] = normalizedContentType;
 
-            SetContentTypeSerializer(normalizedContentType, streamSerializer);
-            SetContentTypeDeserializer(normalizedContentType, streamDeserializer);
+            if (streamSerializer != null)
+                SetContentTypeSerializer(normalizedContentType, streamSerializer);
+            
+            if (streamDeserializer != null)
+                SetContentTypeDeserializer(normalizedContentType, streamDeserializer);
         }
 
         public void RegisterAsync(string contentType, 
@@ -104,8 +107,11 @@ namespace ServiceStack.Host
             var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
             ContentTypeFormats[format] = normalizedContentType;
 
-            ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
-            ContentTypeDeserializersAsync[normalizedContentType] = streamDeserializer;
+            if (streamSerializer != null)
+                ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
+            
+            if (streamDeserializer != null)
+                ContentTypeDeserializersAsync[normalizedContentType] = streamDeserializer;
         }
 
         public void Remove(string contentType)
