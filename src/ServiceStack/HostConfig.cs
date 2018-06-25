@@ -166,12 +166,12 @@ namespace ServiceStack
                 FallbackRestPath = null,
                 UseHttpsLinks = false,
                 UseJsObject = true,
+                EnableOptimizations = true,
+
 #if !NETSTANDARD2_0
                 UseCamelCase = false,
-                EnableOptimizations = false,
 #else
                 UseCamelCase = true,
-                EnableOptimizations = true,
 #endif
             };
 
