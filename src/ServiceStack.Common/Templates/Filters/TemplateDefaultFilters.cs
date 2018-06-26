@@ -116,6 +116,9 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        [HandleUnknownValue]
+        public bool IsNullOrWhiteSpace(object target) => target == null || target is string s && string.IsNullOrWhiteSpace(s);
+        
         [HandleUnknownValue] public StopExecution end() => StopExecution.Value;
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
         [HandleUnknownValue] public StopExecution end(object ignore) => StopExecution.Value;

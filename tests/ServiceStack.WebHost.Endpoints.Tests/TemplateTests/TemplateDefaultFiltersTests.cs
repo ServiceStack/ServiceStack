@@ -1598,5 +1598,33 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ sampleArg.StringProperty | isNull }}", args), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ sampleArg.NullStringProperty | isNull }}", args), Is.EqualTo("True"));
         }
+
+        [Test]
+        public void Can_detect_empty_values()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["nullArg"] = null,
+                    ["emptyArg"] = "",
+                    ["whitespace"] = " ",
+                    ["foo"] = "foo",
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ unknown | isNull }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ nullArg | isNull }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ '' | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ null | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ '' | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ ' ' | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ whitespace | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ ' ' | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ whitespace | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ 'foo' | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
+        }
+
     }
 }

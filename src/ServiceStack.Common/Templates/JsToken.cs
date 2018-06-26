@@ -384,7 +384,7 @@ namespace ServiceStack.Templates
                 }
                 else
                 {
-                    token = new JsLiteral(rawString.Value());                    
+                    token = new JsLiteral(rawString.ToString());                    
                 }
                 
                 return literal.Advance(i + 1);
