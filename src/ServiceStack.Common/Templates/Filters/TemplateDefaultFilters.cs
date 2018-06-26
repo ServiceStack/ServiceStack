@@ -776,8 +776,7 @@ namespace ServiceStack.Templates
 
         public object @do(TemplateScopeContext scope, object expression)
         {
-            var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.AsSpan().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(@do), expression, scopeOptions:null, out var itemBinding);
             var result = token.Evaluate(scope);
 
             return IgnoreResult.Value;
@@ -791,9 +790,7 @@ namespace ServiceStack.Templates
             if (isNull(target) || target is bool b && !b)
                 return TypeConstants.EmptyTask;
 
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
-            var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.AsSpan().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(@do), expression, scopeOptions, out var itemBinding);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
