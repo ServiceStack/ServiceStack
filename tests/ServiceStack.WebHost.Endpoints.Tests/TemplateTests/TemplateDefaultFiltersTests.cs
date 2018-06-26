@@ -1614,13 +1614,17 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ unknown | isNull }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ nullArg | isNull }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ '' | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ `` | isNull }}"), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ emptyArg | isNull }}"), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ null | isEmpty }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ '' | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ `` | isEmpty }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ emptyArg | isEmpty }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ ' ' | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ ` ` | isEmpty }}"), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ whitespace | isEmpty }}"), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ ' ' | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ ` ` | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ whitespace | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
             Assert.That(context.EvaluateTemplate("{{ 'foo' | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
