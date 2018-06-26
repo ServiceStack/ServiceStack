@@ -15,6 +15,9 @@ namespace ServiceStack.RabbitMq
         public Action OnPublishedCallback { get; set; }
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter { get; set; }
         public Action<string, BasicGetResult> GetMessageFilter { get; set; }
+        //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
+        //http://www.rabbitmq.com/amqp-0-9-1-reference.html
+        public ushort PrefetchCount { get; set; } = 20;
 
         private IConnection connection;
         public IConnection Connection
@@ -37,9 +40,9 @@ namespace ServiceStack.RabbitMq
                 if (channel == null || !channel.IsOpen)
                 {
                     channel = Connection.OpenChannel();
-                    //http://www.rabbitmq.com/blog/2012/04/25/rabbitmq-performance-measurements-part-2/
-                    //http://www.rabbitmq.com/amqp-0-9-1-reference.html
-                    channel.BasicQos(prefetchCount: 20, prefetchSize: 0, global: false);
+                    //prefetch size is no supported by RabbitMQ
+                    //http://www.rabbitmq.com/specification.html#method-status-basic.qos
+                    channel.BasicQos(prefetchSize: 0, prefetchCount: PrefetchCount, global: false);
                 }
                 return channel;
             }
@@ -123,9 +126,9 @@ namespace ServiceStack.RabbitMq
         {
             try
             {
-                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists 
+                // In case of server named queues (client declared queue with channel.declare()), assume queue already exists
                 //(redeclaration would result in error anyway since queue was marked as exclusive) and publish to default exchange
-                if (routingKey.IsServerNamedQueue()) 
+                if (routingKey.IsServerNamedQueue())
                 {
                     Channel.BasicPublish("", routingKey, basicProperties, body);
                 }
@@ -200,7 +203,7 @@ namespace ServiceStack.RabbitMq
                 catch (Exception ex)
                 {
                     Log.Error("Error trying to dispose RabbitMqProducer model", ex);
-                } 
+                }
                 channel = null;
             }
             if (connection != null)
