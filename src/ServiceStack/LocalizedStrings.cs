@@ -60,6 +60,10 @@
         public static string IllegalUsername = "UserName contains invalid characters";
         public static string ShouldNotRegisterAuthSession = "AuthSession's are rehydrated from ICacheClient and should not be registered in IOC's when not in HostContext.TestMode";
         public static string ApiKeyRequiresSecureConnection = "Sending ApiKey over insecure connection forbidden when RequireSecureConnection=true";
+        public static string ApiKeyDoesNotExist = "ApiKey does not exist";
+        public static string ApiKeyHasBeenCancelled = "ApiKey has been cancelled";
+        public static string ApiKeyHasExpired = "ApiKey has expired";
+        public static string UserForApiKeyDoesNotExist = "User for ApiKey does not exist";
         public static string JwtRequiresSecureConnection = "Sending JWT over insecure connection forbidden when RequireSecureConnection=true";
         public static string TokenInvalidated = "Token has been invalidated";
         public static string TokenExpired = "Token has expired";
