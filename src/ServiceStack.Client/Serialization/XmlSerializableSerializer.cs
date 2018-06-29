@@ -9,6 +9,10 @@ namespace ServiceStack.Serialization
 {
     public partial class XmlSerializableSerializer : IStringSerializer
     {
+        public static XmlWriterSettings XmlWriterSettings { get; set; } = new XmlWriterSettings {
+            Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+        };
+        
         public static XmlSerializableSerializer Instance = new XmlSerializableSerializer();
 
         public string SerializeToString<XmlDto>(XmlDto from)
@@ -17,7 +21,7 @@ namespace ServiceStack.Serialization
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    using (XmlWriter xw = XmlWriter.Create(ms))
+                    using (XmlWriter xw = XmlWriter.Create(ms, XmlWriterSettings))
                     {
                         var ser = new XmlSerializerWrapper(from.GetType());
                         ser.WriteObject(xw, from);
