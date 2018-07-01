@@ -4,10 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.Templates
 {
     public abstract class JsExpression : JsToken

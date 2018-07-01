@@ -22,7 +22,7 @@
         <dependency id="ServiceStack.Text" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
+        <dependency id="System.Memory" version="[4.5.1, )" />
         <dependency id="System.Dynamic.Runtime" version="[4.3.0, )" />
         <dependency id="System.Data.Common" version="[4.3.0, )" />
         <dependency id="System.ComponentModel.Primitives" version="[4.3.0, )" />

@@ -18,10 +18,6 @@ using ServiceStack.Web;
 using ServiceStack.Logging;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack
 {
     public interface IDataQuery

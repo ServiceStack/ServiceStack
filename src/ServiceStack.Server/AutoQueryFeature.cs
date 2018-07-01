@@ -15,10 +15,6 @@ using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack
 {
     public delegate void QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);

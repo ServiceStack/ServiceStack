@@ -8,10 +8,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.Templates
 {
     public class RawString : IRawString

@@ -10,10 +10,6 @@ using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.Templates
 {
     public class TemplateContext : IDisposable

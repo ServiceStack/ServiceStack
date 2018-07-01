@@ -4,10 +4,6 @@ using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.IO;
 
-#if NETCORE
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplatePageContextFilterTests
