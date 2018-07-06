@@ -35,8 +35,8 @@ namespace ServiceStack
         /// Inspect or Transform the downstream HTTP Response Body that's returned
         /// </summary>
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        
-        public HashSet<string> IgnoreResponseHeaders = new HashSet<string> {
+
+        public HashSet<string> IgnoreResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
