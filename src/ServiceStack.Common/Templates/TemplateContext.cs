@@ -238,7 +238,7 @@ namespace ServiceStack.Templates
             Plugins.Add(new TemplateHtmlBlocks());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
             FilterTransformers["end"] = stream => (TypeConstants.EmptyByteArray.InMemoryStream() as Stream).InTask();
-
+            FilterTransformers["buffer"] = stream => stream.InTask();
             
             Args[nameof(TemplateConfig.MaxQuota)] = TemplateConfig.MaxQuota;
             Args[nameof(TemplateConfig.DefaultCulture)] = TemplateConfig.CreateCulture();
