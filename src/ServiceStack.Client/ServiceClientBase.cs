@@ -1579,7 +1579,8 @@ namespace ServiceStack
         {
             var fileCount = 0;
             long currentStreamPosition = 0;
-            Func<WebRequest> createWebRequest = () =>
+
+            WebRequest createWebRequest()
             {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
@@ -1608,7 +1609,8 @@ namespace ServiceStack
                         outputStream.Write(boundary + newLine);
                         var fileName = file.FileName ?? $"upload{fileCount}";
                         var fieldName = file.FieldName ?? $"upload{fileCount}";
-                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: application/octet-stream{newLine}{newLine}");
+                        var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: {contentType}{newLine}{newLine}");
 
                         int byteCount;
                         int bytesWritten = 0;
@@ -1622,14 +1624,14 @@ namespace ServiceStack
                                 OnUploadProgress(bytesWritten, file.Stream.Length);
                             }
                         }
+
                         outputStream.Write(newLine);
-                        if (fileCount == files.Length - 1)
-                            outputStream.Write(boundary + "--");
+                        if (fileCount == files.Length - 1) outputStream.Write(boundary + "--");
                     }
                 }
 
                 return webRequest;
-            };
+            }
 
             try
             {

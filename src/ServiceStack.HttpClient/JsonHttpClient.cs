@@ -1084,7 +1084,9 @@ namespace ServiceStack
                     Name = fieldName,
                     FileName = fileName,
                 };
-                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
+                
+                var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
 
                 content.Add(fileContent, fileName, fileName);
             }
