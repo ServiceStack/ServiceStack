@@ -52,10 +52,11 @@ namespace ServiceStack
             return result;
         }
 
-        public static JsToken ast(string js)
+        public static JsToken expression(string js)
         {
             js.ParseJsExpression(out var token);
             return token;
         }
+        
     }
 }
