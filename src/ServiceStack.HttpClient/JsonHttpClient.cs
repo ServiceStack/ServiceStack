@@ -256,7 +256,7 @@ namespace ServiceStack
                         {
                             var refreshDto = new GetAccessToken { RefreshToken = RefreshToken };
                             var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
-                            return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto)
+                            return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token)
                                 .ContinueWith(t =>
                                 {
                                     if (t.IsFaulted)
@@ -465,7 +465,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 return;
 
-            var byteArray = Encoding.UTF8.GetBytes("{0}:{1}".Fmt(UserName, Password));
+            var byteArray = Encoding.UTF8.GetBytes($"{UserName}:{Password}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
         }
 
@@ -585,7 +585,7 @@ namespace ServiceStack
 
         public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
-            return SendAllAsync<TResponse>(requests, default(CancellationToken)).GetSyncResponse();
+            return SendAllAsync<TResponse>(requests, default).GetSyncResponse();
         }
 
         public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
@@ -595,12 +595,12 @@ namespace ServiceStack
 
         public virtual void Publish(object request)
         {
-            PublishAsync(request, default(CancellationToken)).Wait();
+            PublishAsync(request, default).Wait();
         }
 
         public void PublishAll(IEnumerable<object> requestDtos)
         {
-            PublishAllAsync(requestDtos, default(CancellationToken)).Wait();
+            PublishAllAsync(requestDtos, default).Wait();
         }
 
         public virtual Task<TResponse> SendAsync<TResponse>(object request) => SendAsync<TResponse>(request, default);
