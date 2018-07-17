@@ -6,9 +6,9 @@ namespace ServiceStack.Templates
     {
         public JsBinaryExpression(JsToken left, JsBinaryOperator operand, JsToken right)
         {
-            Left = left;
-            Operand = operand;
-            Right = right;
+            Left = left ?? throw new SyntaxErrorException($"Left Expression missing in Binary Expression");
+            Operand = operand ?? throw new SyntaxErrorException($"Operator missing in Binary Expression");
+            Right = right ?? throw new SyntaxErrorException($"Right Expression missing in Binary Expression");
         }
 
         public JsBinaryOperator Operand { get; set; }

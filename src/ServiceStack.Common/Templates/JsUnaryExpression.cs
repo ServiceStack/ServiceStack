@@ -10,8 +10,8 @@ namespace ServiceStack.Templates
 
         public JsUnaryExpression(JsUnaryOperator @operator, JsToken argument)
         {
-            Operator = @operator;
-            Argument = argument;
+            Operator = @operator ?? throw new SyntaxErrorException($"Operator missing in Unary Expression");
+            Argument = argument ?? throw new SyntaxErrorException($"Argument missing in Unary Expression");
         }
 
         public override object Evaluate(TemplateScopeContext scope)
