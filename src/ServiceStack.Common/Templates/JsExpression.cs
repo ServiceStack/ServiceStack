@@ -377,8 +377,8 @@ namespace ServiceStack.Templates
         public JsArrowFunctionExpression(JsIdentifier param, JsToken body) : this(new[] {param}, body) {}
         public JsArrowFunctionExpression(JsIdentifier[] @params, JsToken body)
         {
-            Params = @params;
-            Body = body;
+            Params = @params ?? throw new SyntaxErrorException($"Params missing in Arrow Function Expression");
+            Body = body ?? throw new SyntaxErrorException($"Body missing in Arrow Function Expression");
         }
 
         public override string ToRawString()

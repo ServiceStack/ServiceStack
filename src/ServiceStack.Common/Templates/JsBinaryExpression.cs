@@ -4,20 +4,20 @@ namespace ServiceStack.Templates
 {
     public class JsBinaryExpression : JsExpression
     {
-        public JsBinaryExpression(JsToken left, JsBinaryOperator operand, JsToken right)
+        public JsBinaryExpression(JsToken left, JsBinaryOperator @operator, JsToken right)
         {
             Left = left ?? throw new SyntaxErrorException($"Left Expression missing in Binary Expression");
-            Operand = operand ?? throw new SyntaxErrorException($"Operator missing in Binary Expression");
+            Operator = @operator ?? throw new SyntaxErrorException($"Operator missing in Binary Expression");
             Right = right ?? throw new SyntaxErrorException($"Right Expression missing in Binary Expression");
         }
 
-        public JsBinaryOperator Operand { get; set; }
+        public JsBinaryOperator Operator { get; set; }
         public JsToken Left { get; set; }
         public JsToken Right { get; set; }
-        public override string ToRawString() => "(" + JsonValue(Left) + Operand.Token + JsonValue(Right) + ")";
+        public override string ToRawString() => "(" + JsonValue(Left) + Operator.Token + JsonValue(Right) + ")";
 
         protected bool Equals(JsBinaryExpression other) =>
-            Equals(Operand, other.Operand) && Equals(Left, other.Left) && Equals(Right, other.Right);
+            Equals(Operator, other.Operator) && Equals(Left, other.Left) && Equals(Right, other.Right);
 
         public override bool Equals(object obj)
         {
@@ -31,7 +31,7 @@ namespace ServiceStack.Templates
         {
             unchecked
             {
-                var hashCode = (Operand != null ? Operand.GetHashCode() : 0);
+                var hashCode = (Operator != null ? Operator.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Left != null ? Left.GetHashCode() : 0);
                 hashCode = (hashCode * 397) ^ (Right != null ? Right.GetHashCode() : 0);
                 return hashCode;
@@ -42,7 +42,7 @@ namespace ServiceStack.Templates
         {
             var lhs = Left.Evaluate(scope);
             var rhs = Right.Evaluate(scope);
-            return Operand.Evaluate(lhs, rhs);
+            return Operator.Evaluate(lhs, rhs);
         }
 
         public override Dictionary<string, object> ToJsAst()
@@ -50,7 +50,7 @@ namespace ServiceStack.Templates
             var to = new Dictionary<string, object>
             {
                 ["type"] = ToJsAstType(),
-                ["operator"] = Operand.Token,
+                ["operator"] = Operator.Token,
                 ["left"] = Left.ToJsAst(),
                 ["right"] = Right.ToJsAst(),
             };

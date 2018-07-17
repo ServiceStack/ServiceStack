@@ -11,9 +11,9 @@ namespace ServiceStack.Templates
 
         public JsLogicalExpression(JsToken left, JsLogicOperator @operator, JsToken right)
         {
-            Left = left;
-            Operator = @operator;
-            Right = right;
+            Left = left ?? throw new SyntaxErrorException($"Left Expression missing in Logical Expression");
+            Operator = @operator ?? throw new SyntaxErrorException($"Operator missing in Logical Expression");
+            Right = right ?? throw new SyntaxErrorException($"Right Expression missing in Logical Expression");
         }
 
         public override object Evaluate(TemplateScopeContext scope)
