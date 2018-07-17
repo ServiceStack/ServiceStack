@@ -5,7 +5,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Templates
 {
-    public class JsCallExpression : JsToken
+    public class JsCallExpression : JsExpression
     {
         public JsToken Callee { get; }
         public JsToken[] Arguments { get; }
@@ -114,6 +114,23 @@ namespace ServiceStack.Templates
                 return ((Callee != null ? Callee.GetHashCode() : 0) * 397) ^
                        (Arguments != null ? Arguments.GetHashCode() : 0);
             }
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var arguments = new List<object>();
+            var to = new Dictionary<string, object> {
+                ["type"] = ToJsAstType(),
+                ["callee"] = Callee.ToJsAst(),
+                ["arguments"] = arguments,
+            };
+
+            foreach (var argument in Arguments)
+            {
+                arguments.Add(argument.ToJsAst());
+            }
+
+            return to;
         }
     }
 }
