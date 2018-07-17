@@ -90,5 +90,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             Assert.That(ast, Is.EqualTo(expected));
         }
+
+        [Test]
+        public void Does_support_ast_with_null()
+        {
+            JsToken token;
+            
+            "a > b ? a : null".ParseJsExpression(out token);
+            
+            var ast = token.ToJsAst();
+
+            token.ToJsAstString().Print();
+
+            var expected = new Dictionary<string, object> {
+                ["type"] = "ConditionalExpression",
+                ["test"] = new Dictionary<string, object> {
+                    ["type"] = "BinaryExpression",
+                    ["operator"] = ">",
+                    ["left"] = new Dictionary<string, object> {
+                        ["type"] = "Identifier",
+                        ["name"] = "a",
+                    },
+                    ["right"] = new Dictionary<string, object> {
+                        ["type"] = "Identifier",
+                        ["name"] = "b",
+                    },
+                },
+                ["consequent"] = new Dictionary<string, object> {
+                    ["type"] = "Identifier",
+                    ["name"] = "a",
+                },
+                ["alternate"] = new Dictionary<string, object> {
+                    ["type"] = "Literal",
+                    ["value"] = null,
+                    ["raw"] = "null",
+                },
+            };
+
+            Assert.That(ast, Is.EqualTo(expected));
+        }
     }
 }

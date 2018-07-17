@@ -34,13 +34,20 @@ namespace ServiceStack.Templates
         }
     }
 
-    public class JsNull : JsToken
+    public class JsNull : JsLiteral
     {
         public const string String = "null";
         
-        private JsNull() {} //this is the only one
+        private JsNull() : base(null) {} //this is the only one
         public static JsNull Value = new JsNull();
         public override string ToRawString() => String;
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = base.ToJsAst();
+            to["type"] = "Literal";
+            return to;
+        }
 
         public override object Evaluate(TemplateScopeContext scope) => null;
     }
@@ -159,6 +166,14 @@ namespace ServiceStack.Templates
         public static Dictionary<string, object> ToJsAst(this JsToken token) => token is JsExpression expression
             ? expression.ToJsAst()
             : throw new NotSupportedException(token.GetType().Name + " is not a JsExpression");
+
+        public static string ToJsAstString(this JsToken token)
+        {
+            using (JsConfig.With(includeNullValuesInDictionaries: true))
+            {
+                return token.ToJsAst().ToJson().IndentJson();
+            }
+        }
 
         internal static string DebugFirstChar(this ReadOnlySpan<char> literal) => literal.IsNullOrEmpty()
             ? "<end>"
