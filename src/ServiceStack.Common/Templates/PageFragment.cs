@@ -32,7 +32,7 @@ namespace ServiceStack.Templates
             {
                 InitialValue = initialValue.Value;
             }
-            else if (expr is JsNull)
+            else if (ReferenceEquals(expr, JsNull.Value))
             {
                 InitialValue = expr;
             }
@@ -48,7 +48,7 @@ namespace ServiceStack.Templates
 
         public object Evaluate(TemplateScopeContext scope)
         {
-            if (Expression is JsNull)
+            if (ReferenceEquals(Expression, JsNull.Value))
                 return Expression;
             
             return Expression.Evaluate(scope);

@@ -34,22 +34,10 @@ namespace ServiceStack.Templates
         }
     }
 
-    public class JsNull : JsLiteral
+    public static class JsNull
     {
         public const string String = "null";
-        
-        private JsNull() : base(null) {} //this is the only one
-        public static JsNull Value = new JsNull();
-        public override string ToRawString() => String;
-
-        public override Dictionary<string, object> ToJsAst()
-        {
-            var to = base.ToJsAst();
-            to["type"] = "Literal";
-            return to;
-        }
-
-        public override object Evaluate(TemplateScopeContext scope) => null;
+        public static JsLiteral Value = new JsLiteral(null);
     }
 
     public static class JsTokenUtils
