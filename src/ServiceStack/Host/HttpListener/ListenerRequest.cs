@@ -108,7 +108,9 @@ namespace ServiceStack.Host.HttpListener
 
         public string Authorization => string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
 
-        public bool IsSecureConnection => request.IsSecureConnection || XForwardedProtocol == "https";
+        public bool IsSecureConnection => request.IsSecureConnection 
+            || XForwardedProtocol == "https" 
+            || (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
 
         public string[] AcceptTypes => request.AcceptTypes;
 

@@ -79,8 +79,7 @@ namespace ServiceStack.ServiceHost.Tests
             public string XForwardedProtocol { get; set; }
             public string XRealIp { get; set; }
             public string Accept { get; set; }
-
-            public bool IsSecureConnection { get; private set; }
+            public bool IsSecureConnection => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
             public string[] AcceptTypes { get; private set; }
             public string PathInfo { get; private set; }
             public string OriginalPathInfo => PathInfo;

@@ -125,7 +125,18 @@ namespace ServiceStack.Testing
         public string XRealIp { get; set; }
         public string Accept { get; set; }
 
-        public bool IsSecureConnection { get; set; }
+        public bool IsSecureConnection
+        {
+            get => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
+            set
+            {
+                if (value)
+                    RequestAttributes |= RequestAttributes.Secure;
+                else
+                    RequestAttributes &= ~RequestAttributes.Secure;
+            }
+        }
+        
         public string[] AcceptTypes { get; set; }
         public string PathInfo { get; set; }
         public string OriginalPathInfo { get; }

@@ -128,7 +128,14 @@ namespace ServiceStack.ServiceHost.Tests
 
         public bool IsSecureConnection
         {
-            get { throw new NotImplementedException(); }
+            get => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
+            set
+            {
+                if (value)
+                    RequestAttributes |= RequestAttributes.Secure;
+                else
+                    RequestAttributes &= ~RequestAttributes.Secure;
+            }
         }
 
         public string[] AcceptTypes

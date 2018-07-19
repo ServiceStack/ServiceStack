@@ -129,7 +129,17 @@ namespace ServiceStack.Host
 
         public string Authorization { get; set; }
 
-        public bool IsSecureConnection { get; set; }
+        public bool IsSecureConnection
+        {
+            get => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
+            set
+            {
+                if (value)
+                    RequestAttributes |= RequestAttributes.Secure;
+                else
+                    RequestAttributes &= ~RequestAttributes.Secure;
+            }
+        }
 
         public string[] AcceptTypes { get; set; }
 
