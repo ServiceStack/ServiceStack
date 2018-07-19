@@ -15,9 +15,10 @@ using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
 {
-    public class HelloJwt : IReturn<HelloJwtResponse>
+    public class HelloJwt : IReturn<HelloJwtResponse>, IHasBearerToken
     {
         public string Name { get; set; }
+        public string BearerToken { get; set; }
     }
     public class HelloJwtResponse
     {
@@ -158,6 +159,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 .FromJson<SecuredResponse>();
 
             Assert.That(response.Result, Is.EqualTo(request.Name));
+        }
+
+        [Test]
+        public void Can_authenticate_using_JWT_with_IHasBearerToken()
+        {
+            var authClient = GetClientWithBasicAuthCredentials();
+
+            var authResponse = authClient.Post(new Authenticate());
+            Assert.That(authResponse.BearerToken, Is.Not.Null);
+
+            var client = GetClient();
+            var request = new HelloJwt { BearerToken = authResponse.BearerToken, Name = "IHasBearerToken" };
+            var response = client.Get(request);
+
+            Assert.That(response.Result, Is.EqualTo("Hello, IHasBearerToken"));
         }
     }
 

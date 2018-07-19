@@ -9,9 +9,10 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Server.Tests.Auth
 {
-    public class RequiresAuth : IReturn<RequiresAuth>
+    public class RequiresAuth : IReturn<RequiresAuth>, IHasBearerToken
     {
         public string Name { get; set; }
+        public string BearerToken { get; set; }
     }
 
     [Authenticate]
@@ -148,6 +149,22 @@ namespace ServiceStack.Server.Tests.Auth
             Assert.That(response.Name, Is.EqualTo(request.Name));
 
             Assert.That(RequiresAuthActionService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+        }
+
+        [Test]
+        public void Does_allow_ApiKey_in_IHasBearerToken_RequestDto()
+        {
+            AppHost.LastApiKey = null;
+            RequiresAuthService.LastApiKey = null;
+
+            var client = new JsonServiceClient(ListeningOn);
+
+            var request = new RequiresAuth { BearerToken = liveKey.Id, Name = "foo" };
+            var response = client.Send(request);
+            Assert.That(response.Name, Is.EqualTo(request.Name));
+
+            Assert.That(AppHost.LastApiKey.Id, Is.EqualTo(liveKey.Id));
+            Assert.That(RequiresAuthService.LastApiKey.Id, Is.EqualTo(liveKey.Id));
         }
 
         [Test]
