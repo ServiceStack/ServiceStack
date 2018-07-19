@@ -567,6 +567,8 @@ namespace ServiceStack.Common.Tests
             {
                 throw new NotImplementedException();
             }
+
+            public string BearerToken { get; set; }
         }
 
         public object ExecutePath(string pathInfo)

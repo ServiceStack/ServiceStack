@@ -37,7 +37,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AuthenticateResponse : IMeta, IHasSessionId
+    public class AuthenticateResponse : IMeta, IHasSessionId, IHasBearerToken
     {
         public AuthenticateResponse()
         {

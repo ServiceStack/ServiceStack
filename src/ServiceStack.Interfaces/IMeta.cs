@@ -16,6 +16,11 @@ namespace ServiceStack
         string SessionId { get; set; }
     }
 
+    public interface IHasBearerToken
+    {
+        string BearerToken { get; set; }
+    }
+
     public interface IHasVersion
     {
         int Version { get; set; }

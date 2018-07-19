@@ -140,6 +140,7 @@ namespace ServiceStack
 
         public int Version { get; set; }
         public string SessionId { get; set; }
+        public string BearerToken { get; set; }
 
         protected WcfServiceClient()
         {

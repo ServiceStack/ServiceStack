@@ -570,6 +570,12 @@ namespace ServiceStack
             set => client.SessionId = value;
         }
 
+        public string BearerToken
+        {
+            get => client.BearerToken;
+            set => client.BearerToken = value;
+        }
+
         public int Version
         {
             get => client.Version;

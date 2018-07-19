@@ -36,9 +36,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         public string Result { get; set; }
     }
 
-    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId, IHasVersion
+    public class HelloAuthenticated : IReturn<HelloAuthenticatedResponse>, IHasSessionId, IHasBearerToken, IHasVersion
     {
         public string SessionId { get; set; }
+        public string BearerToken { get; set; }
         public int Version { get; set; }
     }
 

@@ -1862,6 +1862,11 @@ namespace ServiceStack
                 if (request is IHasSessionId hasSession && hasSession.SessionId == null)
                     hasSession.SessionId = client.SessionId;
             }
+            if (client is IHasBearerToken clientBearer && clientBearer.BearerToken != null)
+            {
+                if (request is IHasBearerToken hasBearer && hasBearer.BearerToken == null)
+                    hasBearer.BearerToken = clientBearer.BearerToken;
+            }
             if (client is IHasVersion clientVersion && clientVersion.Version > 0)
             {
                 if (request is IHasVersion hasVersion && hasVersion.Version <= 0)

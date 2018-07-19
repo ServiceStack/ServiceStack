@@ -18,6 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         public int Version { get; set; }
         public string SessionId { get; set; }
+        public string BearerToken { get; set; }
 
         public DirectServiceClient(ServiceController serviceController)
         {

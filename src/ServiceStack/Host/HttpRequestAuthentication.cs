@@ -10,6 +10,9 @@ namespace ServiceStack.Host
     {
         public static string GetBearerToken(this IRequest httpReq)
         {
+            if (httpReq.Dto is IHasBearerToken dto && dto.BearerToken != null)
+                return dto.BearerToken;
+            
             var auth = httpReq.Headers[HttpHeaders.Authorization];
             if (string.IsNullOrEmpty(auth))
                 return null;
