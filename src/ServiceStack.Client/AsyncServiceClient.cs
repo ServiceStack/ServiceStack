@@ -18,7 +18,7 @@ namespace ServiceStack
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
 
-    public partial class AsyncServiceClient : IHasSessionId, IHasVersion
+    public partial class AsyncServiceClient : IHasSessionId, IHasBearerToken, IHasVersion
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
@@ -103,8 +103,6 @@ namespace ServiceStack
             this.Password = password;
         }
 
-        public string BearerToken { get; set; }
-
         public TimeSpan? Timeout { get; set; }
 
         public string ContentType { get; set; }
@@ -126,6 +124,8 @@ namespace ServiceStack
         public int Version { get; set; }
 
         public string SessionId { get; set; }
+
+        public string BearerToken { get; set; }
 
         public static bool DisableTimer { get; set; }
 

@@ -212,8 +212,18 @@ namespace ServiceStack
             }
         }
         
-        public string SessionId { get; set; }
+        private string sessionId;
+        public string SessionId
+        {
+            get => sessionId;
+            set
+            {
+                sessionId = value;
+                asyncClient.SessionId = value;
+            }
+        }
 
+        private string userAgent;
         public string UserAgent
         {
             get => userAgent;
@@ -223,7 +233,6 @@ namespace ServiceStack
                 asyncClient.UserAgent = value;
             }
         }
-        private string userAgent;
 
         public TimeSpan? Timeout
         {
