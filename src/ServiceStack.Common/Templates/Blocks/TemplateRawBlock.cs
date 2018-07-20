@@ -30,9 +30,9 @@ namespace ServiceStack.Templates
             }
         }
 
-        private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
+        private static void Capture(TemplateScopeContext scope, PageBlockFragment block, PageStringFragment strFragment)
         {
-            var literal = fragment.Argument.Span.AdvancePastWhitespace();
+            var literal = block.Argument.Span.AdvancePastWhitespace();
             bool appendTo = false;
             if (literal.StartsWith("appendTo "))
             {

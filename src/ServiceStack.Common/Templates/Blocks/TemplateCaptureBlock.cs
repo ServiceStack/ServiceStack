@@ -20,13 +20,36 @@ namespace ServiceStack.Templates
     {
         public override string Name => "capture";
 
-        //Extract Span out of async method 
-        private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(TemplateScopeContext scope, PageBlockFragment fragment)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            if (fragment.Argument.IsNullOrWhiteSpace())
+            var (name, scopeArgs, appendTo) = Parse(scope, block);
+
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var useScope = scope.ScopeWith(scopeArgs, ms);
+
+                await WriteBodyAsync(useScope, block, token);
+
+                var capturedOutput = ms.ReadToEnd();
+
+                if (appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
+                             && oVar is string existingString)
+                {
+                    scope.PageResult.Args[name] = existingString + capturedOutput;
+                    return;
+                }
+            
+                scope.PageResult.Args[name] = capturedOutput;
+            }
+        }
+
+        //Extract Span out of async method 
+        private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(TemplateScopeContext scope, PageBlockFragment block)
+        {
+            if (block.Argument.IsNullOrWhiteSpace())
                 throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
             
-            var literal = fragment.Argument.AdvancePastWhitespace();
+            var literal = block.Argument.AdvancePastWhitespace();
             bool appendTo = false;
             if (literal.StartsWith("appendTo "))
             {
@@ -48,27 +71,6 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException("Any 'capture' argument must be an Object Dictionary");
 
             return (name.ToString(), scopeArgs, appendTo);
-        }
-
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
-        {
-            var (name, scopeArgs, appendTo) = Parse(scope, block);
-            
-            var ms = MemoryStreamFactory.GetStream();
-            var useScope = scope.ScopeWith(scopeArgs, ms);
-
-            await WriteBodyAsync(useScope, block, token);
-
-            var capturedOutput = ms.ReadToEnd();
-
-            if (appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
-                && oVar is string existingString)
-            {
-                scope.PageResult.Args[name] = existingString + capturedOutput;
-                return;
-            }
-            
-            scope.PageResult.Args[name] = capturedOutput;
         }
     }
 }
