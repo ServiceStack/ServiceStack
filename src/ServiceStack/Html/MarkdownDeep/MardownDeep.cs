@@ -31,8 +31,12 @@ namespace MarkdownDeep
 		public int height;
 	}
 
+	public class MarkdownDeepTransformer : IMarkdownTransformer
+	{
+		public string Transform(string markdown) => new Markdown().Transform(markdown);
+	}
 
-	public class Markdown : IMarkdownTransformer
+	public class Markdown
 	{
 		// Constructor
 		public Markdown()
