@@ -15,17 +15,17 @@ namespace ServiceStack.Templates
     {
         public override string Name => "if";
         
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var result = await fragment.Argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
+            var result = await block.Argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
                 ifNone: () => throw new NotSupportedException("'if' block does not have a valid expression"));
             if (result)
             {
-                await WriteBodyAsync(scope, fragment, cancel);
+                await WriteBodyAsync(scope, block, token);
                 return;
             }
 
-            await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+            await WriteElseBlocks(scope, block.ElseBlocks, token);
         }
     }
 }

@@ -50,14 +50,14 @@ namespace ServiceStack.Templates
             return (name.ToString(), scopeArgs, appendTo);
         }
 
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var (name, scopeArgs, appendTo) = Parse(scope, fragment);
+            var (name, scopeArgs, appendTo) = Parse(scope, block);
             
             var ms = MemoryStreamFactory.GetStream();
             var useScope = scope.ScopeWith(scopeArgs, ms);
 
-            await WriteBodyAsync(useScope, fragment, cancel);
+            await WriteBodyAsync(useScope, block, token);
 
             var capturedOutput = ms.ReadToEnd();
 

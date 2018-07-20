@@ -23,12 +23,12 @@ namespace ServiceStack.Templates
     {
         public override string Name => "each";
 
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            if (fragment.Argument.IsNullOrEmpty())
+            if (block.Argument.IsNullOrEmpty())
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var cache = (EachArg)scope.Context.CacheMemory.GetOrAdd(fragment.Argument, _ => ParseArgument(scope, fragment));
+            var cache = (EachArg)scope.Context.CacheMemory.GetOrAdd(block.Argument, _ => ParseArgument(scope, block));
             
             var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
                 ? (IEnumerable)syncResult
@@ -101,7 +101,7 @@ namespace ServiceStack.Templates
                     {
                         var itemScope = scope.ScopeWithParams(scopeArgs);
                         itemScope.ScopedParams[nameof(index)] = index++;
-                        await WriteBodyAsync(itemScope, fragment, cancel);
+                        await WriteBodyAsync(itemScope, block, token);
                     }
                 }
                 else
@@ -117,14 +117,14 @@ namespace ServiceStack.Templates
                         scopeArgs[nameof(index)] = AssertWithinMaxQuota(index++);
                         var itemScope = scope.ScopeWithParams(scopeArgs);
     
-                        await WriteBodyAsync(itemScope, fragment, cancel);
+                        await WriteBodyAsync(itemScope, block, token);
                     }
                 }
             }
 
             if (index == 0)
             {
-                await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+                await WriteElseBlocks(scope, block.ElseBlocks, token);
             }
         }
 

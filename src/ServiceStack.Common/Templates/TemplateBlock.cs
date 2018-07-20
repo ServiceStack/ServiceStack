@@ -18,7 +18,7 @@ namespace ServiceStack.Templates
         protected virtual string GetElseCallTrace(PageElseBlock fragment) => "Block: " + Name + " > Else" + 
            (fragment.Argument.IsNullOrEmpty() ? "" : " (" + fragment.Argument + ")");
 
-        public abstract Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel);
+        public abstract Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token);
 
         protected virtual async Task WriteAsync(TemplateScopeContext scope, PageFragment[] body, string callTrace, CancellationToken cancel)
         {

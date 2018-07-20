@@ -13,9 +13,9 @@ namespace ServiceStack.Templates
     {
         public override string Name => "with";
 
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var result = await fragment.Argument.GetJsExpressionAndEvaluateAsync(scope,
+            var result = await block.Argument.GetJsExpressionAndEvaluateAsync(scope,
                 ifNone: () => throw new NotSupportedException("'with' block does not have a valid expression"));
 
             if (result != null)
@@ -24,12 +24,13 @@ namespace ServiceStack.Templates
     
                 var withScope = scope.ScopeWithParams(resultAsMap);
                 
-                await WriteBodyAsync(withScope, fragment, cancel);
+                await WriteBodyAsync(withScope, block, token);
             }
             else
             {
-                await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+                await WriteElseBlocks(scope, block.ElseBlocks, token);
             }
         }
     }
+    
 }

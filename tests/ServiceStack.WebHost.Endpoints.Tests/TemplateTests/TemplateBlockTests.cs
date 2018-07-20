@@ -161,11 +161,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             public override string Name => "bold";
             
-            public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+            public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
             {
-                await scope.OutputStream.WriteAsync("<b>", cancel);
-                await WriteBodyAsync(scope, fragment, cancel);
-                await scope.OutputStream.WriteAsync("</b>", cancel);
+                await scope.OutputStream.WriteAsync("<b>", token);
+                await WriteBodyAsync(scope, block, token);
+                await scope.OutputStream.WriteAsync("</b>", token);
             }
         }
 

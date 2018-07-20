@@ -190,9 +190,9 @@ namespace ServiceStack.Templates
 
         public virtual string Suffix { get; } = Environment.NewLine; 
         
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var htmlAttrs = fragment.Argument.GetJsExpressionAndEvaluate(scope) as Dictionary<string, object>;
+            var htmlAttrs = block.Argument.GetJsExpressionAndEvaluate(scope) as Dictionary<string, object>;
             var hasEach = false;
             IEnumerable each = null;
             var binding = "it";
@@ -245,7 +245,7 @@ namespace ServiceStack.Templates
 
             if (TemplateHtmlFilters.VoidElements.Contains(Tag)) //e.g. img, input, br, etc
             {
-                await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", cancel);
+                await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
             }
             else
             {
@@ -254,7 +254,7 @@ namespace ServiceStack.Templates
                     var hasElements = each != null && each.GetEnumerator().MoveNext();
                     if (hasElements)
                     {
-                        await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", cancel);
+                        await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
 
                         var index = 0;
                         var whereIndex = 0;
@@ -278,21 +278,21 @@ namespace ServiceStack.Templates
 
                             itemScope.ScopedParams[nameof(index)] = AssertWithinMaxQuota(index++);
 
-                            await WriteBodyAsync(itemScope, fragment, cancel);
+                            await WriteBodyAsync(itemScope, block, token);
                         }
 
-                        await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", cancel);
+                        await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token);
                     }
                     else
                     {
-                        await WriteElseBlocks(scope, fragment.ElseBlocks, cancel);
+                        await WriteElseBlocks(scope, block.ElseBlocks, token);
                     }
                 }
                 else
                 {
-                    await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", cancel);
-                    await WriteBodyAsync(scope, fragment, cancel);
-                    await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", cancel);
+                    await scope.OutputStream.WriteAsync($"<{Tag}{attrString}>{Suffix}", token);
+                    await WriteBodyAsync(scope, block, token);
+                    await scope.OutputStream.WriteAsync($"</{Tag}>{Suffix}", token);
                 }
             }
         }

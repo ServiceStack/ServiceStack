@@ -16,17 +16,17 @@ namespace ServiceStack.Templates
     {
         public override string Name => "raw";
         
-        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override async Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var strFragment = (PageStringFragment)fragment.Body[0];
+            var strFragment = (PageStringFragment)block.Body[0];
 
-            if (!fragment.Argument.IsNullOrWhiteSpace())
+            if (!block.Argument.IsNullOrWhiteSpace())
             {
-                Capture(scope, fragment, strFragment);
+                Capture(scope, block, strFragment);
             }
             else
             {
-                await scope.OutputStream.WriteAsync(strFragment.Value.Span, cancel);
+                await scope.OutputStream.WriteAsync(strFragment.Value.Span, token);
             }
         }
 

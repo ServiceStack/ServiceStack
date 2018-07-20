@@ -18,9 +18,9 @@ namespace ServiceStack.Templates
     {
         public override string Name => "partial";
 
-        public override Task WriteAsync(TemplateScopeContext scope, PageBlockFragment fragment, CancellationToken cancel)
+        public override Task WriteAsync(TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var literal = fragment.Argument.ParseVarName(out var name);
+            var literal = block.Argument.ParseVarName(out var name);
             if (name.IsNullOrEmpty())
                 throw new NotSupportedException("'partial' block is missing name of partial");
             
@@ -40,7 +40,7 @@ namespace ServiceStack.Templates
             }
 
             var nameString = name.ToString();
-            var partial = new TemplatePartialPage(scope.Context, nameString, fragment.Body, format, args);
+            var partial = new TemplatePartialPage(scope.Context, nameString, block.Body, format, args);
             scope.PageResult.Partials[nameString] = partial;
 
             return TypeConstants.EmptyTask;
