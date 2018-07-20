@@ -43,7 +43,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        //Extract Span out of async method 
+        //Extract usages of Span outside of async method 
         private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(TemplateScopeContext scope, PageBlockFragment block)
         {
             if (block.Argument.IsNullOrWhiteSpace())

@@ -51,9 +51,9 @@ namespace ServiceStack
             }
         }
 
-        private static void Capture(TemplateScopeContext scope, PageBlockFragment fragment, PageStringFragment strFragment)
+        private static void Capture(TemplateScopeContext scope, PageBlockFragment block, PageStringFragment strFragment)
         {
-            var literal = fragment.Argument.AdvancePastWhitespace();
+            var literal = block.Argument.AdvancePastWhitespace();
 
             literal = literal.ParseVarName(out var name);
             var nameString = name.ToString();
