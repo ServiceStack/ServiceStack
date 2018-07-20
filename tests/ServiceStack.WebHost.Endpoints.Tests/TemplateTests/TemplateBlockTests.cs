@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -289,6 +290,67 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("Person does not exist"));
             Assert.That(context.EvaluateTemplate("Person {{#with person}}{{Name}} is {{Age}} years old{{else if personMap != null}}map does exist{{else}}does not exist{{/with}}"), 
                 Is.EqualTo("Person map does exist"));
+        }
+
+        public class TemplateSimpleEachBlock : TemplateBlock
+        {
+            public override string Name => "each";
+    
+            public override async Task WriteAsync(
+                TemplateScopeContext scope, PageBlockFragment block, CancellationToken token)
+            {
+                var collection = (IEnumerable) block.Argument.GetJsExpressionAndEvaluate(scope,
+                    ifNone: () => throw new NotSupportedException("'each' block does not have a valid expression"));
+
+                var index = 0;
+                if (collection != null)
+                {
+                    foreach (var element in collection)
+                    {
+                        var scopeArgs = element.ToObjectDictionary();
+                        scopeArgs["it"] = element;
+                        scopeArgs[nameof(index)] = index++;
+                        
+                        var itemScope = scope.ScopeWithParams(scopeArgs);
+                        await WriteBodyAsync(itemScope, block, token);
+                    }
+                }
+                
+                if (index == 0)
+                {
+                    await WriteElseAsync(scope, block.ElseBlocks, token);
+                }
+            }
+        }
+        
+        [Test]
+        public void Does_evaluate_template_with_simple_each_blocks()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["numbers"] = new[]{ 1, 2, 3 },
+                    ["letters"] = new[]{ "A", "B", "C" },
+                    ["empty"] = new int[]{},
+                },
+                TemplateBlocks = {
+                    new TemplateSimpleEachBlock(),
+                    new TemplateIfBlock(),
+                }
+            }
+            .RemovePlugins(x => x is TemplateDefaultBlocks)
+            .Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{it}} {{/each}}"), Is.EqualTo("1 2 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each letters}}{{it}} {{/each}}"), Is.EqualTo("A B C "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each numbers}}{{#if isNumber(it)}}number {{it}} {{else}}letter {{it}} {{/if}}{{/each}}"), 
+                Is.EqualTo("number 1 number 2 number 3 "));
+            
+            Assert.That(context.EvaluateTemplate("{{#each letters}}{{#if isNumber(it)}}number {{it}} {{else}}letter {{it}} {{/if}}{{/each}}"), 
+                Is.EqualTo("letter A letter B letter C "));
+
+            Assert.That(context.EvaluateTemplate("{{#each empty}}{{it}}{{else}}none{{/each}}"), Is.EqualTo("none"));
         }
 
         [Test]
