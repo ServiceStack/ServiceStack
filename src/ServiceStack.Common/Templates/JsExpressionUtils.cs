@@ -105,6 +105,9 @@ namespace ServiceStack.Templates
         public static ReadOnlySpan<char> ParseJsExpression(this ReadOnlySpan<char> literal, out JsToken token) =>
             literal.ParseJsExpression(out token, filterExpression:false);
 
+        public static ReadOnlySpan<char> ParseJsExpression(this ReadOnlyMemory<char> literal, out JsToken token) =>
+            literal.Span.ParseJsExpression(out token, filterExpression:false);
+
         private const char ConditionalExpressionTestChar = '?';
 
         public static ReadOnlySpan<char> ParseJsExpression(this ReadOnlySpan<char> literal, out JsToken token, bool filterExpression)
