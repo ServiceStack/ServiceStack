@@ -35,7 +35,7 @@ namespace ServiceStack.Templates
             await WriteAsync(scope, fragment.Body, GetElseCallTrace(fragment), token);
         }
 
-        protected async Task WriteElseBlocks(TemplateScopeContext scope, PageElseBlock[] elseBlocks, CancellationToken cancel)
+        protected async Task WriteElseAsync(TemplateScopeContext scope, PageElseBlock[] elseBlocks, CancellationToken cancel)
         {
             foreach (var elseBlock in elseBlocks)
             {

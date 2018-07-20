@@ -124,7 +124,7 @@ namespace ServiceStack.Templates
 
             if (index == 0)
             {
-                await WriteElseBlocks(scope, block.ElseBlocks, token);
+                await WriteElseAsync(scope, block.ElseBlocks, token);
             }
         }
 

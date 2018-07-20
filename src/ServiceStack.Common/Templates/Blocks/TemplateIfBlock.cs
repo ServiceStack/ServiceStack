@@ -25,7 +25,7 @@ namespace ServiceStack.Templates
                 return;
             }
 
-            await WriteElseBlocks(scope, block.ElseBlocks, token);
+            await WriteElseAsync(scope, block.ElseBlocks, token);
         }
     }
 }

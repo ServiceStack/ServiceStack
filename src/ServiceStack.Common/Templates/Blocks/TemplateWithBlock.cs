@@ -28,7 +28,7 @@ namespace ServiceStack.Templates
             }
             else
             {
-                await WriteElseBlocks(scope, block.ElseBlocks, token);
+                await WriteElseAsync(scope, block.ElseBlocks, token);
             }
         }
     }
