@@ -33,6 +33,13 @@ namespace ServiceStack
             : RawString.Empty;
     }
 
+    /// <summary>
+    /// Converts markdown contents to HTML using the configured MarkdownConfig.Transformer.
+    /// If a variable name is specified the HTML output is captured and saved instead. 
+    ///
+    /// Usages: {{#markdown}} ## The Heading {{/markdown}}
+    ///         {{#markdown content}} ## The Heading {{/markdown}} HTML: {{content}}
+    /// </summary>
     public class TemplatMarkdownBlock : TemplateBlock
     {
         public override string Name => "markdown";

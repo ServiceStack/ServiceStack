@@ -24,29 +24,29 @@ namespace ServiceStack.Templates
 
     // Equivalent to:
 
-    {{ items | where => it.Age > 27 | assignTo: items }}
-    {{#if !isEmpty(items)}}
-        {{#if hasAccess}}
-        <ul {{ ['nav', !disclaimerAccepted ? 'blur' : ''] | htmlClass }} id="ul-{{id}}">
-        {{#each items}}
-            <li {{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>{{Name}}</li>
-        {{/each}}
-        </ul>
+    {{#if hasAccess}}
+        {{ items | where => it.Age > 27 | assignTo: items }}
+        {{#if !isEmpty(items)}}
+            <ul {{ ['nav', !disclaimerAccepted ? 'blur' : ''] | htmlClass }} id="menu-{{id}}">
+            {{#each items}}
+                <li {{ {alt:isOdd(index), active:Name==highlight} | htmlClass }}>{{Name}}</li>
+            {{/each}}
+            </ul>
+        {{else}}
+            <div>no items</div>
         {{/if}}
-     {{else}}
-         <div>no items</div>
-     {{/if}}
+    {{/if}}
 
     // Razor:
 
     @{
         var persons = (items as IEnumerable<Person>)?.Where(x => x.Age > 27);
     }
-    @if (persons?.Any() == true)
+    @if (hasAccess)
     {
-        if (hasAccess)
+        if (persons?.Any() == true)
         {
-            <ul id="ul-@id" class="nav @(!disclaimerAccepted ? "hide" : "")">
+            <ul id="menu-@id" class="nav @(!disclaimerAccepted ? "hide" : "")">
                 @{
                     var index = 0;
                 }
@@ -58,10 +58,10 @@ namespace ServiceStack.Templates
                 }
             </ul>
         }
-    }
-    else
-    {
-        <div>no items</div>
+        else
+        {
+            <div>no items</div>
+        }
     }
     */
     public class TemplateUlBlock : TemplateHtmlBlock
