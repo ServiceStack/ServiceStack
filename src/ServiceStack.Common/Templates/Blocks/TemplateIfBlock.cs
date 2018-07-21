@@ -19,13 +19,15 @@ namespace ServiceStack.Templates
         {
             var result = await block.Argument.GetJsExpressionAndEvaluateToBoolAsync(scope,
                 ifNone: () => throw new NotSupportedException("'if' block does not have a valid expression"));
+
             if (result)
             {
                 await WriteBodyAsync(scope, block, token);
-                return;
             }
-
-            await WriteElseAsync(scope, block.ElseBlocks, token);
+            else
+            {
+                await WriteElseAsync(scope, block.ElseBlocks, token);
+            }
         }
     }
 }
