@@ -272,6 +272,8 @@ namespace ServiceStack.Templates
             Plugins.RemoveAll(match);
             return this;
         }
+        
+        public Action<TemplateContext> OnAfterPlugins { get; set; }
 
         public bool HasInit { get; private set; }
 
@@ -295,6 +297,8 @@ namespace ServiceStack.Templates
             {
                 plugin.Register(this);
             }
+            
+            OnAfterPlugins?.Invoke(this);
 
             foreach (var type in ScanTypes)
             {
