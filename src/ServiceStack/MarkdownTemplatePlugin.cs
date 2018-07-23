@@ -22,7 +22,7 @@ namespace ServiceStack
 
             TemplateConfig.DontEvaluateBlocksNamed.Add("markdown");
             
-            context.TemplateBlocks.Add(new TemplatMarkdownBlock());
+            context.TemplateBlocks.Add(new TemplateMarkdownBlock());
         }
     }
     
@@ -40,7 +40,7 @@ namespace ServiceStack
     /// Usages: {{#markdown}} ## The Heading {{/markdown}}
     ///         {{#markdown content}} ## The Heading {{/markdown}} HTML: {{content}}
     /// </summary>
-    public class TemplatMarkdownBlock : TemplateBlock
+    public class TemplateMarkdownBlock : TemplateBlock
     {
         public override string Name => "markdown";
         
