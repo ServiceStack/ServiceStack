@@ -397,7 +397,7 @@ namespace ServiceStack.NativeTypes
                 for (var i = 0; i < names.Length; i++)
                 {
                     var name = names[i];
-                    var enumMember = (FieldInfo)type.GetMember(name).First();
+                    var enumMember = GetEnumMember(type, name);
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
 
@@ -430,6 +430,9 @@ namespace ServiceStack.NativeTypes
 
             return metaType;
         }
+
+        public static FieldInfo GetEnumMember(Type type, string name) => 
+            (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static).First();
 
         private static string[] GetGenericArgs(Type type)
         {
