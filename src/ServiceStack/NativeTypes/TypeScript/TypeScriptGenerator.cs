@@ -49,7 +49,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
         };
-        private static string declaredEmptyString = "\"\"";
+        private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
         {
             {"String", declaredEmptyString},
@@ -227,6 +227,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.AppendLine();
                 sb.AppendLine("}");
             }
+            
+            sb.AppendLine(); //tslint
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -395,7 +397,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("public getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
+                    sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();
