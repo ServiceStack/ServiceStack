@@ -87,6 +87,16 @@ namespace ServiceStack.Templates
             }
         }
 
+        public async Task ifDebugIncludeScript(TemplateScopeContext scope, string virtualPath)
+        {
+            if (scope.Context.DebugMode)
+            {
+                await scope.OutputStream.WriteAsync("<script>");
+                await includeFile(scope, virtualPath);
+                await scope.OutputStream.WriteAsync("</script>");
+            }
+        }
+        
         public IEnumerable<IVirtualFile> vfsAllFiles() => Context.VirtualFiles.GetAllFiles();
         public IEnumerable<IVirtualFile> vfsAllRootFiles() => Context.VirtualFiles.GetRootFiles();
         public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => Context.VirtualFiles.GetRootDirectories();
