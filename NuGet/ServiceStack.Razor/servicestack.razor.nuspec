@@ -11,7 +11,7 @@
       ServiceStack Razor Documentation: http://razor.servicestack.net
 
       - Turns ServiceStack into a Complete Web + REST Services Stack. Replaces need for ASP.NET MVC.
-      - Runs In ASP.NET or Self-host, first-class cross-platform support on .NET / Mono runtimes.
+      - Runs In ASP.NET or Self-host, first-class cross-platform support on .NET / .NET Core runtimes.
       - Add HTML views to existing services.
       - Change Views and Layout templates at runtime.
       - No Ceremony development options - Pages without controllers, with typed and dynamic View Models.
@@ -25,7 +25,7 @@
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Razor ViewEngine View Templates Controllers Mono ASP.NET Self-Host ServiceStack</tags>
+    <tags>Razor ViewEngine View Templates Controllers ASP.NET Self-Host ServiceStack</tags>
     <language>en-US</language>
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>

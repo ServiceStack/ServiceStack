@@ -6,7 +6,7 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>Opensource .NET and .NET Core Web Services framework</summary>
     <description>
       ServiceStack Templates, Virtual File System, SimpleContainer and Common library for ServiceStack projects.
     </description>

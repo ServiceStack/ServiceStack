@@ -6,7 +6,7 @@
     <title>ServiceStack.Logging.NLog</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>NLog logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <summary>NLog logging integration for ServiceStack, the Opensource .NET and .NET Core Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides NLog logging integration for other ServiceStack projects

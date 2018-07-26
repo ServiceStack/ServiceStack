@@ -6,7 +6,7 @@
     <title>ServiceStack.Logging.EventLog</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Windows Event Log integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <summary>Windows Event Log integration for ServiceStack, the Opensource .NET and .NET Core Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides EventLog logging integration for other ServiceStack projects

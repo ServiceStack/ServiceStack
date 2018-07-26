@@ -13,7 +13,7 @@
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework ServiceStack</tags>
     <language>en-US</language>
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
