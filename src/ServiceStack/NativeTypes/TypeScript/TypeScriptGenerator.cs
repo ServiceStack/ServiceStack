@@ -110,7 +110,6 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            //sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -326,12 +325,12 @@ namespace ServiceStack.NativeTypes.TypeScript
                                 returnType = replaceReturnType;
 
                             responseTypeExpression = replaceReturnType == null ?
-                                "createResponse() {{ return new {0}(); }}".Fmt(returnType) :
-                                "createResponse() {{ return {0}; }}".Fmt(returnType);
+                                "public createResponse() {{ return new {0}(); }}".Fmt(returnType) :
+                                "public createResponse() {{ return {0}; }}".Fmt(returnType);
                         }
                         else if (implStr == "IReturnVoid")
                         {
-                            responseTypeExpression = "createResponse() {}";
+                            responseTypeExpression = "public createResponse() {}";
                         }
                     }
                 }
@@ -339,6 +338,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
+                var modifier = isClass ? "public " : "";
                 var extend = extends.Count > 0
                     ? " extends " + extends[0]
                     : "";
@@ -372,7 +372,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("{0}{1}: number; //{2}".Fmt(
+                    sb.AppendLine(modifier + "{0}{1}: number; //{2}".Fmt(
                         "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
@@ -380,11 +380,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (type.Name == "IReturn`1")
                     {
-                        sb.AppendLine("createResponse() : T;");
+                        sb.AppendLine("createResponse(): T;");
                     }
                     else if (type.Name == "IReturnVoid")
                     {
-                        sb.AppendLine("createResponse() : void;");
+                        sb.AppendLine("createResponse(): void;");
                     }
                 }
 
@@ -395,7 +395,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
+                    sb.AppendLine("public getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();
@@ -408,6 +408,8 @@ namespace ServiceStack.NativeTypes.TypeScript
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
+            var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
+            var modifier = isClass ? "public " : "";
 
             var dataMemberIndex = 1;
             if (type.Properties != null)
@@ -436,7 +438,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
+                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
                 }
             }
 
@@ -445,7 +447,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("{0}{1}: ResponseStatus;".Fmt(
+                sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
                     typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
         }
