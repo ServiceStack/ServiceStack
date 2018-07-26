@@ -62,6 +62,7 @@ namespace CheckWeb
                 DebugMode = true,
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = { MimeTypes.Html },
+                CompressFilesWithExtensions = { "js", "css" },
                 UseCamelCase = true,
                 AdminAuthSecret = "secretz",
                 //HandlerFactoryPath = "CheckWeb", //when hosted on IIS
