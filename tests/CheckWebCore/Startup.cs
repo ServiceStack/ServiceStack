@@ -97,7 +97,7 @@ namespace CheckWebCore
     }
 
 
-    [Authenticate]
+//    [Authenticate]
     public class MyServices : Service
     {
         //Return index.html for unmatched requests so routing is handled on client
