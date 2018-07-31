@@ -10,6 +10,7 @@ COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\Signed\net45\ServiceStack
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Text\bin\%BUILD%\net45\ServiceStack.Text.* net45
 
 COPY ..\..\ServiceStack.Text\src\ServiceStack.Memory\bin\%BUILD%\netcoreapp2.1\ServiceStack.Memory.* netcoreapp2.1
+COPY ..\..\ServiceStack.Text\src\ServiceStack.Memory\bin\%BUILD%\netcoreapp2.1\ServiceStack.Text.* netcoreapp2.1
 
 COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\%BUILD%\net45\ServiceStack.Client.* net45
 COPY ..\..\ServiceStack\src\ServiceStack.Client\bin\%BUILD%\netstandard2.0\ServiceStack.Client.* netstandard2.0
