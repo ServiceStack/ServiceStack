@@ -161,11 +161,25 @@ namespace ServiceStack.Templates
                 Args[TemplateConstants.Request] = hasRequest;
         }
 
+        //entry point
         public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
         {
             if (OutputTransformers.Count == 0)
             {
-                await WriteToAsyncInternal(responseStream, token);
+                if (Context.BufferOutput)
+                {
+                    using (var ms = MemoryStreamFactory.GetStream())
+                    {
+                        await WriteToAsyncInternal(ms, token);
+    
+                        ms.Position = 0;
+                        await ms.WriteToAsync(responseStream, token);
+                    }
+                }
+                else
+                {
+                    await WriteToAsyncInternal(responseStream, token);
+                }
                 return;
             }
 
