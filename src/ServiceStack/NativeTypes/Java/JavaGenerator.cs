@@ -20,6 +20,8 @@ namespace ServiceStack.NativeTypes.Java
             Config = config;
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+
         public static string DefaultGlobalNamespace = "dtos";
 
         public static List<string> DefaultImports = new List<string>
@@ -293,6 +295,8 @@ namespace ServiceStack.NativeTypes.Java
             AppendDataContract(sb, type.DataContract);
 
             var typeName = Type(type.Name, type.GenericArgs);
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {

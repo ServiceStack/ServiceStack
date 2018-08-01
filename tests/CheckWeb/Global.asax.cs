@@ -23,6 +23,7 @@ using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
@@ -48,6 +49,14 @@ namespace CheckWeb
         public override void Configure(Container container)
         {
 //            EnableBuffering();
+
+            CSharpGenerator.PreTypeFilter = (sb, type) => 
+            {
+                if (!type.IsEnum.GetValueOrDefault() && !type.IsInterface.GetValueOrDefault())
+                {
+                    sb.AppendLine("[Serializable]");
+                }
+            };
             
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/Views/TestErrorNotFound");
 

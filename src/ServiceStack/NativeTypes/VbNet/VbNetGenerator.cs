@@ -21,6 +21,8 @@ namespace ServiceStack.NativeTypes.VbNet
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Int16", "Short"},
@@ -272,6 +274,8 @@ namespace ServiceStack.NativeTypes.VbNet
             AppendDataContract(sb, type.DataContract);
             if (Config.AddGeneratedCodeAttributes)
                 sb.AppendLine("<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>".Fmt(Env.VersionString));
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {

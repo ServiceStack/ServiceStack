@@ -20,6 +20,8 @@ namespace ServiceStack.NativeTypes.CSharp
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
+        
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -234,6 +236,8 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb.AppendLine($"[GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")]");
 
             var typeAccessor = !Config.MakeInternal ? "public" : "internal";
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {

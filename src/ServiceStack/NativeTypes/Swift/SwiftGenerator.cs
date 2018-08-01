@@ -22,6 +22,8 @@ namespace ServiceStack.NativeTypes.Swift
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
@@ -243,6 +245,8 @@ namespace ServiceStack.NativeTypes.Swift
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {

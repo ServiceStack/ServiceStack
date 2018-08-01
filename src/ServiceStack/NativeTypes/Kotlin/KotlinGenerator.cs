@@ -22,6 +22,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
             /* built-in types used
@@ -280,6 +282,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             AppendDataContract(sb, type.DataContract);
 
             var typeName = Type(type.Name, type.GenericArgs);
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {

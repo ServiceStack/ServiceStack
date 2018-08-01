@@ -23,6 +23,8 @@ namespace ServiceStack.NativeTypes.Dart
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
@@ -355,6 +357,8 @@ namespace ServiceStack.NativeTypes.Dart
             }
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {
