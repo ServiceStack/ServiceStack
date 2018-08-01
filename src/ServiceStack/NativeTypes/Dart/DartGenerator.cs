@@ -24,6 +24,7 @@ namespace ServiceStack.NativeTypes.Dart
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -684,6 +685,8 @@ namespace ServiceStack.NativeTypes.Dart
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             return lastNS;
         }

@@ -21,6 +21,7 @@ namespace ServiceStack.NativeTypes.Java
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static string DefaultGlobalNamespace = "dtos";
 
@@ -412,6 +413,8 @@ namespace ServiceStack.NativeTypes.Java
                 sb.AppendLine("}");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+            
             sb = sb.UnIndent();
 
             return lastNS;

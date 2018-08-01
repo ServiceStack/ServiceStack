@@ -22,6 +22,7 @@ namespace ServiceStack.NativeTypes.CSharp
         }
         
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -311,6 +312,8 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             if (!Config.ExcludeNamespace)
             {

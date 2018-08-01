@@ -21,6 +21,7 @@ namespace ServiceStack.NativeTypes.FSharp
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -257,6 +258,8 @@ namespace ServiceStack.NativeTypes.FSharp
 
                 sb = sb.UnIndent();
             }
+            
+            PostTypeFilter?.Invoke(sb, type);
 
             sb = sb.UnIndent();
             return lastNS;

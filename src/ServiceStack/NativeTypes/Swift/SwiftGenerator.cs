@@ -23,6 +23,7 @@ namespace ServiceStack.NativeTypes.Swift
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -375,6 +376,8 @@ namespace ServiceStack.NativeTypes.Swift
                         initCollections: Config.InitializeCollections);
                 }
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             //sb = sb.UnIndent();
 

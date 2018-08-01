@@ -22,6 +22,7 @@ namespace ServiceStack.NativeTypes.VbNet
         }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
@@ -357,6 +358,8 @@ namespace ServiceStack.NativeTypes.VbNet
                 sb.AppendLine(type.IsInterface() ? "End Interface" : "End Class");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+            
             sb = sb.UnIndent();
             return lastNS;
         }
