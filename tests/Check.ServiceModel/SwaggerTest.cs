@@ -1,4 +1,5 @@
 ﻿using ServiceStack;
+using ServiceStack.DataAnnotations;
 
 namespace Check.ServiceModel
 {
@@ -6,5 +7,13 @@ namespace Check.ServiceModel
     public class SwaggerVersionTest
     {
         public string Version { get; set; }
+    }
+
+    [Route("/swagger/range")]
+    public class SwaggerRangeTest
+    {
+        public string IntRange { get; set; }
+
+        public string DoubleRange { get; set; }
     }
 }

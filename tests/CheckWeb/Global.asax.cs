@@ -328,6 +328,18 @@ namespace CheckWeb
                         path.Get = path.Put = path.Delete = null;
                     }
                 },
+                OperationFilter = (verb, op) => {
+                    if (op.RequestType == nameof(SwaggerRangeTest))
+                    {
+                        var intRange = op.Parameters.FirstOrDefault(p => p.Name == nameof(SwaggerRangeTest.IntRange));
+                        intRange.Minimum = 1;
+                        intRange.Maximum = 2;
+
+                        var dobleRange = op.Parameters.FirstOrDefault(p => p.Name == nameof(SwaggerRangeTest.DoubleRange));
+                        dobleRange.Minimum = 1.1;
+                        dobleRange.Maximum = 2.2;
+                    }
+                },
                 Tags =
                 {
                     new OpenApiTag
