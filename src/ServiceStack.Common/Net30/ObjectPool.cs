@@ -41,7 +41,7 @@ namespace ServiceStack.Net30.Collections.Concurrent
         const int bit = 0x8000000;
 
         readonly T[] buffer;
-        int addIndex;
+        volatile int addIndex;
         int removeIndex;
 
         public ObjectPool ()
