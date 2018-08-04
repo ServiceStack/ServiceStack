@@ -15,14 +15,14 @@ namespace ServiceStack
 {
     using System.Web;
 
-    public class Net40PclExportClient : PclExportClient
+    public class Net45PclExportClient : PclExportClient
     {
-        public static Net40PclExportClient Provider = new Net40PclExportClient();
+        public static Net45PclExportClient Provider = new Net45PclExportClient();
 
         public static PclExportClient Configure()
         {
-            Configure(Provider ?? (Provider = new Net40PclExportClient()));
-            Net40PclExport.Configure();
+            Configure(Provider ?? (Provider = new Net45PclExportClient()));
+            Net45PclExport.Configure();
             return Provider;
         }
 
