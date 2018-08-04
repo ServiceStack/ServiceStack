@@ -12,7 +12,6 @@ using System.Xml;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
