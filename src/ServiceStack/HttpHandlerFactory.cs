@@ -288,6 +288,10 @@ namespace ServiceStack
                 if (restPath != null)
                     return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
             }
+            
+            var fallbacHandler = GetFallbackHandlerIfAny(appHost, httpMethod, pathInfo, filePath);
+            if (fallbacHandler != null)
+                return fallbacHandler;
 
             return null;
         }
@@ -295,6 +299,18 @@ namespace ServiceStack
         private static IHttpHandler GetCatchAllHandlerIfAny(ServiceStackHost appHost, string httpMethod, string pathInfo, string filePath)
         {
             foreach (var httpHandlerResolver in appHost.CatchAllHandlersArray)
+            {
+                var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
+                if (httpHandler != null)
+                    return httpHandler;
+            }
+
+            return null;
+        }
+
+        private static IHttpHandler GetFallbackHandlerIfAny(ServiceStackHost appHost, string httpMethod, string pathInfo, string filePath)
+        {
+            foreach (var httpHandlerResolver in appHost.FallbackHandlersArray)
             {
                 var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
                 if (httpHandler != null)

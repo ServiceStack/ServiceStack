@@ -206,6 +206,11 @@ namespace ServiceStack
         List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
         /// <summary>
+        /// Provide a fallback handler for not found requests (last filter in Request Pipeline)
+        /// </summary>
+        List<HttpHandlerResolverDelegate> FallbackHandlers { get; }
+
+        /// <summary>
         /// Use a fall-back Error Handler for handling global errors
         /// </summary>
         IServiceStackHandler GlobalHtmlErrorHttpHandler { get; }

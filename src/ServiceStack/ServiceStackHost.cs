@@ -127,6 +127,7 @@ namespace ServiceStack
                 ReturnRequestInfoHandler,
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+            FallbackHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {
                 { HttpStatusCode.Forbidden, new ForbiddenHttpHandler() },
                 { HttpStatusCode.NotFound, new NotFoundHttpHandler() },
@@ -265,6 +266,7 @@ namespace ServiceStack
             GlobalMessageResponseFiltersAsyncArray = GlobalMessageResponseFiltersAsync.ToArray();
             RawHttpHandlersArray = RawHttpHandlers.ToArray();
             CatchAllHandlersArray = CatchAllHandlers.ToArray();
+            FallbackHandlersArray = FallbackHandlers.ToArray();
             GatewayRequestFiltersArray = GatewayRequestFilters.ToArray();
             GatewayRequestFiltersAsyncArray = GatewayRequestFiltersAsync.ToArray();
             GatewayResponseFiltersArray = GatewayResponseFilters.ToArray();
@@ -456,6 +458,9 @@ namespace ServiceStack
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
+
+        public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
+        internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
 
         public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
 
