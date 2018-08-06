@@ -11,6 +11,7 @@ namespace ServiceStack.Templates
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
+        TemplatePage TryGetPage(string path);
         TemplatePage OneTimePage(string contents, string ext);
         
         TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);

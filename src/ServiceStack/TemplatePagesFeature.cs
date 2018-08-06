@@ -28,6 +28,7 @@ namespace ServiceStack
 
         public bool EnableDebugTemplate { get; set; }
         public bool EnableDebugTemplateToAll { get; set; }
+        public bool DisablePageBasedRouting { get; set; }
 
         public string DebugDefaultTemplate { get; set; }
         
@@ -75,6 +76,11 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
+
+            if (!DisablePageBasedRouting)
+            {
+                appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
+            }
             
             InitViewPages(appHost);
 
@@ -141,6 +147,132 @@ namespace ServiceStack
                 if (catchAllPathsNotFound.Count > 10000) //prevent DOS
                     catchAllPathsNotFound.Clear();
                 catchAllPathsNotFound[pathInfo] = 1;
+            }
+            
+            return null;
+        }
+
+        protected virtual IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+        {
+            var path = pathInfo.Trim('/');
+
+            var vfs = HostContext.VirtualFileSources;
+
+            int CompareByWeightedName(IVirtualNode a, IVirtualNode b)
+            {
+                var aIsWildPath = a.Name[0] == '_';
+                var bIsWildPath = b.Name[0] == '_';
+
+                if (aIsWildPath && !bIsWildPath)
+                    return 1;
+                if (bIsWildPath && !aIsWildPath)
+                    return -1;
+
+                return string.Compare(a.Name, b.Name, StringComparison.Ordinal);
+            }
+
+            TemplatePageHandler GetPageHandler(IVirtualFile file, string[] pathParts)
+            {
+                var filePath = file.VirtualPath.WithoutExtension();
+                var page = Pages.TryGetPage(filePath) ?? 
+                           Pages.AddPage(filePath, file);
+
+                var args = new Dictionary<string, object>();
+                var fileParts = filePath.Split('/');
+
+                for (var i = 0; i < pathParts.Length; i++)
+                {
+                    if (i >= fileParts.Length)
+                        break;
+
+                    var part = fileParts[i];
+                    if (part[0] == '_')
+                        args[part.Substring(1)] = pathParts[i];
+                }
+
+                return new TemplatePageHandler(page) 
+                {
+                    Args = args
+                };
+            }
+
+            List<IVirtualDirectory> GetCandidateDirs(IVirtualDirectory[] argDirs, string segment)
+            {
+                var candidateDirs = new List<IVirtualDirectory>();
+                foreach (var parentDir in argDirs)
+                {
+                    var parentDirs = parentDir.GetDirectories().ToArray();
+                    Array.Sort(parentDirs, CompareByWeightedName);
+                    foreach (var dir in parentDirs)
+                    {
+                        var hasExactDirMatch = segment.EqualsIgnoreCase(dir.Name); 
+                        if (hasExactDirMatch || dir.Name[0] == '_')
+                        {
+                            candidateDirs.Add(dir);
+                        }
+
+                        if (hasExactDirMatch)
+                            return candidateDirs;
+                    }
+                }
+                return candidateDirs;
+            }
+
+            var dirs = new[] { vfs.RootDirectory };
+            
+            var segCounts = path.CountOccurrencesOf('/');
+
+            var index = 0;
+            var pos = 0;
+            var pathSegments = path.Split('/');
+
+            foreach (var segment in pathSegments)
+            {
+                var isLast = index++ == segCounts;
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        foreach (var file in dir.GetFiles())
+                        {
+                            if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0)                                
+                                continue;
+
+                            var fileNameWithoutExt = file.Name.WithoutExtension();
+                            if (fileNameWithoutExt == "index")
+                                continue;
+                                
+                            foreach (var format in PageFormats)
+                            {
+                                if (file.Extension == format.Extension)
+                                {
+                                    if (fileNameWithoutExt == segment || fileNameWithoutExt[0] == '_')
+                                        return GetPageHandler(file, pathSegments);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var candidateDirs = GetCandidateDirs(dirs, segment);
+                if (candidateDirs.Count == 0)
+                    break;
+                
+                dirs = candidateDirs.ToArray();
+                Array.Sort(dirs, CompareByWeightedName);
+
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        foreach (var format in PageFormats)
+                        {
+                            var file = dir.GetFile(IndexPage + "." + format.Extension);
+                            if (file != null)
+                                return GetPageHandler(file, pathSegments);
+                        }
+                    }
+                }
             }
             
             return null;
@@ -515,6 +647,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
     {
         private readonly TemplatePage page;
         private readonly TemplatePage layoutPage;
+        public Dictionary<string, object> Args { get; set; }
         public object Model { get; set; }
         public Stream OutputStream { get; set; }
 
@@ -526,10 +659,19 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         }
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
-        {            
+        {
+            var args = httpReq.GetTemplateRequestParams();
+            if (Args != null)
+            {
+                foreach (var entry in Args)
+                {
+                    args[entry.Key] = entry.Value;
+                }
+            }
+            
             var result = new PageResult(page)
             {
-                Args = httpReq.GetTemplateRequestParams(),
+                Args = args,
                 LayoutPage = layoutPage,
                 Model = Model,
             };
