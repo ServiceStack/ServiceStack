@@ -219,7 +219,7 @@ namespace ServiceStack.IO
             {
                 return subDirPath.CountOccurrencesOf(DirSep) == 0 
                     ? subDirPath
-                    : null;
+                    : subDirPath.LeftPart(DirSep);
             }
 
             if (!subDirPath.StartsWith(fromDirPath))
