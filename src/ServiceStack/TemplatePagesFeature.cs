@@ -235,8 +235,13 @@ namespace ServiceStack
                     {
                         foreach (var file in dir.GetFiles())
                         {
-                            if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0)                                
-                                continue;
+                            var isWildPath = file.Name[0] == '_';
+                            if (isWildPath)
+                            {
+                                if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0)                                
+                                    continue;
+                            }
 
                             var fileNameWithoutExt = file.Name.WithoutExtension();
                             if (fileNameWithoutExt == "index")
@@ -246,7 +251,7 @@ namespace ServiceStack
                             {
                                 if (file.Extension == format.Extension)
                                 {
-                                    if (fileNameWithoutExt == segment || fileNameWithoutExt[0] == '_')
+                                    if (fileNameWithoutExt == segment || isWildPath)
                                         return GetPageHandler(file, pathSegments);
                                 }
                             }
