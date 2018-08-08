@@ -127,7 +127,7 @@ namespace ServiceStack.Host
             {
                 var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
                 if (dtoFromBinder != null)
-                    return HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder);
+                    return await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder);
 
                 var requestParams = httpReq.GetFlattenedRequestParams();
                 if (Log.IsDebugEnabled)

@@ -675,8 +675,8 @@ namespace ServiceStack.Host
 
             if (applyFilters)
             {
-                requestDto = appHost.ApplyRequestConvertersAsync(req, requestDto);
-                appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto).Wait();
+                requestDto = await appHost.ApplyRequestConvertersAsync(req, requestDto);
+                await appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto);
                 if (req.Response.IsClosed)
                     return null;
             }
