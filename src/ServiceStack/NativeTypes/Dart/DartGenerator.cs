@@ -496,7 +496,7 @@ namespace ServiceStack.NativeTypes.Dart
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"int {"Version".PropertyStyle()} = {Config.AddImplicitVersion};");
+                    sb.AppendLine($"int {"Version".PropertyStyle()};");
                 }
 
                 if (type.Name == "IReturn`1")
@@ -525,7 +525,8 @@ namespace ServiceStack.NativeTypes.Dart
                             Name = "Version".PropertyStyle(),
                             Type = "Int32",
                             TypeNamespace = "System",
-                            IsValueType = true,
+                            IsValueType = true,            
+                            Value = Config.AddImplicitVersion.ToString()
                         });
                     }
 
@@ -552,6 +553,10 @@ namespace ServiceStack.NativeTypes.Dart
                             else
                                 sbBody.Append(",");
                             sbBody.Append($"this.{prop.Name.PropertyStyle().PropertyName()}");
+                            if (!string.IsNullOrEmpty(prop.Value))
+                            {
+                                sbBody.Append("=" + prop.Value);
+                            }
                         }
                         if (sbBody.Length > 0)
                         {
