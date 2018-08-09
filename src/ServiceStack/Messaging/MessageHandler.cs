@@ -136,7 +136,7 @@ namespace ServiceStack.Messaging
                 }
                 
                 if (responseEx != null)
-                { 
+                {
                     TotalMessagesFailed++;
 
                     if (message.ReplyTo != null)
@@ -234,6 +234,9 @@ namespace ServiceStack.Messaging
             {
                 try
                 {
+                    if (ex is AggregateException)
+                        ex = ex.UnwrapIfSingleException();
+                    
                     TotalMessagesFailed++;
                     msgHandled = true;
                     processInExceptionFn(this, message, ex);

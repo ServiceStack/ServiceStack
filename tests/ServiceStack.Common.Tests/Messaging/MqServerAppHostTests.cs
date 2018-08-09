@@ -177,7 +177,7 @@ namespace ServiceStack.Common.Tests.Messaging
             mqServer.RegisterHandler<ValidateTestMq>(ExecuteMessage);
             mqServer.RegisterHandler<ThrowGenericError>(ExecuteMessage);
 
-            mqServer.Start();
+            AfterInitCallbacks.Add(appHost => mqServer.Start());
         }
     }
 
