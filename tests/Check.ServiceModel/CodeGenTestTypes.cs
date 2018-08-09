@@ -609,9 +609,29 @@ namespace Check.ServiceModel.Types
         public string Value { get; set; }
     }
 
+    [DataContract]
+    public enum ShortDays
+    {
+        [EnumMember(Value = "MON")]
+        Monday,
+        [EnumMember(Value = "TUE")]
+        Tuesday,
+        [EnumMember(Value = "WED")]
+        Wednesday,
+        [EnumMember(Value = "THU")]
+        Thursday,
+        [EnumMember(Value = "FRI")]
+        Friday,
+        [EnumMember(Value = "SAT")]
+        Saturday,
+        [EnumMember(Value = "SUN")]
+        Sunday,            
+    }
+
     public class HelloBuiltin
     {
         public DayOfWeek DayOfWeek { get; set; }
+        public ShortDays ShortDays { get; set; }
     }
 
     public class HelloVerbResponse

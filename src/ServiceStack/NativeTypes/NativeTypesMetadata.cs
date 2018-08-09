@@ -398,8 +398,16 @@ namespace ServiceStack.NativeTypes
                 {
                     var name = names[i];
                     var enumMember = GetEnumMember(type, name);
+
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
+
+                    var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
+                    if (enumMemberValue != null)
+                    {
+                        enumValue = enumMemberValue;
+                        isDefaultLayout = false;
+                    }                  
 
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;

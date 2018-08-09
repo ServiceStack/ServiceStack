@@ -19,6 +19,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
+        
+        [Obsolete("Migrate to new string enums: enum StringEnum { A = 'A', B = 'B' }")]
+        public static bool UseUnionTypeEnums { get; set; }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
@@ -252,7 +255,8 @@ namespace ServiceStack.NativeTypes.TypeScript
 
             if (type.IsEnum.GetValueOrDefault())
             {
-                if (type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty())
+                var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty(); 
+                if (isIntEnum || !UseUnionTypeEnums)
                 {
                     var typeDeclaration = !Config.ExportAsTypes
                         ? "enum"
@@ -269,9 +273,16 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var name = type.EnumNames[i];
                             var value = type.EnumValues?[i];
 
-                            sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
-                                ? $"{name},"
-                                : $"{name} = {value},");
+                            if (isIntEnum)
+                            {
+                                sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
+                                    ? $"{name},"
+                                    : $"{name} = {value},");
+                            }
+                            else
+                            {
+                                sb.AppendLine($"{name} = '{value ?? name}',");
+                            }
                         }
                     }
 
