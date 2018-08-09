@@ -30,7 +30,7 @@ namespace ServiceStack.NativeTypes.Dart
         {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
 //            "dart:typed_data",  Required for byte[] / Uint8List
-            "package:servicestack/servicestack.dart"
+            "package:servicestack/client.dart"
         };
         
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
