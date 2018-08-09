@@ -44,6 +44,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 channel.PurgeQueue<ValidateTestMq>();
                 channel.PurgeQueue<ValidateTestMqResponse>();
                 channel.PurgeQueue<ThrowGenericError>();
+                channel.PurgeQueue<ThrowVoid>();
             }
         }
 
@@ -124,6 +125,11 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
+    public class ThrowVoid
+    {
+        public string Content { get; set; }
+    }
+        
     public class TestMqService : IService
     {
         public object Any(AnyTestMq request)
@@ -151,6 +157,11 @@ namespace ServiceStack.Common.Tests.Messaging
         {
             throw new ArgumentException("request");
         }
+
+        public void Any(ThrowVoid request)
+        {
+            throw new InvalidOperationException("this is an invalid operation");
+        }
     }
 
     public class MqTestsAppHost : AppHostHttpListenerBase
@@ -176,11 +187,12 @@ namespace ServiceStack.Common.Tests.Messaging
             mqServer.RegisterHandler<PostTestMq>(ExecuteMessage);
             mqServer.RegisterHandler<ValidateTestMq>(ExecuteMessage);
             mqServer.RegisterHandler<ThrowGenericError>(ExecuteMessage);
+            mqServer.RegisterHandler<ThrowVoid>(ExecuteMessage);
 
             AfterInitCallbacks.Add(appHost => mqServer.Start());
         }
     }
-
+    
     [TestFixture]
     public abstract class MqServerAppHostTests
     {
@@ -204,6 +216,26 @@ namespace ServiceStack.Common.Tests.Messaging
         public virtual void TestFixtureTearDown()
         {
             appHost.Dispose();
+        }
+
+        [Test]
+        public void Does_send_to_DLQ_when_thrown_from_void_Service()
+        {
+            using (var mqFactory = appHost.TryResolve<IMessageFactory>())
+            {
+                var request = new ThrowVoid { Content = "Test" };
+
+                using (var mqProducer = mqFactory.CreateMessageProducer())
+                using (var mqClient = mqFactory.CreateMessageQueueClient())
+                {
+                    mqProducer.Publish(request);
+
+                    var msg = mqClient.Get<ThrowVoid>(QueueNames<ThrowVoid>.Dlq, null);
+                    mqClient.Ack(msg);
+
+                    Assert.That(msg.Error.ErrorCode, Is.EqualTo("InvalidOperationException"));
+                }
+            }
         }
 
         [Test]
