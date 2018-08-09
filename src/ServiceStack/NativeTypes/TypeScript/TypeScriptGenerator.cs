@@ -190,9 +190,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                                     if (type.ReturnVoidMarker)
                                         return "IReturnVoid";
                                     if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InDeclarationType() });
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InReturnMarker() });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InDeclarationType() })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InReturnMarker() })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -324,16 +324,17 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var types = implStr.RightPart('<');
                             var returnType = types.Substring(0, types.Length - 1);
 
-                            if (returnType == "any")
-                                returnType = "Object";
-
                             // This is to avoid invalid syntax such as "return new string()"
-                            if (primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType))
-                                returnType = replaceReturnType;
+                            primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType);
 
+                            if (returnType == "any")
+                                replaceReturnType = "{}";
+                            else if (returnType.EndsWith("[]"))
+                                replaceReturnType = $"Array<{returnType.Substring(0, returnType.Length -2)}>";
+                            
                             responseTypeExpression = replaceReturnType == null ?
                                 "public createResponse() {{ return new {0}(); }}".Fmt(returnType) :
-                                "public createResponse() {{ return {0}; }}".Fmt(returnType);
+                                "public createResponse() {{ return {0}; }}".Fmt(replaceReturnType);
                         }
                         else if (implStr == "IReturnVoid")
                         {
@@ -756,13 +757,24 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (type.StartsWith("{"))
                 return "any";
 
-            //TypeScript doesn't support short-hand T[] notation in extension list
+            //TypeScript doesn't support short-hand T[] notation in extension list 
+            //E.g. need to use `extends Array<Type>` instead of `extends Type[]`
             var arrParts = type.SplitOnFirst('[');
             return arrParts.Length > 1 
                 ? "Array<{0}>".Fmt(arrParts[0]) 
                 : type;
         }
 
+        public static string InReturnMarker(this string type)
+        {
+            if (type.StartsWith("{"))
+                return "any";
+            
+            //Note: can only implement using Array short-hand notation: IReturn<Type[]>
+
+            return type;
+        }
+        
         public static string PropertyStyle(this string name)
         {
             return JsConfig.EmitCamelCaseNames
