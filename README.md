@@ -351,19 +351,19 @@ Contributors need to approve the [Contributor License Agreement](https://docs.go
 ServiceStack includes source code of the great libraries below for some of its core functionality. 
 Each library is released under its respective licence:
 
-  - [Mono](https://github.com/mono/mono) [(License)](https://github.com/mono/mono/blob/master/LICENSE)
-  - [Funq IOC](http://funq.codeplex.com) [(License)](https://opensource.org/licenses/MS-PL)
-  - [Fluent Validation](https://github.com/JeremySkinner/FluentValidation) [(License)](https://github.com/JeremySkinner/FluentValidation/blob/master/License.txt)
-  - [Mini Profiler](https://code.google.com/archive/p/mvc-mini-profiler) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [Dapper](https://code.google.com/archive/p/dapper-dot-net) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
-  - [MarkdownSharp](https://code.google.com/archive/p/markdownsharp) [(License)](https://opensource.org/licenses/mit-license.php)
-  - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(License)](http://www.toptensoftware.com/markdowndeep/license)
-  - [HtmlCompressor](https://code.google.com/archive/p/htmlcompressor) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(License)](http://www.apache.org/licenses/LICENSE-2.0)
-  - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
-  - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(License)](https://github.com/aspnet/Mvc/blob/dev/LICENSE.txt)
-  - [CoreFX](https://github.com/dotnet/corefx) [(License)](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
+  - [Mono](https://github.com/mono/mono) [(MIT License)](https://github.com/mono/mono/blob/master/LICENSE)
+  - [Funq IOC](http://funq.codeplex.com) [(MS-PL License)](https://opensource.org/licenses/MS-PL)
+  - [Fluent Validation](https://github.com/JeremySkinner/FluentValidation) [(Apache License 2.0)](https://github.com/JeremySkinner/FluentValidation/blob/master/License.txt)
+  - [Mini Profiler](https://github.com/MiniProfiler/dotnet) [(MIT License)](https://github.com/MiniProfiler/dotnet/blob/master/LICENSE.txt)
+  - [Dapper](https://github.com/StackExchange/Dapper) [(Apache License 2.0)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [TweetStation's OAuth library](https://github.com/migueldeicaza/TweetStation) [(MIT License)](https://github.com/migueldeicaza/TweetStation/blob/master/LICENSE)
+  - [MarkdownSharp](https://code.google.com/archive/p/markdownsharp) [(MIT License)](https://opensource.org/licenses/mit-license.php)
+  - [MarkdownDeep](https://github.com/toptensoftware/markdowndeep) [(Apache License 2.0)](http://www.toptensoftware.com/markdowndeep/license)
+  - [HtmlCompressor](https://code.google.com/archive/p/htmlcompressor) [(Apache License 2.0)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [JSMin](https://github.com/douglascrockford/JSMin/blob/master/jsmin.c) [(Apache License 2.0)](http://www.apache.org/licenses/LICENSE-2.0)
+  - [RecyclableMemoryStream](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream) [(MIT License)](https://github.com/Microsoft/Microsoft.IO.RecyclableMemoryStream/blob/master/LICENSE)
+  - [ASP.NET MVC](https://github.com/aspnet/Mvc) [(Apache License 2.0)](https://github.com/aspnet/Mvc/blob/release/2.2/LICENSE.txt)
+  - [CoreFX](https://github.com/dotnet/corefx) [(MIT License)](https://github.com/dotnet/corefx/blob/master/LICENSE.TXT)
 
 ## Find out More
 
