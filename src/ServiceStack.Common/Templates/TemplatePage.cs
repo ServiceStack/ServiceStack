@@ -91,6 +91,12 @@ namespace ServiceStack.Templates
                 }
                 
                 //When page has variables body starts from first non whitespace after variable's end  
+                var argsSuffixPos = line.LastIndexOf(Format.ArgsSuffix);
+                if (argsSuffixPos >= 0)
+                {
+                    //Start back from the end of the ArgsSuffix
+                    pos -= line.Length - argsSuffixPos - Format.ArgsSuffix.Length;
+                }
                 bodyContents = fileContents.SafeSlice(pos).AdvancePastWhitespace();
             }
 

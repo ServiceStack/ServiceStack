@@ -488,5 +488,18 @@ title: We encode < & >
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<pre>currency: , date: </pre>"));
         }
 
+        [Test]
+        public void Does_preverve_content_after_html_comments()
+        {
+            var context = new TemplateContext().Init();
+            context.VirtualFiles.WriteFile("_layout.html", "<html><body><h1>{{title}}</h1>{{ page }}</body></html>");
+            context.VirtualFiles.WriteFile("page.html", "<!--\ntitle:The Title\n--><p>para</p>");
+
+            var html = new PageResult(context.GetPage("page")).Result;
+            
+            html.Print();
+            
+            Assert.That(html, Is.EqualTo("<html><body><h1>The Title</h1><p>para</p></body></html>"));
+        }
     }
 }

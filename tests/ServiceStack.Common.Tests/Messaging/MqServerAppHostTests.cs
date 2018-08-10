@@ -421,7 +421,7 @@ namespace ServiceStack.Common.Tests.Messaging
                 {
                     var requestMsg = new Message<ThrowGenericError>(request)
                     {
-                        ReplyTo = "mq:{0}.replyto".Fmt(request.GetType().Name)
+                        ReplyTo = $"mq:{request.GetType().Name}.replyto"
                     };
                     mqProducer.Publish(requestMsg);
 
