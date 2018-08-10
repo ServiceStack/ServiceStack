@@ -1,4 +1,5 @@
 ﻿using System;
+using Serilog;
 
 namespace ServiceStack.Logging.Serilog
 {
@@ -7,6 +8,18 @@ namespace ServiceStack.Logging.Serilog
     /// </summary>
     public class SerilogFactory : ILogFactory
     {
+        private readonly ILogger logger;
+
+        public SerilogFactory() {}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SerilogFactory"/> class.
+        /// </summary>
+        public SerilogFactory(ILogger logger)
+        {
+            this.logger = logger;
+        }
+
         /// <summary>
         /// Gets the logger.
         /// </summary>
@@ -14,7 +27,9 @@ namespace ServiceStack.Logging.Serilog
         /// <returns></returns>
         public ILog GetLogger(Type type)
         {
-            return new SerilogLogger(type);
+            return logger != null
+                ? new SerilogLogger(logger.ForContext(type))
+                : new SerilogLogger(type);
         }
 
         /// <summary>
@@ -24,7 +39,7 @@ namespace ServiceStack.Logging.Serilog
         /// <returns></returns>
         public ILog GetLogger(string typeName)
         {
-            return new SerilogLogger(Type.GetType(typeName));
+            return GetLogger(Type.GetType(typeName));
         }
     }
 }
