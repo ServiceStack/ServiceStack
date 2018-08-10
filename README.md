@@ -377,8 +377,8 @@ Follow [@ServiceStack](https://twitter.com/ServiceStack) and
  - [mythz](https://github.com/mythz) (Demis Bellot)
  - [layoric](https://github.com/layoric) (Darren Reid) / [@layoric](https://twitter.com/layoric)
  - [xplicit](https://github.com/xplicit) (Sergey Zhukov) / [@quantumcalc](https://twitter.com/quantumcalc)
- - [arxisos](https://github.com/arxisos) (Steffen Müller) / [@arxisos](https://twitter.com/arxisos)
  - [desunit](https://github.com/desunit) (Sergey Bogdanov) / [@desunit](https://twitter.com/desunit)
+ - [arxisos](https://github.com/arxisos) (Steffen Müller) / [@arxisos](https://twitter.com/arxisos)
 
 ## Contributors 
 
