@@ -457,7 +457,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.WriteToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream, token);
                 }
 
                 stackTrace.Pop();
@@ -494,7 +494,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.WriteToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream, token);
                 }
             }
         }

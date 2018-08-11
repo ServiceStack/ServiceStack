@@ -594,7 +594,16 @@ namespace ServiceStack.Templates
             var pageName = target.ToString();
             var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
-            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (!scope.TryGetPage(pageName, out var page, out var codePage))
+            {
+                //Allow partials starting with '_' to be referenced without
+                if (pageName[0] != '_')
+                {
+                    if (!scope.TryGetPage('_' + pageName, out page, out codePage))
+                        throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
+                }
+            }
+            
             if (page != null)
                 await page.Init();
 
@@ -1003,7 +1012,16 @@ namespace ServiceStack.Templates
             if (isNull(target))
                 return;
 
-            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (!scope.TryGetPage(pageName, out var page, out var codePage))
+            {
+                //Allow partials starting with '_' to be referenced without
+                if (pageName[0] != '_')
+                {
+                    if (!scope.TryGetPage('_' + pageName, out page, out codePage))
+                        throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
+                }
+            }
+
             if (page != null)
                 await page.Init();
 

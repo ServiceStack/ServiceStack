@@ -496,10 +496,21 @@ title: We encode < & >
             context.VirtualFiles.WriteFile("page.html", "<!--\ntitle:The Title\n--><p>para</p>");
 
             var html = new PageResult(context.GetPage("page")).Result;
-            
-            html.Print();
-            
             Assert.That(html, Is.EqualTo("<html><body><h1>The Title</h1><p>para</p></body></html>"));
+        }
+
+        [Test]
+        public void Can_resolve_hidden_partials_without_prefix()
+        {
+            var context = new TemplateContext().Init();
+            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu-partial' | partial }} {{ '_test-partial' | partial }}");
+            context.VirtualFiles.WriteFile("_menu-partial.html", "MENU");
+            context.VirtualFiles.WriteFile("_test-partial.html", "TEST");
+            
+            var result = new PageResult(context.GetPage("page")).Result;
+            result.Print();
+            
+            Assert.That(result, Is.EqualTo("Page MENU TEST"));
         }
     }
 }

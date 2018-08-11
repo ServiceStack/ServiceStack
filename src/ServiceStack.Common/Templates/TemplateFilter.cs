@@ -252,15 +252,17 @@ namespace ServiceStack.Templates
             return valueOrBinding.ConvertTo(returnType);
         }
 
-        public static void TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        public static bool TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
             if (scope.PageResult.Partials.TryGetValue(virtualPath, out page))
             {
                 codePage = null;
-                return;
+                return true;
             }
             
-            scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage);
+            if (!scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage))
+                return false;
+            
             codePage?.Init();
 
             if (codePage is IRequiresRequest requiresRequest)
@@ -268,6 +270,8 @@ namespace ServiceStack.Templates
                 if (scope.GetValue(TemplateConstants.Request) is IRequest request)
                     requiresRequest.Request = request;
             }
+
+            return true;
         }
     }
 }

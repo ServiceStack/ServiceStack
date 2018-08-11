@@ -110,9 +110,15 @@ namespace ServiceStack.Templates
         public TemplateProtectedFilters ProtectedFilters => TemplateFilters.FirstOrDefault(x => x is TemplateProtectedFilters) as TemplateProtectedFilters;
         public TemplateHtmlFilters HtmlFilters => TemplateFilters.FirstOrDefault(x => x is TemplateHtmlFilters) as TemplateHtmlFilters;
 
-        public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        public void GetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            var pathMapKey = nameof(TryGetPage) + ">" + fromVirtualPath;
+            if (!TryGetPage(fromVirtualPath, virtualPath, out page, out codePage))
+                throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");            
+        }
+        
+        public bool TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        {
+            var pathMapKey = nameof(GetPage) + ">" + fromVirtualPath;
             var mappedPath = GetPathMapping(pathMapKey, virtualPath);
             if (mappedPath != null)
             {
@@ -121,7 +127,7 @@ namespace ServiceStack.Templates
                 {
                     page = mappedPage;
                     codePage = null;
-                    return;                        
+                    return true;
                 }
                 RemovePathMapping(pathMapKey, mappedPath);
             }
@@ -134,7 +140,7 @@ namespace ServiceStack.Templates
                 {
                     codePage = cp;
                     page = null;
-                    return;
+                    return true;
                 }
 
                 var p = Pages.GetPage(virtualPath);
@@ -142,7 +148,7 @@ namespace ServiceStack.Templates
                 {
                     page = p;
                     codePage = null;
-                    return;
+                    return true;
                 }
             }
             
@@ -158,7 +164,7 @@ namespace ServiceStack.Templates
                 {
                     codePage = cp;
                     page = null;
-                    return;
+                    return true;
                 }
 
                 var p = Pages.GetPage(seekPath);
@@ -167,7 +173,7 @@ namespace ServiceStack.Templates
                     page = p;
                     codePage = null;
                     SetPathMapping(pathMapKey, virtualPath, seekPath);
-                    return;
+                    return true;
                 }
 
                 if (parentPath == "")
@@ -178,8 +184,10 @@ namespace ServiceStack.Templates
                     : "";
 
             } while (true);
-            
-            throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");
+
+            page = null;
+            codePage = null;
+            return false;
         }
 
         public TemplatePage OneTimePage(string contents, string ext=null) 
