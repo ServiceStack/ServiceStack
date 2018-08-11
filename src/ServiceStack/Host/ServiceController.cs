@@ -203,6 +203,8 @@ namespace ServiceStack.Host
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
+        private static RestPath fallbackRestPath = null;
+
         public void RegisterRestPaths(Type requestType)
         {
             var attrs = appHost.GetRouteAttributes(requestType);
@@ -217,7 +219,8 @@ namespace ServiceStack.Host
                             "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed.");
 
                     appHost.Config.FallbackRestPath = httpReq => restPath.IsMatch(httpReq) ? restPath : null;
-
+                    fallbackRestPath = restPath;
+                    
                     continue;
                 }
 
@@ -268,6 +271,8 @@ namespace ServiceStack.Host
             appHost.RestPaths.Clear();
             appHost.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
             appHost.RestPaths.ForEach(x => x.AfterInit());
+
+            fallbackRestPath?.AfterInit();
 
             appHost.Metadata.AfterInit();
         }
