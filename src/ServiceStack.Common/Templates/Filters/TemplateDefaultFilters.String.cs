@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
@@ -274,5 +275,35 @@ namespace ServiceStack.Templates
 
         public object eval(TemplateScopeContext scope, string js) => JS.eval(js, scope);
         public object parseJson(string json) => JSON.parse(json);
+
+        private static readonly Regex InvalidCharsRegex = new Regex(@"[^a-z0-9\s-]", RegexOptions.Compiled);
+        private static readonly Regex SpacesRegex = new Regex(@"\s", RegexOptions.Compiled);
+        private static readonly Regex CollapseHyphensRegex = new Regex("-+", RegexOptions.Compiled);
+        
+        public string generateSlug(string phrase)
+        {
+            var str = phrase.ToLower()
+                .Replace("#", "sharp")  // c#, f# => csharp, fsharp
+                .Replace("++", "pp");   // c++ => cpp
+
+            str = InvalidCharsRegex.Replace(str, "-");
+            //// convert multiple spaces into one space   
+            //str = CollapseSpacesRegex.Replace(str, " ").Trim();
+            // cut and trim 
+            str = str.Substring(0, str.Length <= 100 ? str.Length : 100).Trim();
+            str = SpacesRegex.Replace(str, "-");
+            str = CollapseHyphensRegex.Replace(str, "-");
+
+            if (string.IsNullOrEmpty(str))
+                return null;
+
+            if (str[0] == '-')
+                str = str.Substring(1);
+            if (str[str.Length - 1] == '-')
+                str = str.Substring(0, str.Length - 1);
+
+            return str;            
+        }
+        
     }
 }
