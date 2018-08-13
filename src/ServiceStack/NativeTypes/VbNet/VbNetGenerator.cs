@@ -76,6 +76,7 @@ namespace ServiceStack.NativeTypes.VbNet
             "end",
             "True",
             "False",
+            "Mod",
         };
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
