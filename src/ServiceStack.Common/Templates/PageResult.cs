@@ -655,6 +655,9 @@ namespace ServiceStack.Templates
                         throw new Exception(errorMsg);
                     }
 
+                    if (value is Task<object> valueObjectTask)
+                        value = await valueObjectTask;
+
                     if (invoker != null)
                     {
                         fnArgValues.Insert(0, value);
@@ -725,7 +728,7 @@ namespace ServiceStack.Templates
                                     if (stream.CanRead)
                                     {
                                         stream.Position = 0;
-                                        await stream.WriteToAsync(scope.OutputStream);
+                                        await stream.WriteToAsync(scope.OutputStream, token);
                                     }
                                 }
                             }
