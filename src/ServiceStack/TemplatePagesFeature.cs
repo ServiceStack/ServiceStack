@@ -105,6 +105,14 @@ namespace ServiceStack
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
             }
 
+            var initPage = Pages.GetPage("_init");
+            if (initPage != null)
+            {
+                appHost.AfterInitCallbacks.Add(host => {
+                    var execInit = new PageResult(initPage).Result;
+                });
+            }
+
             Init();
         }
 
@@ -239,7 +247,8 @@ namespace ServiceStack
                             if (isWildPath)
                             {
                                 if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                                    file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0)                                
+                                    file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.StartsWith("_init"))                                
                                     continue;
                             }
 
