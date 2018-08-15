@@ -149,6 +149,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_parse_logical_expressions()
+        {
+            JsToken expr;
+
+            "!(true || false)".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new JsUnaryExpression(
+                    JsNot.Operator,
+                    new JsLogicalExpression(new JsLiteral(true), JsOr.Operator, new JsLiteral(false))
+                )
+            ));
+        }
+
+        [Test]
         public void Does_parse_binary_and_logical_expressions()
         {
             JsToken expr;

@@ -347,7 +347,7 @@ namespace ServiceStack.Templates
                 
                 while (i < literal.Length)
                 {
-                    c = literal.GetChar(i);
+                    c = literal[i];
                     if (c == quoteChar)
                     {
                         if (literal.SafeGetChar(i - 1) != '\\' || literal.SafeGetChar(i - 2) == '\\')
@@ -502,7 +502,7 @@ namespace ServiceStack.Templates
             }
 
             var unaryOp = firstChar.GetUnaryOperator();
-            if (unaryOp != null && literal.SafeGetChar(1).IsValidVarNameChar())
+            if (unaryOp != null)
             {
                 literal = literal.Advance(1);
                 literal = literal.ParseJsToken(out var arg);
@@ -582,7 +582,7 @@ namespace ServiceStack.Templates
             if (literal.IsNullOrEmpty())
                 return literal;
             
-            var c = literal.GetChar(0);
+            var c = literal[0];
 
             while (c == '.' || c == '[' || c == '(' || (filterExpression && c == ':'))
             {
