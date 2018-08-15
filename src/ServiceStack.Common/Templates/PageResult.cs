@@ -17,10 +17,16 @@ namespace ServiceStack.Templates
     // Render a Template Page to the Response OutputStream
     public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions, IDisposable
     {
+        /// <summary>
+        /// The Template Page to Render
+        /// </summary>
         public TemplatePage Page { get; }
         
+        /// <summary>
+        /// The Code Page to Render
+        /// </summary>
         public TemplateCodePage CodePage { get; }
-
+        
         /// <summary>
         /// Use specified Layout 
         /// </summary>
@@ -37,7 +43,7 @@ namespace ServiceStack.Templates
         public bool NoLayout { get; set; }
 
         /// <summary>
-        /// 
+        /// Extract Model Properties into Scope Args
         /// </summary>
         public object Model { get; set; }
 

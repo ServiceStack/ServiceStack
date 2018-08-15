@@ -691,5 +691,31 @@ partialArg in page scope is <b>from page</b>"));
             Assert.That(context.EvaluateTemplate("{{#capture appendTo output}} INIT{{/capture}}{{#capture appendTo output {nums:[4,5,6] }}{{#each nums}} {{it}}{{/each}}{{/capture}}BEFORE{{output}} AFTER"), 
                 Is.EqualTo("BEFORE INIT 4 5 6 AFTER"));
         }
+
+        [Test]
+        public void Does_evaluate_eval_partial_in_existing_Context()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["income"] = 1000
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{#partial p {expenses:100} }} {{income ?? 2000}} - {{expenses}} {{/partial}}{{ 'p' | partial}}"), 
+                Is.EqualTo(" 1000 - 100 "));
+        }
+
+        [Test]
+        public void Does_evaluate_eval_block_in_new_Context()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["income"] = 1000
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{#eval {expenses:100} }} {{income ?? 2000}} - {{expenses}} {{/eval}}"), 
+                Is.EqualTo(" 2000 - 100 "));
+        }
     }
 }
