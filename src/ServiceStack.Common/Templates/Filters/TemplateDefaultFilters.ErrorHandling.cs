@@ -16,6 +16,12 @@ namespace ServiceStack.Templates
             return StopExecution.Value;
         }
 
+        public object assignErrorAndContinueExecuting(TemplateScopeContext scope, string errorBinding)
+        {
+            assignError(scope, errorBinding);
+            return continueExecutingFiltersOnError(scope);
+        }
+
         public object continueExecutingFiltersOnError(TemplateScopeContext scope, object ignoreTarget) => continueExecutingFiltersOnError(scope);
         public object continueExecutingFiltersOnError(TemplateScopeContext scope)
         {
