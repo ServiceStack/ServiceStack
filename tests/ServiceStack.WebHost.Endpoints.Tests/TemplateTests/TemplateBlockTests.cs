@@ -693,7 +693,7 @@ partialArg in page scope is <b>from page</b>"));
         }
 
         [Test]
-        public void Does_evaluate_eval_partial_in_existing_Context()
+        public void Does_evaluate_partial_in_existing_Context()
         {
             var context = new TemplateContext {
                 Args = {
@@ -710,12 +710,31 @@ partialArg in page scope is <b>from page</b>"));
         {
             var context = new TemplateContext {
                 Args = {
-                    ["income"] = 1000
+                    ["income"] = 1000,
+                    ["incomeExpr"] = "{{income ?? 2000}}"
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{#eval {expenses:100} }} {{income ?? 2000}} - {{expenses}} {{/eval}}"), 
+            Assert.That(context.EvaluateTemplate("{{#eval {expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
                 Is.EqualTo(" 2000 - 100 "));
+        }
+
+        [Test]
+        public void Can_eval_dynamic_content()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["templates"] = new List<string> {
+                        "1. {{income ?? 1000}} - {{expenses}}",
+                        "2. {{income ?? 2000}} - {{expenses}}",
+                        "3. {{income ?? 3000}} - {{expenses}}",
+                    }
+                }
+            }.Init();
+            
+            var result = context.EvaluateTemplate(@"{{#each templates}}{{index}} =>{{#eval {expenses: 100 * index} }} {{it}} {{/eval}}| {{/each}}");
+            
+            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
         }
     }
 }
