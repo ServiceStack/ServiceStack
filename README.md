@@ -288,29 +288,37 @@ val response = client.get(GetCustomers())
 val results = response.results
 ```
 
-### [Calling from jQuery using TypeScript Defintions](http://docs.servicestack.net/typescript-add-servicestack-reference.html#typescript-interface-definitions)
+### [Calling from Dart](http://docs.servicestack.net/dart-add-servicestack-reference)
+
+```dart
+var client = new JsonServiceClient(BaseUri);
+
+var response = await client.get(GetCustomers());
+var results = client.results;
+```
+
+### [Calling from jQuery using TypeScript Definitions](http://docs.servicestack.net/typescript-add-servicestack-reference.html#typescript-interface-definitions)
 
 ```js
-$.getJSON($.ss.createUrl("/customers", request), request, 
-    function (r: dtos.GetCustomersResponse) {
-    	alert(r.Results.length == 1);
-    });
+$.getJSON($.ss.createUrl("/customers", request), request, (r: GetCustomersResponse) => {
+    var results = r.results;
+});
+```
+
+Using TypeScript Definitions with Angular HTTP Client:
+
+```ts
+this.http.get<GetCustomersResponse>(createUrl('/customers', request)).subscribe(r => {
+    this.results = r.results;
+});
 ```
 
 ### Calling from jQuery
 
 ```js
 $.getJSON(baseUri + "/customers", function(r) {
-	alert(r.Results.length == 1);
+	var results = r.results;
 });
-```
-
-### Calling the from [Dart JsonClient](https://github.com/dartist/json_client)
-
-```dart
-var client = new JsonClient(baseUri);
-client.customers()
-	.then((r) => alert(r.Results.length == 1)); 
 ```
 
 That's all the application code required to create and consume a simple database-enabled REST Web Service!
