@@ -1,4 +1,6 @@
-﻿using ServiceStack.Web;
+﻿using System;
+using System.Collections;
+using ServiceStack.Web;
 
 namespace ServiceStack.Templates
 {
@@ -34,5 +36,77 @@ namespace ServiceStack.Templates
         public string httpMethod(TemplateScopeContext scope) => req(scope)?.Verb;
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
+
+        public bool containsXss(object target)
+        {
+            try
+            {
+                return MatchesStringValue(target, ContainsXss);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new NotSupportedException($"containsXss cannot validate {target.GetType().Name}");
+            }
+        }
+
+        public static bool MatchesStringValue(object target, Func<string, bool> match)
+        {
+            if (target == null)
+                return false;
+
+            if (target is string str)
+            {
+                if (match(str))
+                    return true;
+            }
+            else if (target is IDictionary d)
+            {
+                foreach (var item in d.Values)
+                {
+                    if (item is string s && match(s))
+                        return true;
+                }
+            }
+            else if (target is IEnumerable objs)
+            {
+                foreach (var item in objs)
+                {
+                    if (item is string s && match(s))
+                        return true;
+                }
+            }
+            else throw new ArgumentException(nameof(target));
+            
+            return false;
+        }
+        
+        // tests for https://www.owasp.org/index.php/OWASP_Testing_Guide_Appendix_C:_Fuzz_Vectors#Cross_Site_Scripting_.28XSS.29
+        public static string[] XssFragments = { //greedy list
+            "<script",
+            "javascript:",
+            "%3A",       //= ':' URL Encode
+            "&#0000058", //= ':' HTML Entity Encode
+            "SRC=#",
+            "SRC=/",
+            "SRC=&",
+            "SRC= ",
+            "onload=",
+            "onload =",
+            "onunload=",
+            "onerror=",
+            "@import",
+            ":url(",
+        };
+
+        public static bool ContainsXss(string text)
+        {
+            foreach (var needle in XssFragments)
+            {
+                var pos = text.IndexOf(needle, 0, StringComparison.OrdinalIgnoreCase);
+                if (pos >= 0)
+                    return true;
+            }
+            return false;
+        }
     }
 }
