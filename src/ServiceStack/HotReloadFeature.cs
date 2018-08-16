@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 
@@ -27,6 +29,11 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class HotReloadFilesService : Service
     {
+        public static List<string> ExcludePatterns { get; } = new List<string> {
+            "*.sqlite",
+            "*.db",
+        };
+        
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
         public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
 
@@ -44,6 +51,9 @@ namespace ServiceStack
                 var files = VirtualFileSources.GetAllMatchingFiles(pattern);
                 foreach (var file in files)
                 {
+                    if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)) == true)
+                        continue;
+                    
                     file.Refresh();
                     if (file.LastModified > maxLastModified)
                         maxLastModified = file.LastModified;
