@@ -597,10 +597,10 @@ namespace ServiceStack.Templates
 
             if (!scope.TryGetPage(pageName, out var page, out var codePage))
             {
-                //Allow partials starting with '_' to be referenced without
+                //Allow partials starting with '_{name}-partial' to be referenced without boilerplate
                 if (pageName[0] != '_')
                 {
-                    if (!scope.TryGetPage('_' + pageName, out page, out codePage))
+                    if (!scope.TryGetPage('_' + pageName + "-partial", out page, out codePage))
                         throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
                 }
             }
@@ -1015,10 +1015,10 @@ namespace ServiceStack.Templates
 
             if (!scope.TryGetPage(pageName, out var page, out var codePage))
             {
-                //Allow partials starting with '_' to be referenced without
+                //Allow partials starting with '_{name}-partial' to be referenced without boilerplate
                 if (pageName[0] != '_')
                 {
-                    if (!scope.TryGetPage('_' + pageName, out page, out codePage))
+                    if (!scope.TryGetPage('_' + pageName + "-partial", out page, out codePage))
                         throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
                 }
             }
