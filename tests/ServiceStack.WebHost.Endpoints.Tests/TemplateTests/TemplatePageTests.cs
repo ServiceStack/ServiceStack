@@ -503,7 +503,7 @@ title: We encode < & >
         public void Can_resolve_hidden_partials_without_prefix()
         {
             var context = new TemplateContext().Init();
-            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu-partial' | partial }} {{ '_test-partial' | partial }}");
+            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu' | partial }} {{ '_test-partial' | partial }}");
             context.VirtualFiles.WriteFile("_menu-partial.html", "MENU");
             context.VirtualFiles.WriteFile("_test-partial.html", "TEST");
             
