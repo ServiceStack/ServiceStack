@@ -67,8 +67,6 @@ namespace ServiceStack.Templates
         
         public HashSet<string> FileFilterNames { get; } = new HashSet<string> { "includeFile", "fileContents" };
         
-        public bool BufferOutput { get; set; }
-        
         /// <summary>
         /// Available transformers that can transform context filter stream outputs
         /// </summary>
@@ -263,8 +261,6 @@ namespace ServiceStack.Templates
             Args[nameof(TemplateConfig.DefaultStringComparison)] = TemplateConfig.DefaultStringComparison;
             Args[nameof(TemplateConfig.DefaultTableClassName)] = TemplateConfig.DefaultTableClassName;
             Args[nameof(TemplateConfig.DefaultErrorClassName)] = TemplateConfig.DefaultErrorClassName;
-
-            BufferOutput = TemplateConfig.DefaultBufferOutput;
         }
 
         public TemplateContext RemoveFilters(Predicate<TemplateFilter> match)

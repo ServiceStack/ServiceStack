@@ -33,10 +33,10 @@ namespace ServiceStack.Templates
                 throw new NotSupportedException("Any 'partial' argument must be an Object Dictionary");
 
             var format = scope.Context.PageFormats.First().Extension;
-            if (args != null && args.TryGetValue("format", out var oFormat))
+            if (args != null && args.TryGetValue(TemplateConstants.Format, out var oFormat))
             {
                 format = oFormat.ToString();
-                args.Remove("format");
+                args.Remove(TemplateConstants.Format);
             }
 
             var nameString = name.ToString();

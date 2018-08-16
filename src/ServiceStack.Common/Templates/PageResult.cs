@@ -168,24 +168,11 @@ namespace ServiceStack.Templates
         }
 
         //entry point
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = default)
         {
             if (OutputTransformers.Count == 0)
             {
-                if (Context.BufferOutput)
-                {
-                    using (var ms = MemoryStreamFactory.GetStream())
-                    {
-                        await WriteToAsyncInternal(ms, token);
-    
-                        ms.Position = 0;
-                        await ms.WriteToAsync(responseStream, token);
-                    }
-                }
-                else
-                {
-                    await WriteToAsyncInternal(responseStream, token);
-                }
+                await WriteToAsyncInternal(responseStream, token);
                 return;
             }
 
