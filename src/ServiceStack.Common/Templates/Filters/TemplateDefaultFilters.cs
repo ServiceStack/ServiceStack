@@ -217,6 +217,7 @@ namespace ServiceStack.Templates
 
         [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
         [HandleUnknownValue] public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object showIfExists(object useValue, object test) => !isNull(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
         public object show(object ignoreTarget, object useValue) => useValue;
