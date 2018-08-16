@@ -561,8 +561,7 @@ namespace ServiceStack
             // match.Groups[0] is the entire match, the sub groups start at index one
             if (!match.Groups[1].Success)
             {
-                string convertedValue;
-                if (HtmlCharacterCodes.TryGetValue(match.Value, out convertedValue))
+                if (HtmlCharacterCodes.TryGetValue(match.Value, out var convertedValue))
                 {
                     return convertedValue;
                 }

@@ -37,6 +37,13 @@ namespace ServiceStack.Templates
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
 
+        public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
+        public string urlEncode(string value) => value.UrlEncode();
+        public string urlDecode(string value) => value.UrlDecode();
+
+        public string htmlEncode(string value) => value.HtmlEncode();
+        public string htmlDecode(string value) => value.HtmlDecode();
+
         public bool containsXss(object target)
         {
             try
