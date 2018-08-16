@@ -273,6 +273,9 @@ namespace ServiceStack.Templates
                         if (var.Binding?.Equals(TemplateConstants.Page) == true)
                         {
                             await WritePageAsync(Page, CodePage, pageScope, token);
+
+                            if (HaltExecution)
+                                HaltExecution = false; //break out of page but continue evaluating layout
                         }
                         else
                         {
@@ -301,10 +304,7 @@ namespace ServiceStack.Templates
             foreach (var fragment in fragments)
             {
                 if (HaltExecution)
-                {
-                    HaltExecution = false; //break out of page but continue evaluating layout
                     break;
-                }
 
                 if (fragment is PageStringFragment str)
                 {
