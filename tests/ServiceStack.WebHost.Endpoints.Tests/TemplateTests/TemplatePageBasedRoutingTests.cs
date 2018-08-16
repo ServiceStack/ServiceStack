@@ -2,6 +2,7 @@
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -38,6 +39,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 { "tech/_slug/edit.html", "tech/_slug/edit.html slug: {{slug}}" },
                 { "top/index.html", "top/index.html" },
                 { "users/_username.html", "users/_username.html username: {{username}}" },
+                { "httpresults/index.html", "httpresults/index.html {{ {foo:'bar'} | return({ format: 'json' }) }} suffix" },
+                { "httpresults/explicit.html", "httpresults/explicit.html {{ {response: {foo:'bar'}, format: 'json'} | httpResult | return }} suffix" },
+                { "httpresults/_arg.html", "httpresults/_arg.html {{ {foo:arg} | return({ format: 'json' }) }} suffix" },
+                { "httpresults/no-response.html", "httpresults/no-response.html {{ httpResult({ format: 'json' }) | return }} suffix" },
+                { "httpresults/redirect.html", "httpresults/redirect.html {{ httpResult({ status:'Found', Location:'/httpresults/redirected' }) | return }} suffix" },
+                { "httpresults/redirect-code.html", "httpresults/redirect.html {{ httpResult({ status:301, Location:'/httpresults/redirected-301' }) | return }} suffix" },
             };
 
             public override List<IVirtualPathProvider> GetVirtualFileSources()
@@ -91,6 +98,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 .GetStringFromUrl();
             
             Assert.That(html, Is.EqualTo(expectedHtml));
+        }
+
+        [Test]
+        [TestCase("/httpresults", "{\"foo\":\"bar\"}")]
+        [TestCase("/httpresults/explicit", "{\"foo\":\"bar\"}")]
+        [TestCase("/httpresults/qux", "{\"foo\":\"qux\"}")]
+        [TestCase("/httpresults/no-response", "")]
+        [TestCase("/httpresults/redirect", "{\"foo\":\"redirected\"}")]
+        [TestCase("/httpresults/redirect-code", "{\"foo\":\"redirected-301\"}")]
+        public void Does_return_custom_result(string path, string expectedJson)
+        {
+            var response = Config.ListeningOn.CombineWith(path).GetStringFromUrl(
+                responseFilter:res => Assert.That(res.ContentType, Does.StartWith(MimeTypes.Json)));
+            
+            Assert.That(response, Is.EqualTo(expectedJson));
         }
     }
 }

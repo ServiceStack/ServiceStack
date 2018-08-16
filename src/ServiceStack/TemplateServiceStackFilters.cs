@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using ServiceStack.Auth;
+using ServiceStack.Host;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -152,5 +154,49 @@ namespace ServiceStack
 
         [HandleUnknownValue] public object endIfAuthenticated(TemplateScopeContext scope, object value) => !isAuthenticated(scope) 
             ? value : StopExecution.Value;
+
+        public HttpResult httpResult(TemplateScopeContext scope, object options)
+        {
+            var args = scope.AssertOptions(nameof(httpResult), options);
+            return ToHttpResult(args);
+        }
+
+        public static HttpResult ToHttpResult(Dictionary<string, object> args)
+        {
+            var statusCode = HttpStatusCode.OK;
+            if (args.TryGetValue("status", out var oStatus))
+            {
+                if (oStatus is int status)
+                    statusCode = (HttpStatusCode) status;
+                if (oStatus is string strStatus)
+                    statusCode = (HttpStatusCode) Enum.Parse(typeof(HttpStatusCode), strStatus);
+
+                args.Remove("status");
+            }
+
+            object response = null;
+            if (args.TryGetValue("response", out var oResponse))
+            {
+                response = oResponse;
+                args.Remove("status");
+            }
+
+            string contentType = null;
+            if (args.TryGetValue("contentType", out var oContentType))
+            {
+                contentType = (string) oContentType;
+                args.Remove("contentType");
+            }
+            else if (args.TryGetValue("format", out var oFormat) && oFormat is string format)
+            {
+                contentType = HostContext.ContentTypes.GetFormatContentType(format);
+                args.Remove("format");
+            }
+
+            var to = new HttpResult(response, contentType, statusCode);
+            var httpResultHeaders = args.ToStringDictionary();
+            httpResultHeaders.Each(x => to.Options[x.Key] = x.Value);
+            return to;
+        }
     }
 }

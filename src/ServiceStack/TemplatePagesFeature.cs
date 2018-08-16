@@ -483,7 +483,7 @@ namespace ServiceStack
         public async Task<object> Any(ApiPages request) 
         {
             if (string.IsNullOrEmpty(request.PageName))
-                throw new ArgumentNullException("PageName");
+                throw new ArgumentNullException(nameof(request.PageName));
 
             var parts = string.IsNullOrEmpty(request.PathInfo)  
                 ? TypeConstants.EmptyStringArray
@@ -512,7 +512,7 @@ namespace ServiceStack
             if (feature.ApiDefaultContentType != null &&
                 !hasPathContentType &&
                 !hasPageContentType &&
-                base.Request.QueryString["format"] == null && base.Request.ResponseContentType == MimeTypes.Html)
+                base.Request.QueryString[TemplateConstants.Format] == null && base.Request.ResponseContentType == MimeTypes.Html)
             {
                 base.Request.ResponseContentType = feature.ApiDefaultContentType;
             }
@@ -534,17 +534,32 @@ namespace ServiceStack
 
             var discardedOutput = await pageResult.RenderToStringAsync();
 
-            if (!pageResult.Args.TryGetValue("return", out object response))
+            if (!pageResult.Args.TryGetValue(TemplateConstants.Return, out var response))
                 throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
 
             if (response is Task<object> responseTask)
                 response = await responseTask;
-            
-            var httpResultHeaders = (pageResult.Args.TryGetValue("returnArgs", out object returnArgs) ? returnArgs : null).ToStringDictionary();
 
-            var result = new HttpResult(response);
-            httpResultHeaders.Each(x => result.Options[x.Key] = x.Value);
-            return result;
+            var httpResult = ToHttpResult(pageResult, response);
+            return httpResult;
+        }
+
+        internal static IHttpResult ToHttpResult(PageResult pageResult, object response)
+        {
+            if (!(response is IHttpResult httpResult))
+            {
+                if (pageResult.Args.TryGetValue(TemplateConstants.ReturnArgs, out var oArgs) && oArgs is Dictionary<string, object> returnArgs)
+                {
+                    httpResult = TemplateServiceStackFilters.ToHttpResult(returnArgs);
+                    httpResult.Response = response;
+                }
+                else
+                {
+                    httpResult = new HttpResult(response);
+                }
+            }
+            
+            return httpResult;
         }
     }
 
@@ -683,7 +698,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 }
             }
             
-            var result = new PageResult(page)
+            var pageResult = new PageResult(page)
             {
                 Args = args,
                 LayoutPage = layoutPage,
@@ -693,11 +708,38 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             try
             {
                 httpRes.ContentType = page.Format.ContentType;
-                await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
+                if (OutputStream != null)
+                {
+                    await pageResult.WriteToAsync(OutputStream);
+                }
+                else
+                {
+                    // Buffering improves perf when running behind a reverse proxy (recommended for .NET Core) 
+                    using (var ms = MemoryStreamFactory.GetStream())
+                    {
+                        await pageResult.WriteToAsync(ms);
+
+                        if (pageResult.Args.TryGetValue(TemplateConstants.Return, out var response))
+                        {
+                            if (response is Task<object> responseTask)
+                                response = await responseTask;
+
+                            if (response is IHttpResult || response is Dictionary<string, object>)
+                            {
+                                var httpResult = TemplateApiPagesService.ToHttpResult(pageResult, response);
+                                await httpRes.WriteToResponse(httpReq, httpResult);
+                                return;
+                            }
+                        }
+
+                        ms.Position = 0;
+                        await ms.WriteToAsync(httpRes.OutputStream);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                await page.Format.OnViewException(result, httpReq, ex);
+                await page.Format.OnViewException(pageResult, httpReq, ex);
             }
         }
     }
