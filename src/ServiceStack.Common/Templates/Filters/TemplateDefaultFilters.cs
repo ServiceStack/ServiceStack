@@ -616,6 +616,8 @@ namespace ServiceStack.Templates
                 }
             }
 
+            pageParams["it"] = pageParams;
+
             await scope.WritePageAsync(page, codePage, pageParams);
         }
 
@@ -1183,6 +1185,50 @@ namespace ServiceStack.Templates
                 return to;
             }
             return target;
+        }
+
+        public object withKeys(IDictionary<string, object> target, object keys)
+        {
+            if (keys == null)
+                return target;
+            
+            var strKeys = keys is string s
+                ? new List<string>{ s }
+                : keys is IEnumerable e
+                    ? e.Map(x => x.ToString())
+                    : throw new NotSupportedException($"{nameof(withoutKeys)} expects a collection of key names but received ${keys.GetType().Name}");
+
+            var to = new Dictionary<string, object>();
+            foreach (var entry in target)
+            {
+                if (!strKeys.Contains(entry.Key))
+                    continue;
+
+                to[entry.Key] = entry.Value;
+            }
+            return to;
+        }
+
+        public object withoutKeys(IDictionary<string, object> target, object keys)
+        {
+            if (keys == null)
+                return target;
+            
+            var strKeys = keys is string s
+                ? new List<string>{ s }
+                : keys is IEnumerable e
+                    ? e.Map(x => x.ToString())
+                    : throw new NotSupportedException($"{nameof(withoutKeys)} expects a collection of key names but received ${keys.GetType().Name}");
+
+            var to = new Dictionary<string, object>();
+            foreach (var entry in target)
+            {
+                if (strKeys.Contains(entry.Key))
+                    continue;
+
+                to[entry.Key] = entry.Value;
+            }
+            return to;
         }
 
         public string dirPath(string filePath)
