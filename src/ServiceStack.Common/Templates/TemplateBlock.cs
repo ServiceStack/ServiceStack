@@ -83,7 +83,6 @@ namespace ServiceStack.Templates
                 new TemplateCaptureBlock(), 
                 new TemplatePartialBlock(),
                 new TemplateEvalBlock(),
-                new TemplateEvalSafeBlock(), 
                 new TemplateWithBlock(),
                 new TemplateNoopBlock(),
             });

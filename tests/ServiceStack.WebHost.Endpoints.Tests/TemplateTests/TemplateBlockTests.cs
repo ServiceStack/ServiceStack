@@ -720,7 +720,7 @@ partialArg in page scope is <b>from page</b>"));
         }
         
         [Test]
-        public void Does_evaluate_safeEval_block_in_new_Context()
+        public void Does_evaluate_safe_eval_block_in_new_Context()
         {
             var context = new TemplateContext {
                 Args = {
@@ -729,7 +729,7 @@ partialArg in page scope is <b>from page</b>"));
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{#evalSafe {expenses:100} }} {{incomeExpr}} - {{expenses}} {{/evalSafe}}"), 
+            Assert.That(context.EvaluateTemplate("{{#eval {safe:true, expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
                 Is.EqualTo(" 2000 - 100 "));
         }
 
