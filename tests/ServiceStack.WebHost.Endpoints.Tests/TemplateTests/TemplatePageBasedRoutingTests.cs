@@ -39,6 +39,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 { "tech/_slug/edit.html", "tech/_slug/edit.html slug: {{slug}}" },
                 { "top/index.html", "top/index.html" },
                 { "users/_username.html", "users/_username.html username: {{username}}" },
+                { "returnpages/index.html", "returnpages/index.html {{ return }} suffix" },
+                { "returnpages/_arg.html", "returnpages/_arg.html {{arg}} {{ return }} suffix" },
                 { "httpresults/index.html", "httpresults/index.html {{ {foo:'bar'} | return({ format: 'json' }) }} suffix" },
                 { "httpresults/explicit.html", "httpresults/explicit.html {{ {response: {foo:'bar'}, format: 'json'} | httpResult | return }} suffix" },
                 { "httpresults/_arg.html", "httpresults/_arg.html {{ {foo:arg} | return({ format: 'json' }) }} suffix" },
@@ -91,7 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [TestCase("/tech/redis", "<html><body>tech/_slug/index.html slug: redis</body></html>")]
         [TestCase("/tech/redis/edit", "<html><body>tech/_slug/edit.html slug: redis</body></html>")]
         [TestCase("/top", "<html><body>top/index.html</body></html>")]
-        [TestCase("/users/mythz", "<html><body>users/_username.html username: mythz</body></html>")]
+        [TestCase("returnpages", "<html><body>returnpages/index.html </body></html>")]
+        [TestCase("returnpages/qux", "<html><body>returnpages/_arg.html qux </body></html>")]
         public void Can_use_page_based_routing(string path, string expectedHtml)
         {
             var html = Config.ListeningOn.CombineWith(path)

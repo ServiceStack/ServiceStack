@@ -301,7 +301,10 @@ namespace ServiceStack.Templates
             foreach (var fragment in fragments)
             {
                 if (HaltExecution)
+                {
+                    HaltExecution = false; //break out of page but continue evaluating layout
                     break;
+                }
 
                 if (fragment is PageStringFragment str)
                 {
