@@ -1231,6 +1231,22 @@ namespace ServiceStack.Templates
             return to;
         }
 
+        public object merge(IDictionary<string, object> target, object sources)
+        {
+            var srcArray = sources is IDictionary<string, object> d
+                ? new object[] {d}
+                : sources is List<IDictionary<string, object>> ld
+                    ? ld.ToArray()
+                    : sources is List<object> lo
+                        ? lo.ToArray()
+                        : sources is object[] la
+                            ? la
+                            : throw new NotSupportedException(
+                                $"{nameof(merge)} cannot merge objects of type ${sources.GetType().Name}");
+
+            return target.MergeIntoObjectDictionary(srcArray);
+        }
+
         public string dirPath(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
