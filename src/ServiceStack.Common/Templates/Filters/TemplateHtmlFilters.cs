@@ -60,6 +60,8 @@ namespace ServiceStack.Templates
                         foreach (var key in keys)
                         {
                             var value = d[key];
+                            if (value == target) break; // Prevent cyclical deps like 'it' binding
+                            
                             sbRows.Append("<td>");
 
                             if (!isComplexType(value))
@@ -185,6 +187,8 @@ namespace ServiceStack.Templates
                             {
                                 if (o is KeyValuePair<string, object> kvp)
                                 {
+                                    if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
+
                                     sb.Append("<tr>");
                                     sb.Append("<th>");
                                     sb.Append(Context.DefaultFilters?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
