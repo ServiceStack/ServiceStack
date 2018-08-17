@@ -131,7 +131,7 @@ namespace ServiceStack
             if (httpReq.ContentLength > 0)
             {
                 var inputStream = httpReq.InputStream;
-                if (TransformResponse != null)
+                if (TransformRequest != null)
                     inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
 
                 using (inputStream)
