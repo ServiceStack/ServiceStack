@@ -22,7 +22,7 @@ namespace ServiceStack
         private readonly IVirtualFiles files;
         private readonly string requestLogsPattern;
         private readonly string errorLogsPattern;
-        private readonly int appendEverySecs;
+        private readonly TimeSpan appendEverySecs;
         private readonly Timer timer;
 
         public CsvRequestLogger(IVirtualFiles files = null, string requestLogsPattern = null, string errorLogsPattern = null, TimeSpan? appendEvery = null)
@@ -30,13 +30,13 @@ namespace ServiceStack
             this.files = files ?? new FileSystemVirtualFiles(HostContext.Config.WebHostPhysicalPath);
             this.requestLogsPattern = requestLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}.csv";
             this.errorLogsPattern = errorLogsPattern ?? "requestlogs/{year}-{month}/{year}-{month}-{day}-errors.csv";
-            this.appendEverySecs = (int)appendEvery.GetValueOrDefault(TimeSpan.FromSeconds(1)).TotalSeconds;
+            this.appendEverySecs = appendEvery ?? TimeSpan.FromSeconds(1);
 
             var lastEntry = ReadLastEntry(GetLogFilePath(this.requestLogsPattern, DateTime.UtcNow));
             if (lastEntry != null)
                 requestId = lastEntry.Id;
 
-            timer = new Timer(OnFlush, null, this.appendEverySecs, Timeout.Infinite);
+            timer = new Timer(OnFlush, null, this.appendEverySecs, Timeout.InfiniteTimeSpan);
         }
 
         private RequestLogEntry ReadLastEntry(string logFile)
@@ -105,7 +105,7 @@ namespace ServiceStack
                     WriteLogs(errorLogsSnapshot, logFile);
                 }
             }
-            timer.Change(appendEverySecs, Timeout.Infinite);
+            timer.Change(appendEverySecs, Timeout.InfiniteTimeSpan);
         }
 
         public string GetLogFilePath(string logFilePattern, DateTime forDate)
