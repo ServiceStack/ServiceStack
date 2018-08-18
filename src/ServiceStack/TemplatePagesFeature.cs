@@ -109,7 +109,15 @@ namespace ServiceStack
             if (initPage != null)
             {
                 appHost.AfterInitCallbacks.Add(host => {
-                    var execInit = new PageResult(initPage).Result;
+                    try
+                    {
+                        var execInit = new PageResult(initPage).Result;
+                        Args["initout"] = execInit;
+                    }
+                    catch (Exception ex)
+                    {
+                        Args["initout"] = ex.ToString();
+                    }
                 });
             }
 
