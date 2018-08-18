@@ -90,7 +90,7 @@ namespace ServiceStack.Formats
             {
                 // Serialize then escape any potential script tags to avoid XSS when displaying as HTML
                 var json = JsonDataContractSerializer.Instance.SerializeToString(dto) ?? "null";
-                json = json.HtmlEncode();
+                json = json.HtmlEncodeLite();
 
                 var url = req.ResolveAbsoluteUrl()
                     .Replace("format=html", "")

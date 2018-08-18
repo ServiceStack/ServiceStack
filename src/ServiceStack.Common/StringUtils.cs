@@ -540,6 +540,11 @@ namespace ServiceStack
 
         static readonly Regex SafeInputRegEx = new Regex(@"[^\w\s\.,@-\\+\\/]", RegexOptions.Compiled);
 
+        public static string HtmlEncodeLite(this string html)
+        {
+            return html.Replace("<", "&lt;").Replace(">", "&gt;");
+        }
+
         public static string HtmlEncode(this string html)
         {
             return System.Net.WebUtility.HtmlEncode(html).Replace("′", "&prime;");
