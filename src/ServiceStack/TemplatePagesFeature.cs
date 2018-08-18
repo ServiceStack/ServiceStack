@@ -724,7 +724,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                             if (response is Task<object> responseTask)
                                 response = await responseTask;
 
-                            if (response is IHttpResult || response is Dictionary<string, object>)
+                            if (response != null)
                             {
                                 var httpResult = TemplateApiPagesService.ToHttpResult(pageResult, response);
                                 await httpRes.WriteToResponse(httpReq, httpResult);

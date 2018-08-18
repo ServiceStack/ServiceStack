@@ -173,6 +173,7 @@ namespace ServiceStack
 
                 args.Remove("status");
             }
+            args.TryGetValue("statusDescription", out var statusDescription);
 
             object response = null;
             if (args.TryGetValue("response", out var oResponse))
@@ -193,7 +194,9 @@ namespace ServiceStack
                 args.Remove("format");
             }
 
-            var to = new HttpResult(response, contentType, statusCode);
+            var to = new HttpResult(response, contentType, statusCode) {
+                StatusDescription = statusDescription as string
+            };
             var httpResultHeaders = args.ToStringDictionary();
             httpResultHeaders.Each(x => to.Options[x.Key] = x.Value);
             return to;
