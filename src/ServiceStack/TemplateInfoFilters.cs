@@ -71,6 +71,8 @@ namespace ServiceStack
         public string userEmail(TemplateScopeContext scope) => req(scope).GetSession()?.Email;
 
         public string hostServiceName(TemplateScopeContext scope) => HostContext.AppHost.ServiceName;
+        public HostConfig hostConfig(TemplateScopeContext scope) => HostContext.Config;
+        
         public HashSet<Type> metaAllDtos() => HostContext.Metadata.GetAllDtos();
         public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
         public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;
