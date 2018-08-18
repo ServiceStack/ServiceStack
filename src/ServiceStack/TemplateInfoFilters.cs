@@ -70,6 +70,7 @@ namespace ServiceStack
         public string userName(TemplateScopeContext scope) => req(scope).GetSession()?.UserAuthName ?? req(scope).GetSession()?.UserName;
         public string userEmail(TemplateScopeContext scope) => req(scope).GetSession()?.Email;
 
+        public string hostServiceName(TemplateScopeContext scope) => HostContext.AppHost.ServiceName;
         public HashSet<Type> metaAllDtos() => HostContext.Metadata.GetAllDtos();
         public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
         public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;
