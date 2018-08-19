@@ -512,6 +512,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate("{{#each letters}}{{Key}}={{Value}} {{/each}}"), 
                 Is.EqualTo("a=A b=B c=C "));            
         }
+
+        [Test]
+        public void Does_export_Key_name_of_all_KeyValuePairs()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["posts"] = new List<Dictionary<string, object>> {
+                        new Dictionary<string, object> {
+                            ["title"] = "title1", 
+                            ["content"] = "content1", 
+                        },
+                        new Dictionary<string, object> {
+                            ["title"] = "title2", 
+                            ["content"] = "content2", 
+                        }
+                    },
+                }
+            }.Init();
+            
+            Assert.That(context.EvaluateTemplate("{{#each posts}}{{title}}={{content}}, {{/each}}"), 
+                Is.EqualTo("title1=content1, title2=content2, "));
+            
+            context = new TemplateContext().Init();
+
+            Assert.That(context.EvaluateTemplate(
+                "{{ { title:'title1', content:'content1' } | addTo: posts}}" +
+                "{{ { title:'title2', content:'content2' } | addTo: posts}}" +
+                "{{#each posts}}{{title}}={{content}}, {{/each}}"),
+                Is.EqualTo("title1=content1, title2=content2, "));
+        }
         
         [Test]
         public void Does_evaluate_template_with_partial_block()

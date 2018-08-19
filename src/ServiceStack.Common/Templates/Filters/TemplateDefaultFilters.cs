@@ -439,7 +439,7 @@ namespace ServiceStack.Templates
             {
                 if (collection is IList l)
                 {
-                    if (value is IEnumerable e && !(value is string))
+                    if (value is IEnumerable e && !(value is string || value is IDictionary))
                     {
                         foreach (var item in e)
                         {
@@ -497,7 +497,7 @@ namespace ServiceStack.Templates
             }
             else
             {
-                if (value is IEnumerable && !(value is string))
+                if (value is IEnumerable && !(value is string || value is IDictionary))
                     args[varName] = value;
                 else
                     args[varName] = new List<object> { value };
