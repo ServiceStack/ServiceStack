@@ -736,7 +736,7 @@ partialArg in page scope is <b>from page</b>"));
         }
 
         [Test]
-        public void Does_evaluate_eval_block_in_existing_Context()
+        public void Does_evaluate_eval_block_in_new_Context_by_default()
         {
             var context = new TemplateContext {
                 Args = {
@@ -746,11 +746,11 @@ partialArg in page scope is <b>from page</b>"));
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{#eval {expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
-                Is.EqualTo(" 1000 - 100 "));
+                Is.EqualTo(" 2000 - 100 "));
         }
-        
+
         [Test]
-        public void Does_evaluate_safe_eval_block_in_new_Context()
+        public void Does_evaluate_eval_block_in_existing_Context_with_use_context()
         {
             var context = new TemplateContext {
                 Args = {
@@ -759,10 +759,44 @@ partialArg in page scope is <b>from page</b>"));
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{#eval {safe:true, expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
-                Is.EqualTo(" 2000 - 100 "));
+            Assert.That(context.EvaluateTemplate("{{#eval {use:{context:true},expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
+                Is.EqualTo(" 1000 - 100 "));
         }
 
+        [Test]
+        public void Can_include_plugins_into_new_eval_context()
+        {
+            var context = new TemplateContext {
+                Plugins = { new MarkdownTemplatePlugin() },
+                Args = {
+                    ["evalContent"] = "{{#markdown}}# Heading{{/markdown}}",
+                }
+            }.Init();
+
+            Assert.Throws<NotSupportedException>(() => 
+                context.EvaluateTemplate("{{#eval}}{{evalContent}}{{/eval}}"));
+
+            Assert.That(context.EvaluateTemplate("{{#eval {use:{plugins:'MarkdownTemplatePlugin'}}{{evalContent}}{{/eval}}"), 
+                Is.EqualTo("<h1>Heading</h1>\n"));
+        }
+        
+        [Test]
+        public void Can_include_filter_into_new_eval_context()
+        {
+            var context = new TemplateContext {
+                TemplateFilters = { new TemplateInfoFilters() },
+                Args = {
+                    ["evalContent"] = "{{envServerUserAgent}}",
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{#eval}}{{evalContent}}{{/eval}}"), 
+                Does.Not.Contain("ServiceStack"));
+
+            Assert.That(context.EvaluateTemplate("{{#eval {use:{filters:'TemplateInfoFilters'}}{{evalContent}}{{/eval}}"), 
+                Does.Contain("ServiceStack"));
+        }
+        
         [Test]
         public void Can_eval_dynamic_content()
         {
