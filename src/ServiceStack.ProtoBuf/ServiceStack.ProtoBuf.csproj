@@ -41,6 +41,6 @@
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="protobuf-net" Version="2.3.7" />
+    <PackageReference Include="protobuf-net" Version="2.3.17" />
   </ItemGroup>
 </Project>

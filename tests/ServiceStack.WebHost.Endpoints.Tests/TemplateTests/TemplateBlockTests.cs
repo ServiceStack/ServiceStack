@@ -776,7 +776,7 @@ partialArg in page scope is <b>from page</b>"));
             Assert.Throws<NotSupportedException>(() => 
                 context.EvaluateTemplate("{{#eval}}{{evalContent}}{{/eval}}"));
 
-            Assert.That(context.EvaluateTemplate("{{#eval {use:{plugins:'MarkdownTemplatePlugin'}}{{evalContent}}{{/eval}}"), 
+            Assert.That(context.EvaluateTemplate("{{#eval {use:{plugins:'MarkdownTemplatePlugin'} }}{{evalContent}}{{/eval}}"), 
                 Is.EqualTo("<h1>Heading</h1>\n"));
         }
         
