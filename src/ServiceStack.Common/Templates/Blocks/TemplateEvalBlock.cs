@@ -17,7 +17,7 @@ namespace ServiceStack.Templates
     ///         {{#eval {htmlDecode:true} }}emit htmldecoded {{evaluateBodyOfArg}} at {{now}} {{/eval}}
     ///         {{#eval {use:{filters:'TemplateServiceStackFilters',plugins:['MarkdownTemplatePlugin'],context:true} }}
     ///              emit {{evaluateBodyOfArg}} at {{now}} in new context
-    ///          {{/eval}}
+    ///         {{/eval}}
     /// </summary>
     public class TemplateEvalBlock : TemplateBlock
     {
@@ -43,68 +43,7 @@ namespace ServiceStack.Templates
                 args.Remove(nameof(htmlDecode));
             }
 
-            var context = new TemplateContext();
-            if (args.TryGetValue("use", out var oUse))
-            {
-                var use = (Dictionary<string, object>) oUse;
-                if (use.TryGetValue("context", out var oContext) && oContext is bool useContext && useContext)
-                {
-                    context = scope.Context;
-                }
-                else
-                {
-                    // Use same ThreadSafe plugin instance to preserve configuration 
-                    var plugins = use.TryGetValue("plugins", out var oPlugins)
-                        ? ToStrings("plugins", oPlugins)
-                        : null;
-                    if (plugins != null)
-                    {
-                        foreach (var name in plugins)
-                        {
-                            var plugin = scope.Context.Plugins.FirstOrDefault(x => x.GetType().Name == name);
-                            if (plugin == null)
-                                throw new NotSupportedException($"Plugin '{name}' is not registered in parent context");
-                            
-                            context.Plugins.Add(plugin);
-                        }
-                    }
-
-                    // Use new filter and block instances which cannot be shared between contexts
-                    var filters = use.TryGetValue("filters", out var oFilters)
-                        ? ToStrings("filters", oFilters)
-                        : null;
-                    if (filters != null)
-                    {
-                        foreach (var name in filters)
-                        {
-                            var filter = scope.Context.TemplateFilters.FirstOrDefault(x => x.GetType().Name == name);
-                            if (filter == null)
-                                throw new NotSupportedException($"Filter '{name}' is not registered in parent context");
-                            
-                            context.TemplateFilters.Add(filter.GetType().CreateInstance<TemplateFilter>());
-                        }
-                    }
-                    
-                    var blocks = use.TryGetValue("blocks", out var oBlocks)
-                        ? ToStrings("blocks", oBlocks)
-                        : null;
-                    if (blocks != null)
-                    {
-                        foreach (var name in blocks)
-                        {
-                            var useBlock = scope.Context.TemplateBlocks.FirstOrDefault(x => x.GetType().Name == name);
-                            if (useBlock == null)
-                                throw new NotSupportedException($"Block '{name}' is not registered in parent context");
-                            
-                            context.TemplateBlocks.Add(useBlock.GetType().CreateInstance<TemplateBlock>());
-                        }
-                    }
-                }
-
-                args.Remove(nameof(use));
-            }
-            context.Init();
-            
+            var context = scope.CreateNewContext(args);
             var unrenderedBody = new TemplatePartialPage(scope.Context, "eval-page", block.Body, format, args);
 
             using (var ms = MemoryStreamFactory.GetStream())
@@ -123,22 +62,6 @@ namespace ServiceStack.Templates
                 };
                 await pageResult.WriteToAsync(scope.OutputStream, token);
             }
-        }
-
-        IEnumerable<string> ToStrings(string name, object arg)
-        {
-            if (arg == null)
-                return null;
-            
-            var strings = arg is IEnumerable<string> ls
-                ? ls
-                : arg is string s
-                    ? new List<string> {s}
-                    : arg is IEnumerable<object> e
-                        ? e.Map(x => (string) x)
-                        : throw new NotSupportedException($"{name} expected a collection of strings but was '{arg.GetType().Name}'");
-
-            return strings;
         }
     }
 }

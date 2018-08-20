@@ -1270,6 +1270,27 @@ namespace ServiceStack.Templates
                 ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
                 : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
         }
+
+        public Task<object> evalTemplate(TemplateScopeContext scope, string source) => evalTemplate(scope, source, null);
+        public async Task<object> evalTemplate(TemplateScopeContext scope, string source, Dictionary<string, object> args)
+        {
+            var context = scope.CreateNewContext(args);
+            
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var pageResult = new PageResult(context.OneTimePage(source));
+                if (args != null)
+                    pageResult.Args = args;
+                
+                await pageResult.WriteToAsync(ms);
+
+                ms.Position = 0;
+                var result = ms.ReadToEnd();
+
+                return result;
+            }
+        }
+
    }
 
     public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        

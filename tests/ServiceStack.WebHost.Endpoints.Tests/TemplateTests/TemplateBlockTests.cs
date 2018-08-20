@@ -741,11 +741,15 @@ partialArg in page scope is <b>from page</b>"));
             var context = new TemplateContext {
                 Args = {
                     ["income"] = 1000,
-                    ["incomeExpr"] = "{{income ?? 2000}}"
+                    ["incomeExpr"] = "{{income ?? 2000}}",
+                    ["expenseExpr"] = "{{expenses}}",
                 }
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{#eval {expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
+                Is.EqualTo(" 2000 - 100 "));
+            
+            Assert.That(context.EvaluateTemplate("{{ ` ${incomeExpr} - ${expenseExpr} ` | evalTemplate({expenses:100}) }}"), 
                 Is.EqualTo(" 2000 - 100 "));
         }
 
@@ -755,11 +759,15 @@ partialArg in page scope is <b>from page</b>"));
             var context = new TemplateContext {
                 Args = {
                     ["income"] = 1000,
-                    ["incomeExpr"] = "{{income ?? 2000}}"
+                    ["incomeExpr"] = "{{income ?? 2000}}",
+                    ["expenseExpr"] = "{{expenses}}",
                 }
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{#eval {use:{context:true},expenses:100} }} {{incomeExpr}} - {{expenses}} {{/eval}}"), 
+                Is.EqualTo(" 1000 - 100 "));
+            
+            Assert.That(context.EvaluateTemplate("{{ ` ${incomeExpr} - ${expenseExpr} ` | evalTemplate({use:{context:true},expenses:100}) }}"), 
                 Is.EqualTo(" 1000 - 100 "));
         }
 
@@ -775,8 +783,13 @@ partialArg in page scope is <b>from page</b>"));
 
             Assert.Throws<NotSupportedException>(() => 
                 context.EvaluateTemplate("{{#eval}}{{evalContent}}{{/eval}}"));
+            Assert.Throws<NotSupportedException>(() => 
+                context.EvaluateTemplate("{{ evalContent | evalTemplate}}"));
 
             Assert.That(context.EvaluateTemplate("{{#eval {use:{plugins:'MarkdownTemplatePlugin'} }}{{evalContent}}{{/eval}}"), 
+                Is.EqualTo("<h1>Heading</h1>\n"));
+
+            Assert.That(context.EvaluateTemplate("{{ evalContent | evalTemplate({use:{plugins:'MarkdownTemplatePlugin'}}) | raw }}"), 
                 Is.EqualTo("<h1>Heading</h1>\n"));
         }
         
@@ -792,8 +805,13 @@ partialArg in page scope is <b>from page</b>"));
 
             Assert.That(context.EvaluateTemplate("{{#eval}}{{evalContent}}{{/eval}}"), 
                 Does.Not.Contain("ServiceStack"));
+            Assert.That(context.EvaluateTemplate("{{ evalContent | evalTemplate}}"), 
+                Does.Not.Contain("ServiceStack"));
 
             Assert.That(context.EvaluateTemplate("{{#eval {use:{filters:'TemplateInfoFilters'}}{{evalContent}}{{/eval}}"), 
+                Does.Contain("ServiceStack"));
+            
+            Assert.That(context.EvaluateTemplate("{{ evalContent | evalTemplate({use:{filters:'TemplateInfoFilters'}}) }}"), 
                 Does.Contain("ServiceStack"));
         }
         
@@ -811,7 +829,9 @@ partialArg in page scope is <b>from page</b>"));
             }.Init();
             
             var result = context.EvaluateTemplate(@"{{#each templates}}{{index}} =>{{#eval {expenses: 100 * index} }} {{it}} {{/eval}}| {{/each}}");
+            Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
             
+            result = context.EvaluateTemplate(@"{{#each templates}}{{index}} =>{{ ` ${it} ` | evalTemplate({expenses: 100 * index}) }}| {{/each}}");
             Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
         }
     }
