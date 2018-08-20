@@ -27,6 +27,7 @@
     <PackageReference Include="MongoDB.Driver" Version="2.7.0" />
     <PackageReference Include="MongoDB.Driver.Core" Version="2.7.0" />
     <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -60,7 +61,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />

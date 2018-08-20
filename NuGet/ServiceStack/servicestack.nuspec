@@ -26,13 +26,13 @@
         <dependency id="ServiceStack.Common" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.AspNetCore.Http" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.1.1, )" />
         <dependency id="System.Memory" version="[4.5.1, )" />
         <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
         <dependency id="System.Threading.Thread" version="[4.3.0, )" />

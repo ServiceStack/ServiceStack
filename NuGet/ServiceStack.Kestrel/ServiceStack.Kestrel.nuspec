@@ -21,13 +21,13 @@
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.AspNetCore.Server.Kestrel" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Server.Kestrel" version="[2.1.2, )" />
+        <dependency id="Microsoft.AspNetCore.Http" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.1.1, )" />
         <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
         <dependency id="System.Memory" version="[4.5.1, )" />
       </group>

@@ -24,7 +24,7 @@
         <dependency id="System.Net.Primitives" version="[4.3.0, )" />
         <dependency id="System.Net.NetworkInformation" version="[4.3.0, )" />
         <dependency id="System.Runtime.Serialization.Primitives" version="[4.3.0, )" />
-        <dependency id="System.Reflection.TypeExtensions" version="[4.3.0, )" />
+        <dependency id="System.Reflection.TypeExtensions" version="[4.5.0, )" />
         <dependency id="ServiceStack.Interfaces.Core" version="5.0.0" />
         <dependency id="ServiceStack.Text.Core" version="5.0.0" />
       </group>
