@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using ServiceStack.Text;
@@ -54,6 +55,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Stream", "Blob"},
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
+            {"Uri", "string"},
         };
         private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
