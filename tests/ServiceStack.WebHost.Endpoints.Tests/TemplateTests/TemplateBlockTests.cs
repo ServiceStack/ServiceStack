@@ -739,6 +739,7 @@ partialArg in page scope is <b>from page</b>"));
         public void Does_evaluate_eval_block_in_new_Context_by_default()
         {
             var context = new TemplateContext {
+                TemplateBlocks = { new TemplateEvalBlock() },
                 Args = {
                     ["income"] = 1000,
                     ["incomeExpr"] = "{{income ?? 2000}}",
@@ -757,6 +758,7 @@ partialArg in page scope is <b>from page</b>"));
         public void Does_evaluate_eval_block_in_existing_Context_with_use_context()
         {
             var context = new TemplateContext {
+                TemplateBlocks = { new TemplateEvalBlock() },
                 Args = {
                     ["income"] = 1000,
                     ["incomeExpr"] = "{{income ?? 2000}}",
@@ -775,6 +777,7 @@ partialArg in page scope is <b>from page</b>"));
         public void Can_include_plugins_into_new_eval_context()
         {
             var context = new TemplateContext {
+                TemplateBlocks = { new TemplateEvalBlock() },
                 Plugins = { new MarkdownTemplatePlugin() },
                 Args = {
                     ["evalContent"] = "{{#markdown}}# Heading{{/markdown}}",
@@ -797,6 +800,7 @@ partialArg in page scope is <b>from page</b>"));
         public void Can_include_filter_into_new_eval_context()
         {
             var context = new TemplateContext {
+                TemplateBlocks = { new TemplateEvalBlock() },
                 TemplateFilters = { new TemplateInfoFilters() },
                 Args = {
                     ["evalContent"] = "{{envServerUserAgent}}",
@@ -819,6 +823,7 @@ partialArg in page scope is <b>from page</b>"));
         public void Can_eval_dynamic_content()
         {
             var context = new TemplateContext {
+                TemplateBlocks = { new TemplateEvalBlock() },
                 Args = {
                     ["templates"] = new List<string> {
                         "1. {{income ?? 1000}} - {{expenses}}",

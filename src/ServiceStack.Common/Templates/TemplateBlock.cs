@@ -82,9 +82,18 @@ namespace ServiceStack.Templates
                 new TemplateRawBlock(),
                 new TemplateCaptureBlock(), 
                 new TemplatePartialBlock(),
-                new TemplateEvalBlock(),
                 new TemplateWithBlock(),
                 new TemplateNoopBlock(),
+            });
+        }
+    }
+
+    public class TemplateProtectedBlocks : ITemplatePlugin
+    {
+        public void Register(TemplateContext context)
+        {
+            context.TemplateBlocks.AddRange(new TemplateBlock[] {
+                new TemplateEvalBlock(), // evalTemplate filter has same functionality and is registered by default 
             });
         }
     }
