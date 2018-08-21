@@ -199,7 +199,7 @@ Bob's score: {{ scoreRecords
                 Is.EqualTo(@"[""FROM   "","" FORM  ""]["" SALT"",""  LAST   ""]["" EARN "","" NEAR ""]"));
         }
 
-        class MyFilter : TemplateFilter
+        class MyFilters : TemplateFilter
         {
             public double pow(double arg1, double arg2) => arg1 / arg2;
         }
@@ -209,12 +209,25 @@ Bob's score: {{ scoreRecords
         {
             var context = new TemplateContext().Init();
 
-            "(a,b) => pow(a,2) + pow(b,2)".ParseJsExpression(out var token);
-            var arrowExpr = (JsArrowFunctionExpression) token;
+            var expr = JS.expression("pow(2,2) + pow(4,2)");
+            Assert.That(expr.Evaluate(), Is.EqualTo(20));
+            
+            Assert.That(JS.eval("pow(2,2) + pow(4,2)"), Is.EqualTo(20));
+
+            var scope = JS.CreateScope(args: new Dictionary<string, object> {
+                ["a"] = 2,
+                ["b"] = 4,
+            }); 
+            Assert.That(JS.eval("pow(a,2) + pow(b,2)", scope), Is.EqualTo(20));
+
+            var customPow = JS.CreateScope(functions: new MyFilters());
+            Assert.That(JS.eval("pow(2,2) + pow(4,2)", customPow), Is.EqualTo(3));
+
+            var arrowExpr = (JsArrowFunctionExpression)JS.expression("(a,b) => pow(a,2) + pow(b,2)");
             
             Assert.That(arrowExpr.Invoke(2,4), Is.EqualTo(20));
-            
-            Assert.That(arrowExpr.Invoke(JS.CreateScope(functions: new MyFilter()), 2,4), Is.EqualTo(3));
+
+            Assert.That(arrowExpr.Invoke(customPow, 2,4), Is.EqualTo(3));
         }
     }
 }

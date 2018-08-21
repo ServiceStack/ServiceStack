@@ -186,6 +186,8 @@ namespace ServiceStack.Templates
             ? literal.Advance(2)
             : (literal.StartsWith("\n") ? literal.Advance(1) : literal);
 
+        public static object Evaluate(this JsToken token) => token.Evaluate(JS.CreateScope());
+
         public static bool EvaluateToBool(this JsToken token, TemplateScopeContext scope)
         {
             var ret = token.Evaluate(scope);
