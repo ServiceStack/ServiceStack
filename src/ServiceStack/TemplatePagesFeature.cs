@@ -547,6 +547,8 @@ namespace ServiceStack
 
             if (response is Task<object> responseTask)
                 response = await responseTask;
+            if (response is IRawString raw)
+                response = raw.ToRawString();
 
             var httpResult = ToHttpResult(pageResult, response);
             return httpResult;
@@ -731,6 +733,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                         {
                             if (response is Task<object> responseTask)
                                 response = await responseTask;
+                            if (response is IRawString raw)
+                                response = raw.ToRawString();
 
                             if (response != null)
                             {
