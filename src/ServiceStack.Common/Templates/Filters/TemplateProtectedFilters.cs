@@ -350,33 +350,33 @@ namespace ServiceStack.Templates
             }
         }
         
-        static string[] AllCacheNames = new string[] {
-            nameof(Context.Cache),
-            nameof(Context.CacheMemory),
-            nameof(Context.ExpiringCache),
+        static readonly string[] AllCacheNames = {
+            nameof(TemplateContext.Cache),
+            nameof(TemplateContext.CacheMemory),
+            nameof(TemplateContext.ExpiringCache),
             nameof(TemplatePageUtils.BinderCache),
-            nameof(Context.JsTokenCache),
-            nameof(Context.AssignExpressionCache),
-            nameof(Context.PathMappings),
+            nameof(TemplateContext.JsTokenCache),
+            nameof(TemplateContext.AssignExpressionCache),
+            nameof(TemplateContext.PathMappings),
         };
 
         internal IDictionary GetCache(string cacheName)
         {
             switch (cacheName)
             {
-                case nameof(Context.Cache):
+                case nameof(TemplateContext.Cache):
                     return Context.Cache;
-                case nameof(Context.CacheMemory):
+                case nameof(TemplateContext.CacheMemory):
                     return Context.CacheMemory;
-                case nameof(Context.ExpiringCache):
+                case nameof(TemplateContext.ExpiringCache):
                     return Context.ExpiringCache;
                 case nameof(TemplatePageUtils.BinderCache):
                     return TemplatePageUtils.BinderCache;
-                case nameof(Context.JsTokenCache):
+                case nameof(TemplateContext.JsTokenCache):
                     return Context.JsTokenCache;
-                case nameof(Context.AssignExpressionCache):
+                case nameof(TemplateContext.AssignExpressionCache):
                     return Context.AssignExpressionCache;
-                case nameof(Context.PathMappings):
+                case nameof(TemplateContext.PathMappings):
                     return Context.PathMappings;
             }
             return null;
@@ -415,10 +415,7 @@ namespace ServiceStack.Templates
         public object invalidateAllCaches(TemplateScopeContext scope)
         {
             cacheClear(scope, "all");
-            
-            scope.Context.InvalidateCachesBefore = DateTime.UtcNow;
-
-            return null;
+            return scope.Context.InvalidateCachesBefore = DateTime.UtcNow;
         }
     }
 }

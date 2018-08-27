@@ -197,6 +197,9 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        private TemplatePage emptyPage;
+        public TemplatePage EmptyPage => emptyPage ?? (emptyPage = OneTimePage("")); 
+
         public TemplatePage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
 

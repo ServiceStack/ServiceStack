@@ -90,8 +90,8 @@ namespace ServiceStack
                 if (!hasAnyRole)
                     return false;
 
-                var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
-                if (!hasPermssions)
+                var hasPermissions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasPermissions)
                     return false;
 
                 var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
