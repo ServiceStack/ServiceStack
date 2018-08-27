@@ -35,9 +35,15 @@ namespace ServiceStack
         public string ApiPath { get; set; }
         public string ApiDefaultContentType { get; set; } = MimeTypes.Json;
 
+        /// <summary>
+        /// Role Required to call Templates Admin Service (/templates/admin), Default is Admin.
+        /// If null Templates Admin Service will not be registered.
+        /// </summary>
+        public string TemplatesAdminRole { get; set; } = RoleNames.Admin;
+
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
-            "/swagger-ui" //Swagger's handler needs to process index.html 
+            "/swagger-ui" // Swagger's handler needs to process index.html 
         };
 
         public TemplateServiceStackFilters ServiceStackFilters => TemplateFilters.FirstOrDefault(x => x is TemplateServiceStackFilters) as TemplateServiceStackFilters;
@@ -103,6 +109,11 @@ namespace ServiceStack
             {
                 appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
+            }
+
+            if (!string.IsNullOrEmpty(TemplatesAdminRole))
+            {
+                appHost.RegisterService(typeof(TemplatesAdminService), TemplatesAdminService.Routes);
             }
 
             var initPage = Pages.GetPage("_init");
@@ -580,7 +591,7 @@ namespace ServiceStack
         public string AuthSecret { get; set; }
     }
 
-    [ReturnExceptionsInJsonAttribute]
+    [ReturnExceptionsInJson]
     [DefaultRequest(typeof(TemplateMetadataDebug))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplateMetadataDebugService : Service
@@ -679,6 +690,47 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             }
  
             return html;
+        }
+    }
+
+    [ExcludeMetadata]
+    public class TemplatesAdmin : IReturn<TemplatesAdminResponse>
+    {
+        public string Action { get; set; }
+    }
+
+    public class TemplatesAdminResponse
+    {
+        public string Result { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DefaultRequest(typeof(TemplatesAdmin))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class TemplatesAdminService : Service
+    {
+        public static string[] Routes { get; set; } = { "/templates/admin", "/templates/admin/{Action}" }; 
+        
+        public static string AllowableActions = "Allowable Actions: invalidateAllCaches";
+        
+        public object Any(TemplatesAdmin request)
+        {
+            var feature = HostContext.AssertPlugin<TemplatePagesFeature>();
+            
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.TemplatesAdminRole);
+            
+            if (string.IsNullOrEmpty(request.Action))
+                return new TemplatesAdminResponse { Result = AllowableActions };
+
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var scope = new TemplateScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
+            
+                if (request.Action == nameof(TemplateProtectedFilters.invalidateAllCaches))
+                    return new TemplatesAdminResponse { Result = feature.ProtectedFilters.invalidateAllCaches(scope).ToJsv() };
+            }
+            
+            throw new NotSupportedException($"Action '{request.Action}' is not supported. " + AllowableActions);
         }
     }
 

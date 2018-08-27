@@ -17,6 +17,7 @@ using ServiceStack.Api.OpenApi;
 using ServiceStack.Api.OpenApi.Specification;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.Html;
@@ -90,7 +91,8 @@ namespace CheckWeb
 
             Plugins.Add(new TemplatePagesFeature
             {
-                EnableDebugTemplateToAll = false
+                EnableDebugTemplateToAll = false,
+                TemplatesAdminRole = RoleNames.AllowAnon,
             });
 
             //ProxyFetureTests
