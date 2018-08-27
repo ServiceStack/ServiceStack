@@ -10,11 +10,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_ToJsAst_to_generate_Esprima_AST()
         {
-            JsToken token;
+            JsToken token = JS.expression("{ key: a.prop == 1 ? b < 2 : c > 3 }");
 
-            "{ key: a.prop == 1 ? b < 2 : c > 3 }".ParseJsExpression(out token);
+//            "{ key: a.prop == 1 ? b < 2 : c > 3 }".ParseJsExpression(out token);            
 
-            var ast = token.ToJsAst();
+            Dictionary<string, object> ast = token.ToJsAst();
 
             ast.ToJson().IndentJson().Print();
 

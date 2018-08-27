@@ -72,10 +72,14 @@ namespace ServiceStack.Templates
         /// </summary>
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
 
-        // Whether to check for modified pages by default when not in DebugMode
+        /// <summary>
+        /// Whether to check for modified pages by default when not in DebugMode
+        /// </summary>
         public bool CheckForModifiedPages { get; set; } = false;
 
-        ///How long in between checking for modified pages
+        /// <summary>
+        /// How long in between checking for modified pages
+        /// </summary>
         public TimeSpan? CheckForModifiedPagesAfter { get; set; }
         
         /// <summary>
@@ -84,12 +88,12 @@ namespace ServiceStack.Templates
         public bool RenderExpressionExceptions { get; set; }
 
         /// <summary>
-        /// What argument to assign Fitler Exceptions to
+        /// What argument to assign Filter Exceptions to
         /// </summary>
         public string AssignExceptionsTo { get; set; }
         
         /// <summary>
-        /// Whether to 
+        /// Whether to skip executing Filters if an Exception was thrown
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 

@@ -48,30 +48,28 @@ namespace ServiceStack.Templates
                 }
             }
 
-            if (file == null)
+            var parentPath = fromVirtualPath.IndexOf('/') >= 0
+                ? fromVirtualPath.LastLeftPart('/')
+                : "";
+
+            do
             {
-                var parentPath = fromVirtualPath.IndexOf('/') >= 0
-                    ? fromVirtualPath.LastLeftPart('/')
-                    : "";
-
-                do
+                var seekPath = parentPath.CombineWith(virtualPath);
+                file = virtualFiles.GetFile(seekPath);
+                if (file != null)
                 {
-                    var seekPath = parentPath.CombineWith(virtualPath);
-                    file = virtualFiles.GetFile(seekPath);
-                    if (file != null)
-                    {
-                        Context.SetPathMapping(pathMapKey, virtualPath, seekPath);
-                        return file;
-                    }
+                    Context.SetPathMapping(pathMapKey, virtualPath, seekPath);
+                    return file;
+                }
 
-                    if (parentPath == "")
-                        break;
+                if (parentPath == "")
+                    break;
 
-                    parentPath = parentPath.IndexOf('/') >= 0
-                        ? parentPath.LastLeftPart('/')
-                        : "";
-                } while (true);
-            }
+                parentPath = parentPath.IndexOf('/') >= 0
+                    ? parentPath.LastLeftPart('/')
+                    : "";
+            } while (true);
+
             return null;
         }
 
@@ -108,9 +106,9 @@ namespace ServiceStack.Templates
         public IEnumerable<IVirtualFile> dirFiles(string dirPath) => Context.VirtualFiles.GetDirectory(dirPath)?.GetFiles() ?? new List<IVirtualFile>();
         public IVirtualDirectory dirDirectory(string dirPath, string dirName) => Context.VirtualFiles.GetDirectory(dirPath)?.GetDirectory(dirName);
         public IEnumerable<IVirtualDirectory> dirDirectories(string dirPath) => Context.VirtualFiles.GetDirectory(dirPath)?.GetDirectories() ?? new List<IVirtualDirectory>();
-        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPatern) => Context.VirtualFiles.GetDirectory(dirPath)?.GetAllMatchingFiles(globPatern);
+        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPattern) => Context.VirtualFiles.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
 
-        public IEnumerable<IVirtualFile> filesFind(string globPatern) => Context.VirtualFiles.GetAllMatchingFiles(globPatern);
+        public IEnumerable<IVirtualFile> filesFind(string globPattern) => Context.VirtualFiles.GetAllMatchingFiles(globPattern);
         public bool fileExists(string virtualPath) => Context.VirtualFiles.FileExists(virtualPath);
         public IVirtualFile file(string virtualPath) => Context.VirtualFiles.GetFile(virtualPath);
         public string fileWrite(string virtualPath, object contents)
@@ -351,22 +349,34 @@ namespace ServiceStack.Templates
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
+        
+        static string[] AllCacheNames = new string[] {
+            nameof(Context.Cache),
+            nameof(Context.CacheMemory),
+            nameof(Context.ExpiringCache),
+            nameof(TemplatePageUtils.BinderCache),
+            nameof(Context.JsTokenCache),
+            nameof(Context.AssignExpressionCache),
+            nameof(Context.PathMappings),
+        };
 
         internal IDictionary GetCache(string cacheName)
         {
             switch (cacheName)
             {
-                case "Cache":
+                case nameof(Context.Cache):
                     return Context.Cache;
-                case "CacheMemory":
+                case nameof(Context.CacheMemory):
                     return Context.CacheMemory;
-                case "ExpiringCache":
+                case nameof(Context.ExpiringCache):
                     return Context.ExpiringCache;
-                case "JsTokenCache":
+                case nameof(TemplatePageUtils.BinderCache):
+                    return TemplatePageUtils.BinderCache;
+                case nameof(Context.JsTokenCache):
                     return Context.JsTokenCache;
-                case "AssignExpressionCache":
+                case nameof(Context.AssignExpressionCache):
                     return Context.AssignExpressionCache;
-                case "PathMappings":
+                case nameof(Context.PathMappings):
                     return Context.PathMappings;
             }
             return null;
@@ -374,16 +384,16 @@ namespace ServiceStack.Templates
 
         public object cacheClear(TemplateScopeContext scope, object cacheNames)
         {
-            List<string> caches;
+            IEnumerable<string> caches;
             if (cacheNames is string strName)
             {
                 caches = strName.EqualsIgnoreCase("all")
-                    ? new List<string> {"Cache", "CacheMemory", "ExpiringCache", "BinderCache", "JsTokenCache", "AssignExpressionCache", "PathMappings"}
-                    : new List<string> {strName};
+                    ? AllCacheNames
+                    : new[]{ strName };
             }
             else if (cacheNames is IEnumerable<string> nameList)
             {
-                caches = new List<string>(nameList);
+                caches = nameList;
             }
             else throw new NotSupportedException(nameof(cacheClear) + 
                  " expects a cache name or list of cache names but received: " + (cacheNames.GetType()?.Name ?? "null"));

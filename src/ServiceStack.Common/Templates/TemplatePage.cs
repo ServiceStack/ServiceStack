@@ -90,7 +90,7 @@ namespace ServiceStack.Templates
                     pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
                 
-                //When page has variables body starts from first non whitespace after variable's end  
+                //When page has variables body starts from first non whitespace after variables end  
                 var argsSuffixPos = line.LastIndexOf(Format.ArgsSuffix);
                 if (argsSuffixPos >= 0)
                 {

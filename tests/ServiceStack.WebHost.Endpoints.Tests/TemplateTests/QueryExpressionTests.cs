@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -80,6 +81,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     new JsIdentifier("items"),
                     new JsIdentifier("it")
                 ))));
+        }
+
+        [Test]
+        public void Can_customize_and_evaluate_custom_AST_expressions()
+        {
+            JsToken expr;
+
+            var expected = new JsLogicalExpression(
+                new JsBinaryExpression(new JsIdentifier("a"), JsGreaterThan.Operator, new JsLiteral(1)),
+                JsAnd.Operator,
+                new JsBinaryExpression(new JsIdentifier("b"), JsLessThan.Operator, new JsLiteral(2))
+            );
+
+            expr = JS.expression("a > 1 && b < 2");
+            Assert.That(expr, Is.EqualTo(expected));
+            Assert.That(expr.Equals(expected));
+            
+            Assert.That(new JsLogicalExpression(
+                    JS.expression("a > 1"), 
+                    JsAnd.Operator,
+                    JS.expression("b < 2")), 
+                Is.EqualTo(expected));
+            
+            Assert.That((bool)expr.Evaluate(JS.CreateScope(args:new Dictionary<string, object> {
+                ["a"] = 2,
+                ["b"] = 1
+            })));
+
+            Assert.That((bool)expr.Evaluate(JS.CreateScope(args:new Dictionary<string, object> {
+                ["a"] = 1,
+                ["b"] = 2
+            })), Is.False);
         }
 
     }
