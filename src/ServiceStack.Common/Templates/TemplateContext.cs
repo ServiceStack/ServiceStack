@@ -83,6 +83,11 @@ namespace ServiceStack.Templates
         public TimeSpan? CheckForModifiedPagesAfter { get; set; }
         
         /// <summary>
+        /// Existing caches and pages created prior to specified date should be invalidated 
+        /// </summary>
+        public DateTime? InvalidateCachesBefore { get; set; }
+        
+        /// <summary>
         /// Render render filter exceptions in-line where filter is located
         /// </summary>
         public bool RenderExpressionExceptions { get; set; }

@@ -46,7 +46,8 @@ namespace ServiceStack.Templates
                 var skipCheck = !Context.DebugMode &&
                     (Context.CheckForModifiedPagesAfter != null
                         ? DateTime.UtcNow - LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value
-                        : !Context.CheckForModifiedPages);
+                        : !Context.CheckForModifiedPages) &&
+                    (Context.InvalidateCachesBefore == null || LastModifiedCheck > Context.InvalidateCachesBefore.Value);
                 
                 if (skipCheck)
                     return this;

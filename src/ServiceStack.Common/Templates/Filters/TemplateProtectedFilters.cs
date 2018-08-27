@@ -411,5 +411,14 @@ namespace ServiceStack.Templates
 
             return entriesRemoved;
         }
+
+        public object invalidateAllCaches(TemplateScopeContext scope)
+        {
+            cacheClear(scope, "all");
+            
+            scope.Context.InvalidateCachesBefore = DateTime.UtcNow;
+
+            return null;
+        }
     }
 }
