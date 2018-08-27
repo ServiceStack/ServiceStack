@@ -4857,6 +4857,11 @@
             return null if Session is invalid to create new Session.
             </summary>
         </member>
+        <member name="M:ServiceStack.ServiceStackHost.SetCookieFilter(ServiceStack.Web.IRequest,System.Net.Cookie)">
+            <summary>
+            Override built-in Cookies, return false to prevent the Cookie from being set.
+            </summary>
+        </member>
         <member name="M:ServiceStack.ServiceStackHost.GetDbConnection(ServiceStack.Web.IRequest)">
             <summary>
             Gets IDbConnection Checks if DbInfo is seat in RequestContext.
@@ -5686,6 +5691,11 @@
             Provide a catch-all handler that doesn't match any routes
             </summary>
         </member>
+        <member name="P:ServiceStack.IAppHost.FallbackHandlers">
+            <summary>
+            Provide a fallback handler for not found requests (last filter in Request Pipeline)
+            </summary>
+        </member>
         <member name="P:ServiceStack.IAppHost.GlobalHtmlErrorHttpHandler">
             <summary>
             Use a fall-back Error Handler for handling global errors
@@ -5821,6 +5831,15 @@
             </summary>
             <typeparam name="T"></typeparam>
             <returns></returns>
+        </member>
+        <member name="T:ServiceStack.TemplateMarkdownBlock">
+             <summary>
+             Converts markdown contents to HTML using the configured MarkdownConfig.Transformer.
+             If a variable name is specified the HTML output is captured and saved instead. 
+            
+             Usages: {{#markdown}} ## The Heading {{/markdown}}
+                     {{#markdown content}} ## The Heading {{/markdown}} HTML: {{content}}
+             </summary>
         </member>
         <member name="P:ServiceStack.Messaging.BackgroundMqService.RetryCount">
             <summary>
@@ -6285,6 +6304,11 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="P:ServiceStack.ServerEventsHandler.RemoveExpiredSubscriptionsEvery">
+            <summary>
+            Call IServerEvents.RemoveExpiredSubscriptions() after every count
+            </summary>
+        </member>
         <member name="T:ServiceStack.Service">
             <summary>
             Generic + Useful IService base class
@@ -6391,6 +6415,12 @@
             
             If you can build for .net 4.5, you do not have to do this swap. You can take advantage of a new flag (SuppressFormsAuthenticationRedirect)
             that tells the FormAuthenticationModule to not redirect, which also means you will not need the EndRequest code.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.TemplatePagesFeature.TemplatesAdminRole">
+            <summary>
+            Role Required to call Templates Admin Service (/templates/admin), Default is Admin.
+            If null Templates Admin Service will not be registered.
             </summary>
         </member>
         <member name="T:ServiceStack.Templates.HtmlTemplates">

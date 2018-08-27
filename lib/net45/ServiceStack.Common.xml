@@ -426,7 +426,6 @@
              <summary>
              Captures the output and assigns it to the specified variable.
              Accepts an optional Object Dictionary as scope arguments when evaluating body.
-             Effectively is similar 
             
              Usages: {{#capture output}} {{#each args}} - [{{it}}](/path?arg={{it}}) {{/each}} {{/capture}}
                      {{#capture output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
@@ -443,8 +442,20 @@
                     {{#each numbers}} {{it}} {{else}} no numbers {{/each}}
                     {{#each numbers}} {{it}} {{else if letters != null}} has letters {{else}} no numbers {{/each}}
                     {{#each n in numbers where n > 5}} {{it}} {{else}} no numbers > 5 {{/each}}
-                    {{#each n in numbers where n > 5 order by n skip 1 take 2}} {{it}} {{else}} no numbers > 5 {{/each}}
+                    {{#each n in numbers where n > 5 orderby n skip 1 take 2}} {{it}} {{else}} no numbers > 5 {{/each}}
             </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateEvalBlock">
+             <summary>
+             Special block which evaluates the rendered body as a ServiceStack Template
+            
+             Usages: {{#eval}}emit {{evaluateBodyOfArg}} at {{now}} {{/eval}}
+                     {{#eval {scopeArg:1} }}emit {{evaluateBodyOfArg}} at {{now}} with {{scopeArg}} {{/eval}}
+                     {{#eval {htmlDecode:true} }}emit htmldecoded {{evaluateBodyOfArg}} at {{now}} {{/eval}}
+                     {{#eval {use:{filters:'TemplateServiceStackFilters',plugins:['MarkdownTemplatePlugin'],context:true} }}
+                          emit {{evaluateBodyOfArg}} at {{now}} in new context
+                     {{/eval}}
+             </summary>
         </member>
         <member name="M:ServiceStack.Templates.TemplateHtmlBlocks.Register(ServiceStack.Templates.TemplateContext)">
             <summary>
@@ -514,6 +525,16 @@
             <param name="asyncResult"></param>
             <returns>true if result was synchronous otherwise false</returns>
         </member>
+        <member name="P:ServiceStack.Templates.PageResult.Page">
+            <summary>
+            The Template Page to Render
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.CodePage">
+            <summary>
+            The Code Page to Render
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.PageResult.LayoutPage">
             <summary>
             Use specified Layout 
@@ -531,7 +552,7 @@
         </member>
         <member name="P:ServiceStack.Templates.PageResult.Model">
             <summary>
-            
+            Extract Model Properties into Scope Args
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.PageResult.Args">
@@ -629,8 +650,20 @@
             Available transformers that can transform context filter stream outputs
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.CheckForModifiedPages">
+            <summary>
+            Whether to check for modified pages by default when not in DebugMode
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.TemplateContext.CheckForModifiedPagesAfter">
+            <summary>
             How long in between checking for modified pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.InvalidateCachesBefore">
+            <summary>
+            Existing caches and pages created prior to specified date should be invalidated 
+            </summary>
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.RenderExpressionExceptions">
             <summary>
@@ -639,12 +672,12 @@
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.AssignExceptionsTo">
             <summary>
-            What argument to assign Fitler Exceptions to
+            What argument to assign Filter Exceptions to
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.SkipExecutingFiltersIfError">
             <summary>
-            Whether to 
+            Whether to skip executing Filters if an Exception was thrown
             </summary>
         </member>
         <member name="T:ServiceStack.UrnId">

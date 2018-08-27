@@ -395,6 +395,12 @@
             Whether Debug Logging should log detailed Redis operations (default false)
             </summary>
         </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.AssertAccessOnlyOnSameThread">
+            <summary>
+            Assert all access using pooled RedisClient instance should be limited to same thread.
+            Captures StackTrace so is very slow, use only for debugging connection issues.
+            </summary>
+        </member>
         <member name="M:ServiceStack.Redis.RedisConfig.Reset">
             <summary>
             Resets Redis Config and Redis Stats back to default values

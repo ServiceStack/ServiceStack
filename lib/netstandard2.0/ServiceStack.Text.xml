@@ -176,12 +176,12 @@
             Only supported for when the JsConfig.DateHandler == JsonDateHandler.TimestampOffset
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEscapeUnicode">
+        <member name="P:ServiceStack.Text.JsConfig.EscapeUnicode">
             <summary>
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEscapeHtmlChars">
+        <member name="P:ServiceStack.Text.JsConfig.EscapeHtmlChars">
             <summary>
             Gets or sets a value indicating if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
             </summary>
@@ -395,6 +395,22 @@
             and strictly append-only; you cannot change existing values. All key matches are on **REFERENCE**
             equality. The type is fully thread-safe.
             </summary>
+        </member>
+        <member name="T:ServiceStack.Text.Pools.BufferPool">
+            <summary>
+            Courtesy of @marcgravell
+            https://github.com/mgravell/protobuf-net/blob/master/src/protobuf-net/BufferPool.cs
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Text.Pools.BufferPool.MaxByteArraySize">
+            <remarks>
+            https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/gcallowverylargeobjects-element
+            </remarks>
+        </member>
+        <member name="F:ServiceStack.Text.Pools.CharPool.MaxcharArraySize">
+            <remarks>
+            https://docs.microsoft.com/en-us/dotnet/framework/configure-apps/file-schema/runtime/gcallowverylargeobjects-element
+            </remarks>
         </member>
         <member name="T:ServiceStack.Text.Pools.ObjectPool`1">
             <summary>
@@ -1061,6 +1077,17 @@
             Alternative Reusable StringBuilder ThreadStatic Cache
             </summary>
         </member>
+        <member name="T:ServiceStack.Text.StringSpanExtensions">
+            <summary>
+            Helpful extensions on ReadOnlySpan&lt;char&gt;
+            Previous extensions on StringSegment available from: https://gist.github.com/mythz/9825689f0db7464d1d541cb62954614c
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Text.StringSpanExtensions.Value(System.ReadOnlySpan{System.Char})">
+            <summary>
+            Returns null if Length == 0, string.Empty if value[0] == NonWidthWhitespace, otherise returns value.ToString()
+            </summary>
+        </member>
         <member name="T:ServiceStack.Text.StringWriterCache">
             <summary>
             Reusable StringWriter ThreadStatic Cache
@@ -1342,6 +1369,11 @@
         <member name="M:ServiceStack.StreamExtensions.ReadExactlyFast(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
             <summary>
             Same as ReadExactly, but without the argument checks.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.StreamExtensions.InMemoryStream(System.Byte[])">
+            <summary>
+            Returns bytes in publiclyVisible MemoryStream
             </summary>
         </member>
         <member name="M:ServiceStack.StringExtensions.BaseConvert(System.String,System.Int32,System.Int32)">

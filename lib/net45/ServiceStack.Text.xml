@@ -29,11 +29,6 @@
             <param name="assemblyName"></param>
             <returns>The type if it exists</returns>
         </member>
-        <member name="M:ServiceStack.Text.CharSpanExtensions.Value(System.ReadOnlySpan{System.Char})">
-            <summary>
-            Returns null if Length == 0, string.Empty if value[0] == NonWidthWhitespace, otherise returns value.ToString()
-            </summary>
-        </member>
         <member name="M:ServiceStack.Text.Common.DateTimeSerializer.Prepare(System.DateTime,System.Boolean)">
             <summary>
             If AlwaysUseUtc is set to true then convert all DateTime to UTC. If PreserveUtc is set to true then UTC dates will not convert to local
@@ -181,12 +176,12 @@
             Only supported for when the JsConfig.DateHandler == JsonDateHandler.TimestampOffset
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEscapeUnicode">
+        <member name="P:ServiceStack.Text.JsConfig.EscapeUnicode">
             <summary>
             Gets or sets a value indicating if unicode symbols should be serialized as "\uXXXX".
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEscapeHtmlChars">
+        <member name="P:ServiceStack.Text.JsConfig.EscapeHtmlChars">
             <summary>
             Gets or sets a value indicating if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
             </summary>
@@ -1143,322 +1138,16 @@
             Alternative Reusable StringBuilder ThreadStatic Cache
             </summary>
         </member>
-        <member name="T:ServiceStack.Text.StringSegment">
+        <member name="T:ServiceStack.Text.StringSpanExtensions">
             <summary>
-            An optimized representation of a substring.
+            Helpful extensions on ReadOnlySpan&lt;char&gt;
+            Previous extensions on StringSegment available from: https://gist.github.com/mythz/9825689f0db7464d1d541cb62954614c
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.StringSegment.Empty">
+        <member name="M:ServiceStack.Text.StringSpanExtensions.Value(System.ReadOnlySpan{System.Char})">
             <summary>
-            A <see cref="T:ServiceStack.Text.StringSegment"/> for <see cref="F:System.String.Empty"/>.
+            Returns null if Length == 0, string.Empty if value[0] == NonWidthWhitespace, otherise returns value.ToString()
             </summary>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.#ctor(System.String)">
-            <summary>
-            Initializes an instance of the <see cref="T:ServiceStack.Text.StringSegment"/> struct.
-            </summary>
-            <param name="buffer">
-            The original <see cref="T:System.String"/>. The <see cref="T:ServiceStack.Text.StringSegment"/> includes the whole <see cref="T:System.String"/>.
-            </param>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.#ctor(System.String,System.Int32,System.Int32)">
-            <summary>
-            Initializes an instance of the <see cref="T:ServiceStack.Text.StringSegment"/> struct.
-            </summary>
-            <param name="buffer">The original <see cref="T:System.String"/> used as buffer.</param>
-            <param name="offset">The offset of the segment within the <paramref name="buffer"/>.</param>
-            <param name="length">The length of the segment.</param>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.Buffer">
-            <summary>
-            Gets the <see cref="T:System.String"/> buffer for this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.Offset">
-            <summary>
-            Gets the offset within the buffer for this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.Length">
-            <summary>
-            Gets the length of this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.Value">
-            <summary>
-            Gets the value of this segment as a <see cref="T:System.String"/>.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.HasValue">
-            <summary>
-            Gets whether or not this <see cref="T:ServiceStack.Text.StringSegment"/> contains a valid value.
-            </summary>
-        </member>
-        <member name="P:ServiceStack.Text.StringSegment.Item(System.Int32)">
-            <summary>
-            Gets the <see cref="T:System.Char"/> at a specified position in the current <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="index">The offset into the <see cref="T:ServiceStack.Text.StringSegment"/></param>
-            <returns>The <see cref="T:System.Char"/> at a specified position.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.AsSpan">
-            <summary>
-            Gets a <see cref="T:System.ReadOnlySpan`1"/> from the current <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <returns>The <see cref="T:System.ReadOnlySpan`1"/> from this <see cref="T:ServiceStack.Text.StringSegment"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.AsMemory">
-            <summary>
-            Gets a <see cref="T:System.ReadOnlyMemory`1"/> from the current <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <returns>The <see cref="T:System.ReadOnlyMemory`1"/> from this <see cref="T:ServiceStack.Text.StringSegment"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Compare(ServiceStack.Text.StringSegment,ServiceStack.Text.StringSegment,System.StringComparison)">
-            <summary>
-            Compares substrings of two specified <see cref="T:ServiceStack.Text.StringSegment"/> objects using the specified rules,
-            and returns an integer that indicates their relative position in the sort order.
-            </summary>
-            <param name="a">The first StringSegment to compare.</param>
-            <param name="b">The second StringSegment to compare.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
-            <returns>
-            A 32-bit signed integer indicating the lexical relationship between the two comparands.
-            The value is negative if <paramref name="a"/> is less than <paramref name="b"/>, 0 if the two comparands are equal,
-            and positive if <paramref name="a"/> is greater than <paramref name="b"/>.
-            </returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(System.Object)">
-            <inheritdoc />
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(ServiceStack.Text.StringSegment)">
-            <summary>
-            Indicates whether the current object is equal to another object of the same type.
-            </summary>
-            <param name="other">An object to compare with this object.</param>
-            <returns><code>true</code> if the current object is equal to the other parameter; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(ServiceStack.Text.StringSegment,System.StringComparison)">
-            <summary>
-            Indicates whether the current object is equal to another object of the same type.
-            </summary>
-            <param name="other">An object to compare with this object.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
-            <returns><code>true</code> if the current object is equal to the other parameter; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(ServiceStack.Text.StringSegment,ServiceStack.Text.StringSegment,System.StringComparison)">
-            <summary>
-            Determines whether two specified StringSegment objects have the same value. A parameter specifies the culture, case, and
-            sort rules used in the comparison.
-            </summary>
-            <param name="a">The first StringSegment to compare.</param>
-            <param name="b">The second StringSegment to compare.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules for the comparison.</param>
-            <returns><code>true</code> if the objects are equal; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(System.String)">
-            <summary>
-            Checks if the specified <see cref="T:System.String"/> is equal to the current <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="text">The <see cref="T:System.String"/> to compare with the current <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <returns><code>true</code> if the specified <see cref="T:System.String"/> is equal to the current <see cref="T:ServiceStack.Text.StringSegment"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Equals(System.String,System.StringComparison)">
-            <summary>
-            Checks if the specified <see cref="T:System.String"/> is equal to the current <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="text">The <see cref="T:System.String"/> to compare with the current <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
-            <returns><code>true</code> if the specified <see cref="T:System.String"/> is equal to the current <see cref="T:ServiceStack.Text.StringSegment"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.GetHashCode">
-            <inheritdoc />
-            <remarks>
-            This GetHashCode is expensive since it allocates on every call.
-            However this is required to ensure we retain any behavior (such as hash code randomization) that
-            string.GetHashCode has.
-            </remarks>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.op_Equality(ServiceStack.Text.StringSegment,ServiceStack.Text.StringSegment)">
-            <summary>
-            Checks if two specified <see cref="T:ServiceStack.Text.StringSegment"/> have the same value.
-            </summary>
-            <param name="left">The first <see cref="T:ServiceStack.Text.StringSegment"/> to compare, or <code>null</code>.</param>
-            <param name="right">The second <see cref="T:ServiceStack.Text.StringSegment"/> to compare, or <code>null</code>.</param>
-            <returns><code>true</code> if the value of <paramref name="left"/> is the same as the value of <paramref name="right"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.op_Inequality(ServiceStack.Text.StringSegment,ServiceStack.Text.StringSegment)">
-            <summary>
-            Checks if two specified <see cref="T:ServiceStack.Text.StringSegment"/> have different values.
-            </summary>
-            <param name="left">The first <see cref="T:ServiceStack.Text.StringSegment"/> to compare, or <code>null</code>.</param>
-            <param name="right">The second <see cref="T:ServiceStack.Text.StringSegment"/> to compare, or <code>null</code>.</param>
-            <returns><code>true</code> if the value of <paramref name="left"/> is different from the value of <paramref name="right"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.op_Implicit(System.String)~ServiceStack.Text.StringSegment">
-            <summary>
-            Creates a new <see cref="T:ServiceStack.Text.StringSegment"/> from the given <see cref="T:System.String"/>.
-            </summary>
-            <param name="value">The <see cref="T:System.String"/> to convert to a <see cref="T:ServiceStack.Text.StringSegment"/></param>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.op_Implicit(ServiceStack.Text.StringSegment)~System.ReadOnlySpan{System.Char}">
-            <summary>
-            Creates a see <see cref="T:System.ReadOnlySpan`1"/> from the given <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="segment">The <see cref="T:ServiceStack.Text.StringSegment"/> to convert to a <see cref="T:System.ReadOnlySpan`1"/>.</param>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.op_Implicit(ServiceStack.Text.StringSegment)~System.ReadOnlyMemory{System.Char}">
-            <summary>
-            Creates a see <see cref="T:System.ReadOnlyMemory`1"/> from the given <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="segment">The <see cref="T:ServiceStack.Text.StringSegment"/> to convert to a <see cref="T:System.ReadOnlyMemory`1"/>.</param>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.StartsWith(System.String,System.StringComparison)">
-            <summary>
-            Checks if the beginning of this <see cref="T:ServiceStack.Text.StringSegment"/> matches the specified <see cref="T:System.String"/> when compared using the specified <paramref name="comparisonType"/>.
-            </summary>
-            <param name="text">The <see cref="T:System.String"/>to compare.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
-            <returns><code>true</code> if <paramref name="text"/> matches the beginning of this <see cref="T:ServiceStack.Text.StringSegment"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.EndsWith(System.String,System.StringComparison)">
-            <summary>
-            Checks if the end of this <see cref="T:ServiceStack.Text.StringSegment"/> matches the specified <see cref="T:System.String"/> when compared using the specified <paramref name="comparisonType"/>.
-            </summary>
-            <param name="text">The <see cref="T:System.String"/>to compare.</param>
-            <param name="comparisonType">One of the enumeration values that specifies the rules to use in the comparison.</param>
-            <returns><code>true</code> if <paramref name="text"/> matches the end of this <see cref="T:ServiceStack.Text.StringSegment"/>; otherwise, <code>false</code>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Substring(System.Int32)">
-            <summary>
-            Retrieves a substring from this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The substring starts at the position specified by <paramref name="offset"/> and has the remaining length.
-            </summary>
-            <param name="offset">The zero-based starting character position of a substring in this <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <returns>A <see cref="T:System.String"/> that is equivalent to the substring of remaining length that begins at
-            <paramref name="offset"/> in this <see cref="T:ServiceStack.Text.StringSegment"/></returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Substring(System.Int32,System.Int32)">
-            <summary>
-            Retrieves a substring from this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The substring starts at the position specified by <paramref name="offset"/> and has the specified <paramref name="length"/>.
-            </summary>
-            <param name="offset">The zero-based starting character position of a substring in this <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <param name="length">The number of characters in the substring.</param>
-            <returns>A <see cref="T:System.String"/> that is equivalent to the substring of length <paramref name="length"/> that begins at
-            <paramref name="offset"/> in this <see cref="T:ServiceStack.Text.StringSegment"/></returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Subsegment(System.Int32)">
-            <summary>
-            Retrieves a <see cref="T:ServiceStack.Text.StringSegment"/> that represents a substring from this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The <see cref="T:ServiceStack.Text.StringSegment"/> starts at the position specified by <paramref name="offset"/>.
-            </summary>
-            <param name="offset">The zero-based starting character position of a substring in this <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <returns>A <see cref="T:ServiceStack.Text.StringSegment"/> that begins at <paramref name="offset"/> in this <see cref="T:ServiceStack.Text.StringSegment"/>
-            whose length is the remainder.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Subsegment(System.Int32,System.Int32)">
-            <summary>
-            Retrieves a <see cref="T:ServiceStack.Text.StringSegment"/> that represents a substring from this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The <see cref="T:ServiceStack.Text.StringSegment"/> starts at the position specified by <paramref name="offset"/> and has the specified <paramref name="length"/>.
-            </summary>
-            <param name="offset">The zero-based starting character position of a substring in this <see cref="T:ServiceStack.Text.StringSegment"/>.</param>
-            <param name="length">The number of characters in the substring.</param>
-            <returns>A <see cref="T:ServiceStack.Text.StringSegment"/> that is equivalent to the substring of length <paramref name="length"/> that begins at <paramref name="offset"/> in this <see cref="T:ServiceStack.Text.StringSegment"/></returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOf(System.Char,System.Int32,System.Int32)">
-            <summary>
-            Gets the zero-based index of the first occurrence of the character <paramref name="c"/> in this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The search starts at <paramref name="start"/> and examines a specified number of <paramref name="count"/> character positions.
-            </summary>
-            <param name="c">The Unicode character to seek.</param>
-            <param name="start">The zero-based index position at which the search starts. </param>
-            <param name="count">The number of characters to examine.</param>
-            <returns>The zero-based index position of <paramref name="c"/> from the beginning of the <see cref="T:ServiceStack.Text.StringSegment"/> if that character is found, or -1 if it is not.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOf(System.Char,System.Int32)">
-            <summary>
-            Gets the zero-based index of the first occurrence of the character <paramref name="c"/> in this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            The search starts at <paramref name="start"/>.
-            </summary>
-            <param name="c">The Unicode character to seek.</param>
-            <param name="start">The zero-based index position at which the search starts. </param>
-            <returns>The zero-based index position of <paramref name="c"/> from the beginning of the <see cref="T:ServiceStack.Text.StringSegment"/> if that character is found, or -1 if it is not.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOf(System.Char)">
-            <summary>
-            Gets the zero-based index of the first occurrence of the character <paramref name="c"/> in this <see cref="T:ServiceStack.Text.StringSegment"/>.
-            </summary>
-            <param name="c">The Unicode character to seek.</param>
-            <returns>The zero-based index position of <paramref name="c"/> from the beginning of the <see cref="T:ServiceStack.Text.StringSegment"/> if that character is found, or -1 if it is not.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOfAny(System.Char[],System.Int32,System.Int32)">
-            <summary>
-            Reports the zero-based index of the first occurrence in this instance of any character in a specified array
-            of Unicode characters. The search starts at a specified character position and examines a specified number
-            of character positions.
-            </summary>
-            <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
-            <param name="startIndex">The search starting position.</param>
-            <param name="count">The number of character positions to examine.</param>
-            <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-            was found; -1 if no character in anyOf was found.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOfAny(System.Char[],System.Int32)">
-            <summary>
-            Reports the zero-based index of the first occurrence in this instance of any character in a specified array
-            of Unicode characters. The search starts at a specified character position.
-            </summary>
-            <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
-            <param name="startIndex">The search starting position.</param>
-            <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-            was found; -1 if no character in anyOf was found.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IndexOfAny(System.Char[])">
-            <summary>
-            Reports the zero-based index of the first occurrence in this instance of any character in a specified array
-            of Unicode characters.
-            </summary>
-            <param name="anyOf">A Unicode character array containing one or more characters to seek.</param>
-            <returns>The zero-based index position of the first occurrence in this instance where any character in anyOf
-            was found; -1 if no character in anyOf was found.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.LastIndexOf(System.Char)">
-            <summary>
-            Reports the zero-based index position of the last occurrence of a specified Unicode character within this instance.
-            </summary>
-            <param name="value">The Unicode character to seek.</param>
-            <returns>The zero-based index position of value if that character is found, or -1 if it is not.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.Trim">
-            <summary>
-            Removes all leading and trailing whitespaces.
-            </summary>
-            <returns>The trimmed <see cref="T:ServiceStack.Text.StringSegment"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.TrimStart">
-            <summary>
-            Removes all leading whitespaces.
-            </summary>
-            <returns>The trimmed <see cref="T:ServiceStack.Text.StringSegment"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.TrimEnd">
-            <summary>
-            Removes all trailing whitespaces.
-            </summary>
-            <returns>The trimmed <see cref="T:ServiceStack.Text.StringSegment"/>.</returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.IsNullOrEmpty(ServiceStack.Text.StringSegment)">
-            <summary>
-            Indicates whether the specified StringSegment is null or an Empty string.
-            </summary>
-            <param name="value">The StringSegment to test.</param>
-            <returns></returns>
-        </member>
-        <member name="M:ServiceStack.Text.StringSegment.ToString">
-            <summary>
-            Returns the <see cref="T:System.String"/> represented by this <see cref="T:ServiceStack.Text.StringSegment"/> or <code>String.Empty</code> if the <see cref="T:ServiceStack.Text.StringSegment"/> does not contain a value.
-            </summary>
-            <returns>The <see cref="T:System.String"/> represented by this <see cref="T:ServiceStack.Text.StringSegment"/> or <code>String.Empty</code> if the <see cref="T:ServiceStack.Text.StringSegment"/> does not contain a value.</returns>
         </member>
         <member name="T:ServiceStack.Text.StringWriterCache">
             <summary>
@@ -1741,6 +1430,11 @@
         <member name="M:ServiceStack.StreamExtensions.ReadExactlyFast(System.IO.Stream,System.Byte[],System.Int32,System.Int32)">
             <summary>
             Same as ReadExactly, but without the argument checks.
+            </summary>
+        </member>
+        <member name="M:ServiceStack.StreamExtensions.InMemoryStream(System.Byte[])">
+            <summary>
+            Returns bytes in publiclyVisible MemoryStream
             </summary>
         </member>
         <member name="M:ServiceStack.StringExtensions.BaseConvert(System.String,System.Int32,System.Int32)">

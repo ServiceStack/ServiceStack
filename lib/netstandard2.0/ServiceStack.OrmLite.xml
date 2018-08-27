@@ -4419,7 +4419,7 @@
             Return the number of rows returned by the supplied expression
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
             <summary>
             Return the number of rows returned by the supplied sql
             </summary>
@@ -4715,7 +4715,7 @@
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete(System.Data.IDbConnection,System.Type,System.String,System.Object)">
             <summary>
             Delete rows using a SqlFormat filter. E.g:
-            <para>db.Delete&lt;Person&gt;("Age > @age", new { age = 42 })</para>
+            <para>db.Delete(typeof(Person), "Age > @age", new { age = 42 })</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>

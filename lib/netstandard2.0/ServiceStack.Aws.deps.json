@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "e36304bbd75723ed9892cf517167fea11e2f2c48"
+    "signature": "9e062c08f381ec429ebac79de39e3edd37183bc3"
   },
   "compilationOptions": {},
   "targets": {
@@ -9,11 +9,11 @@
     ".NETStandard,Version=v2.0/": {
       "ServiceStack.Aws/1.0.0": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.22",
-          "AWSSDK.DynamoDBv2": "3.3.7.2",
-          "AWSSDK.S3": "3.3.18.1",
-          "AWSSDK.SQS": "3.3.3.6",
-          "NETStandard.Library": "2.0.1",
+          "AWSSDK.Core": "3.3.24.8",
+          "AWSSDK.DynamoDBv2": "3.3.12.2",
+          "AWSSDK.S3": "3.3.20.4",
+          "AWSSDK.SQS": "3.3.3.16",
+          "NETStandard.Library": "2.0.3",
           "System.ServiceModel.Primitives": "4.4.0",
           "ServiceStack.Client": "5.0.0.0",
           "ServiceStack.Common": "5.0.0.0",
@@ -25,7 +25,7 @@
           "ServiceStack.Aws.dll": {}
         }
       },
-      "AWSSDK.Core/3.3.22": {
+      "AWSSDK.Core/3.3.24.8": {
         "dependencies": {
           "Microsoft.CSharp": "4.0.1",
           "System.Net.Requests": "4.0.11",
@@ -34,31 +34,43 @@
           "System.Threading.Thread": "4.0.0"
         },
         "runtime": {
-          "lib/netstandard1.3/AWSSDK.Core.dll": {}
+          "lib/netstandard1.3/AWSSDK.Core.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.3.24.8"
+          }
         }
       },
-      "AWSSDK.DynamoDBv2/3.3.7.2": {
+      "AWSSDK.DynamoDBv2/3.3.12.2": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.22"
+          "AWSSDK.Core": "3.3.24.8"
         },
         "runtime": {
-          "lib/netstandard1.3/AWSSDK.DynamoDBv2.dll": {}
+          "lib/netstandard1.3/AWSSDK.DynamoDBv2.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.3.12.2"
+          }
         }
       },
-      "AWSSDK.S3/3.3.18.1": {
+      "AWSSDK.S3/3.3.20.4": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.22"
+          "AWSSDK.Core": "3.3.24.8"
         },
         "runtime": {
-          "lib/netstandard1.3/AWSSDK.S3.dll": {}
+          "lib/netstandard1.3/AWSSDK.S3.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.3.20.4"
+          }
         }
       },
-      "AWSSDK.SQS/3.3.3.6": {
+      "AWSSDK.SQS/3.3.3.16": {
         "dependencies": {
-          "AWSSDK.Core": "3.3.22"
+          "AWSSDK.Core": "3.3.24.8"
         },
         "runtime": {
-          "lib/netstandard1.3/AWSSDK.SQS.dll": {}
+          "lib/netstandard1.3/AWSSDK.SQS.dll": {
+            "assemblyVersion": "3.3.0.0",
+            "fileVersion": "3.3.3.16"
+          }
         }
       },
       "Microsoft.CSharp/4.0.1": {
@@ -81,12 +93,15 @@
           "System.Threading": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/Microsoft.CSharp.dll": {}
+          "lib/netstandard1.3/Microsoft.CSharp.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "Microsoft.NETCore.Platforms/2.0.0": {},
       "Microsoft.NETCore.Targets/1.0.1": {},
-      "NETStandard.Library/2.0.1": {
+      "NETStandard.Library/2.0.3": {
         "dependencies": {
           "Microsoft.NETCore.Platforms": "2.0.0"
         }
@@ -111,7 +126,10 @@
       },
       "System.Buffers/4.4.0": {
         "runtime": {
-          "lib/netstandard2.0/System.Buffers.dll": {}
+          "lib/netstandard2.0/System.Buffers.dll": {
+            "assemblyVersion": "4.0.2.0",
+            "fileVersion": "4.6.25519.3"
+          }
         }
       },
       "System.Collections/4.0.11": {
@@ -135,7 +153,10 @@
           "System.Threading.Tasks": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Collections.Concurrent.dll": {}
+          "lib/netstandard1.3/System.Collections.Concurrent.dll": {
+            "assemblyVersion": "4.0.12.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Diagnostics.Debug/4.0.11": {
@@ -154,7 +175,10 @@
           "System.Threading": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {}
+          "lib/netstandard1.3/System.Diagnostics.DiagnosticSource.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Diagnostics.Tracing/4.1.0": {
@@ -183,7 +207,10 @@
           "System.Threading": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Dynamic.Runtime.dll": {}
+          "lib/netstandard1.3/System.Dynamic.Runtime.dll": {
+            "assemblyVersion": "4.0.11.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Globalization/4.0.11": {
@@ -237,7 +264,10 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.IO.FileSystem.Primitives.dll": {}
+          "lib/netstandard1.3/System.IO.FileSystem.Primitives.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Linq/4.1.0": {
@@ -249,7 +279,10 @@
           "System.Runtime.Extensions": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.6/System.Linq.dll": {}
+          "lib/netstandard1.6/System.Linq.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Linq.Expressions/4.1.0": {
@@ -273,7 +306,10 @@
           "System.Threading": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.6/System.Linq.Expressions.dll": {}
+          "lib/netstandard1.6/System.Linq.Expressions.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Net.Http/4.1.0": {
@@ -311,7 +347,10 @@
           "System.Buffers": "4.4.0"
         },
         "runtime": {
-          "lib/netstandard2.0/System.Net.Http.WinHttpHandler.dll": {}
+          "lib/netstandard2.0/System.Net.Http.WinHttpHandler.dll": {
+            "assemblyVersion": "4.0.2.0",
+            "fileVersion": "4.6.25519.3"
+          }
         }
       },
       "System.Net.Primitives/4.0.11": {
@@ -347,7 +386,10 @@
           "System.Runtime.Extensions": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Net.WebHeaderCollection.dll": {}
+          "lib/netstandard1.3/System.Net.WebHeaderCollection.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.ObjectModel/4.0.12": {
@@ -359,7 +401,10 @@
           "System.Threading": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.ObjectModel.dll": {}
+          "lib/netstandard1.3/System.ObjectModel.dll": {
+            "assemblyVersion": "4.0.12.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Private.ServiceModel/4.4.0": {
@@ -381,7 +426,10 @@
       },
       "System.Reflection.DispatchProxy/4.4.0": {
         "runtime": {
-          "lib/netstandard2.0/System.Reflection.DispatchProxy.dll": {}
+          "lib/netstandard2.0/System.Reflection.DispatchProxy.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.6.25519.3"
+          }
         }
       },
       "System.Reflection.Emit/4.0.1": {
@@ -393,7 +441,10 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Reflection.Emit.dll": {}
+          "lib/netstandard1.3/System.Reflection.Emit.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Reflection.Emit.ILGeneration/4.0.1": {
@@ -403,7 +454,10 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Reflection.Emit.ILGeneration.dll": {}
+          "lib/netstandard1.3/System.Reflection.Emit.ILGeneration.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Reflection.Emit.Lightweight/4.0.1": {
@@ -414,7 +468,10 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Reflection.Emit.Lightweight.dll": {}
+          "lib/netstandard1.3/System.Reflection.Emit.Lightweight.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Reflection.Extensions/4.0.1": {
@@ -438,7 +495,10 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.5/System.Reflection.TypeExtensions.dll": {}
+          "lib/netstandard1.5/System.Reflection.TypeExtensions.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Resources.ResourceManager/4.0.1": {
@@ -488,7 +548,10 @@
           "System.Runtime.Extensions": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Runtime.Numerics.dll": {}
+          "lib/netstandard1.3/System.Runtime.Numerics.dll": {
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Security.Cryptography.Algorithms/4.2.0": {
@@ -573,7 +636,10 @@
           "runtime.native.System.Security.Cryptography": "4.0.0"
         },
         "runtime": {
-          "lib/netstandard1.6/System.Security.Cryptography.OpenSsl.dll": {}
+          "lib/netstandard1.6/System.Security.Cryptography.OpenSsl.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Security.Cryptography.Primitives/4.0.0": {
@@ -587,7 +653,10 @@
           "System.Threading.Tasks": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Security.Cryptography.Primitives.dll": {}
+          "lib/netstandard1.3/System.Security.Cryptography.Primitives.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Security.Cryptography.X509Certificates/4.1.0": {
@@ -621,7 +690,10 @@
       },
       "System.Security.Principal.Windows/4.4.0": {
         "runtime": {
-          "lib/netstandard2.0/System.Security.Principal.Windows.dll": {}
+          "lib/netstandard2.0/System.Security.Principal.Windows.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "4.6.25519.3"
+          }
         }
       },
       "System.ServiceModel.Primitives/4.4.0": {
@@ -629,7 +701,10 @@
           "System.Private.ServiceModel": "4.4.0"
         },
         "runtime": {
-          "lib/netstandard2.0/System.ServiceModel.Primitives.dll": {}
+          "lib/netstandard2.0/System.ServiceModel.Primitives.dll": {
+            "assemblyVersion": "4.2.0.0",
+            "fileVersion": "4.6.25525.6"
+          }
         }
       },
       "System.Text.Encoding/4.0.11": {
@@ -645,7 +720,10 @@
           "System.Threading.Tasks": "4.0.11"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Threading.dll": {}
+          "lib/netstandard1.3/System.Threading.dll": {
+            "assemblyVersion": "4.0.11.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "System.Threading.Tasks/4.0.11": {
@@ -660,32 +738,50 @@
           "System.Runtime": "4.1.0"
         },
         "runtime": {
-          "lib/netstandard1.3/System.Threading.Thread.dll": {}
+          "lib/netstandard1.3/System.Threading.Thread.dll": {
+            "assemblyVersion": "4.0.0.0",
+            "fileVersion": "1.0.24212.1"
+          }
         }
       },
       "ServiceStack.Client/5.0.0.0": {
         "runtime": {
-          "ServiceStack.Client.dll": {}
+          "ServiceStack.Client.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.0"
+          }
         }
       },
       "ServiceStack.Common/5.0.0.0": {
         "runtime": {
-          "ServiceStack.Common.dll": {}
+          "ServiceStack.Common.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.0"
+          }
         }
       },
       "ServiceStack/5.0.0.0": {
         "runtime": {
-          "ServiceStack.dll": {}
+          "ServiceStack.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.0"
+          }
         }
       },
       "ServiceStack.Interfaces/5.0.0.0": {
         "runtime": {
-          "ServiceStack.Interfaces.dll": {}
+          "ServiceStack.Interfaces.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.0"
+          }
         }
       },
       "ServiceStack.Text/5.0.0.0": {
         "runtime": {
-          "ServiceStack.Text.dll": {}
+          "ServiceStack.Text.dll": {
+            "assemblyVersion": "5.0.0.0",
+            "fileVersion": "5.0.0.0"
+          }
         }
       }
     }
@@ -696,33 +792,33 @@
       "serviceable": false,
       "sha512": ""
     },
-    "AWSSDK.Core/3.3.22": {
+    "AWSSDK.Core/3.3.24.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aor3fY0UwlJmffaI5BoysNEkDEMdokP/yn2hgJTyjENMO44OFW821g9vgIKrRhcUR2ulCpAI3mtsUUpqmF1Wnw==",
-      "path": "awssdk.core/3.3.22",
-      "hashPath": "awssdk.core.3.3.22.nupkg.sha512"
+      "sha512": "sha512-9skBaUTuglb/Wc8XJU1CxFQFT2edPxE2Hn11lkkFNstmc2S1chlCLFVFGMfsanZXnlEMFEsSygu55Jgwi4mWAA==",
+      "path": "awssdk.core/3.3.24.8",
+      "hashPath": "awssdk.core.3.3.24.8.nupkg.sha512"
     },
-    "AWSSDK.DynamoDBv2/3.3.7.2": {
+    "AWSSDK.DynamoDBv2/3.3.12.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-A5AX4dgC23MjoEECttSxkJrMDWNB+/Kw4FfzHfJqgYCCu2LESmPh9gSAO/6h172llGpklW+7Tt7bWFcoJipmTA==",
-      "path": "awssdk.dynamodbv2/3.3.7.2",
-      "hashPath": "awssdk.dynamodbv2.3.3.7.2.nupkg.sha512"
+      "sha512": "sha512-1/nrmOldCTLXgPvQ+OrxLmJul3gq5dv8iFKuWqfIg0dRZVM2OsFy4M+X23t9S2mIqZSlSibIR9n4irD1sRq9vg==",
+      "path": "awssdk.dynamodbv2/3.3.12.2",
+      "hashPath": "awssdk.dynamodbv2.3.3.12.2.nupkg.sha512"
     },
-    "AWSSDK.S3/3.3.18.1": {
+    "AWSSDK.S3/3.3.20.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-INZyF6pb8NTSK9Am3LOSwjUd68mn23oGejeN4LZA/SSCzIl2N/7OcsDnUnsXS+Opu6Ho2rrshkP1mxVRzQDtuw==",
-      "path": "awssdk.s3/3.3.18.1",
-      "hashPath": "awssdk.s3.3.3.18.1.nupkg.sha512"
+      "sha512": "sha512-5iRvS+dgIBe7Jj7Vgg4tSus1Tw4hm51kC5hjet07g6oq2e0ewKmC/niinwrCHPawy3rWqAvwCVXEHz867YL8iQ==",
+      "path": "awssdk.s3/3.3.20.4",
+      "hashPath": "awssdk.s3.3.3.20.4.nupkg.sha512"
     },
-    "AWSSDK.SQS/3.3.3.6": {
+    "AWSSDK.SQS/3.3.3.16": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-BBziVsZoh8Tjut3MFbHwlnjR0lGrTXkKbG4AQKFLW7Q3xKXciy95s6JEran3yr4rClN+eWZ9AFiiNpTeFCX0ZA==",
-      "path": "awssdk.sqs/3.3.3.6",
-      "hashPath": "awssdk.sqs.3.3.3.6.nupkg.sha512"
+      "sha512": "sha512-FksQUq8QzdgqINSm6I0HE63SzBBSitnIYN7LgocpTXYEUVCDKSyRICIuFOLkAZ9laKfAJbRQqvsd2Astj31VAg==",
+      "path": "awssdk.sqs/3.3.3.16",
+      "hashPath": "awssdk.sqs.3.3.3.16.nupkg.sha512"
     },
     "Microsoft.CSharp/4.0.1": {
       "type": "package",
@@ -745,12 +841,12 @@
       "path": "microsoft.netcore.targets/1.0.1",
       "hashPath": "microsoft.netcore.targets.1.0.1.nupkg.sha512"
     },
-    "NETStandard.Library/2.0.1": {
+    "NETStandard.Library/2.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-oA6nwv9MhEKYvLpjZ0ggSpb1g4CQViDVQjLUcDWg598jtvJbpfeP2reqwI1GLW2TbxC/Ml7xL6BBR1HmKPXlTg==",
-      "path": "netstandard.library/2.0.1",
-      "hashPath": "netstandard.library.2.0.1.nupkg.sha512"
+      "sha512": "sha512-st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
+      "path": "netstandard.library/2.0.3",
+      "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
     "runtime.native.System/4.0.0": {
       "type": "package",
@@ -1112,7 +1208,7 @@
     "System.Threading.Thread/4.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZTfrK3GDWdNkPwT8Eo10r7l9YogPAkXNJiV7rxFRnT3h+II6ftzgNajVxGJ1nshWy/nDH+6IgI9DoNki+VHKIg==",
+      "sha512": "sha512-gIdJqDXlOr5W9zeqFErLw3dsOsiShSCYtF9SEHitACycmvNvY8odf9kiKvp6V7aibc8C4HzzNBkWXjyfn7plbQ==",
       "path": "system.threading.thread/4.0.0",
       "hashPath": "system.threading.thread.4.0.0.nupkg.sha512"
     },
