@@ -26,8 +26,6 @@ namespace ServiceStack
     {
         public bool? EnableHotReload { get; set; }
 
-        public bool EnableDebugTemplate { get; set; }
-        public bool EnableDebugTemplateToAll { get; set; }
         public bool DisablePageBasedRouting { get; set; }
 
         public string DebugDefaultTemplate { get; set; }
@@ -40,6 +38,17 @@ namespace ServiceStack
         /// If null Templates Admin Service will not be registered.
         /// </summary>
         public string TemplatesAdminRole { get; set; } = RoleNames.Admin;
+
+        /// <summary>
+        /// Role Required to call Metadata Debug Service (/metadata/debug).
+        /// If null Metadata Debug Service will only be registered in DebugMode.
+        /// </summary>
+        public string MetadataDebugAdminRole { get; set; }
+
+        [Obsolete("Use MetadataDebugAdminRole=RoleNames.Admin")]
+        public bool EnableDebugTemplate { set => MetadataDebugAdminRole = value ? RoleNames.Admin : null; }
+        [Obsolete("Use MetadataDebugAdminRole=RoleNames.AllowAnon")]
+        public bool EnableDebugTemplateToAll { set => MetadataDebugAdminRole = value ? RoleNames.AllowAnon : null; }
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
@@ -105,7 +114,7 @@ namespace ServiceStack
                 appHost.RegisterService(typeof(TemplateApiPagesService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
-            if (DebugMode || EnableDebugTemplate || EnableDebugTemplateToAll)
+            if (DebugMode || MetadataDebugAdminRole != null)
             {
                 appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
@@ -638,11 +647,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 return null;
 
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
-            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
+            if (!HostContext.DebugMode)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
                 {
-                    RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+                    RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
                 }
             }
             
@@ -670,8 +679,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public object GetHtml(TemplateMetadataDebug request)
         {
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
-            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
-                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            if (!HostContext.DebugMode)
+            {
+                RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
+            }
             
             if (request.Template != null)
                 return Any(request);

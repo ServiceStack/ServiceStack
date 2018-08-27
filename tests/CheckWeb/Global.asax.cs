@@ -91,7 +91,7 @@ namespace CheckWeb
 
             Plugins.Add(new TemplatePagesFeature
             {
-                EnableDebugTemplateToAll = false,
+                MetadataDebugAdminRole = RoleNames.AllowAnyUser, 
                 TemplatesAdminRole = RoleNames.AllowAnon,
             });
 
