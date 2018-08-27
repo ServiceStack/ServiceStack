@@ -10,7 +10,6 @@ namespace ServiceStack.Templates
     /// <summary>
     /// Captures the output and assigns it to the specified variable.
     /// Accepts an optional Object Dictionary as scope arguments when evaluating body.
-    /// Effectively is similar 
     ///
     /// Usages: {{#capture output}} {{#each args}} - [{{it}}](/path?arg={{it}}) {{/each}} {{/capture}}
     ///         {{#capture output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
