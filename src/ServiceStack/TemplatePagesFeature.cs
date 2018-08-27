@@ -125,23 +125,33 @@ namespace ServiceStack
                 appHost.RegisterService(typeof(TemplatesAdminService), TemplatesAdminService.Routes);
             }
 
-            var initPage = Pages.GetPage("_init");
-            if (initPage != null)
+            InitPage = Pages.GetPage("_init");
+            if (InitPage != null)
             {
-                appHost.AfterInitCallbacks.Add(host => {
-                    try
-                    {
-                        var execInit = new PageResult(initPage).Result;
-                        Args["initout"] = execInit;
-                    }
-                    catch (Exception ex)
-                    {
-                        Args["initout"] = ex.ToString();
-                    }
-                });
+                appHost.AfterInitCallbacks.Add(host => RunInitPage());
             }
 
             Init();
+        }
+        
+        internal TemplatePage InitPage { get; set; }
+
+        public string RunInitPage()
+        {
+            if (InitPage == null)
+                return "_init.html not found";
+            
+            try
+            {
+                var execInit = new PageResult(InitPage).Result;
+                Args["initout"] = execInit;
+                return execInit;
+            }
+            catch (Exception ex)
+            {
+                Args["initout"] = ex.ToString();
+                return ex.ToString();
+            }
         }
 
         private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound =
@@ -707,12 +717,12 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
     [ExcludeMetadata]
     public class TemplatesAdmin : IReturn<TemplatesAdminResponse>
     {
-        public string Action { get; set; }
+        public string Actions { get; set; }
     }
 
     public class TemplatesAdminResponse
     {
-        public string Result { get; set; }
+        public string[] Results { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -720,9 +730,12 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplatesAdminService : Service
     {
-        public static string[] Routes { get; set; } = { "/templates/admin", "/templates/admin/{Action}" }; 
+        public static string[] Routes { get; set; } = { "/templates/admin", "/templates/admin/{Actions}" }; 
         
-        public static string AllowableActions = "Allowable Actions: invalidateAllCaches";
+        public static string[] Actions = {
+            nameof(TemplateProtectedFilters.invalidateAllCaches),
+            nameof(TemplatePagesFeature.RunInitPage),
+        };
         
         public object Any(TemplatesAdmin request)
         {
@@ -730,18 +743,27 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             
             RequiredRoleAttribute.AssertRequiredRoles(Request, feature.TemplatesAdminRole);
             
-            if (string.IsNullOrEmpty(request.Action))
-                return new TemplatesAdminResponse { Result = AllowableActions };
+            if (string.IsNullOrEmpty(request.Actions))
+                return new TemplatesAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
 
+            var actions = request.Actions.Split(',');
+
+            var results = new List<string>();
             using (var ms = MemoryStreamFactory.GetStream())
             {
                 var scope = new TemplateScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
             
-                if (request.Action == nameof(TemplateProtectedFilters.invalidateAllCaches))
-                    return new TemplatesAdminResponse { Result = feature.ProtectedFilters.invalidateAllCaches(scope).ToJsv() };
+                if (actions.Any(x => x.EqualsIgnoreCase(nameof(TemplateProtectedFilters.invalidateAllCaches))))
+                    results.Add(nameof(TemplateProtectedFilters.invalidateAllCaches) + ": " + feature.ProtectedFilters.invalidateAllCaches(scope).ToJsv());
+                
+                if (actions.Any(x => x.EqualsIgnoreCase(nameof(TemplatePagesFeature.RunInitPage))))
+                    results.Add(nameof(TemplatePagesFeature.RunInitPage) + ": " + feature.RunInitPage());
+                
+                if (results.Count > 0)
+                    return new TemplatesAdminResponse { Results = results.ToArray() };
             }
             
-            throw new NotSupportedException($"Action '{request.Action}' is not supported. " + AllowableActions);
+            throw new NotSupportedException("Unknown Action. Available actions: " + string.Join(",", Actions));
         }
     }
 

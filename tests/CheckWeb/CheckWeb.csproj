@@ -103,6 +103,7 @@
     <Content Include="css\bootstrap.css" />
     <Content Include="css\default.css" />
     <Content Include="img\favicon.png" />
+    <Content Include="_init.html" />
     <Content Include="js\backbone.min.js" />
     <Content Include="js\jquery-1.7.1.min.js" />
     <Content Include="js\jsonreport.js" />
