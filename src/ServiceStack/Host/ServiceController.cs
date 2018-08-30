@@ -240,7 +240,7 @@ namespace ServiceStack.Host
                 throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' must start with a '/'");
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' contains invalid chars. " +
-                                            "See http://docs.servicestack.net/routing for info on valid routes.");
+                                            "See https://docs.servicestack.net/routing for info on valid routes.");
 
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out var pathsAtFirstMatch))
             {

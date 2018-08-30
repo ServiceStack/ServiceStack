@@ -76,7 +76,7 @@ namespace ServiceStack.Auth
 
         /// <summary>
         /// Whether to encrypt JWE Payload (default false). 
-        /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Conent Encryption
+        /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Content Encryption
         /// </summary>
         public bool EncryptPayload { get; set; }
 
@@ -158,7 +158,7 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Convenient overload to intialize the Private Key via exported XML
+        /// Convenient overload to initialize the Private Key via exported XML
         /// </summary>
         public string PrivateKeyXml
         {
@@ -174,7 +174,7 @@ namespace ServiceStack.Auth
         public RSAParameters? PublicKey { get; set; }
 
         /// <summary>
-        /// Convenient overload to intialize the Public Key via exported XML
+        /// Convenient overload to initialize the Public Key via exported XML
         /// </summary>
         public string PublicKeyXml
         {

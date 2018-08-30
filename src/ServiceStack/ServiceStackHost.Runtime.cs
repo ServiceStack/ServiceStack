@@ -622,7 +622,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
-        /// See multitenancy: http://docs.servicestack.net/multitenancy
+        /// See multitenancy: https://docs.servicestack.net/multitenancy
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
