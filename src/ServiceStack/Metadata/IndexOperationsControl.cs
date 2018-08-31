@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
@@ -208,7 +209,9 @@ namespace ServiceStack.Metadata
 
             foreach (var entry in linksMap)
             {
-                var url = baseUrl.CombineWith(entry.Key);
+                var url = entry.Key.IndexOf("://", StringComparison.Ordinal) >= 0 
+                    ? entry.Key
+                    : baseUrl.CombineWith(entry.Key);
                 to[url] = entry.Value;
             }
 
