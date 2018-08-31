@@ -343,7 +343,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                             if (returnType == "any")
                                 replaceReturnType = "{}";
                             else if (returnType.EndsWith("[]"))
-                                replaceReturnType = $"Array<{returnType.Substring(0, returnType.Length -2)}>";
+                                replaceReturnType = $"new Array<{returnType.Substring(0, returnType.Length -2)}>()";
                             
                             responseTypeExpression = replaceReturnType == null ?
                                 "public createResponse() {{ return new {0}(); }}".Fmt(returnType) :
