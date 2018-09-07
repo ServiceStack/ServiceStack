@@ -296,7 +296,7 @@ namespace ServiceStack.Host.AspNet
         public string GetRawBody()
         {
             if (BufferedStream != null)
-                return BufferedStream.ReadBufferedStreamToEnd();
+                return BufferedStream.ReadBufferedStreamToEnd(this);
 
             return InputStream.ReadToEnd();
         }

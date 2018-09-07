@@ -219,7 +219,7 @@ namespace ServiceStack.Host.HttpListener
         public string GetRawBody()
         {
             if (BufferedStream != null)
-                return BufferedStream.ReadBufferedStreamToEnd();
+                return BufferedStream.ReadBufferedStreamToEnd(this);
 
             return InputStream.ReadToEnd();
         }

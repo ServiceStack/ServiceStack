@@ -180,7 +180,7 @@ namespace ServiceStack.Host
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Error while logging req: " + req.Dump(), ex);
+                    Log.ErrorStrict("Error while logging req: " + req.Dump(), ex);
                 }
             }
         }

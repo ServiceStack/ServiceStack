@@ -200,7 +200,7 @@ namespace ServiceStack.Host.NetCore
             if (BufferedStream != null)
             {
                 request.EnableRewind();
-                return BufferedStream.ReadBufferedStreamToEnd();
+                return BufferedStream.ReadBufferedStreamToEnd(this);
             }
 
             return request.Body.ReadToEnd();

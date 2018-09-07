@@ -272,9 +272,9 @@ namespace ServiceStack
             return stream.CopyToNewMemoryStream();
         }
 
-        internal static string ReadBufferedStreamToEnd(this MemoryStream stream)
+        internal static string ReadBufferedStreamToEnd(this MemoryStream stream, IRequest req)
         {
-            return stream.ReadToEnd();
+            return req.GetInputStream(stream).ReadToEnd();
         }
 
         internal static void FlushBufferIfAny(this IResponse response, MemoryStream buffer, Stream output)

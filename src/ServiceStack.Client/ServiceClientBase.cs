@@ -131,7 +131,6 @@ namespace ServiceStack
 
 
         private string requestCompressionType;
-
         public string RequestCompressionType
         {
             get => requestCompressionType;
