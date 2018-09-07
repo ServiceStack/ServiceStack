@@ -316,7 +316,7 @@ namespace CSharpEval
 			{
 				if (!Env.IsMono)
 				{
-                    cp.ReferencedAssemblies.Add(Env.ReferenceAssembyPath + @"System.Core.dll");
+                    cp.ReferencedAssemblies.Add(Env.ReferenceAssemblyPath + @"System.Core.dll");
 				}
 			}
 
