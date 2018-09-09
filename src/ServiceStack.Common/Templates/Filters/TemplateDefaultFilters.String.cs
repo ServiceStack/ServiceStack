@@ -247,6 +247,9 @@ namespace ServiceStack.Templates
         public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
         public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();
         public IRawString dump(object value) => serialize(value, null, x => x.Dump() ?? "");
+        public IRawString indentJson(object value) => indentJson(value, null);
+        public IRawString indentJson(object value, string jsconfig) => 
+            (value is string js ? js : json(value).ToRawString()).IndentJson().ToRawString();
 
         //Blocks
         public Task json(TemplateScopeContext scope, object items) => json(scope, items, null);
