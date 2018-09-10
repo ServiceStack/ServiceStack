@@ -13,12 +13,14 @@ namespace ServiceStack.Templates
     {
         public static string GetIndexOperationsTemplate()
         {
-            return LoadTemplate("IndexOperations.html");
+            return LoadTemplate("IndexOperations.html")
+                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
         public static string GetOperationControlTemplate()
         {
-            return LoadTemplate("OperationControl.html");
+            return LoadTemplate("OperationControl.html")
+                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
         public static string GetHtmlFormatTemplate()
