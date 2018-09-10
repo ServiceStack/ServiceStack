@@ -493,7 +493,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             Assert.That(result, Is.EqualTo("Time: 4:05:06.007"));
 
             // Normal quoted strings pass string verbatim
-            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat('h\:mm\:ss') }}");
+            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat(′h\:mm\:ss′) }}");
             Assert.That(result, Is.EqualTo("Time: 4:05:06"));
 
             // Template literals unescapes strings
@@ -506,17 +506,17 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         {
             var context = new TemplateContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{''}}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{′′}}"), Is.EqualTo(""));
             Assert.That(context.EvaluateTemplate("{{``}}"), Is.EqualTo(""));
 
             // `backticks` unescape strings, all other quoted strings use verbatim strings
-            Assert.That(context.EvaluateTemplate(@"{{'\ '[0] | toCharCode}}"), Is.EqualTo("92")); //= [\]
+            Assert.That(context.EvaluateTemplate(@"{{′\ ′[0] | toCharCode}}"), Is.EqualTo("92")); //= [\]
             Assert.That(context.EvaluateTemplate(@"{{`\ `[0] | toCharCode}}"), Is.EqualTo("32")); //= [ ]
             Assert.That(context.EvaluateTemplate(@"{{`\\` | toCharCode}}"), Is.EqualTo("92")); //= [/]
 
-            Assert.That(context.EvaluateTemplate("{{'\n'}}"), Is.EqualTo("\n"));
+            Assert.That(context.EvaluateTemplate("{{′\n′}}"), Is.EqualTo("\n"));
             Assert.That(context.EvaluateTemplate("{{`a\nb`}}"), Is.EqualTo("a\nb"));
-            Assert.That(context.EvaluateTemplate("{{'\"'|raw}}"), Is.EqualTo("\""));
+            Assert.That(context.EvaluateTemplate("{{′\"′|raw}}"), Is.EqualTo("\""));
             Assert.That(context.EvaluateTemplate("{{`\"`|raw}}"), Is.EqualTo("\""));
         }
 

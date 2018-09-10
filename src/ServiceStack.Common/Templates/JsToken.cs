@@ -372,20 +372,28 @@ namespace ServiceStack.Templates
                 }
                 else if (hasEscapeChar)
                 {
-                    //All other quoted strings use unescaped strings  
-                    var sb = StringBuilderCache.Allocate();
-                    for (var j = 0; j < rawString.Length; j++)
+                    if (quoteChar == '′')
                     {
-                        // strip the back-slash used to escape quote char in strings
-                        var ch = rawString[j];
-                        if (ch != '\\' || (j + 1 >= rawString.Length || rawString[j + 1] != quoteChar))
-                            sb.Append(ch);
+                        //All other quoted strings use unescaped strings  
+                        var sb = StringBuilderCache.Allocate();
+                        for (var j = 0; j < rawString.Length; j++)
+                        {
+                            // strip the back-slash used to escape quote char in strings
+                            var ch = rawString[j];
+                            if (ch != '\\' || (j + 1 >= rawString.Length || rawString[j + 1] != quoteChar))
+                                sb.Append(ch);
+                        }
+                        token = new JsLiteral(StringBuilderCache.ReturnAndFree(sb));
                     }
-                    token = new JsLiteral(StringBuilderCache.ReturnAndFree(sb));
+                    else
+                    {
+                        var unescapedString = JsonTypeSerializer.Unescape(rawString);
+                        token = new JsLiteral(unescapedString.ToString());
+                    }
                 }
                 else
                 {
-                    token = new JsLiteral(rawString.ToString());                    
+                    token = new JsLiteral(rawString.ToString());
                 }
                 
                 return literal.Advance(i + 1);

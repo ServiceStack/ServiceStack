@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsToken token;
             
-            @"'\\'".ParseJsExpression(out token);
+            @"′\\′".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsLiteral(@"\\")));
         }
          
