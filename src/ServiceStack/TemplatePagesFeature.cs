@@ -117,7 +117,7 @@ namespace ServiceStack
             if (DebugMode || MetadataDebugAdminRole != null)
             {
                 appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Inspector");
             }
 
             if (!string.IsNullOrEmpty(TemplatesAdminRole))
