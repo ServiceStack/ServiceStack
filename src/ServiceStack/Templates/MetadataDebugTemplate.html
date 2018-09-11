@@ -53,7 +53,6 @@
         width: 100%;
         font-family: Monaco, Consolas;
         resize:vertical;
-        min-height: 630px;
         padding: 10px 10px 0 10px;
     }
     input {
@@ -124,7 +123,7 @@
     <p>
         This Debug template has access to
         <a href="http://templates.servicestack.net/docs/default-filters">Default Fitlers</a>, <a href="http://templates.servicestack.net/docs/info-filters">Info Fitlers</a>
-        as well as any arguments registered in <a href="http://templates.servicestack.net/docs/view-engine">TemplatePagesFeature</a>.
+        as well as arguments registered in <a href="http://templates.servicestack.net/docs/view-engine">TemplatePagesFeature</a>.
     </p>
     <div class="template">
         <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{0}</textarea>
@@ -156,6 +155,7 @@
         .then(function (html) {
             el.classList.remove('error');
             output.innerHTML = html;
+            autogrow();
         })
         .catch (function (res) {
             try {
@@ -168,12 +168,20 @@
                             (status.stackTrace ? '\n\nStackTrace:\n' + htmlEscape(status.stackTrace) : '') + '</pre></div>';
                     }
                 })
-            } catch(e) {
+            } catch(ex) {
                 output.innerHTML = '<div class="alert alert-danger"><pre>' + res.status + ' ' + res.statusText + '</pre></div>';
             }
         });
     };
     textarea.oninput();
+
+    function autogrow() {
+        var el = textarea;
+        var minHeignt = 150;
+        el.style.height = "5px";
+        el.style.height = Math.max(el.scrollHeight, minHeignt) + "px";
+    }
+    autogrow();
     
     function parseResponseStatus(json, defaultMsg) {
         try {
