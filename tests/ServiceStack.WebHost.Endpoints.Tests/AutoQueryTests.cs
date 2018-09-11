@@ -746,6 +746,37 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+    [Alias(nameof(Rockstar))]
+    public class CustomSelectRockstar
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        [CustomSelect("Age * 2")]
+        public int? Age { get; set; }
+    }
+
+    public class QueryJoinedRockstarAlbumsCustomSelect : QueryDb<CustomSelectRockstar>, 
+        IJoin<CustomSelectRockstar, RockstarAlbum>
+    {
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+    }
+
+    public class CustomSelectRockstarResponse
+    {
+        public int Id { get; set; }
+        public string FirstName { get; set; }
+        public int? Age { get; set; }
+    }
+
+    public class QueryJoinedRockstarAlbumsCustomSelectResponse : QueryDb<CustomSelectRockstar,CustomSelectRockstarResponse>, 
+        IJoin<CustomSelectRockstar, RockstarAlbum>
+    {
+        public int? Age { get; set; }
+        public string RockstarAlbumName { get; set; }
+    }
+
     [TestFixture]
     public class AutoQueryTests
     {
@@ -1015,6 +1046,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(albumNames, Is.EquivalentTo(new[] { "Nevermind" }));
         }
 
+        [Test]
+        public void Can_execute_query_with_JOIN_on_RockstarAlbums_and_CustomSelectRockstar()
+        {
+            var response = client.Get(new QueryJoinedRockstarAlbumsCustomSelect { Include = "Total" });
+            Assert.That(response.Total, Is.EqualTo(TotalAlbums));
+            Assert.That(response.Results.Count, Is.EqualTo(TotalAlbums));
+            var ages = response.Results.Select(x => x.Age);
+            Assert.That(ages.Contains(27 * 2));
+            
+            var customRes = client.Get(new QueryJoinedRockstarAlbumsCustomSelectResponse { Include = "Total" });
+            Assert.That(customRes.Total, Is.EqualTo(TotalAlbums));
+            Assert.That(customRes.Results.Count, Is.EqualTo(TotalAlbums));
+            ages = customRes.Results.Select(x => x.Age);
+            Assert.That(ages.Contains(27 * 2));
+        }
+        
         [Test]
         public void Can_execute_query_with_multiple_JOINs_on_Rockstar_Albums_and_Genres()
         {
