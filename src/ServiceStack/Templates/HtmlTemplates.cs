@@ -23,14 +23,15 @@ namespace ServiceStack.Templates
                 .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
+        public static string GetMetadataDebugTemplate()
+        {
+            return LoadTemplate("MetadataDebugTemplate.html")
+                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+        }
+
         public static string GetHtmlFormatTemplate()
         {
             return LoadTemplate("HtmlFormat.html");
-        }
-
-        public static string GetMetadataDebugTemplate()
-        {
-            return LoadTemplate("MetadataDebugTemplate.html");
         }
 
         private static string LoadTemplate(string templateName)
