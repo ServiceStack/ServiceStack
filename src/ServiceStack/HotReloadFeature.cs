@@ -36,6 +36,8 @@ namespace ServiceStack
         
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
         public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
+        // No delay sometimes causes repetitive loop 
+        public static TimeSpan ModifiedDelay = TimeSpan.FromMilliseconds(50);
 
         public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
@@ -64,7 +66,10 @@ namespace ServiceStack
 
                 shouldReload = maxLastModified != DateTime.MinValue && maxLastModified.Ticks > long.Parse(request.ETag);
                 if (shouldReload)
+                {
+                    await Task.Delay(ModifiedDelay);
                     break;
+                }
 
                 await Task.Delay(CheckDelay);
             }

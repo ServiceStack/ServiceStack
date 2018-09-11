@@ -472,6 +472,7 @@ namespace ServiceStack
     {
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
         public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
+        public static TimeSpan ModifiedDelay = TimeSpan.FromMilliseconds(50);
 
         public ITemplatePages Pages { get; set; }
 
@@ -498,7 +499,10 @@ namespace ServiceStack
 
                 shouldReload = maxLastModified.Ticks > eTagTicks;
                 if (shouldReload)
+                {
+                    await Task.Delay(ModifiedDelay);
                     break;
+                }
 
                 await Task.Delay(CheckDelay);
             }
