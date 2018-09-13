@@ -8,8 +8,13 @@ namespace ServiceStack.Auth
     {
         bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
+
         bool VerifyFacebookAccessToken(string appId, string accessToken);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
+
+        bool VerifyGoogleAccessToken(string consumerKey, string accessToken);
+        string DownloadGoogleUserInfo(string accessToken);
+
         string DownloadYammerUserInfo(string yammerUserId);
         string DownloadGithubUserInfo(string accessToken);
         string DownloadGithubUserEmailsInfo(string accessToken);
@@ -22,6 +27,9 @@ namespace ServiceStack.Auth
 
         public static string FacebookUserUrl = "https://graph.facebook.com/v2.8/me?access_token={0}";
         public static string FacebookVerifyTokenUrl = "https://graph.facebook.com/v2.8/app?access_token={0}";
+
+        public static string GoogleUserUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+        public static string GoogleVerifyTokenUrl = "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token={0}";
 
         public static string YammerUserUrl = "https://www.yammer.com/api/v1/users/{0}.json";
 
@@ -103,6 +111,22 @@ namespace ServiceStack.Auth
             }
 
             var json = url.GetJsonFromUrl();
+            return json;
+        }
+
+        public bool VerifyGoogleAccessToken(string consumerKey, string accessToken)
+        {
+            var url = GoogleVerifyTokenUrl.Fmt(accessToken);
+            var json = url.GetJsonFromUrl();
+            var obj = JsonObject.Parse(json);
+            var issuedTo = obj["issued_to"];
+            return issuedTo == consumerKey;
+        }
+
+        public string DownloadGoogleUserInfo(string accessToken)
+        {
+            var url = GoogleUserUrl.AddQueryParam("access_token", accessToken);
+            string json = url.GetJsonFromUrl();
             return json;
         }
 

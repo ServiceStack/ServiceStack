@@ -69,14 +69,19 @@
         <h2>Yahoo</h2>
         <a href="/auth/YahooOpenId">/auth/YahooOpenId</a>
     </div>
-    
+
     <div>
         <h2>GitHub</h2>
         <a href="/auth/github">/auth/github</a>
     </div>
 
     <div>
-        <h2>Google OAuth</h2>
+        <h2>Google</h2>
+        <a href="/auth/google">/auth/google</a>
+    </div>
+
+    <div>
+        <h2>Google OAuth (DotNetOpenAuth)</h2>
         <a href="/auth/GoogleOAuth">/auth/GoogleOAuth</a>
     </div>
 
@@ -94,7 +99,7 @@
         <h2>Yandex</h2>
         <a href="/auth/Yandex">/auth/Yandex</a>
     </div>
-    
+
     <div>
         <h2>VK.com</h2>
         <a href="/auth/vkcom">/auth/vkcom</a>
@@ -109,30 +114,30 @@
         <h2>Windows Auth</h2>
         <a href="/auth/windowsauth">/auth/windowsauth</a>
     </div>
-    
+
     <h3>Custom Credentials Auth</h3>
     <form action="/auth/credentials">
-        <input type="text" name="Username" value="demis.bellot@gmail.com"/>
-        <input type="text" name="Password" value="test"/>
-        <input type="submit"/>
+        <input type="text" name="Username" value="demis.bellot@gmail.com" />
+        <input type="text" name="Password" value="test" />
+        <input type="submit" />
     </form>
 
     <h3>Private Auth</h3>
     <form action="/privateauth">
-        <input type="text" name="Username" value="demis.bellot@gmail.com"/>
-        <input type="submit"/>
+        <input type="text" name="Username" value="demis.bellot@gmail.com" />
+        <input type="submit" />
     </form>
 
     <h3>Register New User</h3>
     <form action="/register" method="POST">
-        <input type="text" name="Username"  placeholder="UserName"  value="NewUser"/>
-        <input type="text" name="Password"  placeholder="Password"  value="test"/>
-        <input type="text" name="FirstName" placeholder="FirstName" value="New"/>
-        <input type="text" name="LastName"  placeholder="LastName"  value="User"/>
-        <input type="submit"/>
+        <input type="text" name="Username" placeholder="UserName" value="NewUser" />
+        <input type="text" name="Password" placeholder="Password" value="test" />
+        <input type="text" name="FirstName" placeholder="FirstName" value="New" />
+        <input type="text" name="LastName" placeholder="LastName" value="User" />
+        <input type="submit" />
     </form>
-    
-    <hr/>
+
+    <hr />
     <h3>Reset UserAuth tables and Session</h3>
     <a href="/reset-userauth">/reset-userauth</a>
 

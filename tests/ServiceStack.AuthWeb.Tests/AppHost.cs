@@ -141,12 +141,13 @@ namespace ServiceStack.AuthWeb.Tests
                     new ApiKeyAuthProvider(appSettings), 
                     new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
                     new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
+                    new GoogleAuthProvider(appSettings),        //Sign-in with Google OAuth (without DotNetOpenAuth)
+                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider (with DotNetOpenAuth)
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
                     new BasicAuthProvider(),                    //Sign-in with Basic Auth
                     new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
                     new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
                     new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
-                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider
                     new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
                     new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth Provider
                     new FourSquareOAuth2Provider(appSettings),  //Sign-in with FourSquare OAuth2 Provider
