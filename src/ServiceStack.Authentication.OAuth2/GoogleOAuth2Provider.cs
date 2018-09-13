@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
@@ -20,14 +21,14 @@ namespace ServiceStack.Authentication.OAuth2
     {
         public const string Name = "GoogleOAuth";
 
-        public const string Realm = "https://accounts.google.com/o/oauth2/auth";
+        public const string Realm = "https://oauth2.googleapis.com/token";
 
         public GoogleOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = this.AuthorizeUrl ?? Realm;
-            this.AccessTokenUrl = this.AccessTokenUrl ?? "https://accounts.google.com/o/oauth2/token";
-            this.UserProfileUrl = this.UserProfileUrl ?? "https://www.googleapis.com/oauth2/v1/userinfo";
+            this.AccessTokenUrl = this.AccessTokenUrl ?? "https://oauth2.googleapis.com/token";
+            this.UserProfileUrl = this.UserProfileUrl ?? "https://www.googleapis.com/oauth2/v2/userinfo";
 
             if (this.Scopes.Length == 0)
             {
@@ -40,7 +41,41 @@ namespace ServiceStack.Authentication.OAuth2
             this.VerifyAccessToken = OnVerifyAccessToken;
         }
 
-        public string VerifyAccessTokenUrl { get; set; } = "https://www.googleapis.com/oauth2/v1/tokeninfo?access_token={0}";
+        public string VerifyAccessTokenUrl { get; set; } = "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token={0}";
+
+        public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
+        {
+            var httpRequest = authService.Request;
+            var code = httpRequest.QueryString[Keywords.Code];
+            if (code == null)
+                return base.Authenticate(authService, session, request);
+
+            var tokens = Init(authService, ref session, request);
+
+            try
+            {
+                var accessTokenUrl = $"{AccessTokenUrl}?code={code}&client_id={ConsumerKey}&client_secret={ConsumerSecret}&redirect_uri={this.CallbackUrl.UrlEncode()}&grant_type=authorization_code";
+                var contents = AccessTokenUrlFilter(this, accessTokenUrl).PostToUrl("");
+                var authInfo = JsonObject.Parse(contents);
+
+                var accessToken = authInfo["access_token"];
+
+                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
+                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
+            }
+            catch (WebException we)
+            {
+                string errorBody = we.GetResponseBody();
+                var statusCode = ((HttpWebResponse)we.Response).StatusCode;
+                if (statusCode == HttpStatusCode.BadRequest)
+                {
+                    return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "AccessTokenFailed")));
+                }
+            }
+
+            //Shouldn't get here
+            return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "Unknown")));
+        }
 
         public bool OnVerifyAccessToken(string accessToken)
         {
