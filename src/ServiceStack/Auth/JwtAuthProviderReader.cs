@@ -449,11 +449,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public JsonObject GetValidJwtPayload(IRequest req, string jwt)
         {
-            var vefifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
-            var invalidError = GetInvalidJwtPayloadError(vefifiedPayload);
+            var verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+            var invalidError = GetInvalidJwtPayloadError(verifiedPayload);
             return invalidError != null
                 ? null
-                : vefifiedPayload;
+                : verifiedPayload;
         }
         
         /// <summary>
@@ -478,7 +478,7 @@ namespace ServiceStack.Auth
 
                 //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
                 if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                    throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
+                    throw new NotSupportedException($"Invalid algorithm '{algorithm}', expected '{HashAlgorithm}'");
 
                 if (!VerifyPayload(req, algorithm, bytesToSign, signatureBytes))
                     return null;

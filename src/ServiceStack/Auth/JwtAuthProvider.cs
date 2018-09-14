@@ -69,7 +69,7 @@ namespace ServiceStack.Auth
 
         public Func<byte[], byte[]> GetHashAlgorithm(IRequest req)
         {
-            Func<byte[], byte[]> hashAlgoritm = null;
+            Func<byte[], byte[]> hashAlgorithm = null;
 
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out var hmac))
             {
@@ -77,7 +77,7 @@ namespace ServiceStack.Auth
                 if (authKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => hmac(authKey, data);
+                hashAlgorithm = data => hmac(authKey, data);
             }
 
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out var rsa))
@@ -86,13 +86,13 @@ namespace ServiceStack.Auth
                 if (privateKey == null)
                     throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => rsa(privateKey.Value, data);
+                hashAlgorithm = data => rsa(privateKey.Value, data);
             }
 
-            if (hashAlgoritm == null)
-                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+            if (hashAlgorithm == null)
+                throw new NotSupportedException("Invalid algorithm: " + HashAlgorithm);
 
-            return hashAlgoritm;
+            return hashAlgorithm;
         }
 
         public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null) =>
@@ -115,8 +115,8 @@ namespace ServiceStack.Auth
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId(req));
             CreateHeaderFilter?.Invoke(jwtHeader, session);
 
-            var hashAlgoritm = GetHashAlgorithm(req);
-            var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
+            var hashAlgorithm = GetHashAlgorithm(req);
+            var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return bearerToken;
         }
 
