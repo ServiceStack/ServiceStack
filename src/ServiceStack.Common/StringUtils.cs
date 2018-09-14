@@ -156,7 +156,7 @@ namespace ServiceStack
                     }
                     else if (c == separator)
                     {
-                        if (cmd.Name != null)
+                        if (string.IsNullOrEmpty(cmd.Name))
                             cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
 
                         to.Add(cmd);
