@@ -730,6 +730,9 @@ namespace ServiceStack
             if (Config.UseJsObject)
                 JS.Configure();
 
+            if (Config.StrictMode == true && !JsConfig.HasInit)
+                JsConfig.Init(); //Ensure JsConfig global config is not mutated after StartUp
+
             if (config.LogUnobservedTaskExceptions)
             {
                 TaskScheduler.UnobservedTaskException += (sender, args) =>
