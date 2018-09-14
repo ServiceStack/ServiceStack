@@ -21,7 +21,7 @@ namespace ServiceStack.Authentication.OAuth2
     {
         public const string Name = "GoogleOAuth";
 
-        public const string Realm = "https://oauth2.googleapis.com/token";
+        public const string Realm = "https://accounts.google.com/o/oauth2/v2/auth";
 
         public GoogleOAuth2Provider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
