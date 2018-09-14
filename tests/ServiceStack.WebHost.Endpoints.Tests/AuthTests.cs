@@ -187,6 +187,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? By { get; set; }
     }
 
+    [Route("/unsecure")]
+    public class Unsecure : IReturn<Unsecure>
+    {
+        public string Name { get; set; }
+    }
+
     public class CustomUserSessionService : Service
     {
         public object Any(IncrSession request)
@@ -196,6 +202,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Request.SaveSession(session);
             return session;
         }
+
+        public object Any(Unsecure request) => request;
     }
 
     public class CustomAuthProvider : AuthProvider
