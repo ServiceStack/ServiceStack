@@ -759,6 +759,14 @@ namespace ServiceStack
 
             return defaultValue;
         }
+
+        public virtual void PublishMessage<T>(IMessageProducer messageProducer, T message)
+        {
+            if (messageProducer == null)
+                throw new ArgumentNullException(nameof(messageProducer), "No IMessageFactory was registered, cannot PublishMessage");
+
+            messageProducer.Publish(message);
+        }
     }
 
 }

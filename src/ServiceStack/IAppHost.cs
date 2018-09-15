@@ -301,11 +301,16 @@ namespace ServiceStack
         /// Execute MQ Message in ServiceStack
         /// </summary>
         object ExecuteMessage(IMessage mqMessage);
-
+        
         /// <summary>
         /// Access Service Controller for ServiceStack
         /// </summary>
         ServiceController ServiceController { get; }
+
+        /// <summary>
+        /// Publish Message to be processed by AppHost
+        /// </summary>
+        void PublishMessage<T>(IMessageProducer messageProducer, T message);
     }
 
     public interface IHasAppHost

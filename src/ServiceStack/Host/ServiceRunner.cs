@@ -218,7 +218,7 @@ namespace ServiceStack.Host
             //for execution after this req has been completed
             using (var producer = msgFactory.CreateMessageProducer())
             {
-                producer.Publish(request);
+                AppHost.PublishMessage(producer, request);
             }
 
             return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();
