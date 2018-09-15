@@ -633,7 +633,7 @@ namespace ServiceStack.Auth
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
             if (!isHmac && !isRsa)
-                throw new NotSupportedException("Invalid algoritm: " + algorithm);
+                throw new NotSupportedException("Invalid algorithm: " + algorithm);
 
             if (isHmac)
             {
@@ -690,7 +690,7 @@ namespace ServiceStack.Auth
             var isHmac = HmacAlgorithms.ContainsKey(HashAlgorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(HashAlgorithm);
             if (!isHmac && !isRsa)
-                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+                throw new NotSupportedException("Invalid algorithm: " + HashAlgorithm);
 
             if (isHmac && AuthKey == null)
                 throw new ArgumentNullException(nameof(AuthKey), "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");
