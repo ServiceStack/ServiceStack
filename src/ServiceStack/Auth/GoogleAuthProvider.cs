@@ -46,7 +46,7 @@ namespace ServiceStack.Auth
         {
             var tokens = Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
                 if (!AuthHttpGateway.VerifyGoogleAccessToken(ConsumerKey, request.AccessToken))

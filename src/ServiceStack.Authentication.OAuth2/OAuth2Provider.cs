@@ -70,7 +70,7 @@ namespace ServiceStack.Authentication.OAuth2
         {
             var tokens = this.Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
                 if (VerifyAccessToken == null)
