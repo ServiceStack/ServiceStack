@@ -131,10 +131,10 @@ namespace ServiceStack.Auth
             try
             {
                 tokens.UserId = authInfo.Get("id");
-                tokens.UserName = authInfo.Get("id") ?? authInfo.Get("username");
+                tokens.UserName = authInfo.Get("email") ?? authInfo.Get("id") ?? authInfo.Get("username");
                 tokens.DisplayName = authInfo.Get("name");
-                tokens.FirstName = authInfo.Get("first_name");
-                tokens.LastName = authInfo.Get("last_name");
+                tokens.FirstName = authInfo.Get("given_name");
+                tokens.LastName = authInfo.Get("family_name");
                 tokens.Email = authInfo.Get("email");
 
                 var json = AuthHttpGateway.DownloadGoogleUserInfo(tokens.AccessTokenSecret);
