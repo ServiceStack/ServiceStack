@@ -120,12 +120,24 @@
             <param name="value">The value.</param>
             <param name="writer">The writer.</param>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sTimeSpanHandler">
+        <member name="M:ServiceStack.Text.JsConfig.Init">
+            <summary>
+            Mark JsConfig global config as initialized and assert it's no longer mutated
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="M:ServiceStack.Text.JsConfig.Init(ServiceStack.Text.Config)">
+            <summary>
+            Initialize global config and assert that it's no longer mutated 
+            </summary>
+            <param name="config"></param>
+        </member>
+        <member name="P:ServiceStack.Text.JsConfig.TimeSpanHandler">
             <summary>
             Sets which format to use when serializing TimeSpans
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEmitCamelCaseNames">
+        <member name="P:ServiceStack.Text.JsConfig.EmitCamelCaseNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
             to take advantage of <see cref="T:System.CLSCompliantAttribute"/> specification,
@@ -133,30 +145,30 @@
             and parsing member names and enum values in a case-insensitive manner.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sEmitLowercaseUnderscoreNames">
+        <member name="P:ServiceStack.Text.JsConfig.EmitLowercaseUnderscoreNames">
             <summary>
             <see langword="true"/> if the <see cref="T:ServiceStack.Text.Common.ITypeSerializer"/> is configured
             to support web-friendly serialized formats, ie emitting lowercase_underscore_casing for JSON
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sPropertyConvention">
+        <member name="P:ServiceStack.Text.JsConfig.PropertyConvention">
             <summary>
             Define how property names are mapped during deserialization
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sThrowOnError">
+        <member name="P:ServiceStack.Text.JsConfig.ThrowOnError">
             <summary>
             Gets or sets a value indicating if the framework should throw serialization exceptions
             or continue regardless of serialization errors. If <see langword="true"/>  the framework
             will throw; otherwise, it will parse as many fields as possible. The default is <see langword="false"/>.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sAlwaysUseUtc">
+        <member name="P:ServiceStack.Text.JsConfig.AlwaysUseUtc">
             <summary>
             Gets or sets a value indicating if the framework should always convert <see cref="T:System.DateTime"/> to UTC format instead of local time. 
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sSkipDateTimeConversion">
+        <member name="P:ServiceStack.Text.JsConfig.SkipDateTimeConversion">
             <summary>
             Gets or sets a value indicating if the framework should skip automatic <see cref="T:System.DateTime"/> conversions.
             Dates will be handled literally, any included timezone encoding will be lost and the date will be treaded as DateTimeKind.Local
@@ -165,12 +177,12 @@
             JsConfig.DateHandler = DateHandler.ISO8601 should be used when set true for consistent de/serialization.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sAssumeUtc">
+        <member name="P:ServiceStack.Text.JsConfig.AssumeUtc">
             <summary>
             Gets or sets a value indicating if the framework should always assume <see cref="T:System.DateTime"/> is in UTC format if Kind is Unspecified. 
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sAppendUtcOffset">
+        <member name="P:ServiceStack.Text.JsConfig.AppendUtcOffset">
             <summary>
             Gets or sets whether we should append the Utc offset when we serialize Utc dates. Defaults to no.
             Only supported for when the JsConfig.DateHandler == JsonDateHandler.TimestampOffset
@@ -186,7 +198,7 @@
             Gets or sets a value indicating if HTML entity chars [&gt; &lt; &amp; = '] should be escaped as "\uXXXX".
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sOnDeserializationError">
+        <member name="P:ServiceStack.Text.JsConfig.OnDeserializationError">
             <summary>
             Gets or sets a value indicating if the framework should call an error handler when
             an exception happens during the deserialization.
@@ -195,20 +207,20 @@
         </member>
         <member name="P:ServiceStack.Text.JsConfig.PreferInterfaces">
             <summary>
-            If set to true, Interface types will be prefered over concrete types when serializing.
+            If set to true, Interface types will be preferred over concrete types when serializing.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sIncludePublicFields">
+        <member name="P:ServiceStack.Text.JsConfig.IncludePublicFields">
             <summary>
-            If set to true, Interface types will be prefered over concrete types when serializing.
+            If set to true, Interface types will be preferred over concrete types when serializing.
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sMaxDepth">
+        <member name="P:ServiceStack.Text.JsConfig.MaxDepth">
             <summary>
             Sets the maximum depth to avoid circular dependencies
             </summary>
         </member>
-        <member name="F:ServiceStack.Text.JsConfig.sModelFactory">
+        <member name="P:ServiceStack.Text.JsConfig.ModelFactory">
             <summary>
             Set this to enable your own type construction provider.
             This is helpful for integration with IoC containers where you need to call the container constructor.

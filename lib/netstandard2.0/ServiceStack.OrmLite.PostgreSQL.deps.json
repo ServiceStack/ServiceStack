@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETStandard,Version=v2.0/",
-    "signature": "90b099da1443adef4b7fa24f140d4278398c3e3a"
+    "signature": "10345115d5b7eb88d548894342575eaf7e6a794b"
   },
   "compilationOptions": {},
   "targets": {
@@ -10,7 +10,7 @@
       "ServiceStack.OrmLite.PostgreSQL/1.0.0": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
-          "Npgsql": "4.0.2",
+          "Npgsql": "4.0.3",
           "ServiceStack.OrmLite": "1.0.0",
           "ServiceStack.Common": "5.0.0.0",
           "ServiceStack.Interfaces": "5.0.0.0",
@@ -41,7 +41,7 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "Npgsql/4.0.2": {
+      "Npgsql/4.0.3": {
         "dependencies": {
           "System.Runtime.CompilerServices.Unsafe": "4.5.0",
           "System.Threading.Tasks.Extensions": "4.5.0",
@@ -49,8 +49,8 @@
         },
         "runtime": {
           "lib/netstandard2.0/Npgsql.dll": {
-            "assemblyVersion": "4.0.2.0",
-            "fileVersion": "4.0.2.0"
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.0.3.0"
           }
         }
       },
@@ -634,12 +634,12 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "Npgsql/4.0.2": {
+    "Npgsql/4.0.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sPpinYdH+Jdq9iLFllElQ+J/h3jAnefyUxgBlwc4yz9eBezSYhj64T/u9OlX4cJRXglT3LBkwsFFY78HH4wokw==",
-      "path": "npgsql/4.0.2",
-      "hashPath": "npgsql.4.0.2.nupkg.sha512"
+      "sha512": "sha512-kI2cGnKNexseCVn4a8EWA0gz2pXJOrkV9snlSb4How77a5uOu5oILv1FgBxteI2R0FgKfjXnnJnqmEuyAMNG3g==",
+      "path": "npgsql/4.0.3",
+      "hashPath": "npgsql.4.0.3.nupkg.sha512"
     },
     "runtime.native.System.Data.SqlClient.sni/4.4.0": {
       "type": "package",

@@ -211,6 +211,7 @@
               The Callback URL for your app should match the CallbackUrl provided.
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "T:ServiceStack.Auth.GoogleAuthProvider" -->
         <member name="M:ServiceStack.Auth.AuthHttpGateway.DownloadYammerUserInfo(System.String)">
             <summary>
             Download Yammer User Info given its ID.
@@ -340,7 +341,7 @@
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.EncryptPayload">
             <summary>
             Whether to encrypt JWE Payload (default false). 
-            Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Conent Encryption
+            Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Content Encryption
             </summary>
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.HashAlgorithm">
@@ -391,7 +392,7 @@
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.PrivateKeyXml">
             <summary>
-            Convenient overload to intialize the Private Key via exported XML
+            Convenient overload to initialize the Private Key via exported XML
             </summary>
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.PublicKey">
@@ -401,7 +402,7 @@
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.PublicKeyXml">
             <summary>
-            Convenient overload to intialize the Public Key via exported XML
+            Convenient overload to initialize the Public Key via exported XML
             </summary>
         </member>
         <member name="P:ServiceStack.Auth.JwtAuthProviderReader.FallbackPublicKeys">
@@ -5399,6 +5400,11 @@
             Access Service Controller for ServiceStack
             </summary>
         </member>
+        <member name="M:ServiceStack.IAppHost.PublishMessage``1(ServiceStack.Messaging.IMessageProducer,``0)">
+            <summary>
+            Publish Message to be processed by AppHost
+            </summary>
+        </member>
         <member name="T:ServiceStack.IRepository">
             <summary>
             A convenient repository base class you can inherit from to reduce the boilerplate 
@@ -5942,8 +5948,8 @@
         <member name="M:ServiceStack.Service.Dispose">
             <summary>
             Disposes all created disposable properties of this service
-            and executes disposing of all request <see cref="!:IDposable"></see>s 
-            (warning, manualy triggering this might lead to unwanted disposing of all request related objects and services.)
+            and executes disposing of all request <see cref="T:System.IDisposable"></see>s 
+            (warning, manually triggering this might lead to unwanted disposing of all request related objects and services.)
             </summary>
         </member>
         <member name="M:ServiceStack.ServiceRoutesExtensions.AddFromAssembly(ServiceStack.Web.IServiceRoutes,System.Reflection.Assembly[])">
@@ -6159,7 +6165,7 @@
         <member name="M:ServiceStack.ServiceStackHost.GetDbConnection(ServiceStack.Web.IRequest)">
             <summary>
             Gets IDbConnection Checks if DbInfo is seat in RequestContext.
-            See multitenancy: http://docs.servicestack.net/multitenancy
+            See multitenancy: https://docs.servicestack.net/multitenancy
             Called by itself, <see cref="T:ServiceStack.Service"></see> and <see cref="!:ServiceStack.Razor.ViewPageBase"></see>
             </summary>
             <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
@@ -6234,6 +6240,12 @@
             <summary>
             Role Required to call Templates Admin Service (/templates/admin), Default is Admin.
             If null Templates Admin Service will not be registered.
+            </summary>
+        </member>
+        <member name="P:ServiceStack.TemplatePagesFeature.MetadataDebugAdminRole">
+            <summary>
+            Role Required to call Metadata Debug Service (/metadata/debug).
+            If null Metadata Debug Service will only be registered in DebugMode.
             </summary>
         </member>
         <member name="T:ServiceStack.Templates.HtmlTemplates">
