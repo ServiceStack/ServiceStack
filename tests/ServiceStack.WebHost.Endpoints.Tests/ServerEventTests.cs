@@ -191,6 +191,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
     
+#if DEBUG    
+    
     [Ignore("Unnecessary suite of tests")]
     [TestFixture]
     public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
@@ -1630,5 +1632,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             return await task;
         }
-    }
+    }    
+#endif
+    
 }
