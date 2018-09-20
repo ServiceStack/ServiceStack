@@ -153,6 +153,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
+
+    [Route("/alwaysthrowsjsscope")]
+    [DataContract]
+    public class AlwaysThrowsJsScope
+    {
+        [DataMember]
+        public string TheValue { get; set; }
+    }
+
     public class CustomFieldHttpError { }
     public class CustomFieldHttpErrorResponse
     {
@@ -171,6 +180,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             500,
             "HeaderErrorCode");
         }
+        
+        public object Any(AlwaysThrowsJsScope request) => 
+            throw new HttpError(HttpStatusCode.BadRequest) {
+                ResultScope = () => JsConfig.With(new Text.Config {
+                    EmitLowercaseUnderscoreNames = true, 
+                    EmitCamelCaseNames = false,
+                })
+            };
     }
 
 
@@ -571,6 +588,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .GetStringFromUrl();
 
             Assert.That(response, Is.EqualTo("UncaughtException SerializationException"));
+        }
+
+        [Test]
+        public void Does_serialize_HttpError_with_CustomScope()
+        {
+            try
+            {
+                var json = Config.ListeningOn.AppendPath("/alwaysthrowsjsscope").GetJsonFromUrl();
+                Assert.Fail("Should throw");
+            }
+            catch (WebException e)
+            {
+                var json = e.GetResponseBody();
+                Assert.That(json, Does.Contain("response_status"));
+            }
         }
     }
 }
