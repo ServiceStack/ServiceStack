@@ -183,9 +183,15 @@ namespace ServiceStack.Metadata
 
             var errorCount = HostContext.AppHost.StartUpErrors.Count;
             var plural = errorCount > 1 ? "s" : "";
-            var startupErrors = HostContext.DebugMode && errorCount > 0
-                ? $"<div class='error-popup'><a href='?debug=requestinfo'>Review {errorCount} Error{plural} on Startup</a></div>"
-                : "";
+            var startupErrors = "";
+            if (HostContext.DebugMode)
+            {
+                startupErrors = errorCount > 0
+                    ? $"<div class='error-popup'><a href='?debug=requestinfo'>Review {errorCount} Error{plural} on Startup</a></div>"
+                    : LicenseUtils.LicenseWarningMessage != null 
+                        ? $"<div class='error-popup'>{LicenseUtils.LicenseWarningMessage}</div>"                
+                        : "";
+            }
 
             var renderedTemplate = HtmlTemplates.Format(
                 HtmlTemplates.GetIndexOperationsTemplate(),
