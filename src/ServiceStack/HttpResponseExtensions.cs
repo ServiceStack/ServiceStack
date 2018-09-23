@@ -176,9 +176,9 @@ namespace ServiceStack
         /// <summary>
         /// Sets a persistent cookie which expires after the given time
         /// </summary>
-        public static void SetCookie(this IResponse response, string cookieName, string cookieValue, TimeSpan expiresIn)
+        public static void SetCookie(this IResponse response, string cookieName, string cookieValue, TimeSpan expiresIn, string path = "/")
         {
-            response.SetCookie(new Cookie(cookieName, cookieValue)
+            response.SetCookie(new Cookie(cookieName, cookieValue, path)
             {
                 Expires = DateTime.UtcNow + expiresIn
             });

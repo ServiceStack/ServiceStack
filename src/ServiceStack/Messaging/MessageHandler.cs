@@ -43,14 +43,8 @@ namespace ServiceStack.Messaging
             Action<IMessageHandler, IMessage<T>, Exception> processInExceptionFn,
             int retryCount)
         {
-            if (messageService == null)
-                throw new ArgumentNullException(nameof(messageService));
-
-            if (processMessageFn == null)
-                throw new ArgumentNullException(nameof(processMessageFn));
-
-            this.messageService = messageService;
-            this.processMessageFn = processMessageFn;
+            this.messageService = messageService ?? throw new ArgumentNullException(nameof(messageService));
+            this.processMessageFn = processMessageFn ?? throw new ArgumentNullException(nameof(processMessageFn));
             this.processInExceptionFn = processInExceptionFn ?? DefaultInExceptionHandler;
             this.retryCount = retryCount;
             this.ReplyClientFactory = ClientFactory.Create;
@@ -142,7 +136,7 @@ namespace ServiceStack.Messaging
                 }
                 
                 if (responseEx != null)
-                { 
+                {
                     TotalMessagesFailed++;
 
                     if (message.ReplyTo != null)
@@ -240,6 +234,9 @@ namespace ServiceStack.Messaging
             {
                 try
                 {
+                    if (ex is AggregateException)
+                        ex = ex.UnwrapIfSingleException();
+                    
                     TotalMessagesFailed++;
                     msgHandled = true;
                     processInExceptionFn(this, message, ex);

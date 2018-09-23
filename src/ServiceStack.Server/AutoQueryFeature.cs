@@ -15,10 +15,6 @@ using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack
 {
     public delegate void QueryFilterDelegate(ISqlExpression q, IQueryDb dto, IRequest req);
@@ -284,15 +280,15 @@ namespace ServiceStack
             var aggregateCommands = new List<Command>();
             foreach (var cmd in commands)
             {
-                if (!SqlAggregateFunctions.Contains(cmd.Name.ToString()))
+                if (!SqlAggregateFunctions.Contains(cmd.Name))
                     continue;
 
                 aggregateCommands.Add(cmd);
 
                 if (cmd.Args.Count == 0)
-                    cmd.Args.Add("*".ToStringSegment());
+                    cmd.Args.Add("*".AsMemory());
 
-                cmd.Original = cmd.ToStringSegment();
+                cmd.Original = cmd.AsMemory();
 
                 var hasAlias = !cmd.Suffix.IsNullOrWhiteSpace();
 
@@ -303,9 +299,9 @@ namespace ServiceStack
                     string modifier = "";
                     if (arg.StartsWith("DISTINCT ", StringComparison.OrdinalIgnoreCase))
                     {
-                        var argParts = arg.SplitOnFirst(' ');
-                        modifier = argParts[0] + " ";
-                        arg = argParts[1];
+                        arg.SplitOnFirst(' ', out var first, out var last);
+                        modifier = first + " ";
+                        arg = last;
                     }
 
                     var fieldRef = q.FirstMatchingField(arg.ToString());
@@ -316,15 +312,15 @@ namespace ServiceStack
                         var needsRewrite = !fieldName.EqualsIgnoreCase(q.DialectProvider.NamingStrategy.GetColumnName(fieldName)); 
                         if (fieldRef.Item1 != q.ModelDef || fieldRef.Item2.Alias != null || needsRewrite || hasAlias)
                         {
-                            cmd.Args[i] = (modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2)).ToStringSegment();
+                            cmd.Args[i] = (modifier + q.DialectProvider.GetQuotedColumnName(fieldRef.Item1, fieldRef.Item2)).AsMemory();
                         }
                     }
                     else
                     {
                         double d;
-                        if (!arg.Equals("*") && !double.TryParse(arg.ToString(), out d))
+                        if (!arg.EqualsOrdinal("*") && !double.TryParse(arg.ToString(), out d))
                         {
-                            cmd.Args[i] = "{0}".SqlFmt(arg).ToStringSegment();
+                            cmd.Args[i] = "{0}".SqlFmt(arg).AsMemory();
                         }
                     }
                 }
@@ -335,11 +331,11 @@ namespace ServiceStack
                     if (alias.StartsWith("as ", StringComparison.OrdinalIgnoreCase))
                         alias = alias.Substring("as ".Length);
 
-                    cmd.Suffix = (" " + alias.SafeVarName()).ToStringSegment();
+                    cmd.Suffix = (" " + alias.SafeVarName()).AsMemory();
                 }
                 else
                 {
-                    cmd.Suffix = (" " + q.DialectProvider.GetQuotedName(cmd.Original.ToString())).ToStringSegment();
+                    cmd.Suffix = (" " + q.DialectProvider.GetQuotedName(cmd.Original.ToString())).AsMemory();
                 }
             }
 
@@ -541,17 +537,17 @@ namespace ServiceStack
             var totalCommand = commands.FirstOrDefault(x => x.Name.EqualsIgnoreCase("Total"));
             if (totalCommand != null)
             {
-                totalCommand.Name = "COUNT".ToStringSegment();
+                totalCommand.Name = "COUNT";
             }
 
             var totalRequested = commands.Any(x =>
                 x.Name.EqualsIgnoreCase("COUNT") &&
-                (x.Args.Count == 0 || x.Args.Count == 1 && x.Args[0].Equals("*")));
+                (x.Args.Count == 0 || x.Args.Count == 1 && x.Args[0].EqualsOrdinal("*")));
 
             if (IncludeTotal || totalRequested)
             {
                 if (!totalRequested)
-                    commands.Add(new Command { Name = "COUNT".ToStringSegment(), Args = { "*".ToStringSegment() } });
+                    commands.Add(new Command { Name = "COUNT", Args = { "*".AsMemory() } });
 
                 foreach (var responseFilter in ResponseFilters)
                 {

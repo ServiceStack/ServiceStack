@@ -123,18 +123,12 @@ namespace ServiceStack
         /// <summary>
         /// Publish a MQ message over the <see cref="IMessageProducer"></see> implementation.
         /// </summary>
-        public virtual void PublishMessage<T>(T message)
-        {
-            if (MessageProducer == null)
-                throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
-
-            MessageProducer.Publish(message);
-        }
+        public virtual void PublishMessage<T>(T message) => HostContext.AppHost.PublishMessage(MessageProducer, message);
 
         /// <summary>
         /// Disposes all created disposable properties of this service
-        /// and executes disposing of all request <see cref="IDposable"></see>s 
-        /// (warning, manualy triggering this might lead to unwanted disposing of all request related objects and services.)
+        /// and executes disposing of all request <see cref="IDisposable"></see>s 
+        /// (warning, manually triggering this might lead to unwanted disposing of all request related objects and services.)
         /// </summary>
         public virtual void Dispose()
         {

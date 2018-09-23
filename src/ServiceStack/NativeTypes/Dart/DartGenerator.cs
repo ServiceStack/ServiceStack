@@ -23,11 +23,14 @@ namespace ServiceStack.NativeTypes.Dart
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
 //            "dart:collection",  Required for inheriting List<T> / ListBase 
 //            "dart:typed_data",  Required for byte[] / Uint8List
-            "package:servicestack/client.dart"
+            "package:servicestack/servicestack.dart"
         };
         
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
@@ -356,6 +359,8 @@ namespace ServiceStack.NativeTypes.Dart
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 var enumType = Type(type.Name, type.GenericArgs);
@@ -491,7 +496,7 @@ namespace ServiceStack.NativeTypes.Dart
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest && !isAbstractClass;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine($"int {"Version".PropertyStyle()} = {Config.AddImplicitVersion};");
+                    sb.AppendLine($"int {"Version".PropertyStyle()};");
                 }
 
                 if (type.Name == "IReturn`1")
@@ -520,7 +525,8 @@ namespace ServiceStack.NativeTypes.Dart
                             Name = "Version".PropertyStyle(),
                             Type = "Int32",
                             TypeNamespace = "System",
-                            IsValueType = true,
+                            IsValueType = true,            
+                            Value = Config.AddImplicitVersion.ToString()
                         });
                     }
 
@@ -547,6 +553,10 @@ namespace ServiceStack.NativeTypes.Dart
                             else
                                 sbBody.Append(",");
                             sbBody.Append($"this.{prop.Name.PropertyStyle().PropertyName()}");
+                            if (!string.IsNullOrEmpty(prop.Value))
+                            {
+                                sbBody.Append("=" + prop.Value);
+                            }
                         }
                         if (sbBody.Length > 0)
                         {
@@ -681,6 +691,8 @@ namespace ServiceStack.NativeTypes.Dart
                 sb.AppendLine("}");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+
             return lastNS;
         }
 
@@ -703,11 +715,6 @@ namespace ServiceStack.NativeTypes.Dart
             if (existingTypeInfos.Contains(dartType))
                 return;
             existingTypeInfos.Add(dartType);
-
-            if (dartType == "Map<String,List<Map<String,Poco>>>")
-            {
-                dartType.Print();
-            }
 
             if (factoryFn == null)
                 factoryFn = $"() => new {dartType}()"; 

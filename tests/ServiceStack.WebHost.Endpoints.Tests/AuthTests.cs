@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 FileName = file.FileName,
                 ContentLength = file.ContentLength,
                 ContentType = file.ContentType,
-                Contents = new StreamReader(file.InputStream).ReadToEnd(),
+                Contents = file.InputStream.ReadToEnd(),
                 CustomerId = request.CustomerId,
                 CustomerName = request.CustomerName
             };
@@ -187,6 +187,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public int? By { get; set; }
     }
 
+    [Route("/unsecure")]
+    public class Unsecure : IReturn<Unsecure>
+    {
+        public string Name { get; set; }
+    }
+
     public class CustomUserSessionService : Service
     {
         public object Any(IncrSession request)
@@ -196,6 +202,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Request.SaveSession(session);
             return session;
         }
+
+        public object Any(Unsecure request) => request;
     }
 
     public class CustomAuthProvider : AuthProvider
@@ -497,7 +505,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var client = GetClientWithUserPassword();
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             var response = client.PostFile<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -511,7 +519,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new SecuredFileUpload { CustomerId = 123, CustomerName = "Foo" };
             var uploadFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/securedfileupload", uploadFile, request);
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));

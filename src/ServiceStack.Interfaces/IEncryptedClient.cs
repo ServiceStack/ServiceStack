@@ -3,7 +3,7 @@
 
 namespace ServiceStack
 {
-    public interface IEncryptedClient : IReplyClient, IHasSessionId, IHasVersion
+    public interface IEncryptedClient : IReplyClient, IHasSessionId, IHasBearerToken, IHasVersion
     {
         string ServerPublicKeyXml { get; }
         IJsonServiceClient Client { get; }

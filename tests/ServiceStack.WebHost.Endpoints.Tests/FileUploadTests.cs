@@ -51,7 +51,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             AssertResponse(response, contentType);
 
-            var contents = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            var contents = response.GetResponseStream().ReadToEnd();
             var result = DeserializeResult<T>(response, contents, contentType);
 
             customAssert(result);
@@ -100,7 +100,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             AssertResponse<FileUploadResponse>((HttpWebResponse)webResponse, r =>
             {
-                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                var expectedContents = uploadFile.OpenRead().ReadToEnd();
                 Assert.That(r.Name, Is.EqualTo("file"));
                 Assert.That(r.FileName, Is.EqualTo(uploadFile.Name));
                 Assert.That(r.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("file"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -143,7 +143,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 uploadFile, 
                 request);
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -164,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ListeningOn + "/fileuploads?CustomerId=123&CustomerName=Foo,Bar",
                 uploadFile, request);
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -190,7 +190,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         new UploadFile("upload2.html", stream2),
                     });
 
-                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                var expectedContents = uploadFile.OpenRead().ReadToEnd();
 
                 Assert.That(response.Results.Count, Is.EqualTo(2));
 
@@ -228,7 +228,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         new UploadFile("upload2.html", stream2),
                     });
 
-                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                var expectedContents = uploadFile.OpenRead().ReadToEnd();
 
                 Assert.That(response.Results.Count, Is.EqualTo(2));
 
@@ -259,7 +259,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var request = new FileUpload { CustomerId = 123, CustomerName = "Föяšč" };
             var response = client.PostFileWithRequest<FileUploadResponse>(ListeningOn + "/fileuploads", uploadFile, request);
 
-            var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadFile.OpenRead().ReadToEnd();
             Assert.That(response.Name, Is.EqualTo("upload"));
             Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
             Assert.That(response.ContentLength, Is.EqualTo(uploadFile.Length));
@@ -297,10 +297,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var uploadedFile = new FileInfo("~/TestExistingDir/upload.html".MapProjectPlatformPath());
             var webRequest = (HttpWebRequest)WebRequest.Create(ListeningOn + "/fileuploads/TestExistingDir/upload.html");
-            var expectedContents = new StreamReader(uploadedFile.OpenRead()).ReadToEnd();
+            var expectedContents = uploadedFile.OpenRead().ReadToEnd();
 
             var webResponse = webRequest.GetResponse();
-            var actualContents = new StreamReader(webResponse.GetResponseStream()).ReadToEnd();
+            var actualContents = webResponse.GetResponseStream().ReadToEnd();
 
             Assert.That(webResponse.ContentType, Is.EqualTo(MimeTypes.GetMimeType(uploadedFile.Name)));
             Assert.That(actualContents, Is.EqualTo(expectedContents));
@@ -321,7 +321,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     ListeningOn + "/fileuploads", uploadFile, MimeTypes.GetMimeType(uploadFile.Name));
 
 
-                var expectedContents = new StreamReader(uploadFile.OpenRead()).ReadToEnd();
+                var expectedContents = uploadFile.OpenRead().ReadToEnd();
                 Assert.That(isFilterCalled);
                 Assert.That(response.Name, Is.EqualTo("file"));
                 Assert.That(response.FileName, Is.EqualTo(uploadFile.Name));
@@ -355,7 +355,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
 
                     fileStream.Position = 0;
-                    var expectedContents = new StreamReader(fileStream).ReadToEnd();
+                    var expectedContents = fileStream.ReadToEnd();
 
                     Assert.That(isFilterCalled);
                     Assert.That(response.Name, Is.EqualTo("file"));
@@ -391,7 +391,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                         "/fileuploads", fileStream, fileName, MimeTypes.GetMimeType(fileName));
 
                     fileStream.Position = 0;
-                    var expectedContents = new StreamReader(fileStream).ReadToEnd();
+                    var expectedContents = fileStream.ReadToEnd();
 
                     Assert.That(isFilterCalled);
                     Assert.That(response.Name, Is.EqualTo("file"));

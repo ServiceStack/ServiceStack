@@ -93,7 +93,7 @@ namespace ServiceStack
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
 
-            string Localize(string s) => HostContext.AppHost.ResolveLocalizedString(s, null);
+            string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]

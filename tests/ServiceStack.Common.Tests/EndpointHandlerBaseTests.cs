@@ -54,7 +54,7 @@ namespace ServiceStack.Common.Tests
                 ConfigureAppHost = host => host.VirtualFiles = new MemoryVirtualFiles(),
             }.Init())
             {
-                var ms = new MemoryStream("mocked".ToUtf8Bytes());
+                var ms = "mocked".ToUtf8Bytes().InMemoryStream();
                 var httpFile = new HttpFile
                 {
                     ContentType = "application/x-msaccess",

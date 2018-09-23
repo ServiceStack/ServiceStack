@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net46;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net46;netcoreapp2.1</TargetFrameworks>
     <!--<TargetFrameworks>net45</TargetFrameworks>-->
     <DebugType>portable</DebugType>
     <AssemblyName>ServiceStack.Common.Tests</AssemblyName>
@@ -20,13 +20,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
-    <PackageReference Include="NUnit" Version="3.9.0" />
-    <PackageReference Include="Moq" Version="4.7.145" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="Moq" Version="4.9.0" />
     <PackageReference Include="Wire" Version="0.8.2" />
-    <PackageReference Include="AWSSDK.Core" Version="3.3.4.1" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.0.2" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.24.8" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.12.2" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
@@ -41,7 +41,7 @@
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
-    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.108" />
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.109.1" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Data" />
     <Reference Include="System.Configuration" />
@@ -55,23 +55,12 @@
     <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.SqlServer.dll" />
     <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
-  <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
-   https://github.com/nunit/dotnet-test-nunit/issues/91 
-   To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
-   -->
-  <PropertyGroup Condition=" '$(NUNITLITE)' != '' ">
-    <OutputType>Exe</OutputType>
-    <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
-    <PackageReference Include="NUnitLite" Version="3.8.1" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.0.1" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.3" />
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
     <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />

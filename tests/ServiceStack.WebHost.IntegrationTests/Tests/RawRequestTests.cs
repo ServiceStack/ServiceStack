@@ -47,7 +47,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
         public object Any(CustomXml request)
         {
-            var xml = request.RequestStream.ReadFully().FromUtf8Bytes();
+            var xml = request.RequestStream.ReadToEnd();
             return xml;
         }
     }

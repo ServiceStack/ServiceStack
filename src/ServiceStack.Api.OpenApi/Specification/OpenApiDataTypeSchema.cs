@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace ServiceStack.Api.OpenApi.Specification
 {
+    //from https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#user-content-parameterMaximum
     [DataContract]
     public abstract class OpenApiDataTypeSchema
     {
@@ -21,23 +22,23 @@ namespace ServiceStack.Api.OpenApi.Specification
         [DataMember(Name = "default")]
         public string Default { get; set; }
         [DataMember(Name = "maximum")]
-        public string Maximum { get; set; }
+        public double? Maximum { get; set; }
         [DataMember(Name = "exclusiveMaximum")]
-        public string ExclusiveMaximum { get; set; }
+        public bool? ExclusiveMaximum { get; set; }
         [DataMember(Name = "minimum")]
-        public string Minimum { get; set; }
+        public double? Minimum { get; set; }
         [DataMember(Name = "exclusiveMinimum")]
-        public string ExclusiveMinimum { get; set; }
+        public bool? ExclusiveMinimum { get; set; }
         [DataMember(Name = "maxLength")]
-        public string MaxLength { get; set; }
+        public int? MaxLength { get; set; }
         [DataMember(Name = "minLength")]
-        public string MinLength { get; set; }
+        public int? MinLength { get; set; }
         [DataMember(Name = "pattern")]
         public string Pattern { get; set; }
         [DataMember(Name = "maxItems")]
-        public string MaxItems { get; set; }
+        public int? MaxItems { get; set; }
         [DataMember(Name = "minItems")]
-        public string MinItems { get; set; }
+        public int? MinItems { get; set; }
         [DataMember(Name = "uniqueItems")]
         public bool? UniqueItems { get; set; }
         [DataMember(Name = "maxProperties")]
@@ -49,7 +50,7 @@ namespace ServiceStack.Api.OpenApi.Specification
         [DataMember(Name = "enum")]
         public List<string> Enum { get; set; }
         [DataMember(Name = "multipleOf")]
-        public string MultipleOf { get; set; }
+        public double? MultipleOf { get; set; }
         [DataMember(Name = "x-nullable")]
         public bool? Nullable { get; set; }
     }

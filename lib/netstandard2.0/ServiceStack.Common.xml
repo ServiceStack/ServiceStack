@@ -354,6 +354,17 @@
             <param name="teardown"></param>
             <returns></returns>
         </member>
+        <member name="M:ServiceStack.StringUtils.ReplacePairs(System.String,System.String[])">
+            <summary>
+            Multiple string replacements
+            </summary>
+            <param name="replaceStringsPairs">Even number of old and new value pairs</param>
+        </member>
+        <member name="M:ServiceStack.StringUtils.ReplaceOutsideOfQuotes(System.String,System.String[])">
+            <summary>
+            Replace string contents outside of string quotes 
+            </summary>
+        </member>
         <member name="M:ServiceStack.StringUtils.SafeInput(System.String)">
             <summary>
             Protect against XSS by cleaning non-standared User Input
@@ -386,6 +397,119 @@
             to provide a detailed analysis of your logs.
             </summary>
         </member>
+        <member name="T:ServiceStack.Templates.TemplateCaptureBlock">
+             <summary>
+             Captures the output and assigns it to the specified variable.
+             Accepts an optional Object Dictionary as scope arguments when evaluating body.
+            
+             Usages: {{#capture output}} {{#each args}} - [{{it}}](/path?arg={{it}}) {{/each}} {{/capture}}
+                     {{#capture output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
+                     {{#capture appendTo output {nums:[1,2,3]} }} {{#each nums}} {{it}} {{/each}} {{/capture}}
+             </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateEachBlock">
+            <summary>
+            Handlebars.js like each block
+            Usages: {{#each customers}} {{Name}} {{/each}}
+                    {{#each customers}} {{it.Name}} {{/each}}
+                    {{#each num in numbers}} {{num}} {{/each}}
+                    {{#each num in [1,2,3]}} {{num}} {{/each}}
+                    {{#each numbers}} {{it}} {{else}} no numbers {{/each}}
+                    {{#each numbers}} {{it}} {{else if letters != null}} has letters {{else}} no numbers {{/each}}
+                    {{#each n in numbers where n > 5}} {{it}} {{else}} no numbers > 5 {{/each}}
+                    {{#each n in numbers where n > 5 orderby n skip 1 take 2}} {{it}} {{else}} no numbers > 5 {{/each}}
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateEvalBlock">
+             <summary>
+             Special block which evaluates the rendered body as a ServiceStack Template
+            
+             Usages: {{#eval}}emit {{evaluateBodyOfArg}} at {{now}} {{/eval}}
+                     {{#eval {scopeArg:1} }}emit {{evaluateBodyOfArg}} at {{now}} with {{scopeArg}} {{/eval}}
+                     {{#eval {htmlDecode:true} }}emit htmldecoded {{evaluateBodyOfArg}} at {{now}} {{/eval}}
+                     {{#eval {use:{filters:'TemplateServiceStackFilters',plugins:['MarkdownTemplatePlugin'],context:true} }}
+                          emit {{evaluateBodyOfArg}} at {{now}} in new context
+                     {{/eval}}
+             </summary>
+        </member>
+        <member name="M:ServiceStack.Templates.TemplateHtmlBlocks.Register(ServiceStack.Templates.TemplateContext)">
+            <summary>
+            Usages: {{#ul {each:items, class:'nav'} }} <li>{{it}}</li> {{/ul}}
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateIfBlock">
+            <summary>
+            Handlebars.js like if block
+            Usages: {{#if a > b}} max {{a}} {{/if}}
+                    {{#if a > b}} max {{a}} {{else}} max {{b}} {{/if}}
+                    {{#if a > b}} max {{a}} {{else if b > c}} max {{b}} {{else}} max {{c}} {{/if}}
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateNoopBlock">
+            <summary>
+            Handlebars.js like noop block
+            Usage: Remove {{#noop}} contents in here {{/noop}}
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplatePartialBlock">
+            <summary>
+            Partial Block doesn't emit anything it only creates and saves a partial in the PageResult
+            
+            Usages: {{#partial mypartial}} contents {{/partial}}
+                    {{#partial mypartial {format:'html'} }} contents {{/partial}}
+                    {{#partial mypartial {format:'html', pageArg:1} }} contents {{/partial}}
+            </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateRawBlock">
+             <summary>
+             Special block which captures the raw body as a string fragment
+            
+             Usages: {{#raw}}emit {{ verbatim }} body{{/raw}}
+                     {{#raw varname}}assigned to varname{{/raw}}
+                     {{#raw appendTo varname}}appended to varname{{/raw}}
+             </summary>
+        </member>
+        <member name="T:ServiceStack.Templates.TemplateWithBlock">
+            <summary>
+            Handlebars.js like with block
+            Usages: {{#with person}} Hi {{name}}, I'm {{age}} years old{{/with}}
+                    {{#with person}} Hi {{name}}, I'm {{age}} years old {{else}} no person {{/with}}
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Templates.JsTokenUtils.EvaluateToBoolAsync(ServiceStack.Templates.JsToken,ServiceStack.Templates.TemplateScopeContext)">
+            <summary>
+            Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Templates.JsTokenUtils.EvaluateToBool(ServiceStack.Templates.JsToken,ServiceStack.Templates.TemplateScopeContext,System.Nullable{System.Boolean}@,System.Threading.Tasks.Task{System.Boolean}@)">
+            <summary>
+            Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Templates.JsTokenUtils.EvaluateAsync(ServiceStack.Templates.JsToken,ServiceStack.Templates.TemplateScopeContext)">
+            <summary>
+            Evaulate if result can be async, if so converts async result to Task&lt;object&gt; otherwise wraps result in a Task
+            </summary>
+        </member>
+        <member name="M:ServiceStack.Templates.JsTokenUtils.Evaluate(ServiceStack.Templates.JsToken,ServiceStack.Templates.TemplateScopeContext,System.Object@,System.Threading.Tasks.Task{System.Object}@)">
+            <summary>
+            Evaluate then set asyncResult if Result was async, otherwise set result.
+            </summary>
+            <param name="scope"></param>
+            <param name="result"></param>
+            <param name="asyncResult"></param>
+            <returns>true if result was synchronous otherwise false</returns>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.Page">
+            <summary>
+            The Template Page to Render
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.CodePage">
+            <summary>
+            The Code Page to Render
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.PageResult.LayoutPage">
             <summary>
             Use specified Layout 
@@ -403,7 +527,7 @@
         </member>
         <member name="P:ServiceStack.Templates.PageResult.Model">
             <summary>
-            
+            Extract Model Properties into Scope Args
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.PageResult.Args">
@@ -414,6 +538,16 @@
         <member name="P:ServiceStack.Templates.PageResult.TemplateFilters">
             <summary>
             Add additional template filters available to all pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.TemplateBlocks">
+            <summary>
+            Add additional template blocks available to all pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.PageResult.Partials">
+            <summary>
+            Add additional partials available to all pages
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.PageResult.Options">
@@ -491,8 +625,20 @@
             Available transformers that can transform context filter stream outputs
             </summary>
         </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.CheckForModifiedPages">
+            <summary>
+            Whether to check for modified pages by default when not in DebugMode
+            </summary>
+        </member>
         <member name="P:ServiceStack.Templates.TemplateContext.CheckForModifiedPagesAfter">
+            <summary>
             How long in between checking for modified pages
+            </summary>
+        </member>
+        <member name="P:ServiceStack.Templates.TemplateContext.InvalidateCachesBefore">
+            <summary>
+            Existing caches and pages created prior to specified date should be invalidated 
+            </summary>
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.RenderExpressionExceptions">
             <summary>
@@ -501,12 +647,12 @@
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.AssignExceptionsTo">
             <summary>
-            What argument to assign Fitler Exceptions to
+            What argument to assign Filter Exceptions to
             </summary>
         </member>
         <member name="P:ServiceStack.Templates.TemplateContext.SkipExecutingFiltersIfError">
             <summary>
-            Whether to 
+            Whether to skip executing Filters if an Exception was thrown
             </summary>
         </member>
         <member name="T:ServiceStack.UrnId">

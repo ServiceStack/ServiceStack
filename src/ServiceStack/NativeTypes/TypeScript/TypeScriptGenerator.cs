@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using ServiceStack.Text;
@@ -19,6 +20,12 @@ namespace ServiceStack.NativeTypes.TypeScript
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
+        
+        [Obsolete("Migrate to new string enums: enum StringEnum { A = 'A', B = 'B' }")]
+        public static bool UseUnionTypeEnums { get; set; }
+
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static List<string> DefaultImports = new List<string>
         {
@@ -48,8 +55,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Stream", "Blob"},
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
+            {"Uri", "string"},
         };
-        private static string declaredEmptyString = "\"\"";
+        private static string declaredEmptyString = "''";
         private static readonly Dictionary<string, string> primitiveDefaultValues = new Dictionary<string, string>
         {
             {"String", declaredEmptyString},
@@ -110,7 +118,6 @@ namespace ServiceStack.NativeTypes.TypeScript
             sb.AppendLine("BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine();
             sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            //sb.AppendLine("{0}ExportAsTypes: {1}".Fmt(defaultValue("ExportAsTypes"), Config.ExportAsTypes));
             sb.AppendLine("{0}MakePropertiesOptional: {1}".Fmt(defaultValue("MakePropertiesOptional"), Config.MakePropertiesOptional));
             sb.AppendLine("{0}AddServiceStackTypes: {1}".Fmt(defaultValue("AddServiceStackTypes"), Config.AddServiceStackTypes));
             sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
@@ -188,9 +195,9 @@ namespace ServiceStack.NativeTypes.TypeScript
                                     if (type.ReturnVoidMarker)
                                         return "IReturnVoid";
                                     if (type.ReturnMarkerTypeName != null)
-                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InDeclarationType() });
+                                        return Type("IReturn`1", new[] { Type(type.ReturnMarkerTypeName).InReturnMarker() });
                                     return response != null
-                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InDeclarationType() })
+                                        ? Type("IReturn`1", new[] { Type(response.Name, response.GenericArgs).InReturnMarker() })
                                         : null;
                                 },
                                 IsRequest = true,
@@ -228,6 +235,8 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.AppendLine();
                 sb.AppendLine("}");
             }
+            
+            sb.AppendLine(); //tslint
 
             return StringBuilderCache.ReturnAndFree(sbInner);
         }
@@ -244,9 +253,12 @@ namespace ServiceStack.NativeTypes.TypeScript
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
-                if (type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty())
+                var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty(); 
+                if (isIntEnum || !UseUnionTypeEnums)
                 {
                     var typeDeclaration = !Config.ExportAsTypes
                         ? "enum"
@@ -263,9 +275,16 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var name = type.EnumNames[i];
                             var value = type.EnumValues?[i];
 
-                            sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
-                                ? $"{name},"
-                                : $"{name} = {value},");
+                            if (isIntEnum)
+                            {
+                                sb.AppendLine(value == null //Enum Value's are not impacted by JS Style
+                                    ? $"{name},"
+                                    : $"{name} = {value},");
+                            }
+                            else
+                            {
+                                sb.AppendLine($"{name} = '{value ?? name}',");
+                            }
                         }
                     }
 
@@ -318,20 +337,21 @@ namespace ServiceStack.NativeTypes.TypeScript
                             var types = implStr.RightPart('<');
                             var returnType = types.Substring(0, types.Length - 1);
 
-                            if (returnType == "any")
-                                returnType = "Object";
-
                             // This is to avoid invalid syntax such as "return new string()"
-                            if (primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType))
-                                returnType = replaceReturnType;
+                            primitiveDefaultValues.TryGetValue(returnType, out var replaceReturnType);
 
+                            if (returnType == "any")
+                                replaceReturnType = "{}";
+                            else if (returnType.EndsWith("[]"))
+                                replaceReturnType = $"new Array<{returnType.Substring(0, returnType.Length -2)}>()";
+                            
                             responseTypeExpression = replaceReturnType == null ?
-                                "createResponse() {{ return new {0}(); }}".Fmt(returnType) :
-                                "createResponse() {{ return {0}; }}".Fmt(returnType);
+                                "public createResponse() {{ return new {0}(); }}".Fmt(returnType) :
+                                "public createResponse() {{ return {0}; }}".Fmt(replaceReturnType);
                         }
                         else if (implStr == "IReturnVoid")
                         {
-                            responseTypeExpression = "createResponse() {}";
+                            responseTypeExpression = "public createResponse() {}";
                         }
                     }
                 }
@@ -339,6 +359,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 type.Implements.Each(x => interfaces.Add(Type(x)));
 
                 var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
+                var modifier = isClass ? "public " : "";
                 var extend = extends.Count > 0
                     ? " extends " + extends[0]
                     : "";
@@ -372,7 +393,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
-                    sb.AppendLine("{0}{1}: number; //{2}".Fmt(
+                    sb.AppendLine(modifier + "{0}{1}: number; //{2}".Fmt(
                         "Version".PropertyStyle(), isClass ? "" : "?", Config.AddImplicitVersion));
                 }
 
@@ -380,11 +401,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 {
                     if (type.Name == "IReturn`1")
                     {
-                        sb.AppendLine("createResponse() : T;");
+                        sb.AppendLine("createResponse(): T;");
                     }
                     else if (type.Name == "IReturnVoid")
                     {
-                        sb.AppendLine("createResponse() : void;");
+                        sb.AppendLine("createResponse(): void;");
                     }
                 }
 
@@ -395,19 +416,23 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
                     sb.AppendLine(responseTypeExpression);
-                    sb.AppendLine("getTypeName() {{ return \"{0}\"; }}".Fmt(type.Name));
+                    sb.AppendLine("public getTypeName() {{ return '{0}'; }}".Fmt(type.Name));
                 }
 
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+            
             return lastNS;
         }
 
         public void AddProperties(StringBuilderWrapper sb, MetadataType type, bool includeResponseStatus)
         {
             var wasAdded = false;
+            var isClass = Config.ExportAsTypes && !type.IsInterface.GetValueOrDefault();
+            var modifier = isClass ? "public " : "";
 
             var dataMemberIndex = 1;
             if (type.Properties != null)
@@ -436,7 +461,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                     wasAdded = AppendComments(sb, prop.Description);
                     wasAdded = AppendDataMember(sb, prop.DataMember, dataMemberIndex++) || wasAdded;
                     wasAdded = AppendAttributes(sb, prop.Attributes) || wasAdded;
-                    sb.AppendLine("{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
+                    sb.AppendLine(modifier + "{1}{2}: {0};".Fmt(propType, prop.Name.SafeToken().PropertyStyle(), optional));
                 }
             }
 
@@ -445,7 +470,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (wasAdded) sb.AppendLine();
 
                 AppendDataMember(sb, null, dataMemberIndex++);
-                sb.AppendLine("{0}{1}: ResponseStatus;".Fmt(
+                sb.AppendLine(modifier + "{0}{1}: ResponseStatus;".Fmt(
                     typeof(ResponseStatus).Name.PropertyStyle(), Config.ExportAsTypes ? "" : "?"));
             }
         }
@@ -745,13 +770,24 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (type.StartsWith("{"))
                 return "any";
 
-            //TypeScript doesn't support short-hand T[] notation in extension list
+            //TypeScript doesn't support short-hand T[] notation in extension list 
+            //E.g. need to use `extends Array<Type>` instead of `extends Type[]`
             var arrParts = type.SplitOnFirst('[');
             return arrParts.Length > 1 
                 ? "Array<{0}>".Fmt(arrParts[0]) 
                 : type;
         }
 
+        public static string InReturnMarker(this string type)
+        {
+            if (type.StartsWith("{"))
+                return "any";
+            
+            //Note: can only implement using Array short-hand notation: IReturn<Type[]>
+
+            return type;
+        }
+        
         public static string PropertyStyle(this string name)
         {
             return JsConfig.EmitCamelCaseNames

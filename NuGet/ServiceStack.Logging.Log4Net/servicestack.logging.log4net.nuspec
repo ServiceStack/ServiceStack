@@ -6,7 +6,7 @@
     <title>ServiceStack.Logging.Log4Net</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>log4Net logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <summary>log4Net logging integration for ServiceStack, the Opensource .NET and .NET Core Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides log4net logging integration for other ServiceStack projects

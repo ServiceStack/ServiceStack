@@ -20,6 +20,9 @@ namespace ServiceStack.NativeTypes.Java
             Config = config;
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static string DefaultGlobalNamespace = "dtos";
 
         public static List<string> DefaultImports = new List<string>
@@ -294,6 +297,8 @@ namespace ServiceStack.NativeTypes.Java
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine("public static enum {0}".Fmt(typeName));
@@ -408,6 +413,8 @@ namespace ServiceStack.NativeTypes.Java
                 sb.AppendLine("}");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+            
             sb = sb.UnIndent();
 
             return lastNS;

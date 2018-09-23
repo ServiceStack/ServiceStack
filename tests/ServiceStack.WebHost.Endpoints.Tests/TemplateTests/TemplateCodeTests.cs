@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Templates;
@@ -44,6 +45,31 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
     public class TemplateCodeTests
     {
+        [Test]
+        public void Can_remove_TemplateContext_defaults()
+        {
+            var context = new TemplateContext()
+                .RemoveFilters(x => true)
+                .RemoveBlocks(x => true)
+                .RemovePlugins(x => true)
+            .Init();
+            
+            Assert.That(context.TemplateFilters.Count, Is.EqualTo(0));
+            Assert.That(context.TemplateBlocks.Count, Is.EqualTo(0));
+            Assert.That(context.Plugins.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Can_remove_individual_blocks()
+        {
+            var context = new TemplateContext {
+                    OnAfterPlugins = ctx => ctx.RemoveBlocks(x => x.Name == "capture")
+                }
+                .Init();
+            
+            Assert.That(context.TemplateBlocks.Any(x => x is TemplateCaptureBlock), Is.False);
+        }
+        
         [Test]
         public void Can_execute_CodePage()
         {

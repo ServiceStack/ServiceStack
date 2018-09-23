@@ -6,7 +6,7 @@
     <title>ServiceStack.Logging.Elmah</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Elmah logging integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <summary>Elmah logging integration for ServiceStack, the Opensource .NET and .NET Core Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides Elmah logging integration for other ServiceStack projects

@@ -30,7 +30,7 @@ namespace ServiceStack.Metadata
                     HostContext.ContentTypes.SerializeToStreamAsync(
                         new BasicRequest { ContentType = this.ContentType }, requestObj, ms).Wait();
 
-                    return Encoding.UTF8.GetString(ms.ToArray());
+                    return ms.ReadToEnd();
                 }
             }
             catch (Exception ex)

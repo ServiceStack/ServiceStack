@@ -12,7 +12,6 @@ using System.Xml;
 using ServiceStack.Serialization;
 using ServiceStack.Support.WebHost;
 using ServiceStack.Text;
-using ServiceStack.Text.FastMember;
 using ServiceStack.Web;
 
 namespace ServiceStack.Host.Handlers
@@ -24,28 +23,28 @@ namespace ServiceStack.Host.Handlers
             this.HandlerAttributes = soapType;
         }
 
-        public void SendOneWay(Message requestMsg)
+        void IOneWay.SendOneWay(Message requestMsg)
         {
-            SendOneWay(requestMsg, null, null);
+            SendOneWay(requestMsg, null, null).Wait();
         }
 
-        protected void SendOneWay(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
+        protected Task SendOneWay(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.OneWay | this.HandlerAttributes;
 
-            ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+            return ExecuteMessage(requestMsg, endpointAttributes, httpRequest, httpResponse);
+        }
+
+        Message ISyncReply.Send(Message requestMsg)
+        {
+            var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
+
+            return ExecuteMessage(requestMsg, endpointAttributes, null, null).Result;
         }
 
         protected abstract Message GetRequestMessageFromStream(Stream requestStream);
 
-        public Message Send(Message requestMsg)
-        {
-            var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
-
-            return ExecuteMessage(requestMsg, endpointAttributes, null, null);
-        }
-
-        protected Message Send(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
+        protected Task<Message> Send(Message requestMsg, IRequest httpRequest, IResponse httpResponse)
         {
             var endpointAttributes = RequestAttributes.Reply | this.HandlerAttributes;
 
@@ -62,7 +61,7 @@ namespace ServiceStack.Host.Handlers
                 : Message.CreateMessage(requestMsg.Version, requestType.GetOperationName() + "Response", response);
         }
 
-        protected Message ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpReq, IResponse httpRes)
+        protected async Task<Message> ExecuteMessage(Message message, RequestAttributes requestAttributes, IRequest httpReq, IResponse httpRes)
         {
             var soapFeature = requestAttributes.ToSoapFeature();
             appHost.AssertFeatures(soapFeature);
@@ -132,10 +131,7 @@ namespace ServiceStack.Host.Handlers
                 }
 
                 httpReq.RequestAttributes |= requestAttributes;
-                var response = ExecuteService(request, httpReq);
-
-                if (response is Task taskResponse)
-                    response = taskResponse.GetResult();
+                var response = await GetResponseAsync(httpReq, request);
 
                 response = appHost.ApplyResponseConvertersAsync(httpReq, response).Result;
 
@@ -292,18 +288,15 @@ namespace ServiceStack.Host.Handlers
 
         protected static Message GetRequestMessage(Stream inputStream, MessageVersion msgVersion)
         {
-            using (var sr = new StreamReader(inputStream))
-            {
-                var requestXml = sr.ReadToEnd();
+            var requestXml = inputStream.ReadToEnd();
 
-                var doc = new XmlDocument();
-                doc.LoadXml(requestXml);
+            var doc = new XmlDocument();
+            doc.LoadXml(requestXml);
 
-                var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
-                    msgVersion);
+            var msg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                msgVersion);
 
-                return msg;
-            }
+            return msg;
         }
 
         protected Type GetRequestType(Message requestMsg, string xml)

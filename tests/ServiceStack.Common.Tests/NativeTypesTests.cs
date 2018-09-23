@@ -1,4 +1,7 @@
 ﻿#if !NETCORE_SUPPORT
+using System;
+using System.Linq;
+using System.Reflection;
 using NUnit.Framework;
 using ServiceStack.NativeTypes.Java;
 using ServiceStack.Text;
@@ -304,6 +307,35 @@ namespace ServiceStack.Common.Tests
 
             string value;
             JavaGenerator.TypeAliases.TryRemove("StructType", out value);
+        }
+
+        public enum ComparisonOperator
+        {
+            Equals = 0,
+            NotEqual = 1,
+        }
+
+        [Test]
+        public void Can_access_enum_with_Equals_member()
+        {
+            var enumNames = new List<string>();
+            var enumValues = new List<string>();
+            
+            var type = typeof(ComparisonOperator);
+            var names = Enum.GetNames(type);
+            for (var i = 0; i < names.Length; i++)
+            {
+                var name = names[i];
+                var enumMember = MetadataTypesGenerator.GetEnumMember(type, name);
+                var value = enumMember.GetRawConstantValue();
+                var enumValue = Convert.ToInt64(value).ToString();
+
+                enumNames.Add(name);
+                enumValues.Add(enumValue);
+            }
+            
+            Assert.That(enumNames, Is.EquivalentTo(new[]{ "Equals", "NotEqual" }));
+            Assert.That(enumValues, Is.EquivalentTo(new[]{ "0", "1" }));
         }
     }
 

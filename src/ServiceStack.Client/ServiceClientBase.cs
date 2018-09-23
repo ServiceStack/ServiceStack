@@ -131,7 +131,6 @@ namespace ServiceStack
 
 
         private string requestCompressionType;
-
         public string RequestCompressionType
         {
             get => requestCompressionType;
@@ -212,8 +211,18 @@ namespace ServiceStack
             }
         }
         
-        public string SessionId { get; set; }
+        private string sessionId;
+        public string SessionId
+        {
+            get => sessionId;
+            set
+            {
+                sessionId = value;
+                asyncClient.SessionId = value;
+            }
+        }
 
+        private string userAgent;
         public string UserAgent
         {
             get => userAgent;
@@ -223,7 +232,6 @@ namespace ServiceStack
                 asyncClient.UserAgent = value;
             }
         }
-        private string userAgent;
 
         public TimeSpan? Timeout
         {
@@ -767,13 +775,12 @@ namespace ServiceStack
                 {
                     if (string.IsNullOrEmpty(errorResponse.ContentType) || errorResponse.ContentType.MatchesContentType(contentType))
                     {
-                        var bytes = errorResponse.ResponseStream().ReadFully();
-                        var stream = MemoryStreamFactory.GetStream(bytes);
-                        serviceEx.ResponseBody = bytes.FromUtf8Bytes();
-                        serviceEx.ResponseDto = parseDtoFn?.Invoke(stream);
+                        var ms = errorResponse.ResponseStream().CopyToNewMemoryStream();
+                        serviceEx.ResponseBody = ms.ReadToEnd();
+                        serviceEx.ResponseDto = parseDtoFn?.Invoke(ms);
 
-                        if (stream.CanRead)
-                            stream.Dispose(); //alt ms throws when you dispose twice
+                        if (ms.CanRead)
+                            ms.Dispose(); //alt ms throws when you dispose twice
                     }
                     else
                     {
@@ -1580,7 +1587,8 @@ namespace ServiceStack
         {
             var fileCount = 0;
             long currentStreamPosition = 0;
-            Func<WebRequest> createWebRequest = () =>
+
+            WebRequest createWebRequest()
             {
                 var webRequest = PrepareWebRequest(HttpMethods.Post, requestUri, null, null);
 
@@ -1609,7 +1617,8 @@ namespace ServiceStack
                         outputStream.Write(boundary + newLine);
                         var fileName = file.FileName ?? $"upload{fileCount}";
                         var fieldName = file.FieldName ?? $"upload{fileCount}";
-                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: application/octet-stream{newLine}{newLine}");
+                        var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+                        outputStream.Write($"Content-Disposition: form-data;name=\"{fieldName}\";filename=\"{fileName}\"{newLine}Content-Type: {contentType}{newLine}{newLine}");
 
                         int byteCount;
                         int bytesWritten = 0;
@@ -1623,14 +1632,14 @@ namespace ServiceStack
                                 OnUploadProgress(bytesWritten, file.Stream.Length);
                             }
                         }
+
                         outputStream.Write(newLine);
-                        if (fileCount == files.Length - 1)
-                            outputStream.Write(boundary + "--");
+                        if (fileCount == files.Length - 1) outputStream.Write(boundary + "--");
                     }
                 }
 
                 return webRequest;
-            };
+            }
 
             try
             {
@@ -1804,10 +1813,7 @@ namespace ServiceStack
             {
                 if (typeof(TResponse) == typeof(string))
                 {
-                    using (var reader = new StreamReader(responseStream))
-                    {
-                        return (TResponse)(object)reader.ReadToEnd();
-                    }
+                    return (TResponse)(object)responseStream.ReadToEnd();
                 }
                 if (typeof(TResponse) == typeof(byte[]))
                 {
@@ -1863,6 +1869,11 @@ namespace ServiceStack
             {
                 if (request is IHasSessionId hasSession && hasSession.SessionId == null)
                     hasSession.SessionId = client.SessionId;
+            }
+            if (client is IHasBearerToken clientBearer && clientBearer.BearerToken != null)
+            {
+                if (request is IHasBearerToken hasBearer && hasBearer.BearerToken == null)
+                    hasBearer.BearerToken = clientBearer.BearerToken;
             }
             if (client is IHasVersion clientVersion && clientVersion.Version > 0)
             {

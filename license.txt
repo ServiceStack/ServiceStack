@@ -1,5 +1,5 @@
 ServiceStack
-Copyright (c) 2013 Service Stack
+Copyright (c) 2013-present, ServiceStack
 ===============================================================================
 
 This program is free software: you can redistribute it and/or modify it 
@@ -35,7 +35,7 @@ work and are not dervied from the Software.
   - If you violate any of the terms in this Exception, you lose all rights granted 
   to you by the Exception and revert to the terms of AGPLv3.
 
-Service Stack reserves all rights not expressly granted in these terms and conditions. 
+ServiceStack reserves all rights not expressly granted in these terms and conditions. 
 
 Open Source License List
 

@@ -124,7 +124,7 @@ namespace ServiceStack.Templates
 
         public TemplatePage HtmlResolveLayout(TemplatePage page)
         {
-            var isCompletePage = page.BodyContents.StartsWithIgnoreCase("<!DOCTYPE HTML>") || page.BodyContents.StartsWithIgnoreCase("<html");
+            var isCompletePage = page.BodyContents.Span.StartsWithIgnoreCase("<!DOCTYPE HTML>".AsSpan()) || page.BodyContents.Span.StartsWithIgnoreCase("<html".AsSpan());
             if (isCompletePage)
                 return null;
 
@@ -145,12 +145,9 @@ namespace ServiceStack.Templates
 
         public static async Task<Stream> HtmlEncodeTransformer(Stream stream)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                var contents = await reader.ReadToEndAsync();
-                var htmlEncoded = contents.HtmlEncode();
-                return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
-            }
+            var contents = await stream.ReadToEndAsync();
+            var htmlEncoded = contents.HtmlEncode();
+            return MemoryStreamFactory.GetStream(htmlEncoded.ToUtf8Bytes());
         }
     }
 

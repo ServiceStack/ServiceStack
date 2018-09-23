@@ -6,7 +6,7 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>.NET and .NET Core REST Web Services framework</summary>
     <description>
       ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services 
       and web apps that's intuitive and Easy to use!
@@ -17,7 +17,7 @@
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework ServiceStack</tags>
     <language>en-US</language>
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>
@@ -26,14 +26,15 @@
         <dependency id="ServiceStack.Common" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.AspNetCore.Http" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.0.0, )" />
-        <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
+        <dependency id="Microsoft.AspNetCore.Http" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Extensions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Hosting.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.AspNetCore.Cryptography.KeyDerivation" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="[2.1.1, )" />
+        <dependency id="Microsoft.Extensions.DependencyInjection.Abstractions" version="[2.1.1, )" />
+        <dependency id="System.Memory" version="[4.5.1, )" />
+        <dependency id="Microsoft.Extensions.Primitives" version="[2.1.1, )" />
         <dependency id="System.Threading.Thread" version="[4.3.0, )" />
         <dependency id="System.Reflection.Emit" version="[4.3.0, )" />
         <dependency id="System.Linq.Queryable" version="[4.3.0, )" />

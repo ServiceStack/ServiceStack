@@ -121,28 +121,28 @@ namespace ServiceStack.Host
             }
         }
 
-        public static Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath)
+        public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath)
         {
             using (Profiler.Current.Step("Deserialize Request"))
             {
                 var dtoFromBinder = GetCustomRequestFromBinder(httpReq, restPath.RequestType);
                 if (dtoFromBinder != null)
-                    return HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder);
+                    return await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq, dtoFromBinder);
 
                 var requestParams = httpReq.GetFlattenedRequestParams();
                 if (Log.IsDebugEnabled)
                     Log.DebugFormat("CreateRequestAsync/requestParams:" + string.Join(",", requestParams.Keys));
 
-                var taskResponse = HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
-                    CreateRequest(httpReq, restPath, requestParams));
+                var ret = await HostContext.AppHost.ApplyRequestConvertersAsync(httpReq,
+                    await CreateRequestAsync(httpReq, restPath, requestParams));
 
-                return taskResponse;
+                return ret;
             }
         }
 
-        public static object CreateRequest(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
+        public static async Task<object> CreateRequestAsync(IRequest httpReq, IRestPath restPath, Dictionary<string, string> requestParams)
         {
-            var requestDto = CreateContentTypeRequest(httpReq, restPath.RequestType, httpReq.ContentType);
+            var requestDto = await CreateContentTypeRequestAsync(httpReq, restPath.RequestType, httpReq.ContentType);
 
             return CreateRequest(httpReq, restPath, requestParams, requestDto);
         }

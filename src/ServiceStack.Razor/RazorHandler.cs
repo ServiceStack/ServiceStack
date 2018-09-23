@@ -1,4 +1,5 @@
 using System.Net;
+using System.Threading.Tasks;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Razor.Managers;
 using ServiceStack.Web;
@@ -18,7 +19,9 @@ namespace ServiceStack.Razor
             PathInfo = pathInfo;
         }
 
-        public override void ProcessRequest(IRequest httpReq, IResponse httpRes, string operationName)
+        public override bool RunAsAsync() => true;
+
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes);
             if (httpRes.IsClosed) return;
@@ -43,7 +46,7 @@ namespace ServiceStack.Razor
                 var modelType = RazorPage?.ModelType;
                 model = modelType == null || modelType == typeof(DynamicRequestObject)
                     ? null
-                    : DeserializeHttpRequest(modelType, httpReq, httpReq.ContentType);
+                    : await DeserializeHttpRequestAsync(modelType, httpReq, httpReq.ContentType);
             }
 
             using (RazorFormat.ProcessRazorPage(httpReq, contentPage, model, httpRes))

@@ -12,11 +12,7 @@ namespace ServiceStack
             using (var ms = MemoryStreamFactory.GetStream())
             {
                 await writer.WriteToAsync(ms);
-                ms.Position = 0;
-                using (var reader = new StreamReader(ms))
-                {
-                    return await reader.ReadToEndAsync();
-                }
+                return await ms.ReadToEndAsync();
             }
         }
     }

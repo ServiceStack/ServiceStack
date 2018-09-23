@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Web;
 using System.Web.UI;
@@ -57,7 +58,7 @@ namespace ServiceStack.Metadata
             }
         }
 
-        public virtual void Render(HtmlTextWriter output)
+        public virtual void Render(Stream output)
         {
             var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
             var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.GetOperationControlTemplate(),

@@ -34,11 +34,7 @@ namespace ServiceStack.Serialization
                 {
                     var serializer = new System.Runtime.Serialization.Json.DataContractJsonSerializer(type);
                     serializer.WriteObject(ms, obj);
-                    ms.Position = 0;
-                    using (var sr = new StreamReader(ms))
-                    {
-                        return sr.ReadToEnd();
-                    }
+                    return ms.ReadToEnd();
                 }
             }
             catch (Exception ex)

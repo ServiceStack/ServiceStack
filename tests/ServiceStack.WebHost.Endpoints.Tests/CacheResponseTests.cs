@@ -215,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var jsv = request.ToJsv();
             var bytes = jsv.ToUtf8Bytes();
-            var ms = new MemoryStream(bytes);
+            var ms = bytes.InMemoryStream();
             return ms;
         }
     }
@@ -444,7 +444,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 #endif
             var webRes = webReq.GetResponse();
             Assert.That(webRes.ContentType, Does.StartWith(MimeTypes.Json));
-            response = webRes.GetResponseStream().ReadFully().FromUtf8Bytes()
+            response = webRes.GetResponseStream().ReadToEnd()
                 .FromJson<ServerCacheOnly>();
             Assert.That(ServerCacheOnly.Count, Is.EqualTo(1)); //Uses plain json cache from #1
             AssertEquals(response, request);

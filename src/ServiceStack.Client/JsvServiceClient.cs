@@ -23,18 +23,12 @@ namespace ServiceStack
 
         public override void SerializeToStream(IRequest requestContext, object request, Stream stream)
         {
-            using (var writer = new StreamWriter(stream))
-            {
-                TypeSerializer.SerializeToWriter(request, writer);
-            }
+            TypeSerializer.SerializeToStream(request, stream);
         }
 
         public override T DeserializeFromStream<T>(Stream stream)
         {
-            using (var reader = new StreamReader(stream))
-            {
-                return TypeSerializer.DeserializeFromReader<T>(reader);
-            }
+            return TypeSerializer.DeserializeFromStream<T>(stream);
         }
 
         public override StreamDeserializerDelegate StreamDeserializer => TypeSerializer.DeserializeFromStream;

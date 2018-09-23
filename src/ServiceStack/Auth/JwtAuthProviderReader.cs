@@ -76,7 +76,7 @@ namespace ServiceStack.Auth
 
         /// <summary>
         /// Whether to encrypt JWE Payload (default false). 
-        /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Conent Encryption
+        /// Uses RSA-OAEP for Key Encryption and AES/128/CBC HMAC SHA256 for Content Encryption
         /// </summary>
         public bool EncryptPayload { get; set; }
 
@@ -158,7 +158,7 @@ namespace ServiceStack.Auth
         }
 
         /// <summary>
-        /// Convenient overload to intialize the Private Key via exported XML
+        /// Convenient overload to initialize the Private Key via exported XML
         /// </summary>
         public string PrivateKeyXml
         {
@@ -174,7 +174,7 @@ namespace ServiceStack.Auth
         public RSAParameters? PublicKey { get; set; }
 
         /// <summary>
-        /// Convenient overload to intialize the Public Key via exported XML
+        /// Convenient overload to initialize the Public Key via exported XML
         /// </summary>
         public string PublicKeyXml
         {
@@ -449,11 +449,11 @@ namespace ServiceStack.Auth
         /// </summary>
         public JsonObject GetValidJwtPayload(IRequest req, string jwt)
         {
-            var vefifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
-            var invalidError = GetInvalidJwtPayloadError(vefifiedPayload);
+            var verifiedPayload = GetVerifiedJwtPayload(req, jwt.Split('.'));
+            var invalidError = GetInvalidJwtPayloadError(verifiedPayload);
             return invalidError != null
                 ? null
-                : vefifiedPayload;
+                : verifiedPayload;
         }
         
         /// <summary>
@@ -478,7 +478,7 @@ namespace ServiceStack.Auth
 
                 //Potential Security Risk for relying on user-specified algorithm: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
                 if (RequireHashAlgorithm && algorithm != HashAlgorithm)
-                    throw new NotSupportedException($"Invalid algoritm '{algorithm}', expected '{HashAlgorithm}'");
+                    throw new NotSupportedException($"Invalid algorithm '{algorithm}', expected '{HashAlgorithm}'");
 
                 if (!VerifyPayload(req, algorithm, bytesToSign, signatureBytes))
                     return null;
@@ -513,20 +513,18 @@ namespace ServiceStack.Auth
                 Buffer.BlockCopy(cryptAuthKeys256, authKey.Length, cryptKey, 0, cryptKey.Length);
 
                 using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = new MemoryStream())
+                using (var encryptedStream = MemoryStreamFactory.GetStream())
+                using (var writer = new BinaryWriter(encryptedStream))
                 {
-                    using (var writer = new BinaryWriter(encryptedStream))
-                    {
-                        writer.Write(aadBytes);
-                        writer.Write(iv);
-                        writer.Write(cipherText);
-                        writer.Flush();
+                    writer.Write(aadBytes);
+                    writer.Write(iv);
+                    writer.Write(cipherText);
+                    writer.Flush();
 
-                        var calcTag = hmac.ComputeHash(encryptedStream.ToArray());
+                    var calcTag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int)encryptedStream.Length);
 
-                        if (!calcTag.EquivalentTo(sentTag))
-                            return null;
-                    }
+                    if (!calcTag.EquivalentTo(sentTag))
+                        return null;
                 }
 
                 var aes = Aes.Create();
@@ -635,7 +633,7 @@ namespace ServiceStack.Auth
             var isHmac = HmacAlgorithms.ContainsKey(algorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(algorithm);
             if (!isHmac && !isRsa)
-                throw new NotSupportedException("Invalid algoritm: " + algorithm);
+                throw new NotSupportedException("Invalid algorithm: " + algorithm);
 
             if (isHmac)
             {
@@ -692,7 +690,7 @@ namespace ServiceStack.Auth
             var isHmac = HmacAlgorithms.ContainsKey(HashAlgorithm);
             var isRsa = RsaSignAlgorithms.ContainsKey(HashAlgorithm);
             if (!isHmac && !isRsa)
-                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+                throw new NotSupportedException("Invalid algorithm: " + HashAlgorithm);
 
             if (isHmac && AuthKey == null)
                 throw new ArgumentNullException(nameof(AuthKey), "An AuthKey is Required to use JWT, e.g: new JwtAuthProvider { AuthKey = AesUtils.CreateKey() }");

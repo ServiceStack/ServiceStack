@@ -27,15 +27,38 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
                 },
             });
 
+            var apiKeyAuth = new ApiKeyAuthProvider(AppSettings);
+            var jwtAuth = new JwtAuthProvider(AppSettings) {
+                AuthKey = AesUtils.CreateKey()
+            };
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
                     new CredentialsAuthProvider(AppSettings),
+                    apiKeyAuth, 
+                    jwtAuth,
                 }));
 
-            container.Register<IUserAuthRepository>(c => new InMemoryAuthRepository());
-            container.Resolve<IUserAuthRepository>().CreateUserAuth(
+            container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
+            var authRepo = container.Resolve<IAuthRepository>();
+            
+            var userAuth = authRepo.CreateUserAuth(
                 new UserAuth { Email = "test@gmail.com" }, "p@55word");
+
+            var apiKeys = apiKeyAuth.GenerateNewApiKeys(userAuth.Id.ToString(), "live");
+            var apiKeyRepo = (IManageApiKeys) authRepo;
+            apiKeyRepo.StoreAll(apiKeys);
+            LiveApiKey = apiKeys[0];
+
+            JwtBearerToken = jwtAuth.CreateJwtBearerToken(new AuthUserSession {
+                UserAuthId = userAuth.Id.ToString(),
+                Email = userAuth.Email,
+                IsAuthenticated = true,
+            });
         }
+
+        public ApiKey LiveApiKey { get; set; }
+        
+        public string JwtBearerToken { get; set; }
     }
 
     public class JsonServiceClientEncryptedMessagesTests : EncryptedMessagesTests
@@ -57,12 +80,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
     public abstract class EncryptedMessagesTests
     {
         private readonly ServiceStackHost appHost;
+        
+        public ApiKey LiveApiKey => ((EncryptedMessagesAppHost)appHost).LiveApiKey;
+        public string JwtBearerToken => ((EncryptedMessagesAppHost)appHost).JwtBearerToken;
 
         protected EncryptedMessagesTests()
         {
             appHost = new EncryptedMessagesAppHost()
                 .Init()
-                .Start(Config.AbsoluteBaseUri);
+                .Start(Config.AbsoluteBaseUri);            
         }
 
         [OneTimeTearDown]
@@ -200,6 +226,26 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
             client.SetCookie("ss-pid", authResponse.SessionId);
             client.SetCookie("ss-opt", "perm");
             var response = client.Get(new HelloAuthSecure { Name = "World" });
+        }
+
+        [Test]
+        public void Can_Authenticate_with_ApiKey_then_call_AuthOnly_Services_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+            encryptedClient.BearerToken = LiveApiKey.Id;
+
+            var response = encryptedClient.Get(new HelloAuthenticated());
+        }
+
+        [Test]
+        public void Can_Authenticate_with_JWT_then_call_AuthOnly_Services_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get<string>("/publickey"));
+            encryptedClient.BearerToken = JwtBearerToken;
+
+            var response = encryptedClient.Get(new HelloAuthenticated());
         }
 
         [Test]

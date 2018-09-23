@@ -250,9 +250,8 @@ namespace ServiceStack.MiniProfiler.UI
 			if (!_ResourceCache.TryGetValue(filename, out result))
 			{
 				using (var stream = typeof(MiniProfilerHandler).Assembly.GetManifestResourceStream("ServiceStack.MiniProfiler.UI." + filename))
-				using (var reader = new StreamReader(stream))
 				{
-					result = reader.ReadToEnd();
+					result = stream.ReadToEnd();
 				}
 
 				_ResourceCache[filename] = result;

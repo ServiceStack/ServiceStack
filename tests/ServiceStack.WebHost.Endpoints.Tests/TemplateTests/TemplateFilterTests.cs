@@ -1,10 +1,16 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Configuration;
+using ServiceStack.Data;
+using ServiceStack.DataAnnotations;
 using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.IO;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -216,10 +222,10 @@ pageArg: 2
 
             var page = context.OneTimePage("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}");
             
-            Assert.That(new PageResult(page).Result, Is.EqualTo("{{ '.' | repeat(3) }}---"));
+            Assert.That(new PageResult(page).Result, Is.EqualTo("---"));
             
             Assert.That(new PageResult(page){ ExcludeFiltersNamed = {"repeating"} }.Result, 
-                Is.EqualTo("{{ '.' | repeat(3) }}{{ 3 | repeating('-') }}"));
+                Is.EqualTo(""));
         }
 
         [Test]
@@ -258,5 +264,52 @@ pageArg: 2
             Assert.That(context.TemplateFilters.First(x => x is TemplateDefaultFilters).InvokerCache.Count, Is.EqualTo(4));
         }
 
+        class Post
+        {
+            [AutoIncrement]
+            public int Id { get; set; }
+            
+            public string Title { get; set; }
+            
+            public string Content { get; set; }
+            
+            public DateTime Created { get; set; }
+            
+            public string CreatedBy { get; set; }
+
+            public DateTime Modified { get; set; }
+            
+            public string ModifiedBy { get; set; }
+        }
+
+        [Test]
+        public void Filters_evaluates_async_results()
+        {
+            OrmLiteConfig.BeforeExecFilter = cmd => cmd.GetDebugString().Print();
+
+            var context = new TemplateContext
+            {
+                TemplateFilters = { new TemplateDbFiltersAsync() },
+                Args = {
+                    ["objectCount"] = Task.FromResult((object)1)
+                }
+            };
+            context.Container.AddSingleton<IDbConnectionFactory>(() => new OrmLiteConnectionFactory(":memory:", SqliteOrmLiteDialectProvider.Instance));
+            context.Init();
+            
+            using (var db = context.Container.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<Post>();
+                db.Insert(new Post { Title = "The Title", Content = "The Content", Created = DateTime.Now, Modified = DateTime.Now });
+            }
+                
+            context.VirtualFiles.WriteFile("objectCount.html", "{{ objectCount | assignTo: count }}{{ count }}");
+            context.VirtualFiles.WriteFile("dbCount.html", "{{ dbScalar(`SELECT COUNT(*) FROM Post`) | assignTo: count }}{{ count }}");
+            
+            Assert.That(new PageResult(context.GetPage("objectCount")).Result, Is.EqualTo("1"));
+            Assert.That(new PageResult(context.GetPage("dbCount")).Result, Is.EqualTo("1"));
+
+            OrmLiteConfig.BeforeExecFilter = null;
+        }
     }
 }

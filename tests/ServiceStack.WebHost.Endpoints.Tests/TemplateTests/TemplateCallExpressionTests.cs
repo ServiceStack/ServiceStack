@@ -1,10 +1,7 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using ServiceStack.Templates;
 using ServiceStack.Text;
-
-#if NETCORE
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -15,9 +12,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             JsCallExpression expr;
 
-            "a".ToStringSegment().ParseJsCallExpression(out expr);
+            "a".AsSpan().ParseJsCallExpression(out expr);
             Assert.That(expr, Is.EqualTo(new JsCallExpression(new JsIdentifier("a"))));
-            "a()".ToStringSegment().ParseJsCallExpression(out expr);
+            "a()".AsSpan().ParseJsCallExpression(out expr);
             Assert.That(expr, Is.EqualTo(new JsCallExpression(new JsIdentifier("a"))));
         }
 

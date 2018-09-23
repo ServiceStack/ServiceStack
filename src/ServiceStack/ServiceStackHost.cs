@@ -127,6 +127,7 @@ namespace ServiceStack
                 ReturnRequestInfoHandler,
             };
             CatchAllHandlers = new List<HttpHandlerResolverDelegate>();
+            FallbackHandlers = new List<HttpHandlerResolverDelegate>();
             CustomErrorHttpHandlers = new Dictionary<HttpStatusCode, IServiceStackHandler> {
                 { HttpStatusCode.Forbidden, new ForbiddenHttpHandler() },
                 { HttpStatusCode.NotFound, new NotFoundHttpHandler() },
@@ -142,6 +143,7 @@ namespace ServiceStack
                 new NativeTypesFeature(),
                 new HttpCacheFeature(),
                 new RequestInfoFeature(),
+                new SpanFormats(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),
@@ -264,6 +266,7 @@ namespace ServiceStack
             GlobalMessageResponseFiltersAsyncArray = GlobalMessageResponseFiltersAsync.ToArray();
             RawHttpHandlersArray = RawHttpHandlers.ToArray();
             CatchAllHandlersArray = CatchAllHandlers.ToArray();
+            FallbackHandlersArray = FallbackHandlers.ToArray();
             GatewayRequestFiltersArray = GatewayRequestFilters.ToArray();
             GatewayRequestFiltersAsyncArray = GatewayRequestFiltersAsync.ToArray();
             GatewayResponseFiltersArray = GatewayResponseFilters.ToArray();
@@ -455,6 +458,9 @@ namespace ServiceStack
 
         public List<HttpHandlerResolverDelegate> CatchAllHandlers { get; set; }
         internal HttpHandlerResolverDelegate[] CatchAllHandlersArray;
+
+        public List<HttpHandlerResolverDelegate> FallbackHandlers { get; set; }
+        internal HttpHandlerResolverDelegate[] FallbackHandlersArray;
 
         public IServiceStackHandler GlobalHtmlErrorHttpHandler { get; set; }
 
@@ -690,6 +696,8 @@ namespace ServiceStack
 
             AfterPluginsLoaded(specifiedContentType);
 
+            GetPlugin<MetadataFeature>()?.AddDebugLink("Templates/license.html", "License Info");
+
             if (!TestMode && Container.Exists<IAuthSession>())
                 throw new Exception(ErrorMessages.ShouldNotRegisterAuthSession);
 
@@ -721,6 +729,9 @@ namespace ServiceStack
 
             if (Config.UseJsObject)
                 JS.Configure();
+
+            if (Config.StrictMode == true && !JsConfig.HasInit)
+                JsConfig.Init(); //Ensure JsConfig global config is not mutated after StartUp
 
             if (config.LogUnobservedTaskExceptions)
             {

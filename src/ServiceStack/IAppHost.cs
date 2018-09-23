@@ -206,6 +206,11 @@ namespace ServiceStack
         List<HttpHandlerResolverDelegate> CatchAllHandlers { get; }
 
         /// <summary>
+        /// Provide a fallback handler for not found requests (last filter in Request Pipeline)
+        /// </summary>
+        List<HttpHandlerResolverDelegate> FallbackHandlers { get; }
+
+        /// <summary>
         /// Use a fall-back Error Handler for handling global errors
         /// </summary>
         IServiceStackHandler GlobalHtmlErrorHttpHandler { get; }
@@ -296,11 +301,16 @@ namespace ServiceStack
         /// Execute MQ Message in ServiceStack
         /// </summary>
         object ExecuteMessage(IMessage mqMessage);
-
+        
         /// <summary>
         /// Access Service Controller for ServiceStack
         /// </summary>
         ServiceController ServiceController { get; }
+
+        /// <summary>
+        /// Publish Message to be processed by AppHost
+        /// </summary>
+        void PublishMessage<T>(IMessageProducer messageProducer, T message);
     }
 
     public interface IHasAppHost

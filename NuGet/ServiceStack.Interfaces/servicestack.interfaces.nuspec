@@ -6,14 +6,14 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>Opensource .NET and .NET Core Web Services framework</summary>
     <description>
       Lightweight and implementation-free interfaces for DTO's, providers and adapters.
     </description>
     <projectUrl>https://github.com/ServiceStack/ServiceStack</projectUrl>
     <licenseUrl>https://servicestack.net/terms</licenseUrl>
     <iconUrl>https://servicestack.net/img/logo-32.png</iconUrl>
-    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework MONO ServiceStack</tags>
+    <tags>Fast JSON XML CSV HTML SOAP JSV REST Web Service Framework ServiceStack</tags>
     <language>en-US</language>
     <copyright>ServiceStack and contributors</copyright>
     <dependencies>

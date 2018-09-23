@@ -1,74 +1,43 @@
-<!DOCTYPE html>
-<html>
-<head lang="en">
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1, minimum-scale=1">
-    <title>TestLogin</title>
-    <script
-            src="https://code.jquery.com/jquery-3.3.1.min.js"
-            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
-            crossorigin="anonymous"></script>
-    {{ ifDebug | select: <script>{ '/js/hot-fileloader.js' | includeFile }</script> }}
-    <link href="/dist/vendor.dll.css" rel="stylesheet">
-    <link href="/dist/vendor.dll.css" rel="stylesheet">
-</head>
-<body>
+<!--
+title: Bootstrap Templates
+-->
 
-<div id="app"></div>
-<form id="login-form" action="/auth/login" method="POST" style="text-align: center; padding: 0 0 300px 0"
-      _lpchecked="1">
-    <div style="font-size: 16px; width: 400px; text-align: left; display: inline-block;">
-        <p class="error-summary alert alert-danger"></p>
-        <div class="form-group"><label for="email">Email Address</label> <input class="form-control input-lg"
-                                                                                type="text" name="UserName" value=""
-                                                                                style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP6zwAAAgcBApocMXEAAAAASUVORK5CYII=&quot;); cursor: auto;">
-        </div>
-        <div class="form-group"><label for="password">Password</label> <input class="form-control input-lg"
-                                                                              type="password" name="Password" value=""
-                                                                              placeholder=""
-                                                                              style="background-image: url(&quot;data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR4nGP6zwAAAgcBApocMXEAAAAASUVORK5CYII=&quot;); cursor: auto;">
-        </div>
-        <div class="form-group" style="text-align: center; padding: 20px 0 0 0">
-            <button class="btn btn-grove-one btn-xlg btn-bold" style="width: 200px" type="submit">Sign In</button>
-            <p><a class="forgot-password" href="/forgot-password">forgot password?</a></p>
-        </div>
+<p class="lead">
+  Complete with page layout, menu partial and responsive navigation!
+</p>
+<ul class="list-unstyled">
+  <li>Bootstrap v4.1.2</li>
+  <li>jQuery v3.3.1</li>
+</ul>
 
-        <a className="nav-link" href="/auth/logout?continue=/">Logout</a>
+<div class="container" style="padding:60px 0 0 250px">
+  <div class="form-group row">
+    <label for="host" class="col-sm-2 col-form-label">Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="Name" name="Name" placeholder="Name" value="" autocomplete="off">
     </div>
-    <div class="clearfix"></div>
-</form>
-
-<pre>
-    User: 
-    - IsAuthenticated       {{ isAuthenticated }}
-    - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
-    - UserName              {{ userName }} / {{ userSession | select: { it.UserName } }}
-    - LastName              {{ userSession | select: { it.LastName } }}
-    - Is Admin              {{ userHasRole('Admin') }}
-    - Has Permission        {{ userHasPermission('ThePermission') }}
-</pre>
-
-<div id="footer" style="text-align:center; position:absolute; bottom:50px; width:100%;">
-    <h4>
-        <img src="/dist/img/logo.png"/>
-        <a href="https://servicestack.net/vs-templates/ReactApp">Learn about this React VS.NET template</a>
-    </h4>
-    <div>Copyright &copy; {{ now | dateFormat('yyyy') }}</div>
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-2 col-form-label"></label>
+    <div class="col-sm-4">
+      <h4 id="result"></h4>
+    </div>
+  </div>
 </div>
-<script src="/js/ss-utils.js"></script>
 
+{{PathInfo}} / {{Verb}} / {{RawUrl}} / {{AbsoluteUri}}
+
+{{#raw appendTo scripts}}
 <script>
-
-    $("#login-form").bindForm({
-        success: function (r) {
-            location.href = '/';
-        },
-        error: function (data) {
-            console.log(data);
-        },
+$('#Name').keyup(function () {
+  var name = $('#Name').val();
+  if (name) {
+    $.getJSON('/hello/' + name, function (r) {
+      $('#result').html(r.result);
     });
+  } else {
+    $('#result').html('');
+  }
+});
 </script>
-</body>
-</html>
+{{/raw}}

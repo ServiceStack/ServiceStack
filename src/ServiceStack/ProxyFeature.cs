@@ -35,8 +35,8 @@ namespace ServiceStack
         /// Inspect or Transform the downstream HTTP Response Body that's returned
         /// </summary>
         public Func<IHttpResponse, Stream, Task<Stream>> TransformResponse { get; set; }
-        
-        public HashSet<string> IgnoreResponseHeaders = new HashSet<string> {
+
+        public HashSet<string> IgnoreResponseHeaders = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             HttpHeaders.TransferEncoding
         };
 
@@ -131,13 +131,13 @@ namespace ServiceStack
             if (httpReq.ContentLength > 0)
             {
                 var inputStream = httpReq.InputStream;
-                if (TransformResponse != null)
+                if (TransformRequest != null)
                     inputStream = await TransformRequest(httpReq, inputStream) ?? inputStream;
 
                 using (inputStream)
                 using (var requestStream = await webReq.GetRequestStreamAsync())
                 {
-                    await inputStream.CopyToAsync(requestStream);
+                    await inputStream.WriteToAsync(requestStream);
                 }
             }
             var res = (IHttpResponse)httpReq.Response;
@@ -186,7 +186,7 @@ namespace ServiceStack
     
                 using (responseStream)
                 {
-                    await responseStream.CopyToAsync(res.OutputStream);
+                    await responseStream.WriteToAsync(res.OutputStream);
                 }
             }
 

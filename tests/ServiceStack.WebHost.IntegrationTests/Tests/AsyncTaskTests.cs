@@ -150,6 +150,83 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
         }
     }
 
+    [TestFixture]
+    public class Soap12AsyncPostTaskTests : AsyncPostTaskTests
+    {
+        protected override IServiceClient CreateServiceClient()
+        {
+            return new Soap12ServiceClient(Config.ServiceStackBaseUri);
+        }
+    }
+
+    [TestFixture]
+    public class JsonServiceClientAsyncPostTaskTests : AsyncPostTaskTests
+    {
+        protected override IServiceClient CreateServiceClient()
+        {
+            return new JsonServiceClient(Config.ServiceStackBaseUri);
+        }
+    }
+
+    [TestFixture]
+    public class JsonHttpClientAsyncPostTaskTests : AsyncPostTaskTests
+    {
+        protected override IServiceClient CreateServiceClient()
+        {
+            return new JsonHttpClient(Config.ServiceStackBaseUri);
+        }
+    }
+
+    public abstract class AsyncPostTaskTests
+    {
+        private const int Param = 3;
+
+        protected abstract IServiceClient CreateServiceClient();
+
+        [Test]
+        public void PostSync_GetFactorialGenericSync()
+        {
+            var response = CreateServiceClient().Post(new GetFactorialSync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(Param)));
+        }
+
+        [Test]
+        public void PostSync_GetFactorialGenericAsync()
+        {
+            var response = CreateServiceClient().Post(new GetFactorialGenericAsync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(Param)));
+        }
+
+        [Test]
+        public void PostSync_GetFactorialObjectAsync()
+        {
+            var response = CreateServiceClient().Post(new GetFactorialObjectAsync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(Param)));
+        }
+
+        [Test]
+        public void PostSync_GetFactorialAwaitAsync()
+        {
+            var response = CreateServiceClient().Post(new GetFactorialAwaitAsync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(Param)));
+        }
+
+        [Test]
+        public void PostSync_GetFactorialDelayAsync()
+        {
+            var response = CreateServiceClient().Post(new GetFactorialDelayAsync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialService.GetFactorial(Param)));
+        }
+
+        [Test]
+        public void PostSync_GetFactorialUnmarkedAsync()
+        {
+            var response = CreateServiceClient().Post<GetFactorialResponse>(
+                new GetFactorialUnmarkedAsync {ForNumber = Param});
+            Assert.That(response.Result, Is.EqualTo(GetFactorialAsyncService.GetFactorial(Param)));
+        }
+    }
+
     [Ignore("Load Test"), TestFixture]
     public class AsyncLoadTests
     {

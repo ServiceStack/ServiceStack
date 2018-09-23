@@ -310,7 +310,7 @@ namespace ServiceStack.Razor
             var ms = (MemoryStream)httpReq.Response.OutputStream;
             razorView = PageResolver.ExecuteRazorPage(httpReq, ms, model, razorPage);
 
-            return ms.ToArray().FromUtf8Bytes();
+            return ms.ReadToEnd();
         }
     }
 

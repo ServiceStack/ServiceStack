@@ -20,22 +20,21 @@ namespace ServiceStack.Host.Handlers
     {
         public Soap12MessageReplyHttpHandler() : base(RequestAttributes.Soap12) { }
 
-        public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
             if (httpReq.Verb == HttpMethods.Get)
             {
                 var wsdl = new Soap12WsdlMetadataHandler();
-                return wsdl.Execute(httpReq, httpRes);
+                await wsdl.Execute(httpReq, httpRes);
+                return;
             }
 
-            var responseMessage = Send(null, httpReq, httpRes);
+            var responseMessage = await Send(null, httpReq, httpRes);
 
             if (httpRes.IsClosed)
-                return TypeConstants.EmptyTask;
+                return;
 
             HostContext.AppHost.WriteSoapMessage(httpReq, responseMessage, httpRes.OutputStream);
-
-            return TypeConstants.EmptyTask;
         }
     }
 }

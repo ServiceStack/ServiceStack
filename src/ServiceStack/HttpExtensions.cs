@@ -99,11 +99,11 @@ namespace ServiceStack
             var req = httpRes.Request;
             if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
             {
-                HostContext.TryResolve<IRequestLogger>()?
-                    .Log(req, req.Dto, null, TimeSpan.Zero);
+                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, null, TimeSpan.Zero);
             }
 
-            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            if (!skipClose && !httpRes.IsClosed) 
+                httpRes.Close();
 
             HostContext.CompleteRequest(req);
         }
@@ -120,11 +120,11 @@ namespace ServiceStack
             var req = httpRes.Request;
             if (req != null && !req.Items.ContainsKey(Keywords.HasLogged))
             {
-                HostContext.TryResolve<IRequestLogger>()?
-                    .Log(req, req.Dto, null, TimeSpan.Zero);
+                HostContext.TryResolve<IRequestLogger>()?.Log(req, req.Dto, null, TimeSpan.Zero);
             }
 
-            if (!skipClose && !httpRes.IsClosed) httpRes.Close();
+            if (!skipClose && !httpRes.IsClosed) 
+                await httpRes.CloseAsync();
 
             HostContext.CompleteRequest(req);
         }

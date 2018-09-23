@@ -90,8 +90,8 @@ namespace ServiceStack
                 if (!hasAnyRole)
                     return false;
 
-                var hasPermssions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
-                if (!hasPermssions)
+                var hasPermissions = permAttrs.All(x => x.HasAllPermissions(httpReq, authSession, userAuthRepo));
+                if (!hasPermissions)
                     return false;
 
                 var hasAnyPermission = anyPermAttrs.All(x => x.HasAnyPermissions(httpReq, authSession, userAuthRepo));
@@ -224,13 +224,7 @@ namespace ServiceStack
 
         public virtual bool IsAuthenticated => this.GetSession().IsAuthenticated;
 
-        public virtual void PublishMessage<T>(T message)
-        {
-            if (MessageProducer == null)
-                throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
-
-            MessageProducer.Publish(message);
-        }
+        public virtual void PublishMessage<T>(T message) => HostContext.AppHost.PublishMessage(MessageProducer, message);
 
         public virtual void Dispose()
         {

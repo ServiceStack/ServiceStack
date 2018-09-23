@@ -11,6 +11,7 @@ namespace ServiceStack.Templates
         TemplatePage ResolveLayoutPage(TemplatePage page, string layout);
         TemplatePage AddPage(string virtualPath, IVirtualFile file);
         TemplatePage GetPage(string virtualPath);
+        TemplatePage TryGetPage(string path);
         TemplatePage OneTimePage(string contents, string ext);
         
         TemplatePage ResolveLayoutPage(TemplateCodePage page, string layout);
@@ -252,7 +253,7 @@ namespace ServiceStack.Templates
                 {
                     if (fragment.InitialValue is string partialPath)
                     {
-                        Context.TryGetPage(page.VirtualPath, partialPath, out TemplatePage partialPage, out _);
+                        Context.GetPage(page.VirtualPath, partialPath, out TemplatePage partialPage, out _);
                         maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
 
                         if (partialPage?.HasInit == true)
@@ -279,7 +280,7 @@ namespace ServiceStack.Templates
                     {
                         if (!string.IsNullOrEmpty(partialArg))
                         {
-                            Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                            Context.GetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
                             maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
 
                             if (partialPage?.HasInit == true)

@@ -58,7 +58,7 @@ namespace ServiceStack
 #if NETSTANDARD2_0
           = NetStandardPclExportClient.Configure()
 #else
-          = Net40PclExportClient.Configure()
+          = Net45PclExportClient.Configure()
 #endif
         ;
 

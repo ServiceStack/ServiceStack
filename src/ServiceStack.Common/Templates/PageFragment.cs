@@ -2,31 +2,27 @@ using System;
 using System.Collections.Generic;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.Templates
 {
     public abstract class PageFragment {}
 
     public class PageVariableFragment : PageFragment
     {
-        public StringSegment OriginalText { get; set; }
-        private byte[] originalTextBytes;
-        public byte[] OriginalTextBytes => originalTextBytes ?? (originalTextBytes = OriginalText.ToUtf8Bytes());
+        public ReadOnlyMemory<char> OriginalText { get; set; }
+        
+        private ReadOnlyMemory<byte> originalTextUtf8;
+        public ReadOnlyMemory<byte> OriginalTextUtf8 => originalTextUtf8.IsEmpty ? (originalTextUtf8 = OriginalText.ToUtf8()) : OriginalTextUtf8;
         
         public JsToken Expression { get; }
         
-        public StringSegment Binding { get; set; }
-        public string BindingString { get; }       
+        public string Binding { get; set; }
         
         public object InitialValue { get; }
         public JsCallExpression InitialExpression { get; }
         
         public JsCallExpression[] FilterExpressions { get; set; }
 
-        public PageVariableFragment(StringSegment originalText, JsToken expr, List<JsCallExpression> filterCommands)
+        public PageVariableFragment(ReadOnlyMemory<char> originalText, JsToken expr, List<JsCallExpression> filterCommands)
         {
             OriginalText = originalText;
             Expression = expr;
@@ -36,7 +32,7 @@ namespace ServiceStack.Templates
             {
                 InitialValue = initialValue.Value;
             }
-            else if (expr is JsNull)
+            else if (ReferenceEquals(expr, JsNull.Value))
             {
                 InitialValue = expr;
             }
@@ -47,13 +43,12 @@ namespace ServiceStack.Templates
             else if (expr is JsIdentifier initialBinding)
             {
                 Binding = initialBinding.Name;
-                BindingString = Binding.Value;
             }
         }
 
         public object Evaluate(TemplateScopeContext scope)
         {
-            if (Expression is JsNull)
+            if (ReferenceEquals(Expression, JsNull.Value))
                 return Expression;
             
             return Expression.Evaluate(scope);
@@ -62,14 +57,50 @@ namespace ServiceStack.Templates
 
     public class PageStringFragment : PageFragment
     {
-        public StringSegment Value { get; set; }
+        public ReadOnlyMemory<char> Value { get; set; }
+        
+        private string valueString;
+        public string ValueString => valueString ?? (valueString = Value.ToString());
 
-        private byte[] valueBytes;
-        public byte[] ValueBytes => valueBytes ?? (valueBytes = Value.ToUtf8Bytes());
+        private ReadOnlyMemory<byte> valueUtf8;
+        public ReadOnlyMemory<byte> ValueUtf8 => valueUtf8.IsEmpty ? (valueUtf8 = Value.ToUtf8()) : valueUtf8;
 
-        public PageStringFragment(StringSegment value)
+        public PageStringFragment(ReadOnlyMemory<char> value)
         {
             Value = value;
+        }
+    }
+
+    public class PageBlockFragment : PageFragment
+    {
+        public ReadOnlyMemory<char> OriginalText { get; }
+        public string Name { get; }
+
+        public ReadOnlyMemory<char> Argument { get; }
+        
+        public PageFragment[] Body { get; }
+        public PageElseBlock[] ElseBlocks { get; }
+
+        public PageBlockFragment(ReadOnlyMemory<char> originalText, string name, ReadOnlyMemory<char> argument, 
+            List<PageFragment> body, List<PageElseBlock> elseStatements=null)
+        {
+            OriginalText = originalText;
+            Name = name;
+            Argument = argument;
+            Body = body.ToArray();
+            ElseBlocks = elseStatements?.ToArray() ?? TypeConstants<PageElseBlock>.EmptyArray;
+        }
+    }
+
+    public class PageElseBlock : PageFragment
+    {
+        public ReadOnlyMemory<char> Argument { get; }
+        public PageFragment[] Body { get; }
+
+        public PageElseBlock(ReadOnlyMemory<char> argument, List<PageFragment> body)
+        {
+            Argument = argument;
+            Body = body.ToArray();
         }
     }
 }

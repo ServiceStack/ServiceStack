@@ -48,12 +48,6 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="T:ServiceStack.Redis.BufferPool">
-            <summary>
-            Courtesy of @marcgravell
-            http://code.google.com/p/protobuf-net/source/browse/trunk/protobuf-net/BufferPool.cs
-            </summary>
-        </member>
         <member name="T:ServiceStack.Redis.Generic.QueuedRedisTypedCommand`1">
             <summary>
             A complete redis command, with method to send command, receive response, and run callback on success or failure
@@ -365,9 +359,9 @@
             The BackOff multiplier failed Auto Retries starts from (default 10ms)
             </summary>
         </member>
-        <member name="F:ServiceStack.Redis.RedisConfig.BufferLength">
+        <member name="P:ServiceStack.Redis.RedisConfig.BufferLength">
             <summary>
-            The Byte Buffer Size to combine Redis Operations within (default 1450 bytes)
+            The Byte Buffer Size to combine Redis Operations within (1450 bytes)
             </summary>
         </member>
         <member name="F:ServiceStack.Redis.RedisConfig.BufferPoolMaxSize">
@@ -399,6 +393,12 @@
         <member name="F:ServiceStack.Redis.RedisConfig.DisableVerboseLogging">
             <summary>
             Whether Debug Logging should log detailed Redis operations (default false)
+            </summary>
+        </member>
+        <member name="F:ServiceStack.Redis.RedisConfig.AssertAccessOnlyOnSameThread">
+            <summary>
+            Assert all access using pooled RedisClient instance should be limited to same thread.
+            Captures StackTrace so is very slow, use only for debugging connection issues.
             </summary>
         </member>
         <member name="M:ServiceStack.Redis.RedisConfig.Reset">

@@ -578,7 +578,16 @@ namespace ServiceStack
             return OnSessionFilter(session, withSessionId);
         }
 
-        public virtual bool AllowSetCookie(IRequest req, string cookieName)
+        /// <summary>
+        /// Override built-in Cookies, return false to prevent the Cookie from being set.
+        /// </summary>
+        public virtual bool SetCookieFilter(IRequest req, Cookie cookie)
+        {
+            return AllowSetCookie(req, cookie.Name);
+        }
+        
+        [Obsolete("Override SetCookieFilter")]
+        protected virtual bool AllowSetCookie(IRequest req, string cookieName)
         {
             if (!Config.AllowSessionCookies)
                 return cookieName != SessionFeature.SessionId
@@ -613,7 +622,7 @@ namespace ServiceStack
 
         /// <summary>
         /// Gets IDbConnection Checks if DbInfo is seat in RequestContext.
-        /// See multitenancy: http://docs.servicestack.net/multitenancy
+        /// See multitenancy: https://docs.servicestack.net/multitenancy
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
@@ -622,20 +631,34 @@ namespace ServiceStack
         {
             var dbFactory = Container.TryResolve<IDbConnectionFactory>();
 
-            ConnectionInfo connInfo;
-            if (req != null && (connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+            if (req != null)
             {
-                if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
-                    throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+                ConnectionInfo connInfo;
+                if ((connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+                {
+                    if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                        throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
-                if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
-                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
+                    if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
+                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
 
-                if (connInfo.ConnectionString != null)
-                    return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+                    if (connInfo.ConnectionString != null)
+                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
 
-                if (connInfo.NamedConnection != null)
-                    return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+                    if (connInfo.NamedConnection != null)
+                        return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
+                }
+                else
+                {
+                    var namedConnectionAttr = req.Dto?.GetType().FirstAttribute<NamedConnectionAttribute>();
+                    if (namedConnectionAttr != null)
+                    {
+                        if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
+                            throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
+
+                        return dbFactoryExtended.OpenDbConnection(namedConnectionAttr.Name);
+                    }
+                }
             }
 
             return dbFactory.OpenDbConnection();
@@ -735,6 +758,14 @@ namespace ServiceStack
                 return runtimeAppSettings.Get(req, name, defaultValue);
 
             return defaultValue;
+        }
+
+        public virtual void PublishMessage<T>(IMessageProducer messageProducer, T message)
+        {
+            if (messageProducer == null)
+                throw new ArgumentNullException(nameof(messageProducer), "No IMessageFactory was registered, cannot PublishMessage");
+
+            messageProducer.Publish(message);
         }
     }
 

@@ -131,6 +131,16 @@ namespace ServiceStack.Common.Tests.OAuth
                 Tokens.FirstName, Tokens.LastName, Tokens.Email);
         }
 
+        public bool VerifyGoogleAccessToken(string consumerKey, string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public string DownloadGoogleUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadYammerUserInfo(string yammerUserId)
         {
             yammerUserId.ThrowIfNullOrEmpty("yammerUserId");

@@ -113,10 +113,7 @@ namespace ServiceStack.Host
 
         public static string AsHeaderValue(this Cookie cookie)
         {
-            var path = cookie.Expires == Session
-                ? "/"
-                : cookie.Path ?? "/";
-
+            var path = cookie.Path ?? "/";
             var sb = StringBuilderCache.Allocate();
 
             sb.Append($"{cookie.Name}={cookie.Value};path={path}");

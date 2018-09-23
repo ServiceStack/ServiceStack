@@ -6,7 +6,7 @@
     <title>ServiceStack.Logging.EntLib5</title>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Enterprise Library 5.0 Logging Application Block integration for ServiceStack, the Opensource .NET and Mono REST Web Services Framework</summary>
+    <summary>Enterprise Library 5.0 Logging Application Block integration for ServiceStack, the Opensource .NET and .NET Core Web Services Framework</summary>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>
       Provides Enterprise Library 5.0 Logging Application Block logging integration for other ServiceStack projects

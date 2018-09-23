@@ -15,9 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Logging;
-using ServiceStack.Serialization;
 using ServiceStack.Text;
-using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -60,8 +58,6 @@ namespace ServiceStack
         public string BearerToken { get; set; }
         public string RefreshToken { get; set; }
         public string RefreshTokenUri { get; set; }
-
-        public CancellationTokenSource CancelTokenSource { get; set; }
 
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
@@ -210,7 +206,7 @@ namespace ServiceStack
             }
         }
 
-        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default(CancellationToken))
+        public Task<TResponse> SendAsync<TResponse>(string httpMethod, string absoluteUrl, object request, CancellationToken token = default)
         {
             var client = GetHttpClient();
 
@@ -241,13 +237,6 @@ namespace ServiceStack
                 return tcs.Task;
             }
 
-            if (token == default(CancellationToken))
-            {
-                if (CancelTokenSource == null)
-                    CancelTokenSource = new CancellationTokenSource();
-                token = CancelTokenSource.Token;
-            }
-
             var httpReq = CreateRequest(httpMethod, absoluteUrl, request);
             var sendAsyncTask = client.SendAsync(httpReq, token);
 
@@ -267,7 +256,7 @@ namespace ServiceStack
                         {
                             var refreshDto = new GetAccessToken { RefreshToken = RefreshToken };
                             var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
-                            return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto)
+                            return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token)
                                 .ContinueWith(t =>
                                 {
                                     if (t.IsFaulted)
@@ -441,16 +430,6 @@ namespace ServiceStack
                 }, token);
         }
 
-        private void DisposeCancelToken()
-        {
-            if (Interlocked.Decrement(ref activeAsyncRequests) > 0) return;
-
-            if (CancelTokenSource == null) return;
-            
-            CancelTokenSource.Dispose();
-            CancelTokenSource = null;
-        }
-
         public Action<HttpRequestMessage> RequestFilter { get; set; }
         public static Action<HttpRequestMessage> GlobalRequestFilter { get; set; }
 
@@ -472,7 +451,7 @@ namespace ServiceStack
 
         private void ThrowIfError<TResponse>(Task task, HttpResponseMessage httpRes, object request, string requestUri, object response)
         {
-            DisposeCancelToken();
+            Interlocked.Decrement(ref activeAsyncRequests);
 
             if (task.IsFaulted)
                 throw CreateException<TResponse>(httpRes, task.Exception);
@@ -486,7 +465,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(UserName) || string.IsNullOrEmpty(Password))
                 return;
 
-            var byteArray = Encoding.UTF8.GetBytes("{0}:{1}".Fmt(UserName, Password));
+            var byteArray = Encoding.UTF8.GetBytes($"{UserName}:{Password}");
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
         }
 
@@ -507,8 +486,7 @@ namespace ServiceStack
         private void ThrowResponseTypeException<TResponse>(HttpResponseMessage httpRes, object request, string requestUri, object response)
         {
             var responseType = WebRequestUtils.GetErrorResponseDtoType<TResponse>(request);
-            Action<HttpResponseMessage, object, string, object> responseHandler;
-            if (!ResponseHandlers.TryGetValue(responseType, out responseHandler))
+            if (!ResponseHandlers.TryGetValue(responseType, out var responseHandler))
             {
                 var mi = GetType().GetInstanceMethod("ThrowWebServiceException")
                     .MakeGenericMethod(new[] { responseType });
@@ -523,12 +501,10 @@ namespace ServiceStack
 
         public static byte[] GetResponseBytes(object response)
         {
-            var stream = response as Stream;
-            if (stream != null)
+            if (response is Stream stream)
                 return stream.ReadFully();
-            
-            var bytes = response as byte[];
-            if (bytes != null)
+
+            if (response is byte[] bytes)
                 return bytes;
 
             var str = response as string;
@@ -609,7 +585,7 @@ namespace ServiceStack
 
         public virtual List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
-            return SendAllAsync<TResponse>(requests, default(CancellationToken)).GetSyncResponse();
+            return SendAllAsync<TResponse>(requests, default).GetSyncResponse();
         }
 
         public TResponse Send<TResponse>(string httpMethod, string relativeOrAbsoluteUrl, object request)
@@ -619,19 +595,15 @@ namespace ServiceStack
 
         public virtual void Publish(object request)
         {
-            PublishAsync(request, default(CancellationToken)).Wait();
+            PublishAsync(request, default).Wait();
         }
 
         public void PublishAll(IEnumerable<object> requestDtos)
         {
-            PublishAllAsync(requestDtos, default(CancellationToken)).Wait();
+            PublishAllAsync(requestDtos, default).Wait();
         }
 
-        public virtual Task<TResponse> SendAsync<TResponse>(object request)
-        {
-            return SendAsync<TResponse>(request, default(CancellationToken));
-        }
-
+        public virtual Task<TResponse> SendAsync<TResponse>(object request) => SendAsync<TResponse>(request, default);
         public virtual Task<TResponse> SendAsync<TResponse>(object request, CancellationToken token)
         {
             if (typeof(TResponse) == typeof(object))
@@ -641,15 +613,15 @@ namespace ServiceStack
             if (request is IVerb)
             {
                 if (request is IGet)
-                    return GetAsync<TResponse>(request);
+                    return GetAsync<TResponse>(request, token);
                 if (request is IPost)
-                    return PostAsync<TResponse>(request);
+                    return PostAsync<TResponse>(request, token);
                 if (request is IPut)
-                    return PutAsync<TResponse>(request);
+                    return PutAsync<TResponse>(request, token);
                 if (request is IDelete)
-                    return DeleteAsync<TResponse>(request);
+                    return DeleteAsync<TResponse>(request, token);
                 if (request is IPatch)
-                    return PatchAsync<TResponse>(request);
+                    return PatchAsync<TResponse>(request, token);
             }
 
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
@@ -681,154 +653,161 @@ namespace ServiceStack
         }
 
 
-        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
-        }
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        public Task<TResponse> GetAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
 
-        public Task<TResponse> GetAsync<TResponse>(object requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
-        }
+        public Task<TResponse> GetAsync<TResponse>(object requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        public Task<TResponse> GetAsync<TResponse>(object requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
 
-        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl)
-        {
-            return SendAsync<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
-        }
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null);
+        public Task<TResponse> GetAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Get, ResolveUrl(HttpMethods.Get, relativeOrAbsoluteUrl), null, token);
 
-        public Task GetAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
-        }
-
-
-        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
-        }
-
-        public Task<TResponse> DeleteAsync<TResponse>(object requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
-        }
-
-        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl)
-        {
-            return SendAsync<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
-        }
-
-        public Task DeleteAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
-        }
+        public Task GetAsync(IReturnVoid requestDto) => 
+            SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null);
+        public Task GetAsync(IReturnVoid requestDto, CancellationToken token) => 
+            SendAsync<byte[]>(HttpMethods.Get, ResolveTypedUrl(HttpMethods.Get, requestDto), null, token);
 
 
-        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
-        }
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        public Task<TResponse> DeleteAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
 
-        public Task<TResponse> PostAsync<TResponse>(object requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
-        }
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        public Task<TResponse> DeleteAsync<TResponse>(object requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
+        
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null);
+        public Task<TResponse> DeleteAsync<TResponse>(string relativeOrAbsoluteUrl, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Delete, ResolveUrl(HttpMethods.Delete, relativeOrAbsoluteUrl), null, token);
 
-        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
-        {
-            return SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request);
-        }
+        public Task DeleteAsync(IReturnVoid requestDto) => 
+            SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null);
+        public Task DeleteAsync(IReturnVoid requestDto, CancellationToken token) => 
+            SendAsync<byte[]>(HttpMethods.Delete, ResolveTypedUrl(HttpMethods.Delete, requestDto), null, token);
 
-        public Task PostAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
-        }
+        
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+        public Task<TResponse> PostAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto, token);
 
+        public Task<TResponse> PostAsync<TResponse>(object requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+        public Task<TResponse> PostAsync<TResponse>(object requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto, token);
 
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request);
+        public Task<TResponse> PostAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, token);
 
-        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-        }
-
-        public Task<TResponse> PutAsync<TResponse>(object requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-        }
-
-        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request)
-        {
-            return SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request);
-        }
-
-        public Task PutAsync(IReturnVoid requestDto)
-        {
-            return SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
-        }
-
-
-        public Task<TResponse> PatchAsync<TResponse>(object requestDto)
-        {
-            return SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto);
-        }
+        public Task PostAsync(IReturnVoid requestDto) => 
+            SendAsync<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto);
+        public Task PostAsync(IReturnVoid requestDto, CancellationToken token) => 
+            SendAsync<byte[]>(HttpMethods.Post, ResolveTypedUrl(HttpMethods.Post, requestDto), requestDto, token);
 
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto)
-        {
-            if (!HttpMethods.Exists(httpVerb))
-                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+        public Task<TResponse> PutAsync<TResponse>(IReturn<TResponse> requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
-        }
+        public Task<TResponse> PutAsync<TResponse>(object requestDto) => 
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto);
+        public Task<TResponse> PutAsync<TResponse>(object requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto)
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request) =>
+            PutAsync<TResponse>(relativeOrAbsoluteUrl, request, default);
+        public Task<TResponse> PutAsync<TResponse>(string relativeOrAbsoluteUrl, object request, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Put, ResolveUrl(HttpMethods.Put, relativeOrAbsoluteUrl), request, token);
+
+        public Task PutAsync(IReturnVoid requestDto) => PutAsync(requestDto, default);
+        public Task PutAsync(IReturnVoid requestDto, CancellationToken token) => 
+            SendAsync<byte[]>(HttpMethods.Put, ResolveTypedUrl(HttpMethods.Put, requestDto), requestDto, token);
+
+
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto) => PatchAsync<TResponse>(requestDto, default);
+        public Task<TResponse> PatchAsync<TResponse>(object requestDto, CancellationToken token) => 
+            SendAsync<TResponse>(HttpMethods.Patch, ResolveTypedUrl(HttpMethods.Patch, requestDto), requestDto, token);
+
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto) =>
+            CustomMethodAsync<TResponse>(httpVerb, requestDto, default);
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, IReturn<TResponse> requestDto, CancellationToken token)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
+            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
         }
 
-        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto)
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto) =>
+            CustomMethodAsync<TResponse>(httpVerb, requestDto, default);
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, object requestDto, CancellationToken token)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
-            return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody);
+            return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
         }
 
-        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request)
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto) => CustomMethodAsync(httpVerb, requestDto, default);
+        public Task CustomMethodAsync(string httpVerb, IReturnVoid requestDto, CancellationToken token)
+        {
+            if (!HttpMethods.Exists(httpVerb))
+                throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
+
+            var requestBody = HttpUtils.HasRequestBody(httpVerb) ? requestDto : null;
+            return SendAsync<byte[]>(httpVerb, ResolveTypedUrl(httpVerb, requestDto), requestBody, token);
+        }
+
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request) =>
+            CustomMethodAsync<TResponse>(httpVerb, relativeOrAbsoluteUrl, request, default);
+        public Task<TResponse> CustomMethodAsync<TResponse>(string httpVerb, string relativeOrAbsoluteUrl, object request, CancellationToken token)
         {
             if (!HttpMethods.Exists(httpVerb))
                 throw new NotSupportedException("Unknown HTTP Method is not supported: " + httpVerb);
 
             var requestBody = HttpUtils.HasRequestBody(httpVerb) ? request : null;
-            return SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody);
+            return SendAsync<TResponse>(httpVerb, ResolveUrl(httpVerb, relativeOrAbsoluteUrl), requestBody, token);
         }
 
 
-        public void SendOneWay(object request)
+        public void SendOneWay(object request) => SendOneWay(request, default);
+        public void SendOneWay(object request, CancellationToken token)
         {
-            PublishAsync(request, default(CancellationToken)).Wait();
+            PublishAsync(request, token).Wait(token);
         }
 
-        public void SendOneWay(string relativeOrAbsoluteUrl, object request)
+        public void SendOneWay(string relativeOrAbsoluteUrl, object request) => SendOneWay(relativeOrAbsoluteUrl, request, default);
+        public void SendOneWay(string relativeOrAbsoluteUrl, object request, CancellationToken token)
         {
             var httpMethod = ServiceClientBase.GetExplicitMethod(request) ?? DefaultHttpMethod;
             var absolutetUri = ToAbsoluteUrl(ResolveUrl(httpMethod, relativeOrAbsoluteUrl));
-            SendAsync<byte[]>(httpMethod, absolutetUri, request).Wait();
+            SendAsync<byte[]>(httpMethod, absolutetUri, request, token).Wait(token);
         }
 
-        public void SendAllOneWay(IEnumerable<object> requests)
+        public void SendAllOneWay(IEnumerable<object> requests) => SendAllOneWay(requests, default);
+        public void SendAllOneWay(IEnumerable<object> requests, CancellationToken token)
         {
             var elType = requests.GetType().GetCollectionType();
             var requestUri = this.AsyncOneWayBaseUri.WithTrailingSlash() + elType.Name + "[]";
             var absolutetUri = ToAbsoluteUrl(ResolveUrl(HttpMethods.Post, requestUri));
-            SendAsync<byte[]>(HttpMethods.Post, absolutetUri, requests).Wait();
+            SendAsync<byte[]>(HttpMethods.Post, absolutetUri, requests, token).Wait(token);
         }
-
+        
 
         public void ClearCookies()
         {
@@ -868,10 +847,7 @@ namespace ServiceStack
             return GetAsync<TResponse>(relativeOrAbsoluteUrl).GetSyncResponse();
         }
 
-        public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto)
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerable<TResponse> GetLazy<TResponse>(IReturn<QueryResponse<TResponse>> queryDto) => throw new NotImplementedException();
 
         public void Delete(IReturnVoid requestDto)
         {
@@ -968,7 +944,7 @@ namespace ServiceStack
             return SendAsync<TResponse>(httpVerb, ResolveTypedUrl(httpVerb, request), null).GetSyncResponse();
         }
 
-        public virtual Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null)
+        public virtual Task<TResponse> PostFileAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName, string mimeType = null, CancellationToken token = default)
         {
             var content = new MultipartFormDataContent();
             var fileBytes = fileToUpload.ReadFully();
@@ -981,7 +957,7 @@ namespace ServiceStack
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType ?? MimeTypes.GetMimeType(fileName));
             content.Add(fileContent, "file", fileName);
 
-            return SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content)
+            return SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token)
                 .ContinueWith(t => { content.Dispose(); fileContent.Dispose(); return t.Result; },
                 TaskContinuationOptions.ExecuteSynchronously);
         }
@@ -991,9 +967,9 @@ namespace ServiceStack
             return PostFileAsync<TResponse>(relativeOrAbsoluteUrl, fileToUpload, fileName, mimeType).GetSyncResponse();
         }
 
-        public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
+        public Task<TResponse> PostFileWithRequestAsync<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload", CancellationToken token = default)
         {
-            return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName);
+            return PostFileWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), fileToUpload, fileName, request, fieldName, token);
         }
 
         public TResponse PostFileWithRequest<TResponse>(Stream fileToUpload, string fileName, object request, string fieldName = "upload")
@@ -1002,7 +978,7 @@ namespace ServiceStack
         }
 
         public virtual Task<TResponse> PostFileWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, Stream fileToUpload, string fileName,
-                                                        object request, string fieldName = "upload")
+                                                        object request, string fieldName = "upload", CancellationToken token = default)
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
             var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
@@ -1025,7 +1001,7 @@ namespace ServiceStack
             fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
             content.Add(fileContent, "file", fileName);
 
-            return SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content)
+            return SendAsync<TResponse>(HttpMethods.Post, ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), content, token)
                 .ContinueWith(t => { content.Dispose(); fileContent.Dispose(); return t.Result; },
                 TaskContinuationOptions.ExecuteSynchronously);
         }
@@ -1046,17 +1022,17 @@ namespace ServiceStack
             return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray()).GetSyncResponse();
         }
 
-        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files)
+        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(object request, IEnumerable<UploadFile> files, CancellationToken token = default)
         {
-            return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray());
+            return PostFilesWithRequestAsync<TResponse>(ResolveTypedUrl(HttpMethods.Post, request), request, files.ToArray(), token);
         }
 
-        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files)
+        public Task<TResponse> PostFilesWithRequestAsync<TResponse>(string relativeOrAbsoluteUrl, object request, IEnumerable<UploadFile> files, CancellationToken token = default)
         {
-            return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray());
+            return PostFilesWithRequestAsync<TResponse>(ResolveUrl(HttpMethods.Post, relativeOrAbsoluteUrl), request, files.ToArray(), token);
         }
 
-        public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files)
+        public virtual Task<TResponse> PostFilesWithRequestAsync<TResponse>(string requestUri, object request, UploadFile[] files, CancellationToken token = default)
         {
             var queryString = QueryStringSerializer.SerializeToString(request);
             var nameValueCollection = PclExportClient.Instance.ParseQueryString(queryString);
@@ -1084,21 +1060,19 @@ namespace ServiceStack
                     Name = fieldName,
                     FileName = fileName,
                 };
-                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(MimeTypes.GetMimeType(fileName));
+                
+                var contentType = file.ContentType ?? (file.FileName != null ? MimeTypes.GetMimeType(file.FileName) : null) ?? "application/octet-stream";
+                fileContent.Headers.ContentType = MediaTypeHeaderValue.Parse(contentType);
 
                 content.Add(fileContent, fileName, fileName);
             }
 
-            return SendAsync<TResponse>(HttpMethods.Post, requestUri, content)
+            return SendAsync<TResponse>(HttpMethods.Post, requestUri, content, token)
                 .ContinueWith(t => { foreach (var d in disposables) d.Dispose(); return t.Result; },
                 TaskContinuationOptions.ExecuteSynchronously);
         }
 
-
-        public void CancelAsync()
-        {
-            CancelTokenSource.Cancel();
-        }
+        public void CancelAsync() => throw new NotSupportedException("Pass CancellationToken when calling each async API");
 
         public void Dispose()
         {
@@ -1137,8 +1111,7 @@ namespace ServiceStack
 
         public static string GetContentType(this HttpResponseMessage httpRes)
         {
-            IEnumerable<string> values;
-            return httpRes.Headers.TryGetValues(HttpHeaders.ContentType, out values) 
+            return httpRes.Headers.TryGetValues(HttpHeaders.ContentType, out var values) 
                 ? values.FirstOrDefault() 
                 : null;
         }

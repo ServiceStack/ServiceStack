@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
@@ -25,17 +26,33 @@ namespace ServiceStack
     {
         public bool? EnableHotReload { get; set; }
 
-        public bool EnableDebugTemplate { get; set; }
-        public bool EnableDebugTemplateToAll { get; set; }
+        public bool DisablePageBasedRouting { get; set; }
 
         public string DebugDefaultTemplate { get; set; }
         
         public string ApiPath { get; set; }
         public string ApiDefaultContentType { get; set; } = MimeTypes.Json;
 
+        /// <summary>
+        /// Role Required to call Templates Admin Service (/templates/admin), Default is Admin.
+        /// If null Templates Admin Service will not be registered.
+        /// </summary>
+        public string TemplatesAdminRole { get; set; } = RoleNames.Admin;
+
+        /// <summary>
+        /// Role Required to call Metadata Debug Service (/metadata/debug).
+        /// If null Metadata Debug Service will only be registered in DebugMode.
+        /// </summary>
+        public string MetadataDebugAdminRole { get; set; }
+
+        [Obsolete("Use MetadataDebugAdminRole=RoleNames.Admin")]
+        public bool EnableDebugTemplate { set => MetadataDebugAdminRole = value ? RoleNames.Admin : null; }
+        [Obsolete("Use MetadataDebugAdminRole=RoleNames.AllowAnon")]
+        public bool EnableDebugTemplateToAll { set => MetadataDebugAdminRole = value ? RoleNames.AllowAnon : null; }
+
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
-            "/swagger-ui" //Swagger's handler needs to process index.html 
+            "/swagger-ui" // Swagger's handler needs to process index.html 
         };
 
         public TemplateServiceStackFilters ServiceStackFilters => TemplateFilters.FirstOrDefault(x => x is TemplateServiceStackFilters) as TemplateServiceStackFilters;
@@ -62,7 +79,7 @@ namespace ServiceStack
             TemplateFilters.Add(new TemplateProtectedFilters());
             TemplateFilters.Add(new TemplateInfoFilters());
             TemplateFilters.Add(new TemplateServiceStackFilters());
-            FilterTransformers["markdown"] = MarkdownPageFormat.TransformToHtml;
+            Plugins.Add(new MarkdownTemplatePlugin { RegisterPageFormat = false });
             SkipExecutingFiltersIfError = true;
         }
 
@@ -74,6 +91,11 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
+
+            if (!DisablePageBasedRouting)
+            {
+                appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
+            }
             
             InitViewPages(appHost);
 
@@ -92,13 +114,44 @@ namespace ServiceStack
                 appHost.RegisterService(typeof(TemplateApiPagesService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
-            if (DebugMode || EnableDebugTemplate || EnableDebugTemplateToAll)
+            if (DebugMode || MetadataDebugAdminRole != null)
             {
                 appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Templates");
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Inspector");
+            }
+
+            if (!string.IsNullOrEmpty(TemplatesAdminRole))
+            {
+                appHost.RegisterService(typeof(TemplatesAdminService), TemplatesAdminService.Routes);
+            }
+
+            InitPage = Pages.GetPage("_init");
+            if (InitPage != null)
+            {
+                appHost.AfterInitCallbacks.Add(host => RunInitPage());
             }
 
             Init();
+        }
+        
+        internal TemplatePage InitPage { get; set; }
+
+        public string RunInitPage()
+        {
+            if (InitPage == null)
+                return "_init.html not found";
+            
+            try
+            {
+                var execInit = new PageResult(InitPage).Result;
+                Args["initout"] = execInit;
+                return execInit;
+            }
+            catch (Exception ex)
+            {
+                Args["initout"] = ex.ToString();
+                return ex.ToString();
+            }
         }
 
         private readonly ConcurrentDictionary<string, byte> catchAllPathsNotFound =
@@ -140,6 +193,138 @@ namespace ServiceStack
                 if (catchAllPathsNotFound.Count > 10000) //prevent DOS
                     catchAllPathsNotFound.Clear();
                 catchAllPathsNotFound[pathInfo] = 1;
+            }
+            
+            return null;
+        }
+
+        protected virtual IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+        {
+            var path = pathInfo.Trim('/');
+
+            var vfs = HostContext.VirtualFileSources;
+
+            int CompareByWeightedName(IVirtualNode a, IVirtualNode b)
+            {
+                var aIsWildPath = a.Name[0] == '_';
+                var bIsWildPath = b.Name[0] == '_';
+
+                if (aIsWildPath && !bIsWildPath)
+                    return 1;
+                if (bIsWildPath && !aIsWildPath)
+                    return -1;
+
+                return string.Compare(a.Name, b.Name, StringComparison.Ordinal);
+            }
+
+            TemplatePageHandler GetPageHandler(IVirtualFile file, string[] pathParts)
+            {
+                var filePath = file.VirtualPath.WithoutExtension();
+                var page = Pages.TryGetPage(filePath) ?? 
+                           Pages.AddPage(filePath, file);
+
+                var args = new Dictionary<string, object>();
+                var fileParts = filePath.Split('/');
+
+                for (var i = 0; i < pathParts.Length; i++)
+                {
+                    if (i >= fileParts.Length)
+                        break;
+
+                    var part = fileParts[i];
+                    if (part[0] == '_')
+                        args[part.Substring(1)] = pathParts[i];
+                }
+
+                return new TemplatePageHandler(page) 
+                {
+                    Args = args
+                };
+            }
+
+            List<IVirtualDirectory> GetCandidateDirs(IVirtualDirectory[] argDirs, string segment)
+            {
+                var candidateDirs = new List<IVirtualDirectory>();
+                foreach (var parentDir in argDirs)
+                {
+                    var parentDirs = parentDir.GetDirectories().ToArray();
+                    Array.Sort(parentDirs, CompareByWeightedName);
+                    foreach (var dir in parentDirs)
+                    {
+                        var hasExactDirMatch = segment.EqualsIgnoreCase(dir.Name); 
+                        if (hasExactDirMatch || dir.Name[0] == '_')
+                        {
+                            candidateDirs.Add(dir);
+                        }
+
+                        if (hasExactDirMatch)
+                            return candidateDirs;
+                    }
+                }
+                return candidateDirs;
+            }
+
+            var dirs = new[] { vfs.RootDirectory };
+            
+            var segCounts = path.CountOccurrencesOf('/');
+
+            var index = 0;
+            var pos = 0;
+            var pathSegments = path.Split('/');
+
+            foreach (var segment in pathSegments)
+            {
+                var isLast = index++ == segCounts;
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        foreach (var file in dir.GetFiles())
+                        {
+                            var isWildPath = file.Name[0] == '_';
+                            if (isWildPath)
+                            {
+                                if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.StartsWith("_init"))                                
+                                    continue;
+                            }
+
+                            var fileNameWithoutExt = file.Name.WithoutExtension();
+                            if (fileNameWithoutExt == "index")
+                                continue;
+                                
+                            foreach (var format in PageFormats)
+                            {
+                                if (file.Extension == format.Extension)
+                                {
+                                    if (fileNameWithoutExt == segment || isWildPath)
+                                        return GetPageHandler(file, pathSegments);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var candidateDirs = GetCandidateDirs(dirs, segment);
+                if (candidateDirs.Count == 0)
+                    break;
+                
+                dirs = candidateDirs.ToArray();
+                Array.Sort(dirs, CompareByWeightedName);
+
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        foreach (var format in PageFormats)
+                        {
+                            var file = dir.GetFile(IndexPage + "." + format.Extension);
+                            if (file != null)
+                                return GetPageHandler(file, pathSegments);
+                        }
+                    }
+                }
             }
             
             return null;
@@ -287,6 +472,7 @@ namespace ServiceStack
     {
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
         public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
+        public static TimeSpan ModifiedDelay = TimeSpan.FromMilliseconds(50);
 
         public ITemplatePages Pages { get; set; }
 
@@ -313,7 +499,10 @@ namespace ServiceStack
 
                 shouldReload = maxLastModified.Ticks > eTagTicks;
                 if (shouldReload)
+                {
+                    await Task.Delay(ModifiedDelay);
                     break;
+                }
 
                 await Task.Delay(CheckDelay);
             }
@@ -336,7 +525,7 @@ namespace ServiceStack
         public async Task<object> Any(ApiPages request) 
         {
             if (string.IsNullOrEmpty(request.PageName))
-                throw new ArgumentNullException("PageName");
+                throw new ArgumentNullException(nameof(request.PageName));
 
             var parts = string.IsNullOrEmpty(request.PathInfo)  
                 ? TypeConstants.EmptyStringArray
@@ -365,7 +554,7 @@ namespace ServiceStack
             if (feature.ApiDefaultContentType != null &&
                 !hasPathContentType &&
                 !hasPageContentType &&
-                base.Request.QueryString["format"] == null && base.Request.ResponseContentType == MimeTypes.Html)
+                base.Request.QueryString[TemplateConstants.Format] == null && base.Request.ResponseContentType == MimeTypes.Html)
             {
                 base.Request.ResponseContentType = feature.ApiDefaultContentType;
             }
@@ -387,17 +576,34 @@ namespace ServiceStack
 
             var discardedOutput = await pageResult.RenderToStringAsync();
 
-            if (!pageResult.Args.TryGetValue("return", out object response))
+            if (!pageResult.Args.TryGetValue(TemplateConstants.Return, out var response))
                 throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
 
             if (response is Task<object> responseTask)
                 response = await responseTask;
-            
-            var httpResultHeaders = (pageResult.Args.TryGetValue("returnArgs", out object returnArgs) ? returnArgs : null).ToStringDictionary();
+            if (response is IRawString raw)
+                response = raw.ToRawString();
 
-            var result = new HttpResult(response);
-            httpResultHeaders.Each(x => result.Options[x.Key] = x.Value);
-            return result;
+            var httpResult = ToHttpResult(pageResult, response);
+            return httpResult;
+        }
+
+        internal static IHttpResult ToHttpResult(PageResult pageResult, object response)
+        {
+            if (!(response is IHttpResult httpResult))
+            {
+                if (pageResult.Args.TryGetValue(TemplateConstants.ReturnArgs, out var oArgs) && oArgs is Dictionary<string, object> returnArgs)
+                {
+                    httpResult = TemplateServiceStackFilters.ToHttpResult(returnArgs);
+                    httpResult.Response = response;
+                }
+                else
+                {
+                    httpResult = new HttpResult(response);
+                }
+            }
+            
+            return httpResult;
         }
     }
 
@@ -408,7 +614,7 @@ namespace ServiceStack
         public string AuthSecret { get; set; }
     }
 
-    [ReturnExceptionsInJsonAttribute]
+    [ReturnExceptionsInJson]
     [DefaultRequest(typeof(TemplateMetadataDebug))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class TemplateMetadataDebugService : Service
@@ -435,18 +641,18 @@ Session:
   - ss-opt                {{ userSessionOptions | join }}
 
 User: 
-  - IsAuthenticated       {{ userSession | select: { it.IsAuthenticated } }}
-  - UserName              {{ userSession | select: { it.UserName } }}
-  - LastName              {{ userSession | select: { it.LastName } }}
-  - Is Admin              {{ userHasRole('Admin') }}
-  - Has Permission        {{ userHasPermission('ThePermission') }}
+  - IsAuthenticated       {{ userSession.IsAuthenticated }}
+  - UserName              {{ userSession.UserName }}
+  - LastName              {{ userSession.LastName }}
+  - Is Admin              {{ 'Admin'         | userHasRole }}
+  - Has Permission        {{ 'ThePermission' | userHasPermission }}
 
 Plugins: {{ plugins | select: \n  - { it | typeName } }}
 </pre></td><td style='width:50%'> 
-{{ meta.Operations | take(10) | map('{ Request: it.Name, Response: it.ResponseType.Name, Service: it.ServiceType.Name }') | htmlDump({ caption: 'First 10 Services'}) }}
+{{ meta.Operations | take(10) | map => {Request:it.Name, Response:it.ResponseType.Name ?? '', Service:it.ServiceType.Name} | htmlDump({ caption: 'First 10 Services'}) }}
 <table><caption>Network Information</caption>
 <tr><th>    IPv4 Addresses                            </th><th>              IPv6 Addresses                            </th></tr>
-<td><pre>{{ networkIpv4Addresses | select: \n{ it } }}</pre></td><td><pre>{{ networkIpv6Addresses | select: \n{ it } }}</pre><td></tr></pre></td>
+<td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
 </tr></table>";
         
         public object Any(TemplateMetadataDebug request)
@@ -455,11 +661,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 return null;
 
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
-            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
+            if (!HostContext.DebugMode)
             {
                 if (HostContext.Config.AdminAuthSecret == null || HostContext.Config.AdminAuthSecret != request.AuthSecret)
                 {
-                    RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+                    RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
                 }
             }
             
@@ -487,8 +693,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public object GetHtml(TemplateMetadataDebug request)
         {
             var feature = HostContext.GetPlugin<TemplatePagesFeature>();
-            if (!HostContext.DebugMode && !feature.EnableDebugTemplateToAll)
-                RequiredRoleAttribute.AssertRequiredRoles(Request, RoleNames.Admin);
+            if (!HostContext.DebugMode)
+            {
+                RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
+            }
             
             if (request.Template != null)
                 return Any(request);
@@ -510,10 +718,64 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         }
     }
 
+    [ExcludeMetadata]
+    public class TemplatesAdmin : IReturn<TemplatesAdminResponse>
+    {
+        public string Actions { get; set; }
+    }
+
+    public class TemplatesAdminResponse
+    {
+        public string[] Results { get; set; }
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [DefaultRequest(typeof(TemplatesAdmin))]
+    [Restrict(VisibilityTo = RequestAttributes.None)]
+    public class TemplatesAdminService : Service
+    {
+        public static string[] Routes { get; set; } = { "/templates/admin", "/templates/admin/{Actions}" }; 
+        
+        public static string[] Actions = {
+            nameof(TemplateProtectedFilters.invalidateAllCaches),
+            nameof(TemplatePagesFeature.RunInitPage),
+        };
+        
+        public object Any(TemplatesAdmin request)
+        {
+            var feature = HostContext.AssertPlugin<TemplatePagesFeature>();
+            
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.TemplatesAdminRole);
+            
+            if (string.IsNullOrEmpty(request.Actions))
+                return new TemplatesAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
+
+            var actions = request.Actions.Split(',');
+
+            var results = new List<string>();
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var scope = new TemplateScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
+            
+                if (actions.Any(x => x.EqualsIgnoreCase(nameof(TemplateProtectedFilters.invalidateAllCaches))))
+                    results.Add(nameof(TemplateProtectedFilters.invalidateAllCaches) + ": " + feature.ProtectedFilters.invalidateAllCaches(scope).ToJsv());
+                
+                if (actions.Any(x => x.EqualsIgnoreCase(nameof(TemplatePagesFeature.RunInitPage))))
+                    results.Add(nameof(TemplatePagesFeature.RunInitPage) + ": " + feature.RunInitPage());
+                
+                if (results.Count > 0)
+                    return new TemplatesAdminResponse { Results = results.ToArray() };
+            }
+            
+            throw new NotSupportedException("Unknown Action. Available actions: " + string.Join(",", Actions));
+        }
+    }
+
     public class TemplatePageHandler : HttpAsyncTaskHandler
     {
         private readonly TemplatePage page;
         private readonly TemplatePage layoutPage;
+        public Dictionary<string, object> Args { get; set; }
         public object Model { get; set; }
         public Stream OutputStream { get; set; }
 
@@ -525,10 +787,19 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         }
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
-        {            
-            var result = new PageResult(page)
+        {
+            var args = httpReq.GetTemplateRequestParams();
+            if (Args != null)
             {
-                Args = httpReq.GetTemplateRequestParams(),
+                foreach (var entry in Args)
+                {
+                    args[entry.Key] = entry.Value;
+                }
+            }
+            
+            var pageResult = new PageResult(page)
+            {
+                Args = args,
                 LayoutPage = layoutPage,
                 Model = Model,
             };
@@ -536,11 +807,40 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             try
             {
                 httpRes.ContentType = page.Format.ContentType;
-                await result.WriteToAsync(OutputStream ?? httpRes.OutputStream);
+                if (OutputStream != null)
+                {
+                    await pageResult.WriteToAsync(OutputStream);
+                }
+                else
+                {
+                    // Buffering improves perf when running behind a reverse proxy (recommended for .NET Core) 
+                    using (var ms = MemoryStreamFactory.GetStream())
+                    {
+                        await pageResult.WriteToAsync(ms);
+
+                        if (pageResult.Args.TryGetValue(TemplateConstants.Return, out var response))
+                        {
+                            if (response is Task<object> responseTask)
+                                response = await responseTask;
+                            if (response is IRawString raw)
+                                response = raw.ToRawString();
+
+                            if (response != null)
+                            {
+                                var httpResult = TemplateApiPagesService.ToHttpResult(pageResult, response);
+                                await httpRes.WriteToResponse(httpReq, httpResult);
+                                return;
+                            }
+                        }
+
+                        ms.Position = 0;
+                        await ms.WriteToAsync(httpRes.OutputStream);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                await page.Format.OnViewException(result, httpReq, ex);
+                await page.Format.OnViewException(pageResult, httpReq, ex);
             }
         }
     }
@@ -578,25 +878,6 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             catch (Exception ex)
             {
                 await page.Format.OnViewException(result, httpReq, ex);
-            }
-        }
-    }
-
-    public class MarkdownPageFormat : PageFormat
-    {
-        public MarkdownPageFormat()
-        {
-            Extension = "md";
-            ContentType = MimeTypes.MarkdownText;
-        }
-
-        public static async Task<Stream> TransformToHtml(Stream markdownStream)
-        {
-            using (var reader = new StreamReader(markdownStream))
-            {
-                var md = await reader.ReadToEndAsync();
-                var html = MarkdownConfig.Transformer.Transform(md);
-                return MemoryStreamFactory.GetStream(html.ToUtf8Bytes());
             }
         }
     }
@@ -690,13 +971,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public virtual bool IsAuthenticated => this.GetSession().IsAuthenticated;
 
-        public virtual void PublishMessage<T>(T message)
-        {
-            if (MessageProducer == null)
-                throw new NullReferenceException("No IMessageFactory was registered, cannot PublishMessage");
-
-            MessageProducer.Publish(message);
-        }
+        public virtual void PublishMessage<T>(T message) => HostContext.AppHost.PublishMessage(MessageProducer, message);
 
         public override void Dispose()
         {

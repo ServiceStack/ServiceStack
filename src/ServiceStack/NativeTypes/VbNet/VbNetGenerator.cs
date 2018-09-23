@@ -21,6 +21,9 @@ namespace ServiceStack.NativeTypes.VbNet
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string>
         {
             {"Int16", "Short"},
@@ -73,6 +76,7 @@ namespace ServiceStack.NativeTypes.VbNet
             "end",
             "True",
             "False",
+            "Mod",
         };
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
@@ -99,8 +103,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 namespaces.Add(Config.GlobalNamespace);
             }
 
-            Func<string, string> defaultValue = k =>
-                request.QueryString[k].IsNullOrEmpty() ? "'''" : "'";
+            string DefaultValue(string k) => request.QueryString[k].IsNullOrEmpty() ? "'''" : "'";
 
             var sbInner = new StringBuilder();
             var sb = new StringBuilderWrapper(sbInner);
@@ -110,23 +113,23 @@ namespace ServiceStack.NativeTypes.VbNet
             sb.AppendLine("'Tip: {0}".Fmt(HelpMessages.NativeTypesDtoOptionsTip.Fmt("''")));
             sb.AppendLine("'BaseUrl: {0}".Fmt(Config.BaseUrl));
             sb.AppendLine("'");
-            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(defaultValue("GlobalNamespace"), Config.GlobalNamespace));
-            sb.AppendLine("{0}MakePartial: {1}".Fmt(defaultValue("MakePartial"), Config.MakePartial));
-            sb.AppendLine("{0}MakeVirtual: {1}".Fmt(defaultValue("MakeVirtual"), Config.MakeVirtual));
-            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(defaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
-            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(defaultValue("AddReturnMarker"), Config.AddReturnMarker));
-            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(defaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
-            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(defaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
-            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(defaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
-            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(defaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
-            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(defaultValue("AddResponseStatus"), Config.AddResponseStatus));
-            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(defaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
-            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(defaultValue("InitializeCollections"), Config.InitializeCollections));
-            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(defaultValue("ExportValueTypes"), Config.ExportValueTypes));
-            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(defaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(", ")));
-            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(defaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
-            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(defaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
-            sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(defaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
+            sb.AppendLine("{0}GlobalNamespace: {1}".Fmt(DefaultValue("GlobalNamespace"), Config.GlobalNamespace));
+            sb.AppendLine("{0}MakePartial: {1}".Fmt(DefaultValue("MakePartial"), Config.MakePartial));
+            sb.AppendLine("{0}MakeVirtual: {1}".Fmt(DefaultValue("MakeVirtual"), Config.MakeVirtual));
+            sb.AppendLine("{0}MakeDataContractsExtensible: {1}".Fmt(DefaultValue("MakeDataContractsExtensible"), Config.MakeDataContractsExtensible));
+            sb.AppendLine("{0}AddReturnMarker: {1}".Fmt(DefaultValue("AddReturnMarker"), Config.AddReturnMarker));
+            sb.AppendLine("{0}AddDescriptionAsComments: {1}".Fmt(DefaultValue("AddDescriptionAsComments"), Config.AddDescriptionAsComments));
+            sb.AppendLine("{0}AddDataContractAttributes: {1}".Fmt(DefaultValue("AddDataContractAttributes"), Config.AddDataContractAttributes));
+            sb.AppendLine("{0}AddIndexesToDataMembers: {1}".Fmt(DefaultValue("AddIndexesToDataMembers"), Config.AddIndexesToDataMembers));
+            sb.AppendLine("{0}AddGeneratedCodeAttributes: {1}".Fmt(DefaultValue("AddGeneratedCodeAttributes"), Config.AddGeneratedCodeAttributes));
+            sb.AppendLine("{0}AddResponseStatus: {1}".Fmt(DefaultValue("AddResponseStatus"), Config.AddResponseStatus));
+            sb.AppendLine("{0}AddImplicitVersion: {1}".Fmt(DefaultValue("AddImplicitVersion"), Config.AddImplicitVersion));
+            sb.AppendLine("{0}InitializeCollections: {1}".Fmt(DefaultValue("InitializeCollections"), Config.InitializeCollections));
+            sb.AppendLine("{0}ExportValueTypes: {1}".Fmt(DefaultValue("ExportValueTypes"), Config.ExportValueTypes));
+            sb.AppendLine("{0}IncludeTypes: {1}".Fmt(DefaultValue("IncludeTypes"), Config.IncludeTypes.Safe().ToArray().Join(", ")));
+            sb.AppendLine("{0}ExcludeTypes: {1}".Fmt(DefaultValue("ExcludeTypes"), Config.ExcludeTypes.Safe().ToArray().Join(", ")));
+            sb.AppendLine("{0}AddNamespaces: {1}".Fmt(DefaultValue("AddNamespaces"), Config.AddNamespaces.Safe().ToArray().Join(",")));
+            sb.AppendLine("{0}AddDefaultXmlNamespace: {1}".Fmt(DefaultValue("AddDefaultXmlNamespace"), Config.AddDefaultXmlNamespace));
             sb.AppendLine();
 
             namespaces.Where(x => !string.IsNullOrEmpty(x))
@@ -181,8 +184,7 @@ namespace ServiceStack.NativeTypes.VbNet
                     if (!existingTypes.Contains(fullTypeName))
                     {
                         MetadataType response = null;
-                        MetadataOperationType operation;
-                        if (requestTypesMap.TryGetValue(type, out operation))
+                        if (requestTypesMap.TryGetValue(type, out var operation))
                         {
                             response = operation.Response;
                         }
@@ -256,7 +258,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 lastNS = ns;
 
                 sb.AppendLine();
-                sb.AppendLine("Namespace {0}".Fmt(ns.SafeToken()));
+                sb.AppendLine($"Namespace {MetadataExtensions.SafeToken(ns)}");
                 //sb.AppendLine("{");
             }
 
@@ -271,7 +273,9 @@ namespace ServiceStack.NativeTypes.VbNet
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
             if (Config.AddGeneratedCodeAttributes)
-                sb.AppendLine("<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>".Fmt(Env.VersionString));
+                sb.AppendLine($"<GeneratedCode(\"AddServiceStackReference\", \"{Env.VersionString}\")>");
+
+            PreTypeFilter?.Invoke(sb, type);
 
             if (type.IsEnum.GetValueOrDefault())
             {
@@ -305,7 +309,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 //: BaseClass, Interfaces
                 if (type.Inherits != null)
                 {
-                    sb.AppendLine("    Inherits {0}".Fmt(Type(type.Inherits, includeNested: true)));
+                    sb.AppendLine($"    Inherits {Type(type.Inherits, includeNested: true)}");
                 }
 
                 var implements = new List<string>();
@@ -326,7 +330,7 @@ namespace ServiceStack.NativeTypes.VbNet
                 {
                     foreach (var x in implements)
                     {
-                        sb.AppendLine("    Implements {0}".Fmt(x));
+                        sb.AppendLine($"    Implements {x}");
                     }
                 }
 
@@ -353,6 +357,8 @@ namespace ServiceStack.NativeTypes.VbNet
                 sb.AppendLine(type.IsInterface() ? "End Interface" : "End Class");
             }
 
+            PostTypeFilter?.Invoke(sb, type);
+            
             sb = sb.UnIndent();
             return lastNS;
         }
@@ -389,10 +395,7 @@ namespace ServiceStack.NativeTypes.VbNet
             foreach (var prop in collectionProps)
             {
                 var suffix = prop.IsArray() ? "{}" : "";
-                sb.AppendLine("{0} = New {1}{2}".Fmt(
-                prop.Name.SafeToken(),
-                Type(prop.Type, prop.GenericArgs, includeNested:true),
-                suffix));
+                sb.AppendLine($"{MetadataExtensions.SafeToken(prop.Name)} = New {Type(prop.Type, prop.GenericArgs,true)}{suffix}");
             }
 
             sb = sb.UnIndent();
@@ -472,7 +475,7 @@ namespace ServiceStack.NativeTypes.VbNet
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}".Fmt(TypeValue(ctorArg.Type, ctorArg.Value)));
+                            args.Append(TypeValue(ctorArg.Type, ctorArg.Value));
                         }
                     }
                     else if (attr.Args != null)
@@ -481,10 +484,10 @@ namespace ServiceStack.NativeTypes.VbNet
                         {
                             if (args.Length > 0)
                                 args.Append(", ");
-                            args.Append("{0}:={1}".Fmt(attrArg.Name, TypeValue(attrArg.Type, attrArg.Value)));
+                            args.Append($"{attrArg.Name}:={TypeValue(attrArg.Type, attrArg.Value)}");
                         }
                     }
-                    sb.AppendLine("<{0}({1})>".Fmt(attrName, StringBuilderCacheAlt.ReturnAndFree(args)));
+                    sb.AppendLine($"<{attrName}({StringBuilderCacheAlt.ReturnAndFree(args)})>");
                 }
             }
 
@@ -519,7 +522,7 @@ namespace ServiceStack.NativeTypes.VbNet
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
-                    return "Nullable(Of {0})".Fmt(TypeAlias(genericArgs[0], includeNested: includeNested));
+                    return $"Nullable(Of {TypeAlias(genericArgs[0], includeNested: includeNested)})";
 
                 var parts = type.Split('`');
                 if (parts.Length > 1)
@@ -534,7 +537,7 @@ namespace ServiceStack.NativeTypes.VbNet
                     }
 
                     var typeName = NameOnly(type, includeNested: includeNested).SanitizeType();
-                    return "{0}(Of {1})".Fmt(typeName, StringBuilderCacheAlt.ReturnAndFree(args));
+                    return $"{typeName}(Of {StringBuilderCacheAlt.ReturnAndFree(args)})";
                 }
             }
 
@@ -551,10 +554,9 @@ namespace ServiceStack.NativeTypes.VbNet
 
             var arrParts = type.SplitOnFirst('[');
             if (arrParts.Length > 1)
-                return "{0}()".Fmt(TypeAlias(arrParts[0], includeNested: includeNested));
+                return $"{TypeAlias(arrParts[0], includeNested: includeNested)}()";
 
-            string typeAlias;
-            TypeAliases.TryGetValue(type, out typeAlias);
+            TypeAliases.TryGetValue(type, out var typeAlias);
 
             return typeAlias ?? NameOnly(type, includeNested: includeNested);
         }
@@ -569,10 +571,7 @@ namespace ServiceStack.NativeTypes.VbNet
             return name.SafeToken();
         }
 
-        public string EscapeKeyword(string name)
-        {
-            return KeyWords.Contains(name) ? "[{0}]".Fmt(name) : name;
-        }
+        public string EscapeKeyword(string name) => KeyWords.Contains(name) ? $"[{name}]" : name;
 
         public bool AppendComments(StringBuilderWrapper sb, string desc)
         {
@@ -605,19 +604,19 @@ namespace ServiceStack.NativeTypes.VbNet
             if (dcMeta.Name != null || dcMeta.Namespace != null)
             {
                 if (dcMeta.Name != null)
-                    dcArgs = "Name:={0}".Fmt(dcMeta.Name.QuotedSafeValue());
+                    dcArgs = $"Name:={MetadataExtensions.QuotedSafeValue(dcMeta.Name)}";
 
                 if (dcMeta.Namespace != null)
                 {
                     if (dcArgs.Length > 0)
                         dcArgs += ", ";
 
-                    dcArgs += "Namespace:={0}".Fmt(dcMeta.Namespace.QuotedSafeValue());
+                    dcArgs += $"Namespace:={MetadataExtensions.QuotedSafeValue(dcMeta.Namespace)}";
                 }
 
-                dcArgs = "({0})".Fmt(dcArgs);
+                dcArgs = $"({dcArgs})";
             }
-            sb.AppendLine("<DataContract{0}>".Fmt(dcArgs));
+            sb.AppendLine($"<DataContract{dcArgs}>");
         }
 
         public bool AppendDataMember(StringBuilderWrapper sb, MetadataDataMember dmMeta, int dataMemberIndex)
@@ -627,8 +626,8 @@ namespace ServiceStack.NativeTypes.VbNet
                 if (Config.AddDataContractAttributes)
                 {
                     sb.AppendLine(Config.AddIndexesToDataMembers
-                                  ? "<DataMember(Order:={0})>".Fmt(dataMemberIndex)
-                                  : "<DataMember>");
+                        ? $"<DataMember(Order:={dataMemberIndex})>"
+                        : "<DataMember>");
                     return true;
                 }
                 return false;
@@ -642,14 +641,14 @@ namespace ServiceStack.NativeTypes.VbNet
                 || Config.AddIndexesToDataMembers)
             {
                 if (dmMeta.Name != null)
-                    dmArgs = "Name:={0}".Fmt(dmMeta.Name.QuotedSafeValue());
+                    dmArgs = $"Name:={MetadataExtensions.QuotedSafeValue(dmMeta.Name)}";
 
                 if (dmMeta.Order != null || Config.AddIndexesToDataMembers)
                 {
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "Order:={0}".Fmt(dmMeta.Order ?? dataMemberIndex);
+                    dmArgs += $"Order:={dmMeta.Order ?? dataMemberIndex}";
                 }
 
                 if (dmMeta.IsRequired != null)
@@ -657,7 +656,7 @@ namespace ServiceStack.NativeTypes.VbNet
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "IsRequired:={0}".Fmt(dmMeta.IsRequired.ToString().ToLower());
+                    dmArgs += $"IsRequired:={dmMeta.IsRequired.ToString().ToLower()}";
                 }
 
                 if (dmMeta.EmitDefaultValue != null)
@@ -665,12 +664,12 @@ namespace ServiceStack.NativeTypes.VbNet
                     if (dmArgs.Length > 0)
                         dmArgs += ", ";
 
-                    dmArgs += "EmitDefaultValue:={0}".Fmt(dmMeta.EmitDefaultValue.ToString().ToLower());
+                    dmArgs += $"EmitDefaultValue:={dmMeta.EmitDefaultValue.ToString().ToLower()}";
                 }
 
-                dmArgs = "({0})".Fmt(dmArgs);
+                dmArgs = $"({dmArgs})";
             }
-            sb.AppendLine("<DataMember{0}>".Fmt(dmArgs));
+            sb.AppendLine($"<DataMember{dmArgs}>");
 
             return true;
         }
@@ -700,10 +699,7 @@ namespace ServiceStack.NativeTypes.VbNet
             return value;
         }
 
-        public static string QuotedSafeValue(this string value)
-        {
-            return "\"{0}\"".Fmt(value.SafeValue());
-        }
+        public static string QuotedSafeValue(this string value) => $"\"{value.SafeValue()}\"";
 
         public static MetadataAttribute ToMetadataAttribute(this MetadataRoute route)
         {

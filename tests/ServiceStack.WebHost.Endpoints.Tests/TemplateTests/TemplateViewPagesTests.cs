@@ -4,6 +4,8 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.IO;
+using ServiceStack.Templates;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -270,4 +272,34 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             
         }
     }
+
+    public class TemplatePageFeatureTests
+    {
+        class InitFilter : TemplateFilter
+        {
+            public static bool HasInit = false;
+
+            public bool initFilter() => HasInit = true;
+        }
+        
+        [Test]
+        public void Does_evaluate_init_page()
+        {
+            using (new BasicAppHost 
+            {
+                ConfigureAppHost = host => {
+                    var templateFiles = new MemoryVirtualFiles();
+                    templateFiles.WriteFile("_init.html", "{{ initFilter }}");
+                    host.AddVirtualFileSources.Add(templateFiles);
+                    host.Plugins.Add(new TemplatePagesFeature {
+                        TemplateFilters = { new InitFilter() }
+                    });
+                }
+            }.Init())
+            {
+                Assert.That(InitFilter.HasInit);
+            }
+        }
+    }
+    
 }

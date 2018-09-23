@@ -76,31 +76,6 @@ namespace System.Web
 
 namespace System.Web.UI
 {
-    public class Control
-    {
-        protected virtual void Render(HtmlTextWriter output) { }
-
-        public virtual void RenderControl(HtmlTextWriter writer) 
-        {
-            Render(writer);
-        }
-    }
-
-    public class HtmlTextWriter
-    {
-        private readonly TextWriter writer;
-
-        public HtmlTextWriter(TextWriter writer)
-        {
-            this.writer = writer;
-        }
-
-        public void Write(string html)
-        {
-            this.writer.Write(html);
-        }
-    }
-
     // https://github.com/mono/mono/blob/master/mcs/class/System.Web/System.Web.UI/DataBinder.cs
     public sealed class DataBinder
     {

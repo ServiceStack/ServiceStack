@@ -60,6 +60,8 @@ namespace ServiceStack.Templates
                         foreach (var key in keys)
                         {
                             var value = d[key];
+                            if (value == target) break; // Prevent cyclical deps like 'it' binding
+                            
                             sbRows.Append("<td>");
 
                             if (!isComplexType(value))
@@ -185,6 +187,8 @@ namespace ServiceStack.Templates
                             {
                                 if (o is KeyValuePair<string, object> kvp)
                                 {
+                                    if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
+
                                     sb.Append("<tr>");
                                     sb.Append("<th>");
                                     sb.Append(Context.DefaultFilters?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
@@ -370,7 +374,7 @@ namespace ServiceStack.Templates
             return html.ToRawString();
         }
 
-        public string htmlAttrs(Dictionary<string, object> attrs)
+        public string htmlAttrsList(Dictionary<string, object> attrs)
         {
             if (attrs == null || attrs.Count == 0)
                 return string.Empty;
@@ -389,11 +393,74 @@ namespace ServiceStack.Templates
                     : key == "htmlFor"
                         ? "for"
                         : key;
-                
-                sb.Append(' ').Append(useKey).Append('=').Append('"').Append(value?.ToString().HtmlEncode()).Append('"');
+
+                if (value is bool boolAttr)
+                {
+                    if (boolAttr) // only emit attr name if value == true
+                    {
+                        sb.Append(' ').Append(useKey);
+                    }
+                }
+                else
+                {
+                    sb.Append(' ').Append(useKey).Append('=').Append('"').Append(value?.ToString().HtmlEncode()).Append('"');
+                }
             }
             
             return sb.ToString();
+        }
+
+        public IRawString htmlAttrs(object target)
+        {
+            var attrs = htmlAttrsList(target as Dictionary<string, object>);
+            return (attrs.Length > 0 ? attrs : "").ToRawString();
+        }
+
+        public string htmlClassList(object target)
+        {
+            if (target == null)
+                return null;
+            
+            if (target is string clsName)
+                return clsName;
+
+            var sb = StringBuilderCache.Allocate();
+            if (target is Dictionary<string, object> flags)
+            {
+                foreach (var entry in flags)
+                {
+                    if (entry.Value is bool b && b)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(" ");
+                        sb.Append(entry.Key);
+                    }
+                }
+            }
+            else if (target is List<object> list)
+            {
+                foreach (var item in list)
+                {
+                    if (item is string str && str.Length > 0)
+                    {
+                        if (sb.Length > 0)
+                            sb.Append(" ");
+                        sb.Append(str);
+                    }
+                }
+            }
+            else if (target != null)
+            {
+                throw new NotSupportedException($"{nameof(htmlClass)} expects a Dictionary, List or String argument but was '{target.GetType().Name}'");
+            }
+
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public IRawString htmlClass(object target)
+        {
+            var cls = htmlClassList(target);
+            return (cls.Length > 0 ? $" class=\"{cls}\"" : "").ToRawString();
         }
 
         [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
@@ -434,7 +501,7 @@ namespace ServiceStack.Templates
                     : null;
             }
             
-            var attrString = htmlAttrs(attrs);            
+            var attrString = htmlAttrsList(attrs);            
             return VoidElements.Contains(tag)
                 ? $"<{tag}{attrString}>".ToRawString()
                 : $"<{tag}{attrString}>{innerHtml}</{tag}>".ToRawString();

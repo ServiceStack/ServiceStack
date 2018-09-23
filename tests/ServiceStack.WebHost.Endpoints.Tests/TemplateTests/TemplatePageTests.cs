@@ -277,7 +277,7 @@ title: We encode < & >
 
             Assert.That(page.Args["layout"], Is.EqualTo("alt-layout.html"));
             Assert.That(page.Args["title"], Is.EqualTo("Variable Layout"));
-            Assert.That(((PageStringFragment)page.PageFragments[0]).Value, Is.EqualTo("<h1>Variable Page</h1>"));
+            Assert.That(((PageStringFragment)page.PageFragments[0]).Value.ToString(), Is.EqualTo("<h1>Variable Page</h1>"));
         }
 
         [Test]
@@ -294,14 +294,14 @@ title: We encode < & >
             var varFragment4 = (PageVariableFragment)page.PageFragments[3];
             var strFragment5 = (PageStringFragment)page.PageFragments[4];
 
-            Assert.That(strFragment1.Value, Is.EqualTo("<html><head><title>"));
+            Assert.That(strFragment1.Value.ToString(), Is.EqualTo("<html><head><title>"));
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
-            Assert.That(strFragment3.Value, Is.EqualTo("</title></head><body id='layout'>"));
+            Assert.That(strFragment3.Value.ToString(), Is.EqualTo("</title></head><body id='layout'>"));
             Assert.That(varFragment4.Binding, Is.EqualTo("page"));
-            Assert.That(strFragment5.Value, Is.EqualTo("</body></html>"));
+            Assert.That(strFragment5.Value.ToString(), Is.EqualTo("</body></html>"));
         }
 
-        [NUnit.Framework.Ignore("Flaky when run in suite, passes when run on its own")]
+        [NUnit.Framework.Ignore("Flaky when run in suite on .NET Framework only, passes when run on its own or on .NET Core")]
         [Test]
         public void Does_limit_file_changes_checks_to_specified_time()
         {
@@ -488,5 +488,29 @@ title: We encode < & >
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<pre>currency: , date: </pre>"));
         }
 
+        [Test]
+        public void Does_preverve_content_after_html_comments()
+        {
+            var context = new TemplateContext().Init();
+            context.VirtualFiles.WriteFile("_layout.html", "<html><body><h1>{{title}}</h1>{{ page }}</body></html>");
+            context.VirtualFiles.WriteFile("page.html", "<!--\ntitle:The Title\n--><p>para</p>");
+
+            var html = new PageResult(context.GetPage("page")).Result;
+            Assert.That(html, Is.EqualTo("<html><body><h1>The Title</h1><p>para</p></body></html>"));
+        }
+
+        [Test]
+        public void Can_resolve_hidden_partials_without_prefix()
+        {
+            var context = new TemplateContext().Init();
+            context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu' | partial }} {{ '_test-partial' | partial }}");
+            context.VirtualFiles.WriteFile("_menu-partial.html", "MENU");
+            context.VirtualFiles.WriteFile("_test-partial.html", "TEST");
+            
+            var result = new PageResult(context.GetPage("page")).Result;
+            result.Print();
+            
+            Assert.That(result, Is.EqualTo("Page MENU TEST"));
+        }
     }
 }

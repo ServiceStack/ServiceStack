@@ -69,7 +69,7 @@ namespace ServiceStack.Auth
 
         public Func<byte[], byte[]> GetHashAlgorithm(IRequest req)
         {
-            Func<byte[], byte[]> hashAlgoritm = null;
+            Func<byte[], byte[]> hashAlgorithm = null;
 
             if (HmacAlgorithms.TryGetValue(HashAlgorithm, out var hmac))
             {
@@ -77,7 +77,7 @@ namespace ServiceStack.Auth
                 if (authKey == null)
                     throw new NotSupportedException("AuthKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => hmac(authKey, data);
+                hashAlgorithm = data => hmac(authKey, data);
             }
 
             if (RsaSignAlgorithms.TryGetValue(HashAlgorithm, out var rsa))
@@ -86,13 +86,13 @@ namespace ServiceStack.Auth
                 if (privateKey == null)
                     throw new NotSupportedException("PrivateKey required to use: " + HashAlgorithm);
 
-                hashAlgoritm = data => rsa(privateKey.Value, data);
+                hashAlgorithm = data => rsa(privateKey.Value, data);
             }
 
-            if (hashAlgoritm == null)
-                throw new NotSupportedException("Invalid algoritm: " + HashAlgorithm);
+            if (hashAlgorithm == null)
+                throw new NotSupportedException("Invalid algorithm: " + HashAlgorithm);
 
-            return hashAlgoritm;
+            return hashAlgorithm;
         }
 
         public string CreateJwtBearerToken(IAuthSession session, IEnumerable<string> roles = null, IEnumerable<string> perms = null) =>
@@ -115,8 +115,8 @@ namespace ServiceStack.Auth
             var jwtHeader = CreateJwtHeader(HashAlgorithm, GetKeyId(req));
             CreateHeaderFilter?.Invoke(jwtHeader, session);
 
-            var hashAlgoritm = GetHashAlgorithm(req);
-            var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgoritm);
+            var hashAlgorithm = GetHashAlgorithm(req);
+            var bearerToken = CreateJwt(jwtHeader, jwtPayload, hashAlgorithm);
             return bearerToken;
         }
 
@@ -202,43 +202,37 @@ namespace ServiceStack.Auth
                 var aadBytes = aad.ToUtf8Bytes();
                 var payloadBytes = jwtPayload.ToJson().ToUtf8Bytes();
 
-                byte[] cipherText, tag;
+                using (var cipherStream = MemoryStreamFactory.GetStream())
                 using (var encrypter = aes.CreateEncryptor(cryptKey, iv))
-                using (var cipherStream = new MemoryStream())
+                using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
+                using (var writer = new BinaryWriter(cryptoStream))
                 {
-                    using (var cryptoStream = new CryptoStream(cipherStream, encrypter, CryptoStreamMode.Write))
-                    using (var writer = new BinaryWriter(cryptoStream))
+                    writer.Write(payloadBytes);
+                    cryptoStream.FlushFinalBlock();
+                    
+                    using (var hmac = new HMACSHA256(authKey))
+                    using (var encryptedStream = MemoryStreamFactory.GetStream())
+                    using (var bw = new BinaryWriter(encryptedStream))
                     {
-                        writer.Write(payloadBytes);
+                        bw.Write(aadBytes);
+                        bw.Write(iv);
+                        bw.Write(cipherStream.GetBuffer(), 0, (int)cipherStream.Length);
+                        bw.Flush();
+    
+                        var  tag = hmac.ComputeHash(encryptedStream.GetBuffer(), 0, (int) encryptedStream.Length);
+
+                        var cipherTextBase64Url = cipherStream.ToBase64UrlSafe();
+                        var tagBase64Url = tag.ToBase64UrlSafe();
+        
+                        var jweToken = jweHeaderBase64Url + "."
+                            + jweEncKeyBase64Url + "." 
+                            + ivBase64Url + "."
+                            + cipherTextBase64Url + "."
+                            + tagBase64Url;
+        
+                        return jweToken;
                     }
-
-                    cipherText = cipherStream.ToArray();
                 }
-
-                using (var hmac = new HMACSHA256(authKey))
-                using (var encryptedStream = new MemoryStream())
-                {
-                    using (var writer = new BinaryWriter(encryptedStream))
-                    {
-                        writer.Write(aadBytes);
-                        writer.Write(iv);
-                        writer.Write(cipherText);
-                        writer.Flush();
-
-                        tag = hmac.ComputeHash(encryptedStream.ToArray());
-                    }
-                }
-
-                var cipherTextBase64Url = cipherText.ToBase64UrlSafe();
-                var tagBase64Url = tag.ToBase64UrlSafe();
-
-                var jweToken = jweHeaderBase64Url + "."
-                    + jweEncKeyBase64Url + "." 
-                    + ivBase64Url + "."
-                    + cipherTextBase64Url + "."
-                    + tagBase64Url;
-
-                return jweToken;
             }
         }
 

@@ -84,8 +84,8 @@ namespace ServiceStack.Testing
         private string responseContentType;
         public string ResponseContentType
         {
-            get { return responseContentType ?? this.ContentType ?? MimeTypes.Json; }
-            set { responseContentType = value; }
+            get => responseContentType ?? this.ContentType ?? MimeTypes.Json;
+            set => responseContentType = value;
         }
 
         public bool HasExplicitResponseContentType { get; private set; }
@@ -107,8 +107,7 @@ namespace ServiceStack.Testing
             if (InputStream == null) return null;
 
             //Keep the stream alive in-case it needs to be read twice (i.e. ContentLength)
-            rawBody = new StreamReader(InputStream).ReadToEnd();
-            InputStream.Position = 0;
+            rawBody = InputStream.ReadToEnd();
             return rawBody;
         }
 
@@ -126,7 +125,18 @@ namespace ServiceStack.Testing
         public string XRealIp { get; set; }
         public string Accept { get; set; }
 
-        public bool IsSecureConnection { get; set; }
+        public bool IsSecureConnection
+        {
+            get => (RequestAttributes & RequestAttributes.Secure) == RequestAttributes.Secure;
+            set
+            {
+                if (value)
+                    RequestAttributes |= RequestAttributes.Secure;
+                else
+                    RequestAttributes &= ~RequestAttributes.Secure;
+            }
+        }
+        
         public string[] AcceptTypes { get; set; }
         public string PathInfo { get; set; }
         public string OriginalPathInfo { get; }

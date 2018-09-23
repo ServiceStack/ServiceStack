@@ -149,6 +149,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         }
 
         [Test]
+        public void Does_parse_logical_expressions()
+        {
+            JsToken expr;
+
+            "!(true || false)".ParseJsExpression(out expr);
+            Assert.That(expr, Is.EqualTo(
+                new JsUnaryExpression(
+                    JsNot.Operator,
+                    new JsLogicalExpression(new JsLiteral(true), JsOr.Operator, new JsLiteral(false))
+                )
+            ));
+        }
+
+        [Test]
         public void Does_parse_binary_and_logical_expressions()
         {
             JsToken expr;
@@ -255,6 +269,83 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }.Init();
             
             Assert.That(context.EvaluateTemplate("{{ [1 + 2 * 3 > one && 1 * 2 < ten] | get(0) }}"), Is.EqualTo("True"));
+        }
+
+        private static TemplateContext CreateContext()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["a"] = null,
+                    ["b"] = 2,
+                    ["empty"] = "",
+                    ["f"] = false,
+                    ["zero"] = 0,
+                    ["t"] = true,
+                    ["one"] = 1,
+                    ["obj"] = new Dictionary<string, object>(),
+                    ["array"] = new List<object>(),
+                }
+            }.Init();
+            return context;
+        }
+
+        [Test]
+        public void Does_evaluate_Coalescing_expressions()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate("{{ null ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ a ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ '' ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ empty ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ false ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ f ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ 0 ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ zero ?? 1 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ true ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ t ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ b ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 2 ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateTemplate("{{ 1 ?? 2 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateTemplate("{{ one ?? 2 }}"), Is.EqualTo("1"));
+
+            Assert.That(context.EvaluateTemplate("{{ 0 ?? 2 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateTemplate("{{ 2 ?? 0 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+        }
+
+        [Test]
+        public void Does_use_truthy_for_logical_expression()
+        {
+            var context = CreateContext();
+            
+            Assert.That(context.EvaluateTemplate("{{#if null}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if 0}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if ''}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if false}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+
+            Assert.That(context.EvaluateTemplate("{{#if a && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if a && t}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true && a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if unknown && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true && unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if empty && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true && empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+
+            Assert.That(context.EvaluateTemplate("{{#if a || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true || a}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if unknown || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true || unknown}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if empty || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if true || empty}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            
+            Assert.That(context.EvaluateTemplate("{{#if {} && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if obj && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if [] && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateTemplate("{{#if array && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
         }
 
     }

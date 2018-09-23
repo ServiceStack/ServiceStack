@@ -9,6 +9,10 @@ namespace ServiceStack.Serialization
 {
     public partial class XmlSerializableSerializer : IStringSerializer
     {
+        public static XmlWriterSettings XmlWriterSettings { get; set; } = new XmlWriterSettings {
+            Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+        };
+        
         public static XmlSerializableSerializer Instance = new XmlSerializableSerializer();
 
         public string SerializeToString<XmlDto>(XmlDto from)
@@ -17,22 +21,18 @@ namespace ServiceStack.Serialization
             {
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
-                    using (XmlWriter xw = XmlWriter.Create(ms))
+                    using (XmlWriter xw = XmlWriter.Create(ms, XmlWriterSettings))
                     {
                         var ser = new XmlSerializerWrapper(from.GetType());
                         ser.WriteObject(xw, from);
                     }
 
-                    ms.Position = 0;
-                    using (var reader = new StreamReader(ms))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    return ms.ReadToEnd();
                 }
             }
             catch (Exception ex)
             {
-                throw new SerializationException(string.Format("Error serializing object of type {0}", from.GetType().FullName), ex);
+                throw new SerializationException($"Error serializing object of type {from.GetType().FullName}", ex);
             }
         }
     }

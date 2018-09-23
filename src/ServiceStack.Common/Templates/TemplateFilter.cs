@@ -171,8 +171,23 @@ namespace ServiceStack.Templates
         public static string AssertExpression(this TemplateScopeContext scope, string filterName, object expression)
         {
             if (!(expression is string literal)) 
-                throw new NotSupportedException($"'{nameof(filterName)}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
+                throw new NotSupportedException($"'{filterName}' in '{scope.PageResult.VirtualPath}' requires a string Expression but received a '{expression?.GetType()?.Name}' instead");
             return literal;
+        }
+
+        public static JsToken AssertExpression(this TemplateScopeContext scope, string filterName, object expression, object scopeOptions, out string itemBinding)
+        {
+            if (expression is JsArrowFunctionExpression arrowExpr)
+            {
+                itemBinding = arrowExpr.Params[0].Name;
+                return arrowExpr.Body;
+            }
+            
+            var literal = scope.AssertExpression(filterName, expression);
+            var scopedParams = scope.GetParamsWithItemBinding(filterName, scopeOptions, out itemBinding);
+
+            var token = literal.GetCachedJsExpression(scope);
+            return token;
         }
 
         public static Dictionary<string, object> GetParamsWithItemBinding(this TemplateScopeContext scope, string filterName, object scopedParams, out string itemBinding) =>
@@ -229,7 +244,7 @@ namespace ServiceStack.Templates
         {
             if (valueOrBinding is string literal)
             {
-                literal.ToStringSegment().ParseJsExpression(out var token);
+                literal.ParseJsExpression(out var token);
                 var oValue = token.Evaluate(scope);
                 return oValue.ConvertTo(returnType);
             }
@@ -237,9 +252,17 @@ namespace ServiceStack.Templates
             return valueOrBinding.ConvertTo(returnType);
         }
 
-        public static void TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        public static bool TryGetPage(this TemplateScopeContext scope, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage);
+            if (scope.PageResult.Partials.TryGetValue(virtualPath, out page))
+            {
+                codePage = null;
+                return true;
+            }
+            
+            if (!scope.Context.TryGetPage(scope.PageResult.VirtualPath, virtualPath, out page, out codePage))
+                return false;
+            
             codePage?.Init();
 
             if (codePage is IRequiresRequest requiresRequest)
@@ -247,6 +270,94 @@ namespace ServiceStack.Templates
                 if (scope.GetValue(TemplateConstants.Request) is IRequest request)
                     requiresRequest.Request = request;
             }
+
+            return true;
         }
+        
+        
+        public static TemplateContext CreateNewContext(this TemplateScopeContext scope, Dictionary<string, object> args)
+        {
+            if (args == null)
+                return new TemplateContext().Init();
+            
+            var context = new TemplateContext();
+            if (args.TryGetValue("use", out var oUse))
+            {
+                var use = (Dictionary<string, object>) oUse;
+                if (use.TryGetValue("context", out var oContext) && oContext is bool useContext && useContext)
+                {
+                    return scope.Context;
+                }
+
+                // Use same ThreadSafe plugin instance to preserve configuration 
+                var plugins = use.TryGetValue("plugins", out var oPlugins)
+                    ? ToStrings("plugins", oPlugins)
+                    : null;
+                if (plugins != null)
+                {
+                    foreach (var name in plugins)
+                    {
+                        var plugin = scope.Context.Plugins.FirstOrDefault(x => x.GetType().Name == name);
+                        if (plugin == null)
+                            throw new NotSupportedException($"Plugin '{name}' is not registered in parent context");
+                            
+                        context.Plugins.Add(plugin);
+                    }
+                }
+
+                // Use new filter and block instances which cannot be shared between contexts
+                var filters = use.TryGetValue("filters", out var oFilters)
+                    ? ToStrings("filters", oFilters)
+                    : null;
+                if (filters != null)
+                {
+                    foreach (var name in filters)
+                    {
+                        var filter = scope.Context.TemplateFilters.FirstOrDefault(x => x.GetType().Name == name);
+                        if (filter == null)
+                            throw new NotSupportedException($"Filter '{name}' is not registered in parent context");
+                            
+                        context.TemplateFilters.Add(filter.GetType().CreateInstance<TemplateFilter>());
+                    }
+                }
+                    
+                var blocks = use.TryGetValue("blocks", out var oBlocks)
+                    ? ToStrings("blocks", oBlocks)
+                    : null;
+                if (blocks != null)
+                {
+                    foreach (var name in blocks)
+                    {
+                        var useBlock = scope.Context.TemplateBlocks.FirstOrDefault(x => x.GetType().Name == name);
+                        if (useBlock == null)
+                            throw new NotSupportedException($"Block '{name}' is not registered in parent context");
+                            
+                        context.TemplateBlocks.Add(useBlock.GetType().CreateInstance<TemplateBlock>());
+                    }
+                }
+
+                args.Remove(nameof(use));
+            }
+            context.Init();
+
+            return context;
+        }
+
+        private static IEnumerable<string> ToStrings(string argName, object arg)
+        {
+            if (arg == null)
+                return null;
+            
+            var strings = arg is IEnumerable<string> ls
+                ? ls
+                : arg is string s
+                    ? new List<string> {s}
+                    : arg is IEnumerable<object> e
+                        ? e.Map(x => (string) x)
+                        : throw new NotSupportedException($"{argName} expected a collection of strings but was '{arg.GetType().Name}'");
+
+            return strings;
+        }
+        
     }
 }

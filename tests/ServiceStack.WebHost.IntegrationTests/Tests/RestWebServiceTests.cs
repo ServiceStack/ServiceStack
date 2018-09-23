@@ -189,7 +189,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                     Console.WriteLine("Status Code : {0}", errorResponse.StatusCode);
                     Console.WriteLine("Status Description : {0}", errorResponse.StatusDescription);
 
-                    Console.WriteLine("Body:" + new StreamReader(errorResponse.GetResponseStream()).ReadToEnd());
+                    Console.WriteLine("Body:" + errorResponse.GetResponseStream().ReadToEnd());
                 }
 
                 throw;

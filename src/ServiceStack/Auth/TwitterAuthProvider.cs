@@ -30,16 +30,15 @@ namespace ServiceStack.Auth
             
             var tokens = Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request.AccessToken != null && request.AccessTokenSecret != null)
             {
                 tokens.AccessToken = request.AccessToken;
                 tokens.AccessTokenSecret = request.AccessTokenSecret;
 
-                string userId;
                 var validToken = AuthHttpGateway.VerifyTwitterAccessToken(
                     ConsumerKey, ConsumerSecret,
-                    tokens.AccessToken, tokens.AccessTokenSecret, out userId);
+                    tokens.AccessToken, tokens.AccessTokenSecret, out var userId);
 
                 if (!validToken)
                     return HttpError.Unauthorized("AccessToken is invalid");
@@ -133,8 +132,7 @@ namespace ServiceStack.Auth
                         if (!string.IsNullOrEmpty(email))
                             tokens.Email = email;
 
-                        string profileUrl;
-                        if (obj.TryGetValue("profile_image_url", out profileUrl))
+                        if (obj.TryGetValue("profile_image_url", out var profileUrl))
                             tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
 
                         if (SaveExtendedUserInfo)

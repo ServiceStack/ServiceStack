@@ -70,7 +70,7 @@ namespace ServiceStack.Authentication.OAuth2
         {
             var tokens = this.Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
                 if (VerifyAccessToken == null)
@@ -212,8 +212,7 @@ namespace ServiceStack.Authentication.OAuth2
                 tokens.Email = authInfo["email"];
                 userSession.UserAuthName = tokens.Email;
 
-                string profileUrl;
-                if (authInfo.TryGetValue("picture", out profileUrl))
+                if (authInfo.TryGetValue("picture", out var profileUrl))
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
 
                 this.LoadUserOAuthProvider(userSession, tokens);

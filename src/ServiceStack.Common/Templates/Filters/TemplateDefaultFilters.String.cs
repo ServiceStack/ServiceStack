@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ServiceStack.Text;
 
@@ -165,10 +166,6 @@ namespace ServiceStack.Templates
             throw new NotSupportedException($"{delimiter} is not a valid delimiter");
         }
 
-        public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
-        public string urlEncode(string value) => value.UrlEncode();
-        public string urlDecode(string value) => value.UrlDecode();
-
         public Dictionary<string, string> parseKeyValueText(string target) => target?.ParseKeyValueText();
         public Dictionary<string, string> parseKeyValueText(string target, string delimiter) => target?.ParseKeyValueText(delimiter);
 
@@ -250,6 +247,9 @@ namespace ServiceStack.Templates
         public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
         public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();
         public IRawString dump(object value) => serialize(value, null, x => x.Dump() ?? "");
+        public IRawString indentJson(object value) => indentJson(value, null);
+        public IRawString indentJson(object value, string jsconfig) => 
+            (value is string js ? js : json(value).ToRawString()).IndentJson().ToRawString();
 
         //Blocks
         public Task json(TemplateScopeContext scope, object items) => json(scope, items, null);
@@ -274,5 +274,35 @@ namespace ServiceStack.Templates
 
         public object eval(TemplateScopeContext scope, string js) => JS.eval(js, scope);
         public object parseJson(string json) => JSON.parse(json);
+
+        private static readonly Regex InvalidCharsRegex = new Regex(@"[^a-z0-9\s-]", RegexOptions.Compiled);
+        private static readonly Regex SpacesRegex = new Regex(@"\s", RegexOptions.Compiled);
+        private static readonly Regex CollapseHyphensRegex = new Regex("-+", RegexOptions.Compiled);
+        
+        public string generateSlug(string phrase)
+        {
+            var str = phrase.ToLower()
+                .Replace("#", "sharp")  // c#, f# => csharp, fsharp
+                .Replace("++", "pp");   // c++ => cpp
+
+            str = InvalidCharsRegex.Replace(str, "-");
+            //// convert multiple spaces into one space   
+            //str = CollapseSpacesRegex.Replace(str, " ").Trim();
+            // cut and trim 
+            str = str.Substring(0, str.Length <= 100 ? str.Length : 100).Trim();
+            str = SpacesRegex.Replace(str, "-");
+            str = CollapseHyphensRegex.Replace(str, "-");
+
+            if (string.IsNullOrEmpty(str))
+                return null;
+
+            if (str[0] == '-')
+                str = str.Substring(1);
+            if (str[str.Length - 1] == '-')
+                str = str.Substring(0, str.Length - 1);
+
+            return str;            
+        }
+        
     }
 }

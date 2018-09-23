@@ -279,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
 
-            var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+            var dtoString = req.GetResponse().GetResponseStream().ReadToEnd();
             Assert.That(dtoString.Contains("Confidential"));
             Console.WriteLine(dtoString);
         }
@@ -323,7 +323,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             req.Headers[HttpHeaders.Authorization]
                 = "basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes(AllowedUser + ":" + AllowedPass));
 
-            var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+            var dtoString = req.GetResponse().GetResponseStream().ReadToEnd();
             Assert.That(dtoString.Contains("Public"));
             Console.WriteLine(dtoString);
         }
@@ -372,7 +372,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 req = (HttpWebRequest)WebRequest.Create(ServiceClientBaseUri.CombineWith("{0}/reply/Secure".Fmt(format)));
                 req.CookieContainer.Add(new Uri(ServiceClientBaseUri), new Cookie("ss-session", cookie.Value));
 
-                var dtoString = new StreamReader(req.GetResponse().GetResponseStream()).ReadToEnd();
+                var dtoString = req.GetResponse().GetResponseStream().ReadToEnd();
                 Assert.That(dtoString.Contains("Confidential"));
                 Console.WriteLine(dtoString);
             }

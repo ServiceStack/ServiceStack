@@ -306,7 +306,7 @@ namespace ServiceStack.Mvc
                 var modelType = genericDef?.GetGenericArguments()[0];
                 if (modelType != null && modelType != typeof(object))
                 {
-                    model = DeserializeHttpRequest(modelType, req, req.ContentType);
+                    model = await DeserializeHttpRequestAsync(modelType, req, req.ContentType);
                     viewData = RazorFormat.CreateViewData(model);
                 }
             }

@@ -5,15 +5,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Text;
-using ServiceStack.VirtualPath;
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.Templates
 {
@@ -45,13 +40,22 @@ namespace ServiceStack.Templates
 
         public List<TemplateFilter> TemplateFilters { get; } = new List<TemplateFilter>();
 
+        public List<TemplateBlock> TemplateBlocks { get; } = new List<TemplateBlock>();
+
         public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
         
         public HashSet<string> ExcludeFiltersNamed { get; } = new HashSet<string>();
 
+        private readonly Dictionary<string, TemplateBlock> templateBlocksMap = new Dictionary<string, TemplateBlock>(); 
+        public TemplateBlock GetBlock(string name) => templateBlocksMap.TryGetValue(name, out var block) ? block : null;
+
         public ConcurrentDictionary<string, object> Cache { get; } = new ConcurrentDictionary<string, object>();
 
+        public ConcurrentDictionary<ReadOnlyMemory<char>, object> CacheMemory { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, object>();
+
         public ConcurrentDictionary<string, Tuple<DateTime, object>> ExpiringCache { get; } = new ConcurrentDictionary<string, Tuple<DateTime, object>>();
+        
+        public ConcurrentDictionary<ReadOnlyMemory<char>, JsToken> JsTokenCache { get; } = new ConcurrentDictionary<ReadOnlyMemory<char>, JsToken>();
 
         public ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>> AssignExpressionCache { get; } = new ConcurrentDictionary<string, Action<TemplateScopeContext, object, object>>();
 
@@ -68,11 +72,20 @@ namespace ServiceStack.Templates
         /// </summary>
         public Dictionary<string, Func<Stream, Task<Stream>>> FilterTransformers { get; set; } = new Dictionary<string, Func<Stream, Task<Stream>>>();
 
-        // Whether to check for modified pages by default when not in DebugMode
+        /// <summary>
+        /// Whether to check for modified pages by default when not in DebugMode
+        /// </summary>
         public bool CheckForModifiedPages { get; set; } = false;
 
-        ///How long in between checking for modified pages
+        /// <summary>
+        /// How long in between checking for modified pages
+        /// </summary>
         public TimeSpan? CheckForModifiedPagesAfter { get; set; }
+        
+        /// <summary>
+        /// Existing caches and pages created prior to specified date should be invalidated 
+        /// </summary>
+        public DateTime? InvalidateCachesBefore { get; set; }
         
         /// <summary>
         /// Render render filter exceptions in-line where filter is located
@@ -80,16 +93,16 @@ namespace ServiceStack.Templates
         public bool RenderExpressionExceptions { get; set; }
 
         /// <summary>
-        /// What argument to assign Fitler Exceptions to
+        /// What argument to assign Filter Exceptions to
         /// </summary>
         public string AssignExceptionsTo { get; set; }
         
         /// <summary>
-        /// Whether to 
+        /// Whether to skip executing Filters if an Exception was thrown
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
-        public Func<PageVariableFragment, byte[]> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
+        public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
 
         public TemplatePage GetPage(string virtualPath)
         {
@@ -104,9 +117,15 @@ namespace ServiceStack.Templates
         public TemplateProtectedFilters ProtectedFilters => TemplateFilters.FirstOrDefault(x => x is TemplateProtectedFilters) as TemplateProtectedFilters;
         public TemplateHtmlFilters HtmlFilters => TemplateFilters.FirstOrDefault(x => x is TemplateHtmlFilters) as TemplateHtmlFilters;
 
-        public void TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        public void GetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
         {
-            var pathMapKey = nameof(TryGetPage) + ">" + fromVirtualPath;
+            if (!TryGetPage(fromVirtualPath, virtualPath, out page, out codePage))
+                throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");            
+        }
+        
+        public bool TryGetPage(string fromVirtualPath, string virtualPath, out TemplatePage page, out TemplateCodePage codePage)
+        {
+            var pathMapKey = nameof(GetPage) + ">" + fromVirtualPath;
             var mappedPath = GetPathMapping(pathMapKey, virtualPath);
             if (mappedPath != null)
             {
@@ -115,7 +134,7 @@ namespace ServiceStack.Templates
                 {
                     page = mappedPage;
                     codePage = null;
-                    return;                        
+                    return true;
                 }
                 RemovePathMapping(pathMapKey, mappedPath);
             }
@@ -128,7 +147,7 @@ namespace ServiceStack.Templates
                 {
                     codePage = cp;
                     page = null;
-                    return;
+                    return true;
                 }
 
                 var p = Pages.GetPage(virtualPath);
@@ -136,7 +155,7 @@ namespace ServiceStack.Templates
                 {
                     page = p;
                     codePage = null;
-                    return;
+                    return true;
                 }
             }
             
@@ -152,7 +171,7 @@ namespace ServiceStack.Templates
                 {
                     codePage = cp;
                     page = null;
-                    return;
+                    return true;
                 }
 
                 var p = Pages.GetPage(seekPath);
@@ -161,7 +180,7 @@ namespace ServiceStack.Templates
                     page = p;
                     codePage = null;
                     SetPathMapping(pathMapKey, virtualPath, seekPath);
-                    return;
+                    return true;
                 }
 
                 if (parentPath == "")
@@ -172,9 +191,14 @@ namespace ServiceStack.Templates
                     : "";
 
             } while (true);
-            
-            throw new FileNotFoundException($"Page at path was not found: '{virtualPath}'");
+
+            page = null;
+            codePage = null;
+            return false;
         }
+
+        private TemplatePage emptyPage;
+        public TemplatePage EmptyPage => emptyPage ?? (emptyPage = OneTimePage("")); 
 
         public TemplatePage OneTimePage(string contents, string ext=null) 
             => Pages.OneTimePage(contents, ext ?? PageFormats.First().Extension);
@@ -230,30 +254,46 @@ namespace ServiceStack.Templates
             PageFormats.Add(new HtmlPageFormat());
             TemplateFilters.Add(new TemplateDefaultFilters());
             TemplateFilters.Add(new TemplateHtmlFilters());
+            Plugins.Add(new TemplateDefaultBlocks());
+            Plugins.Add(new TemplateHtmlBlocks());
             FilterTransformers[TemplateConstants.HtmlEncode] = HtmlPageFormat.HtmlEncodeTransformer;
-            FilterTransformers["end"] = stream => (new MemoryStream(TypeConstants.EmptyByteArray) as Stream).InTask();
-
-            var culture = CultureInfo.CurrentCulture;
-            if (Equals(culture, CultureInfo.InvariantCulture))
-            {
-                culture = (CultureInfo) culture.Clone();
-                culture.NumberFormat.CurrencySymbol = "$";
-            }
+            FilterTransformers["end"] = stream => (TypeConstants.EmptyByteArray.InMemoryStream() as Stream).InTask();
+            FilterTransformers["buffer"] = stream => stream.InTask();
             
-            Args[TemplateConstants.MaxQuota] = 10000;
-            Args[TemplateConstants.DefaultCulture] = culture;
-            Args[TemplateConstants.DefaultDateFormat] = "yyyy-MM-dd";
-            Args[TemplateConstants.DefaultDateTimeFormat] = "u";
-            Args[TemplateConstants.DefaultTimeFormat] = "h\\:mm\\:ss";
-            Args[TemplateConstants.DefaultFileCacheExpiry] = TimeSpan.FromMinutes(1);
-            Args[TemplateConstants.DefaultUrlCacheExpiry] = TimeSpan.FromMinutes(1);
-            Args[TemplateConstants.DefaultIndent] = "\t";
-            Args[TemplateConstants.DefaultNewLine] = Environment.NewLine;
-            Args[TemplateConstants.DefaultJsConfig] = "excludetypeinfo";
-            Args[TemplateConstants.DefaultStringComparison] = StringComparison.Ordinal;
-            Args[TemplateConstants.DefaultTableClassName] = "table";
-            Args[TemplateConstants.DefaultErrorClassName] = "alert alert-danger";
+            Args[nameof(TemplateConfig.MaxQuota)] = TemplateConfig.MaxQuota;
+            Args[nameof(TemplateConfig.DefaultCulture)] = TemplateConfig.CreateCulture();
+            Args[nameof(TemplateConfig.DefaultDateFormat)] = TemplateConfig.DefaultDateFormat;
+            Args[nameof(TemplateConfig.DefaultDateTimeFormat)] = TemplateConfig.DefaultDateTimeFormat;
+            Args[nameof(TemplateConfig.DefaultTimeFormat)] = TemplateConfig.DefaultTimeFormat;
+            Args[nameof(TemplateConfig.DefaultFileCacheExpiry)] = TemplateConfig.DefaultFileCacheExpiry;
+            Args[nameof(TemplateConfig.DefaultUrlCacheExpiry)] = TemplateConfig.DefaultUrlCacheExpiry;
+            Args[nameof(TemplateConfig.DefaultIndent)] = TemplateConfig.DefaultIndent;
+            Args[nameof(TemplateConfig.DefaultNewLine)] = TemplateConfig.DefaultNewLine;
+            Args[nameof(TemplateConfig.DefaultJsConfig)] = TemplateConfig.DefaultJsConfig;
+            Args[nameof(TemplateConfig.DefaultStringComparison)] = TemplateConfig.DefaultStringComparison;
+            Args[nameof(TemplateConfig.DefaultTableClassName)] = TemplateConfig.DefaultTableClassName;
+            Args[nameof(TemplateConfig.DefaultErrorClassName)] = TemplateConfig.DefaultErrorClassName;
         }
+
+        public TemplateContext RemoveFilters(Predicate<TemplateFilter> match)
+        {
+            TemplateFilters.RemoveAll(match);
+            return this;
+        }
+
+        public TemplateContext RemoveBlocks(Predicate<TemplateBlock> match)
+        {
+            TemplateBlocks.RemoveAll(match);
+            return this;
+        }
+
+        public TemplateContext RemovePlugins(Predicate<ITemplatePlugin> match)
+        {
+            Plugins.RemoveAll(match);
+            return this;
+        }
+        
+        public Action<TemplateContext> OnAfterPlugins { get; set; }
 
         public bool HasInit { get; private set; }
 
@@ -277,6 +317,8 @@ namespace ServiceStack.Templates
             {
                 plugin.Register(this);
             }
+            
+            OnAfterPlugins?.Invoke(this);
 
             foreach (var type in ScanTypes)
             {
@@ -294,6 +336,12 @@ namespace ServiceStack.Templates
             foreach (var filter in TemplateFilters)
             {
                 InitFilter(filter);
+            }
+
+            foreach (var block in TemplateBlocks)
+            {
+                InitBlock(block);
+                templateBlocksMap[block.Name] = block;
             }
 
             var afterPlugins = Plugins.OfType<ITemplatePluginAfter>();
@@ -314,6 +362,15 @@ namespace ServiceStack.Templates
                 filter.Pages = Pages;
         }
 
+        internal void InitBlock(TemplateBlock block)
+        {
+            if (block == null) return;
+            if (block.Context == null)
+                block.Context = this;
+            if (block.Pages == null)
+                block.Pages = Pages;
+        }
+
         public TemplateContext ScanType(Type type)
         {
             if (!type.IsAbstract)
@@ -325,6 +382,15 @@ namespace ServiceStack.Templates
                         Container.AddSingleton(type);
                         var filter = (TemplateFilter)Container.Resolve(type);
                         TemplateFilters.Add(filter);
+                    }
+                }
+                else if (typeof(TemplateBlock).IsAssignableFrom(type))
+                {
+                    if (TemplateBlocks.All(x => x?.GetType() != type))
+                    {
+                        Container.AddSingleton(type);
+                        var block = (TemplateBlock)Container.Resolve(type);
+                        TemplateBlocks.Add(block);
                     }
                 }
                 else if (typeof(TemplateCodePage).IsAssignableFrom(type))
@@ -344,7 +410,7 @@ namespace ServiceStack.Templates
             return this;
         }
 
-        public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, StringSegment expression)
+        public Action<TemplateScopeContext, object, object> GetAssignExpression(Type targetType, ReadOnlyMemory<char> expression)
         {
             if (targetType == null)
                 throw new ArgumentNullException(nameof(targetType));
@@ -361,7 +427,8 @@ namespace ServiceStack.Templates
             return fn;
         }
 
-        protected static byte[] DefaultOnUnhandledExpression(PageVariableFragment var) => var.OriginalTextBytes;
+        protected static ReadOnlyMemory<byte> DefaultOnUnhandledExpression(PageVariableFragment var) => 
+            TemplateConfig.HideUnknownExpressions ? null : var.OriginalTextUtf8;
 
         public void Dispose()
         {

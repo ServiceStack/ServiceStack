@@ -84,6 +84,11 @@ namespace ServiceStack.Web
         /// When used in a request or response filter, no more filters or processing is done on this request.
         /// </summary>
         void Close();
+        
+        /// <summary>
+        /// Close this Response Output Stream Async
+        /// </summary>
+        Task CloseAsync(CancellationToken token = default(CancellationToken));
 
         /// <summary>
         /// Calls Response.End() on ASP.NET HttpResponse otherwise is an alias for Close().
@@ -99,8 +104,6 @@ namespace ServiceStack.Web
         /// <summary>
         /// Flush this Response Output Stream Async
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
         Task FlushAsync(CancellationToken token = default(CancellationToken));
 
         /// <summary>

@@ -29,7 +29,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 HostContext.Config.GlobalResponseHeaders.Clear();
 
-                PreRequestFilters.Add((req,res) => res.UseBufferedStream = true);
+                PreRequestFilters.Add((req,res) => req.UseBufferedStream = res.UseBufferedStream = true);
 
                 //Signal advanced web browsers what HTTP Methods you accept
                 //base.SetConfig(new EndpointHostConfig());
@@ -79,7 +79,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public object Any(PlainDto request) => request;
 
-            public object Any(HttpResultDto request) => new HttpResult(request, HttpStatusCode.Created);
+            public object Any(HttpResultDto request) => 
+                new HttpResult(request, HttpStatusCode.Created);
         }
 
         readonly ServiceStackHost appHost;
@@ -125,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Assert.That(res.Headers[HttpHeaders.TransferEncoding], Is.Null);
                     Assert.That(res.ContentLength, Is.GreaterThan(0));
                 }).FromJson<HttpResultDto>();
-
+    
             Assert.That(response.Name, Is.EqualTo("foo"));
         }
 
@@ -150,11 +151,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 res = (HttpWebResponse)req.GetResponse();
 
-                string downloaded;
-                using (StreamReader s = new StreamReader(res.GetResponseStream()))
-                {
-                    downloaded = s.ReadToEnd();
-                }
+                var downloaded = res.GetResponseStream().ReadToEnd();
 
                 Assert.AreEqual(text, downloaded, "Checking the downloaded string");
 

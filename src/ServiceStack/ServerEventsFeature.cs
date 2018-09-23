@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -115,6 +116,12 @@ namespace ServiceStack
             return true;
         }
 
+        /// <summary>
+        /// Call IServerEvents.RemoveExpiredSubscriptions() after every count
+        /// </summary>
+        public static int RemoveExpiredSubscriptionsEvery { get; } = 1000;
+        private static int ConnectionsCount = 0;
+
         public override Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
             if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
@@ -126,6 +133,12 @@ namespace ServiceStack
             if (feature.LimitToAuthenticatedUsers && !session.IsAuthenticated)
                 return session.ReturnFailedAuthentication(req);
 
+            var serverEvents = req.TryResolve<IServerEvents>();
+            if ((Interlocked.Increment(ref ConnectionsCount) % RemoveExpiredSubscriptionsEvery) == 0)
+            {
+                serverEvents.RemoveExpiredSubscriptions();
+            }
+
             res.ContentType = MimeTypes.ServerSentEvents;
             res.AddHeader(HttpHeaders.CacheControl, "no-cache");
             res.ApplyGlobalResponseHeaders();
@@ -136,7 +149,6 @@ namespace ServiceStack
 
             res.Flush();
 
-            var serverEvents = req.TryResolve<IServerEvents>();
             var userAuthId = session?.UserAuthId;
             var anonUserId = serverEvents.GetNextSequence("anonUser");
             var userId = userAuthId ?? ("-" + anonUserId);
@@ -204,7 +216,7 @@ namespace ServiceStack
                 {"id", subscriptionId },
                 {"unRegisterUrl", unRegisterUrl},
                 {"heartbeatUrl", heartbeatUrl},
-                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/".CombineWith(feature.SubscribersPath, subscriptionId)) },
+                {"updateSubscriberUrl", req.ResolveAbsoluteUrl("~/".CombineWith(feature.SubscribersPath)) },
                 {"heartbeatIntervalMs", ((long)feature.HeartbeatInterval.TotalMilliseconds).ToString(CultureInfo.InvariantCulture) },
                 {"idleTimeoutMs", ((long)feature.IdleTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture)}
             };
@@ -406,6 +418,8 @@ namespace ServiceStack
         }
 
         private long subscribed = 1;
+        private long requestEnded = 0;
+        bool isDisposed;
 
         private readonly IResponse response;
         private long msgId;
@@ -435,40 +449,83 @@ namespace ServiceStack
         public Action<IResponse, string> WriteEvent { get; set; }
         public Action<IEventSubscription, Exception> OnError { get; set; }
         public bool IsClosed => this.response.IsClosed;
+        public bool IsDisposed => isDisposed;
+
+        StringBuilder buffer = new StringBuilder();
+
+        public void Pulse()
+        {
+            LastPulseAt = DateTime.UtcNow;
+        }
+
+        string CreateFrame(string selector, string message)
+        {
+            var msg = message ?? "";
+            var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
+                      + "data: " + selector + " " + msg + "\n\n";
+            return frame;
+        }
 
         public void Publish(string selector)
         {
             Publish(selector, null);
         }
 
-        private string CreateFrame(string selector, string message)
-        {
-            var msg = message ?? "";
-            var frame = "id: " + Interlocked.Increment(ref msgId) + "\n"
-                        + "data: " + selector + " " + msg + "\n\n";
-            return frame;
-        }
-
         public void Publish(string selector, string message) => PublishRaw(CreateFrame(selector, message));
 
         public void PublishRaw(string frame)
         {
-            if (response.IsClosed) return;
-
-            lock (response)
+            bool acquiredLock = false;
+            try
             {
-                try 
-                { 
-                    WriteEvent(response, frame);
-                }
-                catch (Exception ex)
+                Monitor.TryEnter(response, ref acquiredLock);
+                if (acquiredLock)
                 {
-                    HandleWriteException(response, frame, ex);
+                    if (!EndRequestIfDisposed())
+                    {
+                        var pendingWrites = GetAndResetBuffer();
+                        if (pendingWrites != null)
+                            frame = pendingWrites + frame;
+
+                        try
+                        {
+                            WriteEvent(response, frame);
+                        }
+                        catch (Exception ex)
+                        {
+                            HandleWriteException(response, frame, ex);
+                        }
+
+                        EndRequestIfDisposed();
+                    }
                 }
+                else
+                {
+                    lock (buffer)
+                        buffer.Append(frame);
+                }
+            }
+            finally
+            {
+                if (acquiredLock)
+                    Monitor.Exit(response);
             }
         }
 
-        private void HandleWriteException(IResponse response, string frame, Exception ex)
+        string GetAndResetBuffer()
+        {
+            lock (buffer)
+            {
+                if (buffer.Length == 0)
+                    return null;
+
+                var ret = buffer.ToString();
+                buffer.Length = 0;
+                return ret;
+            }
+        }
+
+        void HandleWriteException(IResponse response, string frame, Exception ex)
         {
             if (ex != null)
             {
@@ -493,9 +550,23 @@ namespace ServiceStack
             Unsubscribe();
         }
 
-        public void Pulse()
+        bool EndRequestIfDisposed()
         {
-            LastPulseAt = DateTime.UtcNow;
+            if (!isDisposed) return false;
+            if (response.IsClosed) return true;
+
+            if (Interlocked.CompareExchange(ref requestEnded, 1, 0) == 0)
+            {
+                try
+                {
+                    response.EndHttpHandlerRequest(skipHeaders: true);
+                }
+                catch (Exception ex)
+                {
+                    Log.Error("Error ending subscription response", ex);
+                }
+            }
+            return true;
         }
 
         public void Unsubscribe()
@@ -511,18 +582,24 @@ namespace ServiceStack
 
         public void Dispose()
         {
-            OnUnsubscribe = null;
-            if (response.IsClosed) return;
+            if (isDisposed)
+                return;
+
+            isDisposed = true;
+
+            bool acquiredLock = false;
             try
             {
-                lock (response)
-                {
-                    response.EndHttpHandlerRequest(skipHeaders: true);
-                }
+                Monitor.TryEnter(response, ref acquiredLock);
+                if (acquiredLock)
+                    EndRequestIfDisposed();
+
+                // else PublishRaw has it, end at end of PublishRaw or next time it's run
             }
-            catch (Exception ex)
+            finally
             {
-                Log.Error("Error ending subscription response", ex);
+                if (acquiredLock)
+                    Monitor.Exit(response);
             }
 
             OnDispose?.Invoke(this);
@@ -1073,8 +1150,7 @@ namespace ServiceStack
                 if (subs == null)
                     return;
 
-                bool flag;
-                subs.TryRemove(subscription, out flag);
+                subs.TryRemove(subscription, out bool _);
             }
             catch (Exception ex)
             {
@@ -1109,18 +1185,25 @@ namespace ServiceStack
                 UnRegisterSubscription(subscription, subscription.SessionId, SessionSubcriptions);
 
                 OnUnsubscribe?.Invoke(subscription);
-
-                subscription.Dispose();
-
-                if (NotifyChannelOfSubscriptions && subscription.Channels != null)
-                    NotifyLeave?.Invoke(subscription);
             }
+
+            subscription.Dispose();
+
+            if (NotifyChannelOfSubscriptions && subscription.Channels != null)
+                NotifyLeave?.Invoke(subscription);
         }
 
         public void Dispose()
         {
             if (isDisposed) return;
             isDisposed = true;
+
+            var allSubs = Subcriptions.ValuesWithoutLock().ToArray();
+            foreach (var sub in allSubs)
+            {
+                sub.Unsubscribe();
+            }
+
             Reset();
         }
     }

@@ -20,6 +20,9 @@ namespace ServiceStack.NativeTypes.FSharp
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
         };
@@ -190,6 +193,8 @@ namespace ServiceStack.NativeTypes.FSharp
                 sb.AppendLine("[<GeneratedCode(\"AddServiceStackReference\", \"{0}\")>]".Fmt(Env.VersionString));
             }
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine("type {0} =".Fmt(Type(type.Name, type.GenericArgs)));
@@ -253,6 +258,8 @@ namespace ServiceStack.NativeTypes.FSharp
 
                 sb = sb.UnIndent();
             }
+            
+            PostTypeFilter?.Invoke(sb, type);
 
             sb = sb.UnIndent();
             return lastNS;

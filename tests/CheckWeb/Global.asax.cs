@@ -17,12 +17,14 @@ using ServiceStack.Api.OpenApi;
 using ServiceStack.Api.OpenApi.Specification;
 using ServiceStack.Api.Swagger;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.Formats;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.MiniProfiler;
 using ServiceStack.MiniProfiler.Data;
+using ServiceStack.NativeTypes.CSharp;
 using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Razor;
@@ -47,6 +49,16 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         public override void Configure(Container container)
         {
+//            EnableBuffering();
+
+            CSharpGenerator.PreTypeFilter = (sb, type) => 
+            {
+                if (!type.IsEnum.GetValueOrDefault() && !type.IsInterface.GetValueOrDefault())
+                {
+                    sb.AppendLine("[Serializable]");
+                }
+            };
+            
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/Views/TestErrorNotFound");
 
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
@@ -60,6 +72,7 @@ namespace CheckWeb
                 DebugMode = true,
                 //UseHttpsLinks = true,
                 AppendUtf8CharsetOnContentTypes = { MimeTypes.Html },
+                CompressFilesWithExtensions = { "js", "css" },
                 UseCamelCase = true,
                 AdminAuthSecret = "secretz",
                 //HandlerFactoryPath = "CheckWeb", //when hosted on IIS
@@ -78,7 +91,8 @@ namespace CheckWeb
 
             Plugins.Add(new TemplatePagesFeature
             {
-                EnableDebugTemplateToAll = false
+                MetadataDebugAdminRole = RoleNames.AllowAnyUser, 
+                TemplatesAdminRole = RoleNames.AllowAnon,
             });
 
             //ProxyFetureTests
@@ -316,6 +330,18 @@ namespace CheckWeb
                         path.Get = path.Put = path.Delete = null;
                     }
                 },
+                OperationFilter = (verb, op) => {
+                    if (op.RequestType == nameof(SwaggerRangeTest))
+                    {
+                        var intRange = op.Parameters.FirstOrDefault(p => p.Name == nameof(SwaggerRangeTest.IntRange));
+                        intRange.Minimum = 1;
+                        intRange.Maximum = 2;
+
+                        var dobleRange = op.Parameters.FirstOrDefault(p => p.Name == nameof(SwaggerRangeTest.DoubleRange));
+                        dobleRange.Minimum = 1.1;
+                        dobleRange.Maximum = 2.2;
+                    }
+                },
                 Tags =
                 {
                     new OpenApiTag
@@ -338,6 +364,15 @@ namespace CheckWeb
             //    LogoUrl = "//lh6.googleusercontent.com/-lh7Gk4ZoVAM/AAAAAAAAAAI/AAAAAAAAAAA/_0CgCb4s1e0/s32-c/photo.jpg"
             //});
             //Plugins.Add(new CorsFeature()); // Uncomment if the services to be available from external sites
+        }
+
+        public void EnableBuffering()
+        {
+            PreRequestFilters.Add((req, res) =>
+            {
+                req.UseBufferedStream = true;
+                res.UseBufferedStream = true;
+            });
         }
 
         public override List<IVirtualPathProvider> GetVirtualFileSources()

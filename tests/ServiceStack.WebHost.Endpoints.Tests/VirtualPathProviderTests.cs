@@ -349,6 +349,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(file.Directory.ParentDirectory.ParentDirectory.VirtualPath, Is.EqualTo("a"));
             Assert.That(file.Directory.ParentDirectory.ParentDirectory.Name, Is.EqualTo("a"));
             Assert.That(file.Directory.ParentDirectory.ParentDirectory.ParentDirectory.IsRoot);
+            Assert.That(vfs.RootDirectory.GetDirectories().Any(x => x.Name == "a"));
             
             vfs.DeleteFile("a/b/c/file.txt");
         }

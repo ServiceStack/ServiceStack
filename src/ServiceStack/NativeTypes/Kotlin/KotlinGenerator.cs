@@ -22,6 +22,9 @@ namespace ServiceStack.NativeTypes.Kotlin
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
             /* built-in types used
@@ -281,6 +284,8 @@ namespace ServiceStack.NativeTypes.Kotlin
 
             var typeName = Type(type.Name, type.GenericArgs);
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 var hasIntValue = type.EnumNames.Count == (type.EnumValues?.Count ?? 0);
@@ -386,6 +391,8 @@ namespace ServiceStack.NativeTypes.Kotlin
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             return lastNS;
         }

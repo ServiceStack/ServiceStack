@@ -180,7 +180,7 @@ namespace ServiceStack.Host
                 }
                 catch (Exception ex)
                 {
-                    Log.Error("Error while logging req: " + req.Dump(), ex);
+                    Log.ErrorStrict("Error while logging req: " + req.Dump(), ex);
                 }
             }
         }
@@ -218,7 +218,7 @@ namespace ServiceStack.Host
             //for execution after this req has been completed
             using (var producer = msgFactory.CreateMessageProducer())
             {
-                producer.Publish(request);
+                AppHost.PublishMessage(producer, request);
             }
 
             return WebRequestUtils.GetErrorResponseDtoType(request).CreateInstance();

@@ -92,9 +92,8 @@ namespace ServiceStack
                             : null, "Operations");
 
                 default:
-                    string contentType;
                     if (HostContext.ContentTypes
-                        .ContentTypeFormats.TryGetValue(pathController, out contentType))
+                        .ContentTypeFormats.TryGetValue(pathController, out var contentType))
                     {
                         var format = ContentFormat.GetContentFormat(contentType);
                         return new CustomMetadataHandler(contentType, format);

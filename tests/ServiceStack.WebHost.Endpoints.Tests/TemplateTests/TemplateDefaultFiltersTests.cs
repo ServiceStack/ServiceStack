@@ -412,7 +412,7 @@ square = 10 x 10 = 100".NormalizeNewLines()));
         public async Task Does_default_filter_currency()
         {
             var context = CreateContext().Init();
-            context.Args[TemplateConstants.DefaultCulture] = new CultureInfo("en-US");
+            context.Args[nameof(TemplateConfig.DefaultCulture)] = new CultureInfo("en-US");
 
             context.VirtualFiles.WriteFile("page-default.html", "Cost: {{ 99.99 | currency }}");
             context.VirtualFiles.WriteFile("page-culture.html", "Cost: {{ 99.99 | currency(culture) | raw }}");
@@ -492,10 +492,33 @@ square = 10 x 10 = 100".NormalizeNewLines()));
             result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('g') }}");
             Assert.That(result, Is.EqualTo("Time: 4:05:06.007"));
 
-            result = context.EvaluateTemplate("Time: {{ date.TimeOfDay | timeFormat('h\\:mm\\:ss') }}");
+            // Normal quoted strings pass string verbatim
+            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat(′h\:mm\:ss′) }}");
+            Assert.That(result, Is.EqualTo("Time: 4:05:06"));
+
+            // Template literals unescapes strings
+            result = context.EvaluateTemplate(@"Time: {{ date.TimeOfDay | timeFormat(`h\\:mm\\:ss`) }}");
             Assert.That(result, Is.EqualTo("Time: 4:05:06"));
         }
+        
+        [Test]
+        public void Does_unescape_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("{{′′}}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{``}}"), Is.EqualTo(""));
 
+            // `backticks` unescape strings, all other quoted strings use verbatim strings
+            Assert.That(context.EvaluateTemplate(@"{{′\ ′[0] | toCharCode}}"), Is.EqualTo("92")); //= [\]
+            Assert.That(context.EvaluateTemplate(@"{{`\ `[0] | toCharCode}}"), Is.EqualTo("32")); //= [ ]
+            Assert.That(context.EvaluateTemplate(@"{{`\\` | toCharCode}}"), Is.EqualTo("92")); //= [/]
+
+            Assert.That(context.EvaluateTemplate("{{′\n′}}"), Is.EqualTo("\n"));
+            Assert.That(context.EvaluateTemplate("{{`a\nb`}}"), Is.EqualTo("a\nb"));
+            Assert.That(context.EvaluateTemplate("{{′\"′|raw}}"), Is.EqualTo("\""));
+            Assert.That(context.EvaluateTemplate("{{`\"`|raw}}"), Is.EqualTo("\""));
+        }
 
         [Test]
         public async Task Does_default_filter_dateTimeFormat()
@@ -684,6 +707,23 @@ result={{ result }}
         }
 
         [Test]
+        public void Can_assign_to_array_index_with_arrow_function()
+        {
+            var context = new TemplateContext {
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1,2,3,4,5] | assignTo => numbers }}
+{{ numbers | do => assign('numbers[index]', numbers[index] * numbers[index]) }}
+{{ numbers | join }}").Trim(), Is.EqualTo("1,4,9,16,25"));
+
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1,2,3,4,5] | assignTo => numbers }}
+{{ numbers | do => assign(`num${index}`, it * it) }}
+{{ num0 }},{{ num1 }},{{ num2 }},{{ num3 }},{{ num4 }}").Trim(), Is.EqualTo("1,4,9,16,25"));
+        }
+
+        [Test]
         public void Can_assign_to_variables_in_partials()
         {
             var context = new TemplateContext
@@ -750,7 +790,7 @@ pageMetaTitle: page meta title
 <header>
 layout num = 1
 pageMetaTitle = page meta title
-inlinePageTitle = {{ inlinePageTitle }}
+inlinePageTitle = 
 pageResultTitle = page result title
 </header>
 <h3>partial num = 110</h3> 
@@ -1418,6 +1458,26 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_addToGlobal_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addToGlobal: nums }}
+{{ 2  | addToGlobal: nums }}
+{{ 3  | addToGlobal: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ [1]  | addToGlobal: nums }}
+{{ [2]  | addToGlobal: nums }}
+{{ [3]  | addToGlobal: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
+        }
+
+        [Test]
         public void Can_addToStart_of_an_existing_collection()
         {
             var context = new TemplateContext().Init();
@@ -1426,6 +1486,19 @@ dir-file: dir/dir-file.txt
 {{ 1  | addToStart: nums }}
 {{ 2  | addToStart: nums }}
 {{ 3  | addToStart: nums }}
+{{ nums | join }}
+".NormalizeNewLines()), Is.EqualTo("3,2,1"));
+        }
+
+        [Test]
+        public void Can_addToStartGlobal_of_an_existing_collection()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 1  | addToStartGlobal: nums }}
+{{ 2  | addToStartGlobal: nums }}
+{{ 3  | addToStartGlobal: nums }}
 {{ nums | join }}
 ".NormalizeNewLines()), Is.EqualTo("3,2,1"));
         }
@@ -1444,6 +1517,19 @@ dir-file: dir/dir-file.txt
         }
 
         [Test]
+        public void Can_appendToGlobal_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | appendToGlobal: string }}
+{{ 'b' | appendToGlobal: string }}
+{{ 'c' | appendToGlobal: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("abc"));
+        }
+
+        [Test]
         public void Can_prependTo_existing_string()
         {
             var context = new TemplateContext().Init();
@@ -1452,6 +1538,19 @@ dir-file: dir/dir-file.txt
 {{ 'a' | prependTo: string }}
 {{ 'b' | prependTo: string }}
 {{ 'c' | prependTo: string }}
+{{ string }}
+".NormalizeNewLines()), Is.EqualTo("cba"));
+        }
+
+        [Test]
+        public void Can_prependToGlobal_existing_string()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate(@"
+{{ 'a' | prependToGlobal: string }}
+{{ 'b' | prependToGlobal: string }}
+{{ 'c' | prependToGlobal: string }}
 {{ string }}
 ".NormalizeNewLines()), Is.EqualTo("cba"));
         }
@@ -1516,5 +1615,37 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateTemplate("{{ sampleArg.StringProperty | isNull }}", args), Is.EqualTo("False"));
             Assert.That(context.EvaluateTemplate("{{ sampleArg.NullStringProperty | isNull }}", args), Is.EqualTo("True"));
         }
+
+        [Test]
+        public void Can_detect_empty_values()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["nullArg"] = null,
+                    ["emptyArg"] = "",
+                    ["whitespace"] = " ",
+                    ["foo"] = "foo",
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ unknown | isNull }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ nullArg | isNull }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ '' | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ `` | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | isNull }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ null | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ '' | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ `` | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ emptyArg | isEmpty }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ ' ' | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ ` ` | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ whitespace | isEmpty }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ ' ' | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ ` ` | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ whitespace | IsNullOrWhiteSpace }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateTemplate("{{ 'foo' | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateTemplate("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
+        }
+
     }
 }

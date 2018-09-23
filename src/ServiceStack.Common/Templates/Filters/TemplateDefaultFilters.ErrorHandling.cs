@@ -16,6 +16,12 @@ namespace ServiceStack.Templates
             return StopExecution.Value;
         }
 
+        public object assignErrorAndContinueExecuting(TemplateScopeContext scope, string errorBinding)
+        {
+            assignError(scope, errorBinding);
+            return continueExecutingFiltersOnError(scope);
+        }
+
         public object continueExecutingFiltersOnError(TemplateScopeContext scope, object ignoreTarget) => continueExecutingFiltersOnError(scope);
         public object continueExecutingFiltersOnError(TemplateScopeContext scope)
         {
@@ -40,6 +46,9 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object ifError(TemplateScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
         [HandleUnknownValue] public object ifDebug(TemplateScopeContext scope, object ignoreTarget) => ifDebug(scope);
         [HandleUnknownValue] public object ifDebug(TemplateScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object debug(TemplateScopeContext scope) => scope.Context.DebugMode;
+
+        public bool hasError(TemplateScopeContext scope) => scope.PageResult.LastFilterError != null;
         
         [HandleUnknownValue] public Exception lastError(TemplateScopeContext scope) => scope.PageResult.LastFilterError;
         [HandleUnknownValue] public string lastErrorMessage(TemplateScopeContext scope) => scope.PageResult.LastFilterError?.Message;

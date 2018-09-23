@@ -18,7 +18,7 @@ namespace ServiceStack
      * http://msdn.microsoft.com/en-us/library/86wf6409(VS.71).aspx
      */
 
-    public partial class AsyncServiceClient : IHasSessionId, IHasVersion
+    public partial class AsyncServiceClient : IHasSessionId, IHasBearerToken, IHasVersion
     {
         private static readonly ILog Log = LogManager.GetLogger(typeof(AsyncServiceClient));
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(60);
@@ -103,8 +103,6 @@ namespace ServiceStack
             this.Password = password;
         }
 
-        public string BearerToken { get; set; }
-
         public TimeSpan? Timeout { get; set; }
 
         public string ContentType { get; set; }
@@ -126,6 +124,8 @@ namespace ServiceStack
         public int Version { get; set; }
 
         public string SessionId { get; set; }
+
+        public string BearerToken { get; set; }
 
         public static bool DisableTimer { get; set; }
 
@@ -286,25 +286,22 @@ namespace ServiceStack
                         }
                         else
                         {
-                            var reader = ms;
+                            var stream = ms;
                             try
                             {
                                 if (typeof(T) == typeof(string))
                                 {
-                                    using (var sr = new StreamReader(reader))
-                                    {
-                                        return Complete((T) (object) sr.ReadToEnd());
-                                    }
+                                    return Complete((T) (object) stream.ReadToEnd());
                                 }
                                 else if (typeof(T) == typeof(byte[]))
-                                    return Complete((T) (object) reader.ToArray());
+                                    return Complete((T) (object) stream.ToArray());
                                 else
-                                    return Complete((T) this.StreamDeserializer(typeof(T), reader));
+                                    return Complete((T) this.StreamDeserializer(typeof(T), stream));
                             }
                             finally
                             {
-                                if (reader.CanRead)
-                                    reader.Dispose(); // Not yet disposed, but could've been.
+                                if (stream.CanRead)
+                                    stream.Dispose(); // Not yet disposed, but could've been.
                             }
                         }
                     }

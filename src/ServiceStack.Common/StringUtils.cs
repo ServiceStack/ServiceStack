@@ -9,89 +9,22 @@ using System.Text.RegularExpressions;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack
 {
-    public class Command
-    {
-        public StringSegment Name { get; set; }
-
-        private string nameString;
-        public string NameString => nameString ?? (nameString = Name.HasValue ? Name.Value : null);
-
-        public StringSegment Original { get; set; }
-
-        public List<StringSegment> Args { get; internal set; } = new List<StringSegment>();
-
-        public StringSegment Suffix { get; set; }
-
-        public int IndexOfMethodEnd(StringSegment commandsString, int pos)
-        {
-            //finding end of suffix, e.g: 'SUM(*) Total' or 'SUM(*) as Total'
-            var endPos = pos;
-            while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
-                endPos++;
-
-            if (commandsString.Length > endPos && commandsString.IndexOf("as ", endPos) == endPos)
-                endPos += "as ".Length;
-
-            while (commandsString.Length > endPos && char.IsWhiteSpace(commandsString.GetChar(endPos)))
-                endPos++;
-
-            while (commandsString.Length > endPos &&
-                   char.IsLetterOrDigit(commandsString.GetChar(endPos)))
-                endPos++;
-
-            this.Suffix = commandsString.Subsegment(pos, endPos - pos).TrimEnd();
-
-            return endPos;
-        }
-
-        //Output different format for debugging to verify command was parsed correctly
-        public virtual string ToDebugString()
-        {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append('|');
-                sb.Append(arg);
-            }
-            return $"[{Name}:{StringBuilderCacheAlt.ReturnAndFree(sb)}]{Suffix}";
-        }
-
-        public override string ToString()
-        {
-            var sb = StringBuilderCacheAlt.Allocate();
-            foreach (var arg in Args)
-            {
-                if (sb.Length > 0)
-                    sb.Append(',');
-                sb.Append(arg);
-            }
-            return $"{Name}({StringBuilderCacheAlt.ReturnAndFree(sb)}){Suffix}";
-        }
-
-        public StringSegment ToStringSegment() => ToString().ToStringSegment();
-    }
-
     public static class StringUtils
     {
         public static List<Command> ParseCommands(this string commandsString)
         {
-            return commandsString.ToStringSegment().ParseCommands(',');
+            return commandsString.AsMemory().ParseCommands(',');
         }
         
-        public static List<Command> ParseCommands(this StringSegment commandsString, 
+        public static List<Command> ParseCommands(this ReadOnlyMemory<char> commandsString, 
             char separator = ',',
-            Func<StringSegment, int, int?> atEndIndex = null, 
+            Func<ReadOnlyMemory<char>, int, int?> atEndIndex = null, 
             bool allowWhitespaceSensitiveSyntax = false)
         {
             var to = new List<Command>();
-            List<StringSegment> args = null;
+            List<ReadOnlyMemory<char>> args = null;
             var pos = 0;
 
             if (commandsString.IsNullOrEmpty())
@@ -110,7 +43,7 @@ namespace ServiceStack
             {
                 for (var i = 0; i < commandsString.Length; i++)
                 {
-                    var c = commandsString.GetChar(i);
+                    var c = commandsString.Span[i];
                     if (c.IsWhiteSpace())
                         continue;
 
@@ -155,11 +88,11 @@ namespace ServiceStack
                     }
 
                     if (c.IsOperatorChar() && // don't take precedence over '|' seperator 
-                        (c != separator || (i + 1 < commandsString.Length && commandsString.GetChar(i + 1).IsOperatorChar())))
+                        (c != separator || (i + 1 < commandsString.Length && commandsString.Span[i + 1].IsOperatorChar())))
                     {
-                        cmd.Name = commandsString.Subsegment(0, i).TrimEnd();
+                        cmd.Name = commandsString.Slice(0, i).TrimEnd().ToString();
                         pos = i;
-                        if (cmd.Name.HasValue)
+                        if (!string.IsNullOrEmpty(cmd.Name))
                             to.Add(cmd);
                         return to;
                     }
@@ -174,13 +107,13 @@ namespace ServiceStack
                             endStringPos = endStatementPos;
                         
                         if (endStringPos == -1)
-                            throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithElipsis(i,50)}'");
+                            throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithEllipsis(i,50)}'");
 
-                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
+                        cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
                         
-                        var originalArgs = commandsString.Substring(i + 1, endStringPos - i - 1);
+                        var originalArgs = commandsString.Slice(i + 1, endStringPos - i - 1).ToString();
                         var rewrittenArgs = "′" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("′", "\\′") + "′)";
-                        ParseArguments(rewrittenArgs.ToStringSegment(), out args);
+                        ParseArguments(rewrittenArgs.AsMemory(), out args);
                         cmd.Args = args;
                         
                         i = endStringPos == endStatementPos 
@@ -194,10 +127,10 @@ namespace ServiceStack
                     if (c == '(')
                     {
                         inBrackets = true;
-                        cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
+                        cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
                         pos = i + 1;
 
-                        var literal = commandsString.Subsegment(pos);
+                        var literal = commandsString.Slice(pos);
                         var literalRemaining = ParseArguments(literal, out args);
                         cmd.Args = args;
                         var endPos = literal.Length - literalRemaining.Length;
@@ -217,14 +150,14 @@ namespace ServiceStack
 
                     if (inBrackets && c == ',')
                     {
-                        var arg = commandsString.Subsegment(pos, i - pos).Trim();
+                        var arg = commandsString.Slice(pos, i - pos).Trim();
                         cmd.Args.Add(arg);
                         pos = i + 1;
                     }
                     else if (c == separator)
                     {
-                        if (!cmd.Name.HasValue)
-                            cmd.Name = commandsString.Subsegment(pos, i - pos).Trim();
+                        if (string.IsNullOrEmpty(cmd.Name))
+                            cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
 
                         to.Add(cmd);
                         cmd = new Command();
@@ -239,11 +172,11 @@ namespace ServiceStack
                     }
                 }
 
-                var remaining = commandsString.Subsegment(pos, endBlockPos - pos);
+                var remaining = commandsString.Slice(pos, endBlockPos - pos);
                 if (!remaining.Trim().IsNullOrEmpty())
                 {
                     pos += remaining.Length;
-                    cmd.Name = remaining.Trim();
+                    cmd.Name = remaining.Trim().ToString();
                 }
 
                 if (!cmd.Name.IsNullOrEmpty())
@@ -251,7 +184,7 @@ namespace ServiceStack
             }
             catch (Exception e)
             {
-                throw new Exception($"Illegal syntax near '{commandsString.Value.SafeSubstring(pos - 10, 50)}...'", e);
+                throw new Exception($"Illegal syntax near '{commandsString.SafeSlice(pos - 10, 50)}...'", e);
             }
 
             return to;
@@ -259,9 +192,9 @@ namespace ServiceStack
         
         // ( {args} , {args} )
         //   ^
-        public static StringSegment ParseArguments(StringSegment argsString, out List<StringSegment> args)
+        public static ReadOnlyMemory<char> ParseArguments(ReadOnlyMemory<char> argsString, out List<ReadOnlyMemory<char>> args)
         {
-            var to = new List<StringSegment>();
+            var to = new List<ReadOnlyMemory<char>>();
 
             var inDoubleQuotes = false;
             var inSingleQuotes = false;
@@ -274,7 +207,7 @@ namespace ServiceStack
 
             for (var i = 0; i < argsString.Length; i++)
             {
-                var c = argsString.GetChar(i);
+                var c = argsString.Span[i];
                 if (inDoubleQuotes)
                 {
                     if (c == '"')
@@ -349,14 +282,14 @@ namespace ServiceStack
                         continue;
                     case ',':
                     {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                        var arg = argsString.Slice(lastPos, i - lastPos).Trim();
                         to.Add(arg);
                         lastPos = i + 1;
                         continue;
                     }
                     case ')':
                     {
-                        var arg = argsString.Subsegment(lastPos, i - lastPos).Trim();
+                        var arg = argsString.Slice(lastPos, i - lastPos).Trim();
                         if (!arg.IsNullOrEmpty())
                         {
                             to.Add(arg);
@@ -369,7 +302,125 @@ namespace ServiceStack
             }
             
             args = to;
-            return TypeConstants.EmptyStringSegment;
+            return TypeConstants.EmptyStringMemory;
+        }
+
+        /// <summary>
+        /// Multiple string replacements
+        /// </summary>
+        /// <param name="replaceStringsPairs">Even number of old and new value pairs</param>
+        public static string ReplacePairs(string str, string[] replaceStringsPairs)
+        {
+            if (replaceStringsPairs.Length < 2 || replaceStringsPairs.Length % 2 != 0)
+                throw new ArgumentException("Replacement pairs must be an even number of old and new value pairs", nameof(replaceStringsPairs));
+            
+            for (var i = 0; i < replaceStringsPairs.Length; i+=2)
+            {
+                str = str.Replace(replaceStringsPairs[i], replaceStringsPairs[i + 1]);
+            }
+            return str;
+        }
+        
+        /// <summary>
+        /// Replace string contents outside of string quotes 
+        /// </summary>
+        public static string ReplaceOutsideOfQuotes(this string str, params string[] replaceStringsPairs)
+        {
+            var inDoubleQuotes = false;
+            var inSingleQuotes = false;
+            var inBackTickQuotes = false;
+            var inPrimeQuotes = false;
+            var quoteStartPos = 0;
+            var chunkLastPos = 0;
+
+            var sb = StringBuilderCache.Allocate();
+
+            for (var i = 0; i < str.Length; i++)
+            {
+                var c = str[i];
+                if (i > 0 && c == '\\')
+                {
+                    switch (str[i-1]) 
+                    {
+                        case '"':
+                        case '\'':
+                        case '`':
+                        case '′':
+                            continue;
+                    }
+                }
+
+                if (inDoubleQuotes)
+                {
+                    if (c == '"')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inDoubleQuotes = false;
+                    }
+                    continue;
+                }
+                if (inSingleQuotes)
+                {
+                    if (c == '\'')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inSingleQuotes = false;
+                    }
+                    continue;
+                }
+                if (inBackTickQuotes)
+                {
+                    if (c == '`')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inBackTickQuotes = false;
+                    }
+                    continue;
+                }
+                if (inPrimeQuotes)
+                {
+                    if (c == '′')
+                    {
+                        sb.Append(str.Substring(quoteStartPos, (chunkLastPos = i) - quoteStartPos));
+                        inPrimeQuotes = false;
+                    }
+                    continue;
+                }
+                
+                switch (c) 
+                {
+                    case '"':
+                    case '\'':
+                    case '`':
+                    case '′':
+                        var prevChunk = str.Substring(chunkLastPos, i-chunkLastPos);
+                        sb.Append(ReplacePairs(prevChunk, replaceStringsPairs));
+                        chunkLastPos = i;
+                        quoteStartPos = i;
+                        switch (c)
+                        {
+                            case '"':
+                                inDoubleQuotes = true;
+                                continue;
+                            case '\'':
+                                inSingleQuotes = true;
+                                continue;
+                            case '`':
+                                inBackTickQuotes = true;
+                                continue;
+                            case '′':
+                                inPrimeQuotes = true;
+                                continue;
+                        }
+                        continue;
+                }
+            }
+
+            var lastChunk = str.Substring(chunkLastPos);
+            sb.Append(ReplacePairs(lastChunk, replaceStringsPairs));
+
+            var ret = StringBuilderCache.ReturnAndFree(sb);
+            return ret;
         }
 
         /// <summary>
@@ -428,6 +479,11 @@ namespace ServiceStack
 
         static readonly Regex SafeInputRegEx = new Regex(@"[^\w\s\.,@-\\+\\/]", RegexOptions.Compiled);
 
+        public static string HtmlEncodeLite(this string html)
+        {
+            return html.Replace("<", "&lt;").Replace(">", "&gt;");
+        }
+
         public static string HtmlEncode(this string html)
         {
             return System.Net.WebUtility.HtmlEncode(html).Replace("′", "&prime;");
@@ -449,8 +505,7 @@ namespace ServiceStack
             // match.Groups[0] is the entire match, the sub groups start at index one
             if (!match.Groups[1].Success)
             {
-                string convertedValue;
-                if (HtmlCharacterCodes.TryGetValue(match.Value, out convertedValue))
+                if (HtmlCharacterCodes.TryGetValue(match.Value, out var convertedValue))
                 {
                     return convertedValue;
                 }

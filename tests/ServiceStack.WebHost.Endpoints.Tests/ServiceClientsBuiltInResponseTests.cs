@@ -187,8 +187,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Stream response = client.Get<Stream>("/poco/Test");
             using (response)
             {
-                var bytes = response.ReadFully();
-                Assert.That(bytes.FromUtf8Bytes(), Does.Contain("Hello, Test"));
+                Assert.That(response.ReadToEnd(), Does.Contain("Hello, Test"));
             }
         }
 
@@ -200,9 +199,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             HttpWebResponse response = client.Get<HttpWebResponse>("/poco/Test");
 
             using (var stream = response.GetResponseStream())
-            using (var sr = new StreamReader(stream))
             {
-                Assert.That(sr.ReadToEnd(), Does.Contain("Hello, Test"));
+                Assert.That(stream.ReadToEnd(), Does.Contain("Hello, Test"));
             }
         }
 

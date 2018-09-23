@@ -70,13 +70,17 @@ namespace ServiceStack
             var mode = Config.HandlerFactoryPath;
             if (!string.IsNullOrEmpty(mode))
             {
-                if (pathInfo.IndexOf(mode, StringComparison.Ordinal) != 1)
+                var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.Ordinal) == 1;
+                var includedInPathPase = context.Request.PathBase.HasValue &&
+                                         context.Request.PathBase.Value.IndexOf(mode, StringComparison.Ordinal) == 1;
+                if (!includedInPathInfo && !includedInPathPase)
                 {
                     await next();
                     return;
                 }
 
-                pathInfo = pathInfo.Substring(mode.Length + 1);
+                if (includedInPathInfo)
+                    pathInfo = pathInfo.Substring(mode.Length + 1);
             }
 
             RequestContext.Instance.StartRequestContext();

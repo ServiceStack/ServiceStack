@@ -36,7 +36,7 @@ namespace ServiceStack.Auth
         {
             var tokens = Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
                 if (!AuthHttpGateway.VerifyFacebookAccessToken(AppId, request.AccessToken))
@@ -128,8 +128,7 @@ namespace ServiceStack.Auth
                 var data = picture?.Object("data");
                 if (data != null)
                 {
-                    string profileUrl;
-                    if (data.TryGetValue("url", out profileUrl))
+                    if (data.TryGetValue("url", out var profileUrl))
                         tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
                 }
             }

@@ -218,8 +218,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage GetPage(string absolutePath)
         {
-            RazorPage page;
-            Pages.TryGetValue(GetDictionaryPagePath(absolutePath), out page);
+            Pages.TryGetValue(GetDictionaryPagePath(absolutePath), out var page);
             return page;
         }
 
@@ -238,8 +237,7 @@ namespace ServiceStack.Razor.Managers
 
         public virtual RazorPage GetViewPage(string pageName)
         {
-            string viewPath;
-            if (ViewNamesMap.TryGetValue(pageName.ToLowerInvariant(), out viewPath))
+            if (ViewNamesMap.TryGetValue(pageName.ToLowerInvariant(), out var viewPath))
                 return GetPage(viewPath);
             return null;
         }

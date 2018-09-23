@@ -3465,6 +3465,11 @@
             Alias for OpenDbConnectionAsync
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.OpenAsync(ServiceStack.Data.IDbConnectionFactory,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Alias for OpenDbConnectionAsync
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteConnectionFactoryExtensions.Open(ServiceStack.Data.IDbConnectionFactory,System.String)">
             <summary>
             Alias for OpenDbConnection
@@ -4426,7 +4431,7 @@
             Return the number of rows returned by the supplied expression
             </summary>
         </member>
-        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync(System.Data.IDbConnection,System.String,System.Threading.CancellationToken)">
+        <member name="M:ServiceStack.OrmLite.OrmLiteReadExpressionsApiAsync.RowCountAsync(System.Data.IDbConnection,System.String,System.Object,System.Threading.CancellationToken)">
             <summary>
             Return the number of rows returned by the supplied sql
             </summary>
@@ -4722,7 +4727,7 @@
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteApi.Delete(System.Data.IDbConnection,System.Type,System.String,System.Object)">
             <summary>
             Delete rows using a SqlFormat filter. E.g:
-            <para>db.Delete&lt;Person&gt;("Age > @age", new { age = 42 })</para>
+            <para>db.Delete(typeof(Person), "Age > @age", new { age = 42 })</para>
             </summary>
             <returns>number of rows deleted</returns>
         </member>
@@ -5048,6 +5053,14 @@
               UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
             </summary>
         </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateOnly``1(System.Data.IDbConnection,System.Collections.Generic.Dictionary{System.String,System.Object},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
+            <summary>
+            Updates all values from Object Dictionary matching the where condition. E.g
+            
+              db.UpdateOnly&lt;Person&gt;(new Dictionary&lt;string,object&lt; { {"FirstName", "JJ"} }, where:p => p.FirstName == "Jimi");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
+            </summary>
+        </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.UpdateNonDefaults``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}})">
             <summary>
             Updates all non-default values set on item matching the where condition (if any). E.g
@@ -5062,6 +5075,11 @@
             
               db.Update(new Person { Id = 1, FirstName = "JJ" }, p => p.LastName == "Hendrix");
               UPDATE "Person" SET "Id" = 1,"FirstName" = 'JJ',"LastName" = NULL,"Age" = 0 WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,System.Object)">
+            <summary>
+            Updates the entity using the primary key as the filter
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApi.Update``1(System.Data.IDbConnection,System.Object,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand})">
@@ -5189,6 +5207,14 @@
             
               db.UpdateAddAsync(() => new Person { Age = 5 }, db.From&lt;Person&gt;().Where(p => p.LastName == "Hendrix"));
               UPDATE "Person" SET "Age" = "Age" + 5 WHERE ("LastName" = 'Hendrix')
+            </summary>
+        </member>
+        <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateOnlyAsync``1(System.Data.IDbConnection,System.Collections.Generic.Dictionary{System.String,System.Object},System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Action{System.Data.IDbCommand},System.Threading.CancellationToken)">
+            <summary>
+            Updates all values from Object Dictionary matching the where condition. E.g
+            
+              db.UpdateOnlyAsync&lt;Person&gt;(new Dictionary&lt;string,object&lt; { {"FirstName", "JJ"} }, where:p => p.FirstName == "Jimi");
+              UPDATE "Person" SET "FirstName" = 'JJ' WHERE ("FirstName" = 'Jimi')
             </summary>
         </member>
         <member name="M:ServiceStack.OrmLite.OrmLiteWriteExpressionsApiAsync.UpdateNonDefaultsAsync``1(System.Data.IDbConnection,``0,System.Linq.Expressions.Expression{System.Func{``0,System.Boolean}},System.Threading.CancellationToken)">

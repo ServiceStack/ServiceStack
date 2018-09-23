@@ -20,6 +20,9 @@ namespace ServiceStack.NativeTypes.CSharp
             Config = config;
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
+        
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
         public static Dictionary<string, string> TypeAliases = new Dictionary<string, string> 
         {
@@ -235,6 +238,8 @@ namespace ServiceStack.NativeTypes.CSharp
 
             var typeAccessor = !Config.MakeInternal ? "public" : "internal";
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine($"{typeAccessor} enum {Type(type.Name, type.GenericArgs)}");
@@ -307,6 +312,8 @@ namespace ServiceStack.NativeTypes.CSharp
                 sb = sb.UnIndent();
                 sb.AppendLine("}");
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             if (!Config.ExcludeNamespace)
             {

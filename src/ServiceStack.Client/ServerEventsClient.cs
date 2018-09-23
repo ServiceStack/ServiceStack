@@ -613,6 +613,14 @@ namespace ServiceStack
         void ProcessEventMessage(ServerEventMessage e)
         {
             var parts = e.Data.SplitOnFirst(' ');
+
+            var validMsg = parts.Length > 1;  
+            if (!validMsg) // If it was not a valid msg sent with a Server Events client just fire event + return
+            {
+                OnMessageReceived(e);
+                return;
+            }
+
             e.Selector = parts[0];
             var selParts = e.Selector.SplitOnFirst('@');
             if (selParts.Length > 1)

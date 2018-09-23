@@ -6,7 +6,7 @@
     <version>5.0.0</version>
     <authors>ServiceStack</authors>
     <owners>ServiceStack</owners>
-    <summary>Opensource .NET and Mono REST Web Services framework</summary>
+    <summary>Opensource .NET and .NET Core Web Services framework</summary>
     <description>
       JSON, XML, JSV, SOAP and MQ Generic Service Clients.
     </description>
@@ -23,9 +23,9 @@
         <dependency id="ServiceStack.Text" version="5.0.0" />
       </group>
       <group targetFramework=".netstandard2.0">
-        <dependency id="Microsoft.Extensions.Primitives" version="[2.0.0, )" />
+        <dependency id="System.Memory" version="[4.5.1, )" />
         <dependency id="System.Net.Requests" version="[4.3.0, )" />
-        <dependency id="System.ServiceModel.Primitives" version="[4.4.0, )" />
+        <dependency id="System.ServiceModel.Primitives" version="[4.5.3, )" />
         <dependency id="System.Collections.Specialized" version="[4.3.0, )" />
         <dependency id="System.Xml.XmlSerializer" version="[4.3.0, )" />
         <dependency id="ServiceStack.Interfaces" version="5.0.0" />

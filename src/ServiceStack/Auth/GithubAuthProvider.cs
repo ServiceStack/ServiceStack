@@ -39,7 +39,7 @@ namespace ServiceStack.Auth
         {
             var tokens = Init(authService, ref session, request);
 
-            //Transfering AccessToken/Secret from Mobile/Desktop App to Server
+            //Transferring AccessToken/Secret from Mobile/Desktop App to Server
             if (request?.AccessToken != null)
             {
                 //https://developer.github.com/v3/oauth_authorizations/#check-an-authorization
@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
                             tokens.Email = obj.Get("email");
                             if (obj.Get<bool>("verified"))
                             {
-                                tokens.Items["email_veriried"] = "true";
+                                tokens.Items["email_verified"] = "true";
                             }
                             break;
                         }

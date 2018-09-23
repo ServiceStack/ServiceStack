@@ -16,6 +16,16 @@ namespace ServiceStack
     
     public class TemplateInfoFilters : TemplateFilter
     {
+        public const string ServiceStackLogoSvg = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 496 512\"><path fill=\"currentColor\" d=\"M88 216c81.7 10.2 273.7 102.3 304 232H0c99.5-8.1 184.5-137 88-232zm32-152c32.3 35.6 47.7 83.9 46.4 133.6C249.3 231.3 373.7 321.3 400 448h96C455.3 231.9 222.8 79.5 120 64z\"></path></svg>";
+
+        public const string ServiceStackLogoDataUri = "\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 496 512'%3e%3cpath fill='currentColor' d='M88 216c81.7 10.2 273.7 102.3 304 232H0c99.5-8.1 184.5-137 88-232zm32-152c32.3 35.6 47.7 83.9 46.4 133.6C249.3 231.3 373.7 321.3 400 448h96C455.3 231.9 222.8 79.5 120 64z'%3e%3c/path%3e%3c/svg%3e\"";
+
+        public IRawString serviceStackLogoSvg(string color) => ServiceStackLogoSvg.Replace("currentColor", color).ToRawString();
+        public IRawString serviceStackLogoSvg() => ServiceStackLogoSvg.ToRawString();
+        public IRawString serviceStackLogoDataUri(string color) => ServiceStackLogoDataUri.Replace("currentColor", color).ToRawString();
+        public IRawString serviceStackLogoDataUri() => ServiceStackLogoDataUri.ToRawString();
+        public IRawString serviceStackLogoDataUriLight() => serviceStackLogoDataUri("%23dddddd");
+        
         public string envVariable(string variable) => Environment.GetEnvironmentVariable(variable);
         public string envExpandVariables(string name) => Environment.ExpandEnvironmentVariables(name);
         public string envStackTrace() => Environment.StackTrace;
@@ -70,6 +80,9 @@ namespace ServiceStack
         public string userName(TemplateScopeContext scope) => req(scope).GetSession()?.UserAuthName ?? req(scope).GetSession()?.UserName;
         public string userEmail(TemplateScopeContext scope) => req(scope).GetSession()?.Email;
 
+        public string hostServiceName(TemplateScopeContext scope) => HostContext.AppHost.ServiceName;
+        public HostConfig hostConfig(TemplateScopeContext scope) => HostContext.Config;
+        
         public HashSet<Type> metaAllDtos() => HostContext.Metadata.GetAllDtos();
         public List<string> metaAllDtoNames() => HostContext.Metadata.GetOperationDtos().Map(x => x.Name);
         public IEnumerable<Operation> metaAllOperations() => HostContext.Metadata.Operations;

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,10 +10,6 @@ using System.Threading.Tasks;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.Templates
 {
     public interface IPageResult {}
@@ -20,10 +17,16 @@ namespace ServiceStack.Templates
     // Render a Template Page to the Response OutputStream
     public class PageResult : IPageResult, IStreamWriterAsync, IHasOptions, IDisposable
     {
+        /// <summary>
+        /// The Template Page to Render
+        /// </summary>
         public TemplatePage Page { get; }
         
+        /// <summary>
+        /// The Code Page to Render
+        /// </summary>
         public TemplateCodePage CodePage { get; }
-
+        
         /// <summary>
         /// Use specified Layout 
         /// </summary>
@@ -40,7 +43,7 @@ namespace ServiceStack.Templates
         public bool NoLayout { get; set; }
 
         /// <summary>
-        /// 
+        /// Extract Model Properties into Scope Args
         /// </summary>
         public object Model { get; set; }
 
@@ -53,6 +56,16 @@ namespace ServiceStack.Templates
         /// Add additional template filters available to all pages
         /// </summary>
         public List<TemplateFilter> TemplateFilters { get; set; }
+
+        /// <summary>
+        /// Add additional template blocks available to all pages
+        /// </summary>
+        public List<TemplateBlock> TemplateBlocks { get; set; }
+        
+        /// <summary>
+        /// Add additional partials available to all pages
+        /// </summary>
+        public Dictionary<string, TemplatePage> Partials { get; set; }
 
         /// <summary>
         /// Return additional HTTP Headers in HTTP Requests
@@ -129,6 +142,8 @@ namespace ServiceStack.Templates
         {
             Args = new Dictionary<string, object>();
             TemplateFilters = new List<TemplateFilter>();
+            TemplateBlocks = new List<TemplateBlock>();
+            Partials = new Dictionary<string, TemplatePage>();
             PageTransformers = new List<Func<Stream, Task<Stream>>>();
             OutputTransformers = new List<Func<Stream, Task<Stream>>>();
             FilterTransformers = new Dictionary<string, Func<Stream, Task<Stream>>>();
@@ -152,7 +167,8 @@ namespace ServiceStack.Templates
                 Args[TemplateConstants.Request] = hasRequest;
         }
 
-        public async Task WriteToAsync(Stream responseStream, CancellationToken token = default(CancellationToken))
+        //entry point
+        public async Task WriteToAsync(Stream responseStream, CancellationToken token = default)
         {
             if (OutputTransformers.Count == 0)
             {
@@ -177,7 +193,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(responseStream);
+                    await stream.WriteToAsync(responseStream, token);
                 }
 
                 stackTrace.Pop();
@@ -240,6 +256,7 @@ namespace ServiceStack.Templates
 
             if (!NoLayout && LayoutPage != null)
             {
+                // sync impl with WriteFragmentsAsync
                 stackTrace.Push("Layout: " + LayoutPage.VirtualPath);
                 
                 foreach (var fragment in LayoutPage.PageFragments)
@@ -249,18 +266,26 @@ namespace ServiceStack.Templates
 
                     if (fragment is PageStringFragment str)
                     {
-                        await outputStream.WriteAsync(str.ValueBytes, token);
+                        await outputStream.WriteAsync(str.ValueUtf8, token);
                     }
                     else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
                     {
-                        if (var.Binding.Equals(TemplateConstants.Page))
+                        if (var.Binding?.Equals(TemplateConstants.Page) == true)
                         {
                             await WritePageAsync(Page, CodePage, pageScope, token);
+
+                            if (HaltExecution)
+                                HaltExecution = false; //break out of page but continue evaluating layout
                         }
                         else
                         {
                             await WriteVarAsync(pageScope, var, token);
                         }
+                    }
+                    else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
+                    {
+                        var block = GetBlock(blockFragment.Name);
+                        await block.WriteAsync(pageScope, blockFragment, token);
                     }
                 }
 
@@ -272,12 +297,44 @@ namespace ServiceStack.Templates
             }
         }
 
+        internal async Task WriteFragmentsAsync(TemplateScopeContext scope, IEnumerable<PageFragment> fragments, string callTrace, CancellationToken token)
+        {
+            stackTrace.Push(callTrace);
+
+            foreach (var fragment in fragments)
+            {
+                if (HaltExecution)
+                    break;
+
+                if (fragment is PageStringFragment str)
+                {
+                    await scope.OutputStream.WriteAsync(str.ValueUtf8, token);
+                }
+                else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
+                {
+                    await WriteVarAsync(scope, var, token);
+                }
+                else if (fragment is PageBlockFragment blockFragment && !ShouldSkipFilterExecution(blockFragment))
+                {
+                    var block = GetBlock(blockFragment.Name);
+                    await block.WriteAsync(scope, blockFragment, token);
+                }
+            }
+            
+            stackTrace.Pop();
+        }
+
         public bool ShouldSkipFilterExecution(PageVariableFragment var)
         {
-            return HaltExecution || SkipFilterExecution && (var.BindingString != null 
-               ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.BindingString)
+            return HaltExecution || SkipFilterExecution && (var.Binding != null 
+               ? !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.Binding)
                : var.InitialExpression?.Name == null || 
                  !TemplateConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution.Contains(var.InitialExpression.Name));
+        }
+
+        public bool ShouldSkipFilterExecution(PageBlockFragment var)
+        {
+            return HaltExecution || SkipFilterExecution;
         }
 
         public TemplateContext Context => Page?.Context ?? CodePage.Context;
@@ -306,6 +363,12 @@ namespace ServiceStack.Templates
             foreach (var filter in TemplateFilters)
             {
                 Context.InitFilter(filter);
+            }
+
+            foreach (var block in TemplateBlocks)
+            {
+                Context.InitBlock(block);
+                templateBlocksMap[block.Name] = block;
             }
 
             if (Page != null)
@@ -390,7 +453,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream, token);
                 }
 
                 stackTrace.Pop();
@@ -401,24 +464,7 @@ namespace ServiceStack.Templates
         {
             await page.Init(); //reload modified changes if needed
 
-            stackTrace.Push("Page: " + page.VirtualPath);
-            
-            foreach (var fragment in page.PageFragments)
-            {
-                if (HaltExecution)
-                    break;
-
-                if (fragment is PageStringFragment str)
-                {
-                    await scope.OutputStream.WriteAsync(str.ValueBytes, token);
-                }
-                else if (fragment is PageVariableFragment var && !ShouldSkipFilterExecution(var))
-                {
-                    await WriteVarAsync(scope, var, token);
-                }
-            }
-            
-            stackTrace.Pop();
+            await WriteFragmentsAsync(scope, page.PageFragments, "Page: " + page.VirtualPath, token);
         }
 
         public async Task WriteCodePageAsync(TemplateCodePage page, TemplateScopeContext scope, CancellationToken token = default(CancellationToken))
@@ -444,7 +490,7 @@ namespace ServiceStack.Templates
                 using (stream)
                 {
                     stream.Position = 0;
-                    await stream.CopyToAsync(scope.OutputStream);
+                    await stream.WriteToAsync(scope.OutputStream, token);
                 }
             }
         }
@@ -475,14 +521,14 @@ namespace ServiceStack.Templates
 
         private async Task WriteVarAsync(TemplateScopeContext scope, PageVariableFragment var, CancellationToken token)
         {
-            if (var.BindingString != null)
-                stackTrace.Push($"Expression (binding): " + var.BindingString);
+            if (var.Binding != null)
+                stackTrace.Push($"Expression (binding): " + var.Binding);
             else if (var.InitialExpression?.Name != null)
                 stackTrace.Push("Expression (filter): " + var.InitialExpression.Name);
             else if (var.InitialValue != null)
-                stackTrace.Push($"Expression ({var.InitialValue.GetType().Name}): " + toDebugString(var.InitialValue).SubstringWithElipsis(0, 200));
+                stackTrace.Push($"Expression ({var.InitialValue.GetType().Name}): " + toDebugString(var.InitialValue).SubstringWithEllipsis(0, 200));
             else 
-                stackTrace.Push($"{var.Expression.GetType().Name}: " + var.Expression.ToRawString().SubstringWithElipsis(0, 200));
+                stackTrace.Push($"{var.Expression.GetType().Name}: " + var.Expression.ToRawString().SubstringWithEllipsis(0, 200));
             
             var value = await EvaluateAsync(var, scope, token);
             if (value != IgnoreResult.Value)
@@ -495,7 +541,7 @@ namespace ServiceStack.Templates
                 else
                 {
                     var bytes = Context.OnUnhandledExpression(var);
-                    if (bytes != null && bytes.Length > 0)
+                    if (bytes.Length > 0)
                         await scope.OutputStream.WriteAsync(bytes, token);
                 }
             }
@@ -546,20 +592,20 @@ namespace ServiceStack.Templates
                             return string.Empty;
                     }
 
-                    if (!var.Binding.HasValue)
+                    if (var.Binding == null)
                         return null;
 
-                    var hasFilterAsBinding = GetFilterAsBinding(var.BindingString, out TemplateFilter filter);
+                    var hasFilterAsBinding = GetFilterAsBinding(var.Binding, out TemplateFilter filter);
                     if (hasFilterAsBinding != null)
                     {
-                        value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.BindingString);
+                        value = InvokeFilter(hasFilterAsBinding, filter, new object[0], var.Binding);
                     }
                     else
                     {
-                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.BindingString, out filter);
+                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.Binding, out filter);
                         if (hasContexFilterAsBinding != null)
                         {
-                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.BindingString);
+                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.Binding);
                         }
                         else
                         {
@@ -584,12 +630,16 @@ namespace ServiceStack.Templates
                 try
                 {
                     var filterName = expr.Name;
-                    var invoker = GetFilterInvoker(filterName, 1 + expr.Arguments.Length, out TemplateFilter filter);
+
+                    var fnArgValues = JsCallExpression.EvaluateArgumentValues(scope, expr.Arguments);
+                    var fnArgsLength = fnArgValues.Count;
+
+                    var invoker = GetFilterInvoker(filterName, 1 + fnArgsLength, out TemplateFilter filter);
                     var contextFilterInvoker = invoker == null
-                        ? GetContextFilterInvoker(filterName, 2 + expr.Arguments.Length, out filter)
+                        ? GetContextFilterInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
                     var contextBlockInvoker = invoker == null && contextFilterInvoker == null
-                        ? GetContextBlockInvoker(filterName, 2 + expr.Arguments.Length, out filter)
+                        ? GetContextBlockInvoker(filterName, 2 + fnArgsLength, out filter)
                         : null;
 
                     if (invoker == null && contextFilterInvoker == null && contextBlockInvoker == null)
@@ -601,33 +651,21 @@ namespace ServiceStack.Templates
                         throw new Exception(errorMsg);
                     }
 
+                    if (value is Task<object> valueObjectTask)
+                        value = await valueObjectTask;
+
                     if (invoker != null)
                     {
-                        var args = new object[1 + expr.Arguments.Length];
-                        args[0] = value;
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[1 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, value);
+                        var args = fnArgValues.ToArray();
 
                         value = InvokeFilter(invoker, filter, args, expr.Name);
                     }
                     else if (contextFilterInvoker != null)
                     {
-                        var args = new object[2 + expr.Arguments.Length];
-
-                        args[0] = scope;
-                        args[1] = value;  // filter target
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[2 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, scope);
+                        fnArgValues.Insert(1, value); // filter target
+                        var args = fnArgValues.ToArray();
 
                         value = InvokeFilter(contextFilterInvoker, filter, args, expr.Name);
                     }
@@ -635,20 +673,13 @@ namespace ServiceStack.Templates
                     {
                         var hasFilterTransformers = var.FilterExpressions.Length + i > 1;
 
-                        var args = new object[2 + expr.Arguments.Length];
                         var useScope = hasFilterTransformers
                             ? scope.ScopeWithStream(MemoryStreamFactory.GetStream())
                             : scope;
 
-                        args[0] = useScope;
-                        args[1] = value;  // filter target
-
-                        for (var cmdIndex = 0; cmdIndex < expr.Arguments.Length; cmdIndex++)
-                        {
-                            var arg = expr.Arguments[cmdIndex];
-                            var varValue = arg.Evaluate(scope);
-                            args[2 + cmdIndex] = varValue;
-                        }
+                        fnArgValues.Insert(0, useScope);
+                        fnArgValues.Insert(1, value); // filter target
+                        var args = fnArgValues.ToArray();
 
                         try
                         {
@@ -693,7 +724,7 @@ namespace ServiceStack.Templates
                                     if (stream.CanRead)
                                     {
                                         stream.Position = 0;
-                                        await stream.CopyToAsync(scope.OutputStream);
+                                        await stream.WriteToAsync(scope.OutputStream, token);
                                     }
                                 }
                             }
@@ -872,7 +903,7 @@ namespace ServiceStack.Templates
             }
         }
 
-        public StringSegment ParseJsExpression(TemplateScopeContext scope, StringSegment literal, out JsToken token)
+        public ReadOnlySpan<char> ParseJsExpression(TemplateScopeContext scope, ReadOnlySpan<char> literal, out JsToken token)
         {
             try
             {
@@ -883,22 +914,27 @@ namespace ServiceStack.Templates
                 if (scope.ScopedParams.TryGetValue(nameof(PageVariableFragment), out var oVar)
                     && oVar is PageVariableFragment var && !var.OriginalText.IsNullOrEmpty())
                 {
-                    throw new Exception($"Invalid literal: {literal} in '{var.OriginalText}'", e);
+                    throw new Exception($"Invalid literal: {literal.ToString()} in '{var.OriginalText}'", e);
                 }
                 
                 throw;
             }
         }
 
+        private readonly Dictionary<string, TemplateBlock> templateBlocksMap = new Dictionary<string, TemplateBlock>();
+
+        public TemplateBlock TryGetBlock(string name) => templateBlocksMap.TryGetValue(name, out var block) ? block : Context.GetBlock(name); 
+        public TemplateBlock GetBlock(string name)
+        {
+            var block = TryGetBlock(name);
+            if (block == null)
+                throw new NotSupportedException($"Block in '{VirtualPath}' named '{name}' was not found.");
+
+            return block;
+        }       
+
         public TemplateScopeContext CreateScope(Stream outputStream=null) => 
             new TemplateScopeContext(this, outputStream ?? MemoryStreamFactory.GetStream(), null);
-
-        internal object EvaluateExpression(StringSegment arg, TemplateScopeContext scope)
-        {
-            arg = ParseJsExpression(scope, arg, out var token);
-            var value = EvaluateIfToken(token, scope);
-            return value;
-        }
 
         internal MethodInvoker GetFilterInvoker(string name, int argsCount, out TemplateFilter filter) => GetInvoker(name, argsCount, InvokerType.Filter, out filter);
         internal MethodInvoker GetContextFilterInvoker(string name, int argsCount, out TemplateFilter filter) => GetInvoker(name, argsCount, InvokerType.ContextFilter, out filter);
@@ -997,6 +1033,7 @@ namespace ServiceStack.Templates
             {
                 Args = Args,
                 TemplateFilters = TemplateFilters,
+                TemplateBlocks = TemplateBlocks,
                 FilterTransformers = FilterTransformers,
             };
         }

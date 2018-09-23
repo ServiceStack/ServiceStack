@@ -22,9 +22,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             using (var response = httpReq.GetResponse())
             using (var stream = response.GetResponseStream())
-            using (var reader = new StreamReader(stream))
             {
-                Assert.That(reader.ReadToEnd(), Is.EqualTo("{\"result\":\"Hello, World!\"}"));
+                Assert.That(stream.ReadToEnd(), Is.EqualTo("{\"result\":\"Hello, World!\"}"));
             }
         }
 
@@ -43,9 +42,8 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
 
             using (var response = httpReq.GetResponse())
             using (var stream = response.GetResponseStream())
-            using (var reader = new StreamReader(stream))
             {
-                Assert.That(reader.ReadToEnd(), Is.EqualTo("<?xml version=\"1.0\" encoding=\"utf-8\"?><HelloResponse xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Result>Hello, World!</Result></HelloResponse>"));
+                Assert.That(stream.ReadToEnd(), Is.EqualTo("<?xml version=\"1.0\" encoding=\"utf-8\"?><HelloResponse xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://schemas.servicestack.net/types\"><Result>Hello, World!</Result></HelloResponse>"));
             }
         }
     }

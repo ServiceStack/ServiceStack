@@ -6,18 +6,15 @@ using System.Text;
 using System.Threading.Tasks;
 using ServiceStack.IO;
 using ServiceStack.Text;
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.Templates
 {
     public class TemplatePage
     {
         public IVirtualFile File { get; }
-        public StringSegment FileContents { get; private set; }
-        public StringSegment BodyContents { get; private set; }
-        public Dictionary<string, object> Args { get; private set; }
+        public ReadOnlyMemory<char> FileContents { get; private set; }
+        public ReadOnlyMemory<char> BodyContents { get; private set; }
+        public Dictionary<string, object> Args { get; protected set; }
         public TemplatePage LayoutPage { get; set; }
         public List<PageFragment> PageFragments { get; set; }
         public DateTime LastModified { get; set; }
@@ -42,14 +39,15 @@ namespace ServiceStack.Templates
                 throw new ArgumentException($"File with extension '{File.Extension}' is not a registered PageFormat in Context.PageFormats", nameof(file));
         }
 
-        public async Task<TemplatePage> Init()
+        public virtual async Task<TemplatePage> Init()
         {
             if (HasInit)
             {
                 var skipCheck = !Context.DebugMode &&
                     (Context.CheckForModifiedPagesAfter != null
                         ? DateTime.UtcNow - LastModifiedCheck < Context.CheckForModifiedPagesAfter.Value
-                        : !Context.CheckForModifiedPages);
+                        : !Context.CheckForModifiedPages) &&
+                    (Context.InvalidateCachesBefore == null || LastModifiedCheck > Context.InvalidateCachesBefore.Value);
                 
                 if (skipCheck)
                     return this;
@@ -67,18 +65,17 @@ namespace ServiceStack.Templates
         {
             string contents;
             using (var stream = File.OpenRead())
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
             {
-                contents = await reader.ReadToEndAsync();
+                contents = await stream.ReadToEndAsync();
             }
 
             var lastModified = File.LastModified;
-            var fileContents = contents.ToStringSegment();
+            var fileContents = contents.AsMemory();
             var pageVars = new Dictionary<string, object>();
 
             var pos = 0;
             var bodyContents = fileContents;
-            fileContents.AdvancePastWhitespace().TryReadLine(out StringSegment line, ref pos);
+            fileContents.AdvancePastWhitespace().TryReadLine(out ReadOnlyMemory<char> line, ref pos);
             if (line.StartsWith(Format.ArgsPrefix))
             {
                 while (fileContents.TryReadLine(out line, ref pos))
@@ -90,12 +87,18 @@ namespace ServiceStack.Templates
                     if (line.StartsWith(Format.ArgsSuffix))
                         break;
 
-                    var kvp = line.SplitOnFirst(':');
-                    pageVars[kvp[0].Trim().ToString()] = kvp.Length > 1 ? kvp[1].Trim().ToString() : "";
+                    line.SplitOnFirst(':', out var first, out var last);
+                    pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
                 
-                //When page has variables body starts from first non whitespace after variable's end  
-                bodyContents = fileContents.SafeSubsegment(pos).AdvancePastWhitespace();
+                //When page has variables body starts from first non whitespace after variables end  
+                var argsSuffixPos = line.LastIndexOf(Format.ArgsSuffix);
+                if (argsSuffixPos >= 0)
+                {
+                    //Start back from the end of the ArgsSuffix
+                    pos -= line.Length - argsSuffixPos - Format.ArgsSuffix.Length;
+                }
+                bodyContents = fileContents.SafeSlice(pos).AdvancePastWhitespace();
             }
 
             var pageFragments = pageVars.TryGetValue("ignore", out object ignore) 
@@ -105,7 +108,7 @@ namespace ServiceStack.Templates
 
             foreach (var fragment in pageFragments)
             {
-                if (fragment is PageVariableFragment var && var.BindingString == TemplateConstants.Page)
+                if (fragment is PageVariableFragment var && var.Binding == TemplateConstants.Page)
                 {
                     IsLayout = true;
                     break;
@@ -146,5 +149,27 @@ namespace ServiceStack.Templates
 
             return this;
         }
+    }
+
+    public class TemplatePartialPage : TemplatePage
+    {
+        private static readonly MemoryVirtualFiles TempFiles = new MemoryVirtualFiles();
+        private static readonly InMemoryVirtualDirectory TempDir = new InMemoryVirtualDirectory(TempFiles, TemplateConstants.TempFilePath);
+
+        static IVirtualFile CreateFile(string name, string format) =>
+            new InMemoryVirtualFile(TempFiles, TempDir)
+            {
+                FilePath = name + "." + format, 
+                TextContents = "",
+            };
+
+        public TemplatePartialPage(TemplateContext context, string name, IEnumerable<PageFragment> body, string format, Dictionary<string,object> args=null)
+            : base(context, CreateFile(name, format), context.GetFormat(format))
+        {
+            PageFragments = body.ToList();
+            Args = args ?? new Dictionary<string, object>();
+        }
+
+        public override Task<TemplatePage> Init() => ((TemplatePage)this).InTask();
     }
 }

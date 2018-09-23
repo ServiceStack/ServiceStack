@@ -89,8 +89,11 @@ namespace ServiceStack.Host
             var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
             ContentTypeFormats[format] = normalizedContentType;
 
-            SetContentTypeSerializer(normalizedContentType, streamSerializer);
-            SetContentTypeDeserializer(normalizedContentType, streamDeserializer);
+            if (streamSerializer != null)
+                SetContentTypeSerializer(normalizedContentType, streamSerializer);
+            
+            if (streamDeserializer != null)
+                SetContentTypeDeserializer(normalizedContentType, streamDeserializer);
         }
 
         public void RegisterAsync(string contentType, 
@@ -104,8 +107,11 @@ namespace ServiceStack.Host
             var normalizedContentType = ContentFormat.NormalizeContentType(contentType);
             ContentTypeFormats[format] = normalizedContentType;
 
-            ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
-            ContentTypeDeserializersAsync[normalizedContentType] = streamDeserializer;
+            if (streamSerializer != null)
+                ContentTypeSerializersAsync[normalizedContentType] = streamSerializer;
+            
+            if (streamDeserializer != null)
+                ContentTypeDeserializersAsync[normalizedContentType] = streamDeserializer;
         }
 
         public void Remove(string contentType)
@@ -150,8 +156,13 @@ namespace ServiceStack.Host
                 case byte[] bytes:
                     await stream.WriteAsync(bytes, 0, bytes.Length);
                     break;
+                case MemoryStream input:
+                    await input.WriteToAsync(stream);
+                    break;
                 case Stream input:
                     await input.CopyToAsync(stream);
+                    break;
+                case ErrorResponse errorDto:  //ignore writing ErrorResponse bodies for unknown content types
                     break;
 #if !NETSTANDARD2_0
                 case System.Drawing.Image img:
@@ -207,10 +218,7 @@ namespace ServiceStack.Host
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseStreamWriter(req, response, ms);
-
-                    ms.Position = 0;
-                    var result = new StreamReader(ms, UTF8EncodingWithoutBom).ReadToEnd();
-                    return result;
+                    return ms.ReadToEnd();
                 }
             }
 
@@ -220,11 +228,7 @@ namespace ServiceStack.Host
                 using (var ms = MemoryStreamFactory.GetStream())
                 {
                     responseWriterAsync(req, response, ms).Wait();
-
-                    var bytes = ms.ToArray();
-                    var result = bytes.FromUtf8Bytes();
-
-                    return result;
+                    return ms.ReadToEnd();
                 }
             }
 

@@ -47,12 +47,8 @@ namespace ServiceStack.Metadata
             }
             else
             {
-                using (var sw = new StreamWriter(httpRes.OutputStream))
-                {
-                    var writer = new HtmlTextWriter(sw);
-                    httpRes.ContentType = "text/html; charset=utf-8";
-                    ProcessOperations(writer, httpReq, httpRes);
-                }
+                httpRes.ContentType = "text/html; charset=utf-8";
+                ProcessOperations(httpRes.OutputStream, httpReq, httpRes);
             }
 
             httpRes.EndHttpHandlerRequest(skipHeaders:true);

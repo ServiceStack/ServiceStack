@@ -144,6 +144,10 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
+                //e.g. to Process View Engiine requests
+                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                if (catchAllHandler != null) return catchAllHandler;
+
                 //If the fallback route can handle it, let it
                 var restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
                 if (restPath != null)
@@ -151,10 +155,6 @@ namespace ServiceStack
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
                     return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
-
-                //e.g. CatchAllHandler to Process Markdown files
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
 
                 if (mode == null)
                     return DefaultHttpHandler;
@@ -188,6 +188,10 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
+                //e.g. to Process View Engiine requests
+                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                if (catchAllHandler != null) return catchAllHandler;
+
                 //If the fallback route can handle it, let it
                 RestPath restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
                 if (restPath != null)
@@ -195,10 +199,6 @@ namespace ServiceStack
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
                     return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
-
-                //e.g. CatchAllHandler to Process Markdown files
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
 
                 if (mode == null)
                     return DefaultHttpHandler;
@@ -287,6 +287,13 @@ namespace ServiceStack
                 restPath = appHost.Config.FallbackRestPath(httpReq);
                 if (restPath != null)
                     return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+            }
+            
+            foreach (var httpHandlerResolver in appHost.FallbackHandlersArray)
+            {
+                var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
+                if (httpHandler != null)
+                    return httpHandler;
             }
 
             return null;

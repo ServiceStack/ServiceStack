@@ -26,8 +26,9 @@ namespace ServiceStack
     public class EncryptedServiceClient : IEncryptedClient
     {
         public string ServerPublicKeyXml { get; private set; }
-        public int Version { get; set; }
         public string SessionId { get; set; }
+        public string BearerToken { get; set; }
+        public int Version { get; set; }
         public RSAParameters PublicKey { get; set; }
         public IJsonServiceClient Client { get; set; }
         public string KeyId { get; set; }
@@ -51,8 +52,7 @@ namespace ServiceStack
 
         public TResponse Send<TResponse>(string httpMethod, object request)
         {
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             try
             {
@@ -84,8 +84,7 @@ namespace ServiceStack
 
         public List<TResponse> SendAll<TResponse>(IEnumerable<object> requests)
         {
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             try
             {
@@ -113,8 +112,7 @@ namespace ServiceStack
 
         public void Publish(object request)
         {
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             try
             {
@@ -129,8 +127,7 @@ namespace ServiceStack
 
         public void PublishAll(IEnumerable<object> requests)
         {
-            byte[] cryptKey, authKey, iv;
-            AesUtils.CreateCryptAuthKeysAndIv(out cryptKey, out authKey, out iv);
+            AesUtils.CreateCryptAuthKeysAndIv(out var cryptKey, out var authKey, out var iv);
 
             try
             {
@@ -183,9 +180,7 @@ namespace ServiceStack
                 return ex;
             }
 
-            var encResponse = ex.ResponseDto as EncryptedMessageResponse;
-
-            if (encResponse != null)
+            if (ex.ResponseDto is EncryptedMessageResponse encResponse)
             {
                 var authEncryptedBytes = Convert.FromBase64String(encResponse.EncryptedBody);
                 if (!HmacUtils.Verify(authEncryptedBytes, authKey))

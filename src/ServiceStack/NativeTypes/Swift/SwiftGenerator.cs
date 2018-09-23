@@ -22,6 +22,9 @@ namespace ServiceStack.NativeTypes.Swift
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
 
+        public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
+        public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
+
         public static List<string> DefaultImports = new List<string>
         {
             "Foundation",
@@ -244,6 +247,8 @@ namespace ServiceStack.NativeTypes.Swift
             AppendAttributes(sb, type.Attributes);
             AppendDataContract(sb, type.DataContract);
 
+            PreTypeFilter?.Invoke(sb, type);
+
             if (type.IsEnum.GetValueOrDefault())
             {
                 sb.AppendLine($"public enum {Type(type.Name, type.GenericArgs)} : Int");
@@ -371,6 +376,8 @@ namespace ServiceStack.NativeTypes.Swift
                         initCollections: Config.InitializeCollections);
                 }
             }
+
+            PostTypeFilter?.Invoke(sb, type);
 
             //sb = sb.UnIndent();
 

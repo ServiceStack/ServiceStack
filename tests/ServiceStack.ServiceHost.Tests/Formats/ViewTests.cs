@@ -62,8 +62,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
                 var httpRes = new HttpResponseStreamWrapper(ms, httpReq);
                 appHost.ViewEngines[0].ProcessRequestAsync(httpReq, dto, httpRes.OutputStream);
 
-                var utf8Bytes = ms.ToArray();
-                var html = utf8Bytes.FromUtf8Bytes();
+                var html = ms.ReadToEnd();
                 return html;
             }
         }
@@ -176,8 +175,7 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public string GetHeader(string name)
             {
-                string value;
-                this.Headers.TryGetValue(name, out value);
+                this.Headers.TryGetValue(name, out var value);
                 return value;
             }
 
@@ -196,9 +194,15 @@ namespace ServiceStack.ServiceHost.Tests.Formats
 
             public void Close()
             {
-                this.Contents = Encoding.UTF8.GetString(MemoryStream.ToArray());
+                this.Contents = MemoryStream.ReadToEnd();
                 MemoryStream.Close();
                 this.IsClosed = true;
+            }
+
+            public Task CloseAsync(CancellationToken token = default(CancellationToken))
+            {
+                Close();
+                return TypeConstants.EmptyTask;
             }
 
             public void End()

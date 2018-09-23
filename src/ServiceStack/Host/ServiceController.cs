@@ -203,6 +203,8 @@ namespace ServiceStack.Host
 
         public readonly Dictionary<string, List<RestPath>> RestPathMap = new Dictionary<string, List<RestPath>>();
 
+        private static RestPath fallbackRestPath = null;
+
         public void RegisterRestPaths(Type requestType)
         {
             var attrs = appHost.GetRouteAttributes(requestType);
@@ -217,7 +219,8 @@ namespace ServiceStack.Host
                             "Config.FallbackRestPath is already defined. Only 1 [FallbackRoute] is allowed.");
 
                     appHost.Config.FallbackRestPath = httpReq => restPath.IsMatch(httpReq) ? restPath : null;
-
+                    fallbackRestPath = restPath;
+                    
                     continue;
                 }
 
@@ -237,7 +240,7 @@ namespace ServiceStack.Host
                 throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' must start with a '/'");
             if (restPath.Path.IndexOfAny(InvalidRouteChars) != -1)
                 throw new ArgumentException($"Route '{restPath.Path}' on '{restPath.RequestType.GetOperationName()}' contains invalid chars. " +
-                                            "See http://docs.servicestack.net/routing for info on valid routes.");
+                                            "See https://docs.servicestack.net/routing for info on valid routes.");
 
             if (!RestPathMap.TryGetValue(restPath.FirstMatchHashKey, out var pathsAtFirstMatch))
             {
@@ -268,6 +271,8 @@ namespace ServiceStack.Host
             appHost.RestPaths.Clear();
             appHost.RestPaths.AddRange(RestPathMap.Values.SelectMany(x => x));
             appHost.RestPaths.ForEach(x => x.AfterInit());
+
+            fallbackRestPath?.AfterInit();
 
             appHost.Metadata.AfterInit();
         }
@@ -675,8 +680,8 @@ namespace ServiceStack.Host
 
             if (applyFilters)
             {
-                requestDto = appHost.ApplyRequestConvertersAsync(req, requestDto);
-                appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto).Wait();
+                requestDto = await appHost.ApplyRequestConvertersAsync(req, requestDto);
+                await appHost.ApplyRequestFiltersAsync(req, req.Response, requestDto);
                 if (req.Response.IsClosed)
                     return null;
             }

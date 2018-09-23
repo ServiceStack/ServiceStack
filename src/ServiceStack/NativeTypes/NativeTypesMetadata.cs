@@ -160,7 +160,11 @@ namespace ServiceStack.NativeTypes
             void registerTypeFn(Type t)
             {
                 if (t.IsArray || t == typeof(Array))
-                    return;
+                {
+                    t = t.GetElementType();
+                    if (t == null)
+                        return;
+                }
 
                 considered.Add(t);
                 queue.Enqueue(t);
@@ -393,9 +397,17 @@ namespace ServiceStack.NativeTypes
                 for (var i = 0; i < names.Length; i++)
                 {
                     var name = names[i];
-                    var enumMember = (FieldInfo)type.GetMember(name).First();
+                    var enumMember = GetEnumMember(type, name);
+
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
+
+                    var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
+                    if (enumMemberValue != null)
+                    {
+                        enumValue = enumMemberValue;
+                        isDefaultLayout = false;
+                    }                  
 
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;
@@ -426,6 +438,9 @@ namespace ServiceStack.NativeTypes
 
             return metaType;
         }
+
+        public static FieldInfo GetEnumMember(Type type, string name) => 
+            (FieldInfo) type.GetMember(name, BindingFlags.Public | BindingFlags.Static).First();
 
         private static string[] GetGenericArgs(Type type)
         {

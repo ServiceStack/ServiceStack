@@ -257,6 +257,7 @@ namespace ServiceStack.NativeTypes
             typeof(IOptions),
             typeof(IMeta),
             typeof(IHasSessionId),
+            typeof(IHasBearerToken),
             typeof(IHasVersion),
         }.ToList();
 

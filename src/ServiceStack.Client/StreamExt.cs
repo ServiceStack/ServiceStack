@@ -134,10 +134,7 @@ namespace ServiceStack
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            using (var reader = new StreamReader(stream, Encoding.UTF8))
-            {
-                return reader.ReadToEnd();
-            }
+            return stream.ReadToEnd();
         }
 
         public static byte[] ToBytes(this Stream stream)

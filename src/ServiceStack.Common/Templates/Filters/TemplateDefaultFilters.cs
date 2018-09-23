@@ -48,6 +48,8 @@ namespace ServiceStack.Templates
         public bool isOdd(int value) => !isEven(value);
 
         public static bool isTrue(object target) => target is bool b && b;
+
+        public static bool isTruthy(object target) => !isFalsy(target);
         public static bool isFalsy(object target)
         {
             if (target == null || target == JsNull.Value)
@@ -114,6 +116,9 @@ namespace ServiceStack.Templates
             return false;
         }
 
+        [HandleUnknownValue]
+        public bool IsNullOrWhiteSpace(object target) => target == null || target is string s && string.IsNullOrWhiteSpace(s);
+        
         [HandleUnknownValue] public StopExecution end() => StopExecution.Value;
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
         [HandleUnknownValue] public StopExecution end(object ignore) => StopExecution.Value;
@@ -145,7 +150,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -186,7 +191,7 @@ namespace ServiceStack.Templates
             var literal = scope.AssertExpression(nameof(count), expression);
             var scopedParams = scope.GetParamsWithItemBinding(nameof(count), scopeOptions, out string itemBinding);
 
-            literal.ParseJsExpression(out var expr);
+            var expr = literal.GetCachedJsExpression(scope);
             scope.AddItemToScope(itemBinding, target);
             var result = expr.EvaluateToBool(scope);
 
@@ -212,6 +217,7 @@ namespace ServiceStack.Templates
 
         [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
         [HandleUnknownValue] public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        [HandleUnknownValue] public object showIfExists(object useValue, object test) => !isNull(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
         public object show(object ignoreTarget, object useValue) => useValue;
@@ -319,52 +325,76 @@ namespace ServiceStack.Templates
 
         public KeyValuePair<string, object> keyValuePair(string key, object value) => new KeyValuePair<string, object>(key, value);
 
-        public IgnoreResult prependTo(TemplateScopeContext scope, string value, string argName)
+        public IgnoreResult prependTo(TemplateScopeContext scope, string value, object argExpr) =>
+            prependToArgs(scope, nameof(prependTo), value, argExpr, scope.ScopedParams);
+
+        public IgnoreResult prependToGlobal(TemplateScopeContext scope, string value, object argExpr) =>
+            prependToArgs(scope, nameof(prependToGlobal), value, argExpr, scope.PageResult.Args);
+
+        private IgnoreResult prependToArgs(TemplateScopeContext scope, string filterName, string value, object argExpr, Dictionary<string, object> args)
         {
             if (value == null)
                 return IgnoreResult.Value;
 
-            if (scope.ScopedParams.TryGetValue(argName, out object oString))
+            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExpr);
+
+            if (args.TryGetValue(varName, out object oString))
             {
                 if (oString is string s)
                 {
-                    scope.ScopedParams[argName] = value + s;
+                    args[varName] = value + s;
                 }
             }
             else
             {
-                scope.ScopedParams[argName] = value;
+                args[varName] = value;
             }
             
             return IgnoreResult.Value;
         }
 
-        public IgnoreResult appendTo(TemplateScopeContext scope, string value, string argName)
+        public IgnoreResult appendTo(TemplateScopeContext scope, string value, object argExpr) =>
+            appendToArgs(scope, nameof(appendTo), value, argExpr, scope.ScopedParams);
+
+        public IgnoreResult appendToGlobal(TemplateScopeContext scope, string value, object argExpr) =>
+            appendToArgs(scope, nameof(appendToGlobal), value, argExpr, scope.PageResult.Args);
+
+        private IgnoreResult appendToArgs(TemplateScopeContext scope, string filterName, string value, object argExpr, Dictionary<string,object> args)
         {
             if (value == null)
                 return IgnoreResult.Value;
 
-            if (scope.ScopedParams.TryGetValue(argName, out object oString))
+            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExpr);
+
+            if (args.TryGetValue(varName, out object oString))
             {
                 if (oString is string s)
                 {
-                    scope.ScopedParams[argName] = s + value;
+                    args[varName] = s + value;
                 }
             }
             else
             {
-                scope.ScopedParams[argName] = value;
+                args[varName] = value;
             }
             
             return IgnoreResult.Value;
         }
-        
-        public IgnoreResult addToStart(TemplateScopeContext scope, object value, string argName)
+
+        public IgnoreResult addToStart(TemplateScopeContext scope, object value, object argExpr) =>
+            addToStartArgs(scope, nameof(addToStart), value, argExpr, scope.ScopedParams);
+
+        public IgnoreResult addToStartGlobal(TemplateScopeContext scope, object value, object argExpr) =>
+            addToStartArgs(scope, nameof(addToStartGlobal), value, argExpr, scope.PageResult.Args);
+
+        private IgnoreResult addToStartArgs(TemplateScopeContext scope, string filterName, object value, object argExpr, Dictionary<string,object> args)
         {
             if (value == null)
                 return IgnoreResult.Value;
-            
-            if (scope.ScopedParams.TryGetValue(argName, out object collection))
+
+            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExpr);
+
+            if (args.TryGetValue(varName, out object collection))
             {
                 if (collection is IList l)
                 {
@@ -377,31 +407,39 @@ namespace ServiceStack.Templates
                     {
                         to.Add(item);
                     }
-                    scope.ScopedParams[argName] = to;
+                    args[varName] = to;
                 }
                 else throw new NotSupportedException(nameof(addToStart) + " can only add to an IEnumerable not a " + collection.GetType().Name);
             }
             else
             {
                 if (value is IEnumerable && !(value is string))
-                    scope.ScopedParams[argName] = value;
+                    args[varName] = value;
                 else
-                    scope.ScopedParams[argName] = new List<object> { value };
+                    args[varName] = new List<object> { value };
             }
             
             return IgnoreResult.Value;
         }
 
-        public IgnoreResult addTo(TemplateScopeContext scope, object value, string argName) 
+        public IgnoreResult addTo(TemplateScopeContext scope, object value, object argExpr) =>
+            addToArgs(scope, nameof(addTo), value, argExpr, scope.ScopedParams);
+
+        public IgnoreResult addToGlobal(TemplateScopeContext scope, object value, object argExpr) =>
+            addToArgs(scope, nameof(addToGlobal), value, argExpr, scope.PageResult.Args);
+
+        private IgnoreResult addToArgs(TemplateScopeContext scope, string filterName, object value, object argExpr, Dictionary<string, object> args)
         {
             if (value == null)
                 return IgnoreResult.Value;
-            
-            if (scope.ScopedParams.TryGetValue(argName, out object collection))
+
+            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExpr);
+
+            if (args.TryGetValue(varName, out object collection))
             {
                 if (collection is IList l)
                 {
-                    if (value is IEnumerable e && !(value is string))
+                    if (value is IEnumerable e && !(value is string || value is IDictionary))
                     {
                         foreach (var item in e)
                         {
@@ -453,32 +491,38 @@ namespace ServiceStack.Templates
                     {
                         to.Add(value);
                     }
-                    scope.ScopedParams[argName] = to;
+                    args[varName] = to;
                 }
                 else throw new NotSupportedException(nameof(addTo) + " can only add to an IEnumerable not a " + collection.GetType().Name);
             }
             else
             {
-                if (value is IEnumerable && !(value is string))
-                    scope.ScopedParams[argName] = value;
+                if (value is IEnumerable && !(value is string || value is IDictionary))
+                    args[varName] = value;
                 else
-                    scope.ScopedParams[argName] = new List<object> { value };
+                    args[varName] = new List<object> { value };
             }
             
             return IgnoreResult.Value;
         }
-        
-        public object assign(TemplateScopeContext scope, string argExpr, object value) //from filter
+
+        public object assign(TemplateScopeContext scope, string argExpr, object value) =>
+            assignArgs(scope, argExpr, value, scope.ScopedParams);
+
+        public object assignGlobal(TemplateScopeContext scope, string argExpr, object value) =>
+            assignArgs(scope, argExpr, value, scope.PageResult.Args);
+
+        private object assignArgs(TemplateScopeContext scope, string argExpr, object value, Dictionary<string,object> args) //from filter
         {
             var targetEndPos = argExpr.IndexOfAny(new[] { '.', '[' });
             if (targetEndPos == -1)
             {
-                scope.ScopedParams[argExpr] = value;
+                args[argExpr] = value;
             }
             else
             {
                 var targetName = argExpr.Substring(0, targetEndPos);
-                if (!scope.ScopedParams.TryGetValue(targetName, out object target))
+                if (!args.TryGetValue(targetName, out object target))
                     throw new NotSupportedException($"Cannot assign to non-existing '{targetName}' in {argExpr}");
 
                 scope.InvokeAssignExpression(argExpr, target, value);
@@ -487,18 +531,61 @@ namespace ServiceStack.Templates
             return value;
         }
 
-        public IgnoreResult assignTo(TemplateScopeContext scope, object value, string argName)
+        public IgnoreResult assignTo(TemplateScopeContext scope, object value, object argExpr)
         {
-            scope.ScopedParams[argName] = value;
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(assignTo), argExpr);
+            
+            scope.ScopedParams[varName] = value;
             return IgnoreResult.Value;
         }
 
-        public Task assignTo(TemplateScopeContext scope, string argName) //from context filter
+        public IgnoreResult assignToGlobal(TemplateScopeContext scope, object value, object argExpr)
+        {
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(assignToGlobal), argExpr);
+            
+            scope.PageResult.Args[varName] = value;
+            return IgnoreResult.Value;
+        }
+
+        public Task assignTo(TemplateScopeContext scope, object argExpr) =>
+            assignToArgs(scope, nameof(assignTo), argExpr, scope.ScopedParams);
+
+        public Task assignToGlobal(TemplateScopeContext scope, object argExpr) =>
+            assignToArgs(scope, nameof(assignToGlobal), argExpr, scope.PageResult.Args);
+
+        private Task assignToArgs(TemplateScopeContext scope, string filterName, object argExpr, Dictionary<string, object> args) //from context filter
+        {
+            var varName = GetVarNameFromStringOrArrowExpression(nameof(assignToGlobal), argExpr);
+
+            var ms = (MemoryStream)scope.OutputStream;
+            var value = ms.ReadToEnd();
+            scope.ScopedParams[varName] = value;
+            ms.SetLength(0); //just capture output, don't write anything to the ResponseStream
+            return TypeConstants.EmptyTask;
+        }
+
+        public static string GetVarNameFromStringOrArrowExpression(string filterName, object argExpr)
+        {
+            if (argExpr == null)
+                throw new ArgumentNullException(filterName);
+            
+            if (argExpr is JsArrowFunctionExpression arrowExpr)
+            {
+                if (!(arrowExpr.Body is JsIdentifier identifier))
+                    throw new NotSupportedException($"{filterName} expression must return an identifer");
+
+                return identifier.Name;
+            }
+
+            if (argExpr is string varName)
+                return varName;
+
+            throw new NotSupportedException($"{filterName} requires a string or expression identifier but was instead '{argExpr.GetType().Name}'");
+        }
+
+        public Task buffer(TemplateScopeContext scope, object target)
         {
             var ms = (MemoryStream)scope.OutputStream;
-            var value = ms.ReadFully().FromUtf8Bytes();
-            scope.ScopedParams[argName] = value;
-            ms.SetLength(0); //just capture output, don't write anything to the ResponseStream
             return TypeConstants.EmptyTask;
         }
 
@@ -508,9 +595,28 @@ namespace ServiceStack.Templates
             var pageName = target.ToString();
             var pageParams = scope.AssertOptions(nameof(partial), scopedParams);
 
-            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (!scope.TryGetPage(pageName, out var page, out var codePage))
+            {
+                //Allow partials starting with '_{name}-partial' to be referenced without boilerplate
+                if (pageName[0] != '_')
+                {
+                    if (!scope.TryGetPage('_' + pageName + "-partial", out page, out codePage))
+                        throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
+                }
+            }
+            
             if (page != null)
                 await page.Init();
+
+            if (page is TemplatePartialPage) // make partial block args available in scope
+            {
+                foreach (var pageArg in page.Args)
+                {
+                    pageParams[pageArg.Key] = pageArg.Value;
+                }
+            }
+
+            pageParams["it"] = pageParams;
 
             await scope.WritePageAsync(page, codePage, pageParams);
         }
@@ -547,6 +653,8 @@ namespace ServiceStack.Templates
             : target is IEnumerable<object> objects
                 ? objects.Where(x => x != null).Select(x => x.ToString()[0]).ToArray()
                 : target.ConvertTo<char[]>();
+
+        public int toCharCode(object target) => toChar(target);
 
         public byte[] toUtf8Bytes(string target) => target.ToUtf8Bytes();
         public string fromUtf8Bytes(byte[] target) => target.FromUtf8Bytes();
@@ -655,10 +763,7 @@ namespace ServiceStack.Templates
         public Dictionary<object, object> toDictionary(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
             var items = target.AssertEnumerable(nameof(toDictionary));
-            var literal = scope.AssertExpression(nameof(toDictionary), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(toDictionary), scopeOptions, out string itemBinding);
-
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
             return items.ToDictionary(item => token.Evaluate(scope.AddItemToScope(itemBinding, item)));
         }
@@ -683,8 +788,7 @@ namespace ServiceStack.Templates
 
         public object @do(TemplateScopeContext scope, object expression)
         {
-            var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(@do), expression, scopeOptions:null, out var itemBinding);
             var result = token.Evaluate(scope);
 
             return IgnoreResult.Value;
@@ -698,9 +802,7 @@ namespace ServiceStack.Templates
             if (isNull(target) || target is bool b && !b)
                 return TypeConstants.EmptyTask;
 
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(@do), scopeOptions, out string itemBinding);
-            var literal = scope.AssertExpression(nameof(@do), expression);
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(@do), expression, scopeOptions, out var itemBinding);
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
@@ -754,10 +856,7 @@ namespace ServiceStack.Templates
         public object map(TemplateScopeContext scope, object items, object expression) => map(scope, items, expression, null);
         public object map(TemplateScopeContext scope, object target, object expression, object scopeOptions)
         {
-            var literal = scope.AssertExpression(nameof(map), expression);
-            var scopedParams = scope.GetParamsWithItemBinding(nameof(map), scopeOptions, out string itemBinding);
-
-            literal.ToStringSegment().ParseJsExpression(out var token);
+            var token = scope.AssertExpression(nameof(map), expression, scopeOptions, out var itemBinding);
 
             if (target is IEnumerable items && !(target is IDictionary) && !(target is string))
             {
@@ -768,7 +867,7 @@ namespace ServiceStack.Templates
             var result = token.Evaluate(scope.AddItemToScope(itemBinding, target));
             return result;
         }
-
+        
         public object scopeVars(object target)
         {
             if (isNull(target))
@@ -916,11 +1015,28 @@ namespace ServiceStack.Templates
             if (isNull(target))
                 return;
 
-            scope.TryGetPage(pageName, out TemplatePage page, out TemplateCodePage codePage);
+            if (!scope.TryGetPage(pageName, out var page, out var codePage))
+            {
+                //Allow partials starting with '_{name}-partial' to be referenced without boilerplate
+                if (pageName[0] != '_')
+                {
+                    if (!scope.TryGetPage('_' + pageName + "-partial", out page, out codePage))
+                        throw new FileNotFoundException($"Partial was not found: '{pageName}'");            
+                }
+            }
+
             if (page != null)
                 await page.Init();
 
             var pageParams = scope.GetParamsWithItemBinding(nameof(selectPartial), page, scopedParams, out string itemBinding);
+
+            if (page is TemplatePartialPage) // make partial block args available in scope
+            {
+                foreach (var pageArg in page.Args)
+                {
+                    pageParams[pageArg.Key] = pageArg.Value;
+                }
+            }
 
             if (target is IEnumerable objs && !(target is IDictionary) && !(target is string))
             {
@@ -1071,6 +1187,66 @@ namespace ServiceStack.Templates
             return target;
         }
 
+        public object withKeys(IDictionary<string, object> target, object keys)
+        {
+            if (keys == null)
+                return target;
+            
+            var strKeys = keys is string s
+                ? new List<string>{ s }
+                : keys is IEnumerable e
+                    ? e.Map(x => x.ToString())
+                    : throw new NotSupportedException($"{nameof(withoutKeys)} expects a collection of key names but received ${keys.GetType().Name}");
+
+            var to = new Dictionary<string, object>();
+            foreach (var entry in target)
+            {
+                if (!strKeys.Contains(entry.Key))
+                    continue;
+
+                to[entry.Key] = entry.Value;
+            }
+            return to;
+        }
+
+        public object withoutKeys(IDictionary<string, object> target, object keys)
+        {
+            if (keys == null)
+                return target;
+            
+            var strKeys = keys is string s
+                ? new List<string>{ s }
+                : keys is IEnumerable e
+                    ? e.Map(x => x.ToString())
+                    : throw new NotSupportedException($"{nameof(withoutKeys)} expects a collection of key names but received ${keys.GetType().Name}");
+
+            var to = new Dictionary<string, object>();
+            foreach (var entry in target)
+            {
+                if (strKeys.Contains(entry.Key))
+                    continue;
+
+                to[entry.Key] = entry.Value;
+            }
+            return to;
+        }
+
+        public object merge(IDictionary<string, object> target, object sources)
+        {
+            var srcArray = sources is IDictionary<string, object> d
+                ? new object[] {d}
+                : sources is List<IDictionary<string, object>> ld
+                    ? ld.ToArray()
+                    : sources is List<object> lo
+                        ? lo.ToArray()
+                        : sources is object[] la
+                            ? la
+                            : throw new NotSupportedException(
+                                $"{nameof(merge)} cannot merge objects of type ${sources.GetType().Name}");
+
+            return target.MergeIntoObjectDictionary(srcArray);
+        }
+
         public string dirPath(string filePath)
         {
             if (string.IsNullOrEmpty(filePath) || filePath[filePath.Length - 1] == '/')
@@ -1094,6 +1270,27 @@ namespace ServiceStack.Templates
                 ? assetsBase.ToString().CombineWith(virtualPath).ResolvePaths()
                 : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
         }
+
+        public Task<object> evalTemplate(TemplateScopeContext scope, string source) => evalTemplate(scope, source, null);
+        public async Task<object> evalTemplate(TemplateScopeContext scope, string source, Dictionary<string, object> args)
+        {
+            var context = scope.CreateNewContext(args);
+            
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var pageResult = new PageResult(context.OneTimePage(source));
+                if (args != null)
+                    pageResult.Args = args;
+                
+                await pageResult.WriteToAsync(ms);
+
+                ms.Position = 0;
+                var result = ms.ReadToEnd();
+
+                return result;
+            }
+        }
+
    }
 
     public partial class TemplateDefaultFilters //Methods named after common keywords breaks intelli-sense when trying to use them        

@@ -11,10 +11,6 @@ using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.IO;
 
-#if NETCORE
-using Microsoft.Extensions.Primitives;
-#endif
-
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class ModelBinding
@@ -326,7 +322,7 @@ Brackets in Layout < & >
             
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
-<head><title>{{ title }}</title></head>
+<head><title></title></head>
 <body>
 <header>I&#39;m In Your Header</header>
 <div id='content'><h2>Content is King!</h2><section><p>About this page.....</p></section></div>
@@ -725,10 +721,10 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 }
             }.Init();
 
-            Assert.That(new PageResult(context.OneTimePage("{{ undefined }}")).Result, Is.EqualTo("{{ undefined }}"));
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined }}")).Result, Is.EqualTo(""));
             Assert.That(new PageResult(context.OneTimePage("{{ serverArg }}")).Result, Is.EqualTo("defined"));
-            Assert.That(new PageResult(context.OneTimePage("{{ serverArg | unknownFilter }}")).Result, Is.EqualTo("{{ serverArg | unknownFilter }}"));
-            Assert.That(new PageResult(context.OneTimePage("{{ undefined | titleCase }}")).Result, Is.EqualTo("{{ undefined | titleCase }}"));
+            Assert.That(new PageResult(context.OneTimePage("{{ serverArg | unknownFilter }}")).Result, Is.EqualTo(""));
+            Assert.That(new PageResult(context.OneTimePage("{{ undefined | titleCase }}")).Result, Is.EqualTo(""));
             
             Assert.That(new PageResult(context.OneTimePage("{{ '' }}")).Result, Is.EqualTo(""));
             Assert.That(new PageResult(context.OneTimePage("{{ null }}")).Result, Is.EqualTo(""));
@@ -928,7 +924,10 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_control_whats_emitted_on_Unhandled_expression()
         {
-            var context = new TemplateContext().Init();
+            var context = new TemplateContext
+            {
+                OnUnhandledExpression = var => var.OriginalTextUtf8
+            }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo("{{ unknownArg | lower }}"));
 
@@ -962,7 +961,6 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         public static string RemoveNewLines(this string text) => text.Trim().Replace("\r", "").Replace("\n", "");
         
         static readonly Regex whitespace = new Regex(@"\s+", RegexOptions.Compiled);
-        public static string RemoveAllWhitespace(this StringSegment text) => whitespace.Replace(text.Value, "");
         public static string RemoveAllWhitespace(this string text) => whitespace.Replace(text, "");
     }
 }

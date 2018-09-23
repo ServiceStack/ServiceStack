@@ -1,211 +1,464 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
-
-#if NETSTANDARD2_0
-using Microsoft.Extensions.Primitives;
-#endif
 
 namespace ServiceStack.Templates
 {
-    public abstract class JsExpression : JsToken {}
-
-    public static class JsExpressionUtils
+    public abstract class JsExpression : JsToken
     {
-        public static StringSegment ParseJsExpression(this string literal, out JsToken token) =>
-            literal.ToStringSegment().ParseJsExpression(out token);
+        public abstract Dictionary<string, object> ToJsAst();
 
-        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token) =>
-            literal.ParseJsExpression(out token, filterExpression:false);
+        public virtual string ToJsAstType() => GetType().ToJsAstType();
+    }
+    
+    public class JsIdentifier : JsExpression
+    {
+        public string Name { get; }
 
-        private const char ConditionalExpressionTestChar = '?';
-
-        public static StringSegment ParseJsExpression(this StringSegment literal, out JsToken token, bool filterExpression)
+        public JsIdentifier(string name) => Name = name;
+        public JsIdentifier(ReadOnlySpan<char> name) => Name = name.Value();
+        public override string ToRawString() => ":" + Name;
+        
+        public override object Evaluate(TemplateScopeContext scope)
         {
-            var peekLiteral = literal.ParseJsToken(out var node, filterExpression:filterExpression);
-
-            peekLiteral = peekLiteral.AdvancePastWhitespace();
-            
-            var peekChar = peekLiteral.SafeGetChar(0);
-            if (literal.IsNullOrEmpty() || peekChar.IsExpressionTerminatorChar())
-            {
-                token = node;
-                return peekLiteral;
-            }
-
-            if (peekChar == ConditionalExpressionTestChar)
-            {
-                literal = peekLiteral.ParseJsConditionalExpression(node, out var expression);
-                token = expression;
-                return literal;
-            }
-
-            peekLiteral = peekLiteral.AdvancePastWhitespace();
-
-            if (!peekLiteral.IsNullOrEmpty())
-            {
-                if (filterExpression && peekLiteral.Length > 2)
-                {
-                    var char1 = peekLiteral.GetChar(0);
-                    var char2 = peekLiteral.GetChar(1);
-                    if ((char1 == '|' && char2 != '|') || (char1 == '}' && char2 == '}'))
-                    {
-                        token = node;
-                        return peekLiteral;
-                    }
-                }
-            }
-            
-            peekLiteral = peekLiteral.ParseJsBinaryOperator(out var op);
-            if (op != null)
-            {
-                literal = literal.ParseBinaryExpression(out var expr, filterExpression);
-                token = expr;
-
-                literal = literal.AdvancePastWhitespace();
-                if (literal.FirstCharEquals(ConditionalExpressionTestChar))
-                {
-                    literal = literal.ParseJsConditionalExpression(expr, out var conditionalExpr);
-                    token = conditionalExpr;
-                    return literal;
-                }
-                
-                return literal;
-            }
-
-            literal = peekLiteral.ParseJsMemberExpression(ref node, filterExpression);
-
-            token = node;
-            return literal;
+            var ret = scope.PageResult.GetValue(Name, scope);
+            return ret;
         }
 
-        private static StringSegment ParseJsConditionalExpression(this StringSegment literal, JsToken test, out JsConditionalExpression expression)
+        protected bool Equals(JsIdentifier other) => string.Equals(Name, other.Name);
+
+        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object> {
+            ["type"] = ToJsAstType(),
+            ["name"] = Name,
+        };
+
+        public override int GetHashCode() => Name.GetHashCode();
+
+        public override bool Equals(object obj)
         {
-            literal = literal.Advance(1);
-
-            literal = literal.ParseJsExpression(out var consequent);
-            literal = literal.AdvancePastWhitespace();
-
-            if (!literal.FirstCharEquals(':'))
-                throw new SyntaxErrorException($"Expected Conditional ':' but was {literal.DebugFirstChar()}");
-
-            literal = literal.Advance(1);
-
-            literal = literal.ParseJsExpression(out var alternate);
-
-            expression = new JsConditionalExpression(test, consequent, alternate);
-            return literal;
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsIdentifier) obj);
         }
 
-        public static StringSegment ParseBinaryExpression(this StringSegment literal, out JsExpression expr, bool filterExpression)
+        public override string ToString() => ToRawString();
+    }
+
+    public class JsLiteral : JsExpression
+    {
+        public static JsLiteral True = new JsLiteral(true);
+        public static JsLiteral False = new JsLiteral(false);
+        
+        public object Value { get; }
+        public JsLiteral(object value) => Value = value;
+        public override string ToRawString() => JsonValue(Value);
+
+        public override int GetHashCode() => (Value != null ? Value.GetHashCode() : 0);
+        protected bool Equals(JsLiteral other) => Equals(Value, other.Value);
+        public override bool Equals(object obj)
         {
-            literal = literal.AdvancePastWhitespace();
-            
-            literal = literal.ParseJsToken(out var lhs, filterExpression:filterExpression);
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            return obj.GetType() == this.GetType() && Equals((JsLiteral) obj);
+        }
 
-            if (literal.IsNullOrEmpty())
+        public override string ToString() => ToRawString();
+
+        public override object Evaluate(TemplateScopeContext scope) => Value;
+
+        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object> {
+            ["type"] = ToJsAstType(),
+            ["value"] = Value,
+            ["raw"] = JsonValue(Value),
+        };
+    }
+
+    public class JsArrayExpression : JsExpression
+    {
+        public JsToken[] Elements { get; }
+
+        public JsArrayExpression(params JsToken[] elements) => Elements = elements.ToArray();
+        public JsArrayExpression(IEnumerable<JsToken> elements) : this(elements.ToArray()) {}
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var to = new List<object>();
+            foreach (var element in Elements)
             {
-                expr = lhs is JsExpression jsExpr
-                    ? jsExpr
-                    : throw new SyntaxErrorException($"Expected Expression but was {lhs.DebugToken()}");
-            }
-            else
-            {
-                literal = literal.ParseJsBinaryOperator(out var op);
-
-                if (op == null)
-                    throw new SyntaxErrorException($"Expected binary operator near: {literal.SubstringWithElipsis(0, 50)}");
-
-                var prec = JsTokenUtils.GetBinaryPrecedence(op.Token);
-                if (prec > 0)
+                if (element is JsSpreadElement spread)
                 {
-                    literal = literal.ParseJsToken(out JsToken rhs, filterExpression:filterExpression);
+                    if (!(spread.Argument.Evaluate(scope) is IEnumerable arr))
+                        continue;
 
-                    var stack = new Stack<JsToken>();
-                    stack.Push(lhs);
-                    stack.Push(op);
-                    stack.Push(rhs);
-
-                    var precedences = new List<int> { prec };
-
-                    while (true)
+                    foreach (var value in arr)
                     {
-                        literal = literal.AdvancePastWhitespace();
-                        if (filterExpression && literal.Length > 2 && (literal.GetChar(0) == '|' && literal.GetChar(1) != '|'))
-                        {
-                            break;
-                        }
-
-                        prec = literal.GetNextBinaryPrecedence();
-                        if (prec == 0)
-                            break;
-
-                        while ((stack.Count > 2) && prec <= precedences[precedences.Count - 1])
-                        {
-                            rhs = stack.Pop();
-                            var operand = (JsBinaryOperator)stack.Pop();
-                            precedences.RemoveAt(precedences.Count - 1);
-                            lhs = stack.Pop();
-                            stack.Push(CreateJsExpression(lhs, operand, rhs));
-                        }
-
-                        literal = literal.ParseJsBinaryOperator(out op);
-                        
-                        if (literal.IsNullOrEmpty())
-                            throw new SyntaxErrorException($"Expected expression near: '{literal.SubstringWithElipsis(0,40)}'");
-
-                        literal = literal.ParseJsToken(out var token, filterExpression:filterExpression);
-                        
-                        stack.Push(op);
-                        stack.Push(token);
-                        precedences.Add(prec);
+                        to.Add(value);
                     }
-
-                    var i = stack.Count - 1;
-                    var ret = stack.Pop();
-
-                    while (stack.Count > 0)
-                    {
-                        op = (JsBinaryOperator) stack.Pop();
-                        lhs = stack.Pop();
-                        ret = CreateJsExpression(lhs, op, ret);
-                    }
-
-                    expr = (JsExpression) ret;
                 }
                 else
                 {
-                    expr = lhs is JsExpression jsExpr
-                        ? jsExpr
-                        : throw new SyntaxErrorException($"Expected Expression but was {lhs.DebugToken()}");
+                    var value = element.Evaluate(scope);
+                    to.Add(value);
                 }
             }
-
-            return literal;
+            return to;
         }
 
-        public static JsExpression CreateJsExpression(JsToken lhs, JsBinaryOperator op, JsToken rhs)
+        public override string ToRawString()
         {
-            if (op is JsAnd opAnd)
-                return new JsLogicalExpression(lhs, opAnd, rhs);
-            if (op is JsOr opOr)
-                return new JsLogicalExpression(lhs, opOr, rhs);
-            
-            return new JsBinaryExpression(lhs, op, rhs);
-        }
-
-        static int GetNextBinaryPrecedence(this StringSegment literal)
-        {
-            if (!literal.IsNullOrEmpty() && !literal.GetChar(0).IsExpressionTerminatorChar())
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("[");
+            for (var i = 0; i < Elements.Length; i++)
             {
-                literal.ParseJsBinaryOperator(out var binaryOp);
-                if (binaryOp != null)
-                    return JsTokenUtils.GetBinaryPrecedence(binaryOp.Token);
+                if (i > 0) 
+                    sb.Append(",");
+                
+                var element = Elements[i];
+                sb.Append(element.ToRawString());
+            }
+            sb.Append("]");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var elements = new List<object>();
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["elements"] = elements
+            };
+
+            foreach (var element in Elements)
+            {
+                elements.Add(element.ToJsAst());
             }
 
-            return 0;
+            return to;
+        }
+
+        protected bool Equals(JsArrayExpression other)
+        {
+            return Elements.EquivalentTo(other.Elements);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsArrayExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Elements != null ? Elements.GetHashCode() : 0);
+        }
+    }
+
+    public class JsObjectExpression : JsExpression
+    {
+        public JsProperty[] Properties { get; }
+
+        public JsObjectExpression(params JsProperty[] properties) => Properties = properties;
+        public JsObjectExpression(IEnumerable<JsProperty> properties) : this(properties.ToArray()) {}
+
+        public static string GetKey(JsToken token)
+        {
+            if (token is JsLiteral literalKey)
+                return literalKey.Value.ToString();
+            if (token is JsIdentifier identifierKey)
+                return identifierKey.Name;
+            if (token is JsMemberExpression memberExpr && memberExpr.Property is JsIdentifier prop)
+                return prop.Name;
+            
+            throw new SyntaxErrorException($"Invalid Key. Expected a Literal or Identifier but was {token.DebugToken()}");
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            var to = new Dictionary<string, object>();
+            foreach (var prop in Properties)
+            {
+                if (prop.Key == null)
+                {
+                    if (prop.Value is JsSpreadElement spread)
+                    {
+                        var value = spread.Argument.Evaluate(scope);
+                        var obj = value.ToObjectDictionary();
+                        if (obj != null)
+                        {
+                            foreach (var entry in obj)
+                            {
+                                to[entry.Key] = entry.Value;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new NotSupportedException("Object Expressions does not have a key");
+                    }
+                }
+                else
+                {
+                    var keyString = GetKey(prop.Key);
+                    var value = prop.Value.Evaluate(scope);
+                    to[keyString] = value;
+                }
+            }
+            return to;
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("{");
+            for (var i = 0; i < Properties.Length; i++)
+            {
+                if (i > 0) 
+                    sb.Append(",");
+                
+                var prop = Properties[i];
+                if (prop.Key != null)
+                {
+                    sb.Append(prop.Key.ToRawString());
+                    if (!prop.Shorthand)
+                    {
+                        sb.Append(":");
+                        sb.Append(prop.Value.ToRawString());
+                    }
+                }
+                else //.... spread operator
+                {
+                    sb.Append(prop.Value.ToRawString());
+                }
+            }
+            sb.Append("}");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var properties = new List<object>();
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["properties"] = properties
+            };
+
+            var propType = typeof(JsProperty).ToJsAstType();
+            foreach (var prop in Properties)
+            {
+                properties.Add(new Dictionary<string, object> {
+                    ["type"] = propType,
+                    ["key"] = prop.Key?.ToJsAst(), 
+                    ["computed"] = false, //syntax not supported: { ["a" + 1]: 2 }
+                    ["value"] = prop.Value.ToJsAst(), 
+                    ["kind"] = "init",
+                    ["method"] = false,
+                    ["shorthand"] = prop.Shorthand,
+                });
+            }
+
+            return to;
+        }
+
+        protected bool Equals(JsObjectExpression other)
+        {
+            return Properties.EquivalentTo(other.Properties);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsObjectExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Properties != null ? Properties.GetHashCode() : 0);
+        }
+    }
+
+    public class JsProperty
+    {
+        public JsToken Key { get; }
+        public JsToken Value { get; }
+        public bool Shorthand { get; }
+
+        public JsProperty(JsToken key, JsToken value) : this(key, value, shorthand:false){}
+        public JsProperty(JsToken key, JsToken value, bool shorthand)
+        {
+            Key = key;
+            Value = value;
+            Shorthand = shorthand;
+        }
+
+        protected bool Equals(JsProperty other)
+        {
+            return Equals(Key, other.Key) && 
+                   Equals(Value, other.Value) && 
+                   Shorthand == other.Shorthand;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsProperty) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Key != null ? Key.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Value != null ? Value.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ Shorthand.GetHashCode();
+                return hashCode;
+            }
+        }
+    }
+
+    public class JsSpreadElement : JsExpression
+    {
+        public JsToken Argument { get; }
+        public JsSpreadElement(JsToken argument)
+        {
+            Argument = argument;
+        }
+
+        public override object Evaluate(TemplateScopeContext scope)
+        {
+            return Argument.Evaluate(scope);
+        }
+
+        public override string ToRawString()
+        {
+            return "..." + Argument.ToRawString();
+        }
+
+        public override Dictionary<string, object> ToJsAst() => new Dictionary<string, object>
+        {
+            ["type"] = ToJsAstType(),
+            ["argument"] = Argument.ToJsAst()
+        };
+
+        protected bool Equals(JsSpreadElement other)
+        {
+            return Equals(Argument, other.Argument);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsSpreadElement) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Argument != null ? Argument.GetHashCode() : 0);
+        }
+    }
+
+    public class JsArrowFunctionExpression : JsExpression
+    {
+        public JsIdentifier[] Params { get; }
+        public JsToken Body { get; }
+
+        public JsArrowFunctionExpression(JsIdentifier param, JsToken body) : this(new[] {param}, body) {}
+        public JsArrowFunctionExpression(JsIdentifier[] @params, JsToken body)
+        {
+            Params = @params ?? throw new SyntaxErrorException($"Params missing in Arrow Function Expression");
+            Body = body ?? throw new SyntaxErrorException($"Body missing in Arrow Function Expression");
+        }
+
+        public override string ToRawString()
+        {
+            var sb = StringBuilderCache.Allocate();
+
+            sb.Append("(");
+            for (var i = 0; i < Params.Length; i++)
+            {
+                var identifier = Params[i];
+                if (i > 0)
+                    sb.Append(",");
+
+                sb.Append(identifier.Name);
+            }
+            sb.Append(") => ");
+
+            sb.Append(Body.ToRawString());
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
+        public override object Evaluate(TemplateScopeContext scope) => this;
+
+        public object Invoke(params object[] @params) => Invoke(JS.CreateScope(), @params);
+        public object Invoke(TemplateScopeContext scope, params object[] @params)
+        {
+            var args = new Dictionary<string, object>();
+            for (var i = 0; i < Params.Length; i++)
+            {
+                if (@params.Length < i)
+                    break;
+
+                var param = Params[i];
+                args[param.Name] = @params[i];
+            }
+
+            var exprScope = scope.ScopeWithParams(args);
+            var ret = Body.Evaluate(exprScope);
+            return ret;
+        }
+
+        public override Dictionary<string, object> ToJsAst()
+        {
+            var to = new Dictionary<string, object>
+            {
+                ["type"] = ToJsAstType(),
+                ["id"] = null,
+            };
+            var args = new List<object>();
+            to["params"] = args;
+
+            foreach (var param in Params)
+            {
+                args.Add(param.ToJsAst());
+            }
+
+            to["body"] = Body.ToJsAst();
+            return to;
+        }
+
+        protected bool Equals(JsArrowFunctionExpression other)
+        {
+            return Params.EquivalentTo(other.Params) && Equals(Body, other.Body);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((JsArrowFunctionExpression) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((Params != null ? Params.GetHashCode() : 0) * 397) ^ (Body != null ? Body.GetHashCode() : 0);
+            }
         }
     }
     
-
 }

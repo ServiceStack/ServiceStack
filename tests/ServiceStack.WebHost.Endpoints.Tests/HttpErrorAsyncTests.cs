@@ -150,7 +150,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 Assert.That(((WebException)innerEx).Status, Is.EqualTo(WebExceptionStatus.NameResolutionFailure));
 #else
                 Assert.That(innerEx.Message, Is.EqualTo("Couldn't resolve host name")
-                                            .Or.EqualTo("The server name or address could not be resolved")); // .NET Core
+                                            .Or.EqualTo("No such host is known")                              // .NET Core 2.1
+                                            .Or.EqualTo("The server name or address could not be resolved")); // .NET Core 2.0
 #endif        
             }
             catch (WebException ex) //JsonServiceClient

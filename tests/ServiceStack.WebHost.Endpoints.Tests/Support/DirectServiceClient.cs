@@ -18,6 +18,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
 
         public int Version { get; set; }
         public string SessionId { get; set; }
+        public string BearerToken { get; set; }
 
         public DirectServiceClient(ServiceController serviceController)
         {
@@ -65,7 +66,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Support
                 try
                 {
                     var deserializer = HostContext.ContentTypes.GetStreamDeserializer(httpReq.ResponseContentType);
-                    webEx.ResponseDto = deserializer(typeof(TResponse), new MemoryStream(httpRes.ReadAsBytes()));
+                    webEx.ResponseDto = deserializer(typeof(TResponse), httpRes.ReadAsBytes().InMemoryStream());
                 }
                 catch (Exception ex)
                 {

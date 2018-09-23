@@ -157,5 +157,40 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 Is.EqualTo("<select name=\"sel\"><option value=\"A\">A</option><option value=\"B\">B</option><option value=\"C\">C</option></select>"));
         }
 
+        [Test]
+        public void Does_generate_class_list_with_htmlClass()
+        {
+            var context = new TemplateContext {
+                Args = {
+                    ["index"] = 1,
+                    ["name"] = "foo",
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ {alt:isOdd(index), active:'foo'==name } | htmlClass }}"), 
+                Is.EqualTo(" class=\"alt active\""));
+            Assert.That(context.EvaluateTemplate("{{ {alt:isEven(index), active:'bar'==name } | htmlClass }}"), 
+                Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ [isOdd(index) ? 'odd': 'even', 'foo'==name ? 'active' : ''] | htmlClass }}"), 
+                Is.EqualTo(" class=\"odd active\""));
+            Assert.That(context.EvaluateTemplate("{{ [isOdd(index+1) ? 'odd': 'even', 'bar'==name ? 'active' : ''] | htmlClass }}"), 
+                Is.EqualTo(" class=\"even\""));
+
+            Assert.That(context.EvaluateTemplate("{{ 'hide' | if(!disclaimerAccepted) | htmlClass }}"), 
+                Is.EqualTo(" class=\"hide\""));
+        }
+
+        [Test]
+        public void HtmlAttrs_with_bool_only_emits_name()
+        {
+            var context = new TemplateContext().Init();
+            
+            Assert.That(context.EvaluateTemplate("<option {{ {selected:true,test:'val'} | htmlAttrs }}>"), 
+                Is.EqualTo("<option  selected test=\"val\">"));
+
+            Assert.That(context.EvaluateTemplate("<option {{ {selected:false,test:'val'} | htmlAttrs }}>"), 
+                Is.EqualTo("<option  test=\"val\">"));
+        }
+
     }
 }

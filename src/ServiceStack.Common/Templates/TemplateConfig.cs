@@ -1,18 +1,26 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace ServiceStack.Templates
 {
     public static class TemplateConfig
     {
+        public static bool HideUnknownExpressions { get; set; } = true;
+        
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
             "assignTo",
+            "assignToGlobal",
             "assignError",
             "addTo",
+            "addToGlobal",
             "addToStart",
+            "addToStartGlobal",
             "appendTo",
+            "appendToGlobal",
             "prependTo",
+            "prependToGlobal",
             "do",
             "end",
             "throw",
@@ -61,5 +69,38 @@ namespace ServiceStack.Templates
             typeof(NullReferenceException),
             typeof(ArgumentNullException),
         };
+        
+        public static HashSet<string> DontEvaluateBlocksNamed { get; set; } = new HashSet<string> {
+            "raw"
+        };
+
+        public static int MaxQuota { get; set; } = 10000;
+        public static CultureInfo DefaultCulture { get; set; } //Uses CurrentCulture by default
+        public static string DefaultDateFormat { get; set; }  = "yyyy-MM-dd";
+        public static string DefaultDateTimeFormat { get; set; } = "u";
+        public static string DefaultTimeFormat { get; set; } = @"h\:mm\:ss";
+        public static TimeSpan DefaultFileCacheExpiry { get; set; } =TimeSpan.FromMinutes(1);
+        public static TimeSpan DefaultUrlCacheExpiry { get; set; } =TimeSpan.FromMinutes(1);
+        public static string DefaultIndent { get; set; } = "\t";
+        public static string DefaultNewLine { get; set; } = Environment.NewLine;
+        public static string DefaultJsConfig { get; set; } = "excludetypeinfo";
+        public static StringComparison DefaultStringComparison { get; set; } = StringComparison.Ordinal;
+        public static string DefaultTableClassName { get; set; } = "table";
+        public static string DefaultErrorClassName { get; set; } = "alert alert-danger";
+        
+        public static CultureInfo CreateCulture()
+        {
+            var culture = DefaultCulture;
+            if (culture == null)
+            {
+                culture = CultureInfo.CurrentCulture;
+            }
+            if (Equals(culture, CultureInfo.InvariantCulture))
+            {
+                culture = (CultureInfo) culture.Clone();
+                culture.NumberFormat.CurrencySymbol = "$";
+            }
+            return culture;
+        }
     }
 }

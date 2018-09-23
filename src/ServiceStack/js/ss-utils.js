@@ -559,7 +559,7 @@
                     }
                     if (opt.unRegisterUrl) {
                         $(window).on("unload", function () {
-                            $.post(opt.unRegisterUrl, null, function (r) { });
+                            $.ajax({ type: 'POST', url: opt.unRegisterUrl, async: false });
                         });
                     }
                     $.ss.updateSubscriberUrl = opt.updateSubscriberUrl;
