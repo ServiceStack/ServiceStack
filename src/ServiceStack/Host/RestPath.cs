@@ -219,10 +219,10 @@ namespace ServiceStack.Host
             this.UniqueMatchHashKey = StringBuilderCache.ReturnAndFree(sbHashKey);
 
             this.typeDeserializer = new StringMapTypeDeserializer(this.RequestType);
-            RegisterCaseInsenstivePropertyNameMappings();
+            RegisterCaseInsensitivePropertyNameMappings();
         }
 
-        private void RegisterCaseInsenstivePropertyNameMappings()
+        private void RegisterCaseInsensitivePropertyNameMappings()
         {
             var propertyName = "";
             try
@@ -230,14 +230,14 @@ namespace ServiceStack.Host
                 foreach (var propertyInfo in this.RequestType.GetSerializableProperties())
                 {
                     propertyName = propertyInfo.Name;
-                    propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
+                    propertyNamesMap.Add(propertyName, propertyName);
                 }
                 if (JsConfig.IncludePublicFields)
                 {
                     foreach (var fieldInfo in this.RequestType.GetSerializableFields())
                     {
                         propertyName = fieldInfo.Name;
-                        propertyNamesMap.Add(propertyName.ToLowerInvariant(), propertyName);
+                        propertyNamesMap.Add(propertyName, propertyName);
                     }
                 }
             }
@@ -259,7 +259,7 @@ namespace ServiceStack.Host
 
         private readonly StringMapTypeDeserializer typeDeserializer;
 
-        private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> propertyNamesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public static Func<RestPath, string, string[], int> CalculateMatchScore { get; set; }
 
@@ -473,7 +473,7 @@ namespace ServiceStack.Host
                     continue;
                 }
 
-                if (!this.propertyNamesMap.TryGetValue(variableName.ToLower(), out var propertyNameOnRequest))
+                if (!this.propertyNamesMap.TryGetValue(variableName, out var propertyNameOnRequest))
                 {
                     if (Keywords.Ignore.EqualsIgnoreCase(variableName))
                     {
