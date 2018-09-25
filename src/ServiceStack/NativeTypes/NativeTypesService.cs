@@ -190,6 +190,7 @@ namespace ServiceStack.NativeTypes
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
             var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? false;
             typesConfig.ExportAsTypes = true;
 
             return GenerateTypeScript(request, typesConfig);
@@ -200,7 +201,10 @@ namespace ServiceStack.NativeTypes
         {
             request.BaseUrl = GetBaseUrl(request.BaseUrl);
 
-            return GenerateTypeScript(request, NativeTypesMetadata.GetConfig(request));
+            var typesConfig = NativeTypesMetadata.GetConfig(request);
+            typesConfig.MakePropertiesOptional = request.MakePropertiesOptional ?? true;
+            
+            return GenerateTypeScript(request, typesConfig);
         }
 
         public string GenerateTypeScript(NativeTypesBase request, MetadataTypesConfig typesConfig)
