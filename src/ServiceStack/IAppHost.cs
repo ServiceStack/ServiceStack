@@ -115,6 +115,11 @@ namespace ServiceStack
         /// Add Response Filters for MQ/TCP Responses
         /// </summary>
         List<Action<IRequest, IResponse, object>> GlobalMessageResponseFilters { get; }
+        
+        /// <summary>
+        /// Add Async Response Filters for MQ/TCP Responses
+        /// </summary>
+        List<Func<IRequest, IResponse, object, Task>> GlobalMessageResponseFiltersAsync { get; }
 
         /// <summary>
         /// Add Request Filter for a specific Request DTO Type
