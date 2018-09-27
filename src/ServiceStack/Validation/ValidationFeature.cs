@@ -14,7 +14,8 @@ namespace ServiceStack.Validation
         public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         public bool ScanAppHostAssemblies { get; set; } = true;
-
+        public bool TreatInfoAndWarningsAsErrors { get; set; } = true;
+        
         /// <summary>
         /// Activate the validation mechanism, so every request DTO with an existing validator
         /// will be validated.
@@ -22,14 +23,39 @@ namespace ServiceStack.Validation
         /// <param name="appHost">The app host</param>
         public void Register(IAppHost appHost)
         {
-            if (!appHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+            if (TreatInfoAndWarningsAsErrors)
             {
-                appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
-            }
+                if (!appHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+                {
+                    appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+                }
 
-            if (!appHost.GlobalMessageRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+                if (!appHost.GlobalMessageRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsync))
+                {
+                    appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+                }
+            }
+            else
             {
-                appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsync);
+                if (!appHost.GlobalRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsyncIgnoreWarningsInfo))
+                {
+                    appHost.GlobalRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsyncIgnoreWarningsInfo);
+                }
+
+                if (!appHost.GlobalMessageRequestFiltersAsync.Contains(ValidationFilters.RequestFilterAsyncIgnoreWarningsInfo))
+                {
+                    appHost.GlobalMessageRequestFiltersAsync.Add(ValidationFilters.RequestFilterAsyncIgnoreWarningsInfo);
+                }
+                
+                if (!appHost.GlobalResponseFiltersAsync.Contains(ValidationFilters.ResponseFilterAsync))
+                {
+                    appHost.GlobalResponseFiltersAsync.Add(ValidationFilters.ResponseFilterAsync);
+                }
+
+                if (!appHost.GlobalMessageResponseFiltersAsync.Contains(ValidationFilters.ResponseFilterAsync))
+                {
+                    appHost.GlobalMessageResponseFiltersAsync.Add(ValidationFilters.ResponseFilterAsync);
+                }
             }
 
             if (ScanAppHostAssemblies)
