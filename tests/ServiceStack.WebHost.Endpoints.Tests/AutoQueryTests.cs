@@ -9,7 +9,9 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.OrmLite;
+using ServiceStack.Testing;
 using ServiceStack.Text;
 using TestsConfig = ServiceStack.WebHost.Endpoints.Tests.Config;
 
@@ -775,6 +777,55 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public int? Age { get; set; }
         public string RockstarAlbumName { get; set; }
+    }
+
+    public class AutoQueryUnitTests
+    {
+        private ServiceStackHost appHost;
+
+        public AutoQueryUnitTests()
+        {
+            appHost = new BasicAppHost {
+                ConfigureAppHost = host => {
+                    host.Plugins.Add(new AutoQueryFeature());
+                },
+                ConfigureContainer = container => {
+                    var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
+                    container.Register<IDbConnectionFactory>(dbFactory);
+                    using (var db = dbFactory.Open())
+                    {
+                        db.DropAndCreateTable<Movie>();
+                        db.InsertAll(AutoQueryAppHost.SeedMovies);
+                    }
+                    container.RegisterAutoWired<MyQueryServices>();
+                },
+            }.Init();
+        }
+
+        [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
+
+        public class MyQueryServices : Service
+        {
+            public IAutoQueryDb AutoQuery { get; set; }
+
+            public object Any(QueryMovies query)
+            {
+                var q = AutoQuery.CreateQuery(query, base.Request);
+                return AutoQuery.Execute(query, q);
+            }
+            
+        }
+        [Test]
+        public void Can_execute_AutoQueryService_in_UnitTest()
+        {
+            var service = appHost.Resolve<MyQueryServices>();
+            service.Request = new BasicRequest();
+
+            var response = (QueryResponse<Movie>) service.Any(
+                new QueryMovies { Ratings = new[] {"G", "PG-13"} });
+            
+            Assert.That(response.Results.Count, Is.EqualTo(5));
+        }
     }
 
     [TestFixture]
