@@ -104,35 +104,28 @@ namespace ServiceStack.Validation
         {
             var ruleSet = req.Verb;
 
-            try
-            {
-                ValidationResult validationResult;
+            ValidationResult validationResult;
 
-                if (validator.HasAsyncValidators(ruleSet))
-                {
-                    validationResult = await validator.ValidateAsync(
-                        new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
-                        {
-                            Request = req
-                        });
-                }
-                else
-                {
-                    validationResult = validator.Validate(
-                        new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
-                        {
-                            Request = req
-                        });
-                }
-
-                return validationResult;
-            }
-            finally
+            if (validator.HasAsyncValidators(ruleSet))
             {
-                using (validator as IDisposable)
-                {
-                }
+                validationResult = await validator.ValidateAsync(
+                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
+                    {
+                        Request = req
+                    });
             }
+            else
+            {
+                validationResult = validator.Validate(
+                    new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
+                    {
+                        Request = req
+                    });
+            }
+
+            using (validator as IDisposable) { }
+            
+            return validationResult;
         }
     }
 }
