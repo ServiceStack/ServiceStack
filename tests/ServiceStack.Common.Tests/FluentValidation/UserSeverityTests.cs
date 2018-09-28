@@ -78,6 +78,23 @@ namespace ServiceStack.Common.Tests.FluentValidation
                         "'Word' should not be empty.");
                 }
             }
+            
+            [Test]
+            public void Can_return_response_when_no_failed_validations_and_TreatInfoAndWarningsAsErrors_set_false()
+            {
+                using (var appHost = new TestAppHost())
+                {
+                    appHost.Plugins.Add(new ValidationFeature {TreatInfoAndWarningsAsErrors = false});
+                    appHost.Init();
+                    appHost.Start(Urlbase);
+
+                    var sc = new JsonServiceClient(Urlbase);
+
+                    var resp = sc.Get(new EchoRequest {Day = "Monday", Word = "Word"});
+
+                    Assert.That(resp.ResponseStatus, Is.Null);
+                }
+            }
 
             [Test]
             public void Can_ignore_warnings_and_info_as_errors()
