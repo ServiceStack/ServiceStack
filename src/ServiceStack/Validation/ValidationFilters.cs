@@ -83,6 +83,9 @@ namespace ServiceStack.Validation
 
             var validationResult = await Validate(validator, req, req.Dto);
 
+            if (validationResult.IsValid) 
+                return;
+            
             var responseStatus = response.ResponseStatus ??
                                  DtoUtils.CreateResponseStatus(validationResult.Errors[0].ErrorCode);
             foreach (var error in validationResult.Errors)
