@@ -21,7 +21,6 @@ namespace ServiceStack.NativeTypes.TypeScript
             feature = HostContext.GetPlugin<NativeTypesFeature>();
         }
         
-        [Obsolete("Migrate to new string enums: enum StringEnum { A = 'A', B = 'B' }")]
         public static bool UseUnionTypeEnums { get; set; }
 
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
@@ -261,13 +260,9 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (type.IsEnum.GetValueOrDefault())
             {
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty(); 
-                if (isIntEnum || !UseUnionTypeEnums)
+                if ((isIntEnum || !UseUnionTypeEnums) && Config.ExportAsTypes)
                 {
-                    var typeDeclaration = !Config.ExportAsTypes
-                        ? "enum"
-                        : "export enum";
-
-                    sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}");
+                    sb.AppendLine($"export enum {Type(type.Name, type.GenericArgs)}");
                     sb.AppendLine("{");
                     sb = sb.Indent();
 
