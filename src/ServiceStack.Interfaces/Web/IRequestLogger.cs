@@ -55,6 +55,11 @@ namespace ServiceStack.Web
         Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
         /// <summary>
+        /// Customize Request Log Entry
+        /// </summary>
+        Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
+        /// <summary>
         /// Log a request
         /// </summary>
         /// <param name="request">The RequestContext</param>

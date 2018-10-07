@@ -34,6 +34,8 @@ namespace ServiceStack.Host
 
         public Type[] HideRequestBodyForRequestDtoTypes { get; set; }
 
+        public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
+
         protected InMemoryRollingRequestLogger() {}
 
         public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
@@ -60,6 +62,8 @@ namespace ServiceStack.Host
             var requestType = requestDto?.GetType();
 
             var entry = CreateEntry(request, requestDto, response, requestDuration, requestType);
+
+            RequestLogFilter?.Invoke(request, entry);
 
             logEntries.Enqueue(entry);
 

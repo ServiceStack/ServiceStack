@@ -68,6 +68,11 @@ namespace ServiceStack
         /// Limit logging to only Service Requests
         /// </summary>
         public bool LimitToServiceRequests { get; set; }
+        
+        /// <summary>
+        /// Customize Request Log Entry
+        /// </summary>
+        public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
         public RequestLogsFeature(int capacity) : this()
         {
@@ -101,6 +106,7 @@ namespace ServiceStack
             requestLogger.EnableErrorTracking = EnableErrorTracking;
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
+            requestLogger.RequestLogFilter = RequestLogFilter;
 
             appHost.Register(requestLogger);
 
