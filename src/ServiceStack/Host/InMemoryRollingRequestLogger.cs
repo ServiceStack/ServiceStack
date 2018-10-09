@@ -36,6 +36,8 @@ namespace ServiceStack.Host
 
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
+        public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
+
         protected InMemoryRollingRequestLogger() {}
 
         public InMemoryRollingRequestLogger(int? capacity = DefaultCapacity)
@@ -77,7 +79,7 @@ namespace ServiceStack.Host
             var entry = new RequestLogEntry
             {
                 Id = Interlocked.Increment(ref requestId),
-                DateTime = DateTime.UtcNow,
+                DateTime = CurrentDateFn(),
                 RequestDuration = requestDuration,
             };
 

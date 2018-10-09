@@ -74,6 +74,11 @@ namespace ServiceStack
         /// </summary>
         public Action<IRequest, RequestLogEntry> RequestLogFilter { get; set; }
 
+        /// <summary>
+        /// Change what DateTime to use for the current Date (defaults to UtcNow)
+        /// </summary>
+        public Func<DateTime> CurrentDateFn { get; set; } = () => DateTime.UtcNow;
+
         public RequestLogsFeature(int capacity) : this()
         {
             this.Capacity = capacity;
@@ -107,6 +112,7 @@ namespace ServiceStack
             requestLogger.ExcludeRequestDtoTypes = ExcludeRequestDtoTypes;
             requestLogger.HideRequestBodyForRequestDtoTypes = HideRequestBodyForRequestDtoTypes;
             requestLogger.RequestLogFilter = RequestLogFilter;
+            requestLogger.CurrentDateFn = CurrentDateFn;
 
             appHost.Register(requestLogger);
 

@@ -34,7 +34,7 @@ namespace ServiceStack.Host
                 entry.Id = redisLogEntry.GetNextSequence();
 
                 var key = UrnId.Create<RequestLogEntry>(entry.Id).ToLower();
-                var nowScore = DateTime.UtcNow.ToUnixTime();
+                var nowScore = CurrentDateFn().ToUnixTime();
 
                 using (var trans = redis.CreateTransaction())
                 {
