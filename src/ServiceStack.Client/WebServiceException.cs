@@ -27,147 +27,67 @@ namespace ServiceStack
         public WebHeaderCollection ResponseHeaders { get; set; }
 
         public object ResponseDto { get; set; }
-        
+
         public string ResponseBody { get; set; }
 
         public override string Message => ErrorMessage ?? base.Message;
 
-        private string errorCode;
+        public string ErrorCode => ResponseStatus?.ErrorCode ?? StatusDescription;
 
-        private void ParseResponseDto()
-        {
-            try
-            {
-                if (!TryGetResponseStatusFromResponseDto(out var responseStatus))
-                {
-                    if (!TryGetResponseStatusFromResponseBody(out responseStatus))
-                    {
-                        errorCode = StatusDescription;
-                        return;
-                    }
-                }
+        public string ErrorMessage => ResponseStatus?.Message;
 
-                var rsMap = responseStatus.FromJsv<Dictionary<string, string>>();
-                if (rsMap == null) return;
+        public string ServerStackTrace => ResponseStatus?.StackTrace;
 
-                rsMap = new Dictionary<string, string>(rsMap, PclExport.Instance.InvariantComparerIgnoreCase);
-                rsMap.TryGetValue("ErrorCode", out errorCode);
-                rsMap.TryGetValue("Message", out errorMessage);
-                rsMap.TryGetValue("StackTrace", out serverStackTrace);
-            }
-            catch (Exception ex)
-            {
-                if (log.IsDebugEnabled)
-                    log.Debug($"Could not parse Error ResponseDto {ResponseDto?.GetType().Name}", ex);
-            }        
-        }
-
-        private bool TryGetResponseStatusFromResponseDto(out string responseStatus)
-        {
-            responseStatus = string.Empty;
-            try
-            {
-                if (ResponseDto == null)
-                    return false;
-                var jsv = ResponseDto.ToJsv();
-                var map = jsv.FromJsv<Dictionary<string, string>>();
-                map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
-
-                return map.TryGetValue("ResponseStatus", out responseStatus);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private bool TryGetResponseStatusFromResponseBody(out string responseStatus)
-        {
-            responseStatus = string.Empty;
-            try
-            {
-                if (string.IsNullOrEmpty(ResponseBody)) return false;
-                var map = ResponseBody.FromJsv<Dictionary<string, string>>();
-                map = new Dictionary<string, string>(map, PclExport.Instance.InvariantComparerIgnoreCase);
-                return map.TryGetValue("ResponseStatus", out responseStatus);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public string ErrorCode
-        {
-            get
-            {
-                if (errorCode == null)
-                {
-                    ParseResponseDto();
-                }
-                return errorCode;
-            }
-        }
-
-        private string errorMessage;
-        public string ErrorMessage
-        {
-            get
-            {
-                if (errorMessage == null)
-                {
-                    ParseResponseDto();
-                }
-                return errorMessage;
-            }
-        }
-
-        private string serverStackTrace;
-        public string ServerStackTrace
-        {
-            get
-            {
-                if (serverStackTrace == null)
-                {
-                    ParseResponseDto();
-                }
-                return serverStackTrace;
-            }
-        }
-
+        private ResponseStatus responseStatus = null;
         public ResponseStatus ResponseStatus
         {
             get
             {
-                if (this.ResponseDto == null)
-                    return null;
-
+                if (responseStatus != null)
+                    return responseStatus;
+                
                 if (this.ResponseDto is IHasResponseStatus hasResponseStatus)
-                    return hasResponseStatus.ResponseStatus;
+                    responseStatus = hasResponseStatus.ResponseStatus;
 
-                var propertyInfo = this.ResponseDto.GetType().GetProperty("ResponseStatus");
-                return propertyInfo?.GetProperty(this.ResponseDto) as ResponseStatus;
+                try
+                {
+                    if (responseStatus == null && ResponseDto != null)
+                    {
+                        var propertyInfo = this.ResponseDto.GetType().GetProperty(nameof(ResponseStatus));
+                        responseStatus = propertyInfo?.GetProperty(this.ResponseDto) as ResponseStatus;
+
+                        if (responseStatus == null)
+                        {
+                            if (ResponseDto.ToObjectDictionary().TryGetValue(nameof(ResponseStatus), out var oStatus))
+                                responseStatus = oStatus as ResponseStatus;
+                        }
+                    }
+
+                    if (responseStatus == null && ResponseBody != null)
+                    {
+                        var map = ResponseBody.FromJsv<Dictionary<string, string>>();
+                        map = new Dictionary<string, string>(map, StringComparer.InvariantCultureIgnoreCase);
+                        if (map.TryGetValue(nameof(ResponseStatus), out var statusStr))
+                            responseStatus = statusStr.FromJsv<ResponseStatus>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (log.IsDebugEnabled)
+                        log.Debug($"Could not parse Error ResponseStatus {ResponseDto?.GetType().Name}", ex);
+                }        
+
+                return responseStatus;
             }
         }
 
-        public List<ResponseError> GetFieldErrors()
-        {
-            var responseStatus = ResponseStatus;
-            if (responseStatus != null)
-                return responseStatus.Errors ?? new List<ResponseError>();
+        public ResponseStatus ToResponseStatus() => ResponseStatus;
 
-            return new List<ResponseError>();
-        }
+        public List<ResponseError> GetFieldErrors() => ResponseStatus?.Errors ?? new List<ResponseError>();
 
-        public bool IsAny400()
-        {
-            return StatusCode >= 400 && StatusCode < 500;
-        }
+        public bool IsAny400() => StatusCode >= 400 && StatusCode < 500;
 
-        public bool IsAny500()
-        {
-            return StatusCode >= 500 && StatusCode < 600;
-        }
+        public bool IsAny500() => StatusCode >= 500 && StatusCode < 600;
 
         public override string ToString()
         {
@@ -211,11 +131,6 @@ namespace ServiceStack
 
 
             return StringBuilderCache.ReturnAndFree(sb);
-        }
-
-        public ResponseStatus ToResponseStatus()
-        {
-            return ResponseStatus;
         }
     }
 
