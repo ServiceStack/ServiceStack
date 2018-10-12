@@ -5,12 +5,14 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using Funq;
+using ServiceStack.ProtoBuf;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/users")]
+    [DataContract]
     public class User { }
     [DataContract]
     public class UserResponse : IHasResponseStatus
@@ -250,9 +252,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             public override void Configure(Container container)
             {
-                JsConfig.EmitCamelCaseNames = true;
+                JsConfig.Init(new Text.Config
+                {
+                    EmitCamelCaseNames = true
+                });
 
-                SetConfig(new HostConfig { DebugMode = false });
+                SetConfig(new HostConfig
+                {
+                    DebugMode = false,
+                });
+                
+                Plugins.Add(new ProtoBufFormat());
 
                 //Custom global uncaught exception handling strategy
                 this.UncaughtExceptionHandlers.Add((req, res, operationName, ex) =>
@@ -299,6 +309,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             appHost.Dispose();
             appHost.UncaughtExceptionHandlers = null;
+            JsConfig.Reset();
         }
 
         static IRestClient[] ServiceClients = 
@@ -306,7 +317,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 			new JsonServiceClient(Config.ListeningOn),
 			new JsonHttpClient(Config.ListeningOn),
 			new XmlServiceClient(Config.ListeningOn),
-			new JsvServiceClient(Config.ListeningOn)
+		    new JsvServiceClient(Config.ListeningOn),
+		    new ProtoBufServiceClient(Config.ListeningOn), 
 			//SOAP not supported in HttpListener
 			//new Soap11ServiceClient(ServiceClientBaseUri),
 			//new Soap12ServiceClient(ServiceClientBaseUri)

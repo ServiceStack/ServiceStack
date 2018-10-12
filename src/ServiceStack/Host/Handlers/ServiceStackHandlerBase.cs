@@ -178,6 +178,18 @@ namespace ServiceStack.Host.Handlers
             return CreateContentTypeRequestAsync(httpReq, operationType, contentType);
         }
 
+        static long GetStreamLengthSafe(Stream stream)
+        {
+            try
+            {
+                return stream.Length; //can throw NotSupportedException
+            }
+            catch (Exception e)
+            {
+                return -1;
+            }
+        }
+
         protected static Task<object> CreateContentTypeRequestAsync(IRequest httpReq, Type requestType, string contentType)
         {
             try
@@ -189,7 +201,7 @@ namespace ServiceStack.Host.Handlers
                         || (HttpUtils.HasRequestBody(httpReq.Verb) && 
                                 (httpReq.GetContentEncoding() != null
 #if NETSTANDARD2_0
-                                || httpReq.InputStream.Length > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
+                                || GetStreamLengthSafe(httpReq.InputStream) > 0 // AWS API Gateway reports ContentLength=0,ContentEncoding=null
 #endif
                                 ));
 
