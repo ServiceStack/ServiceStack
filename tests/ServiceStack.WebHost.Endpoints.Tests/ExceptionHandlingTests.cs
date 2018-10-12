@@ -28,6 +28,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class UserReturnVoid : IReturnVoid { }
+
     public class UserService : Service
     {
         public object Get(User request)
@@ -51,6 +53,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         public void Delete(UserVoid request)
+        {
+            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
+        }
+
+        public void Delete(UserReturnVoid request)
         {
             throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
         }
@@ -360,6 +367,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Delete<UserVoidResponse>("/usersvoid");
+                Assert.Fail();
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+            }
+        }
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Handles_Thrown_Http_Error_With_Forbidden_status_code_using_IReturnVoid(IRestClient client)
+        {
+            try
+            {
+                client.Delete(new UserReturnVoid());
                 Assert.Fail();
             }
             catch (WebServiceException ex)
