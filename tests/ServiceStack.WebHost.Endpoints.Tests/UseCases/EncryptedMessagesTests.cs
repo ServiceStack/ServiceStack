@@ -112,6 +112,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.UseCases
         }
 
         [Test]
+        public void Can_Send_Secure_Restriced_Encrypted_Message_with_ServiceClients()
+        {
+            var client = CreateClient();
+            IEncryptedClient encryptedClient = client.GetEncryptedClient(client.Get(new GetPublicKey()));
+
+            var response = encryptedClient.Send(new HelloSecureRestricted { Name = "World" });
+
+            Assert.That(response.Result, Is.EqualTo("Hello, World!"));
+        }
+
+        [Test]
         public void Can_Send_Encrypted_OneWay_Message_with_ServiceClients()
         {
             var client = CreateClient();
