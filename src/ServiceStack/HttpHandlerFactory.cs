@@ -251,8 +251,8 @@ namespace ServiceStack
             var pathInfo = httpReq.PathInfo;
             var httpMethod = httpReq.Verb;
             
-            var hasSegments = pathInfo.AsSpan().TrimStart('/').IndexOf('/') >= 0;
-            if (!hasSegments) return NotFoundHttpHandler;
+            if (pathInfo.AsSpan().TrimStart('/').Length == 0) 
+                return NotFoundHttpHandler;
 
             var restPath = RestHandler.FindMatchingRestPath(httpReq, out var contentType);
             if (restPath != null)
