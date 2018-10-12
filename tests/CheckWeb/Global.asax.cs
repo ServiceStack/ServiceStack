@@ -64,8 +64,10 @@ namespace CheckWeb
             var nativeTypes = this.GetPlugin<NativeTypesFeature>();
             nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
             nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
-            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
 
+            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute));
+            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
+            
             // Change ServiceStack configuration
             this.SetConfig(new HostConfig
             {

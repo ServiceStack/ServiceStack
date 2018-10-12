@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -86,6 +87,8 @@ namespace ServiceStack.NativeTypes
 
     public class MetadataTypesGenerator
     {
+        private static ILog log = LogManager.GetLogger(typeof(MetadataTypesGenerator));
+        
         private readonly ServiceMetadata meta;
         private readonly MetadataTypesConfig config;
 
@@ -639,24 +642,31 @@ namespace ServiceStack.NativeTypes
 
             if (instance != null)
             {
-                var value = pi.GetValue(instance, null);
-                if (value != null
-                    && !value.Equals(pi.PropertyType.GetDefaultValue()))
+                try
                 {
-                    if (pi.PropertyType.IsEnum)
+                    var value = pi.GetValue(instance, null);
+                    if (value != null
+                        && !value.Equals(pi.PropertyType.GetDefaultValue()))
                     {
-                        property.Value = "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+                        if (pi.PropertyType.IsEnum)
+                        {
+                            property.Value = "{0}.{1}".Fmt(pi.PropertyType.Name, value);
+                        }
+                        else if (pi.PropertyType == typeof(Type))
+                        {
+                            var type = (Type)value;
+                            property.Value = $"typeof({type.FullName})";
+                        }
+                        else
+                        {
+                            var strValue = value as string;
+                            property.Value = strValue ?? value.ToJson();
+                        }
                     }
-                    else if (pi.PropertyType == typeof(Type))
-                    {
-                        var type = (Type)value;
-                        property.Value = $"typeof({type.FullName})";
-                    }
-                    else
-                    {
-                        var strValue = value as string;
-                        property.Value = strValue ?? value.ToJson();
-                    }
+                }
+                catch (Exception ex)
+                {
+                    log.Warn($"Could not get value for property '{pi.PropertyType}.{pi.Name}'", ex);
                 }
 
                 if (pi.GetSetMethod() == null) //ReadOnly is bool? to minimize serialization
