@@ -12,8 +12,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 {
     [Route("/users")]
     public class User { }
+    [DataContract]
     public class UserResponse : IHasResponseStatus
     {
+        [DataMember(Order = 1)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    [Route("/usersvoid")]
+    public class UserVoid { }
+    [DataContract]
+    public class UserVoidResponse : IHasResponseStatus
+    {
+        [DataMember(Order = 1)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -37,6 +48,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public object Put(User request)
         {
             throw new ArgumentException();
+        }
+
+        public void Delete(UserVoid request)
+        {
+            throw new HttpError(HttpStatusCode.Forbidden, "CanNotExecute", "Failed to execute!");
         }
     }
 
@@ -328,6 +344,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Delete<UserResponse>("/users");
+                Assert.Fail();
+            }
+            catch (WebServiceException ex)
+            {
+                Assert.That(ex.StatusCode, Is.EqualTo((int)System.Net.HttpStatusCode.Forbidden));
+                Assert.That(ex.ErrorCode, Is.EqualTo("CanNotExecute"));
+                Assert.That(ex.Message, Is.EqualTo("Failed to execute!"));
+            }
+        }
+
+        [Test, TestCaseSource("ServiceClients")]
+        public void Handles_Thrown_Http_Error_With_Forbidden_status_code_in_void_method(IRestClient client)
+        {
+            try
+            {
+                client.Delete<UserVoidResponse>("/usersvoid");
                 Assert.Fail();
             }
             catch (WebServiceException ex)
