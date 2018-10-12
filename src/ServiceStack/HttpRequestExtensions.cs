@@ -677,6 +677,8 @@ namespace ServiceStack
             return item;
         }
 
+        private static readonly string[] FormContentTypes = { MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData };
+
         public static string GetResponseContentType(this IRequest httpReq)
         {
             var specifiedContentType = GetQueryStringContentType(httpReq);
@@ -684,7 +686,7 @@ namespace ServiceStack
 
             var acceptContentTypes = httpReq.AcceptTypes;
             var defaultContentType = httpReq.ContentType;
-            if (httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData))
+            if (httpReq.HasAnyOfContentTypes(FormContentTypes))
             {
                 defaultContentType = HostContext.Config.DefaultContentType;
             }
