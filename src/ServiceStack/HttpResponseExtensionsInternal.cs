@@ -241,8 +241,7 @@ namespace ServiceStack
 
                         //ContentType='text/html' is the default for a HttpResponse
                         //Do not override if another has been set
-                        if (response.ContentType == null || (response.ContentType == MimeTypes.Html 
-                                                             && !(response.Dto is string))) //Allow HTML string even if Feature.Html is removed
+                        if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                         {
                             response.ContentType = defaultContentType;
                         }

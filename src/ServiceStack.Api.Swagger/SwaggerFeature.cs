@@ -104,7 +104,7 @@ namespace ServiceStack.Api.Swagger
 
                     return new CustomResponseHandler((req, res) =>
                     {
-                        res.ContentType = MimeTypes.Html;
+                        res.ContentType = MimeTypes.HtmlUtf8; //use alt HTML ContentType so it's not overridden when Feature.Html is removed
                         var resourcesUrl = req.ResolveAbsoluteUrl("~/resources");
                         var logoHref = LogoHref ?? "./";
                         html = html.Replace("http://petstore.swagger.io/v2/swagger.json", resourcesUrl)
