@@ -138,7 +138,7 @@ namespace ServiceStack
 
                 foreach (var dto in dtos)
                 {
-                    req.Items["MultiRequestIndex"] = i;
+                    req.Items["AutoBatchIndex"] = i;
                     await ApplyRequestFiltersSingleAsync(req, res, dto);
                     if (res.IsClosed)
                         return;
@@ -146,7 +146,7 @@ namespace ServiceStack
                     i++;
                 }
 
-                req.Items.Remove("MultiRequestIndex");
+                req.Items.Remove("AutoBatchIndex");
             }
         }
 
