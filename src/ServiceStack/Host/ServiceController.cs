@@ -746,6 +746,8 @@ namespace ServiceStack.Host
 
                 var firstDto = dtosList[0];
 
+                req.Items["MultiRequestIndex"] = 0;
+
                 var firstResponse = handlerFn(req, firstDto);
                 if (firstResponse is Exception)
                 {
@@ -764,6 +766,7 @@ namespace ServiceStack.Host
                     for (var i = 1; i < dtosList.Count; i++)
                     {
                         var dto = dtosList[i];
+                        req.Items["MultiRequestIndex"] = i;
                         var response = handlerFn(req, dto);
                         //short-circuit on first error
                         if (response is Exception)
@@ -774,6 +777,7 @@ namespace ServiceStack.Host
 
                         ret[i] = response;
                     }
+                    req.Items.Remove("MultiRequestIndex");
                     req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return ret;
                 }
@@ -788,6 +792,8 @@ namespace ServiceStack.Host
                     //short-circuit on first error and don't exec any more handlers
                     if (firstAsyncError != null)
                         return firstAsyncError;
+
+                    req.Items["MultiRequestIndex"] = i;
 
                     asyncResponses[i] = i == 0
                         ? asyncResponse //don't re-execute first request
@@ -804,7 +810,7 @@ namespace ServiceStack.Host
                 var batchResponse = HostContext.Async.ContinueWith(req, task, x => {
                     if (firstAsyncError != null)
                         return (object)firstAsyncError;
-
+                    req.Items.Remove("MultiRequestIndex");
                     req.SetAutoBatchCompletedHeader(dtosList.Count);
                     return (object) asyncResponses;
                 }); //return error or completed responses
