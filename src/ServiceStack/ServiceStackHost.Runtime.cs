@@ -134,12 +134,19 @@ namespace ServiceStack
                 }
 
                 var dtos = (IEnumerable)requestDto;
+                var i = 0;
+
                 foreach (var dto in dtos)
                 {
+                    req.Items["AutoBatchIndex"] = i;
                     await ApplyRequestFiltersSingleAsync(req, res, dto);
                     if (res.IsClosed)
                         return;
+
+                    i++;
                 }
+
+                req.Items.Remove("AutoBatchIndex");
             }
         }
 
