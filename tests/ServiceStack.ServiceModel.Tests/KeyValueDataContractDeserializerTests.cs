@@ -103,7 +103,7 @@ namespace ServiceStack.ServiceModel.Tests
         [Test]
         public void KVP_Serializer_fills_public_fields()
         {
-            using (JsConfig.With(includePublicFields:true))
+            using (JsConfig.With(new Config { IncludePublicFields = true }))
             {
                 var valueMap = new Dictionary<string, string> { { "FirstName", "james" }, { "LastName", "bond" }, { "FullName", "james bond" } };
                 var result = (CustomerWithFields)KeyValueDataContractDeserializer.Instance.Parse(valueMap, typeof(CustomerWithFields));

@@ -96,7 +96,12 @@ namespace ServiceStack.Api.OpenApi
 
             return new HttpResult(result)
             {
-                ResultScope = () => JsConfig.With(includeNullValues: false, includeTypeInfo: false, excludeTypeInfo: true)
+                ResultScope = () => JsConfig.With(new Config
+                {
+                    IncludeNullValues = false, 
+                    IncludeTypeInfo = false, 
+                    ExcludeTypeInfo = true,
+                })
             };
         }
 

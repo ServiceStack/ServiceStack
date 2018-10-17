@@ -507,7 +507,11 @@ namespace ServiceStack.Templates
 
         private string toDebugString(object instance)
         {
-            using (JsConfig.With(excludeTypeInfo:true, includeTypeInfo:false))
+            using (JsConfig.With(new Config
+            {
+                ExcludeTypeInfo = true,
+                IncludeTypeInfo = false,
+            }))
             {
                 if (instance is Dictionary<string, object> d)
                     return d.ToJsv();

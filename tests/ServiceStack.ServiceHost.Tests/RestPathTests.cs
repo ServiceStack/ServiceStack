@@ -105,7 +105,7 @@ namespace ServiceStack.ServiceHost.Tests
         [Test]
         public void Can_deserialize_ComplexTypeWithFields_path()
         {
-            using (JsConfig.With(includePublicFields: true))
+            using (JsConfig.With(new Config { IncludePublicFields = true }))
             {
                 var restPath = new RestPath(typeof(ComplexTypeWithFields),
                     "/Complex/{Id}/{Name}/Unique/{UniqueId}");

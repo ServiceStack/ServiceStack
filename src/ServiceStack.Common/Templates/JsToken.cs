@@ -157,7 +157,7 @@ namespace ServiceStack.Templates
 
         public static string ToJsAstString(this JsToken token)
         {
-            using (JsConfig.With(includeNullValuesInDictionaries: true))
+            using (JsConfig.With(new Config { IncludeNullValuesInDictionaries = true }))
             {
                 return token.ToJsAst().ToJson().IndentJson();
             }

@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var httpResult = new HttpResult(dto)
             {
-                ResultScope = () => JsConfig.With(includeNullValues:true)
+                ResultScope = () => JsConfig.With(new Text.Config { IncludeNullValues = true })
             };
 
             var reponseWasAutoHandled = mockResponse.WriteToResponse(httpResult, MimeTypes.Html);
