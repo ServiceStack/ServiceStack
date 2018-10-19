@@ -30,7 +30,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
     public class SerializationIssuesService : Service
     {
-        public object Put(PutConfirmed request) => new PutConfirmedResponse { IsSucceed = true };
+        public object Put(PutConfirmed request) => new PutConfirmedResponse
+        {
+            IsSucceed = request.Confirmations[0].Confirmed && request.Confirmations[0].ChangeId == 126552616
+        };
     }
     
     public class SerializationIssues
