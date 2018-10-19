@@ -234,12 +234,20 @@ namespace ServiceStack
                     return;
                 }
 
+                var i = 0;
+
                 foreach (var dto in batchResponse)
                 {
+                    req.Items["AutoBatchIndex"] = i;
+
                     await ApplyResponseFiltersSingleAsync(req, res, dto);
                     if (res.IsClosed)
                         return;
+
+                    i++;
                 }
+
+                req.Items.Remove("AutoBatchIndex");
             }
         }
 
