@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,6 +57,22 @@ namespace ServiceStack.Host
 
         public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
         {
+            if (response.IsErrorResponse())
+            {
+                var autoBatchIndex = req.GetItem("AutoBatchIndex")?.ToString();
+                if (autoBatchIndex != null)
+                {
+                    var responseStatus = response.GetResponseStatus();
+                    if (responseStatus != null)
+                    {
+                        if (responseStatus.Meta == null)
+                            responseStatus.Meta = new Dictionary<string, string>();
+
+                        responseStatus.Meta["AutoBatchIndex"] = autoBatchIndex;
+                    }
+                }
+            }
+
             //only call OnAfterExecute if no exception occured
             return response.IsErrorResponse() ? response : OnAfterExecute(req, response);
         }
