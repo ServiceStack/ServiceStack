@@ -28,6 +28,9 @@ namespace ServiceStack.Auth
             this.AccessTokenUrl = appSettings.Get($"oauth.{oAuthProvider}.AccessTokenUrl", authRealm + "oauth/access_token");
             this.SaveExtendedUserInfo = appSettings.Get($"oauth.{oAuthProvider}.SaveExtendedUserInfo", true);
 
+            this.UserProfileUrl = appSettings.GetNullableString($"oauth.{oAuthProvider}.UserProfileUrl");
+            this.VerifyTokenUrl = appSettings.GetNullableString($"oauth.{oAuthProvider}.VerifyTokenUrl");
+
             this.OAuthUtils = new OAuthAuthorizer(this);
             this.AuthHttpGateway = new AuthHttpGateway();
         }
@@ -39,6 +42,10 @@ namespace ServiceStack.Auth
         public string RequestTokenUrl { get; set; }
         public string AuthorizeUrl { get; set; }
         public string AccessTokenUrl { get; set; }
+
+        public string UserProfileUrl { get; set; }
+        public string VerifyTokenUrl { get; set; }
+
         public OAuthAuthorizer OAuthUtils { get; set; }
 
 

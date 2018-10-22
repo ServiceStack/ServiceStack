@@ -94,4 +94,17 @@ public static class DictionaryExtensions
         map?.Remove(key);
         return map;
     }
+
+    public static Dictionary<TKey, TValue> MoveKey<TKey, TValue>(this Dictionary<TKey, TValue> map, TKey oldKey, TKey newKey, Func<TValue, TValue> valueFilter=null)
+    {
+        if (map == null)
+            return null;
+        
+        if (map.TryGetValue(oldKey, out var value))
+            map[newKey] = valueFilter != null ? valueFilter(value) : value;
+        
+        map.Remove(oldKey);
+        return map;
+    }
+
 }

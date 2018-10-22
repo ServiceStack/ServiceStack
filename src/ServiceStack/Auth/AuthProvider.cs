@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -111,6 +112,8 @@ namespace ServiceStack.Auth
             return new AuthenticateResponse();
         }
 
+        public HashSet<string> ExcludeAuthInfoItems { get; set; } = new HashSet<string>(new[]{ "user_id", "email", "username", "name", "first_name", "last_name", "email" }, StringComparer.OrdinalIgnoreCase);
+
         public virtual IHttpResult OnAuthenticated(IServiceBase authService, IAuthSession session, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             session.AuthProvider = Provider;
@@ -129,7 +132,13 @@ namespace ServiceStack.Auth
                 if (tokens.Items == null)
                     tokens.Items = new Dictionary<string, string>();
 
-                authInfo.ForEach((x, y) => tokens.Items[x] = y);
+                foreach (var entry in authInfo)
+                {
+                    if (ExcludeAuthInfoItems.Contains(entry.Key)) 
+                        continue;
+
+                    tokens.Items[entry.Key] = entry.Value;
+                }
             }
 
             if (session is IAuthSessionExtended authSession)
