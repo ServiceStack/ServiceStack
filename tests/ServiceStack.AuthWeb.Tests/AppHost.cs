@@ -139,21 +139,25 @@ namespace ServiceStack.AuthWeb.Tests
                     },
                     new JwtAuthProvider(appSettings), 
                     new ApiKeyAuthProvider(appSettings), 
-                    new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
-                    new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
-                    new GoogleAuthProvider(appSettings),        //Sign-in with Google OAuth (without DotNetOpenAuth)
-                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider (with DotNetOpenAuth)
                     new DigestAuthProvider(appSettings),        //Sign-in with Digest Auth
                     new BasicAuthProvider(),                    //Sign-in with Basic Auth
-                    new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
-                    new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
-                    new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
-                    new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
+
+                    new TwitterAuthProvider(appSettings),       //Sign-in with Twitter
+                    new FacebookAuthProvider(appSettings),      //Sign-in with Facebook
+                    new GoogleAuthProvider(appSettings),        //Sign-in with Google OAuth
                     new GithubAuthProvider(appSettings),        //Sign-in with GitHub OAuth Provider
-                    new FourSquareOAuth2Provider(appSettings),  //Sign-in with FourSquare OAuth2 Provider
+                    new MicrosoftGraphAuthProvider(appSettings),//Sign-in with Microsoft Graph OAuth
+                    new LinkedInAuthProvider(appSettings),      //Sign-in with LinkedIn
                     new YandexAuthProvider(appSettings),        //Sign-in with Yandex OAuth Provider        
                     new VkAuthProvider(appSettings),            //Sign-in with VK.com OAuth Provider 
                     new OdnoklassnikiAuthProvider(appSettings), //Sign-in with Odnoklassniki OAuth Provider 
+
+                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider (with DotNetOpenAuth)
+                    new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
+                    new FourSquareOAuth2Provider(appSettings),  //Sign-in with FourSquare OAuth2 Provider
+                    new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
+                    new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
+                    new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
                 }));
 
 #if HTTP_LISTENER
