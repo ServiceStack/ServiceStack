@@ -142,8 +142,7 @@ namespace ServiceStack.Auth
 
         public override void LoadUserOAuthProvider(IAuthSession authSession, IAuthTokens tokens)
         {
-            var userSession = authSession as AuthUserSession;
-            if (userSession == null) return;
+            if (!(authSession is AuthUserSession userSession)) return;
 
             userSession.FacebookUserId = tokens.UserId ?? userSession.FacebookUserId;
             userSession.FacebookUserName = tokens.UserName ?? userSession.FacebookUserName;

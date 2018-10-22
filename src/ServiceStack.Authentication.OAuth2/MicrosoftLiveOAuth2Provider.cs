@@ -4,14 +4,13 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Authentication.OAuth2
 {
-    /*
-        Create an OAuth2 App at: https://account.live.com/developers/applications
-        The Apps Callback URL should match the CallbackUrl here.
-     
-        Microsoft Account OAuth2 info: https://msdn.microsoft.com/en-us/library/dn659752.aspx
-        Microsoft Account OAuth2 Scopes from: https://msdn.microsoft.com/en-us/library/hh243646.aspx)
-
-     */
+    /// <summary>
+    ///   Create an OAuth2 App at: https://account.live.com/developers/applications
+    ///   The Apps Callback URL should match the CallbackUrl here.
+    ///    
+    ///   Microsoft Account OAuth2 info: https://msdn.microsoft.com/en-us/library/dn659752.aspx
+    ///   Microsoft Account OAuth2 Scopes from: https://msdn.microsoft.com/en-us/library/hh243646.aspx)
+    /// </summary>
     public class MicrosoftLiveOAuth2Provider : OAuth2Provider
     {
         public const string Name = "microsoftlive";
