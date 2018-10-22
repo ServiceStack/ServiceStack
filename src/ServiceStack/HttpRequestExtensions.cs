@@ -1111,5 +1111,19 @@ namespace ServiceStack
                     throw new NotSupportedException($"Unknown IHttpRequest property '{name}'");
             }
         }
+
+        public static void EachRequest<T>(this IRequest httpReq, Action<T> action)
+        {
+            if (!(httpReq.Dto is IEnumerable<T> requests))
+                return;
+
+            requests.Each((i, dto) =>
+            {
+                httpReq.Items["AutoBatchIndex"] = i;
+                action(dto);
+            });
+
+            httpReq.Items.Remove("AutoBatchIndex");
+        }
     }
 }

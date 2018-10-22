@@ -48,6 +48,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
     }
 
+    public class GetCustomAutoBatchIndex : IReturn<GetAutoBatchIndexResponse>
+    {
+    }
+
     public class GetAutoBatchIndexResponse : IMeta
     {
         public string Index { get; set; }
@@ -63,6 +67,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 Index = autoBatchIndex
             };
+        }
+
+        public GetAutoBatchIndexResponse Any(GetCustomAutoBatchIndex request)
+        {
+            var autoBatchIndex = Request.GetItem("AutoBatchIndex")?.ToString();
+            return new GetAutoBatchIndexResponse
+            {
+                Index = autoBatchIndex
+            };
+        }
+
+        public object Any(GetCustomAutoBatchIndex[] requests)
+        {
+            var responses = new List<GetAutoBatchIndexResponse>();
+
+            Request.EachRequest<GetCustomAutoBatchIndex>(dto =>
+            {
+                responses.Add(Any(dto));
+            });
+
+            return responses;
         }
     }
 
@@ -114,6 +139,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 new GetAutoBatchIndex(),
                 new GetAutoBatchIndex()
+            });
+
+            Assert.AreEqual("0", responses[0].Index);
+            Assert.AreEqual("0", responses[0].Meta["GlobalResponseFilterAutoBatchIndex"]);
+
+            Assert.AreEqual("1", responses[1].Index);
+            Assert.AreEqual("1", responses[1].Meta["GlobalResponseFilterAutoBatchIndex"]);
+
+            Assert.AreEqual("1", responseHeaders["GlobalRequestFilterAutoBatchIndex"]);
+        }
+
+        [Test]
+        public void Custom_multi_requests_set_AutoBatchIndex()
+        {
+            var client = new JsonServiceClient(Config.AbsoluteBaseUri);
+
+            WebHeaderCollection responseHeaders = null;
+
+            client.ResponseFilter = response => { responseHeaders = response.Headers; };
+
+            var responses = client.SendAll(new[]
+            {
+                new GetCustomAutoBatchIndex(),
+                new GetCustomAutoBatchIndex()
             });
 
             Assert.AreEqual("0", responses[0].Index);
