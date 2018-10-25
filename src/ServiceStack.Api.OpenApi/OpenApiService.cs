@@ -323,6 +323,11 @@ namespace ServiceStack.Api.OpenApi
             return typeName;
         }
 
+        private static string GetSchemaDefinitionRef(Type schemaType) =>
+            swaggerRefRegex.Replace(GetSchemaTypeName(schemaType), "_");
+
+        private static readonly Regex swaggerRefRegex = new Regex("[^A-Za-z0-9\\.\\-_]", RegexOptions.Compiled);
+
         private OpenApiProperty GetOpenApiProperty(IDictionary<string, OpenApiSchema> schemas, Type propertyType, string route, string verb)
         {
             var schemaProp = new OpenApiProperty();
@@ -337,7 +342,7 @@ namespace ServiceStack.Api.OpenApi
                 else
                 {
                     ParseDefinitions(schemas, propertyType, route, verb);
-                    schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                    schemaProp.Ref = "#/definitions/" + GetSchemaDefinitionRef(propertyType);
                 }
             }
             else if (IsListType(propertyType))
@@ -365,7 +370,7 @@ namespace ServiceStack.Api.OpenApi
                 }
                 else
                 {
-                    schemaProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaTypeName(listItemType) } };
+                    schemaProp.Items = new Dictionary<string, object> { { "$ref", "#/definitions/" + GetSchemaDefinitionRef(listItemType) } };
                     ParseDefinitions(schemas, listItemType, route, verb);
                 }
             }
@@ -400,7 +405,7 @@ namespace ServiceStack.Api.OpenApi
             else
             {
                 ParseDefinitions(schemas, propertyType, route, verb);
-                schemaProp.Ref = "#/definitions/" + GetSchemaTypeName(propertyType);
+                schemaProp.Ref = "#/definitions/" + GetSchemaDefinitionRef(propertyType);
             }
 
             return schemaProp;
@@ -454,7 +459,7 @@ namespace ServiceStack.Api.OpenApi
         {
             if (IsSwaggerScalarType(schemaType) || schemaType.ExcludesFeature(Feature.Metadata)) return;
 
-            var schemaId = GetSchemaTypeName(schemaType);
+            var schemaId = GetSchemaDefinitionRef(schemaType);
             if (schemas.ContainsKey(schemaId)) return;
 
             var schema = GetDictionarySchema(schemas, schemaType, route, verb)
@@ -615,7 +620,7 @@ namespace ServiceStack.Api.OpenApi
                     }
                 : IsInlineSchema(schemaType)
                     ? schemas[GetSchemaTypeName(schemaType)]
-                    : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaTypeName(schemaType) });
+                    : new OpenApiSchema { Ref = "#/definitions/" + GetSchemaDefinitionRef(schemaType) });
 
             schemaDescription = schema.Description ?? schemaType.GetDescription() ?? string.Empty;
 
