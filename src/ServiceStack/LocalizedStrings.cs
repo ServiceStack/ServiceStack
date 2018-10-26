@@ -34,6 +34,7 @@
         public static string State = "state";
         public static string View = "View";
         public static string Template = "Template";
+        public static string Redirect = "redirect";
     }
 
     public static class LocalizedStrings

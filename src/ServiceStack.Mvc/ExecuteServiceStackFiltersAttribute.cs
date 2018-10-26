@@ -27,7 +27,7 @@ namespace ServiceStack.Mvc
             if (!ssController.IsAuthorized(authAttr))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
+                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
                     : ssController.AuthenticationErrorResult;
 
                 filterContext.Result = authError;
@@ -42,7 +42,7 @@ namespace ServiceStack.Mvc
             if (!ssController.HasAccess(roleAttrs, anyRoleAttrs, permAttrs, anyPermAttrs))
             {
                 var authError = authAttr?.HtmlRedirect != null
-                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam("redirect", ssController.Request.GetPathAndQuery()))
+                    ? new RedirectResult(authAttr.HtmlRedirect.AddQueryParam(Keywords.Redirect, ssController.Request.GetPathAndQuery()))
                     : ssController.ForbiddenErrorResult;
 
                 filterContext.Result = authError;

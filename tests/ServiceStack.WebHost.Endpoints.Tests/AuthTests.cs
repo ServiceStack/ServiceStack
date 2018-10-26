@@ -1008,7 +1008,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var queryString = HttpUtility.ParseQueryString(locationUri.Query);
-            var redirectQueryString = queryString["redirect"];
+            var redirectQueryString = queryString[Keywords.Redirect];
             var redirectUri = new Uri(redirectQueryString);
 
             // Should contain the url attempted to access before the redirect to the login page.
@@ -1049,7 +1049,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var locationUriQueryString = HttpUtility.ParseQueryString(locationUri.Query);
-            var redirectQueryItem = locationUriQueryString["redirect"];
+            var redirectQueryItem = locationUriQueryString[Keywords.Redirect];
             var redirectUri = new Uri(redirectQueryItem);
 
             // Should contain the url attempted to access before the redirect to the login page,
