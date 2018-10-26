@@ -21,11 +21,11 @@
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
+        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(Configuration)' == 'Release' ">
-        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**"/>
+        <Compile Include="..\..\ServiceStack.Interfaces\**\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
     </ItemGroup>
 
     <PropertyGroup Condition=" '$(TargetFramework)' == 'net45' ">
@@ -40,7 +40,7 @@
     </PropertyGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0"/>
+        <PackageReference Include="System.Runtime.Serialization.Primitives" Version="4.3.0" />
     </ItemGroup>
 
 </Project>
