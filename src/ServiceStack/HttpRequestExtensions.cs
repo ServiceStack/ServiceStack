@@ -1119,11 +1119,11 @@ namespace ServiceStack
 
             requests.Each((i, dto) =>
             {
-                httpReq.Items["AutoBatchIndex"] = i;
+                httpReq.Items[Keywords.AutoBatchIndex] = i;
                 action(dto);
             });
 
-            httpReq.Items.Remove("AutoBatchIndex");
+            httpReq.Items.Remove(Keywords.AutoBatchIndex);
         }
     }
 }

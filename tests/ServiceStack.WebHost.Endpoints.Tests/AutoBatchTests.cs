@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             GlobalRequestFilters.Add((req, res, dto) =>
             {
-                var autoBatchIndex = req.GetItem("AutoBatchIndex")?.ToString();
+                var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
                 if (autoBatchIndex != null)
                 {
                     res.RemoveHeader("GlobalRequestFilterAutoBatchIndex");
@@ -27,12 +27,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             GlobalResponseFilters.Add((req, res, dto) =>
             {
-                var autoBatchIndex = req.GetItem("AutoBatchIndex")?.ToString();
+                var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
 
                 if (autoBatchIndex != null)
                 {
-                    var response = dto as IMeta;
-                    if (response != null)
+                    if (dto is IMeta response)
                     {
                         response.Meta = new Dictionary<string, string>
                         {
@@ -62,7 +61,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public object Any(GetAutoBatchIndex request)
         {
-            var autoBatchIndex = Request.GetItem("AutoBatchIndex")?.ToString();
+            var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
             return new GetAutoBatchIndexResponse
             {
                 Index = autoBatchIndex
@@ -71,7 +70,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         public GetAutoBatchIndexResponse Any(GetCustomAutoBatchIndex request)
         {
-            var autoBatchIndex = Request.GetItem("AutoBatchIndex")?.ToString();
+            var autoBatchIndex = Request.GetItem(Keywords.AutoBatchIndex)?.ToString();
             return new GetAutoBatchIndexResponse
             {
                 Index = autoBatchIndex

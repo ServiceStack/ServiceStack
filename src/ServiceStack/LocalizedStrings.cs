@@ -35,6 +35,7 @@
         public static string View = "View";
         public static string Template = "Template";
         public static string Redirect = "redirect";
+        public static string AutoBatchIndex = "AutoBatchIndex";
     }
 
     public static class LocalizedStrings

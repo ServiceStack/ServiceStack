@@ -59,7 +59,7 @@ namespace ServiceStack.Host
         {
             if (response.IsErrorResponse())
             {
-                var autoBatchIndex = req.GetItem("AutoBatchIndex")?.ToString();
+                var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
                 if (autoBatchIndex != null)
                 {
                     var responseStatus = response.GetResponseStatus();
@@ -68,7 +68,7 @@ namespace ServiceStack.Host
                         if (responseStatus.Meta == null)
                             responseStatus.Meta = new Dictionary<string, string>();
 
-                        responseStatus.Meta["AutoBatchIndex"] = autoBatchIndex;
+                        responseStatus.Meta[Keywords.AutoBatchIndex] = autoBatchIndex;
                     }
                 }
             }

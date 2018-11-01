@@ -138,7 +138,7 @@ namespace ServiceStack
 
                 foreach (var dto in dtos)
                 {
-                    req.Items["AutoBatchIndex"] = i;
+                    req.Items[Keywords.AutoBatchIndex] = i;
                     await ApplyRequestFiltersSingleAsync(req, res, dto);
                     if (res.IsClosed)
                         return;
@@ -146,7 +146,7 @@ namespace ServiceStack
                     i++;
                 }
 
-                req.Items.Remove("AutoBatchIndex");
+                req.Items.Remove(Keywords.AutoBatchIndex);
             }
         }
 
@@ -238,7 +238,7 @@ namespace ServiceStack
 
                 foreach (var dto in batchResponse)
                 {
-                    req.Items["AutoBatchIndex"] = i;
+                    req.Items[Keywords.AutoBatchIndex] = i;
 
                     await ApplyResponseFiltersSingleAsync(req, res, dto);
                     if (res.IsClosed)
@@ -247,7 +247,7 @@ namespace ServiceStack
                     i++;
                 }
 
-                req.Items.Remove("AutoBatchIndex");
+                req.Items.Remove(Keywords.AutoBatchIndex);
             }
         }
 
