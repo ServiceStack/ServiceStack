@@ -43,7 +43,19 @@ namespace ServiceStack.Validation
                     var errorResponse =
                         await HostContext.RaiseServiceException(req, requestDto, validationResult.ToException())
                         ?? DtoUtils.CreateErrorResponse(requestDto, validationResult.ToErrorResult());
-    
+   
+                    var autoBatchIndex = req.GetItem(Keywords.AutoBatchIndex)?.ToString();
+                    if (autoBatchIndex != null)
+                    {
+                        var responseStatus = errorResponse.GetResponseStatus();
+                        if (responseStatus != null)
+                        {
+                            if (responseStatus.Meta == null)
+                                responseStatus.Meta = new Dictionary<string, string>();
+                            responseStatus.Meta[Keywords.AutoBatchIndex] = autoBatchIndex;
+                        }
+                    }
+                    
                     var validationFeature = HostContext.GetPlugin<ValidationFeature>();
                     if (validationFeature?.ErrorResponseFilter != null)
                     {
