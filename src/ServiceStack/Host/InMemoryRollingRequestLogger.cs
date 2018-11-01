@@ -115,7 +115,17 @@ namespace ServiceStack.Host
                         entry.FormData = request.FormData.ToDictionary();
 
                     if (EnableRequestBodyTracking)
+                    {
+#if NETSTANDARD2_0
+                        // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                        if (!request.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                        {
+                            entry.RequestBody = request.GetRawBody();
+                        }
+#else
                         entry.RequestBody = request.GetRawBody();
+#endif
+                    }
                 }
             }
 
