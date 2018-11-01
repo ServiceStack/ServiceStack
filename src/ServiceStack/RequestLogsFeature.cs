@@ -118,10 +118,27 @@ namespace ServiceStack
 
             if (EnableRequestBodyTracking)
             {
+#if NETSTANDARD2_0
+                appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
+                {
+                    if (httpReq.ContentType != null)
+                    {
+                        if (!(httpReq.ContentType.MatchesContentType(MimeTypes.MultiPartFormData)))
+                        {
+                            httpReq.UseBufferedStream = EnableRequestBodyTracking;
+                        }
+                    }
+                    else
+                    {
+                        httpReq.UseBufferedStream = EnableRequestBodyTracking;
+                    }
+                });
+#else
                 appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
                 {
                     httpReq.UseBufferedStream = EnableRequestBodyTracking;
                 });
+#endif
             }
 
             appHost.GetPlugin<MetadataFeature>()
