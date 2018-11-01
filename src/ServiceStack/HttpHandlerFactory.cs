@@ -84,8 +84,8 @@ namespace ServiceStack
                 if (DefaultHttpHandler == null)
                     DefaultHttpHandler = NotFoundHttpHandler;
 
-                var debugDefaultHandler = DefaultHttpHandler is RedirectHttpHandler defaultRedirectHanlder
-                    ? defaultRedirectHanlder.RelativeUrl
+                var debugDefaultHandler = DefaultHttpHandler is RedirectHttpHandler defaultRedirectHandler
+                    ? defaultRedirectHandler.RelativeUrl
                     : typeof(DefaultHttpHandler).GetOperationName();
 
                 ForbiddenHttpHandler = appHost.GetCustomErrorHttpHandler(HttpStatusCode.Forbidden);
@@ -136,7 +136,7 @@ namespace ServiceStack
 
             var pathInfo = httpReq.PathInfo;
 
-            //WebDev Server auto requests '/default.aspx' so recorrect path to different default document
+            //WebDev Server auto requests '/default.aspx' so re-correct path to different default document
             var mode = appHost.Config.HandlerFactoryPath;
             if (mode == null && (url == "/default.aspx" || url == "/Default.aspx"))
                 pathInfo = "/";
@@ -144,7 +144,7 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engiine requests
+                //e.g. to Process View Engine requests
                 var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
@@ -188,7 +188,7 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engiine requests
+                //e.g. to Process View Engine requests
                 var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
                 if (catchAllHandler != null) return catchAllHandler;
 
@@ -214,7 +214,7 @@ namespace ServiceStack
         }
 
         // no handler registered 
-        // serve the file from the filesystem, restricting to a safelist of extensions
+        // serve the file from the filesystem, restricting to a safe-list of extensions
         public static bool ShouldAllow(string pathInfo)
         {
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
