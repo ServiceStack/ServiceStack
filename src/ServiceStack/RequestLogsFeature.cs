@@ -120,6 +120,11 @@ namespace ServiceStack
             {
                 appHost.PreRequestFilters.Insert(0, (httpReq, httpRes) =>
                 {
+#if NETSTANDARD2_0
+                    // https://forums.servicestack.net/t/unexpected-end-of-stream-when-uploading-to-aspnet-core/6478/6
+                    if (httpReq.ContentType.MatchesContentType(MimeTypes.MultiPartFormData))
+                        return;                    
+#endif
                     httpReq.UseBufferedStream = EnableRequestBodyTracking;
                 });
             }
