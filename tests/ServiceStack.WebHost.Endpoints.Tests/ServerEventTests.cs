@@ -193,48 +193,29 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     
 #if DEBUG    
     
-    [Ignore("Unnecessary suite of tests")]
-    [TestFixture]
-    public class MemoryServerEventsWithNewlineOnPublishTests : ServerEventsTests
-    {
-        protected override ServiceStackHost CreateAppHost()
-        {
-            return new ServerEventsAppHost
-                {
-                 
-                    OnPublish = (sub, res, msg) =>
-                    {
-                        res.OutputStream.Write("\n\n\n\n\n\n\n\n\n\n");
-                    }
-                }
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
-    }
-
-    [Ignore("Can hang builds")]
-    [TestFixture]
-    public class MemoryServerEventsTests : ServerEventsTests
-    {
-        protected override ServiceStackHost CreateAppHost()
-        {
-            return new ServerEventsAppHost()
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
-    }
-
-    [Ignore("Hangs in new build server")]
-    [TestFixture]
-    public class RedisServerEventsTests : ServerEventsTests
-    {
-        protected override ServiceStackHost CreateAppHost()
-        {
-            return new ServerEventsAppHost { UseRedisServerEvents = true }
-                .Init()
-                .Start(Config.AbsoluteBaseUri);
-        }
-    }
+//    [Ignore("Can hang builds")]
+//    [TestFixture]
+//    public class MemoryServerEventsTests : ServerEventsTests
+//    {
+//        protected override ServiceStackHost CreateAppHost()
+//        {
+//            return new ServerEventsAppHost()
+//                .Init()
+//                .Start(Config.AbsoluteBaseUri);
+//        }
+//    }
+//
+//    [Ignore("Hangs in new build server")]
+//    [TestFixture]
+//    public class RedisServerEventsTests : ServerEventsTests
+//    {
+//        protected override ServiceStackHost CreateAppHost()
+//        {
+//            return new ServerEventsAppHost { UseRedisServerEvents = true }
+//                .Init()
+//                .Start(Config.AbsoluteBaseUri);
+//        }
+//    }
 
     public abstract class ServerEventsTests
     {
