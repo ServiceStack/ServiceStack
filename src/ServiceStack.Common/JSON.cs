@@ -32,14 +32,23 @@ namespace ServiceStack
                 if (json.TryParseDouble(out var doubleValue))
                     return doubleValue;
             }
-
-            if (firstChar == '{' || firstChar == '[')
+            else if (firstChar == '{' || firstChar == '[')
             {
                 json.ParseJsToken(out var token);
                 return token.Evaluate(JS.CreateScope());
             }
-
-            return json.ToString();
+            else if (json.Length == 4)
+            {
+                if (firstChar == 't' && json[1] == 'r' && json[2] == 'u' && json[3] == 'e')
+                    return true;
+                if (firstChar == 'n' && json[1] == 'u' && json[2] == 'l' && json[3] == 'l')
+                    return null;
+            }
+            else if (json.Length == 5 && firstChar == 'f' && json[1] == 'a' && json[2] == 'l' && json[3] == 's' && json[4] == 'e')
+            {
+                return false;
+            }
+                
             var unescapedString = JsonTypeSerializer.Unescape(json);
             return unescapedString.ToString();
         }
