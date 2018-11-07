@@ -16,7 +16,8 @@ namespace ServiceStack
 
         public static object parseSpan(ReadOnlySpan<char> json)
         {
-            if (json.Length == 0) return null;
+            if (json.Length == 0) 
+                return null;
             var firstChar = json[0];
 
             if (firstChar >= '0' && firstChar <= '9')
@@ -39,6 +40,8 @@ namespace ServiceStack
             }
 
             return json.ToString();
+            var unescapedString = JsonTypeSerializer.Unescape(json);
+            return unescapedString.ToString();
         }
 
         public static string stringify(object value) => value.ToJson();
