@@ -137,6 +137,27 @@ namespace ServiceStack.Messaging
             }
         }
 
+        public IMqWorker[] GetWorkers(string queueName)
+        {
+            var ret = new List<IMqWorker>();
+
+            if (workers != null)
+            {
+                lock (workers)
+                {
+                    foreach (var worker in workers)
+                    {
+                        if (worker.QueueName != queueName)
+                            continue;
+
+                        ret.Add(worker);
+                    }
+                }
+            }
+
+            return ret.ToArray();
+        }
+
         public string GetStatus() => workers != null ? nameof(WorkerStatus.Started) : nameof(WorkerStatus.Stopped);
 
         public string GetStatsDescription()
@@ -263,7 +284,6 @@ namespace ServiceStack.Messaging
             }
             else
             {
-
                 var started = DateTime.UtcNow;
     
                 if (Log.IsDebugEnabled)
@@ -406,6 +426,8 @@ namespace ServiceStack.Messaging
         void Clear(string queueName);
 
         string GetDescription();
+
+        Dictionary<string,long> GetDescriptionMap();
     }
  
     public interface IMqWorker : IDisposable
@@ -567,6 +589,24 @@ namespace ServiceStack.Messaging
             return StringBuilderCache.ReturnAndFree(sb);
         }
 
+        public Dictionary<string, long> GetDescriptionMap()
+        {
+            var to = new Dictionary<string,long> {
+                [nameof(ThreadCount)] = ThreadCount,
+                ["TotalMessagesAdded"] = Interlocked.Read(ref totalMessagesAdded),
+                ["TotalMessagesTaken"] = Interlocked.Read(ref totalMessagesTaken),
+                ["TotalOutQMessagesAdded"] = Interlocked.Read(ref totalOutQMessagesAdded),
+                ["TotalDlQMessagesAdded"] = Interlocked.Read(ref totalDlQMessagesAdded),
+            };
+
+            foreach (var entry in queueMap)
+            {
+                to[entry.Key] = entry.Value.Count;
+            }
+
+            return to;
+        }
+        
         //Called when AppHost is disposing
         public void Dispose()
         {
