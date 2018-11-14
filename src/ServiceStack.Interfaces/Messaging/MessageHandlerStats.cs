@@ -70,7 +70,7 @@ namespace ServiceStack.Messaging
 
     public static class MessageHandlerStatsExtensions
     {
-        public static IMessageHandlerStats CombineStats(IEnumerable<IMessageHandlerStats> stats)
+        public static IMessageHandlerStats CombineStats(this IEnumerable<IMessageHandlerStats> stats)
         {
             IMessageHandlerStats to = null;
 
