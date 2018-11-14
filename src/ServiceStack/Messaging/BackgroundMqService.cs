@@ -158,6 +158,18 @@ namespace ServiceStack.Messaging
             return ret.ToArray();
         }
 
+        public IMqWorker[] GetAllWorkers()
+        {
+            if (workers != null)
+            {
+                lock (workers)
+                {
+                    return workers.ToArray();
+                }
+            }
+            return TypeConstants<IMqWorker>.EmptyArray;
+        }
+
         public string GetStatus() => workers != null ? nameof(WorkerStatus.Started) : nameof(WorkerStatus.Stopped);
 
         public string GetStatsDescription()
