@@ -33,15 +33,24 @@ namespace ServiceStack.Messaging
         /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
-        public string[] PriortyQueuesWhitelist { get; set; }
+        public string[] PriorityQueuesWhitelist { get; set; }
 
         /// <summary>
         /// Create workers for priority queues
         /// </summary>
-        public bool EnablePriortyQueues
+        public bool EnablePriorityQueues
         {
-            set => PriortyQueuesWhitelist = value ? null : TypeConstants.EmptyStringArray;
+            set => PriorityQueuesWhitelist = value ? null : TypeConstants.EmptyStringArray;
         }
+
+        [Obsolete("Use PriorityQueuesWhitelist")]
+        public string[] PriortyQueuesWhitelist
+        {
+            get => PriorityQueuesWhitelist;
+            set => PriorityQueuesWhitelist = value;
+        }
+        [Obsolete("Use EnablePriorityQueues")]
+        public bool EnablePriortyQueues { set => EnablePriorityQueues = value; }
 
         /// <summary>
         /// Opt-in to only publish responses on this white list. 
@@ -67,7 +76,7 @@ namespace ServiceStack.Messaging
 
         public BackgroundMqService()
         {
-            EnablePriortyQueues = false;
+            EnablePriorityQueues = false;
             mqClient = new BackgroundMqClient(this);
             MessageFactory = new BackgroundMqMessageFactory(mqClient);
         }
@@ -308,8 +317,8 @@ namespace ServiceStack.Messaging
                     var collection = entry.Value;
                     var queueNames = new QueueNames(msgType);
 
-                    if (PriortyQueuesWhitelist == null
-                        || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
+                    if (PriorityQueuesWhitelist == null
+                        || PriorityQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         collection.ThreadCount.Times(i => 
                             workerBuilder.Add(collection.CreateWorker(queueNames.Priority)));
