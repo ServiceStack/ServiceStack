@@ -115,8 +115,14 @@ namespace ServiceStack
             var url = req.ResolveAbsoluteUrl(redirectUrl);
             if (includeRedirectParam)
             {
-                var absoluteRequestPath = req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString));
-                url = url.AddQueryParam(HostContext.ResolveLocalizedString(LocalizedStrings.Redirect), absoluteRequestPath);
+                var redirectPath = !AuthenticateService.HtmlRedirectReturnPathOnly 
+                    ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
+                    : req.PathInfo + ToQueryString(req.QueryString);
+
+                var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
+                                  HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
+                
+                url = url.AddQueryParam(returnParam, redirectPath);
             }
 
             res.RedirectToUrl(url);

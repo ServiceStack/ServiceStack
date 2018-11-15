@@ -26,7 +26,20 @@ namespace ServiceStack
 
         public List<IAuthEvents> AuthEvents { get; set; }
 
+        /// <summary>
+        /// Login path to redirect to
+        /// </summary>
         public string HtmlRedirect { get; set; }
+        
+        /// <summary>
+        /// What queryString param to capture redirect param on
+        /// </summary>
+        public string HtmlRedirectReturnParam { get; set; }
+
+        /// <summary>
+        /// Whether to only capture return path or absolute URL (default)
+        /// </summary>
+        public bool HtmlRedirectReturnPathOnly { get; set; }
 
         public string HtmlLogoutRedirect { get; set; }
 
@@ -114,6 +127,7 @@ namespace ServiceStack
             AuthEvents = new List<IAuthEvents>();
 
             this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
+            this.HtmlRedirectReturnParam = LocalizedStrings.Redirect;
             this.IncludeAuthMetadataProvider = true;
             this.ValidateUniqueEmails = true;
             this.DeleteSessionCookiesOnLogout = true;
@@ -170,6 +184,8 @@ namespace ServiceStack
             authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
+            AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
         }
 

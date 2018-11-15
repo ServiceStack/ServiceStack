@@ -29,6 +29,7 @@ namespace ServiceStack.Auth
         public const string CredentialsAliasProvider = "login";
         public const string LogoutAction = "logout";
         public const string DigestProvider = "digest";
+        public const string IdentityProvider = "identity";
 
         public static Func<IAuthSession> CurrentSessionFactory { get; set; }
         public static ValidateFn ValidateFn { get; set; }
@@ -36,6 +37,9 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        public static string HtmlRedirectReturnParam { get; internal set; }
+        public static bool HtmlRedirectReturnPathOnly { get; internal set; }
+        
         public static Func<AuthFilterContext, object> AuthResponseDecorator { get; internal set; }
         internal static IAuthProvider[] AuthProviders = TypeConstants<IAuthProvider>.EmptyArray;
         internal static IAuthWithRequest[] AuthWithRequestProviders = TypeConstants<IAuthWithRequest>.EmptyArray;
