@@ -31,6 +31,15 @@ namespace ServiceStack.Serialization
             }
         }
 
+        public object DeserializeFromStream(Type type, Stream stream)
+        {
+            using (var reader = XmlDictionaryReader.CreateTextReader(stream, new XmlDictionaryReaderQuotas()))
+            {
+                var serializer = new System.Xml.Serialization.XmlSerializer(type);
+                return serializer.Deserialize(reader);
+            }
+        }
+
         public To Parse<To>(TextReader from)
         {
             var type = typeof(To);
