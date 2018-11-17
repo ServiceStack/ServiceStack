@@ -994,6 +994,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             var to = reqParams.ToObjectDictionary();
             to[TemplateConstants.Request] = request;
+
+            if (request.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
+                to[Keywords.DbInfo] = connInfo;
+            
             return to;
         }
         
