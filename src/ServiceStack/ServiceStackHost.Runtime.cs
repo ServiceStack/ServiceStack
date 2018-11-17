@@ -648,17 +648,17 @@ namespace ServiceStack
 
             if (req != null)
             {
-                ConnectionInfo connInfo;
-                if ((connInfo = req.GetItem(Keywords.DbInfo) as ConnectionInfo) != null)
+                if (req.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
                 {
                     if (!(dbFactory is IDbConnectionFactoryExtended dbFactoryExtended))
                         throw new NotSupportedException("ConnectionInfo can only be used with IDbConnectionFactoryExtended");
 
-                    if (connInfo.ConnectionString != null && connInfo.ProviderName != null)
-                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName);
-
                     if (connInfo.ConnectionString != null)
-                        return dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+                    {
+                        return connInfo.ProviderName != null 
+                            ? dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString, connInfo.ProviderName) 
+                            : dbFactoryExtended.OpenDbConnectionString(connInfo.ConnectionString);
+                    }
 
                     if (connInfo.NamedConnection != null)
                         return dbFactoryExtended.OpenDbConnection(connInfo.NamedConnection);
@@ -683,7 +683,7 @@ namespace ServiceStack
         /// Resolves <see cref="IRedisClient"></see> based on <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
-        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
         public virtual IRedisClient GetRedisClient(IRequest req = null)
         {
@@ -700,7 +700,7 @@ namespace ServiceStack
         /// If not registered, it falls back to <see cref="IRedisClientsManager"></see>.GetClient();
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
-        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
         public virtual ICacheClient GetCacheClient(IRequest req)
         {
@@ -720,7 +720,7 @@ namespace ServiceStack
         /// Returns <see cref="MemoryCacheClient"></see>. cache is only persisted for this running app instance.
         /// Called by <see cref="Service"></see>.MemoryCacheClient
         /// </summary>
-        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns>Nullable MemoryCacheClient</returns>
         public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req)
         {
@@ -731,7 +731,7 @@ namespace ServiceStack
         /// Returns <see cref="IMessageProducer"></see> from the IOC container.
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
-        /// <param name="req">Provided by services and PageViewBase, can be helpfull when overriding this method</param>
+        /// <param name="req">Provided by services and PageViewBase, can be helpful when overriding this method</param>
         /// <returns></returns>
         public virtual IMessageProducer GetMessageProducer(IRequest req = null)
         {
