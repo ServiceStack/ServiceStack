@@ -640,7 +640,7 @@ namespace ServiceStack
         /// See multitenancy: https://docs.servicestack.net/multitenancy
         /// Called by itself, <see cref="Service"></see> and <see cref="ServiceStack.Razor.ViewPageBase"></see>
         /// </summary>
-        /// <param name="req">Provided by services and pageView, can be helpfull when overriding this method</param>
+        /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns></returns>
         public virtual IDbConnection GetDbConnection(IRequest req = null)
         {
