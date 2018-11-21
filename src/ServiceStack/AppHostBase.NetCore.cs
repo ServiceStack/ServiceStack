@@ -31,6 +31,8 @@ namespace ServiceStack
 
         IApplicationBuilder app;
 
+        public Func<NetCoreRequest,Task> BeforeNextMiddleware { get; set; }
+
         public virtual void Bind(IApplicationBuilder app)
         {
             this.app = app;
@@ -108,9 +110,9 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(mode))
             {
                 var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.Ordinal) == 1;
-                var includedInPathPase = context.Request.PathBase.HasValue &&
+                var includedInPathBase = context.Request.PathBase.HasValue &&
                                          context.Request.PathBase.Value.IndexOf(mode, StringComparison.Ordinal) == 1;
-                if (!includedInPathInfo && !includedInPathPase)
+                if (!includedInPathInfo && !includedInPathBase)
                 {
                     await next();
                     return;
@@ -133,6 +135,15 @@ namespace ServiceStack
                 
                 httpRes = httpReq.Response;
                 handler = HttpHandlerFactory.GetHandler(httpReq);
+
+                if (BeforeNextMiddleware != null)
+                {
+                    var holdNext = next;
+                    next = async () => {
+                        await BeforeNextMiddleware(httpReq);
+                        await holdNext();
+                    };
+                }
             } 
             catch (Exception ex) //Request Initialization error
             {

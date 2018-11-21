@@ -55,6 +55,9 @@ namespace ServiceStack.Host.NetCore
             return this.TryResolveInternal<T>();
         }
 
+        public HttpContext HttpContext => context;
+        public HttpRequest HttpRequest => request;
+
         public object OriginalRequest => request;
 
         private IResponse response;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Text;
 
@@ -522,6 +523,65 @@ namespace ServiceStack.Auth
                         break;
                 }
             }
+        }
+        
+        public static List<Claim> ConvertSessionToClaims(this IAuthSession session,
+            string issuer = null, string roleClaimType=ClaimTypes.Role, string permissionClaimType="perm")
+        {
+            var claims = new List<Claim>();
+
+            void addClaim(string type, string value)
+            {
+                if (value == null)
+                    return;
+
+                claims.Add(new Claim(type, value, ClaimValueTypes.String, issuer));
+            }
+
+            addClaim(ClaimTypes.NameIdentifier, session.Id);
+            addClaim(ClaimTypes.Email, session.Email);
+            addClaim(ClaimTypes.Name, session.UserAuthName);
+            addClaim(ClaimTypes.GivenName, session.FirstName);
+            addClaim(ClaimTypes.Surname, session.LastName);
+
+            if (session is IAuthSessionExtended sessionExt)
+            {
+                addClaim(ClaimTypes.StreetAddress, sessionExt.Address);
+                addClaim(ClaimTypes.Locality, sessionExt.City);
+                addClaim(ClaimTypes.StateOrProvince, sessionExt.State);
+                addClaim(ClaimTypes.PostalCode, sessionExt.PostalCode);
+                addClaim(ClaimTypes.Country, sessionExt.Country);
+                addClaim(ClaimTypes.HomePhone, sessionExt.HomePhone);
+                addClaim(ClaimTypes.MobilePhone, sessionExt.MobilePhone);
+                addClaim(ClaimTypes.DateOfBirth, sessionExt.BirthDateRaw ?? sessionExt.BirthDate?.ToShortDateString());
+                addClaim(ClaimTypes.Gender, sessionExt.Gender);
+                addClaim(ClaimTypes.Dns, sessionExt.Dns);
+                addClaim(ClaimTypes.Rsa, sessionExt.Rsa);
+                addClaim(ClaimTypes.Sid, sessionExt.Sid);
+                addClaim(ClaimTypes.Hash, sessionExt.Hash);
+                addClaim(ClaimTypes.HomePhone, sessionExt.HomePhone);
+                addClaim(ClaimTypes.MobilePhone, sessionExt.MobilePhone);
+                addClaim(ClaimTypes.OtherPhone, sessionExt.PhoneNumber);
+                addClaim(ClaimTypes.Webpage, sessionExt.Webpage);
+            }
+
+            if (session.Roles != null)
+            {
+                foreach (var role in session.Roles)
+                {
+                    addClaim(roleClaimType, role);
+                }
+            }
+
+            if (session.Permissions != null)
+            {
+                foreach (var permission in session.Permissions)
+                {
+                    addClaim(permissionClaimType, permission);
+                }
+            }
+ 
+            return claims;
         }
     }
 
