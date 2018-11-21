@@ -415,10 +415,12 @@ namespace ServiceStack.Auth
                         authSession.FacebookUserName = entry.Value;
                         break;
                     case "given_name":
+                    case "GivenName":
                     case "FirstName":
                         session.FirstName = entry.Value;
                         break;
                     case "family_name":
+                    case "Surname":
                     case "LastName":
                         session.LastName = entry.Value;
                         break;
@@ -484,6 +486,39 @@ namespace ServiceStack.Auth
                         break;
                     case "Tag":
                         authSession.Tag = long.Parse(entry.Value);
+                        break;
+                    case "Dns":
+                        authSession.Dns = entry.Value;
+                        break;
+                    case "Rsa":
+                        authSession.Rsa = entry.Value;
+                        break;
+                    case "Sid":
+                        authSession.Sid = entry.Value;
+                        break;
+                    case "Hash":
+                        authSession.Hash = entry.Value;
+                        break;
+                    case "HomePhone":
+                        authSession.HomePhone = entry.Value;
+                        break;
+                    case "MobilePhone":
+                        authSession.MobilePhone = entry.Value;
+                        break;
+                    case "Webpage":
+                        authSession.Webpage = entry.Value;
+                        break;
+                    case "EmailConfirmed":
+                        authSession.EmailConfirmed = entry.Value.FromJsv<bool>();
+                        break;
+                    case "PhoneNumberConfirmed":
+                        authSession.PhoneNumberConfirmed = entry.Value.FromJsv<bool>();
+                        break;
+                    case "TwoFactorEnabled":
+                        authSession.TwoFactorEnabled = entry.Value.FromJsv<bool>();
+                        break;
+                    case "SecurityStamp":
+                        authSession.SecurityStamp = entry.Value;
                         break;
                 }
             }
