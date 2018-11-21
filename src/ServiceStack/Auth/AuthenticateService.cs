@@ -210,6 +210,8 @@ namespace ServiceStack.Auth
 
                 var referrerUrl = request.Continue
                     ?? session.ReferrerUrl
+                    ?? request.Continue
+                    ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 

@@ -129,7 +129,7 @@ namespace ServiceStack.Auth
                             provider = CredentialsAuthProvider.Name,
                             UserName = request.UserName ?? request.Email,
                             Password = request.Password,
-                            Continue = request.Continue
+                            Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
                         });
 
                     if (authResponse is IHttpError)

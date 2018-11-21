@@ -69,6 +69,9 @@ namespace ServiceStack
             return null;
         }
 
+        public static string GetQueryStringOrForm(this IRequest httpReq, string name) =>
+            httpReq.QueryString[name] ?? httpReq.FormData[name];
+
         public static string GetParentAbsolutePath(this IRequest httpReq)
         {
             return httpReq.GetAbsolutePath().ToParentPath();
