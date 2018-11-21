@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Funq;
@@ -111,34 +112,39 @@ namespace IdentityDemo
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
 
-            CreateRoles(app.ApplicationServices).Wait();
+            CreateRoles(app).Wait();
         }
         
-        private async Task CreateRoles(IServiceProvider serviceProvider)
+        private async Task CreateRoles(IApplicationBuilder app)
         {
-            //initializing custom roles 
-            var RoleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var UserManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-            string[] roleNames = { "Admin", "Manager", "Member" };
-            IdentityResult roleResult;
+            var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
 
-            foreach (var roleName in roleNames)
+            using (var scope = scopeFactory.CreateScope())
             {
-                var roleExist = await RoleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
+                //initializing custom roles 
+                var RoleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var UserManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                string[] roleNames = { "Admin", "Manager", "Member" };
+                IdentityResult roleResult;
+
+                foreach (var roleName in roleNames)
                 {
-                    //create the roles and seed them to the database: Question 1
-                    roleResult = await RoleManager.CreateAsync(new IdentityRole(roleName));
+                    var roleExist = await RoleManager.RoleExistsAsync(roleName);
+                    if (!roleExist)
+                    {
+                        //create the roles and seed them to the database: Question 1
+                        roleResult = await RoleManager.CreateAsync(new IdentityRole(roleName));
+                    }
                 }
-            }
             
-            var user = await UserManager.FindByEmailAsync("test@gmail.com");
-            if (user != null)
-            {
-                foreach (var role in roleNames)
+                var user = await UserManager.FindByEmailAsync("test@gmail.com");
+                if (user != null)
                 {
-                    //here we tie the new user to the role
-                    await UserManager.AddToRoleAsync(user, role);
+                    foreach (var role in roleNames)
+                    {
+                        //here we tie the new user to the role
+                        await UserManager.AddToRoleAsync(user, role);
+                    }
                 }
             }
         }
@@ -150,8 +156,18 @@ namespace IdentityDemo
 
         public override void Configure(Container container)
         {
+            var authRepo = new InMemoryAuthRepository();
+            container.Register<IAuthRepository>(c => authRepo);
+            authRepo.CreateUserAuth(new UserAuth {
+                UserName = "test",
+                Email = "test@gmail.com",
+                DisplayName = "ServiceStack User",
+                Roles = new List<string> { "Member" },
+            }, "test");
+            
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
                 new IAuthProvider[] {
+                    new CredentialsAuthProvider(AppSettings), 
                     new NetCoreIdentityAuthProvider(AppSettings) 
                     {
                         PopulateSessionFilter = (session, principal, req) => 
@@ -164,6 +180,10 @@ namespace IdentityDemo
                         }
                     }, 
                 }));
+            
+            SetConfig(new HostConfig {
+                AdminAuthSecret = "secret"
+            });
         }
     }
 
@@ -173,12 +193,30 @@ namespace IdentityDemo
         public string Name { get; set; }
     }
 
+    [Route("/hello-member")]
+    public class HelloMember : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    [Route("/hello-manager")]
+    public class HelloManager : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    [Route("/hello-admin")]
+    public class HelloAdmin : IReturn<HelloResponse>
+    {
+        public string Name { get; set; }
+    }
+
     public class HelloResponse
     {
         public string Result { get; set; }
     }
 
-    [Route("/helloauth")]
+    [Route("/hello-auth")]
     public class HelloAuth : IReturn<HelloResponse>
     {
         public string Name { get; set; }
@@ -190,5 +228,14 @@ namespace IdentityDemo
 
         [Authenticate]
         public object Any(HelloAuth request) => new HelloResponse { Result = $"Hello Auth, {request.Name}!" };
+
+        [RequiredRole("Member")]
+        public object Any(HelloMember request) => new HelloResponse { Result = $"Hello Member, {request.Name}!" };
+
+        [RequiredRole("Manager")]
+        public object Any(HelloManager request) => new HelloResponse { Result = $"Hello Manager, {request.Name}!" };
+
+        [RequiredRole("Admin")]
+        public object Any(HelloAdmin request) => new HelloResponse { Result = $"Hello Admin, {request.Name}!" };
     }
 }

@@ -16,17 +16,41 @@ namespace IdentityDemo.Controllers
             return View();
         }
 
-        [Authorize]
-        public IActionResult About()
+        public IActionResult Contact()
         {
-            ViewData["Message"] = "Your application description page.";
+            ViewData["Message"] = "Anyone can access this page.";
 
             return View();
         }
 
-        public IActionResult Contact()
+        [Authorize]
+        public IActionResult About()
         {
-            ViewData["Message"] = "Your contact page.";
+            ViewData["Message"] = "Access limited to any Authenticated User.";
+
+            return View();
+        }
+
+        [Authorize(Roles = "Member")]
+        public IActionResult Member()
+        {
+            ViewData["Message"] = "Access limited to users with 'Member' role.";
+
+            return View();
+        }
+
+        [Authorize(Roles = "Manager")]
+        public IActionResult Manager()
+        {
+            ViewData["Message"] = "Access limited to users with 'Manager' role.";
+
+            return View();
+        }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult Admin()
+        {
+            ViewData["Message"] = "Access limited to users with 'Admin' role.";
 
             return View();
         }

@@ -1,0 +1,13 @@
+﻿@{
+    ViewData["Title"] = "Admin";
+}
+<h2>@ViewData["Title"]</h2>
+<h3>@ViewData["Message"]</h3>
+
+<p>Has 'Admin' role.</p>
+
+<p><a href="/hello-admin?Name=Admin">ServiceStack Requires 'Admin' Role</a></p>
+
+<p><a href="/hello-admin?Name=Admin&authsecret=secret">ServiceStack Requires 'Admin' Role with secret</a></p>
+
+

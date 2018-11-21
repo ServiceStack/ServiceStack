@@ -31,14 +31,17 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a asp-area="" asp-controller="Home" asp-action="Index">Home</a></li>
-                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
                     <li><a asp-area="" asp-controller="Home" asp-action="Contact">Contact</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="About">About</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Member">Member</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Manager">Manager</a></li>
+                    <li><a asp-area="" asp-controller="Home" asp-action="Admin" asp-route-authsecret="secret">Admin</a></li>
                 </ul>
                 @await Html.PartialAsync("_LoginPartial")
             </div>
         </div>
     </nav>
-    <div class="container body-content">
+    <div class="container body-content" style="margin-top:40px">
         @RenderBody()
         <hr />
         <footer>
