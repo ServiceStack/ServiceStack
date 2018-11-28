@@ -19,9 +19,7 @@ namespace ServiceStack
         }
         
         public static List<Command> ParseCommands(this ReadOnlyMemory<char> commandsString, 
-            char separator = ',',
-            Func<ReadOnlyMemory<char>, int, int?> atEndIndex = null, 
-            bool allowWhitespaceSensitiveSyntax = false)
+            char separator = ',')
         {
             var to = new List<Command>();
             List<ReadOnlyMemory<char>> args = null;
@@ -87,43 +85,6 @@ namespace ServiceStack
                             continue;
                     }
 
-                    if (c.IsOperatorChar() && // don't take precedence over '|' seperator 
-                        (c != separator || (i + 1 < commandsString.Length && commandsString.Span[i + 1].IsOperatorChar())))
-                    {
-                        cmd.Name = commandsString.Slice(0, i).TrimEnd().ToString();
-                        pos = i;
-                        if (!string.IsNullOrEmpty(cmd.Name))
-                            to.Add(cmd);
-                        return to;
-                    }
-
-                    if (allowWhitespaceSensitiveSyntax && c == ':')
-                    {
-                        // replace everything after ':' up till new line and rewrite as single string to method
-                        var endStringPos = commandsString.IndexOf("\n", i);
-                        var endStatementPos = commandsString.IndexOf("}}", i);
-
-                        if (endStringPos == -1 || (endStatementPos != -1 && endStatementPos < endStringPos))
-                            endStringPos = endStatementPos;
-                        
-                        if (endStringPos == -1)
-                            throw new NotSupportedException($"Whitespace sensitive syntax did not find a '\\n' new line to mark the end of the statement, near '{commandsString.SubstringWithEllipsis(i,50)}'");
-
-                        cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
-                        
-                        var originalArgs = commandsString.Slice(i + 1, endStringPos - i - 1).ToString();
-                        var rewrittenArgs = "′" + originalArgs.Trim().Replace("{", "{{").Replace("}", "}}").Replace("′", "\\′") + "′)";
-                        ParseArguments(rewrittenArgs.AsMemory(), out args);
-                        cmd.Args = args;
-                        
-                        i = endStringPos == endStatementPos 
-                            ? endStatementPos - 2  //move cursor back before var block terminator 
-                            : endStringPos;
-
-                        pos = i + 1;
-                        continue;
-                    }
-
                     if (c == '(')
                     {
                         inBrackets = true;
@@ -162,13 +123,6 @@ namespace ServiceStack
                         to.Add(cmd);
                         cmd = new Command();
                         pos = i + 1;
-                    }
-                    
-                    var atEndIndexPos = atEndIndex?.Invoke(commandsString, i);
-                    if (atEndIndexPos != null)
-                    {
-                        endBlockPos = atEndIndexPos.Value;
-                        break;
                     }
                 }
 

@@ -251,5 +251,33 @@ namespace ServiceStack.Common.Tests
             Assert.That("fn(var.prop['key'],var.prop['key'])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop['key']|var.prop['key']]" }));
             Assert.That("fn(var.prop[\"key\"],var.prop[\"key\"])".ParseCommands().Map(x => x.ToDebugString()), Is.EqualTo(new[]{ "[fn:var.prop[\"key\"]|var.prop[\"key\"]]" }));
         }
+
+        [Test]
+        public void Can_parse_SELECT_Expression_with_concatenation()
+        {
+            var sql = "\"UserName\", \"Email\", \"FirstName\" AS \"GivenName\", \"LastName\" AS \"Surname\", \"FirstName\" || @1 || \"LastName\" AS FullName";
+
+            var commands = sql.ParseCommands();
+
+            var names = commands.Map(x => x.Name);
+            Assert.That(names, Is.EquivalentTo(new[] {
+                "\"UserName\"",
+                "\"Email\"",
+                "\"FirstName\" AS \"GivenName\"",
+                "\"LastName\" AS \"Surname\"",
+                "\"FirstName\" || @1 || \"LastName\" AS FullName",
+            }));
+
+            var aliasesOrNames = names.Map(x => x.LastRightPart("AS").Trim().StripQuotes() );
+            aliasesOrNames.PrintDump();
+            
+            Assert.That(aliasesOrNames, Is.EquivalentTo(new[] {
+                "UserName",
+                "Email",
+                "GivenName",
+                "Surname",
+                "FullName",
+            }));
+        }
     }
 }
