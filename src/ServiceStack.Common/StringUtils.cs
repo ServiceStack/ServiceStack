@@ -36,6 +36,7 @@ namespace ServiceStack
 
             var endBlockPos = commandsString.Length;
             var cmd = new Command();
+            var segmentStartPos = 0;
 
             try
             {
@@ -119,10 +120,14 @@ namespace ServiceStack
                     {
                         if (string.IsNullOrEmpty(cmd.Name))
                             cmd.Name = commandsString.Slice(pos, i - pos).Trim().ToString();
+                        else
+                            cmd.Suffix = commandsString.Slice(pos - cmd.Suffix.Length, i - pos + cmd.Suffix.Length);
+
+                        cmd.Original = commandsString.Slice(segmentStartPos, i - segmentStartPos).Trim();
 
                         to.Add(cmd);
                         cmd = new Command();
-                        pos = i + 1;
+                        segmentStartPos = pos = i + 1;
                     }
                 }
 
@@ -134,7 +139,10 @@ namespace ServiceStack
                 }
 
                 if (!cmd.Name.IsNullOrEmpty())
+                {
+                    cmd.Original = commandsString.Slice(segmentStartPos, commandsString.Length - segmentStartPos).Trim();
                     to.Add(cmd);
+                }
             }
             catch (Exception e)
             {
@@ -378,7 +386,7 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Protect against XSS by cleaning non-standared User Input
+        /// Protect against XSS by cleaning non-standard User Input
         /// </summary>
         public static string SafeInput(this string text)
         {
