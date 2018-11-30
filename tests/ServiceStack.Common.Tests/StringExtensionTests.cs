@@ -259,7 +259,7 @@ namespace ServiceStack.Common.Tests
 
             var commands = sql.ParseCommands();
 
-            var names = commands.Map(x => x.Name);
+            var names = commands.Map(x => x.Original.ToString());
             Assert.That(names, Is.EquivalentTo(new[] {
                 "\"UserName\"",
                 "\"Email\"",
@@ -277,7 +277,35 @@ namespace ServiceStack.Common.Tests
                 "GivenName",
                 "Surname",
                 "FullName",
+            }));            
+        }
+
+        [Test]
+        public void Can_parse_SELECT_Expression_with_nested_functions()
+        {
+            var sql = "CONCAT(CONCAT(\"FirstName\", @1), \"LastName\") AS FullName, \"FirstName\" AS \"GivenName\", \"LastName\" AS \"Surname\", \"Email\", \"UserName\"";
+
+            var commands = sql.ParseCommands();
+
+            var names = commands.Map(x => x.Original.ToString());
+            Assert.That(names, Is.EquivalentTo(new[] {
+                "CONCAT(CONCAT(\"FirstName\", @1), \"LastName\") AS FullName",
+                "\"FirstName\" AS \"GivenName\"",
+                "\"LastName\" AS \"Surname\"",
+                "\"Email\"",
+                "\"UserName\"",
             }));
+
+            var aliasesOrNames = names.Map(x => x.LastRightPart("AS").Trim().StripQuotes() );
+            aliasesOrNames.PrintDump();
+            
+            Assert.That(aliasesOrNames, Is.EquivalentTo(new[] {
+                "FullName",
+                "GivenName",
+                "Surname",
+                "Email",
+                "UserName",
+            }));            
         }
     }
 }
