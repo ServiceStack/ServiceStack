@@ -46,6 +46,21 @@ namespace CheckMvc.Controllers
 
         public ActionResult Contact()
         {
+            try
+            {
+                var request = new TestGateway {Name = "MVC"};
+                var gateway = HostContext.AppHost.GetServiceGateway(HostContext.GetCurrentRequest());
+                var response = gateway.Send(request);
+                //within above call the validator throws exception
+            }
+            catch (WebServiceException ex)
+            {
+                // no longer reaches here
+                if (ex.ResponseStatus.ErrorCode == "NotFound")
+                    return HttpNotFound();
+                throw;
+            }
+            
             return View(GetViewModel("Contact"));
         }
     }

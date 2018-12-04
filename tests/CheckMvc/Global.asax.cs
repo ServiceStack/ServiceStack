@@ -45,6 +45,24 @@ namespace CheckMvc
         }
     }
 
+    public class TestGateway : IReturn<TestGatewayResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class TestGatewayResponse
+    {
+        public string Result { get; set; }
+        
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+    public class TestGatewayService : Service
+    {
+        public object Any(TestGateway request) =>
+            throw HttpError.NotFound("NotFound");
+    }
+
     public class SmrImportServices : Service
     {
         public object Post(AddSmrImportRequest request)
