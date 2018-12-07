@@ -1,0 +1,41 @@
+<!--
+title: Bootstrap Templates
+-->
+
+<p class="lead">
+  Complete with page layout, menu partial and responsive navigation!
+</p>
+<ul class="list-unstyled">
+  <li>Bootstrap v4.1.3</li>
+  <li>jQuery v3.3.1</li>
+</ul>
+
+<div class="container" style="padding:60px 0 0 250px">
+  <div class="form-group row">
+    <label for="host" class="col-sm-2 col-form-label">Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="Name" name="Name" placeholder="Name" value="" autocomplete="off">
+    </div>
+  </div>
+  <div class="form-group row">
+    <label class="col-sm-2 col-form-label"></label>
+    <div class="col-sm-4">
+      <h4 id="result"></h4>
+    </div>
+  </div>
+</div>
+
+{{#raw appendTo scripts}}
+<script>
+$('#Name').keyup(function () {
+  var name = $('#Name').val();
+  if (name) {
+    $.getJSON('/hello/' + name, function (r) {
+      $('#result').html(r.result);
+    });
+  } else {
+    $('#result').html('');
+  }
+});
+</script>
+{{/raw}}
