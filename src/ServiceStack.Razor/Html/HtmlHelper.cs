@@ -486,7 +486,7 @@ namespace ServiceStack.Html
 
         public ResponseStatus GetErrorStatus()
         {
-            var errorStatus = this.HttpRequest.GetItem(HtmlFormat.ErrorStatusKey);
+            var errorStatus = this.HttpRequest.GetItem(Keywords.ErrorStatus);
             return errorStatus as ResponseStatus;
         }
 

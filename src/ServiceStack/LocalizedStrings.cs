@@ -37,6 +37,9 @@
         public static string Redirect = "redirect";
         public static string ReturnUrl = "ReturnUrl"; //.NET Core default convention
         public static string AutoBatchIndex = "AutoBatchIndex";
+        public static string Error = "__error";
+        public static string ErrorStatus = "__errorStatus";
+        public static string Model = "Model";
     }
 
     public static class LocalizedStrings

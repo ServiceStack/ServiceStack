@@ -153,7 +153,7 @@ namespace ServiceStack.Mvc
                 {
                     var model = modelType.CreateInstance();
                     viewData = CreateViewData(model);
-                    req.Items[Formats.HtmlFormat.ErrorStatusKey] = errorDto;
+                    req.Items[Keywords.ErrorStatus] = errorDto;
                 }
             }
 
@@ -474,7 +474,7 @@ namespace ServiceStack.Mvc
 
         public ResponseStatus GetErrorStatus()
         {
-            var errorStatus = this.Request.GetItem(Formats.HtmlFormat.ErrorStatusKey);
+            var errorStatus = this.Request.GetItem(Keywords.ErrorStatus);
             return errorStatus as ResponseStatus
                 ?? GetResponseStatus(ModelError);
         }

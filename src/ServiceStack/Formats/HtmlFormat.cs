@@ -20,9 +20,6 @@ namespace ServiceStack.Formats
 
         private IAppHost AppHost { get; set; }
 
-        public const string ModelKey = "Model";
-        public const string ErrorStatusKey = "__errorStatus";
-
         public void Register(IAppHost appHost)
         {
             AppHost = appHost;
@@ -47,7 +44,7 @@ namespace ServiceStack.Formats
                 if (res.StatusCode >= 400)
                 {
                     var responseStatus = response.GetResponseStatus();
-                    req.Items[ErrorStatusKey] = responseStatus;
+                    req.Items[Keywords.ErrorStatus] = responseStatus;
                 }
 
                 if (response is CompressedResult)
