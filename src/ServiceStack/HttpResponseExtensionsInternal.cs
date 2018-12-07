@@ -176,7 +176,7 @@ namespace ServiceStack
                         if (httpResult is IHttpError httpError)
                         {
                             response.Dto = httpError.CreateErrorResponse();
-                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto))
+                            if (await response.HandleCustomErrorHandler(request, defaultContentType, httpError.Status, response.Dto, httpError as Exception))
                             {
                                 return true;
                             }
@@ -439,7 +439,7 @@ namespace ServiceStack
             var errorDto = ex.ToErrorResponse();
             HostContext.AppHost.OnExceptionTypeFilter(ex, errorDto.ResponseStatus);
 
-            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto))
+            if (await HandleCustomErrorHandler(httpRes, httpReq, contentType, statusCode, errorDto, ex))
                 return;
 
             if ((httpRes.ContentType == null || httpRes.ContentType == MimeTypes.Html) 
@@ -474,7 +474,7 @@ namespace ServiceStack
         }
 
         private static async Task<bool> HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
-            string contentType, int statusCode, object errorDto)
+            string contentType, int statusCode, object errorDto, Exception ex)
         {
             if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
             {
@@ -482,8 +482,12 @@ namespace ServiceStack
                     ?? HostContext.AppHost.GlobalHtmlErrorHttpHandler;
                 if (errorHandler != null)
                 {
-                    httpReq.Items["Model"] = errorDto;
-                    httpReq.Items[HtmlFormat.ErrorStatusKey] = errorDto.GetResponseStatus();
+                    httpReq.Items[Keywords.Model] = errorDto;
+                    httpReq.Items[Keywords.ErrorStatus] = errorDto.GetResponseStatus();
+                    if (ex != null)
+                    {
+                        httpReq.Items[Keywords.Error] = ex;
+                    }
                     await errorHandler.ProcessRequestAsync(httpReq, httpRes, httpReq.OperationName);
                     return true;
                 }
