@@ -504,7 +504,7 @@ namespace ServiceStack.Razor
 
         public ResponseStatus GetErrorStatus()
         {
-            var errorStatus = this.Request.GetItem(HtmlFormat.ErrorStatusKey);
+            var errorStatus = this.Request.GetItem(Keywords.ErrorStatus);
             return errorStatus as ResponseStatus 
                 ?? GetResponseStatus(ModelError);
         }
