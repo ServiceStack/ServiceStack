@@ -773,11 +773,19 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     public class TemplatePageHandler : HttpAsyncTaskHandler
     {
-        private readonly TemplatePage page;
-        private readonly TemplatePage layoutPage;
+        private TemplatePage page;
+        private TemplatePage layoutPage;
         public Dictionary<string, object> Args { get; set; }
         public object Model { get; set; }
         public Stream OutputStream { get; set; }
+        private readonly string pagePath; 
+        private readonly string layoutPath;
+
+        public TemplatePageHandler(string pagePath, string layoutPath=null)
+        {
+            this.RequestName = this.pagePath = pagePath ?? throw new ArgumentNullException(nameof(pagePath));
+            this.layoutPath = layoutPath;
+        }
 
         public TemplatePageHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
@@ -788,6 +796,19 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (page == null && pagePath != null)
+            {
+                var pages = httpReq.TryResolve<ITemplatePages>();
+                page = pages.GetPage(pagePath)
+                   ?? throw new FileNotFoundException($"Template Page not found '{pagePath}'");
+
+                if (!string.IsNullOrEmpty(layoutPath))
+                {
+                    layoutPage = pages.GetPage(layoutPath) 
+                        ?? throw new FileNotFoundException($"Template Page not found '{layoutPath}'");
+                }
+            }
+            
             var args = httpReq.GetTemplateRequestParams();
             if (Args != null)
             {
@@ -987,12 +1008,19 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public static Dictionary<string, object> GetTemplateRequestParams(this IRequest request)
         {
             var reqParams = request.GetRequestParams();
+
             reqParams["RawUrl"] = request.RawUrl;
             reqParams[TemplateConstants.PathInfo] = request.OriginalPathInfo;
             reqParams["AbsoluteUri"] = request.AbsoluteUri;
             reqParams["Verb"] = reqParams["Method"] = request.Verb;
 
             var to = reqParams.ToObjectDictionary();
+            
+            foreach (var item in request.Items)
+            {
+                to[item.Key.Trim('_')] = item.Value; //Remove __ prefixes for internal Keywords
+            }
+
             to[TemplateConstants.Request] = request;
 
             if (request.GetItem(Keywords.DbInfo) is ConnectionInfo connInfo)
