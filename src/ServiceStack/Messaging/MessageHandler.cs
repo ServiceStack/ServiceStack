@@ -194,12 +194,16 @@ namespace ServiceStack.Messaging
                         if (!publishAllResponses)
                         {
                             var inWhitelist = PublishResponsesWhitelist.Any(
-                                publishResponse => responseType.GetOperationName() == publishResponse);
-                            if (!inWhitelist) return;
+                                publishResponse => 
+                                    responseType.GetOperationName() == publishResponse || 
+                                    responseType.Name == publishResponse);
+                            if (!inWhitelist) 
+                                return;
                         }
 
                         // Leave as-is to work around a Mono 2.6.7 compiler bug
-                        if (!responseType.IsUserType()) return;
+                        if (!responseType.IsUserType()) 
+                            return;
                         mqReplyTo = new QueueNames(responseType).In;
                     }
 
