@@ -90,14 +90,21 @@ namespace ServiceStack.RabbitMq
         /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
-        public string[] PriortyQueuesWhitelist { get; set; }
+        public string[] PriorityQueuesWhitelist { get; set; }
+
+        [Obsolete("Use PriorityQueuesWhitelist")]
+        public string[] PriortyQueuesWhitelist
+        {
+            get => PriorityQueuesWhitelist;
+            set => PriorityQueuesWhitelist = value;
+        }
 
         /// <summary>
         /// Don't listen on any Priority Queues
         /// </summary>
         public bool DisablePriorityQueues
         {
-            set => PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
+            set => PriorityQueuesWhitelist = TypeConstants.EmptyStringArray;
         }
 
         /// <summary>
@@ -250,8 +257,8 @@ namespace ServiceStack.RabbitMq
                     var queueNames = new QueueNames(msgType);
                     var noOfThreads = handlerThreadCountMap[msgType];
 
-                    if (PriortyQueuesWhitelist == null
-                        || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
+                    if (PriorityQueuesWhitelist == null
+                        || PriorityQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         noOfThreads.Times(i =>
                             workerBuilder.Add(new RabbitMqWorker(

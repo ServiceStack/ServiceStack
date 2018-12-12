@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
     }
 
     /// <summary>
-    /// Conveneint base class with empty virtual methods so subclasses only need to override the hooks they need.
+    /// Convenient base class with empty virtual methods so subclasses only need to override the hooks they need.
     /// </summary>
     public class AuthEvents : IAuthEvents
     {

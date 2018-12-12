@@ -22,7 +22,7 @@ namespace ServiceStack.Messaging.Redis
     ///  - 1 for processing the services Priority Queue and 1 processing the services normal Inbox Queue.
     /// 
     /// Priority Queue's can be enabled on a message-per-message basis by specifying types in the 
-    /// OnlyEnablePriortyQueuesForTypes property. The DisableAllPriorityQueues property disables all Queues.
+    /// OnlyEnablePriorityQueuesForTypes property. The DisableAllPriorityQueues property disables all Queues.
     /// 
     /// The Start/Stop methods are idempotent i.e. It's safe to call them repeatedly on multiple threads 
     /// and the Redis MQ Server will only have Started or Stopped once.
@@ -64,14 +64,21 @@ namespace ServiceStack.Messaging.Redis
         /// <summary>
         /// If you only want to enable priority queue handlers (and threads) for specific msg types
         /// </summary>
-        public string[] PriortyQueuesWhitelist { get; set; }
+        public string[] PriorityQueuesWhitelist { get; set; }
+
+        [Obsolete("Use PriorityQueuesWhitelist")]
+        public string[] PriortyQueuesWhitelist
+        {
+            get => PriorityQueuesWhitelist;
+            set => PriorityQueuesWhitelist = value;
+        }
 
         /// <summary>
         /// Don't listen on any Priority Queues
         /// </summary>
         public bool DisablePriorityQueues
         {
-            set => PriortyQueuesWhitelist = TypeConstants.EmptyStringArray;
+            set => PriorityQueuesWhitelist = TypeConstants.EmptyStringArray;
         }
 
         public IRedisPubSubServer RedisPubSub { get; set; }
@@ -194,8 +201,8 @@ namespace ServiceStack.Messaging.Redis
                     var queueNames = new QueueNames(msgType);
                     var noOfThreads = handlerThreadCountMap[msgType];
 
-                    if (PriortyQueuesWhitelist == null
-                        || PriortyQueuesWhitelist.Any(x => x == msgType.Name))
+                    if (PriorityQueuesWhitelist == null
+                        || PriorityQueuesWhitelist.Any(x => x == msgType.Name))
                     {
                         noOfThreads.Times(i =>
                             workerBuilder.Add(new MessageHandlerWorker(
