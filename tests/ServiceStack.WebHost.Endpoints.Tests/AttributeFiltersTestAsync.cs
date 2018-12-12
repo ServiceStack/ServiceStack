@@ -173,7 +173,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public List<string> Names { get; set; }
     }
 
-    public class PriortyAttributeAsyncService : Service
+    public class PriorityAttributeAsyncService : Service
     {
         [PriorityAsync(3, "3rd")]
         [PriorityAsync(2, "2nd")]

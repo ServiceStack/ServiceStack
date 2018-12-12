@@ -75,7 +75,7 @@ namespace ServiceStack.Web
         string ResponseContentType { get; set; }
 
         /// <summary>
-        /// Whether the ResponseContentType has been explicitly overrided or whether it was just the default
+        /// Whether the ResponseContentType has been explicitly overriden or whether it was just the default
         /// </summary>
         bool HasExplicitResponseContentType { get; }
 
