@@ -11,8 +11,8 @@ namespace ServiceStack.Auth
     {
         public OrmLiteAuthRepository(IDbConnectionFactory dbFactory) : base(dbFactory) { }
 
-        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnnection = null) 
-            : base(dbFactory, namedConnnection) {}
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnection = null) 
+            : base(dbFactory, namedConnection) {}
     }
 
     public class OrmLiteAuthRepository<TUserAuth, TUserAuthDetails> : OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails>
@@ -23,10 +23,10 @@ namespace ServiceStack.Auth
 
         public string NamedConnection { get; private set; }
 
-        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnnection = null)
+        public OrmLiteAuthRepository(IDbConnectionFactory dbFactory, string namedConnection = null)
         {
             this.dbFactory = dbFactory;
-            this.NamedConnection = namedConnnection;
+            this.NamedConnection = namedConnection;
         }
 
         protected IDbConnection OpenDbConnection()
