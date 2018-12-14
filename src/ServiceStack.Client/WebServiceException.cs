@@ -65,10 +65,16 @@ namespace ServiceStack
 
                     if (responseStatus == null && ResponseBody != null)
                     {
-                        var map = ResponseBody.FromJsv<Dictionary<string, string>>();
-                        map = new Dictionary<string, string>(map, StringComparer.InvariantCultureIgnoreCase);
-                        if (map.TryGetValue(nameof(ResponseStatus), out var statusStr))
-                            responseStatus = statusStr.FromJsv<ResponseStatus>();
+                        var tryJsonFirst = ResponseBody.StartsWith("{\"");
+
+                        var errorResponse = tryJsonFirst ? ResponseBody.FromJson<ErrorResponse>() : null;
+                        if (errorResponse?.ResponseStatus?.ErrorCode == null)
+                            errorResponse = ResponseBody.FromJsv<ErrorResponse>();
+                        if (!tryJsonFirst && errorResponse?.ResponseStatus?.ErrorCode == null)
+                            errorResponse = ResponseBody.FromJson<ErrorResponse>();
+
+                        if (errorResponse?.ResponseStatus?.ErrorCode != null)
+                            responseStatus = errorResponse?.ResponseStatus;
                     }
                 }
                 catch (Exception ex)

@@ -295,6 +295,7 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
                 {"BadDictionaryKey", "A1,B:"},
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
+                {"Email","{From:test@email.com,Subject:The Subject}"},
             };
         }
 

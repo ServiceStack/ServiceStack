@@ -83,12 +83,14 @@ namespace ServiceStack.Common.Tests.OAuth
         [OneTimeSetUp]
         public void TestFixtureSetUp()
         {
+            RegisterService.AllowUpdates = true;
             appHost = new BasicAppHost().Init();
         }
 
         [OneTimeTearDown]
         public void TestFixtureTearDown()
         {
+            RegisterService.AllowUpdates = false;
             appHost.Dispose();
         }
 
@@ -230,8 +232,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var responseObj = registrationService.Post(RegisterDto);
 
-            var httpResult = responseObj as IHttpResult;
-            if (httpResult != null)
+            if (responseObj is IHttpResult httpResult)
             {
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
             }
@@ -279,8 +280,7 @@ namespace ServiceStack.Common.Tests.OAuth
 
             var responseObj = registrationService.Post(RegisterDto);
 
-            var httpResult = responseObj as IHttpResult;
-            if (httpResult != null)
+            if (responseObj is IHttpResult httpResult)
             {
                 Assert.Fail("HttpResult found: " + httpResult.Dump());
             }
