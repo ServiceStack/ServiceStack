@@ -29,7 +29,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [TearDown]
         public void TearDown()
         {
-            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+//            Licensing.RegisterLicense(new AppSettings().GetString("servicestack:license"));
+            Licensing.RegisterLicense(Environment.GetEnvironmentVariable("SERVICESTACK_LICENSE"));
         }
 
         [Test]
@@ -59,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }
         }
 
-        [Ignore("TODO: Ingore reason"), Test]
+        [Ignore("TODO: Ignore reason"), Test]
         public void Allows_MegaDto_through_ServiceClient()
         {
             using (var appHost = new LicenseTestsAppHost(typeof(MegaDtoService)))
