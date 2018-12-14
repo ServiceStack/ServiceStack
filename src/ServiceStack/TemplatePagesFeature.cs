@@ -52,6 +52,7 @@ namespace ServiceStack
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
+            "/Views/",
             "/swagger-ui" // Swagger's handler needs to process index.html 
         };
 
@@ -164,7 +165,7 @@ namespace ServiceStack
 
             foreach (var ignorePath in IgnorePaths)
             {
-                if (pathInfo.StartsWith(ignorePath))
+                if (pathInfo.StartsWithIgnoreCase(ignorePath))
                 {
                     catchAllPathsNotFound[pathInfo] = 1;
                     return null;
