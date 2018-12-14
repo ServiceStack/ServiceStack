@@ -179,7 +179,7 @@ namespace ServiceStack
             if (args.TryGetValue("response", out var oResponse))
             {
                 response = oResponse;
-                args.Remove("status");
+                args.Remove("response");
             }
 
             string contentType = null;

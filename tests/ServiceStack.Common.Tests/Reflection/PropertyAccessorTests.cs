@@ -31,6 +31,7 @@ namespace ServiceStack.Common.Tests.Reflection
             var longIdAccessor = TypeProperties<ModelWithFieldsOfDifferentTypes>.GetAccessor("LongId");
             var guidAccessor = TypeProperties<ModelWithFieldsOfDifferentTypes>.GetAccessor("Guid");
             var boolAccessor = TypeProperties<ModelWithFieldsOfDifferentTypes>.GetAccessor("Bool");
+            var doubleAccessor = TypeProperties<ModelWithFieldsOfDifferentTypes>.GetAccessor("Double");
             var dateTimeAccessor = TypeProperties<ModelWithFieldsOfDifferentTypes>.GetAccessor("DateTime");
 
             var original = ModelWithFieldsOfDifferentTypesFactory.Instance.CreateInstance(1);
@@ -40,6 +41,7 @@ namespace ServiceStack.Common.Tests.Reflection
             Assert.That(longIdAccessor.PublicGetter(original), Is.EqualTo(original.LongId));
             Assert.That(guidAccessor.PublicGetter(original), Is.EqualTo(original.Guid));
             Assert.That(boolAccessor.PublicGetter(original), Is.EqualTo(original.Bool));
+            Assert.That(doubleAccessor.PublicGetter(original), Is.EqualTo(original.Double).Within(0.1));
             Assert.That(dateTimeAccessor.PublicGetter(original), Is.EqualTo(original.DateTime));
 
             var to = ModelWithFieldsOfDifferentTypesFactory.Instance.CreateInstance(2);
@@ -49,6 +51,7 @@ namespace ServiceStack.Common.Tests.Reflection
             longIdAccessor.PublicSetter(original, to.LongId);
             guidAccessor.PublicSetter(original, to.Guid);
             boolAccessor.PublicSetter(original, to.Bool);
+            doubleAccessor.PublicSetter(original, to.Double);
             dateTimeAccessor.PublicSetter(original, to.DateTime);
 
             ModelWithFieldsOfDifferentTypesFactory.Instance.AssertIsEqual(original, to);

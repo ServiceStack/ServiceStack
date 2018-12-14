@@ -147,12 +147,10 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_create_url_with_FieldId()
         {
-            using (JsConfig.BeginScope())
+            using (JsConfig.With(new ServiceStack.Text.Config { IncludePublicFields = true }))
             {
-                JsConfig.IncludePublicFields = true;
                 var url = new FieldId(1).ToUrl("GET");
                 Assert.That(url, Is.EqualTo("/route/1"));
-
             }
         }
 

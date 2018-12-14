@@ -87,21 +87,24 @@ namespace ServiceStack.Validation
 
             var validationResult = await Validate(validator, req, req.Dto);
 
-            var responseStatus = response.ResponseStatus 
-                 ?? DtoUtils.CreateResponseStatus(validationResult.Errors[0].ErrorCode);
-            foreach (var error in validationResult.Errors)
+            if (!validationResult.IsValid)
             {
-                var responseError = new ResponseError
+                var responseStatus = response.ResponseStatus
+                     ?? DtoUtils.CreateResponseStatus(validationResult.Errors[0].ErrorCode);
+                foreach (var error in validationResult.Errors)
                 {
-                    ErrorCode = error.ErrorCode,
-                    FieldName = error.PropertyName,
-                    Message = error.ErrorMessage,
-                    Meta = new Dictionary<string, string> {["Severity"] = error.Severity.ToString()}
-                };
-                responseStatus.Errors.Add(responseError);
-            }
+                    var responseError = new ResponseError
+                    {
+                        ErrorCode = error.ErrorCode,
+                        FieldName = error.PropertyName,
+                        Message = error.ErrorMessage,
+                        Meta = new Dictionary<string, string> {["Severity"] = error.Severity.ToString()}
+                    };
+                    responseStatus.Errors.Add(responseError);
+                }
 
-            response.ResponseStatus = responseStatus;
+                response.ResponseStatus = responseStatus;
+            }
         }
 
         private static async Task<ValidationResult> Validate(IValidator validator, IRequest req, object requestDto)
