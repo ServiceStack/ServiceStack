@@ -52,6 +52,7 @@ namespace ServiceStack
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
+            "/Views/",
             "/swagger-ui" // Swagger's handler needs to process index.html 
         };
 
