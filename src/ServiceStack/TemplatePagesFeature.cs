@@ -164,7 +164,7 @@ namespace ServiceStack
 
             foreach (var ignorePath in IgnorePaths)
             {
-                if (pathInfo.StartsWith(ignorePath))
+                if (pathInfo.StartsWithIgnoreCase(ignorePath))
                 {
                     catchAllPathsNotFound[pathInfo] = 1;
                     return null;
