@@ -72,6 +72,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Does_log_compressed_requests()
         {
+            var hold = JsConfig.UTF8Encoding; 
             JsConfig.UTF8Encoding = new UTF8Encoding(false, true);
             
             var client = new JsonServiceClient(Config.ListeningOn)
@@ -85,7 +86,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             });
             Assert.That(response.Result, Is.EqualTo("Hello, GZIP (1)"));
 
-            JsConfig.UTF8Encoding = null;
+            JsConfig.UTF8Encoding = hold;
         }
     }
 }
