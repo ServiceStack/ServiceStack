@@ -23,7 +23,7 @@ namespace ServiceStack.Common.Tests
             using (new AppHostTest().Init())
             {
                 var map = ConfigUtils.GetAppSettingsMap();
-                Assert.That(map.Count, Is.EqualTo(10));
+                Assert.That(map.Count, Is.EqualTo(11));
                 Assert.That(map.Keys, Is.EquivalentTo(new[] {
                     "servicestack:license",
                     "EmptyKey",
@@ -35,6 +35,7 @@ namespace ServiceStack.Common.Tests
                     "BadDictionaryKey",
                     "ObjectNoLineFeed",
                     "ObjectWithLineFeed",
+                    "Email",
                 }));
             }
         }
