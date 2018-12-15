@@ -14,13 +14,6 @@
     <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
-    <PackageReference Include="NUnit" Version="3.10.1" />
-    <PackageReference Include="AWSSDK.Core" Version="3.3.24.8" />
-    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.12.2" />
-    <PackageReference Include="System.Memory" Version="4.5.1" />
-    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.csproj">
       <Project>{5E258282-86A6-4780-AB25-5E458F2E6F70}</Project>
       <Name>ServiceStack.Api.OpenApi</Name>
@@ -35,11 +28,25 @@
     <ProjectReference Include="..\..\src\ServiceStack.Api.Swagger\ServiceStack.Api.Swagger.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\ServiceStack.Common.Tests\ServiceStack.Common.Tests.csproj" />
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Redis" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.OrmLite.MySql" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
+    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="System.Memory" Version="4.5.1" />
+    <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
   </ItemGroup>
   <PropertyGroup Condition=" '$(TargetFramework)' == 'net46' ">
     <DefineConstants>$(DefineConstants);NET45</DefineConstants>
   </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net46' ">
+    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
+    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.109.1" />
     <PackageReference Include="Mysql.Data" Version="8.0.12" />
     <Reference Include="System.Xml" />
@@ -50,44 +57,13 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <ProjectReference Include="..\..\src\ServiceStack.NetFramework\ServiceStack.NetFramework.csproj" />
-    <ProjectReference Include="..\ServiceStack.ServiceModel.Tests\ServiceStack.ServiceModel.Tests.csproj" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Redis.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.Sqlite.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.SqlServer.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.OrmLite.MySql.dll" />
-    <Reference Include="..\..\lib\net45\ServiceStack.Aws.dll" />
   </ItemGroup>
-  <!-- Enable NunitLite build, becase NUnit is not supported on .NET Core SDK 1.0.2 
-   https://github.com/nunit/dotnet-test-nunit/issues/91 
-   To enable NUnitLite pass /p:NUNITLITE=1 into msbuild arguments
-   -->
-  <PropertyGroup Condition=" '$(NUNITLITE)' != '' ">
-    <OutputType>Exe</OutputType>
-    <DefineConstants>$(DefineConstants);NUNITLITE</DefineConstants>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(NUNITLITE)' != '' ">
-    <PackageReference Include="NUnitLite" Version="3.7.1" />
-  </ItemGroup>
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
-    <DefineConstants>$(DefineConstants);NETCORE_SUPPORT;NETCORE</DefineConstants>
-  </PropertyGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
+    <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
     <PackageReference Include="System.Threading" Version="4.3.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.1.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.5.1" />
-    <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <Reference Include="..\..\lib\netcoreapp2.1\ServiceStack.Memory.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Text.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Redis.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.Sqlite.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.SqlServer.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.OrmLite.MySql.dll" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\customers.json">
