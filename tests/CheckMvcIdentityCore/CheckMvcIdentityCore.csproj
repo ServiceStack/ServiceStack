@@ -5,7 +5,6 @@
     <UserSecretsId>aspnet-IdentityDemo-7939A8EF-89B2-46F3-9E64-E33629F164CB</UserSecretsId>
   </PropertyGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.*" PrivateAssets="All" />
@@ -23,12 +22,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="ServiceStack.Text, Version=5.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\lib\netstandard2.0\ServiceStack.Text.dll</HintPath>
-    </Reference>
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
 
 </Project>
