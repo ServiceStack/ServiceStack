@@ -20,7 +20,7 @@ namespace ServiceStack.VirtualPath
             return GetFile(SanitizePath(virtualPath)) != null;
         }
 
-        public string SanitizePath(string filePath)
+        public virtual string SanitizePath(string filePath)
         {
             var sanitizedPath = string.IsNullOrEmpty(filePath)
                 ? null
