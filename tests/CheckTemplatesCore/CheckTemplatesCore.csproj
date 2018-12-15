@@ -19,12 +19,7 @@
       <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack.Server\ServiceStack.Server.csproj" />
       <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="ServiceStack.Text, Version=5.0.0.0, Culture=neutral, PublicKeyToken=null">
-        <HintPath>..\..\lib\netcoreapp2.1\ServiceStack.Text.dll</HintPath>
-      </Reference>
+      <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     </ItemGroup>
 
 </Project>

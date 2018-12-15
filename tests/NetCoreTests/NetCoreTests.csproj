@@ -15,6 +15,6 @@
     <ProjectReference Include="..\..\src\ServiceStack.HttpClient\ServiceStack.HttpClient.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
-    <Reference Include="..\..\lib\netstandard2.0\ServiceStack.Aws.dll" />
+    <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
   </ItemGroup>
 </Project>
