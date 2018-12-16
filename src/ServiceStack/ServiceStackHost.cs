@@ -680,8 +680,8 @@ namespace ServiceStack
             if (config.HandlerFactoryPath != null)
                 config.HandlerFactoryPath = config.HandlerFactoryPath.TrimStart('/');
 
-            if (config.UseCamelCase)
-                ServiceStack.Text.Config.UnsafeInit(new Text.Config { EmitCamelCaseNames = true });
+            if (config.UseCamelCase && JsConfig.TextCase == TextCase.Default)
+                ServiceStack.Text.Config.UnsafeInit(new Text.Config { TextCase = TextCase.CamelCase });
 
             if (config.EnableOptimizations)
             {
