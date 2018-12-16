@@ -30,10 +30,11 @@
   </Target>
 
   <Target Name="BuildSolutions">
+    <ItemGroup>
+      <NugetPackageFilesToDelete Include="$(NuGetPackageDir)/*.nupkg"/>
+    </ItemGroup>
+    <Delete Files="@(NugetPackageFilesToDelete)" />
     <CallTarget Targets="ClearNuGetRestoreCaches" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
   </Target>
 
   <!-- need to remove old caches from nuget restore from .Core csproj's -->
@@ -59,28 +60,33 @@
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
 
-    <!-- ServiceStack.Interfaces -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Interfaces/ServiceStack.Interfaces.csproj"
+    <!-- ServiceStack.Interfaces.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Interfaces/ServiceStack.Interfaces.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Interfaces/ServiceStack.Interfaces.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Client -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Client/ServiceStack.Client.csproj"
+    <!-- ServiceStack.Client.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Client/ServiceStack.Client.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Client/ServiceStack.Client.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.HttpClient -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj"
+    <!-- ServiceStack.HttpClient.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.HttpClient/ServiceStack.HttpClient.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.HttpClient/ServiceStack.HttpClient.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack.Common -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj"
+    <!-- ServiceStack.Common.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Common/ServiceStack.Common.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Common/ServiceStack.Common.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
-    <!-- ServiceStack -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
+    <!-- ServiceStack.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack/ServiceStack.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack/ServiceStack.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
