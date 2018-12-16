@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <PackageId>ServiceStack.Interfaces</PackageId>
+        <PackageId>ServiceStack.Interfaces.Core</PackageId>
         <AssemblyName>ServiceStack.Interfaces</AssemblyName>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>

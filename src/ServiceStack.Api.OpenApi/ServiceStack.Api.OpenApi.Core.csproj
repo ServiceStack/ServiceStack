@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
-    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
-    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
+    <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Core.Client.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Core.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.Core.csproj" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">

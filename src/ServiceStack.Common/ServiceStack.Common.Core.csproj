@@ -11,8 +11,8 @@
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj" />
+    <PackageReference Include="ServiceStack.Text.Core" Version="$(Version)" />
     <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="System.Memory" Version="4.5.1" />
   </ItemGroup>
