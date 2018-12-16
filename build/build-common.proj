@@ -42,6 +42,11 @@
 
   <!-- need to remove old caches from nuget restore from .Core csproj's -->
   <Target Name="ClearNuGetRestoreCaches">
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Client/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
