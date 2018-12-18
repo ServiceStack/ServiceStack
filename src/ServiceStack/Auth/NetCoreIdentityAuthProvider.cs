@@ -100,8 +100,11 @@ namespace ServiceStack.Auth
                     if (entry.Value == nameof(AuthUserSession.Id))
                     {
                         var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == entry.Key);
-                        sessionId = idClaim;
-                        break;
+                        if (idClaim != null)
+                        {
+                            sessionId = idClaim;
+                            break;
+                        }                      
                     }
                 }
                 
