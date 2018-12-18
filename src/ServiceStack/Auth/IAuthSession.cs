@@ -71,6 +71,7 @@ namespace ServiceStack.Auth
         string Gender { get; set; }
         
         //Claims https://docs.microsoft.com/en-us/previous-versions/windows-identity-foundation/ee727097(v=msdn.10)
+        List<string> Scopes { get; set; }
         string Dns { get; set; }
         string Rsa { get; set; }
         string Sid { get; set; }

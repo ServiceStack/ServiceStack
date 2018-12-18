@@ -96,6 +96,7 @@ namespace ServiceStack.Auth
                 throw new NotSupportedException($"Claim '{IdClaimType}' is required");
 
             var session = SessionFeature.CreateNewSession(req, sessionId.Value);
+            var extended = session as IAuthSessionExtended;
             var meta = (session as IMeta)?.Meta;
             session.AuthProvider = Name;
 
@@ -114,6 +115,12 @@ namespace ServiceStack.Auth
                     if (session.Permissions == null)
                         session.Permissions = new List<string>();
                     session.Permissions.Add(claim.Value);
+                }
+                else if (claim.Type == "scope" && extended != null)
+                {
+                    if (extended.Scopes == null)
+                        extended.Scopes = new List<string>();
+                    extended.Scopes.Add(claim.Value);
                 }
                 else if (MapClaimsToSession.TryGetValue(claim.Type, out var sessionProp))
                 {
