@@ -36,6 +36,7 @@ namespace ServiceStack.Auth
         public string PermissionClaimType { get; set; } = "perm";
         
         public Dictionary<string, string> MapClaimsToSession { get; set; } = new Dictionary<string, string> {
+            ["sub"] = nameof(AuthUserSession.Id),
             [ClaimTypes.NameIdentifier] = nameof(AuthUserSession.Id),
             [ClaimTypes.Email] = nameof(AuthUserSession.Email),
             [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
@@ -93,7 +94,20 @@ namespace ServiceStack.Auth
 
             var sessionId = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == IdClaimType);
             if (sessionId == null)
-                throw new NotSupportedException($"Claim '{IdClaimType}' is required");
+            {
+                foreach (var entry in MapClaimsToSession)
+                {
+                    if (entry.Value == nameof(AuthUserSession.Id))
+                    {
+                        var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == entry.Key);
+                        sessionId = idClaim;
+                        break;
+                    }
+                }
+                
+                if (sessionId == null)
+                    throw new NotSupportedException($"Claim '{IdClaimType}' is required");
+            }
 
             var session = SessionFeature.CreateNewSession(req, sessionId.Value);
             var extended = session as IAuthSessionExtended;
