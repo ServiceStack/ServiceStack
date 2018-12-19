@@ -77,7 +77,9 @@ namespace ServiceStack.Templates
         public string Name { get; }
 
         public ReadOnlyMemory<char> Argument { get; }
-        
+        private string argumentString;
+        public string ArgumentString => argumentString ?? (argumentString = Argument.ToString());
+
         public PageFragment[] Body { get; }
         public PageElseBlock[] ElseBlocks { get; }
 

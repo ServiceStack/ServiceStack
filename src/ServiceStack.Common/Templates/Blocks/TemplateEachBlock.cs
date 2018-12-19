@@ -28,7 +28,7 @@ namespace ServiceStack.Templates
             if (block.Argument.IsNullOrEmpty())
                 throw new NotSupportedException("'each' block requires the collection to iterate");
 
-            var cache = (EachArg)scope.Context.CacheMemory.GetOrAdd(block.Argument, _ => ParseArgument(scope, block));
+            var cache = (EachArg)scope.Context.Cache.GetOrAdd(block.ArgumentString, _ => ParseArgument(scope, block));
             
             var collection = cache.Source.Evaluate(scope, out var syncResult, out var asyncResult)
                 ? (IEnumerable)syncResult
