@@ -31,13 +31,26 @@ namespace ServiceStack.Auth
         public string AuthenticationType { get; set; } = "Identity.Application"; //Used by SignInManager<T>.IsSignedIn()
         public string Issuer { get; set; } = HostContext.ServiceName;
 
-        public string IdClaimType { get; set; } = ClaimTypes.NameIdentifier;
+        public string IdClaimType
+        {
+            get => IdClaimTypes.FirstOrDefault();
+            set => IdClaimTypes = new List<string> { value };
+        }
+        
+        public List<string> IdClaimTypes { get; set; } = new List<string> {
+            ClaimTypes.NameIdentifier, 
+            "sub",       //JWT User
+        };
+        
+        /// <summary>
+        /// Allow access to JWT Client Apps containing the client_id: 
+        /// </summary>
+        public List<string> AllowClientIds { get; set; } = new List<string>();
+        
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
         public string PermissionClaimType { get; set; } = "perm";
         
         public Dictionary<string, string> MapClaimsToSession { get; set; } = new Dictionary<string, string> {
-            ["sub"] = nameof(AuthUserSession.Id),
-            [ClaimTypes.NameIdentifier] = nameof(AuthUserSession.Id),
             [ClaimTypes.Email] = nameof(AuthUserSession.Email),
             [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
             [ClaimTypes.GivenName] = nameof(AuthUserSession.FirstName),
@@ -92,29 +105,41 @@ namespace ServiceStack.Auth
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;
 
-            var sessionId = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == IdClaimType);
-            if (sessionId == null)
+            string source; 
+            string sessionId;
+            Claim idClaim = null;
+            foreach (var idClaimType in IdClaimTypes)
             {
-                foreach (var entry in MapClaimsToSession)
-                {
-                    if (entry.Value == nameof(AuthUserSession.Id))
-                    {
-                        var idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == entry.Key);
-                        if (idClaim != null)
-                        {
-                            sessionId = idClaim;
-                            break;
-                        }                      
-                    }
-                }
-                
-                if (sessionId == null)
-                    throw new NotSupportedException($"Claim '{IdClaimType}' is required");
+                idClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == idClaimType);
+                if (idClaim != null)
+                    break;
             }
 
-            var session = SessionFeature.CreateNewSession(req, sessionId.Value);
+            if (idClaim != null)
+            {
+                sessionId = idClaim.Value;
+                source = idClaim.Type;
+            }
+            else
+            {
+                var clientIdClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "client_id");
+                if (clientIdClaim != null)
+                {
+                    if (AllowClientIds.Contains(clientIdClaim.Type))
+                    {
+                        sessionId = clientIdClaim.Value;
+                        source = "client_id";
+                    }
+                    else throw new NotSupportedException($"Unknown client_id '{clientIdClaim.Value}' not found in NetCoreIdentityAuthProvider.AllowClientIds");
+                }
+                else throw new NotSupportedException($"Claim '{IdClaimType}' is required");
+            }
+
+            var session = SessionFeature.CreateNewSession(req, sessionId);
+            var meta = (session as IMeta)?.Meta;            
             var extended = session as IAuthSessionExtended;
-            var meta = (session as IMeta)?.Meta;
+            if (extended != null)
+                extended.Type = source;
             session.AuthProvider = Name;
 
             var sessionValues = new Dictionary<string,string>();
@@ -132,6 +157,12 @@ namespace ServiceStack.Auth
                     if (session.Permissions == null)
                         session.Permissions = new List<string>();
                     session.Permissions.Add(claim.Value);
+                }
+                else if (claim.Type == "aud" && extended != null)
+                {
+                    if (extended.Audiences == null)
+                        extended.Audiences = new List<string>();
+                    extended.Audiences.Add(claim.Value);
                 }
                 else if (claim.Type == "scope" && extended != null)
                 {

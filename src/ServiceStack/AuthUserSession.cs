@@ -61,20 +61,22 @@ namespace ServiceStack
         [DataMember(Order = 44)] public Dictionary<string, string> Meta { get; set; }
         
         //Claims https://docs.microsoft.com/en-us/previous-versions/windows-identity-foundation/ee727097(v=msdn.10)
-        [DataMember(Order = 45)] public List<string> Scopes { get; set; }
-        [DataMember(Order = 46)] public string Dns { get; set; }
-        [DataMember(Order = 47)] public string Rsa { get; set; }
-        [DataMember(Order = 48)] public string Sid { get; set; }
-        [DataMember(Order = 49)] public string Hash { get; set; }
-        [DataMember(Order = 50)] public string HomePhone { get; set; }
-        [DataMember(Order = 51)] public string MobilePhone { get; set; }
-        [DataMember(Order = 52)] public string Webpage { get; set; }
+        [DataMember(Order = 45)] public List<string> Audiences { get; set; }
+        [DataMember(Order = 46)] public List<string> Scopes { get; set; }
+        [DataMember(Order = 47)] public string Dns { get; set; }
+        [DataMember(Order = 48)] public string Rsa { get; set; }
+        [DataMember(Order = 49)] public string Sid { get; set; }
+        [DataMember(Order = 50)] public string Hash { get; set; }
+        [DataMember(Order = 51)] public string HomePhone { get; set; }
+        [DataMember(Order = 52)] public string MobilePhone { get; set; }
+        [DataMember(Order = 53)] public string Webpage { get; set; }
 
         //IdentityUser<TKey>
-        [DataMember(Order = 53)] public bool? EmailConfirmed { get; set; }
-        [DataMember(Order = 54)] public bool? PhoneNumberConfirmed { get; set; }
-        [DataMember(Order = 55)] public bool? TwoFactorEnabled { get; set; }
-        [DataMember(Order = 56)] public string SecurityStamp { get; set; }
+        [DataMember(Order = 54)] public bool? EmailConfirmed { get; set; }
+        [DataMember(Order = 55)] public bool? PhoneNumberConfirmed { get; set; }
+        [DataMember(Order = 56)] public bool? TwoFactorEnabled { get; set; }
+        [DataMember(Order = 57)] public string SecurityStamp { get; set; }
+        [DataMember(Order = 58)] public string Type { get; set; }
 
         public virtual bool IsAuthorized(string provider)
         {
