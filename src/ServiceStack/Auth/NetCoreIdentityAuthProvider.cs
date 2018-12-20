@@ -125,7 +125,7 @@ namespace ServiceStack.Auth
                 var clientIdClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "client_id");
                 if (clientIdClaim != null)
                 {
-                    if (RestrictToClientIds == null || RestrictToClientIds.Contains(clientIdClaim.Type))
+                    if (RestrictToClientIds == null || RestrictToClientIds.Contains(clientIdClaim.Value))
                     {
                         sessionId = clientIdClaim.Value;
                         source = "client_id";
