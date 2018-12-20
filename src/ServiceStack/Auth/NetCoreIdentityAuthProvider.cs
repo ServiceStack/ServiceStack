@@ -38,14 +38,14 @@ namespace ServiceStack.Auth
         }
         
         public List<string> IdClaimTypes { get; set; } = new List<string> {
-            ClaimTypes.NameIdentifier, 
-            "sub",       //JWT User
+            ClaimTypes.NameIdentifier, //ASP.NET Identity default
+            "sub",                     //JWT User
         };
         
         /// <summary>
-        /// Allow access to JWT Client Apps containing the client_id: 
+        /// Allow access to JWT Client Apps containing the client_id or 'null' to allow all Authenticated client_id's (default). 
         /// </summary>
-        public List<string> AllowClientIds { get; set; } = new List<string>();
+        public List<string> RestrictToClientIds { get; set; }
         
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
         public string PermissionClaimType { get; set; } = "perm";
@@ -125,12 +125,12 @@ namespace ServiceStack.Auth
                 var clientIdClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == "client_id");
                 if (clientIdClaim != null)
                 {
-                    if (AllowClientIds.Contains(clientIdClaim.Type))
+                    if (RestrictToClientIds == null || RestrictToClientIds.Contains(clientIdClaim.Type))
                     {
                         sessionId = clientIdClaim.Value;
                         source = "client_id";
                     }
-                    else throw new NotSupportedException($"Unknown client_id '{clientIdClaim.Value}' not found in NetCoreIdentityAuthProvider.AllowClientIds");
+                    else throw new NotSupportedException($"Unknown client_id '{clientIdClaim.Value}' not found in NetCoreIdentityAuthProvider.RestrictToClientIds");
                 }
                 else throw new NotSupportedException($"Claim '{IdClaimType}' is required");
             }
