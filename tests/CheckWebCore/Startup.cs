@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
-using ServiceStack.Templates;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Mvc;
 
 namespace CheckWebCore
 {
@@ -23,7 +19,10 @@ namespace CheckWebCore
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services) { }
+        public void ConfigureServices(IServiceCollection services)
+        {
+            services.AddMvc();
+        }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -51,6 +50,13 @@ namespace CheckWebCore
         {
             Plugins.Add(new TemplatePagesFeature()); // enable server-side rendering, see: http://templates.servicestack.net
 
+            if (Config.DebugMode)
+            {
+                Plugins.Add(new HotReloadFeature());
+            }
+
+            Plugins.Add(new RazorFormat()); // enable ServiceStack.Razor
+            
             SetConfig(new HostConfig
             {
                 AddRedirectParamsToQueryString = true,
@@ -96,8 +102,11 @@ namespace CheckWebCore
         public string Result { get; set; }
     }
 
+    [Route("/testauth")]
+    public class TestAuth : IReturn<TestAuth> {}
 
-//    [Authenticate]
+
+    //    [Authenticate]
     public class MyServices : Service
     {
         //Return index.html for unmatched requests so routing is handled on client
@@ -109,5 +118,7 @@ namespace CheckWebCore
         {
             return new HelloResponse { Result = $"Hello, {request.Name}!" };
         }
+
+        public object Any(TestAuth request) => request;
     }
 }

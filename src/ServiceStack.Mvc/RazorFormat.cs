@@ -468,6 +468,8 @@ namespace ServiceStack.Mvc
             }
         }
 
+        public IHttpResponse Response => (IHttpResponse)Request.Response;
+
         public string GetLayout(string defaultLayout) => ViewData["Layout"] as string ?? defaultLayout;
 
         public bool IsError => ModelError != null || GetErrorStatus() != null;
@@ -496,6 +498,24 @@ namespace ServiceStack.Mvc
 
             var propertyInfo = response.GetType().GetProperty("ResponseStatus");
             return propertyInfo?.GetProperty(response) as ResponseStatus;
+        }
+
+        public HtmlString GetErrorMessage()
+        {
+            var errorStatus = GetErrorStatus();
+            return errorStatus == null ? null : new HtmlString(errorStatus.Message);
+        }
+
+        public HtmlString GetAbsoluteUrl(string virtualPath)
+        {
+            return new HtmlString(AppHost.ResolveAbsoluteUrl(virtualPath, Request));
+        }
+
+        public void ApplyRequestFilters(object requestDto)
+        {
+            HostContext.ApplyRequestFiltersAsync(Request, Response, requestDto).Wait();
+            if (Response.IsClosed)
+                throw new StopExecutionException();
         }
 
         public HtmlString GetErrorHtml()
@@ -564,6 +584,50 @@ namespace ServiceStack.Mvc
         }
 
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(Request);
+
+        public void RedirectIfNotAuthenticated(string redirectUrl = null)
+        {
+            if (IsAuthenticated)
+                return;
+
+            redirectUrl = redirectUrl
+                ?? AuthenticateService.HtmlRedirect
+                ?? HostContext.Config.DefaultRedirectPath
+                ?? HostContext.Config.WebHostUrl
+                ?? "/";
+            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
+            throw new StopExecutionException();
+        }
+
+        public bool RenderErrorIfAny()
+        {
+            var html = GetErrorHtml(GetErrorStatus());
+            if (html == null)
+                return false;
+
+            WriteLiteral(html);
+
+            return true;
+        }
+
+        private string GetErrorHtml(ResponseStatus responseStatus)
+        {
+            if (responseStatus == null) return null;
+
+            var stackTrace = responseStatus.StackTrace != null
+                ? "<pre>" + responseStatus.StackTrace + "</pre>"
+                : "";
+
+            var html = @"
+                <div id=""error-response"" class=""alert alert-danger"">
+                    <h4>" +
+                       responseStatus.ErrorCode + ": " +
+                       responseStatus.Message + @"
+                    </h4>" +
+                   stackTrace +
+               "</div>";
+            return html;
+        }
     }
 }
 

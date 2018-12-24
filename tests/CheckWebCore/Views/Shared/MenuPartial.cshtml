@@ -1,0 +1,11 @@
+@{
+    var menuItems = base.AppSettings.GetDictionary("Menu");
+}
+
+<div class="collapse navbar-collapse" id="navbarResponsive">
+    <ul class="navbar-nav ml-auto">
+       @foreach (var item in menuItems) {
+           <li class="nav-item @(item.Key == Request.PathInfo ? "active" : "")"><a class="nav-link" href="@item.Key">@item.Value</a></li>
+       }
+    </ul>
+</div>
