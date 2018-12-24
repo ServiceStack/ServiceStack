@@ -436,7 +436,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 .FromJson<QueryResponse<Adhoc>>();
             Assert.That(response.Results.Count, Is.EqualTo(7));
 
-            JsConfig.EmitLowercaseUnderscoreNames = true;
+            JsConfig.Init(new Text.Config { TextCase = TextCase.SnakeCase });
             response = Config.ListeningOn.CombineWith("adhocdata")
                 .AddQueryParam("last_name", "Hendrix")
                 .GetJsonFromUrl()

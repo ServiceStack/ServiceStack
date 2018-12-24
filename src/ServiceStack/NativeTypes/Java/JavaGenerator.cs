@@ -849,9 +849,9 @@ namespace ServiceStack.NativeTypes.Java
         public static string PropertyStyle(this string name)
         {
             //Gson is case-sensitive, fieldName needs to match json
-            var fieldName = JsConfig.EmitCamelCaseNames
+            var fieldName = JsConfig.TextCase == TextCase.CamelCase
                 ? name.ToCamelCase()
-                : JsConfig.EmitLowercaseUnderscoreNames
+                : JsConfig.TextCase == TextCase.SnakeCase
                     ? name.ToLowercaseUnderscore()
                     : name;
 

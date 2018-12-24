@@ -57,7 +57,9 @@ namespace ServiceStack.WebHost.IntegrationTests
             {
                 IocShared.Configure(this);
 
-                JsConfig.EmitCamelCaseNames = true;
+                JsConfig.Init(new Text.Config {
+                    TextCase = TextCase.CamelCase,
+                });
                 ServiceStack.Auth.RegisterService.AllowUpdates = true;
 
                 this.PreRequestFilters.Add((req, res) =>

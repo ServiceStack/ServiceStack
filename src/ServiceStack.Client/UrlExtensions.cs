@@ -473,7 +473,7 @@ namespace ServiceStack
                 if (ClientConfig.SkipEmptyArrays && value is Array array && array.Length == 0)
                     continue;
 
-                var qsName = JsConfig.EmitLowercaseUnderscoreNames
+                var qsName = JsConfig.TextCase == TextCase.SnakeCase
                     ? queryProperty.Key.ToLowercaseUnderscore()
                     : queryProperty.Key;
 

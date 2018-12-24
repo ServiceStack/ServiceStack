@@ -792,9 +792,9 @@ namespace ServiceStack.NativeTypes.TypeScript
         
         public static string PropertyStyle(this string name)
         {
-            return JsConfig.EmitCamelCaseNames
+            return JsConfig.TextCase == TextCase.CamelCase
                 ? name.ToCamelCase()
-                : JsConfig.EmitLowercaseUnderscoreNames
+                : JsConfig.TextCase == TextCase.SnakeCase
                     ? name.ToLowercaseUnderscore()
                     : name;
         }
