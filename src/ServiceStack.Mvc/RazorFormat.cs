@@ -243,6 +243,7 @@ namespace ServiceStack.Mvc
                     }
                 }
             }
+            catch (StopExecutionException) { }
             catch (Exception ex)
             {
                 req.Items[RenderException] = ex;
