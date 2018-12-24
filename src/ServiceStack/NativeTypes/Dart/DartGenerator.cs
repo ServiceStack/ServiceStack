@@ -1252,9 +1252,9 @@ namespace ServiceStack.NativeTypes.Dart
 
         public static string PropertyStyle(this string name)
         {
-            var formattedName = JsConfig.EmitCamelCaseNames
+            var formattedName = JsConfig.TextCase == TextCase.CamelCase
                 ? name.ToCamelCase()
-                : JsConfig.EmitLowercaseUnderscoreNames
+                : JsConfig.TextCase == TextCase.SnakeCase
                     ? name.ToLowercaseUnderscore()
                     : name;
 

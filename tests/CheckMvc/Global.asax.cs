@@ -118,8 +118,10 @@ namespace CheckMvc
                 ConfigurationManager.AppSettings["connectionString"],
                 SqlServerDialect.Provider);
 
-            JsConfig.DateHandler = DateHandler.ISO8601;
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new ServiceStack.Text.Config {
+                TextCase = TextCase.CamelCase,
+                DateHandler = DateHandler.ISO8601,
+            });
 
             AreaRegistration.RegisterAllAreas();
 

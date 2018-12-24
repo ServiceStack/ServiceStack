@@ -46,7 +46,7 @@ namespace ServiceStack.OpenApi.Tests.Host
 
         public override void Configure(Container container)
         {
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new Text.Config { TextCase = TextCase.CamelCase });
 
             SetConfig(new HostConfig
             {

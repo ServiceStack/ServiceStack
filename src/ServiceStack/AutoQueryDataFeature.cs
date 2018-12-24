@@ -1408,11 +1408,10 @@ namespace ServiceStack
 
             if (match == null)
             {
-                string alias;
-                if (aliases.TryGetValue(name, out alias))
+                if (aliases.TryGetValue(name, out var alias))
                     match = GetQueryMatch(q, alias, options);
 
-                if (match == null && JsConfig.EmitLowercaseUnderscoreNames && name.Contains("_"))
+                if (match == null && JsConfig.TextCase == TextCase.SnakeCase && name.Contains("_"))
                     match = GetQueryMatch(q, name.Replace("_", ""), options);
             }
 

@@ -92,7 +92,9 @@ namespace ServiceStack.AuthWeb.Tests
                 db.Insert(Rockstar.SeedData);
             }
 
-            JsConfig.EmitCamelCaseNames = true;
+            JsConfig.Init(new Text.Config {
+                TextCase = TextCase.CamelCase
+            });
 
             //Register a external dependency-free 
             container.Register<ICacheClient>(new MemoryCacheClient());

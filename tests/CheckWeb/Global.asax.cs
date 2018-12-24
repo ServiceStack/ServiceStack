@@ -244,15 +244,12 @@ namespace CheckWeb
         /// <param name="container">The container.</param>
         private void ConfigureSerialization(Container container)
         {
-            // Set JSON web services to return idiomatic JSON camelCase properties
-            //JsConfig.EmitCamelCaseNames = true;
-            //JsConfig.EmitLowercaseUnderscoreNames = true;
-
             // Set JSON web services to return ISO8601 date format
-            JsConfig.DateHandler = DateHandler.ISO8601;
-
             // Exclude type info during serialization as an effect of IoC
-            JsConfig.ExcludeTypeInfo = true;
+            JsConfig.Init(new ServiceStack.Text.Config {
+                DateHandler = DateHandler.ISO8601,
+                ExcludeTypeInfo = true,
+            });
         }
 
         /// <summary>
