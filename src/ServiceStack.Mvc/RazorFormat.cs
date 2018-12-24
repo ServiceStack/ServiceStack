@@ -46,6 +46,10 @@ namespace ServiceStack.Mvc
 
         public string PagesPath { get; set; } = "~/Views/Pages";
 
+        private const string ErrorMvcNotInit = "MVC Services have not been configured, Please add `services.AddMvc()` to StartUp.ConfigureServices()";
+
+        public IRazorViewEngine ViewEngine => viewEngine ?? throw new Exception(ErrorMvcNotInit);
+
         IRazorViewEngine viewEngine;
         ITempDataProvider tempDataProvider;
 
@@ -73,10 +77,10 @@ namespace ServiceStack.Mvc
             tempDataProvider = appHost.TryResolve<ITempDataProvider>();
 
             if (viewEngine == null || tempDataProvider == null)
-                throw new Exception("MVC Services have not been configured, Please add `services.AddMvc()` to StartUp.ConfigureServices()");
+                throw new Exception(ErrorMvcNotInit);
         }
 
-        public System.Web.IHttpHandler CatchAllHandler(string httpmethod, string pathInfo, string filepath)
+        public System.Web.IHttpHandler CatchAllHandler(string httpMethod, string pathInfo, string filepath)
         {
             var viewEngineResult = GetPageFromPathInfo(pathInfo);
 
@@ -94,7 +98,7 @@ namespace ServiceStack.Mvc
             if (!viewPath.EndsWith(".cshtml"))
                 viewPath += ".cshtml";
 
-            var viewEngineResult = viewEngine.GetView("", viewPath, 
+            var viewEngineResult = ViewEngine.GetView("", viewPath, 
                 isMainPage: viewPath == "~/wwwroot/default.cshtml");
 
             if (!viewEngineResult.Success)
@@ -103,7 +107,7 @@ namespace ServiceStack.Mvc
                 if (!viewPath.EndsWith(".cshtml"))
                     viewPath += ".cshtml";
 
-                viewEngineResult = viewEngine.GetView("", viewPath,
+                viewEngineResult = ViewEngine.GetView("", viewPath,
                     isMainPage: viewPath == $"{PagesPath}/default.cshtml");
             }
 
@@ -173,7 +177,7 @@ namespace ServiceStack.Mvc
                 foreach (var location in ViewLocations)
                 {
                     var viewPath = location.CombineWith(viewName) + ".cshtml";
-                    var viewEngineResult = viewEngine.GetView(execPath, viewPath, isMainPage: false);
+                    var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
                     if (viewEngineResult.Success)
                         return viewEngineResult;
                 }
