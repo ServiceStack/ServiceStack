@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Xml.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -9,6 +10,7 @@ namespace ServiceStack.Authentication.OAuth2
     /// <summary>
     /// Create new App at: https://www.linkedin.com/secure/developer
     /// </summary>
+    [Obsolete("Use built-in LinkedInAuthProvider in ServiceStack.Auth")]
     public class LinkedInOAuth2Provider : OAuth2Provider
     {
         public const string Name = "LinkedIn";

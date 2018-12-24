@@ -9,6 +9,7 @@ using ServiceStack.Configuration;
 
 namespace ServiceStack.Authentication.OAuth2
 {
+    [Obsolete("Use built-in OAuth2Provider in ServiceStack.Auth")]
     public abstract class OAuth2Provider : AuthProvider
     {
         protected OAuth2Provider(IAppSettings appSettings, string realm, string provider)
