@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -17,6 +18,7 @@ namespace ServiceStack.Authentication.OAuth2
             https://www.googleapis.com/auth/userinfo.email View your email address
             https://www.googleapis.com/auth/userinfo.profile View basic information about your account
      */
+    [Obsolete("Use built-in GoogleAuthProvider in ServiceStack.Auth")]
     public class GoogleOAuth2Provider : OAuth2Provider
     {
         public const string Name = "GoogleOAuth";

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ServiceStack.Configuration;
 using ServiceStack.Text;
 
@@ -11,6 +12,7 @@ namespace ServiceStack.Authentication.OAuth2
     ///   Microsoft Account OAuth2 info: https://msdn.microsoft.com/en-us/library/dn659752.aspx
     ///   Microsoft Account OAuth2 Scopes from: https://msdn.microsoft.com/en-us/library/hh243646.aspx)
     /// </summary>
+    [Obsolete("Use built-in MicrosoftGraphAuthProvider in ServiceStack.Auth")]
     public class MicrosoftLiveOAuth2Provider : OAuth2Provider
     {
         public const string Name = "microsoftlive";
