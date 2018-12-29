@@ -63,10 +63,14 @@ namespace CheckWebCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false)
             });
 
+            var permissions = AppSettings.Get<string[]>("oauth.facebook.Permissions");
+            var permissionsList = AppSettings.GetList("oauth.facebook.Permissions");
+
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
                     new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
+                    new FacebookAuthProvider(AppSettings),
                 }));
 
             Plugins.Add(new RegistrationFeature());
