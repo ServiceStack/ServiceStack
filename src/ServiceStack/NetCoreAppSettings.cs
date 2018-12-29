@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_0
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
@@ -21,6 +22,12 @@ namespace ServiceStack
             {
                 if (config.Value != null)
                     return config.Value.ConvertTo<T>();
+
+                if (typeof(T).HasInterface(typeof(IEnumerable)))
+                {
+                    var values = config.GetChildren().Map(x => x.Value);
+                    return values.ConvertTo<T>();
+                }
             }
             catch (Exception ex)
             {
