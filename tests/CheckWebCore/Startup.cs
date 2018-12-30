@@ -63,6 +63,7 @@ namespace CheckWebCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false)
             });
 
+            var permissions2 = AppSettings.Get<string[]>("oauth.facebook.Permissions2");
             var permissions = AppSettings.Get<string[]>("oauth.facebook.Permissions");
             var permissionsList = AppSettings.GetList("oauth.facebook.Permissions");
 
