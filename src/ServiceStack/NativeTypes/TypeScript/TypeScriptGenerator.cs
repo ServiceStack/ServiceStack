@@ -54,6 +54,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"Stream", "Blob"},
             {"HttpWebResponse", "Blob"},
             {"IDictionary", "any"},
+            {"OrderedDictionary", "any"},
             {"Uri", "string"},
         };
         private static string declaredEmptyString = "''";
