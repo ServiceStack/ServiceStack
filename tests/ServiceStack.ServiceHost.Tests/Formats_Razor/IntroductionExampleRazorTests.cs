@@ -174,7 +174,7 @@ var message = ""Number is "" + number;
             var template =
 @"
 @if (DateTime.Now.Year == 2019) {
-<p>If the year is 2018 then print this 
+<p>If the year is 2019 then print this 
 multi-line text block and 
 the date: @DateTime.Now</p>
 }
