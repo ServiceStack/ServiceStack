@@ -240,6 +240,13 @@ namespace ServiceStack
 
             HttpHandlerFactory.Init();
 
+            foreach (var callback in AfterInitCallbacks)
+            {
+                callback(this);
+            }
+
+            ReadyAt = DateTime.UtcNow;
+
             return this;
         }
 
@@ -748,13 +755,6 @@ namespace ServiceStack
                     });
                 };
             }
-
-            foreach (var callback in AfterInitCallbacks)
-            {
-                callback(this);
-            }
-
-            ReadyAt = DateTime.UtcNow;
         }
 
         private void ConfigurePlugins()
