@@ -23,7 +23,8 @@ namespace ServiceStack
                 if (config.Value != null)
                     return config.Value.ConvertTo<T>();
 
-                if (typeof(T).HasInterface(typeof(IEnumerable)))
+                if (typeof(T).HasInterface(typeof(IEnumerable))
+                    && !typeof(T).HasInterface(typeof(IDictionary)))
                 {
                     var values = config.GetChildren().Map(x => x.Value);
                     return values.ConvertTo<T>();
