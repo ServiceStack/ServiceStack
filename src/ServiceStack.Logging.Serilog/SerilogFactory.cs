@@ -9,6 +9,7 @@ namespace ServiceStack.Logging.Serilog
     public class SerilogFactory : ILogFactory
     {
         private readonly ILogger logger;
+        public ILogger Logger => logger;
 
         public SerilogFactory() {}
 
