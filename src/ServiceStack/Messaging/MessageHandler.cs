@@ -20,6 +20,8 @@ namespace ServiceStack.Messaging
         private readonly Action<IMessageHandler, IMessage<T>, Exception> processInExceptionFn;
         public Func<string, IOneWayClient> ReplyClientFactory { get; set; }
         public string[] PublishResponsesWhitelist { get; set; }
+        public string[] PublishToOutqWhitelist { get; set; }
+        
         private readonly int retryCount;
 
         public int TotalMessagesProcessed { get; private set; }
@@ -170,6 +172,14 @@ namespace ServiceStack.Messaging
                     }
                     else
                     {
+                        var publishOutqResponses = PublishToOutqWhitelist == null;
+                        if (!publishOutqResponses)
+                        {
+                            var inWhitelist = PublishToOutqWhitelist.Contains(QueueNames<T>.Out);
+                            if (!inWhitelist) 
+                                return;
+                        }
+                        
                         var messageOptions = (MessageOption) message.Options;
                         if (messageOptions.Has(MessageOption.NotifyOneWay))
                         {
