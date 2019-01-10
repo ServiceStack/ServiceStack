@@ -395,6 +395,31 @@ namespace ServiceStack.Server.Tests.Messaging
         }
 
         [Test]
+        public void Messages_with_null_responses_are_not_published_when_DisablePublishingToOutq()
+        {
+            int msgsReceived = 0;
+            using (var mqServer = CreateMqServer())
+            {
+                mqServer.DisablePublishingToOutq = true;
+                mqServer.RegisterHandler<HelloNull>(m =>
+                {
+                    Interlocked.Increment(ref msgsReceived);
+                    return null;
+                });
+
+                mqServer.Start();
+
+                using (var mqClient = mqServer.CreateMessageQueueClient())
+                {
+                    mqClient.Publish(new HelloNull { Name = "Into the Void" });
+
+                    var msg = mqClient.Get<HelloNull>(QueueNames<HelloNull>.Out, TimeSpan.FromSeconds(2));
+                    Assert.That(msg, Is.Null);
+                }
+            }
+        }
+
+        [Test]
         public void Messages_with_null_Response_is_published_to_ReplyMQ()
         {
             int msgsReceived = 0;

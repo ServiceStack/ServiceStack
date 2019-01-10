@@ -121,6 +121,21 @@ namespace ServiceStack.RabbitMq
             set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
         }
 
+        /// <summary>
+        /// Opt-in to only publish .outq messages on this white list. 
+        /// Publishes all responses by default.
+        /// </summary>
+        public string[] PublishToOutqWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any messages to .outq
+        /// </summary>
+        public bool DisablePublishingToOutq
+        {
+            set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
+
+        
         private IConnection connection;
         private IConnection Connection => connection ?? (connection = ConnectionFactory.CreateConnection());
 
@@ -186,7 +201,8 @@ namespace ServiceStack.RabbitMq
             {
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
-                PublishResponsesWhitelist = PublishResponsesWhitelist,               
+                PublishResponsesWhitelist = PublishResponsesWhitelist,    
+                PublishToOutqWhitelist = PublishToOutqWhitelist,
                 RetryCount = RetryCount,
             };
         }

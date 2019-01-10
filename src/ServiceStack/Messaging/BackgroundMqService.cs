@@ -57,7 +57,29 @@ namespace ServiceStack.Messaging
         /// Publishes all responses by default.
         /// </summary>
         public string[] PublishResponsesWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any response messages
+        /// </summary>
+        public bool DisablePublishingResponses
+        {
+            set => PublishResponsesWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
         
+        /// <summary>
+        /// Opt-in to only publish .outq messages on this white list. 
+        /// Publishes all responses by default.
+        /// </summary>
+        public string[] PublishToOutqWhitelist { get; set; }
+
+        /// <summary>
+        /// Don't publish any messages to .outq
+        /// </summary>
+        public bool DisablePublishingToOutq
+        {
+            set => PublishToOutqWhitelist = value ? TypeConstants.EmptyStringArray : null;
+        }
+
         /// <summary>
         /// Subscribe to messages sent to .outq
         /// </summary>
@@ -121,6 +143,7 @@ namespace ServiceStack.Messaging
                 RequestFilter = this.RequestFilter,
                 ResponseFilter = this.ResponseFilter,
                 PublishResponsesWhitelist = PublishResponsesWhitelist,
+                PublishToOutqWhitelist = PublishToOutqWhitelist,
                 RetryCount = RetryCount,
             };
         }
