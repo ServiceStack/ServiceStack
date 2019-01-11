@@ -105,6 +105,10 @@ namespace ServiceStack.Auth
             if (claimsPrincipal.Identity?.IsAuthenticated != true)
                 return;
 
+            var session = req.GetSession();
+            if (session.IsAuthenticated) // if existing Session exists use it instead
+                return;
+
             string source; 
             string sessionId;
             Claim idClaim = null;
@@ -135,7 +139,8 @@ namespace ServiceStack.Auth
                 else throw new NotSupportedException($"Claim '{IdClaimType}' is required");
             }
 
-            var session = SessionFeature.CreateNewSession(req, sessionId);
+            session = SessionFeature.CreateNewSession(req, sessionId);
+            session.IsAuthenticated = true;
             var meta = (session as IMeta)?.Meta;            
             var extended = session as IAuthSessionExtended;
             if (extended != null)

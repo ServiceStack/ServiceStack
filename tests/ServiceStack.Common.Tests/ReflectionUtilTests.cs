@@ -263,7 +263,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Translate_Between_Models_of_differrent_types_and_nullables()
+        public void Translate_Between_Models_of_different_types_and_nullables()
         {
             var fromObj = ModelWithFieldsOfDifferentTypes.CreateConstant(1);
 
@@ -275,7 +275,7 @@ namespace ServiceStack.Common.Tests
         }
 
         [Test]
-        public void Translate_Between_Models_of_nullables_and_differrent_types()
+        public void Translate_Between_Models_of_nullables_and_different_types()
         {
             var fromObj = ModelWithFieldsOfDifferentTypesAsNullables.CreateConstant(1);
 
