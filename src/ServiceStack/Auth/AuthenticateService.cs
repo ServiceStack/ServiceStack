@@ -281,7 +281,7 @@ namespace ServiceStack.Auth
         /// Public API entry point to authenticate via code
         /// </summary>
         /// <param name="request"></param>
-        /// <returns>null; if already autenticated otherwise a populated instance of AuthResponse</returns>
+        /// <returns>null; if already authenticated otherwise a populated instance of AuthResponse</returns>
         public AuthenticateResponse Authenticate(Authenticate request)
         {
             //Remove HTML Content-Type to avoid auth providers issuing browser re-directs
@@ -322,7 +322,7 @@ namespace ServiceStack.Auth
         /// <summary>
         /// The specified <paramref name="session"/> may change as a side-effect of this method. If
         /// subsequent code relies on current <see cref="IAuthSession"/> data be sure to reload
-        /// the session istance via <see cref="ServiceExtensions.GetSession(IServiceBase,bool)"/>.
+        /// the session instance via <see cref="ServiceExtensions.GetSession(IServiceBase,bool)"/>.
         /// </summary>
         private object Authenticate(Authenticate request, string provider, IAuthSession session, IAuthProvider oAuthConfig)
         {
@@ -330,7 +330,8 @@ namespace ServiceStack.Auth
                 return null; //Just return sessionInfo if no provider or username is given
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
-            var generateNewCookies = authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication;
+            var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
+                && request.oauth_token == null; //keep existing session during OAuth flow
 
             if (generateNewCookies)
                 this.Request.GenerateNewSessionCookies(session);
