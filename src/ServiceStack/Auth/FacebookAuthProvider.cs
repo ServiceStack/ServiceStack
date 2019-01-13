@@ -131,6 +131,7 @@ namespace ServiceStack.Auth
                     if (data.TryGetValue("url", out var profileUrl))
                         tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
                 }
+                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             }
             catch (Exception ex)
             {

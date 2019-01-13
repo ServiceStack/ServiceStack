@@ -209,6 +209,7 @@ namespace ServiceStack.Auth
                 {
                     obj.Each(x => authInfo[x.Key] = x.Value);
                 }
+                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             }
             catch (Exception ex)
             {

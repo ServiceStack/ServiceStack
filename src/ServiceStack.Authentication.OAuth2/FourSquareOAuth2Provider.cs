@@ -208,6 +208,7 @@ namespace ServiceStack.Authentication.OAuth2
             if (authInfo.ContainsKey("twitter"))
                 userSession.TwitterUserId = authInfo["twitter"];
 
+            userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             base.LoadUserAuthInfo(userSession, tokens, authInfo);
         }
     }
