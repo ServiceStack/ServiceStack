@@ -388,6 +388,15 @@ namespace ServiceStack.Mvc
                 ?? HostContext.AppHost.TryGetCurrentRequest();
         }
 
+        public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
+            htmlHelper.GetRequest().Response;
+
+        public static HttpRequest GetHttpRequest(this IHtmlHelper htmlHelper) =>
+            htmlHelper.ViewContext.HttpContext.Request;
+
+        public static HttpResponse GetHttpResponse(this IHtmlHelper htmlHelper) =>
+            htmlHelper.ViewContext.HttpContext.Response;
+
         public static IHtmlContent PartialMarkdown(this IHtmlHelper htmlHelper, string partial)
         {
             var req = htmlHelper.GetRequest();
@@ -433,12 +442,12 @@ namespace ServiceStack.Mvc
 
         public static string GetQueryString(this IHtmlHelper htmlHelper, string paramName)
         {
-            return htmlHelper.GetRequest().QueryString[paramName];
+            return htmlHelper.GetHttpRequest().Query[paramName];
         }
 
         public static string GetFormData(this IHtmlHelper htmlHelper, string paramName)
         {
-            var req = (HttpRequest)htmlHelper.GetRequest().OriginalRequest;
+            var req = htmlHelper.GetHttpRequest();
             return req.HasFormContentType 
                 ? req.Form[paramName].FirstOrDefault() 
                 : null;
