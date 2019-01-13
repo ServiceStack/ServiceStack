@@ -189,6 +189,8 @@ namespace ServiceStack.Authentication.OpenId
             if (authInfo.ContainsKey("TimeZone"))
                 tokens.TimeZone = authInfo.GetValueOrDefault("TimeZone");
 
+            userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+
             LoadUserOAuthProvider(userSession, tokens);
         }
 

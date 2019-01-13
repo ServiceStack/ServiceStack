@@ -163,6 +163,7 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
+                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             }
             catch (Exception ex)
             {
@@ -177,7 +178,6 @@ namespace ServiceStack.Auth
             if (!(authSession is AuthUserSession userSession)) return;
 
             userSession.UserName = tokens.UserName ?? userSession.UserName;
-            userSession.UserAuthName = userSession.UserName;
             userSession.DisplayName = tokens.DisplayName ?? userSession.DisplayName;
             userSession.Company = tokens.Company ?? userSession.Company;
             userSession.Country = tokens.Country ?? userSession.Country;

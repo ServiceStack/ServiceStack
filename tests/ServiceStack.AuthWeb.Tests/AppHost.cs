@@ -283,6 +283,8 @@ namespace ServiceStack.AuthWeb.Tests
                         ? "{0} {1}".Fmt(user.GivenName, user.Surname)
                         : "{0} {1} {2}".Fmt(user.GivenName, user.MiddleName, user.Surname);
                     tokens.PhoneNumber = user.VoiceTelephoneNumber;
+
+                    userSession.UserAuthName = tokens.Email ?? tokens.UserName;
                 }
             }
             catch (MultipleMatchesException mmex)
