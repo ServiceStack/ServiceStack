@@ -82,7 +82,7 @@
 
         //Register
         public static string UserNotExists = "User does not exist";
-        public static string AuthRepositoryNotExists = "No IAuthRepository registered or failed to resolve. Check your IoC registrations.";
+        public static string AuthRepositoryNotExists = "No IAuthRepository registered in IoC or failed to resolve.";
         public static string UsernameAlreadyExists = "Username already exists";
         public static string EmailAlreadyExists = "Email already exists";
         public static string RegisterUpdatesDisabled = "Updating User Info is not enabled";
