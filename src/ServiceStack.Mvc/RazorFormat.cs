@@ -436,6 +436,14 @@ namespace ServiceStack.Mvc
             return htmlHelper.GetRequest().QueryString[paramName];
         }
 
+        public static string GetFormData(this IHtmlHelper htmlHelper, string paramName)
+        {
+            var req = (HttpRequest)htmlHelper.GetRequest().OriginalRequest;
+            return req.HasFormContentType 
+                ? req.Form[paramName].FirstOrDefault() 
+                : null;
+        }
+
         public static HtmlString IncludeFile(this IHtmlHelper htmlHelper, string virtualPath)
         {
             var file = HostContext.VirtualFileSources.GetFile(virtualPath);
