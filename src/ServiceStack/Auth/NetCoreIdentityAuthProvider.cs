@@ -228,9 +228,21 @@ namespace ServiceStack.Auth
                     roleClaimType:RoleClaimType,
                     permissionClaimType:PermissionClaimType);
                 
+                if (session.Roles.IsEmpty() && HostContext.AppHost.GetAuthRepository(req) is IManageRoles authRepo)
+                {
+                    using (authRepo as IDisposable)
+                    {
+                        var roles = authRepo.GetRoles(session.UserAuthId.ToInt());
+                        foreach (var role in roles)
+                        {
+                            claims.Add(new Claim(RoleClaimType, role, Issuer));
+                        }
+                    }
+                }
+                
                 if (HostContext.HasValidAuthSecret(req))
                     claims.Add(new Claim(RoleClaimType, RoleNames.Admin, Issuer));
-                
+
                 var principal = CreateClaimsPrincipal != null
                     ? CreateClaimsPrincipal(claims, session, req)
                     : new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationType));
