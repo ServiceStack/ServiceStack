@@ -75,6 +75,9 @@ namespace ServiceStack.Auth
                 var state = httpRequest.QueryString[Keywords.State];
                 if (state != null && session is AuthUserSession authSession)
                 {
+                    if (authSession.Meta == null)
+                        authSession.Meta = new Dictionary<string, string>();
+                    
                     if (authSession.Meta.TryGetValue("oauthstate", out var oauthState) && state != oauthState)
                         return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "InvalidState")));
 
