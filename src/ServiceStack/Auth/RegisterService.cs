@@ -53,8 +53,8 @@ namespace ServiceStack.Auth
                 ApplyTo.Put,
                 () =>
                 {
-                    RuleFor(x => x.UserName).NotEmpty();
-                    RuleFor(x => x.Email).NotEmpty();
+                    RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
+                    RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                 });
         }
     }
@@ -107,14 +107,12 @@ namespace ServiceStack.Auth
                 var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
                 registerNewUser = existingUser == null;
 
-                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
-                {
-                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
-                }
-                
                 if (!registerNewUser && !AllowUpdates)
                     throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
 
+                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
+                
                 user = registerNewUser
                     ? authRepo.CreateUserAuth(newUserAuth, request.Password)
                     : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
