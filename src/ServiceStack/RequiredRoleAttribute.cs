@@ -22,7 +22,7 @@ namespace ServiceStack
         {
             this.RequiredRoles = roles.ToList();
             this.ApplyTo = applyTo;
-            this.Priority = (int)RequestFilterPriority.RequiredRole;
+            this.Priority = (int)RequestFilterPriority.RequiredRole;            
         }
 
         public RequiredRoleAttribute(params string[] roles)
@@ -47,6 +47,8 @@ namespace ServiceStack
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
+        
+        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
 
         public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
