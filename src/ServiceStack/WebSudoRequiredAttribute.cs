@@ -42,6 +42,8 @@ namespace ServiceStack
             res.EndRequest();
         }
 
+        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
+
         public bool HasWebSudo(IRequest req, IWebSudoAuthSession session)
         {
             if (session?.AuthenticatedWebSudoUntil == null)

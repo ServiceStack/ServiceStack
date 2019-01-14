@@ -58,6 +58,8 @@ namespace ServiceStack
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
 
+        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
+
         public bool HasAllPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
             if (HasAllPermissions(session, authRepo)) return true;

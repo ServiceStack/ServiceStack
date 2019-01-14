@@ -262,6 +262,7 @@ namespace ServiceStack.Auth
             {
                 // defaults: https://github.com/aspnet/Security/blob/master/src/Microsoft.AspNetCore.Authentication.Cookies/CookieAuthenticationDefaults.cs
                 authFeature.HtmlRedirect = "~/Account/Login";
+                authFeature.HtmlRedirectAccessDenied = "~/Account/AccessDenied";
                 authFeature.HtmlRedirectReturnParam = "ReturnUrl";
                 authFeature.HtmlRedirectReturnPathOnly = true;
             }

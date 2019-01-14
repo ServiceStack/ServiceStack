@@ -37,6 +37,8 @@ namespace ServiceStack.Auth
         public static string DefaultOAuthProvider { get; private set; }
         public static string DefaultOAuthRealm { get; private set; }
         public static string HtmlRedirect { get; internal set; }
+        
+        public static string HtmlRedirectAccessDenied { get; internal set; }
         public static string HtmlRedirectReturnParam { get; internal set; }
         public static bool HtmlRedirectReturnPathOnly { get; internal set; }
         

@@ -30,6 +30,11 @@ namespace ServiceStack
         /// Login path to redirect to
         /// </summary>
         public string HtmlRedirect { get; set; }
+
+        /// <summary>
+        /// Redirect path to when Access by Authenticated User is Denied
+        /// </summary>
+        public string HtmlRedirectAccessDenied { get; set; }
         
         /// <summary>
         /// What queryString param to capture redirect param on
@@ -184,6 +189,7 @@ namespace ServiceStack
             authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
+            AuthenticateService.HtmlRedirectAccessDenied = HtmlRedirectAccessDenied;
             AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
             AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
