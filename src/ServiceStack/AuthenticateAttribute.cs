@@ -98,12 +98,21 @@ namespace ServiceStack
                 }
             }
         }
-        
-        protected virtual string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
 
         protected bool DoHtmlRedirectIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
         {
-            var htmlRedirect = this.GetHtmlRedirect();
+            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirect;
+            if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
+            {
+                DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);
+                return true;
+            }
+            return false;
+        }
+
+        protected bool DoHtmlRedirectAccessDeniedIfConfigured(IRequest req, IResponse res, bool includeRedirectParam = false)
+        {
+            var htmlRedirect = this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
             if (htmlRedirect != null && req.ResponseContentType.MatchesContentType(MimeTypes.Html))
             {
                 DoHtmlRedirect(htmlRedirect, req, res, includeRedirectParam);

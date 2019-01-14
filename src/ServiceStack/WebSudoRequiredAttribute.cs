@@ -33,7 +33,7 @@ namespace ServiceStack
             {
                 if (session != null && session.HasRole("Admin", authRepo)
                     || (this.HasWebSudo(req, session as IWebSudoAuthSession)
-                    || this.DoHtmlRedirectIfConfigured(req, res)))
+                    || this.DoHtmlRedirectAccessDeniedIfConfigured(req, res)))
                     return;
             }
 
@@ -41,8 +41,6 @@ namespace ServiceStack
             res.StatusDescription = "Web Sudo Required";
             res.EndRequest();
         }
-
-        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
 
         public bool HasWebSudo(IRequest req, IWebSudoAuthSession session)
         {
