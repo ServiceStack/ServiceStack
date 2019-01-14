@@ -40,15 +40,13 @@ namespace ServiceStack
             if (HasAllRoles(req, req.GetSession(), RequiredRoles))
                 return;
 
-            if (DoHtmlRedirectIfConfigured(req, res))
+            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidRole.Localize(req);
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
-        
-        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
 
         public bool HasAllRoles(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {

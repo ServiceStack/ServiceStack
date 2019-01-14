@@ -49,15 +49,13 @@ namespace ServiceStack
                     return;
             }
 
-            if (DoHtmlRedirectIfConfigured(req, res))
+            if (DoHtmlRedirectAccessDeniedIfConfigured(req, res))
                 return;
 
             res.StatusCode = (int)HttpStatusCode.Forbidden;
             res.StatusDescription = ErrorMessages.InvalidPermission.Localize(req);
             await HostContext.AppHost.HandleShortCircuitedErrors(req, res, requestDto);
         }
-
-        protected override string GetHtmlRedirect() => this.HtmlRedirect ?? AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect;
 
         public bool HasAnyPermissions(IRequest req, IAuthSession session, IAuthRepository authRepo)
         {
