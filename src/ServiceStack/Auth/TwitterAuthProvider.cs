@@ -133,7 +133,12 @@ namespace ServiceStack.Auth
                             tokens.Email = email;
 
                         if (obj.TryGetValue("profile_image_url", out var profileUrl))
+                        {
                             tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+
+                            if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                                userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                        }
 
                         if (SaveExtendedUserInfo)
                         {

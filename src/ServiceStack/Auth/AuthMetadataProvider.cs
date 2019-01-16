@@ -83,6 +83,9 @@ namespace ServiceStack.Auth
             if (authSession == null)
                 return defaultUrl ?? NoProfileImgUrl;
 
+            if (!string.IsNullOrEmpty(authSession.ProfileUrl))
+                return authSession.ProfileUrl;
+
             foreach (var authTokens in authSession.ProviderOAuthAccess.Safe())
             {
                 if (authTokens.Items != null)
