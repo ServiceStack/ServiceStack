@@ -137,6 +137,12 @@ namespace ServiceStack.Auth
                 tokens.LastName = authInfo.Get("last_name");
                 tokens.Email = authInfo.Get("email");
                 userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+
+                if (authInfo.TryGetValue(AuthMetadataProvider.ProfileUrlKey, out var profileUrl))
+                {
+                    if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                        userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                }
             }
             catch (Exception ex)
             {

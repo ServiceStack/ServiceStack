@@ -191,10 +191,9 @@ namespace ServiceStack.Authentication.OAuth2
 
             if (authInfo.ContainsKey("birthday"))
             {
-                tokens.BirthDateRaw = authInfo["birthday"];                
+                tokens.BirthDateRaw = authInfo["birthday"];
 
-                long unixDateTime;
-                if (long.TryParse(tokens.BirthDateRaw, out unixDateTime))
+                if (long.TryParse(tokens.BirthDateRaw, out var unixDateTime))
                 {
                     tokens.BirthDate = unixDateTime.FromUnixTime();
                 }

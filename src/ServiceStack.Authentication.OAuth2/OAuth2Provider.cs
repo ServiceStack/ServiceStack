@@ -213,8 +213,14 @@ namespace ServiceStack.Authentication.OAuth2
                 tokens.Email = authInfo["email"];
                 userSession.UserAuthName = tokens.Email ?? tokens.UserName;
 
-                if (authInfo.TryGetValue("picture", out var profileUrl))
+                if (authInfo.TryGetValue("picture", out var profileUrl) 
+                    || authInfo.TryGetValue(AuthMetadataProvider.ProfileUrlKey, out profileUrl))
+                {
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                    
+                    if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                        userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                }
 
                 this.LoadUserOAuthProvider(userSession, tokens);
             }

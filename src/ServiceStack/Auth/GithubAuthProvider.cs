@@ -144,7 +144,12 @@ namespace ServiceStack.Auth
                 tokens.Country = authInfo.Get("country");
 
                 if (authInfo.TryGetValue("avatar_url", out var profileUrl))
+                {
                     tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl;
+                        
+                    if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                        userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                }
 
                 if (tokens.Email == null)
                 {

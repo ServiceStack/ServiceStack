@@ -38,7 +38,7 @@ namespace IdentityDemo
 
             services.Configure<IdentityOptions>(options =>
             {
-                // Password settings
+                // Strict Password settings
                 // options.Password.RequireDigit = true;
                 // options.Password.RequiredLength = 8;
                 // options.Password.RequireNonAlphanumeric = false;
@@ -46,6 +46,7 @@ namespace IdentityDemo
                 // options.Password.RequireLowercase = false;
                 // options.Password.RequiredUniqueChars = 6;
 
+                // Relaxed Password settings
                 options.Password.RequireDigit = false;
                 options.Password.RequiredLength = 4;
                 options.Password.RequireNonAlphanumeric = false;

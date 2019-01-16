@@ -129,7 +129,12 @@ namespace ServiceStack.Auth
                 if (data != null)
                 {
                     if (data.TryGetValue("url", out var profileUrl))
+                    {
                         tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
+                        
+                        if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                            userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                    }
                 }
                 userSession.UserAuthName = tokens.Email ?? tokens.UserName;
             }
