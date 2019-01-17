@@ -160,9 +160,12 @@ namespace ServiceStack.Auth
                 if (instance.Items == null)
                     instance.Items = new Dictionary<string, string>();
 
-                foreach (var entry in tokens.Items)
+                if (instance.Items != tokens.Items)
                 {
-                    instance.Items[entry.Key] = entry.Value;
+                    foreach (var entry in tokens.Items)
+                    {
+                        instance.Items[entry.Key] = entry.Value;
+                    }
                 }
             }
 

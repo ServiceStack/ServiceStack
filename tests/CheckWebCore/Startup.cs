@@ -63,15 +63,12 @@ namespace CheckWebCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false)
             });
 
-            var permissions2 = AppSettings.Get<string[]>("oauth.facebook.Permissions2");
-            var permissions = AppSettings.Get<string[]>("oauth.facebook.Permissions");
-            var permissionsList = AppSettings.GetList("oauth.facebook.Permissions");
-
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
                     new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                     new FacebookAuthProvider(AppSettings),
+                    new TwitterAuthProvider(AppSettings),
                 }));
 
             Plugins.Add(new RegistrationFeature());
@@ -110,6 +107,8 @@ namespace CheckWebCore
     [Route("/testauth")]
     public class TestAuth : IReturn<TestAuth> {}
 
+    [Route("/session")]
+    public class Session : IReturn<AuthUserSession> {}
 
     //    [Authenticate]
     public class MyServices : Service
@@ -125,5 +124,7 @@ namespace CheckWebCore
         }
 
         public object Any(TestAuth request) => request;
+
+        public object Any(Session request) => SessionAs<AuthUserSession>();
     }
 }
