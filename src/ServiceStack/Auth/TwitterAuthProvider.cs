@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
         public const string Name = "twitter";
         public static string Realm = "https://api.twitter.com/";
 
-        public bool AttemptToRetrieveEmail { get; set; } = true;
+        public bool RetrieveEmail { get; set; } = true;
 
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
@@ -137,7 +137,7 @@ namespace ServiceStack.Auth
                         {
                             tokens.Email = email;
                         }
-                        else if (AttemptToRetrieveEmail)
+                        else if (RetrieveEmail)
                         {
                             try 
                             { 
