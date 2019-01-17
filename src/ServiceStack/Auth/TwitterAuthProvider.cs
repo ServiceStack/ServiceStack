@@ -14,6 +14,8 @@ namespace ServiceStack.Auth
         public const string Name = "twitter";
         public static string Realm = "https://api.twitter.com/";
 
+        public bool AttemptToRetrieveEmail { get; set; } = true;
+
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
@@ -38,7 +40,9 @@ namespace ServiceStack.Auth
 
                 var validToken = AuthHttpGateway.VerifyTwitterAccessToken(
                     ConsumerKey, ConsumerSecret,
-                    tokens.AccessToken, tokens.AccessTokenSecret, out var userId);
+                    tokens.AccessToken, tokens.AccessTokenSecret, 
+                    out var userId, 
+                    out var email);
 
                 if (!validToken)
                     return HttpError.Unauthorized("AccessToken is invalid");
@@ -130,7 +134,25 @@ namespace ServiceStack.Auth
 
                         var email = obj.Get("email");
                         if (!string.IsNullOrEmpty(email))
+                        {
                             tokens.Email = email;
+                        }
+                        else if (AttemptToRetrieveEmail)
+                        {
+                            try 
+                            { 
+                                AuthHttpGateway.VerifyTwitterAccessToken(
+                                    ConsumerKey, ConsumerSecret,
+                                    tokens.AccessToken, tokens.AccessTokenSecret,
+                                    out userId, out email);
+
+                                tokens.Email = email;
+                            }
+                            catch (Exception ex)
+                            {
+                                Log.Warn($"Could not retrieve Twitter Email", ex);
+                            }
+                        }
 
                         if (obj.TryGetValue("profile_image_url", out var profileUrl))
                         {

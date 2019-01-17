@@ -6,7 +6,7 @@ namespace ServiceStack.Auth
 {
     public interface IAuthHttpGateway
     {
-        bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId);
+        bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId, out string email);
         string DownloadTwitterUserInfo(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, string twitterUserId);
 
         bool VerifyFacebookAccessToken(string appId, string accessToken);
@@ -38,18 +38,21 @@ namespace ServiceStack.Auth
                 TwitterUserUrl.Fmt(twitterUserId));
         }
 
-        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, out string userId)
+        public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret, 
+            out string userId, out string email)
         {
             try
             {
                 var json = GetJsonFromOAuthUrl(consumerKey, consumerSecret, accessToken, accessTokenSecret, TwitterVerifyCredentialsUrl);
                 var obj = JsonObject.Parse(json);
                 userId = obj.Get("id_str");
+                email = obj.Get("email");
                 return !string.IsNullOrEmpty(userId);
             }
             catch
             {
                 userId = null;
+                email = null;
                 return false;
             }
         }

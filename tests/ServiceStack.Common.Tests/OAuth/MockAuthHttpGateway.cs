@@ -160,7 +160,7 @@ namespace ServiceStack.Common.Tests.OAuth
         }
 
         public bool VerifyTwitterAccessToken(string consumerKey, string consumerSecret, string accessToken, string accessTokenSecret,
-            out string userId)
+            out string userId, out string email)
         {
             throw new System.NotImplementedException();
         }
