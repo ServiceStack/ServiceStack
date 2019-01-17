@@ -50,6 +50,13 @@ namespace ServiceStack.Auth
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
         public string PermissionClaimType { get; set; } = "perm";
         
+        /// <summary>
+        /// Automatically Assign these roles to Admin Users. 
+        /// </summary>
+        public List<string> AdminRoles { get; set; } = new List<string> {
+            RoleNames.Admin,
+        };
+        
         public Dictionary<string, string> MapClaimsToSession { get; set; } = new Dictionary<string, string> {
             [ClaimTypes.Email] = nameof(AuthUserSession.Email),
             [ClaimTypes.Name] = nameof(AuthUserSession.UserAuthName),
@@ -240,8 +247,33 @@ namespace ServiceStack.Auth
                     }
                 }
                 
-                if (HostContext.HasValidAuthSecret(req))
-                    claims.Add(new Claim(RoleClaimType, RoleNames.Admin, Issuer));
+                if (HostContext.HasValidAuthSecret(req) || claims.Any(x => x.Type == RoleClaimType && x.Value == RoleNames.Admin))
+                {
+                    foreach (var adminRole in AdminRoles)
+                    {
+                        claims.Add(new Claim(RoleClaimType, adminRole, ClaimValueTypes.String, Issuer));
+                    }
+                }
+                
+                var principal = CreateClaimsPrincipal != null
+                    ? CreateClaimsPrincipal(claims, session, req)
+                    : new ClaimsPrincipal(new ClaimsIdentity(claims, AuthenticationType));
+
+                req.HttpContext.User = principal;
+            }
+            else if (HostContext.HasValidAuthSecret(req))
+            {
+                var claims = new List<Claim> {
+                    new Claim(ClaimTypes.NameIdentifier, nameof(HostConfig.AdminAuthSecret), ClaimValueTypes.String, Issuer),
+                    new Claim(ClaimTypes.Name, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new Claim(ClaimTypes.GivenName, RoleNames.Admin, ClaimValueTypes.String, Issuer),
+                    new Claim(ClaimTypes.Surname, "User", ClaimValueTypes.String, Issuer),
+                };
+
+                foreach (var adminRole in AdminRoles)
+                {
+                    claims.Add(new Claim(RoleClaimType, adminRole, ClaimValueTypes.String, Issuer));
+                }
 
                 var principal = CreateClaimsPrincipal != null
                     ? CreateClaimsPrincipal(claims, session, req)
