@@ -152,7 +152,11 @@ namespace ServiceStack.Auth
             var extended = session as IAuthSessionExtended;
             if (extended != null)
                 extended.Type = source;
-            session.AuthProvider = Name;
+            
+            var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod);            
+            session.AuthProvider = authMethodClaim != null
+                ? authMethodClaim.Value
+                : Name;
 
             var sessionValues = new Dictionary<string,string>();
             

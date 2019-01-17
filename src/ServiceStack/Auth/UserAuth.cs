@@ -543,6 +543,7 @@ namespace ServiceStack.Auth
             addClaim(ClaimTypes.Name, session.UserAuthName);
             addClaim(ClaimTypes.GivenName, session.FirstName);
             addClaim(ClaimTypes.Surname, session.LastName);
+            addClaim(ClaimTypes.AuthenticationMethod, session.AuthProvider);
 
             if (session is IAuthSessionExtended sessionExt)
             {
