@@ -21,7 +21,7 @@ namespace ServiceStack.Auth
 
         public const string DefaultUserProfileUrl = "https://graph.microsoft.com/v1.0/me";
         
-        public const string DefaultPhotoUrl = "https://graph.microsoft.com/beta/me/photo/$value";
+        public static string PhotoUrl { get; set; } = "https://graph.microsoft.com/beta/me/photo/$value";
 
         public bool SavePhoto { get; set; }
         
@@ -51,8 +51,6 @@ namespace ServiceStack.Auth
             set => ConsumerSecret = value;
         }
         
-        public string PhotoUrl { get; set; }
-
         public MicrosoftGraphAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
@@ -60,7 +58,6 @@ namespace ServiceStack.Auth
             this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", AuthorizeUrl);
             this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", AccessTokenUrl);
             this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
-            this.PhotoUrl = appSettings.Get($"oauth.{Name}.PhotoUrl", DefaultPhotoUrl);
 
             this.AppId = appSettings.GetString($"oauth.{Name}.AppId");
             this.AppSecret = appSettings.GetString($"oauth.{Name}.AppSecret");
@@ -99,25 +96,7 @@ namespace ServiceStack.Auth
             {
                 try
                 {
-                    using (var origStream = PhotoUrl.GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
-                    using (var origImage = System.Drawing.Image.FromStream(origStream))
-                    {
-                        var parts = SavePhotoSize?.Split('x');
-                        var width = origImage.Width;
-                        var height = origImage.Height;
-
-                        if (parts != null && parts.Length > 0)
-                            int.TryParse(parts[0], out width);
-
-                        if (parts != null && parts.Length > 1)
-                            int.TryParse(parts[1], out height);
-
-                        using (var resizedImage = origImage.ResizeToPng(width, height))
-                        {
-                            var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
-                            obj[AuthMetadataProvider.ProfileUrlKey] = "data:image/png;base64," + base64;
-                        }
-                    }
+                    obj[AuthMetadataProvider.ProfileUrlKey] = AuthHttpGateway.CreateMicrosoftPhotoUrl(accessToken, SavePhotoSize);
                 }
                 catch (Exception ex)
                 {
