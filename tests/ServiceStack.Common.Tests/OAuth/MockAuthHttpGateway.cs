@@ -141,6 +141,11 @@ namespace ServiceStack.Common.Tests.OAuth
             throw new System.NotImplementedException();
         }
 
+        public string DownloadMicrosoftUserInfo(string accessToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadYammerUserInfo(string yammerUserId)
         {
             yammerUserId.ThrowIfNullOrEmpty("yammerUserId");
