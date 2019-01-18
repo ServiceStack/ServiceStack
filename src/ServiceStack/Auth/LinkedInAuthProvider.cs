@@ -11,17 +11,22 @@ namespace ServiceStack.Auth
     {
         public const string Name = "linkedin";
 
-        public const string Realm = "https://www.linkedin.com/uas/oauth2/authorization";
+        public const string Realm = DefaultAuthorizeUrl;
+
+        public const string DefaultAuthorizeUrl = "https://www.linkedin.com/uas/oauth2/authorization";
+
+        public const string DefaultAccessTokenUrl = "https://www.linkedin.com/uas/oauth2/accessToken";
+
+        public const string DefaultUserProfileUrl = "https://api.linkedin.com/v1/people/~:(id,email-address,formatted-name,first-name,last-name,date-of-birth,public-profile-url,picture-url)";
 
         public LinkedInAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", Realm);
-            this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", "https://www.linkedin.com/uas/oauth2/accessToken");
+            this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", DefaultAuthorizeUrl);
+            this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", DefaultAccessTokenUrl);
 
             //Fields available at: http://developer.linkedin.com/documents/profile-fields
-            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", 
-                "https://api.linkedin.com/v1/people/~:(id,email-address,formatted-name,first-name,last-name,date-of-birth,public-profile-url,picture-url)");
+            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
 
             if (this.Scopes == null || this.Scopes.Length == 0)
             {
