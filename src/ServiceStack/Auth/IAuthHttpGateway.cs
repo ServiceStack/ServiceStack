@@ -16,6 +16,7 @@ namespace ServiceStack.Auth
         string DownloadGithubUserEmailsInfo(string accessToken);
         string DownloadGoogleUserInfo(string accessToken);
         string DownloadMicrosoftUserInfo(string accessToken);
+        string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null);
         string DownloadYammerUserInfo(string yammerUserId);
     }
 
@@ -153,6 +154,30 @@ namespace ServiceStack.Auth
             var json = MicrosoftGraphAuthProvider.DefaultUserProfileUrl
                 .GetJsonFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
             return json;
+        }
+
+        public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null)
+        {
+            using (var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
+            using (var origImage = System.Drawing.Image.FromStream(origStream))
+            {
+                var parts = savePhotoSize?.Split('x');
+                var width = origImage.Width;
+                var height = origImage.Height;
+
+                if (parts != null && parts.Length > 0)
+                    int.TryParse(parts[0], out width);
+
+                if (parts != null && parts.Length > 1)
+                    int.TryParse(parts[1], out height);
+
+                using (var resizedImage = origImage.ResizeToPng(width, height))
+                {
+                    var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                    return "data:image/png;base64," + base64;
+                }
+            }
         }
 
         /// <summary>

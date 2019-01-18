@@ -146,6 +146,11 @@ namespace ServiceStack.Common.Tests.OAuth
             throw new System.NotImplementedException();
         }
 
+        public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize = null)
+        {
+            throw new System.NotImplementedException();
+        }
+
         public string DownloadYammerUserInfo(string yammerUserId)
         {
             yammerUserId.ThrowIfNullOrEmpty("yammerUserId");
