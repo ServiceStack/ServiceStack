@@ -1,5 +1,6 @@
 using System;
 using System.Net;
+using ServiceStack.Logging;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -22,6 +23,8 @@ namespace ServiceStack.Auth
 
     public class AuthHttpGateway : IAuthHttpGateway
     {
+        protected static readonly ILog Log = LogManager.GetLogger(typeof(AuthHttpGateway));
+
         public static string TwitterUserUrl = "https://api.twitter.com/1.1/users/lookup.json?user_id={0}";
         public static string TwitterVerifyCredentialsUrl = "https://api.twitter.com/1.1/account/verify_credentials.json?include_email=true";
 
@@ -158,25 +161,33 @@ namespace ServiceStack.Auth
 
         public string CreateMicrosoftPhotoUrl(string accessToken, string savePhotoSize=null)
         {
-            using (var origStream = MicrosoftGraphAuthProvider.PhotoUrl
-                .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
-            using (var origImage = System.Drawing.Image.FromStream(origStream))
-            {
-                var parts = savePhotoSize?.Split('x');
-                var width = origImage.Width;
-                var height = origImage.Height;
-
-                if (parts != null && parts.Length > 0)
-                    int.TryParse(parts[0], out width);
-
-                if (parts != null && parts.Length > 1)
-                    int.TryParse(parts[1], out height);
-
-                using (var resizedImage = origImage.ResizeToPng(width, height))
+            try 
+            { 
+                using (var origStream = MicrosoftGraphAuthProvider.PhotoUrl
+                    .GetStreamFromUrl(requestFilter:req => req.AddBearerToken(accessToken)))
+                using (var origImage = System.Drawing.Image.FromStream(origStream))
                 {
-                    var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
-                    return "data:image/png;base64," + base64;
+                    var parts = savePhotoSize?.Split('x');
+                    var width = origImage.Width;
+                    var height = origImage.Height;
+
+                    if (parts != null && parts.Length > 0)
+                        int.TryParse(parts[0], out width);
+
+                    if (parts != null && parts.Length > 1)
+                        int.TryParse(parts[1], out height);
+
+                    using (var resizedImage = origImage.ResizeToPng(width, height))
+                    {
+                        var base64 = Convert.ToBase64String(resizedImage.GetBuffer(), 0, (int) resizedImage.Length);
+                        return "data:image/png;base64," + base64;
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Log.Warn($"Could not retrieve '{MicrosoftGraphAuthProvider.Name}' photo", ex);
+                return null;
             }
         }
 
