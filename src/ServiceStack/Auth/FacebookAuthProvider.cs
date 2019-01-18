@@ -23,6 +23,8 @@ namespace ServiceStack.Auth
         public string[] Permissions { get; set; }
         public string[] Fields { get; set; }
 
+        public bool RetrieveUserPicture { get; set; } = true;
+
         public FacebookAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name, "AppId", "AppSecret")
         {
@@ -122,21 +124,25 @@ namespace ServiceStack.Auth
                 tokens.LastName = authInfo.Get("last_name");
                 tokens.Email = authInfo.Get("email");
 
-                var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
-                var obj = JsonObject.Parse(json);
-                var picture = obj.Object("picture");
-                var data = picture?.Object("data");
-                if (data != null)
+                if (RetrieveUserPicture)
                 {
-                    if (data.TryGetValue("url", out var profileUrl))
+                    var json = AuthHttpGateway.DownloadFacebookUserInfo(tokens.AccessTokenSecret, "picture");
+                    var obj = JsonObject.Parse(json);
+                    var picture = obj.Object("picture");
+                    var data = picture?.Object("data");
+                    if (data != null)
                     {
-                        tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
-                        
-                        if (string.IsNullOrEmpty(userSession.ProfileUrl))
-                            userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                        if (data.TryGetValue("url", out var profileUrl))
+                        {
+                            tokens.Items[AuthMetadataProvider.ProfileUrlKey] = profileUrl.SanitizeOAuthUrl();
+                            
+                            if (string.IsNullOrEmpty(userSession.ProfileUrl))
+                                userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
+                        }
                     }
                 }
-                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+
+                userSession.UserAuthName = tokens.Email;
             }
             catch (Exception ex)
             {

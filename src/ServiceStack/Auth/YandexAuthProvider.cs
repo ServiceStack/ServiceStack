@@ -109,7 +109,7 @@ namespace ServiceStack.Auth
                 tokens.LastName = obj.Get("last_name");
                 tokens.Email = obj.Get("default_email");
                 tokens.BirthDateRaw = obj.Get("birthday");
-                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+                userSession.UserAuthName = tokens.Email;
 
                 LoadUserOAuthProvider(userSession, tokens);
             }
