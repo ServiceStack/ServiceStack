@@ -12,9 +12,11 @@ namespace ServiceStack.Auth
         bool VerifyFacebookAccessToken(string appId, string accessToken);
         string DownloadFacebookUserInfo(string facebookCode, params string[] fields);
 
-        string DownloadYammerUserInfo(string yammerUserId);
         string DownloadGithubUserInfo(string accessToken);
         string DownloadGithubUserEmailsInfo(string accessToken);
+        string DownloadGoogleUserInfo(string accessToken);
+        string DownloadMicrosoftUserInfo(string accessToken);
+        string DownloadYammerUserInfo(string yammerUserId);
     }
 
     public class AuthHttpGateway : IAuthHttpGateway
@@ -134,6 +136,22 @@ namespace ServiceStack.Auth
             var json = url.GetJsonFromUrl(
                 httpReq => PclExport.Instance.SetUserAgent(httpReq, ServiceClientBase.DefaultUserAgent));
 
+            return json;
+        }
+
+        public string DownloadGoogleUserInfo(string accessToken)
+        {
+            var json = GoogleAuthProvider.DefaultUserProfileUrl
+                .AddQueryParam("access_token", accessToken)
+                .GetJsonFromUrl();
+
+            return json;
+        }
+
+        public string DownloadMicrosoftUserInfo(string accessToken)
+        {
+            var json = MicrosoftGraphAuthProvider.DefaultUserProfileUrl
+                .GetJsonFromUrl(requestFilter:req => req.AddBearerToken(accessToken));
             return json;
         }
 
