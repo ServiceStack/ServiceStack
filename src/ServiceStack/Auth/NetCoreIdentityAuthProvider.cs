@@ -154,9 +154,9 @@ namespace ServiceStack.Auth
                 extended.Type = source;
             
             var authMethodClaim = claimsPrincipal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.AuthenticationMethod);            
-            session.AuthProvider = authMethodClaim != null
-                ? authMethodClaim.Value
-                : Name;
+            session.AuthProvider = authMethodClaim?.Value 
+                                   ?? claimsPrincipal.Identity?.AuthenticationType
+                                   ?? Name;
 
             var sessionValues = new Dictionary<string,string>();
             
