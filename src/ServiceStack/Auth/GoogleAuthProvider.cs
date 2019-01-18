@@ -71,9 +71,6 @@ namespace ServiceStack.Auth
             obj.MoveKey("family_name", "last_name");
             obj.MoveKey("picture", AuthMetadataProvider.ProfileUrlKey, profileUrl => profileUrl.SanitizeOAuthUrl());
 
-            if (obj.TryGetValue("email", out var email))
-                obj["username"] = email;
-
             return obj;
         }
     }

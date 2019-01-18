@@ -131,7 +131,7 @@ namespace ServiceStack.Auth
             try
             {
                 tokens.UserId = authInfo.Get("user_id");
-                tokens.UserName = authInfo.Get("email") ?? authInfo.Get("username") ?? tokens.UserId;
+                tokens.UserName = authInfo.Get("username") ?? tokens.UserId;
                 tokens.DisplayName = authInfo.Get("name");
                 tokens.FirstName = authInfo.Get("first_name");
                 tokens.LastName = authInfo.Get("last_name");
