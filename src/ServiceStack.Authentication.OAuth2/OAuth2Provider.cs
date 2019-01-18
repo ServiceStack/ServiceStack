@@ -211,7 +211,7 @@ namespace ServiceStack.Authentication.OAuth2
                 tokens.FirstName = authInfo["first_name"];
                 tokens.LastName = authInfo["last_name"];
                 tokens.Email = authInfo["email"];
-                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+                userSession.UserAuthName = tokens.Email;
 
                 if (authInfo.TryGetValue("picture", out var profileUrl) 
                     || authInfo.TryGetValue(AuthMetadataProvider.ProfileUrlKey, out profileUrl))

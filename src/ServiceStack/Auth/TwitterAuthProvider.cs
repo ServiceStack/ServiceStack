@@ -168,7 +168,7 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
-                userSession.UserAuthName = tokens.Email ?? tokens.UserName;
+                userSession.UserAuthName = tokens.Email;
             }
             catch (Exception ex)
             {
