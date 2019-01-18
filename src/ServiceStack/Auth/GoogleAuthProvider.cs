@@ -20,16 +20,21 @@ namespace ServiceStack.Auth
     public class GoogleAuthProvider : OAuth2Provider
     {
         public const string Name = "google";
-        public static string Realm = "https://accounts.google.com/o/oauth2/v2/auth";
+        public static string Realm = DefaultAuthorizeUrl;
+
+        public const string DefaultAuthorizeUrl = "https://accounts.google.com/o/oauth2/v2/auth";
+        public const string DefaultAccessTokenUrl = "https://oauth2.googleapis.com/token";
+        public const string DefaultUserProfileUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+        public const string DefaultVerifyTokenUrl = "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token={0}";
 
         public GoogleAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
             VerifyAccessToken = OnVerifyAccessToken;
-            this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", Realm);
-            this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", "https://oauth2.googleapis.com/token");
-            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", "https://www.googleapis.com/oauth2/v2/userinfo");
-            this.VerifyTokenUrl = appSettings.Get($"oauth.{Name}.VerifyTokenUrl", "https://www.googleapis.com/oauth2/v2/tokeninfo?access_token={0}");
+            this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", DefaultAuthorizeUrl);
+            this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", DefaultAccessTokenUrl);
+            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
+            this.VerifyTokenUrl = appSettings.Get($"oauth.{Name}.VerifyTokenUrl", DefaultVerifyTokenUrl);
 
             if (this.Scopes == null || this.Scopes.Length == 0)
             {

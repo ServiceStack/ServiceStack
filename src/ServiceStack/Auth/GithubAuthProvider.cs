@@ -14,7 +14,13 @@ namespace ServiceStack.Auth
     {
         public const string Name = "github";
         public static string Realm = "https://github.com/login/";
-        public static string PreAuthUrl = "https://github.com/login/oauth/authorize";
+        
+        public const string DefaultPreAuthUrl = "https://github.com/login/oauth/authorize";
+        public const string DefaultVerifyAccessTokenUrl = "https://api.github.com/applications/{0}/tokens/{1}";
+
+        public string PreAuthUrl { get; set; }
+
+        public string VerifyAccessTokenUrl { get; set; }
 
         static GithubAuthProvider() {}
 
@@ -24,6 +30,8 @@ namespace ServiceStack.Auth
             ClientId = appSettings.GetString("oauth.github.ClientId");
             ClientSecret = appSettings.GetString("oauth.github.ClientSecret");
             Scopes = appSettings.Get("oauth.github.Scopes", new[] { "user" });
+            PreAuthUrl = DefaultPreAuthUrl;
+            VerifyAccessTokenUrl = DefaultVerifyAccessTokenUrl;            
             ClientConfig.ConfigureTls12();
         }
 
@@ -32,8 +40,6 @@ namespace ServiceStack.Auth
         public string ClientSecret { get; set; }
 
         public string[] Scopes { get; set; }
-
-        public string VerifyAccessTokenUrl { get; set; } = "https://api.github.com/applications/{0}/tokens/{1}";
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
         {

@@ -17,7 +17,11 @@ namespace ServiceStack.Auth
     {
         public const string Name = "microsoftgraph";
 
-        public const string Realm = "https://graph.microsoft.com/v1.0/me";
+        public const string Realm = DefaultUserProfileUrl;
+
+        public const string DefaultUserProfileUrl = "https://graph.microsoft.com/v1.0/me";
+        
+        public const string DefaultPhotoUrl = "https://graph.microsoft.com/beta/me/photo/$value";
 
         public bool SavePhoto { get; set; }
         
@@ -55,8 +59,8 @@ namespace ServiceStack.Auth
             this.Tenant = appSettings.Get($"oauth.{Name}.Tenant", "common");
             this.AuthorizeUrl = appSettings.Get($"oauth.{Name}.AuthorizeUrl", AuthorizeUrl);
             this.AccessTokenUrl = appSettings.Get($"oauth.{Name}.AccessTokenUrl", AccessTokenUrl);
-            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", "https://graph.microsoft.com/v1.0/me");
-            this.PhotoUrl = appSettings.Get($"oauth.{Name}.PhotoUrl", "https://graph.microsoft.com/beta/me/photo/$value");
+            this.UserProfileUrl = appSettings.Get($"oauth.{Name}.UserProfileUrl", DefaultUserProfileUrl);
+            this.PhotoUrl = appSettings.Get($"oauth.{Name}.PhotoUrl", DefaultPhotoUrl);
 
             this.AppId = appSettings.GetString($"oauth.{Name}.AppId");
             this.AppSecret = appSettings.GetString($"oauth.{Name}.AppSecret");

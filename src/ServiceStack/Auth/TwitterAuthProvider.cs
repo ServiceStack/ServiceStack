@@ -14,12 +14,14 @@ namespace ServiceStack.Auth
         public const string Name = "twitter";
         public static string Realm = "https://api.twitter.com/";
 
+        public const string DefaultAuthorizeUrl = "https://api.twitter.com/oauth/authenticate";
+
         public bool RetrieveEmail { get; set; } = true;
 
         public TwitterAuthProvider(IAppSettings appSettings)
             : base(appSettings, Realm, Name)
         {
-            this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", Realm + "oauth/authenticate");
+            this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", DefaultAuthorizeUrl);
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)
