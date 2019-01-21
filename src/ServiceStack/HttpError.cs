@@ -136,6 +136,11 @@ namespace ServiceStack
             return new HttpError(HttpStatusCode.MethodNotAllowed, message);
         }
 
+        public static Exception BadRequest(string message)
+        {
+            return new HttpError(HttpStatusCode.BadRequest, message);
+        }
+
         public ResponseStatus ToResponseStatus()
         {
             return Response.GetResponseStatus()
