@@ -19,6 +19,7 @@ namespace ServiceStack
 
         private readonly Func<IAuthSession> sessionFactory;
         private IAuthProvider[] authProviders;
+        public IAuthProvider[] AuthProviders => authProviders;
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
@@ -149,7 +150,7 @@ namespace ServiceStack
             if (hasRegistered)
                 throw new Exception("AuthFeature has already been registered");
             
-            this.authProviders = new List<IAuthProvider>(this.authProviders) {
+            this.authProviders = new List<IAuthProvider>(this.AuthProviders) {
                 authProvider
             }.ToArray();
         }
@@ -159,7 +160,7 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             hasRegistered = true;
-            AuthenticateService.Init(sessionFactory, authProviders);
+            AuthenticateService.Init(sessionFactory, AuthProviders);
 
             var unitTest = appHost == null;
             if (unitTest) return;
@@ -186,7 +187,7 @@ namespace ServiceStack
             if (IncludeAuthMetadataProvider && appHost.TryResolve<IAuthMetadataProvider>() == null)
                 appHost.Register<IAuthMetadataProvider>(new AuthMetadataProvider());
 
-            authProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
+            AuthProviders.OfType<IAuthPlugin>().Each(x => x.Register(appHost, this));
 
             AuthenticateService.HtmlRedirect = HtmlRedirect;
             AuthenticateService.HtmlRedirectAccessDenied = HtmlRedirectAccessDenied;
