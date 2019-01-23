@@ -231,6 +231,9 @@ namespace ServiceStack.Auth
             if (!AutoSignInSessionsMatching(req))
                 return;
             
+            if (req.HttpContext.User?.Identity?.IsAuthenticated == true)
+                return;
+            
             var session = req.GetSession();
             if (session.IsAuthenticated)
             {
