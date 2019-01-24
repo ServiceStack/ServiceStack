@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
 using ServiceStack.Data;
@@ -1128,5 +1129,33 @@ namespace ServiceStack
 
             httpReq.Items.Remove(Keywords.AutoBatchIndex);
         }
+
+        public static IEnumerable<Claim> GetClaims(this IRequest req)
+        {
+#if NETSTANDARD2_0
+            if (req.OriginalRequest is Microsoft.AspNetCore.Http.HttpRequest httpReq)
+                return httpReq.HttpContext.User?.Claims;
+#else
+            if (req.OriginalRequest is HttpRequestBase httpReq
+                && httpReq.RequestContext.HttpContext.User is ClaimsPrincipal principal)
+                return principal.Claims;
+#endif
+            return TypeConstants<Claim>.EmptyArray;
+        }
+
+        public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
+
+        public static bool HasScope(this IEnumerable<Claim> claims, string role) => claims.HasClaim("scope", role);
+
+        public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
+        {
+            foreach (var claim in claims)
+            {
+                if (claim.Type == type && claim.Value == value)
+                    return true;
+            }
+            return false;
+        }
+
     }
 }
