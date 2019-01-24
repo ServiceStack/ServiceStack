@@ -1,0 +1,1 @@
+console.log('patch.js', window.swaggerUi);
