@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Api.OpenApi.Specification;
+using ServiceStack.Auth;
 
 namespace ServiceStack.Api.OpenApi
 {
@@ -43,6 +45,40 @@ namespace ServiceStack.Api.OpenApi
 
         public bool DisableSwaggerUI { get; set; }
 
+        public Dictionary<string, OpenApiSecuritySchema> SecurityDefinitions { get; set; }
+
+        public Dictionary<string, List<string>> OperationSecurity { get; set; }
+
+        public bool UseBearerSecurity
+        {
+            set
+            {
+                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> {
+                    { "Bearer", new OpenApiSecuritySchema {
+                        Type = "apiKey",
+                        Name = "Authorization",
+                        In = "header",
+                    } }
+                };
+                OperationSecurity = new Dictionary<string, List<string>> {
+                    { "Bearer", new List<string>() }
+                };
+            }
+        }
+
+        public bool UseBasicSecurity
+        {
+            set
+            {
+                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> {
+                    { "basic", new OpenApiSecuritySchema { Type = "basic" } }
+                };
+                OperationSecurity = new Dictionary<string, List<string>> {
+                    { "basic", new List<string>() }
+                };
+            }
+        }
+
         public OpenApiFeature()
         {
             Tags = new List<OpenApiTag>();
@@ -60,6 +96,16 @@ namespace ServiceStack.Api.OpenApi
             if (ResourceFilterPattern != null)
                 OpenApiService.resourceFilterRegex = new Regex(ResourceFilterPattern, RegexOptions.Compiled);
 
+            if (SecurityDefinitions == null && OperationSecurity == null)
+            {
+                var useBasicAuth = appHost.GetPlugin<AuthFeature>()?.AuthProviders
+                   ?.Any(x => x.Provider == AuthenticateService.BasicProvider) == true;
+                if (!useBasicAuth)
+                    UseBearerSecurity = true;
+                else
+                    UseBasicSecurity = true;
+            }
+
             OpenApiService.UseCamelCaseSchemaPropertyNames = UseCamelCaseSchemaPropertyNames;
             OpenApiService.UseLowercaseUnderscoreSchemaPropertyNames = UseLowercaseUnderscoreSchemaPropertyNames;
             OpenApiService.DisableAutoDtoInBodyParam = DisableAutoDtoInBodyParam;
@@ -69,6 +115,8 @@ namespace ServiceStack.Api.OpenApi
             OpenApiService.SchemaPropertyFilter = SchemaPropertyFilter;
             OpenApiService.AnyRouteVerbs = AnyRouteVerbs.ToArray();
             OpenApiService.InlineSchemaTypesInNamespaces = InlineSchemaTypesInNamespaces.ToArray();
+            OpenApiService.SecurityDefinitions = SecurityDefinitions;
+            OpenApiService.OperationSecurity = OperationSecurity;
 
             appHost.RegisterService(typeof(OpenApiService), "/openapi");
 
