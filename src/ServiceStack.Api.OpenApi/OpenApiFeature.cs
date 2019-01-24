@@ -83,12 +83,14 @@ namespace ServiceStack.Api.OpenApi
                 {
                     IVirtualFile indexFile;
                     IVirtualFile patchFile = null;
+                    IVirtualFile patchPreLoadFile = null;
                     switch (pathInfo)
                     {
                         case "/swagger-ui/":
                         case "/swagger-ui/default.html":
                             indexFile = appHost.VirtualFileSources.GetFile("/swagger-ui/index.html");
                             patchFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch.js");
+                            patchPreLoadFile = appHost.VirtualFileSources.GetFile("/swagger-ui/patch-preload.js");
                             break;
                         default:
                             indexFile = null;
@@ -98,6 +100,7 @@ namespace ServiceStack.Api.OpenApi
                     {
                         var html = indexFile.ReadAllText();
                         var injectJs = patchFile?.ReadAllText();
+                        var injectPreloadJs = patchPreLoadFile?.ReadAllText();
 
                         return new CustomResponseHandler((req, res) =>
                         {
@@ -110,6 +113,11 @@ namespace ServiceStack.Api.OpenApi
 
                             if (LogoUrl != null)
                                 html = html.Replace("images/logo_small.png", LogoUrl);
+
+                            if (injectPreloadJs != null)
+                            {
+                                html = html.Replace("window.swaggerUi.load();", injectPreloadJs + "\n\n      window.swaggerUi.load();");
+                            }
 
                             if (injectJs != null)
                             {
