@@ -80,6 +80,9 @@
         public static string InvalidRole = "Invalid Role";
         public static string InvalidPermission = "Invalid Permission";
 
+        public static string ClaimDoesNotExistFmt = "Claim '{0}' with '{1}' does not exist";
+
+
         //Register
         public static string UserNotExists = "User does not exist";
         public static string AuthRepositoryNotExists = "No IAuthRepository registered in IoC or failed to resolve.";
