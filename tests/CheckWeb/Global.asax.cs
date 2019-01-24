@@ -111,7 +111,7 @@ namespace CheckWeb
             Plugins.Add(new AutoQueryDataFeature()
                 .AddDataSource(ctx => ctx.MemorySource(GetRockstars())));
 
-            Plugins.Add(new AdminFeature());
+            //Plugins.Add(new AdminFeature());
 
             Plugins.Add(new PostmanFeature());
             Plugins.Add(new CorsFeature(
