@@ -40,6 +40,9 @@ namespace ServiceStack.Api.OpenApi
         internal static Action<OpenApiProperty> SchemaPropertyFilter { get; set; }
         internal static string[] AnyRouteVerbs { get; set; }
         internal static string[] InlineSchemaTypesInNamespaces { get; set; }
+        
+        public static Dictionary<string, OpenApiSecuritySchema> SecurityDefinitions { get; set; }
+        public static Dictionary<string, List<string>> OperationSecurity { get; set; }
 
         public object Get(OpenApiSpecification request)
         {
@@ -86,7 +89,7 @@ namespace ServiceStack.Api.OpenApi
                 Definitions = definitions.Where(x => !SchemaIdToClrType.ContainsKey(x.Key) || !IsInlineSchema(SchemaIdToClrType[x.Key])).ToDictionary(x => x.Key, x => x.Value),
                 Tags = tags.Values.OrderBy(x => x.Name).ToList(),
                 Parameters = new Dictionary<string, OpenApiParameter> { { "Accept", GetAcceptHeaderParameter() } },
-                SecurityDefinitions = new Dictionary<string, OpenApiSecuritySchema> { { "basic", new OpenApiSecuritySchema { Type = "basic" } } }
+                SecurityDefinitions = SecurityDefinitions,                
             };
 
             if (OperationFilter != null)
@@ -732,10 +735,7 @@ namespace ServiceStack.Api.OpenApi
                         Tags = userTags.Count > 0 ? userTags : GetTags(restPath.Path),
                         Deprecated = requestType.HasAttribute<ObsoleteAttribute>(),
                         Security = needAuth ? new List<Dictionary<string, List<string>>> {
-                            new Dictionary<string, List<string>>
-                            {
-                                { "basic", new List<string>() }
-                            }
+                            OperationSecurity
                         } : null
                     };
 
