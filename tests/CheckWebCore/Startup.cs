@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
@@ -65,7 +66,12 @@ namespace CheckWebCore
 
             Plugins.Add(new AuthFeature(() => new AuthUserSession(),
                 new IAuthProvider[] {
-                    new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
+                    //new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
+                    new JwtAuthProvider(AppSettings)
+                    {
+                        AuthKey = AesUtils.CreateKey(),
+                        RequireSecureConnection = false,
+                    }, 
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                     new FacebookAuthProvider(AppSettings),
                     new TwitterAuthProvider(AppSettings),
@@ -73,14 +79,19 @@ namespace CheckWebCore
 
             Plugins.Add(new RegistrationFeature());
 
+            Plugins.Add(new OpenApiFeature
+            {
+                UseBearerSecurity = true,
+            });
+
             container.Register<ICacheClient>(new MemoryCacheClient());
             var userRep = new InMemoryAuthRepository();
             container.Register<IAuthRepository>(userRep);
 
             var authRepo = userRep;
 
-            var newAdmin = new UserAuth {Email = "testman@test.com"};
-            var user = authRepo.CreateUserAuth(newAdmin, "!Abc1234");
+            var newAdmin = new UserAuth {Email = "test@test.com"};
+            var user = authRepo.CreateUserAuth(newAdmin, "test");
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
     }
@@ -125,6 +136,7 @@ namespace CheckWebCore
 
         public object Any(TestAuth request) => request;
 
+        [Authenticate]
         public object Any(Session request) => SessionAs<AuthUserSession>();
     }
 }
