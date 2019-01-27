@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Client.Core</PackageId>
     <AssemblyName>ServiceStack.Client</AssemblyName>
+    <RootNamespace>ServiceStack.Client</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>.NET and .NET Core fast, end-to-end typed, code-gen free Service Clients</Title>
     <PackageDescription>

@@ -3,6 +3,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.Interfaces.Core</PackageId>
         <AssemblyName>ServiceStack.Interfaces</AssemblyName>
+        <RootNamespace>ServiceStack.Interfaces</RootNamespace>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <Title>Lightweight and implementation-free interfaces for ServiceStack</Title>
         <PackageDescription>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.MsgPack.Core</PackageId>
     <AssemblyName>ServiceStack.MsgPack</AssemblyName>
+    <RootNamespace>ServiceStack.MsgPack</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>Message Pack support for ServiceStack. Includes typed MsgPack Client</Title>
     <PackageDescription>

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.HttpClient.Core</PackageId>
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
+    <RootNamespace>ServiceStack.HttpClient</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>Common libraries for ServiceStack projects</Title>
     <PackageDescription>

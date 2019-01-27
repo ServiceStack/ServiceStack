@@ -2,6 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Mvc.Core</PackageId>
     <AssemblyName>ServiceStack.Mvc</AssemblyName>
+    <RootNamespace>ServiceStack.Mvc</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>MVC Adapters for integrating with ServiceStack webservices</Title>
     <PackageDescription>
