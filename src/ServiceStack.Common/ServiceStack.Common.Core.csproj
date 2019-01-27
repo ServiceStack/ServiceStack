@@ -2,6 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Common.Core</PackageId>
     <AssemblyName>ServiceStack.Common</AssemblyName>
+    <RootNamespace>ServiceStack.Common</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
     <Title>Common libraries for ServiceStack projects</Title>

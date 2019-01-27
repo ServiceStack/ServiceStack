@@ -3,6 +3,7 @@
     <PropertyGroup>
         <PackageId>ServiceStack.RabbitMq.Core</PackageId>
         <AssemblyName>ServiceStack.RabbitMq</AssemblyName>
+        <RootNamespace>ServiceStack.RabbitMq</RootNamespace>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
         <Title>ServiceStack.RabbitMq</Title>
         <PackageDescription>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.ProtoBuf.Core</PackageId>
     <AssemblyName>ServiceStack.ProtoBuf</AssemblyName>
+    <RootNamespace>ServiceStack.ProtoBuf</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</Title>
     <PackageDescription>

@@ -2,6 +2,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Core</PackageId>
     <AssemblyName>ServiceStack</AssemblyName>
+    <RootNamespace>ServiceStack</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
     <PackageDescription>

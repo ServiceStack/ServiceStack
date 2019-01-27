@@ -3,6 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Server.Core</PackageId>
     <AssemblyName>ServiceStack.Server</AssemblyName>
+    <RootNamespace>ServiceStack.Server</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>ServiceStack Server integration with Redis and OrmLite</Title>
     <PackageDescription>
