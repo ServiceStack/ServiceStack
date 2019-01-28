@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
@@ -206,9 +207,16 @@ namespace ServiceStack
             OnBeforeInit();
             ServiceController.Init();
 
+            var scanAssemblies = new List<Assembly>(ServiceAssemblies);
+            scanAssemblies.AddIfNotExists(GetType().Assembly);
+
+            RunConfigureAppHosts(scanAssemblies.SelectMany(x => x.GetTypes())
+                .Where(x => x.HasInterface(typeof(IConfigureAppHost))));
             BeforeConfigure.Each(fn => fn(this));
             Configure(Container);
             AfterConfigure.Each(fn => fn(this));
+            RunConfigureAppHosts(scanAssemblies.SelectMany(x => x.GetTypes())
+                .Where(x => x.HasInterface(typeof(IPostConfigureAppHost))));
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -757,6 +765,25 @@ namespace ServiceStack
             }
         }
 
+        private void RunConfigureAppHosts(IEnumerable<Type> configureAppHosts)
+        {
+            foreach (var configureAppHostType in configureAppHosts)
+            {
+                try
+                {
+                    var instance = configureAppHostType.CreateInstance();
+                    if (instance is IConfigureAppHost preConfigureAppHost)
+                        preConfigureAppHost.Configure(this);
+                    else if (instance is IPostConfigureAppHost postConfigureAppHost)
+                        postConfigureAppHost.Configure(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
+            }
+        }
+
         private void ConfigurePlugins()
         {
             //Some plugins need to initialize before other plugins are registered.
@@ -856,7 +883,7 @@ namespace ServiceStack
         {
             this.Container.Register(instance);
         }
-
+        
         /// <summary>
         /// Registers type to be automatically wired by the Ioc container of the AppHost.
         /// </summary>

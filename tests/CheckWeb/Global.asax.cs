@@ -51,25 +51,10 @@ namespace CheckWeb
         {
 //            EnableBuffering();
 
-            CSharpGenerator.PreTypeFilter = (sb, type) => 
-            {
-                if (!type.IsEnum.GetValueOrDefault() && !type.IsInterface.GetValueOrDefault())
-                {
-                    sb.AppendLine("[Serializable]");
-                }
-            };
-            
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/Views/TestErrorNotFound");
-
-            var nativeTypes = this.GetPlugin<NativeTypesFeature>();
-            nativeTypes.MetadataTypesConfig.ExportTypes.Add(typeof(DayOfWeek));
-            nativeTypes.MetadataTypesConfig.IgnoreTypes.Add(typeof(IgnoreInMetadataConfig));
-
-            nativeTypes.MetadataTypesConfig.ExportAttributes.Add(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute));
-            //nativeTypes.MetadataTypesConfig.GlobalNamespace = "Check.ServiceInterface";
             
             // Change ServiceStack configuration
-            this.SetConfig(new HostConfig
+            SetConfig(new HostConfig
             {
                 DebugMode = true,
                 //UseHttpsLinks = true,
