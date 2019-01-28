@@ -86,6 +86,7 @@
     <Compile Include="BuiltInDtosService.cs" />
     <Compile Include="ChangeRequestService.cs" />
     <Compile Include="CompressedServices.cs" />
+    <Compile Include="Configure.NativeTypes.cs" />
     <Compile Include="CustomRoutesService.cs" />
     <Compile Include="DiscoverTypesService.cs" />
     <Compile Include="ErrorServices.cs" />

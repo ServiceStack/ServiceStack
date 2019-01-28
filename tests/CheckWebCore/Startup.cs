@@ -79,20 +79,7 @@ namespace CheckWebCore
 
             Plugins.Add(new RegistrationFeature());
 
-            Plugins.Add(new OpenApiFeature
-            {
-                UseBearerSecurity = true,
-            });
-
             container.Register<ICacheClient>(new MemoryCacheClient());
-            var userRep = new InMemoryAuthRepository();
-            container.Register<IAuthRepository>(userRep);
-
-            var authRepo = userRep;
-
-            var newAdmin = new UserAuth {Email = "test@test.com"};
-            var user = authRepo.CreateUserAuth(newAdmin, "test");
-            authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
     }
     
