@@ -64,21 +64,6 @@ namespace CheckWebCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false)
             });
 
-            Plugins.Add(new AuthFeature(() => new AuthUserSession(),
-                new IAuthProvider[] {
-                    //new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
-                    new JwtAuthProvider(AppSettings)
-                    {
-                        AuthKey = AesUtils.CreateKey(),
-                        RequireSecureConnection = false,
-                    }, 
-                    new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-                    new FacebookAuthProvider(AppSettings),
-                    new TwitterAuthProvider(AppSettings),
-                }));
-
-            Plugins.Add(new RegistrationFeature());
-
             container.Register<ICacheClient>(new MemoryCacheClient());
         }
     }
