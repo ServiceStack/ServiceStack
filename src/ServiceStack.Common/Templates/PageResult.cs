@@ -135,6 +135,11 @@ namespace ServiceStack.Templates
         /// Immediately halt execution of the page
         /// </summary>
         public bool HaltExecution { get; set; }
+
+        /// <summary>
+        /// Whether to disable buffering output and render directly to OutputStream
+        /// </summary>
+        public bool DisableBuffering { get; set; }
         
         private readonly Stack<string> stackTrace = new Stack<string>();
 
@@ -172,7 +177,20 @@ namespace ServiceStack.Templates
         {
             if (OutputTransformers.Count == 0)
             {
-                await WriteToAsyncInternal(responseStream, token);
+                var bufferOutput = !DisableBuffering && !(responseStream is MemoryStream);
+                if (bufferOutput)
+                {
+                    using (var ms = MemoryStreamFactory.GetStream())
+                    {
+                        await WriteToAsyncInternal(ms, token);
+                        ms.Position = 0;
+                        await ms.WriteToAsync(responseStream, token);
+                    }
+                }
+                else
+                {
+                    await WriteToAsyncInternal(responseStream, token);
+                }
                 return;
             }
 
@@ -606,10 +624,10 @@ namespace ServiceStack.Templates
                     }
                     else
                     {
-                        var hasContexFilterAsBinding = GetContextFilterAsBinding(var.Binding, out filter);
-                        if (hasContexFilterAsBinding != null)
+                        var hasContextFilterAsBinding = GetContextFilterAsBinding(var.Binding, out filter);
+                        if (hasContextFilterAsBinding != null)
                         {
-                            value = InvokeFilter(hasContexFilterAsBinding, filter, new object[] { scope }, var.Binding);
+                            value = InvokeFilter(hasContextFilterAsBinding, filter, new object[] { scope }, var.Binding);
                         }
                         else
                         {
