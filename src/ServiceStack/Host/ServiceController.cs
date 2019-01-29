@@ -210,7 +210,10 @@ namespace ServiceStack.Host
             var attrs = appHost.GetRouteAttributes(requestType);
             foreach (RouteAttribute attr in attrs)
             {
-                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.Matches);
+                var restPath = new RestPath(requestType, attr.Path, attr.Verbs, attr.Summary, attr.Notes, attr.Matches)
+                {
+                    Priority = attr.Priority
+                };
 
                 if (attr is FallbackRouteAttribute defaultAttr)
                 {
