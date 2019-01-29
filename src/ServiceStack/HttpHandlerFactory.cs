@@ -144,16 +144,20 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engine requests
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
+                RestPath matchesFallback = appHost.Config.FallbackRestPath?.Invoke(httpReq);
+                if (matchesFallback == null || matchesFallback.Priority > 0 || 
+                    (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
+                {
+                    //e.g. to Process View Engine requests
+                    var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                    if (catchAllHandler != null) return catchAllHandler;
+                }
 
                 //If the fallback route can handle it, let it
-                var restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
-                if (restPath != null)
+                if (matchesFallback != null)
                 {
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    return new RestHandler { RestPath = matchesFallback, RequestName = matchesFallback.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
 
                 if (mode == null)
@@ -188,16 +192,20 @@ namespace ServiceStack
             //Default Request /
             if (string.IsNullOrEmpty(pathInfo) || pathInfo == "/")
             {
-                //e.g. to Process View Engine requests
-                var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
-                if (catchAllHandler != null) return catchAllHandler;
+                RestPath matchesFallback = appHost.Config.FallbackRestPath?.Invoke(httpReq);
+                if (matchesFallback == null || matchesFallback.Priority > 0 || 
+                    (matchesFallback.MatchRule == null && !(matchesFallback.Priority < 0))) // is not targeted fallback
+                {
+                    //e.g. to Process View Engine requests
+                    var catchAllHandler = GetCatchAllHandlerIfAny(appHost, httpReq.HttpMethod, pathInfo, httpReq.GetPhysicalPath());
+                    if (catchAllHandler != null) return catchAllHandler;
+                }
 
                 //If the fallback route can handle it, let it
-                RestPath restPath = appHost.Config.FallbackRestPath?.Invoke(httpReq);
-                if (restPath != null)
+                if (matchesFallback != null)
                 {
                     var sanitizedPath = RestHandler.GetSanitizedPathInfo(pathInfo, out var contentType);
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+                    return new RestHandler { RestPath = matchesFallback, RequestName = matchesFallback.RequestType.GetOperationName(), ResponseContentType = contentType };
                 }
 
                 if (mode == null)
