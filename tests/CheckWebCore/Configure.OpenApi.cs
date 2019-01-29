@@ -4,9 +4,9 @@ using ServiceStack.Api.OpenApi;
 namespace CheckWebCore
 {
     /// <summary>
-    /// Run before AppHost.Configure()
+    /// Run after AppHost.Configure()
     /// </summary>
-    public class ConfigureOpenApi : IConfigureAppHost
+    public class ConfigureOpenApi : IPostConfigureAppHost
     {
         public void Configure(IAppHost appHost)
         {
