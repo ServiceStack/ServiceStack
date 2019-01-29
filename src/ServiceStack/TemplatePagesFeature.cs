@@ -1040,14 +1040,21 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             return HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
         }
 
+        public static PageResult BindRequest(this PageResult result, IRequest request)
+        {
+            result.Args["Request"] = request;
+            result.Args[nameof(request.RawUrl)] = request.RawUrl;
+            result.Args[TemplateConstants.PathInfo] = request.OriginalPathInfo;
+            result.Args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
+            result.Args[nameof(request.Verb)] = result.Args["Method"] = request.Verb;
+
+            return result;
+        }
+
         public static PageResult GetPageResult(this IRequest request, string virtualPath, Dictionary<string,object> args=null)
         {
             var page = HostContext.AssertPlugin<TemplatePagesFeature>().GetPage(virtualPath);
-            var pageResult = new PageResult(page) {
-                Args = {
-                    ["Request"] = request   
-                }
-            };
+            var pageResult = new PageResult(page).BindRequest(request);
             if (args != null)
             {
                 foreach (var entry in args)

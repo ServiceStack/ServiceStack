@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
+using ServiceStack.Templates;
 
 namespace CheckTemplatesCore
 {
@@ -97,5 +98,17 @@ namespace CheckTemplatesCore
         public object Any(Throw404 request) => throw HttpError.NotFound(request.Message ?? "Not Found");
         
         public object Any(Throw request) => throw new Exception(request.Message ?? "Exception in 'Throw' Service");
+        
+        public object Any(ViewIndex request)
+        {
+            return Request.GetPageResult("/index");
+            //equivalent to: return new PageResult(Request.GetPage("/index")).BindRequest(Request);
+        }
+    }
+    
+    [FallbackRoute("/{PathInfo*}", Matches="AcceptsHtml")]
+    public class ViewIndex
+    {
+        public string PathInfo { get; set; }
     }
 }
