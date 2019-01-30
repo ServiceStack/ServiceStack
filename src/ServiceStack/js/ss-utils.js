@@ -41,7 +41,7 @@
     $.ss.getSelection = function () {
         return window.getSelection
             ? window.getSelection().toString()
-            : document.selection && document.selection.type != "Control"
+            : document.selection && document.selection.type !== "Control"
                 ? document.selection.createRange().text : "";
     };
     $.ss.combinePaths = function() {
@@ -111,7 +111,7 @@
         for (var i = 0; i < parts.length; i++) {
             var p = parts[i];
             if (p == null) p = '';
-            if (p[0] == '{' && p[p.length - 1] == '}') {
+            if (p[0] === '{' && p[p.length - 1] === '}') {
                 var key = argKeys[p.substring(1, p.length - 1).toLowerCase()];
                 if (key) {
                     p = args[key];
@@ -129,7 +129,7 @@
     };
     function splitCase(t) {
         return typeof t != 'string' ? t : t.replace(/([A-Z]|[0-9]+)/g, ' $1').replace(/_/g, ' ');
-    };
+    }
     $.ss.humanize = function (s) { return !s || s.indexOf(' ') >= 0 ? s : splitCase(s); };
 
     function toCamelCase(key) {
@@ -186,6 +186,41 @@
             data: typeof data == "string" ? data : JSON.stringify(data),
             success: success, error: error
         });
+    };
+    $.ss.createElement = createElement;
+    var keyAliases = {className:'class',htmlFor:'for'};
+    function createElement(tagName, options, attrs) {
+        var el = document.createElement(tagName);
+        if (attrs) {
+            for (var key in attrs) {
+                if (!attrs.hasOwnProperty(key)) continue;
+                el.setAttribute(keyAliases[key] || key, attrs[key]);
+            }
+        }
+        if (options && options.insertAfter) {
+            options.insertAfter.parentNode.insertBefore(el, options.insertAfter.nextSibling);
+        }
+        return el;
+    }
+    function showInvalidInputs() {
+        var errorMsg = this.getAttribute('data-invalid');
+        if (errorMsg) {
+            addClass(this, 'is-invalid');
+            var elError = this.nextSibling && hasClass(this.nextSibling, 'invalid-feedback')
+                ? this.nextSibling
+                : createElement("div", { insertAfter:this }, { className: 'invalid-feedback' });
+            elError.innerHTML = errorMsg;
+        }
+    }
+    function hasClass(el, cls) {
+        return (" " + el.className + " ").replace(/[\n\t\r]/g, " ").indexOf(" " + cls + " ") > -1;
+    }
+    function addClass(el, cls) {
+        if (!hasClass(el, cls)) el.className = (el.className + " " + cls).trim();
+    }
+    $.fn.bootstrap = function(){
+        $(this).find('[data-invalid]').each(showInvalidInputs);
+        return this;
     };
 
     $.fn.setFieldError = function (name, msg) {

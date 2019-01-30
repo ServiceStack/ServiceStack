@@ -25,8 +25,18 @@ title: Bootstrap Templates
   </div>
 </div>
 
-{{PathInfo}} / {{Verb}} / {{RawUrl}} / {{AbsoluteUri}}
+<div style="text-align: left">
+  <h3>Validation</h3>
+  <ul>
+    <li><a href="/validation/authtest">/validation/authtest</a></li>
+    <li><a href="/validation/postback/login">/validation/postback/login</a></li>
+  </ul>
 
+  <h3>Info</h3>
+
+  {{PathInfo}} / {{Verb}} / {{RawUrl}} / {{AbsoluteUri}}
+</div>
+  
 {{#raw appendTo scripts}}
 <script>
 $('#Name').keyup(function () {
