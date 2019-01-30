@@ -33,8 +33,8 @@ namespace CheckWebCore
 
             var authRepo = userRep;
 
-            var newAdmin = new UserAuth {Email = "test@test.com"};
-            var user = authRepo.CreateUserAuth(newAdmin, "test");
+            var newAdmin = new UserAuth {Email = "admin@email.com", DisplayName = "Admin User"};
+            var user = authRepo.CreateUserAuth(newAdmin, "p@55wOrd");
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
     }
