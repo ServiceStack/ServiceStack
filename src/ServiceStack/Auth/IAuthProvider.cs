@@ -60,6 +60,7 @@ namespace ServiceStack.Auth
         public IAuthSession Session { get; internal set; }
         public Authenticate AuthRequest { get; internal set; }
         public AuthenticateResponse AuthResponse { get; internal set; }
+        public string ReferrerUrl { get; internal set; }
         public bool AlreadyAuthenticated { get; internal set; }
         public bool DidAuthenticate { get; internal set; }
     }

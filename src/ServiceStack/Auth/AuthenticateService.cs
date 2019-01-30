@@ -248,7 +248,9 @@ namespace ServiceStack.Auth
 
                     if (AuthResponseDecorator != null)
                     {
-                        return AuthResponseDecorator(authCtx);
+                        var authDecoratorResponse = AuthResponseDecorator(authCtx);
+                        if (authDecoratorResponse != response)
+                            return authDecoratorResponse;                        
                     }
                 }
 

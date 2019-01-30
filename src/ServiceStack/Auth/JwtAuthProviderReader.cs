@@ -718,7 +718,7 @@ namespace ServiceStack.Auth
 
             authCtx.AuthService.Request.RemoveSession(authCtx.AuthService.GetSessionId());
 
-            return new HttpResult(authCtx.AuthResponse)
+            var httpResult = new HttpResult(authCtx.AuthResponse)
             {
                 Cookies = {
                     new Cookie(Keywords.TokenCookie, authCtx.AuthResponse.BearerToken, Cookies.RootPath) {
@@ -728,6 +728,15 @@ namespace ServiceStack.Auth
                     }
                 }
             };
+
+            var isHtml = authCtx.AuthService.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+            if (isHtml)
+            {
+                httpResult.StatusCode = HttpStatusCode.Redirect;
+                httpResult.Location = authCtx.ReferrerUrl;
+            }
+
+            return httpResult;
         }
     }
 
