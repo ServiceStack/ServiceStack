@@ -37,13 +37,35 @@ namespace ServiceStack.Templates
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
 
+        public string httpFormData(TemplateScopeContext scope, string name) => req(scope).FormData[name];
+        public string httpQueryString(TemplateScopeContext scope, string name) => req(scope).QueryString[name];
+        public string httpParam(TemplateScopeContext scope, string name) => GetParam(req(scope), name);
+
+        private static string GetParam(IRequest httpReq, string name) //sync with IRequest.GetParam()
+        {
+            string value;
+            if ((value = httpReq.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
+            if ((value = httpReq.QueryString[name]) != null) return value;
+            if ((value = httpReq.FormData[name]) != null) return value;
+
+            //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
+            //TryGetValue is not happy with null dictionary keys, so we should bail out here
+            if (string.IsNullOrEmpty(name)) return null;
+
+            if (httpReq.Cookies.TryGetValue(name, out var cookie)) return cookie.Value;
+
+            if (httpReq.Items.TryGetValue(name, out var oValue)) return oValue.ToString();
+
+            return null;
+        }
+
         public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
         public string urlEncode(string value) => value.UrlEncode();
         public string urlDecode(string value) => value.UrlDecode();
 
         public string htmlEncode(string value) => value.HtmlEncode();
         public string htmlDecode(string value) => value.HtmlDecode();
-
+        
         public bool containsXss(object target)
         {
             try
