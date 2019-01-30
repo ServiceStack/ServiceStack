@@ -463,6 +463,14 @@ namespace ServiceStack.Templates
             return (cls.Length > 0 ? $" class=\"{cls}\"" : "").ToRawString();
         }
 
+        public IRawString htmlFormat(string htmlWithFormat, string arg)
+        {
+            if (string.IsNullOrEmpty(arg))
+                return null;
+
+            return string.Format(htmlWithFormat, Context.DefaultFilters.htmlEncode(arg)).ToRawString();
+        }
+
         [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
         [HandleUnknownValue] public IRawString htmlLink(string href, Dictionary<string, object> attrs)
         {
