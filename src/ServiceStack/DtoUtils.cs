@@ -17,8 +17,7 @@ namespace ServiceStack
 
         public static ResponseStatus ToResponseStatus(this Exception exception)
         {
-            var customStatus = exception as IResponseStatusConvertible;
-            return customStatus != null
+            return exception is IResponseStatusConvertible customStatus
                 ? customStatus.ToResponseStatus()
                 : CreateResponseStatus(exception.GetType().Name, exception.Message);
         }
@@ -74,8 +73,7 @@ namespace ServiceStack
         {
             var responseDto = CreateResponseDto(request, responseStatus);
 
-            var httpError = ex as IHttpError;
-            if (httpError != null)
+            if (ex is IHttpError httpError)
             {
                 if (responseDto != null)
                     httpError.Response = responseDto;
@@ -109,8 +107,7 @@ namespace ServiceStack
                 return null;
 
             // For faster serialization of exceptions, services should implement IHasResponseStatus
-            var hasResponseStatus = responseDto as IHasResponseStatus;
-            if (hasResponseStatus != null)
+            if (responseDto is IHasResponseStatus hasResponseStatus)
             {
                 hasResponseStatus.ResponseStatus = responseStatus;
             }

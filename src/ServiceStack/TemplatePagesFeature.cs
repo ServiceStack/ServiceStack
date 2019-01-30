@@ -92,6 +92,7 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
+            appHost.ViewEngines.Add(this);
 
             if (!DisablePageBasedRouting)
             {
@@ -397,17 +398,28 @@ namespace ServiceStack
 
         public async Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream)
         {
+            var explicitView = req.GetView();
+            
             if (dto is IHttpResult httpResult)
-                dto = httpResult.Response;
-            
-            var viewNames = new List<string>
             {
-                req.OperationName,
-                dto.GetType().Name,
-            };
+                dto = httpResult.Response;
+                if (httpResult is HttpResult viewResult && viewResult.View != null)
+                    explicitView = viewResult.View;
+            }
+
+            var errorStatus = dto.GetResponseStatus()
+                ?? (dto is Exception ex
+                    ? ex.ToResponseStatus()
+                    : null);
+            if (errorStatus?.ErrorCode != null)
+                req.Items[Keywords.ErrorStatus] = errorStatus;
+
+            var viewNames = new List<string>();
+            if (explicitView != null)
+                viewNames.Add(explicitView);
             
-            if (req.GetItem(Keywords.View) is string viewName)
-                viewNames.Insert(0, viewName);
+            viewNames.Add(req.OperationName);
+            viewNames.Add(dto.GetType().Name);
 
             TemplateCodePage codePage = null;
             TemplatePage viewPage = null;
