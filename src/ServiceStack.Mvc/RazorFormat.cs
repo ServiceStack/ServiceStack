@@ -157,7 +157,7 @@ namespace ServiceStack.Mvc
                 {
                     var model = modelType.CreateInstance();
                     viewData = CreateViewData(model);
-                    req.Items[Keywords.ErrorStatus] = errorDto;
+                    req.Items[Keywords.ErrorStatus] = errorDto.ResponseStatus;
                 }
             }
 
