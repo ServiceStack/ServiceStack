@@ -13,6 +13,10 @@ namespace ServiceStack.Templates
         public bool matchesPathInfo(TemplateScopeContext scope, string pathInfo) => 
             scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');
 
+        public bool startsWithPathInfo(TemplateScopeContext scope, string pathInfo) => pathInfo == "/"
+            ? matchesPathInfo(scope, pathInfo)
+            : scope.GetValue("PathInfo")?.ToString().TrimEnd('/').StartsWith(pathInfo?.TrimEnd('/') ?? "") == true;
+
         public object ifMatchesPathInfo(TemplateScopeContext scope, object returnTarget, string pathInfo) =>
             matchesPathInfo(scope, pathInfo) ? returnTarget : null;
 
