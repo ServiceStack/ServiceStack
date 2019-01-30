@@ -6,3 +6,10 @@ body {
         padding-top: 56px;
     }
 }
+[data-click] {
+    color: #007bff;
+    cursor: pointer;
+}
+[data-click]:hover {
+    text-decoration: underline;
+}
