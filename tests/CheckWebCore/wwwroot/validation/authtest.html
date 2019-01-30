@@ -1,0 +1,8 @@
+{{#if isAuthenticated}}
+    Hi {{userSession.DisplayName}}!
+    <p>
+        <a href="/auth/logout?continue=/validation/authtest">Sign Out</a>.
+    </p>
+{{else}}
+    You're not authenticated, please <a href="postback/login">Sign In</a>.
+{{/if}}
