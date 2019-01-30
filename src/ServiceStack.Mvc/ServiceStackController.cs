@@ -38,7 +38,7 @@ namespace ServiceStack.Mvc
         public static string DefaultAction = "Index";
 
         /// <summary>
-        /// Default redirct URL if [Authenticate] attribute doesn't permit access.
+        /// Default redirect URL if [Authenticate] attribute doesn't permit access.
         /// </summary>
         public virtual string UnauthorizedRedirectUrl => 
             HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
@@ -61,7 +61,7 @@ namespace ServiceStack.Mvc
         }
 
         /// <summary>
-        /// Default redirct URL if Required Role or Permission attributes doesn't permit access.
+        /// Default redirect URL if Required Role or Permission attributes doesn't permit access.
         /// </summary>
         public virtual string ForbiddenRedirectUrl => 
             HostContext.GetPlugin<AuthFeature>().GetHtmlRedirect();
