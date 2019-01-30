@@ -235,6 +235,7 @@ namespace ServiceStack.Auth
                         AuthProvider = authProvider,
                         AuthRequest = request,
                         AuthResponse = authResponse,
+                        ReferrerUrl = referrerUrl,
                         Session = session,
                         AlreadyAuthenticated = alreadyAuthenticated,
                         DidAuthenticate = Request.Items.ContainsKey(Keywords.DidAuthenticate),
@@ -266,13 +267,22 @@ namespace ServiceStack.Auth
 
                 return response;
             }
-            catch (HttpError ex)
+            catch (Exception ex)
             {
-                var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
-                if (isHtml && errorReferrerUrl != null)
+                if (isHtml && !string.IsNullOrEmpty(request.ErrorView))
                 {
-                    errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
-                    return HttpResult.Redirect(errorReferrerUrl);
+                    Request.SetView(request.ErrorView);
+                    return ex;
+                }
+
+                if (ex is HttpError)
+                {
+                    var errorReferrerUrl = this.Request.GetHeader(HttpHeaders.Referer);
+                    if (isHtml && errorReferrerUrl != null)
+                    {
+                        errorReferrerUrl = errorReferrerUrl.SetParam("f", ex.Message.Localize(Request));
+                        return HttpResult.Redirect(errorReferrerUrl);
+                    }
                 }
 
                 throw;
