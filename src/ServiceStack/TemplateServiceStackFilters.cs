@@ -14,9 +14,13 @@ namespace ServiceStack
     
     public class TemplateServiceStackFilters : TemplateFilter
     {
-        private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
         private ServiceStackHost appHost => HostContext.AppHost;
 
+        private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        private ResponseStatus errorStatus(TemplateScopeContext scope) => 
+            scope.GetValue("errorStatus") as ResponseStatus ??
+            req(scope)?.GetItem(Keywords.ErrorStatus) as ResponseStatus;
+        
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName) => sendToGateway(scope, dto, requestName, null);
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName, object options)
         {
@@ -200,6 +204,67 @@ namespace ServiceStack
             var httpResultHeaders = args.ToStringDictionary();
             httpResultHeaders.Each(x => to.Options[x.Key] = x.Value);
             return to;
+        }
+
+        public string errorResponseSummary(TemplateScopeContext scope) => errorResponseSummary(scope, errorStatus(scope));
+        public string errorResponseSummary(TemplateScopeContext scope, ResponseStatus errorStatus)
+        {
+            if (errorStatus == null)
+                return null;
+
+            return errorStatus.Errors.IsEmpty()
+                ? errorStatus.Message ?? errorStatus.ErrorCode
+                : null;
+        }
+
+        public string errorResponseExcept(TemplateScopeContext scope, IEnumerable<object> fields) =>
+            errorResponseExcept(scope, errorStatus(scope), fields);
+        public string errorResponseExcept(TemplateScopeContext scope, ResponseStatus errorStatus, IEnumerable<object> fields)
+        {
+            if (errorStatus == null)
+                return null;
+            
+            var fieldNamesLookup = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var fieldNames = new List<string>();
+            foreach (var field in fields)
+            {
+                var fieldName = field.AsString();
+                fieldNamesLookup.Add(fieldName);
+                fieldNames.Add(fieldName);
+            }
+
+            if (!fieldNames.IsEmpty() && !errorStatus.Errors.IsEmpty())
+            {
+                foreach (var fieldError in errorStatus.Errors)
+                {
+                    if (fieldNamesLookup.Contains(fieldError.FieldName))
+                        return null;
+                }
+
+                var firstFieldError = errorStatus.Errors[0];
+                return firstFieldError.Message ?? firstFieldError.ErrorCode;
+            }
+
+            return errorStatus.Message ?? errorStatus.ErrorCode;
+        }
+
+        public string errorResponse(TemplateScopeContext scope) => errorResponse(scope, errorStatus(scope), null);
+        public string errorResponse(TemplateScopeContext scope, string fieldName) =>
+            errorResponse(scope, errorStatus(scope), fieldName);
+        public string errorResponse(TemplateScopeContext scope, ResponseStatus errorStatus, string fieldName)
+        {
+            if (fieldName == null)
+                return errorResponseSummary(scope, errorStatus);
+            if (errorStatus == null || errorStatus.Errors.IsEmpty())
+                return null;
+
+            foreach (var fieldError in errorStatus.Errors)
+            {
+                if (fieldName.EqualsIgnoreCase(fieldError.FieldName))
+                    return fieldError.Message ?? fieldError.ErrorCode;
+            }
+
+            return null;
         }
     }
 }
