@@ -313,9 +313,8 @@ namespace ServiceStack
             if (response is IHasResponseStatus hasResponseStatus)
                 return hasResponseStatus.ResponseStatus;
 
-            var propertyInfo = response.GetType().GetProperty("ResponseStatus");
-
-            return propertyInfo?.GetProperty(response) as ResponseStatus;
+            var statusGetter = TypeProperties.Get(response.GetType()).GetPublicGetter(nameof(ResponseStatus));
+            return statusGetter?.Invoke(response) as ResponseStatus;
         }
     }
 }
