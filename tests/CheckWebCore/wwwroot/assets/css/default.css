@@ -13,3 +13,7 @@ body {
 [data-click]:hover {
     text-decoration: underline;
 }
+
+form {
+    padding: 10px;
+}
