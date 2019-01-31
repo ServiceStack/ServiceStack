@@ -9,12 +9,14 @@
 
 <div class="form-row">
     <div class="form-group">
-        {{ {id:'userName',value:'as@if.com'} | formInput({label:'Email',help:'Email you signed up with',size:'lg'}) }}
+        {{ {id:'userName',value:'admin@email.com'} 
+           | formInput({label:'Email',help:'Email you signed up with',size:'lg'}) }}
     </div>
 </div>
 <div class="form-row">
     <div class="form-group">
-        {{ {id:'password',type:'password'} | formInput({label:'Password',help:'6 characters or more',size:'lg',preserveValue:false}) }}
+        {{ {id:'password',type:'password',value:'p@55wOrd'} 
+           | formInput({label:'Password',help:'6 characters or more',size:'lg',preserveValue:false}) }}
     </div>
 </div>
 <div class="form-row">
@@ -32,21 +34,4 @@
         <a class="lnk" href="/validation/postback/register">Register New User</a>
     </div>
 </div>
-<div>
-    <b>Quick Login:</b>
-    <div class="quicklist">
-        <span data-click="switchUser:admin@email.com">admin@email.com</span>
-    </div>
-</div>
 </form>
-
-{{#raw appendTo scripts}}
-<script>
-$(document).bindHandlers({
-    switchUser: function(u) {
-        $("[name=userName]").val(u);
-        $("[name=password]").val('p@55wOrd');
-    }
-});
-</script>
-{{/raw}}
