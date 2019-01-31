@@ -10,17 +10,13 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    // ReSharper disable InconsistentNaming
-    
     public class TemplateServiceStackFilters : TemplateFilter
     {
         private ServiceStackHost appHost => HostContext.AppHost;
 
+        public IHttpRequest getHttpRequest(TemplateScopeContext scope) => req(scope);
         private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
-        private ResponseStatus errorStatus(TemplateScopeContext scope) => 
-            scope.GetValue("errorStatus") as ResponseStatus ??
-            req(scope)?.GetItem(Keywords.ErrorStatus) as ResponseStatus;
-        
+
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName) => sendToGateway(scope, dto, requestName, null);
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName, object options)
         {
@@ -99,11 +95,11 @@ namespace ServiceStack
 
                 if (requestType.HasInterface(typeof(IQueryDb)))
                 {
-                    var ssFillter = Context.TemplateFilters.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
-                    if (ssFillter == null)
+                    var ssFilter = Context.TemplateFilters.FirstOrDefault(x => x is IAutoQueryDbFilters) as IAutoQueryDbFilters;
+                    if (ssFilter == null)
                         throw new NotImplementedException("sendToAutoQuery RDBMS requires TemplateAutoQueryFilters");
 
-                    return ssFillter.sendToAutoQuery(scope, dto, requestName, options);
+                    return ssFilter.sendToAutoQuery(scope, dto, requestName, options);
                 }
                 
                 var autoQuery = appHost.TryResolve<IAutoQueryData>();
@@ -139,6 +135,7 @@ namespace ServiceStack
             return results;
         }
        
+        public object getUserSession(TemplateScopeContext scope) => req(scope).GetSession();
         public IAuthSession userSession(TemplateScopeContext scope) => req(scope).GetSession();
 
         public bool isAuthenticated(TemplateScopeContext scope)
@@ -159,6 +156,7 @@ namespace ServiceStack
         [HandleUnknownValue] public object endIfAuthenticated(TemplateScopeContext scope, object value) => !isAuthenticated(scope) 
             ? value : StopExecution.Value;
 
+        public IHttpResult getHttpResult(TemplateScopeContext scope, object options) => httpResult(scope, options);
         public HttpResult httpResult(TemplateScopeContext scope, object options)
         {
             var args = scope.AssertOptions(nameof(httpResult), options);
@@ -206,7 +204,11 @@ namespace ServiceStack
             return to;
         }
 
-        public string errorResponseSummary(TemplateScopeContext scope) => errorResponseSummary(scope, errorStatus(scope));
+        public ResponseStatus getErrorStatus(TemplateScopeContext scope) => 
+            scope.GetValue("errorStatus") as ResponseStatus ??
+            req(scope)?.GetItem(Keywords.ErrorStatus) as ResponseStatus;
+        
+        public string errorResponseSummary(TemplateScopeContext scope) => errorResponseSummary(scope, getErrorStatus(scope));
         public string errorResponseSummary(TemplateScopeContext scope, ResponseStatus errorStatus)
         {
             if (errorStatus == null)
@@ -218,7 +220,7 @@ namespace ServiceStack
         }
 
         public string errorResponseExcept(TemplateScopeContext scope, IEnumerable<object> fields) =>
-            errorResponseExcept(scope, errorStatus(scope), fields);
+            errorResponseExcept(scope, getErrorStatus(scope), fields);
         public string errorResponseExcept(TemplateScopeContext scope, ResponseStatus errorStatus, IEnumerable<object> fields)
         {
             if (errorStatus == null)
@@ -248,9 +250,9 @@ namespace ServiceStack
             return errorStatus.Message ?? errorStatus.ErrorCode;
         }
 
-        public string errorResponse(TemplateScopeContext scope) => errorResponse(scope, errorStatus(scope), null);
+        public string errorResponse(TemplateScopeContext scope) => errorResponse(scope, getErrorStatus(scope), null);
         public string errorResponse(TemplateScopeContext scope, string fieldName) =>
-            errorResponse(scope, errorStatus(scope), fieldName);
+            errorResponse(scope, getErrorStatus(scope), fieldName);
         public string errorResponse(TemplateScopeContext scope, ResponseStatus errorStatus, string fieldName)
         {
             if (fieldName == null)

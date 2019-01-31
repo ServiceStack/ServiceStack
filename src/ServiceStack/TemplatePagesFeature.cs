@@ -80,6 +80,7 @@ namespace ServiceStack
             TemplateFilters.Add(new TemplateProtectedFilters());
             TemplateFilters.Add(new TemplateInfoFilters());
             TemplateFilters.Add(new TemplateServiceStackFilters());
+            TemplateFilters.Add(new TemplateBootstrapFilters());
             Plugins.Add(new MarkdownTemplatePlugin { RegisterPageFormat = false });
             SkipExecutingFiltersIfError = true;
         }
@@ -92,7 +93,6 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
-            appHost.ViewEngines.Add(this);
 
             if (!DisablePageBasedRouting)
             {
@@ -332,7 +332,8 @@ namespace ServiceStack
             return null;
         }
 
-        private readonly ConcurrentDictionary<string, TemplatePage> viewPagesMap = new ConcurrentDictionary<string, TemplatePage>();
+        private readonly ConcurrentDictionary<string, TemplatePage> viewPagesMap = 
+            new ConcurrentDictionary<string, TemplatePage>();
 
         private void InitViewPages(IAppHost appHost)
         {
@@ -1088,6 +1089,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 requiresRequest.Request = request;
             return page;
         }
+        
+        public static TemplateServiceStackFilters GetServiceStackFilters(this TemplateContext context) =>
+            context.TemplateFilters.FirstOrDefault(x => x is TemplateServiceStackFilters) as TemplateServiceStackFilters;
     }
 
     public interface IAutoQueryDbFilters
