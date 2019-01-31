@@ -463,6 +463,39 @@ namespace ServiceStack.Templates
             return (cls.Length > 0 ? $" class=\"{cls}\"" : "").ToRawString();
         }
 
+        public bool htmlHasClass(object target, string name)
+        {
+            if (target == null)
+                return false;
+
+            if (target is Dictionary<string, object> flags)
+                return flags.TryGetValue(name, out var oFlags) && oFlags is bool flag && flag;
+
+            if (target is List<object> list)
+            {
+                foreach (var oCls in list)
+                {
+                    if (oCls is string cls && cls == name)
+                        return true;
+                }
+                return false;
+            }
+            if (target is string className)
+                return ($" {className} ").IndexOf($" {name} ", StringComparison.Ordinal) >= 0;
+
+            return false;
+        }
+
+        public string htmlAddClass(object target, string name)
+        {
+            var className = htmlClassList(target) ?? "";
+            
+            if (htmlHasClass(target, name))
+                return className;
+
+            return className + " " + name;
+        }
+
         public IRawString htmlFormat(string htmlWithFormat, string arg)
         {
             if (string.IsNullOrEmpty(arg))
