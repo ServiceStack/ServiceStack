@@ -4,5 +4,9 @@
         <a href="/auth/logout?continue=/validation/authtest">Sign Out</a>.
     </p>
 {{else}}
-    You're not authenticated, please <a href="postback/login">Sign In</a>.
+    You're not authenticated, please Sign In:
+    <ul>
+        <li><a href="server/login">server/login</a></li>
+        <li><a href="server/login-nojs">server/login-nojs</a></li>
+    </ul>
 {{/if}}

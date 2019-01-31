@@ -1,0 +1,52 @@
+<h3>Register New User</h3>
+
+<form action="/register" method="post" class="col-lg-7">
+    <div class="form-group">
+        {{ '<div class="alert alert-danger">{0}</div>' 
+           | htmlFormat(errorResponseExcept('displayName,email,password,confirmPassword')) }}
+        <input type="hidden" name="continue" value="/validation/authtest" />
+        <input type="hidden" name="errorView" value="ServerRegister" />
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="displayName" type="text" placeholder="Display Name"
+               value="{{ 'displayName' | httpForm }}" data-invalid="{{errorResponse('displayName')}}">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="email" type="text" placeholder="Email"
+               value="{{ 'email' | httpForm }}" data-invalid="{{errorResponse('email')}}">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="password" type="password" placeholder="Password"
+               value="{{ 'password' | httpForm }}" data-invalid="{{errorResponse('password')}}">
+    </div>
+    <div class="form-group">
+        <input class="form-control form-control-lg" name="confirmPassword" type="password" placeholder="Confirm Password"
+               value="{{ 'confirmPassword' | httpForm }}" data-invalid="{{errorResponse('confirmPassword')}}">
+    </div>
+    <div class="form-group">
+        <input type="checkbox" id="autoLogin" name="autoLogin" value="true" checked>
+        <label for="autoLogin" class="form-check-label">Auto Login</label>
+    </div>
+    <div class="form-group">
+        <button class="btn btn-lg btn-primary" type="submit">Register</button>
+    </div>
+    <div class="form-group">
+        <b>Quick Populate:</b>
+        <div class="quicklist">
+            <span data-click="newUser:new@user.com">new@user.com</span>
+        </div>
+    </div>
+</form>
+
+{{#raw appendTo scripts}}
+<script>
+$(document).bootstrap().bindHandlers({
+    newUser: function(u) {
+        var names = u.split('@');
+        $("[name=displayName]").val($.ss.toPascalCase(names[0]) + " " + $.ss.toPascalCase($.ss.splitOnFirst(names[1],'.')[0]));
+        $("[name=email]").val(u);
+        $("[type=password]").val('p@55wOrd');
+    }
+});
+</script>
+{{/raw}}

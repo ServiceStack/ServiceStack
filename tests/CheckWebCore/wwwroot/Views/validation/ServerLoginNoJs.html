@@ -1,37 +1,26 @@
 <h3>Sign In using credentials</h3>
 
-<form action="/auth/credentials" method="post">
-<div class="form-row">
-    {{ ['userName','password'] | formSummary({class:'alert alert-warning'}) }}
-    <input type="hidden" name="continue" value="/validation/authtest" />
-    <input type="hidden" name="errorView" value="PostBackLoginNoJs">
-</div>
-
-<div class="form-row">
+<form action="/auth/credentials" method="post" class="col-lg-4">
+    <div class="form-group">
+        {{ ['userName','password'] | formSummary({class:'alert alert-warning'}) }}
+        <input type="hidden" name="continue" value="/validation/authtest" />
+        <input type="hidden" name="errorView" value="ServerLoginNoJs">
+    </div>
     <div class="form-group">
         {{ {id:'userName',value:'admin@email.com'} 
            | formInput({label:'Email',help:'Email you signed up with',size:'lg'}) }}
     </div>
-</div>
-<div class="form-row">
     <div class="form-group">
         {{ {id:'password',type:'password',value:'p@55wOrd'} 
            | formInput({label:'Password',help:'6 characters or more',size:'lg',preserveValue:false}) }}
     </div>
-</div>
-<div class="form-row">
     <div class="form-group">
         {{ {id:'rememberMe',type:'checkbox',checked:true} | formInput({label:'Remember Me'}) }}
     </div>
-</div>
-<div class="form-row">
-    <div class="form-group col-md-4">
+    <div class="form-group">
         <button type="submit" class="btn btn-lg btn-primary">Login</button>
     </div>
-</div>
-<div class="form-row">
-    <div class="form-group col-md-4">
-        <a class="lnk" href="/validation/postback/register">Register New User</a>
+    <div class="form-group">
+        <a class="lnk" href="/validation/server/register-nojs">Register New User</a>
     </div>
-</div>
 </form>

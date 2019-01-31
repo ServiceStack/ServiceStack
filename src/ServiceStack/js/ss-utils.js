@@ -135,6 +135,8 @@
     function toCamelCase(key) {
         return !key ? key : key.charAt(0).toLowerCase() + key.substring(1);
     }
+    $.ss.toCamelCase = toCamelCase;
+    $.ss.toPascalCase = function (s) { return !s ? s : s.charAt(0).toUpperCase() + s.substring(1); };
     $.ss.normalizeKey = function (key) {
         return typeof key == "string" ? key.toLowerCase().replace(/_/g, '') : key;
     };
