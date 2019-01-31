@@ -253,7 +253,10 @@ namespace ServiceStack.Templates
                 {
                     if (fragment.InitialValue is string partialPath)
                     {
-                        Context.GetPage(page.VirtualPath, partialPath, out TemplatePage partialPage, out _);
+                        Context.TryGetPage(page.VirtualPath, partialPath, out TemplatePage partialPage, out _);
+                        if (partialPage == null && partialPath[0] != '_')
+                            Context.TryGetPage(page.VirtualPath, $"_{partialPath}-partial", out partialPage, out _);
+                        
                         maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
 
                         if (partialPage?.HasInit == true)
@@ -280,7 +283,10 @@ namespace ServiceStack.Templates
                     {
                         if (!string.IsNullOrEmpty(partialArg))
                         {
-                            Context.GetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                            Context.TryGetPage(page.VirtualPath, partialArg, out TemplatePage partialPage, out _);
+                            if (partialPage == null && partialArg[0] != '_')
+                                Context.TryGetPage(page.VirtualPath, $"_{partialArg}-partial", out partialPage, out _);
+
                             maxLastModified = GetMaxLastModified(partialPage?.File, maxLastModified);
 
                             if (partialPage?.HasInit == true)
