@@ -749,6 +749,18 @@ namespace ServiceStack.Templates
             }
             return to;
         }
+        
+        public List<string> toVarNames(object names) => names is null
+            ? TypeConstants.EmptyStringList
+            : names is List<string> strList
+                ? strList
+                : names is IEnumerable<string> strEnum
+                    ? strEnum.ToList()
+                    : names is IEnumerable<object> objEnum
+                        ? objEnum.Map(x => x.AsString())
+                        : names is string strFields
+                            ? new List<string>(strFields.Split(','))
+                            : throw new NotSupportedException($"Cannot convert '{names.GetType().Name}' to List<string>");
 
         public int AssertWithinMaxQuota(int value)
         {
