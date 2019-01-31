@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation;
 
 namespace CheckWebCore
 {
@@ -28,6 +29,9 @@ namespace CheckWebCore
 
             appHost.Plugins.Add(new RegistrationFeature());
 
+            //override the default registration validation with your own custom implementation
+            appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
+
             var userRep = new InMemoryAuthRepository();
             appHost.Register<IAuthRepository>(userRep);
 
@@ -38,4 +42,17 @@ namespace CheckWebCore
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
     }
+    
+    public class CustomRegistrationValidator : RegistrationValidator
+    {
+        public CustomRegistrationValidator()
+        {
+            RuleSet(ApplyTo.Post, () =>
+            {
+                RuleFor(x => x.DisplayName).NotEmpty();
+                RuleFor(x => x.ConfirmPassword).NotEmpty();
+            });
+        }
+    }
+
 }

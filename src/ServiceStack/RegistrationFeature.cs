@@ -30,7 +30,11 @@ namespace ServiceStack
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService<RegisterService>(AtRestPath);
-            appHost.RegisterAs<RegistrationValidator, IValidator<Register>>();
+
+            if (!appHost.GetContainer().Exists<IValidator<Register>>())
+            {
+                appHost.RegisterAs<RegistrationValidator, IValidator<Register>>();
+            }
         }
     }
 }
