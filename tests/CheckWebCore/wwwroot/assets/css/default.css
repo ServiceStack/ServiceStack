@@ -13,6 +13,10 @@ body {
 [data-click]:hover {
     text-decoration: underline;
 }
+.quicklist span {
+    display: block;
+    margin-left: 1em;
+}
 
 form {
     padding: 10px;
