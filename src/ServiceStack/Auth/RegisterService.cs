@@ -22,6 +22,11 @@ namespace ServiceStack.Auth
                 () =>
                 {
                     RuleFor(x => x.Password).NotEmpty();
+                    RuleFor(x => x.ConfirmPassword)
+                        .Equal(x => x.Password)
+                        .When(x => x.ConfirmPassword != null)
+                        .WithErrorCode(nameof(ErrorMessages.PasswordsShouldMatch))
+                        .WithMessage(ErrorMessages.PasswordsShouldMatch.Localize(base.Request));
                     RuleFor(x => x.UserName).NotEmpty().When(x => x.Email.IsNullOrEmpty());
                     RuleFor(x => x.Email).NotEmpty().EmailAddress().When(x => x.UserName.IsNullOrEmpty());
                     RuleFor(x => x.UserName)
@@ -83,104 +88,118 @@ namespace ServiceStack.Auth
         /// </summary>
         public object Post(Register request)
         {
-            if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
+            try
             {
-                if (request.UserName != null)
-                    request.UserName = request.UserName.ToLower();
-                if (request.Email != null)
-                    request.Email = request.Email.ToLower();
-            }
-            
-            var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
-            if (validateResponse != null)
-                return validateResponse;
-
-            RegisterResponse response = null;
-            var session = this.GetSession();
-            bool registerNewUser;
-            IUserAuth user;
-
-            var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
-            var newUserAuth = ToUserAuth(authRepo, request);
-            using (authRepo as IDisposable)
-            {
-                var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
-                registerNewUser = existingUser == null;
-
-                if (!registerNewUser && !AllowUpdates)
-                    throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
-
-                if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
-                    RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
-                
-                user = registerNewUser
-                    ? authRepo.CreateUserAuth(newUserAuth, request.Password)
-                    : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
-            }
-
-            if (request.AutoLogin.GetValueOrDefault())
-            {
-                using (var authService = base.ResolveService<AuthenticateService>())
+                if (HostContext.GetPlugin<AuthFeature>()?.SaveUserNamesInLowerCase == true)
                 {
-                    var authResponse = authService.Post(
-                        new Authenticate {
-                            provider = CredentialsAuthProvider.Name,
-                            UserName = request.UserName ?? request.Email,
-                            Password = request.Password,
-                            Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
-                        });
-
-                    if (authResponse is IHttpError)
-                        throw (Exception)authResponse;
-
-                    if (authResponse is AuthenticateResponse typedResponse)
+                    if (request.UserName != null)
+                        request.UserName = request.UserName.ToLower();
+                    if (request.Email != null)
+                        request.Email = request.Email.ToLower();
+                }
+                
+                var validateResponse = ValidateFn?.Invoke(this, HttpMethods.Post, request);
+                if (validateResponse != null)
+                    return validateResponse;
+    
+                RegisterResponse response = null;
+                var session = this.GetSession();
+                bool registerNewUser;
+                IUserAuth user;
+    
+                var authRepo = HostContext.AppHost.GetAuthRepository(base.Request);
+                var newUserAuth = ToUserAuth(authRepo, request);
+                using (authRepo as IDisposable)
+                {
+                    var existingUser = session.IsAuthenticated ? authRepo.GetUserAuth(session, null) : null;
+                    registerNewUser = existingUser == null;
+    
+                    if (!registerNewUser && !AllowUpdates)
+                        throw new NotSupportedException(ErrorMessages.RegisterUpdatesDisabled.Localize(Request));
+    
+                    if (!HostContext.AppHost.GlobalRequestFiltersAsyncArray.Contains(ValidationFilters.RequestFilterAsync)) //Already gets run
+                        RegistrationValidator?.ValidateAndThrow(request, registerNewUser ? ApplyTo.Post : ApplyTo.Put);
+                    
+                    user = registerNewUser
+                        ? authRepo.CreateUserAuth(newUserAuth, request.Password)
+                        : authRepo.UpdateUserAuth(existingUser, newUserAuth, request.Password);
+                }
+    
+                if (request.AutoLogin.GetValueOrDefault())
+                {
+                    using (var authService = base.ResolveService<AuthenticateService>())
                     {
-                        response = new RegisterResponse
+                        var authResponse = authService.Post(
+                            new Authenticate {
+                                provider = CredentialsAuthProvider.Name,
+                                UserName = request.UserName ?? request.Email,
+                                Password = request.Password,
+                                Continue = request.Continue ?? base.Request.GetQueryStringOrForm(Keywords.ReturnUrl)
+                            });
+    
+                        if (authResponse is IHttpError)
+                            throw (Exception)authResponse;
+    
+                        if (authResponse is AuthenticateResponse typedResponse)
                         {
-                            SessionId = typedResponse.SessionId,
-                            UserName = typedResponse.UserName,
-                            ReferrerUrl = typedResponse.ReferrerUrl,
-                            UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                            BearerToken = typedResponse.BearerToken,
-                            RefreshToken = typedResponse.RefreshToken,
-                        };
+                            response = new RegisterResponse
+                            {
+                                SessionId = typedResponse.SessionId,
+                                UserName = typedResponse.UserName,
+                                ReferrerUrl = typedResponse.ReferrerUrl,
+                                UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                                BearerToken = typedResponse.BearerToken,
+                                RefreshToken = typedResponse.RefreshToken,
+                            };
+                        }
                     }
                 }
-            }
-
-            if (registerNewUser)
-            {
-                session = this.GetSession();
-                if (!request.AutoLogin.GetValueOrDefault())
-                    session.PopulateSession(user, new List<IAuthTokens>());
-
-                session.OnRegistered(Request, session, this);
-                AuthEvents?.OnRegistered(this.Request, session, this);
-            }
-
-            if (response == null)
-            {
-                response = new RegisterResponse
+    
+                if (registerNewUser)
                 {
-                    UserId = user.Id.ToString(CultureInfo.InvariantCulture),
-                    ReferrerUrl = request.Continue,
-                    UserName = session.UserName,
-                };
-            }
-
-            var isHtml = Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
-            if (isHtml)
-            {
-                if (string.IsNullOrEmpty(request.Continue))
-                    return response;
-
-                return new HttpResult(response)
+                    session = this.GetSession();
+                    if (!request.AutoLogin.GetValueOrDefault())
+                        session.PopulateSession(user, new List<IAuthTokens>());
+    
+                    session.OnRegistered(Request, session, this);
+                    AuthEvents?.OnRegistered(this.Request, session, this);
+                }
+    
+                if (response == null)
                 {
-                    Location = request.Continue
-                };
+                    response = new RegisterResponse
+                    {
+                        UserId = user.Id.ToString(CultureInfo.InvariantCulture),
+                        ReferrerUrl = request.Continue,
+                        UserName = session.UserName,
+                    };
+                }
+    
+                var isHtml = Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+                if (isHtml)
+                {
+                    if (string.IsNullOrEmpty(request.Continue))
+                        return response;
+    
+                    return new HttpResult(response)
+                    {
+                        Location = request.Continue
+                    };
+                }
+    
+                return response;            
             }
+            catch (Exception ex)
+            {
+                var isHtml = base.Request.ResponseContentType.MatchesContentType(MimeTypes.Html);
+                if (isHtml && !string.IsNullOrEmpty(request.ErrorView))
+                {
+                    Request.SetView(request.ErrorView);
+                    return ex;
+                }
 
-            return response;
+                throw;
+            }
         }
 
         public IUserAuth ToUserAuth(IAuthRepository authRepo, Register request)
