@@ -914,7 +914,6 @@ namespace ServiceStack
 
         /// <summary>
         /// Looks for first plugin of this type in Plugins.
-        /// Reflection performance penalty.
         /// </summary>
         public T GetPlugin<T>() where T : class, IPlugin
         {
