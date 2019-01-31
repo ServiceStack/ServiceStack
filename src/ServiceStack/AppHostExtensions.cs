@@ -56,6 +56,15 @@ namespace ServiceStack
             return appHost.Plugins.FirstOrDefault(x => x is T) as T;
         }
 
+        public static T AssertPlugin<T>(this IAppHost appHost) where T : class, IPlugin
+        {
+            var plugin = appHost.Plugins.FirstOrDefault(x => x is T) as T;
+            if (plugin == null)
+                throw new NotSupportedException($"Required Plugin '{typeof(T).Name}' was not registered");
+
+            return plugin;
+        }
+
         public static bool HasPlugin<T>(this IAppHost appHost) where T : class, IPlugin
         {
             return appHost.Plugins.FirstOrDefault(x => x is T) != null;
