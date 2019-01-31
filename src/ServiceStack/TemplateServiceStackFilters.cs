@@ -219,20 +219,19 @@ namespace ServiceStack
                 : null;
         }
 
-        public string errorResponseExcept(TemplateScopeContext scope, IEnumerable<object> fields) =>
+        public string errorResponseExcept(TemplateScopeContext scope, object fields) =>
             errorResponseExcept(scope, getErrorStatus(scope), fields);
-        public string errorResponseExcept(TemplateScopeContext scope, ResponseStatus errorStatus, IEnumerable<object> fields)
+        public string errorResponseExcept(TemplateScopeContext scope, ResponseStatus errorStatus, object fields)
         {
             if (errorStatus == null)
                 return null;
-            
+
+            var fieldNames = Context.DefaultFilters.toVarNames(fields);
+
             var fieldNamesLookup = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var fieldNames = new List<string>();
-            foreach (var field in fields)
+            foreach (var fieldName in fieldNames)
             {
-                var fieldName = field.AsString();
                 fieldNamesLookup.Add(fieldName);
-                fieldNames.Add(fieldName);
             }
 
             if (!fieldNames.IsEmpty() && !errorStatus.Errors.IsEmpty())
