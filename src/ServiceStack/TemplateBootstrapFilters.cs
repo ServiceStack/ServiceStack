@@ -109,14 +109,25 @@ namespace ServiceStack.Templates
             if (options.TryGetValue("label", out var oLabel) && !args.ContainsKey("placeholder"))
                 args["placeholder"] = label = oLabel as string;
 
+            var isGet = Context.DefaultFilters.isHttpGet(scope);
             var preserveValue = !options.TryGetValue("preserveValue", out var oPreserve) || oPreserve as bool? == true;
             if (preserveValue)
             {
                 var value = Context.DefaultFilters.httpForm(scope, name);
+                if (!isGet || !string.IsNullOrEmpty(value)) //only override value if POST or GET queryString has value
+                {
+                    if (!isCheck)
+                        args["value"] = value;
+                    else
+                        args["checked"] = value == "true";
+                }
+            }
+            else if (!isGet)
+            {
                 if (!isCheck)
-                    args["value"] = value;
-                else if (!Context.DefaultFilters.isHttpGet(scope))
-                    args["checked"] = value == "true";
+                {
+                    args["value"] = null;
+                }
             }
 
             var htmlFilters = scope.Context.HtmlFilters;
