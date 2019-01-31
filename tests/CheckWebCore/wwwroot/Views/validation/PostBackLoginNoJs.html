@@ -2,30 +2,29 @@
 
 <form action="/auth/credentials" method="post">
 <div class="form-row">
-    {{ '<div class="alert alert-danger">{0}</div>' | htmlFormat(errorResponseExcept(['userName','password'])) }}
+    {{ ['userName','password'] | formSummary({class:'alert alert-warning'}) }}
     <input type="hidden" name="continue" value="/validation/authtest" />
-    <input type="hidden" name="errorView" value="PostBackLogin">
+    <input type="hidden" name="errorView" value="PostBackLoginNoJs">
 </div>
 
 <div class="form-row">
     <div class="form-group">
-        <input class="form-control input-lg" name="userName" type="text" placeholder="UserName" 
-               value="{{ 'userName' | httpForm }}" data-invalid="{{errorResponse('userName')}}">
+        {{ {id:'userName',value:'as@if.com'} | formInput({label:'Email',help:'Email you signed up with',size:'lg'}) }}
     </div>
 </div>
 <div class="form-row">
     <div class="form-group">
-        <input class="form-control input-lg" name="password" type="password" placeholder="Password" 
-               value="" data-invalid="{{errorResponse('password')}}">
+        {{ {id:'password',type:'password'} | formInput({label:'Password',help:'6 characters or more',size:'lg',preserveValue:false}) }}
     </div>
+</div>
+<div class="form-row">
+    <div class="form-group">
+        {{ {id:'rememberMe',type:'checkbox',checked:true} | formInput({label:'Remember Me'}) }}
+    </div>
+</div>
+<div class="form-row">
     <div class="form-group col-md-4">
-        <button type="submit" class="btn btn-primary">Login</button>
-    </div>
-</div>
-<div class="form-row">
-    <div class="form-group">
-        <input type="checkbox" id="chkRememberMe" name="rememberMe" value="true" {{ {checked:httpForm('rememberMe')=='true'} | htmlAttrs }}>
-        <label for="chkRememberMe">Remember Me</label>
+        <button type="submit" class="btn btn-lg btn-primary">Login</button>
     </div>
 </div>
 <div class="form-row">
@@ -43,7 +42,7 @@
 
 {{#raw appendTo scripts}}
 <script>
-$(document).bootstrap().bindHandlers({
+$(document).bindHandlers({
     switchUser: function(u) {
         $("[name=userName]").val(u);
         $("[name=password]").val('p@55wOrd');
