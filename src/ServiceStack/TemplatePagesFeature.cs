@@ -11,6 +11,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Html;
 using ServiceStack.IO;
@@ -493,6 +494,24 @@ namespace ServiceStack
         public async Task<HotReloadPageResponse> Any(HotReloadPage request)
         {
             var page = Pages.GetPage(request.Path ?? "/");
+            if (page == null)
+            {
+                var matchingRoute = RestHandler.FindMatchingRestPath(
+                    HttpMethods.Get, request.Path ?? "/", out var contentType);
+
+                if (matchingRoute != null)
+                {
+                    var feature = HostContext.AppHost.AssertPlugin<TemplatePagesFeature>();
+                    page = feature.GetViewPage(matchingRoute.RequestType.Name);
+
+                    if (page == null)
+                    {
+                        var responseType = HostContext.AppHost.Metadata.GetResponseTypeByRequest(matchingRoute.RequestType);
+                        page = feature.GetViewPage(responseType.Name);
+                    }
+                }
+            }
+            
             if (page == null)
                 throw HttpError.NotFound("Page not found: " + request.Path);
 
