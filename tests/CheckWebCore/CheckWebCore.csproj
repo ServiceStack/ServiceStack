@@ -4,7 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="wwwroot\" />
-    <Folder Include="wwwroot\Views" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.2" />

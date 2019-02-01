@@ -94,6 +94,7 @@ namespace ServiceStack
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
+            appHost.ViewEngines.Add(this);
 
             if (!DisablePageBasedRouting)
             {
@@ -356,11 +357,6 @@ namespace ServiceStack
 
                 viewPagesMap[viewName] = new TemplatePage(this, file, htmlFormat);
             }
-
-            if (viewPagesMap.Count > 0)
-            {
-                appHost.ViewEngines.Add(this);
-            }
         }
 
         public TemplatePage GetViewPage(string viewName)
@@ -428,7 +424,7 @@ namespace ServiceStack
 
             foreach (var name in viewNames)
             {
-                codePage = req.GetCodePage("Views/" + name);
+                codePage = req.GetCodePage(name.FirstCharEquals('/') ? name : "Views/" + name);
                 if (codePage != null)
                     break;
             }
@@ -437,7 +433,9 @@ namespace ServiceStack
             {
                 foreach (var name in viewNames)
                 {
-                    viewPage = GetViewPage(name);
+                    viewPage = name.FirstCharEquals('/') 
+                        ? Pages.GetPage(name) //content page
+                        : GetViewPage(name);
                     if (viewPage != null)
                         break;
                 }
