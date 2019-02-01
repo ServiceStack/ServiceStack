@@ -11,13 +11,13 @@
 <div class="form-row">
     <div class="form-group">
         <input class="form-control form-control-lg" name="userName" type="text" placeholder="UserName" 
-               value="{{ 'userName' | httpForm }}" data-invalid="{{errorResponse('userName')}}">
+               value="{{ 'userName' | formValue }}" data-invalid="{{ 'userName' | errorResponse}}">
     </div>
 </div>
 <div class="form-row">
     <div class="form-group">
         <input class="form-control form-control-lg" name="password" type="password" placeholder="Password" 
-               value="" data-invalid="{{errorResponse('password')}}">
+               value="" data-invalid="{{ 'password' | errorResponse }}">
     </div>
     <div class="form-group col-md-4">
         <button type="submit" class="btn btn-lg btn-primary">Login</button>
@@ -25,7 +25,7 @@
 </div>
 <div class="form-row">
     <div class="form-group">
-        <input type="checkbox" id="rememberMe" name="rememberMe" value="true" {{ {checked:httpForm('rememberMe')=='true'} | htmlAttrs }}>
+        <input type="checkbox" id="rememberMe" name="rememberMe" value="true" {{ {checked:formCheckValue('rememberMe')} | htmlAttrs }}>
         <label for="rememberMe">Remember Me</label>
     </div>
 </div>

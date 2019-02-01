@@ -106,14 +106,18 @@ namespace ServiceStack.Templates
             if (helpId != null)
                 args["aria-describedby"] = helpId;
 
-            if (options.TryGetValue("label", out var oLabel) && !args.ContainsKey("placeholder"))
-                args["placeholder"] = label = oLabel as string;
+            if (options.TryGetValue("label", out var oLabel))
+            {
+                label = oLabel as string;
+                if (!args.ContainsKey("placeholder"))
+                    args["placeholder"] = label;
+            }
 
             var isGet = Context.DefaultFilters.isHttpGet(scope);
             var preserveValue = !options.TryGetValue("preserveValue", out var oPreserve) || oPreserve as bool? == true;
             if (preserveValue)
             {
-                var value = Context.DefaultFilters.httpForm(scope, name);
+                var value = Context.GetServiceStackFilters().formValue(scope, name);
                 if (!isGet || !string.IsNullOrEmpty(value)) //only override value if POST or GET queryString has value
                 {
                     if (!isCheck)
