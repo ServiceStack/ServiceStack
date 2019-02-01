@@ -226,4 +226,16 @@ namespace CheckWebCore
               : Color.FromName(color).IsKnownColor);
     }
 
+    public class ContactServiceFilters : TemplateFilter
+    {
+        static Dictionary<string, string> Colors = new Dictionary<string, string>
+        {
+            {"#ffa4a2","Red"},
+            {"#b2fab4","Green"},
+            {"#9be7ff","Blue"}
+        };
+
+        public Dictionary<string, string> contactColors() => Colors;
+    }
+
 }

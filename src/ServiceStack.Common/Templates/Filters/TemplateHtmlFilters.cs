@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Templates
@@ -546,13 +547,20 @@ namespace ServiceStack.Templates
             var opt = options.AssertOptions(nameof(htmlOptions));
             var selected = opt.TryGetValue("selected", out var oSelected) ? oSelected as string : null;
             var sb = StringBuilderCache.Allocate();
+
+            void appendOption(StringBuilder _sb, string value, string text)
+            {
+                var selAttr = selected != null && value == selected ? " selected" : "";
+                _sb.AppendLine($"<option value=\"{value.HtmlEncode()}\"{selAttr}>{text?.HtmlEncode()}</option>");
+            }
+            
             if (values is IEnumerable<KeyValuePair<string, object>> kvps)
             {
-                foreach (var kvp in kvps)
-                {
-                    var selAttr = selected != null && kvp.Key == selected ? " selected" : "";
-                    sb.AppendLine($"<option value=\"{kvp.Key.HtmlEncode()}\"{selAttr}>{kvp.Value?.ToString().HtmlEncode()}</option>");
-                }
+                foreach (var kvp in kvps) appendOption(sb, kvp.Key, kvp.Value?.ToString());
+            }
+            else if (values is IEnumerable<KeyValuePair<string, string>> kvpsStr)
+            {
+                foreach (var kvp in kvpsStr) appendOption(sb, kvp.Key, kvp.Value);
             }
             else if (values is IEnumerable<object> list)
             {
