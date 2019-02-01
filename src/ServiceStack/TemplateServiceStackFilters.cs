@@ -204,9 +204,24 @@ namespace ServiceStack
             return to;
         }
 
+        public bool hasErrorStatus(TemplateScopeContext scope) => getErrorStatus(scope) != null;
+
         public ResponseStatus getErrorStatus(TemplateScopeContext scope) => 
             scope.GetValue("errorStatus") as ResponseStatus ??
             req(scope)?.GetItem(Keywords.ErrorStatus) as ResponseStatus;
+
+        /// <summary>
+        /// Only return form input value if form submission was invalid
+        /// </summary>
+        public string formValue(TemplateScopeContext scope, string name) => hasErrorStatus(scope) 
+            ? Context.DefaultFilters.httpForm(scope, name) 
+            : null;
+
+        public bool formCheckValue(TemplateScopeContext scope, string name)
+        {
+            var value = formValue(scope, name);
+            return value == "true" || value == "True" || value == "t" || value == "on" || value == "1";
+        }
         
         public string errorResponseSummary(TemplateScopeContext scope) => errorResponseSummary(scope, getErrorStatus(scope));
         public string errorResponseSummary(TemplateScopeContext scope, ResponseStatus errorStatus)
