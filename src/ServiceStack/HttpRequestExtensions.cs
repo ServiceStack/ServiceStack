@@ -759,12 +759,32 @@ namespace ServiceStack
 
         public static void SetView(this IRequest httpReq, string viewName)
         {
+            if (string.IsNullOrEmpty(viewName))
+                return;
             httpReq.SetItem(Keywords.View, viewName);
         }
 
         public static string GetView(this IRequest httpReq)
         {
             return httpReq.GetItem(Keywords.View) as string;
+        }
+
+        /// <summary>
+        /// Specify the View to render HTML error responses with 
+        /// </summary>
+        public static void SetErrorView(this IRequest httpReq, string viewName)
+        {
+            if (string.IsNullOrEmpty(viewName))
+                return;
+            httpReq.SetItem(Keywords.ErrorView, viewName);
+        }
+
+        /// <summary>
+        /// Get the View to render HTML error responses with 
+        /// </summary>
+        public static string GetErrorView(this IRequest httpReq)
+        {
+            return httpReq.GetItem(Keywords.ErrorView) as string;
         }
 
         public static void SetTemplate(this IRequest httpReq, string templateName)
