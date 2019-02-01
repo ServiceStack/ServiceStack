@@ -12,34 +12,35 @@
         public static string Ignore = "ignore";
         public static string IgnorePlaceHolder = "_";
         public static string Bare = "bare";
-        public static string SoapMessage = "SoapMessage";
-        public static string Route = "__route";
-        public static string InvokeVerb = "__verb";
-        public static string DbInfo = "__dbinfo";
-        public static string CacheInfo = "__cacheinfo";
-        public static string ApiKey = "__apikey";
-        public static string ApiKeyParam = "apikey";
-        public static string Session = "__session";
         public static string JsConfig = "jsconfig";
         public static string SessionId = "ss-id";
         public static string PermanentSessionId = "ss-pid";
         public static string SessionOptionsKey = "ss-opt";
         public static string TokenCookie = "ss-tok";
-        public static string HasPreAuthenticated = "__haspreauth";
-        public static string HasLogged = "_logged";
-        public static string DidAuthenticate = "__didauth";
-        public static string IRequest = "__irequest";
-        public static string RequestDuration = "_requestDurationStopwatch";
-        public static string Code = "code";
-        public static string State = "state";
-        public static string View = "View";
-        public static string Template = "Template";
+        public static string ApiKeyParam = "apikey";
         public static string Redirect = "redirect";
-        public static string ReturnUrl = "ReturnUrl"; //.NET Core default convention
-        public static string AutoBatchIndex = "AutoBatchIndex";
-        public static string Error = "__error";
-        public static string ErrorStatus = "__errorStatus";
-        public static string Model = "Model";
+        public static string ReturnUrl = nameof(ReturnUrl); //.NET Core default convention
+        public static string AutoBatchIndex = nameof(AutoBatchIndex);
+        public static string SoapMessage = nameof(SoapMessage);
+
+        public const string Route = "__route";
+        public const string InvokeVerb = "__verb";
+        public const string DbInfo = "__dbinfo";
+        public const string CacheInfo = "__cacheinfo";
+        public const string ApiKey = "__apikey";
+        public const string Session = "__session";
+        public const string HasPreAuthenticated = "__haspreauth";
+        public const string HasLogged = "_logged";
+        public const string DidAuthenticate = "__didauth";
+        public const string IRequest = "__irequest";
+        public const string RequestDuration = "_requestDurationStopwatch";
+        public const string Code = "code";
+        public const string State = "state";
+        public const string View = "View";
+        public const string Template = "Template";
+        public const string Error = "__error";
+        public const string ErrorStatus = "__errorStatus";
+        public const string Model = "Model";
     }
 
     public static class LocalizedStrings

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Caching;
@@ -190,6 +191,7 @@ namespace ServiceStack
         /// <summary>
         /// Store an entry in the IHttpRequest.Items Dictionary
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SetItem(this IRequest httpReq, string key, object value)
         {
             if (httpReq == null) return;
@@ -200,6 +202,7 @@ namespace ServiceStack
         /// <summary>
         /// Get an entry from the IHttpRequest.Items Dictionary
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static object GetItem(this IRequest httpReq, string key)
         {
             if (httpReq == null) return null;
