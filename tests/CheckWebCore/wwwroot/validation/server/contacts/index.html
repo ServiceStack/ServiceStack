@@ -15,7 +15,7 @@
         {{ {id:'company',placeholder:'Company'} | formInput }}
     </div>
     <div class="form-group">
-        {{ {id:'color',html:htmlOptions({'','#ffa4a2':'Red','#b2fab4':'Green','#9be7ff':'Blue'},{selected:formValue('color')})}
+        {{ {id:'color',html:htmlOptions({'', ...contactColors},{selected:formValue('color')})}
            | formSelect({label:'Favorite color'}) }}
     </div>
     <div class="form-group">
