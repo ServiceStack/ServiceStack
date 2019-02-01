@@ -74,7 +74,7 @@ namespace ServiceStack.Host
                 Path = cookie.Path,
                 Expires = cookie.Expires,
                 HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
-                Secure = cookie.Secure
+                Secure = cookie.Secure,                
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
             {
@@ -91,22 +91,24 @@ namespace ServiceStack.Host
 #if NETSTANDARD2_0
         public static CookieOptions ToCookieOptions(this Cookie cookie)
         {
+            var config = HostContext.Config;
             var cookieOptions = new CookieOptions
             {
                 Path = cookie.Path,
                 Expires = cookie.Expires == DateTime.MinValue ? (DateTimeOffset?)null : cookie.Expires,
-                HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
-                Secure = cookie.Secure
+                HttpOnly = !config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
+                Secure = cookie.Secure,
             };
 
+            if (config.UseSameSiteCookies)
+                cookieOptions.SameSite = SameSiteMode.Strict;
             if (!string.IsNullOrEmpty(cookie.Domain))
-            {
                 cookieOptions.Domain = cookie.Domain;
-            }
-            else if (HostContext.Config.RestrictAllCookiesToDomain != null)
-            {
-                cookieOptions.Domain = HostContext.Config.RestrictAllCookiesToDomain;
-            }
+            else if (config.RestrictAllCookiesToDomain != null)
+                cookieOptions.Domain = config.RestrictAllCookiesToDomain;
+            
+            HostContext.AppHost?.CookieOptionsFilter(cookie, cookieOptions);
+
             return cookieOptions;
         }
 #endif

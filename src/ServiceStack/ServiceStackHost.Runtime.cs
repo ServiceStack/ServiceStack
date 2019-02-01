@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using Microsoft.AspNetCore.Http;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -592,6 +593,11 @@ namespace ServiceStack
             }
             return OnSessionFilter(session, withSessionId);
         }
+
+        /// <summary>
+        /// Modify Cookie options
+        /// </summary>
+        public virtual void CookieOptionsFilter(Cookie cookie, CookieOptions cookieOptions) {}
 
         /// <summary>
         /// Override built-in Cookies, return false to prevent the Cookie from being set.
