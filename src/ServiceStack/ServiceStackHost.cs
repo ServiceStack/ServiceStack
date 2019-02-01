@@ -1119,7 +1119,7 @@ namespace ServiceStack
             if (string.IsNullOrEmpty(mode))
                 return pathInfo;
 
-            var pathNoPrefix = pathInfo[0] == '/'
+            var pathNoPrefix = pathInfo.Length > 0 && pathInfo[0] == '/'
                 ? pathInfo.Substring(1)
                 : pathInfo;
 
