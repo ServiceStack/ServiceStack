@@ -15,17 +15,22 @@
         {{ {id:'company',placeholder:'Company'} | formInput }}
     </div>
     <div class="form-group">
+        {{ {id:'color',html:htmlOptions({'','#ffa4a2':'Red','#b2fab4':'Green','#9be7ff':'Blue'},{selected:formValue('color')})}
+           | formSelect({label:'Favorite color'}) }}
+    </div>
+    <div class="form-group">
         {{ {id:'age',placeholder:'Age',class:'col-2'} | formInput }}
     </div>
     <div class="form-group">
         <button class="btn btn-primary" type="submit">Add Contact</button>
+        <a href="/validation/server/contacts/">reset</a>
     </div>
 </form>
 
 <table>
     <tbody>
     {{#each response.Results}}
-        <tr>
+        <tr style="background:{{Color}}">
             <td>{{Name}} ({{Company}})</td>
             <td style="padding: 0 5px"><a href="edit?Id={{Id}}">edit</a></td>
             <td><a class="btn btn-sm btn-primary" href="/contacts/{{Id}}/delete" onclick="return confirm('Are you sure?')">delete</a></td>
@@ -38,4 +43,4 @@
     </tbody>
 </table>
 
-{{ htmlErrorDebug }}
+{{ htmlError }}

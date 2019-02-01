@@ -522,7 +522,7 @@ namespace ServiceStack.Templates
             return htmlImg(new Dictionary<string, object>(attrs ?? TypeConstants.EmptyObjectDictionary) { ["src"] = src });
         }
 
-        public IRawString htmlHiddenInputs(TemplateScopeContext scope, Dictionary<string, object> inputValues)
+        public IRawString htmlHiddenInputs(Dictionary<string, object> inputValues)
         {
             if (inputValues != null)
             {
@@ -536,6 +536,37 @@ namespace ServiceStack.Templates
             return RawString.Empty;
         }
 
+        public IRawString htmlOptions(object values) => htmlOptions(values, null);
+        
+        public IRawString htmlOptions(object values, object options)
+        {
+            if (values == null)
+                return RawString.Empty;
+            
+            var opt = options.AssertOptions(nameof(htmlOptions));
+            var selected = opt.TryGetValue("selected", out var oSelected) ? oSelected as string : null;
+            var sb = StringBuilderCache.Allocate();
+            if (values is IEnumerable<KeyValuePair<string, object>> kvps)
+            {
+                foreach (var kvp in kvps)
+                {
+                    var selAttr = selected != null && kvp.Key == selected ? " selected" : "";
+                    sb.AppendLine($"<option value=\"{kvp.Key.HtmlEncode()}\"{selAttr}>{kvp.Value?.ToString().HtmlEncode()}</option>");
+                }
+            }
+            else if (values is IEnumerable<object> list)
+            {
+                foreach (string item in list)
+                {
+                    var str = item.AsString();
+                    var selAttr = selected != null && str == selected ? " selected" : "";
+                    sb.AppendLine($"<option{selAttr}>{str?.HtmlEncode()}</option>");
+                }
+            }
+            else throw new NotSupportedException($"Could convert '{values.GetType().Name}' values into List<string>");
+
+            return StringBuilderCache.ReturnAndFree(sb).ToRawString();
+        }
        
         public static HashSet<string> VoidElements { get; } = new HashSet<string>
         {
@@ -547,13 +578,13 @@ namespace ServiceStack.Templates
             var scopedParams = attrs ?? TypeConstants.EmptyObjectDictionary;
             
             var innerHtml = scopedParams.TryGetValue("html", out object oInnerHtml)
-                ? oInnerHtml?.ToString()
+                ? oInnerHtml.AsString()
                 : null;
 
             if (innerHtml == null)
             {
                 innerHtml = scopedParams.TryGetValue("text", out object text)
-                    ? text?.ToString().HtmlEncode()
+                    ? text.AsString().HtmlEncode()
                     : null;
             }
             

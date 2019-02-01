@@ -476,7 +476,7 @@ namespace ServiceStack
         private static async Task<bool> HandleCustomErrorHandler(this IResponse httpRes, IRequest httpReq,
             string contentType, int statusCode, object errorDto, Exception ex)
         {
-            if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType))
+            if (httpReq != null && MimeTypes.Html.MatchesContentType(contentType) && httpReq.GetView() == null)
             {
                 var errorHandler = HostContext.AppHost.GetCustomErrorHandler(statusCode)
                     ?? HostContext.AppHost.GlobalHtmlErrorHttpHandler;
