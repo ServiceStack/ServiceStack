@@ -759,22 +759,22 @@ namespace ServiceStack
 
         public static void SetView(this IRequest httpReq, string viewName)
         {
-            httpReq.SetItem("View", viewName);
+            httpReq.SetItem(Keywords.View, viewName);
         }
 
         public static string GetView(this IRequest httpReq)
         {
-            return httpReq.GetItem("View") as string;
+            return httpReq.GetItem(Keywords.View) as string;
         }
 
         public static void SetTemplate(this IRequest httpReq, string templateName)
         {
-            httpReq.SetItem("Template", templateName);
+            httpReq.SetItem(Keywords.Template, templateName);
         }
 
         public static string GetTemplate(this IRequest httpReq)
         {
-            return httpReq.GetItem("Template") as string;
+            return httpReq.GetItem(Keywords.Template) as string;
         }
 
         public static string ResolveAbsoluteUrl(this IRequest httpReq, string virtualPath=null)
