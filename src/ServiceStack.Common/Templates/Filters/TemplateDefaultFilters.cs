@@ -759,7 +759,7 @@ namespace ServiceStack.Templates
                     : names is IEnumerable<object> objEnum
                         ? objEnum.Map(x => x.AsString())
                         : names is string strFields
-                            ? new List<string>(strFields.Split(','))
+                            ? strFields.Split(',').Map(x => x.Trim())
                             : throw new NotSupportedException($"Cannot convert '{names.GetType().Name}' to List<string>");
 
         public int AssertWithinMaxQuota(int value)
