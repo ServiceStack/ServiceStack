@@ -1,0 +1,41 @@
+{{ 'requires-auth' | partial }}
+
+{{ {} | sendToGateway('GetContacts') | assignTo: response }}
+
+<h3>Add new Contact</h3>
+
+<form action="/contacts" method="post" class="col-lg-4">
+    <div class="form-group">
+        {{ 'name,age,company' | validationSummary }}
+    </div>
+    <div class="form-group">
+        {{ {id:'name',placeholder:'Name'} | formInput({label:'Full Name',help:'Your first and last name'}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'company',placeholder:'Company'} | formInput }}
+    </div>
+    <div class="form-group">
+        {{ {id:'age',placeholder:'Age',class:'col-2'} | formInput }}
+    </div>
+    <div class="form-group">
+        <button class="btn btn-primary" type="submit">Add Contact</button>
+    </div>
+</form>
+
+<table>
+    <tbody>
+    {{#each response.Results}}
+        <tr>
+            <td>{{Name}} ({{Company}})</td>
+            <td style="padding: 0 5px"><a href="edit?Id={{Id}}">edit</a></td>
+            <td><a class="btn btn-sm btn-primary" href="/contacts/{{Id}}/delete" onclick="return confirm('Are you sure?')">delete</a></td>
+        </tr>
+    {{else}}
+        <tr>
+            <td>There are no contacts.</td>
+        </tr>
+    {{/each}}
+    </tbody>
+</table>
+
+{{ htmlErrorDebug }}
