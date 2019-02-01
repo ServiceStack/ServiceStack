@@ -139,6 +139,10 @@ namespace ServiceStack.Templates
             !literal.IsNullOrEmpty() && literal[0] == c;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool FirstCharEquals(this string literal, char c) => 
+            !string.IsNullOrEmpty(literal) && literal[0] == c;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this ReadOnlySpan<char> literal, int index) =>
             index >= 0 && index < literal.Length ? literal[index] : default(char);
 

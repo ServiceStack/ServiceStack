@@ -1,12 +1,12 @@
 {{#if isAuthenticated}}
     Hi {{userSession.DisplayName}}!
     <p>
-        <a href="/auth/logout?continue=/validation/authtest">Sign Out</a>.
+        <a href="/auth/logout?continue=/validation/authcheck">Sign Out</a>.
     </p>
 {{else}}
     You're not authenticated, please Sign In:
     <ul>
         <li><a href="server/login">server/login</a></li>
-        <li><a href="server/login-nojs">server/login-nojs</a></li>
+        <li><a href="server-js/login">server-js/login</a></li>
     </ul>
 {{/if}}
