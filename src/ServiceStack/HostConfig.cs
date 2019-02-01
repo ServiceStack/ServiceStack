@@ -48,6 +48,7 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
+                UseSameSiteCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
                 DefaultDocuments = new List<string> {
@@ -236,6 +237,7 @@ namespace ServiceStack
             this.MetadataVisibility = instance.MetadataVisibility;
             this.Return204NoContentForEmptyResponse = instance.Return204NoContentForEmptyResponse;
             this.AllowNonHttpOnlyCookies = instance.AllowNonHttpOnlyCookies;
+            this.UseSameSiteCookies = instance.UseSameSiteCookies;
             this.AllowJsConfig = instance.AllowJsConfig;
             this.AllowPartialResponses = instance.AllowPartialResponses;
             this.IgnoreWarningsOnAllProperties = instance.IgnoreWarningsOnAllProperties;
@@ -357,6 +359,7 @@ namespace ServiceStack
         public bool AllowJsConfig { get; set; }
         public bool AllowPartialResponses { get; set; }
         public bool AllowNonHttpOnlyCookies { get; set; }
+        public bool UseSameSiteCookies { get; set; }
         public bool AllowAclUrlReservation { get; set; }
         public bool AddRedirectParamsToQueryString { get; set; }
         public bool RedirectToDefaultDocuments { get; set; }
