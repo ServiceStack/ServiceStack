@@ -37,6 +37,7 @@
         public const string Code = "code";
         public const string State = "state";
         public const string View = "View";
+        public const string ErrorView = "ErrorView";
         public const string Template = "Template";
         public const string Error = "__error";
         public const string ErrorStatus = "__errorStatus";

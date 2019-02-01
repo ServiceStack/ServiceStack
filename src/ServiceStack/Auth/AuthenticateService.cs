@@ -19,6 +19,7 @@ namespace ServiceStack.Auth
     public delegate object ValidateFn(IServiceBase service, string httpMethod, object requestDto);
 
     [DefaultRequest(typeof(Authenticate))]
+    [ErrorView(nameof(ServiceStack.Authenticate.ErrorView))]
     public class AuthenticateService : Service
     {
         public const string BasicProvider = "basic";
@@ -271,11 +272,8 @@ namespace ServiceStack.Auth
             }
             catch (Exception ex)
             {
-                if (isHtml && !string.IsNullOrEmpty(request.ErrorView))
-                {
-                    Request.SetView(request.ErrorView);
+                if (isHtml && Request.GetErrorView() != null)
                     return ex;
-                }
 
                 if (ex is HttpError)
                 {

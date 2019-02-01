@@ -158,6 +158,13 @@ namespace ServiceStack
 
                     IDisposable resultScope = null;
 
+
+                    if (result is Exception)
+                    {
+                        if (response.Request.Items.TryGetValue(Keywords.ErrorView, out var oErrorView))
+                            response.Request.Items[Keywords.View] = oErrorView;
+                    }
+
                     var httpResult = result as IHttpResult;
                     if (httpResult != null)
                     {
