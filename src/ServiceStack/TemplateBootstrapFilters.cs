@@ -9,13 +9,13 @@ namespace ServiceStack.Templates
     
     public class TemplateBootstrapFilters : TemplateFilter
     {
-        public IRawString formSummary(TemplateScopeContext scope) =>
-            formSummary(scope, null, null);
+        public IRawString validationSummary(TemplateScopeContext scope) =>
+            validationSummary(scope, null, null);
 
-        public IRawString formSummary(TemplateScopeContext scope, IEnumerable<object> exceptFields) =>
-            formSummary(scope, exceptFields, null);
+        public IRawString validationSummary(TemplateScopeContext scope, IEnumerable<object> exceptFields) =>
+            validationSummary(scope, exceptFields, null);
         
-        public IRawString formSummary(TemplateScopeContext scope, IEnumerable<object> exceptFields, object htmlAttrs)
+        public IRawString validationSummary(TemplateScopeContext scope, IEnumerable<object> exceptFields, object htmlAttrs)
         {
             var ssFilters = Context.GetServiceStackFilters();
             if (ssFilters == null)
@@ -28,7 +28,7 @@ namespace ServiceStack.Templates
             if (string.IsNullOrEmpty(errorSummaryMsg))
                 return null;
 
-            var divAttrs = htmlAttrs.AssertOptions(nameof(formSummary));
+            var divAttrs = htmlAttrs.AssertOptions(nameof(validationSummary));
             if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
                 divAttrs["class"] = "alert alert-danger";
             
