@@ -14,7 +14,7 @@ namespace CheckWebCore
         public void Configure(IAppHost appHost)
         {
             var AppSettings = appHost.AppSettings;
-            appHost.Plugins.Add(new AuthFeature(() => new AuthUserSession(),
+            appHost.Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                 new IAuthProvider[] {
                     //new BasicAuthProvider(), //Sign-in with HTTP Basic Auth
                     new JwtAuthProvider(AppSettings)
@@ -42,6 +42,8 @@ namespace CheckWebCore
             authRepo.AssignRoles(user, new List<string> {"Admin"});
         }
     }
+    
+    public class CustomUserSession : AuthUserSession {}
     
     public class CustomRegistrationValidator : RegistrationValidator
     {

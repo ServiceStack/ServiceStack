@@ -21,21 +21,31 @@ title: Bootstrap Templates
   </div>
 </div>
 
-<div style="text-align: left">
-  <h3>Validation</h3>
-  <ul>
-    <li><a href="/validation/authcheck">/validation/authcheck</a></li>
-  </ul>
-  <h4>Sign In</h4>
-  <ul>
-    <li><a href="/validation/server/login">/validation/server/login</a></li>
-    <li><a href="/validation/server-js/login">/validation/server-js/login</a></li>
-  </ul>
-  <h4>Register</h4>
-  <ul>
-    <li><a href="/validation/server/register">/validation/server/register</a></li>
-    <li><a href="/validation/server-js/register">/validation/server-js/register</a></li>
-  </ul>
+<div class="container">
+  <h2>Validation</h2>
+  <div class="row">
+
+    <div class="col-6">
+      <h4>Auth and Registration</h4>
+      <ul>
+        <li><a href="/validation/authcheck">/validation/authcheck</a></li>
+      </ul>
+      <h4>Sign In</h4>
+      {{ 'signin-links' | partial }}
+      <h4>Register</h4>
+      <ul>
+        <li><a href="/validation/server/register">/validation/server/register</a></li>
+        <li><a href="/validation/server-js/register">/validation/server-js/register</a></li>
+      </ul>
+    </div>
+
+    <div class="col-6">
+      <h4>Example</h4>
+      <ul>
+        <li><a href="/validation/server/contacts/">/validation/server/contacts/</a></li>
+      </ul>
+    </div>
+  </div>
 </div>
   
 {{#raw appendTo scripts}}

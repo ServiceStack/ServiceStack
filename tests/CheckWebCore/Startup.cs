@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Mvc;
+using ServiceStack.Validation;
 
 namespace CheckWebCore
 {
@@ -65,6 +66,8 @@ namespace CheckWebCore
             });
 
             container.Register<ICacheClient>(new MemoryCacheClient());
+            
+            Plugins.Add(new ValidationFeature());
         }
     }
     

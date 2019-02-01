@@ -5,8 +5,5 @@
     </p>
 {{else}}
     You're not authenticated, please Sign In:
-    <ul>
-        <li><a href="server/login">server/login</a></li>
-        <li><a href="server-js/login">server-js/login</a></li>
-    </ul>
+    {{ 'signin-links' | partial }}
 {{/if}}

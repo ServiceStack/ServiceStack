@@ -9,19 +9,19 @@
     </div>
     <div class="form-group">
         <input class="form-control form-control-lg" name="displayName" type="text" placeholder="Display Name"
-               value="{{ 'displayName' | httpForm }}" data-invalid="{{errorResponse('displayName')}}">
+               value="{{ 'displayName' | formValue }}" data-invalid="{{errorResponse('displayName')}}">
     </div>
     <div class="form-group">
         <input class="form-control form-control-lg" name="email" type="text" placeholder="Email"
-               value="{{ 'email' | httpForm }}" data-invalid="{{errorResponse('email')}}">
+               value="{{ 'email' | formValue }}" data-invalid="{{errorResponse('email')}}">
     </div>
     <div class="form-group">
         <input class="form-control form-control-lg" name="password" type="password" placeholder="Password"
-               value="{{ 'password' | httpForm }}" data-invalid="{{errorResponse('password')}}">
+               value="{{ 'password' | formValue }}" data-invalid="{{errorResponse('password')}}">
     </div>
     <div class="form-group">
         <input class="form-control form-control-lg" name="confirmPassword" type="password" placeholder="Confirm Password"
-               value="{{ 'confirmPassword' | httpForm }}" data-invalid="{{errorResponse('confirmPassword')}}">
+               value="{{ 'confirmPassword' | formValue }}" data-invalid="{{errorResponse('confirmPassword')}}">
     </div>
     <div class="form-group">
         <input type="checkbox" id="autoLogin" name="autoLogin" value="true" checked>
