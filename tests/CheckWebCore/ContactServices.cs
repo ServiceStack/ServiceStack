@@ -2,10 +2,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Drawing;
+using System.Globalization;
 using System.Threading;
 using CheckWebCore.ServiceModel;
 using ServiceStack;
 using ServiceStack.FluentValidation;
+using ServiceStack.Templates;
 
 namespace CheckWebCore
 {
@@ -17,6 +20,7 @@ namespace CheckWebCore
             public int UserAuthId { get; set; }
             public string Name { get; set; }
             public string Company { get; set; }
+            public string Color { get; set; }
             public int Age { get; set; }
             public DateTime CreatedDate { get; set; }
             public DateTime ModifiedDate { get; set; }
@@ -51,6 +55,7 @@ namespace CheckWebCore
         {
             public string Name { get; set; }
             public string Company { get; set; }
+            public string Color { get; set; }
             public int Age { get; set; }
         }
         public class CreateContactResponse 
@@ -64,6 +69,7 @@ namespace CheckWebCore
             public int Id { get; set; }
             public string Name { get; set; }
             public string Company { get; set; }
+            public string Color { get; set; }
             public int Age { get; set; }
         }
         public class UpdateContactResponse 
@@ -89,6 +95,7 @@ namespace CheckWebCore
                 public int UserAuthId { get; set; }
                 public string Name { get; set; }
                 public string Company { get; set; }
+                public string Color { get; set; }
                 public int Age { get; set; }
             }
         }
@@ -101,6 +108,7 @@ namespace CheckWebCore
             RuleFor(r => r.Name).NotEmpty();
             RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
             RuleFor(r => r.Company).NotEmpty();
+            RuleFor(r => r.Color).Must(x => x.IsValidColor()).WithMessage("Must be a valid color");
         }
     }
     
@@ -112,6 +120,7 @@ namespace CheckWebCore
             RuleFor(r => r.Name).NotEmpty();
             RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
             RuleFor(r => r.Company).NotEmpty();
+            RuleFor(r => r.Color).Must(x => x.IsValidColor()).WithMessage("Must be a valid color");
         }
     }
 
@@ -210,6 +219,11 @@ namespace CheckWebCore
         public static int GetUserId(this Service service) => int.Parse(service.GetSession().UserAuthId);
 
         public static ServiceModel.Types.Contact ToDto(this Data.Contact from) => from.ConvertTo<ServiceModel.Types.Contact>();
+        
+        public static bool IsValidColor(this string color) => !string.IsNullOrEmpty(color) && 
+          (color.FirstCharEquals('#')
+              ? int.TryParse(color.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _)
+              : Color.FromName(color).IsKnownColor);
     }
 
 }

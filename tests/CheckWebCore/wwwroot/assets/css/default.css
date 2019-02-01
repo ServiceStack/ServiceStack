@@ -21,3 +21,7 @@ body {
 form {
     padding: 10px;
 }
+td {
+    padding: 2px;
+    text-indent: 5px;
+}
