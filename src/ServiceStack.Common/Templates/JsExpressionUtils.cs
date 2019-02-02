@@ -26,7 +26,7 @@ namespace ServiceStack.Templates
             return result;
         }
 
-        public static Task<object> GetJsExpressionAndEvaluateAsync(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
+        public static async Task<object> GetJsExpressionAndEvaluateAsync(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
         {
             if (expr.IsNullOrEmpty())
             {
@@ -41,7 +41,10 @@ namespace ServiceStack.Templates
                 return TypeConstants.EmptyTask;
             }
 
-            return token.EvaluateAsync(scope);
+            var ret = await token.EvaluateAsync(scope);
+            return ret == JsNull.Value 
+                ? null 
+                : ret;
         }
 
         public static bool GetJsExpressionAndEvaluateToBool(this ReadOnlyMemory<char> expr, TemplateScopeContext scope, Action ifNone = null)
