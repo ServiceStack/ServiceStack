@@ -30,13 +30,14 @@
 
 {{ {} | sendToGateway('GetContacts') | assignTo: response }}
 
-<table>
+<table id="results">
     <tbody>
     {{#each response.Results}}
         <tr style="background:{{Color}}">
             <td>{{Title}} {{Name}} ({{Age}})</td>
-            <td style="padding: 0 5px"><a href="/validation/server/contacts/edit?Id={{Id}}">edit</a></td>
-            <td><a class="btn btn-sm btn-primary" href="/contacts/{{Id}}/delete" onclick="return confirm('Are you sure?')">delete</a></td>
+            <td><a href="/validation/server/contacts/edit?Id={{Id}}">edit</a></td>
+            <td><form method="post" action="/contacts/{{Id}}/delete" onsubmit="return confirm('Are you sure?')">
+                <button class="btn btn-sm btn-primary">delete</button></form></td>
         </tr>
     {{else}}
         <tr>
