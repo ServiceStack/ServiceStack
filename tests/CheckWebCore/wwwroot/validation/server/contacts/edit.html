@@ -20,7 +20,7 @@
     </div>
     <div class="form-group">
         {{ {id:'color',class:'col-4',value:Color}
-           | formSelect({label:'Favorite color',values:{'', ...contactColors}}) }}
+           | formSelect({label:'Favorite color',values:contactColors}) }}
     </div>
     <div class="form-group">
         {{ {id:'age',value:Age,class:'col-2'} | formInput({label:'Age'}) }}

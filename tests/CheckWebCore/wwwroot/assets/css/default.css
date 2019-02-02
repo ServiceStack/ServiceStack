@@ -21,12 +21,14 @@ span[data-click]:hover {
 form {
     padding: 10px;
 }
-table#results td {
-    padding: 2px;
-    text-indent: 5px;
+table form {
+    padding: 0;
 }
-table#results td:nth-child(2) {
-    padding: 0 5px 0 15px;
+table#results button {
+    margin: 5px;
+}
+table#results td:first-child {
+    padding: 2px 10px;
 }
 
 .form-check.form-control {
