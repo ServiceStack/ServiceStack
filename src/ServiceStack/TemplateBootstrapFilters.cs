@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using ServiceStack;
 using ServiceStack.Templates;
@@ -61,6 +62,7 @@ namespace ServiceStack.Templates
             string name = null;
             string label = null;
             string size = null;
+            bool inline = options.TryGetValue("inline", out var oInline) && oInline is bool b;
 
             if (args.TryGetValue("type", out var oType))
                 type = oType as string;
@@ -113,17 +115,18 @@ namespace ServiceStack.Templates
                     args["placeholder"] = label;
             }
 
+            string formValue = null;
             var isGet = Context.DefaultFilters.isHttpGet(scope);
             var preserveValue = !options.TryGetValue("preserveValue", out var oPreserve) || oPreserve as bool? == true;
             if (preserveValue)
             {
-                var value = Context.GetServiceStackFilters().formValue(scope, name);
-                if (!isGet || !string.IsNullOrEmpty(value)) //only override value if POST or GET queryString has value
+                formValue = Context.GetServiceStackFilters().formValue(scope, name);
+                if (!isGet || !string.IsNullOrEmpty(formValue)) //only override value if POST or GET queryString has value
                 {
                     if (!isCheck)
-                        args["value"] = value;
+                        args["value"] = formValue;
                     else
-                        args["checked"] = value == "true";
+                        args["checked"] = formValue == "true";
                 }
             }
             else if (!isGet)
@@ -165,7 +168,46 @@ namespace ServiceStack.Templates
                 sb.AppendLine(labelHtml);
             }
 
-            var inputHtml = htmlFilters.htmlTag(args, tagName).AsString();
+            string inputHtml = null;
+            var values = options.TryGetValue("values", out var oValues)
+                ? oValues
+                : null;
+
+            var value = args.TryGetValue("value", out var oValue) ? oValue?.ToString() : null;
+            if (type == "radio")
+            {
+                if (values != null)
+                {
+                    var sbInput = StringBuilderCacheAlt.Allocate();
+                    var kvps = Context.DefaultFilters.toKeyValues(values);
+                    foreach (var kvp in kvps)
+                    {
+                        var cls = inline ? " custom-control-inline" : "";
+                        sbInput.AppendLine($"<div class=\"custom-control custom-radio{cls}\">");
+                        var radId = name + "-" + kvp.Key;
+                        var selected = kvp.Key == formValue || kvp.Key == value ? " checked" : "";
+                        sbInput.AppendLine($"  <input type=\"radio\" id=\"{radId}\" name=\"{name}\" value=\"{kvp.Key}\" class=\"custom-control-input\"{selected}>");
+                        sbInput.AppendLine($"  <label class=\"custom-control-label\" for=\"{radId}\">{kvp.Value}</label>");
+                        sbInput.AppendLine("</div>");
+                    }
+                    inputHtml = StringBuilderCacheAlt.ReturnAndFree(sbInput);
+                }
+                else throw new NotSupportedException($"input type=radio requires 'values' inputOption containing a collection of Key/Value Pairs");
+            }
+            else if (type == "select")
+            {
+                if (values != null)
+                {
+                    args["html"] = Context.HtmlFilters.htmlOptions(values, 
+                        new Dictionary<string, object> { {"selected",formValue ?? value} });
+                }
+                else if (!args.ContainsKey("html"))
+                    throw new NotSupportedException($"<select> requires either 'values' inputOption containing a collection of Key/Value Pairs or 'html' argument containing innerHTML <option>'s");
+            }
+
+            if (inputHtml == null)
+                inputHtml = htmlFilters.htmlTag(args, tagName).AsString();
+            
             if (!isCheck)
                 sb.AppendLine(inputHtml);
             else
@@ -175,24 +217,31 @@ namespace ServiceStack.Templates
             {
                 sb.AppendLine($"<small id='{helpId}' class='{helpClass}'>{help.HtmlEncode()}</small>");
             }
-            
+
+            string htmlError = null;
             var showErrors = !options.TryGetValue("showErrors", out var oShowErrors) || oShowErrors as bool? == true;
             if (showErrors && errorMsg != null)
             {
                 var errorClass = "invalid-feedback";
                 if (options.TryGetValue("errorClass", out var oErrorClass))
                     errorClass = oErrorClass as string ?? "";
-                var htmlError = $"<div class='{errorClass}'>{errorMsg.HtmlEncode()}</div>";
+                htmlError = $"<div class='{errorClass}'>{errorMsg.HtmlEncode()}</div>";
+            }
+
+            if (!isCheck)
+            {
                 sb.AppendLine(htmlError);
+            }
+            else
+            {
+                var cls = htmlError != null ? " is-invalid form-control" : "";
+                sb.Insert(0, $"<div class=\"form-check{cls}\">");
+                sb.AppendLine("</div>");
+                if (htmlError != null)
+                    sb.AppendLine(htmlError);
             }
 
             var html = StringBuilderCache.ReturnAndFree(sb);
-
-            if (isCheck)
-            {
-                html = "<div class=\"form-check\">" + html + "</div>";
-            }
-
             return html.ToRawString();
         }
     }
