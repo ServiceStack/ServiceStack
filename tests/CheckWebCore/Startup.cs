@@ -62,7 +62,8 @@ namespace CheckWebCore
             SetConfig(new HostConfig
             {
                 AddRedirectParamsToQueryString = true,
-                DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false)
+                DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
+                UseSameSiteCookies = true,
             });
 
             container.Register<ICacheClient>(new MemoryCacheClient());
