@@ -74,7 +74,7 @@ namespace ServiceStack.Host
                 Path = cookie.Path,
                 Expires = cookie.Expires,
                 HttpOnly = !HostContext.Config.AllowNonHttpOnlyCookies || cookie.HttpOnly,
-                Secure = cookie.Secure,                
+                Secure = cookie.Secure,
             };
             if (!string.IsNullOrEmpty(cookie.Domain))
             {
@@ -84,6 +84,9 @@ namespace ServiceStack.Host
             {
                 httpCookie.Domain = HostContext.Config.RestrictAllCookiesToDomain;
             }
+            
+            HostContext.AppHost?.HttpCookieFilter(httpCookie);
+
             return httpCookie;
         }
 #endif
