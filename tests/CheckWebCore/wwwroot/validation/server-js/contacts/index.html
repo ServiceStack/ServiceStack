@@ -52,10 +52,9 @@
 
 {{#raw appendTo scripts}}
 <script>
-    var $form = $("form");
-    $form.bindBootstrapForm({
+    $("form").bootstrapForm({
         success: function (r) {
-            $form[0].reset();
+            $("form")[0].reset();
             CONTACTS.push(r.result);
             render();
         }

@@ -29,7 +29,6 @@
     <div class="form-group">
         <label class="form-label" for="color">Favorite color</label>
         <select id="color" name="color" class="col-4 form-control">
-            <option value=""></option>
             {{#each contactColors}}
             <option value="{{Key}}" {{ {selected:Key == Color} | htmlAttrs }}>{{Value}}</option>
             {{/each}}
@@ -52,7 +51,7 @@
 
 {{#capture appendTo scripts}}
 <script>
-    $("form").bindBootstrapForm({
+    $("form").bootstrapForm({
         success: function (r) {
             location.href = '{{continue}}';
         }

@@ -375,7 +375,7 @@
         this.find('.is-invalid').removeClass('is-invalid').removeAttr('data-invalid');
         this.find('.is-valid').removeClass('is-valid');
     };
-    $.fn.bindForm = function (orig) {
+    $.fn.bindForm = function (orig) { //bootstrap v3
         return this.each(function () {
             var f = $(this);
             f.submit(function (e) {
@@ -384,7 +384,7 @@
             });
         });
     };
-    $.fn.bindBootstrapForm = function (orig) {
+    $.fn.bootstrapForm = function (orig) { //bootstrap v4
         return this.each(function () {
             var f = $(this);
             f.submit(function (e) {
