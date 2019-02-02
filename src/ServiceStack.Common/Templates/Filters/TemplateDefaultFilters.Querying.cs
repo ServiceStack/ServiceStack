@@ -659,6 +659,14 @@ namespace ServiceStack.Templates
                         return value;
                 }
             }
+            else if (key is string fieldName)
+            {
+                var targetType = target.GetType();
+                var memberFn = TypeProperties.Get(targetType).GetPublicGetter(fieldName)
+                               ?? TypeFields.Get(targetType).GetPublicGetter(fieldName);
+                if (memberFn != null)
+                    return memberFn(target);
+            }
 
             throw new NotSupportedException($"'{nameof(get)}' expects a collection but received a '{target.GetType().Name}'");
         }
