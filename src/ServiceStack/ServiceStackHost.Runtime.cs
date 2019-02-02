@@ -598,6 +598,8 @@ namespace ServiceStack
         /// Modify Cookie options
         /// </summary>
         public virtual void CookieOptionsFilter(Cookie cookie, Microsoft.AspNetCore.Http.CookieOptions cookieOptions) {}
+#else
+        public virtual void HttpCookieFilter(HttpCookie cookie) {}
 #endif
         
         /// <summary>
