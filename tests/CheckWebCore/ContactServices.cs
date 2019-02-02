@@ -85,14 +85,11 @@ namespace CheckWebCore
         }
 
         [Route("/contacts/{Id}", "DELETE")]
-        [Route("/contacts/{Id}/delete")]
+        [Route("/contacts/{Id}/delete", "POST")] // more accessible from HTML
         public class DeleteContact : IReturnVoid
         {
             public int Id { get; set; }
         }
-
-        [Route("/contacts/reset")]
-        public class ResetContacts {}
 
         namespace Types
         {
@@ -202,13 +199,11 @@ namespace CheckWebCore
                 }
             }
     
-            public object GetHtml(DeleteContact request) // only called by html GET requests where it takes precedence
+            public object PostHtml(DeleteContact request) // only called by html POST requests where it takes precedence
             {
                 Any(request);
                 return HttpResult.Redirect(Request.GetView()); //added by [DefaultView]
             }
-    
-            public void Any(ResetContacts request) => Contacts.Clear();
         }
     
         // Example of single 'pure' API supporting multiple HTML UIs

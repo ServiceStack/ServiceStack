@@ -6,11 +6,11 @@ body {
         padding-top: 56px;
     }
 }
-[data-click] {
+span[data-click] {
     color: #007bff;
     cursor: pointer;
 }
-[data-click]:hover {
+span[data-click]:hover {
     text-decoration: underline;
 }
 .quicklist span {
@@ -21,7 +21,16 @@ body {
 form {
     padding: 10px;
 }
-td {
+table#results td {
     padding: 2px;
     text-indent: 5px;
 }
+table#results td:nth-child(2) {
+    padding: 0 5px 0 15px;
+}
+
+.form-check.form-control {
+    padding-left: 1.75rem;
+}
+
+

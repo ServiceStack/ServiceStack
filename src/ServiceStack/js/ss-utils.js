@@ -204,15 +204,30 @@
         }
         return el;
     }
-    function showInvalidInputs() {
+    $.ss.showInvalidInputs = function() {
         var errorMsg = this.getAttribute('data-invalid');
         if (errorMsg) {
-            addClass(this, 'is-invalid');
-            var elError = this.nextSibling && hasClass(this.nextSibling, 'invalid-feedback')
-                ? this.nextSibling
-                : createElement("div", { insertAfter:this }, { className: 'invalid-feedback' });
+            var isCheck = this.type === "checkbox" || this.type === "radio";
+            var elFormCheck = isCheck ? parent(this.parentElement,'form-check') : null;
+            if (!isCheck)
+                addClass(this, 'is-invalid');
+            else
+                addClass(elFormCheck || this.parentElement, 'is-invalid form-control');
+
+            var elNext = this.nextElementSibling;
+            var elLast = elNext && (elNext.getAttribute('for') === this.id || elNext.tagName === "SMALL")
+                ? (isCheck ? elFormCheck || elNext.parentElement : elNext)
+                : this;
+            var elError = elLast.nextElementSibling && hasClass(elLast.nextElementSibling, 'invalid-feedback')
+                ? elLast.nextElementSibling
+                : $.ss.createElement("div", { insertAfter:elLast }, { className: 'invalid-feedback' });
             elError.innerHTML = errorMsg;
         }
+    };
+    function parent(el,cls) {
+        while (!hasClass(el,cls))
+            el = el.parentElement;
+        return el;
     }
     function hasClass(el, cls) {
         return (" " + el.className + " ").replace(/[\n\t\r]/g, " ").indexOf(" " + cls + " ") > -1;
@@ -220,8 +235,29 @@
     function addClass(el, cls) {
         if (!hasClass(el, cls)) el.className = (el.className + " " + cls).trim();
     }
+    function errorResponseExcept(status, fieldNames) {
+        if (typeof fieldNames == 'string')
+            fieldNames = arguments.length == 1 ? [fieldNames] : Array.prototype.slice.call(arguments);
+        if (fieldNames && !(status.errors == null || status.errors.length == 0)) {
+            var lowerFieldsNames = fieldNames.map(function (x) { return (x || '').toLowerCase(); });
+            for (var i = 0, _a = status.errors; i < _a.length; i++) {
+                var field = _a[i];
+                if (lowerFieldsNames.indexOf((field.fieldName || '').toLowerCase()) !== -1) {
+                    return undefined;
+                }
+            }
+            for (var _b = 0, _c = status.errors; _b < _c.length; _b++) {
+                var field = _c[_b];
+                if (lowerFieldsNames.indexOf((field.fieldName || '').toLowerCase()) === -1) {
+                    return field.message || field.errorCode;
+                }
+            }
+        }
+        return status.message || status.errorCode || undefined;
+    }
+    $.ss.errorResponseExcept = errorResponseExcept;
     $.fn.bootstrap = function(){
-        $(this).find('[data-invalid]').each(showInvalidInputs);
+        $(this).find('[data-invalid]').each($.ss.showInvalidInputs);
         return this;
     };
 
@@ -247,6 +283,7 @@
 
         this.addClass("has-errors");
 
+        var bs4 = opt && opt.type === "bootstrap-v4";
         var o = $.extend({}, $.ss.validation, opt);
         if (opt && opt.messages) {
             o.overrideMessages = true;
@@ -261,16 +298,19 @@
             this.find("input,textarea,select,button").each(function () {
                 var $el = $(this);
                 var $prev = $el.prev(), $next = $el.next();
-                var fieldId = this.id || $el.attr("name");
+                var isCheck = this.type === "radio" || this.type === "checkbox";
+                var fieldId = (!isCheck ? this.id : null) || $el.attr("name");
                 if (!fieldId) return;
 
                 var key = (fieldId).toLowerCase();
 
                 fieldMap[key] = $el;
-                if ($prev.hasClass("help-inline") || $prev.hasClass("help-block")) {
-                    fieldLabelMap[key] = $prev;
-                } else if ($next.hasClass("help-inline") || $next.hasClass("help-block")) {
-                    fieldLabelMap[key] = $next;
+                if (!bs4) {
+                    if ($prev.hasClass("help-inline") || $prev.hasClass("help-block")) {
+                        fieldLabelMap[key] = $prev;
+                    } else if ($next.hasClass("help-inline") || $next.hasClass("help-block")) {
+                        fieldLabelMap[key] = $next;
+                    }
                 }
             });
             this.find(".help-inline[data-for],.help-block[data-for]").each(function () {
@@ -282,8 +322,14 @@
                 var key = (error.fieldName || "").toLowerCase();
                 var $field = fieldMap[key];
                 if ($field) {
-                    $field.addClass("error");
-                    $field.parent().addClass("has-error");
+                    if (!bs4) {
+                        $field.addClass("error");
+                        $field.parent().addClass("has-error");
+                    } else {
+                        var type = $field.attr('type'), isCheck = type === "radio" || type === "checkbox";
+                        if (!isCheck) $field.addClass("is-invalid");
+                        $field.attr("data-invalid", filter(error.message, error.errorCode, "field"));
+                    }
                 }
                 var $lblErr = fieldLabelMap[key];
                 if (!$lblErr) return;
@@ -292,13 +338,25 @@
                 $lblErr.html(filter(error.message, error.errorCode, "field"));
                 $lblErr.show();
             });
+
+            this.find("[data-validation-summary]").each(function () {
+               var fields = this.getAttribute('data-validation-summary').split(','); 
+               var summaryMsg = errorResponseExcept(status, fields);
+               if (summaryMsg)
+                   this.innerHTML = bsAlert(summaryMsg);
+            });
         } else {
-            this.find(".error-summary")
-                .html(filter(status.message || splitCase(status.errorCode), status.errorCode, "summary"))
-                .show();
+            var htmlSummary = filter(status.message || splitCase(status.errorCode), status.errorCode, "summary");
+            if (!bs4) {
+                this.find(".error-summary").html(htmlSummary).show();
+            } else {
+                this.find("[data-validation-summary]").html(htmlSummary[0] === "<" ? htmlSummary : bsAlert(htmlSummary));
+            }
         }
         return this;
     };
+    function bsAlert(msg) { return '<div class="alert alert-danger">' + msg + '</div>'; }
+    
     $.fn.clearErrors = function () {
         this.removeClass("has-errors");
         this.find(".error-summary").html("").hide();
@@ -308,9 +366,14 @@
         this.find(".error").each(function () {
             $(this).removeClass("error");
         });
-        return this.find(".has-error").each(function () {
+        this.find(".has-error").each(function () {
             $(this).removeClass("has-error");
         });
+        this.find("[data-validation-summary]").html("");
+        this.find('.form-check.is-invalid [data-invalid]').removeAttr('data-invalid');
+        this.find('.form-check.is-invalid').removeClass('form-control');
+        this.find('.is-invalid').removeClass('is-invalid').removeAttr('data-invalid');
+        this.find('.is-valid').removeClass('is-valid');
     };
     $.fn.bindForm = function (orig) {
         return this.each(function () {
@@ -321,8 +384,19 @@
             });
         });
     };
+    $.fn.bindBootstrapForm = function (orig) {
+        return this.each(function () {
+            var f = $(this);
+            f.submit(function (e) {
+                e.preventDefault();
+                orig.type = "bootstrap-v4";
+                return $(f).ajaxSubmit(orig);
+            });
+        });
+    };
     $.fn.ajaxSubmit = function (orig) {
         orig = orig || {};
+        var bs4 = orig.type === "bootstrap-v4";
         if (orig.validation) {
             $.extend($.ss.validation, orig.validation);
         }
@@ -353,11 +427,18 @@
                     if (!err) {
                         f.addClass("has-errors");
                         f.find(".error-summary").html(errMsg);
+                        if (bs4) {
+                            var elSummary = f.find('[data-validation-summary]');
+                            elSummary.html('<div class="alert alert-danger">' + errMsg + '</div>');
+                        }
                     } else {
-                        f.applyErrors(err.ResponseStatus || err.responseStatus);
+                        f.applyErrors(err.ResponseStatus || err.responseStatus, {type:orig.type});
                     }
                     if (orig.error) {
                         orig.error.apply(this, arguments);
+                    }
+                    if (bs4) {
+                        f.find('[data-invalid]').each($.ss.showInvalidInputs);
                     }
                 },
                 complete: function (jq) {
@@ -372,13 +453,13 @@
                     }
                     var evt = jq.getResponseHeader("X-Trigger");
                     if (evt) {
-                        var pos = attr.indexOf(':');
+                        var pos = evt.indexOf(':');
                         var cmd = pos >= 0 ? evt.substring(0, pos) : evt;
                         var data = pos >= 0 ? evt.substring(pos + 1) : null;
                         f.trigger(cmd, data ? [data] : []);
                     }
                 },
-                dataType: "json",
+                dataType: "json"
             });
             $.ajax(opt);
             return false;
@@ -413,7 +494,7 @@
         if (pos >= 0) {
             var cmd = attr.substring(0, pos);
             var data = attr.substring(pos + 1);
-            if (cmd == 'trigger') {
+            if (cmd === 'trigger') {
                 $el.trigger(data, [e.target]);
             } else {
                 fn = $.ss.handlers[cmd];
@@ -442,7 +523,7 @@
         var url = window.location.href;
         return this.each(function () {
             $(this).filter(function () {
-                return this.href == url;
+                return this.href === url;
             })
             .addClass('active')
             .closest("li").addClass('active');
