@@ -3,7 +3,7 @@
 <form action="/auth/credentials" method="post" class="col-lg-4">
     <div class="form-group">
         {{ ['userName','password'] | validationSummary({class:'alert alert-warning'}) }}
-        <input type="hidden" name="continue" value="/validation/authcheck" />
+        <input type="hidden" name="continue" value="{{continue ?? '/validation/server/'}}" />
         <input type="hidden" name="errorView" value="/validation/server/login">
     </div>
     <div class="form-group">

@@ -1,25 +1,26 @@
 {{ 'requires-auth' | partial }}
 
-{{ {} | sendToGateway('GetContacts') | assignTo: response }}
-
 <h3>Add new Contact</h3>
 
 <form action="/contacts" method="post" class="col-lg-4">
     <div class="form-group">
-        {{ 'name,age,company' | validationSummary }}
+        {{ 'title,name,color,age,agree' | validationSummary }}
+    </div>
+    <div class="form-group">
+        {{ {id:'title',type:'radio'} | formInput({values:contactTitles,inline:true}) }}
     </div>
     <div class="form-group">
         {{ {id:'name',placeholder:'Name'} | formInput({label:'Full Name',help:'Your first and last name'}) }}
     </div>
     <div class="form-group">
-        {{ {id:'company',placeholder:'Company'} | formInput }}
-    </div>
-    <div class="form-group">
-        {{ {id:'color',html:htmlOptions({'', ...contactColors},{selected:formValue('color')})}
-           | formSelect({label:'Favorite color'}) }}
+        {{ {id:'color',class:'col-4'}
+           | formSelect({label:'Favorite color',values:{'', ...contactColors}}) }}
     </div>
     <div class="form-group">
         {{ {id:'age',placeholder:'Age',class:'col-2'} | formInput }}
+    </div>
+    <div class="form-group">
+        {{ {id:'agree',type:'checkbox'} | formInput({label:'Agree to terms and conditions'}) }}
     </div>
     <div class="form-group">
         <button class="btn btn-primary" type="submit">Add Contact</button>
@@ -27,12 +28,14 @@
     </div>
 </form>
 
+{{ {} | sendToGateway('GetContacts') | assignTo: response }}
+
 <table>
     <tbody>
     {{#each response.Results}}
         <tr style="background:{{Color}}">
-            <td>{{Name}} ({{Company}})</td>
-            <td style="padding: 0 5px"><a href="edit?Id={{Id}}">edit</a></td>
+            <td>{{Title}} {{Name}} ({{Age}})</td>
+            <td style="padding: 0 5px"><a href="/validation/server/contacts/edit?Id={{Id}}">edit</a></td>
             <td><a class="btn btn-sm btn-primary" href="/contacts/{{Id}}/delete" onclick="return confirm('Are you sure?')">delete</a></td>
         </tr>
     {{else}}
