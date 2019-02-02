@@ -788,8 +788,20 @@ namespace ServiceStack.Templates
                     {
                         string errorBinding = null;
 
-                        if (ex.Options is Dictionary<string, object> filterParams && filterParams.TryGetValue(TemplateConstants.AssignError, out object assignError))
-                            errorBinding = assignError as string;
+                        if (ex.Options is Dictionary<string, object> filterParams)
+                        {
+                            if (filterParams.TryGetValue(TemplateConstants.AssignError, out object assignError))
+                            {
+                                errorBinding = assignError as string;
+                            }
+                            else if (filterParams.TryGetValue(TemplateConstants.CatchError, out object catchError))
+                            {
+                                errorBinding = catchError as string;
+                                SkipFilterExecution = false;
+                                LastFilterError = null;
+                                LastFilterStackTrace = null;
+                            }
+                        }
 
                         if (errorBinding == null)
                             errorBinding = AssignExceptionsTo ?? Context.AssignExceptionsTo;
@@ -804,7 +816,7 @@ namespace ServiceStack.Templates
                     if (SkipExecutingFiltersIfError.HasValue || Context.SkipExecutingFiltersIfError)
                         return string.Empty;
                     
-                    // rethrow exceptiosn which aren't handled
+                    // rethrow exceptions which aren't handled
 
                     var exResult = Format.OnExpressionException(this, ex);
                     if (exResult != null)
