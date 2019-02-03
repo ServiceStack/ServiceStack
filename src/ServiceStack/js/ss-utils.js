@@ -419,7 +419,7 @@
                 data: f.serialize(),
                 accept: "application/json",
                 error: function (jq, jqStatus, statusText) {
-                    var err, errMsg = "The request failed with " + statusText;
+                    var err, errMsg = "The request failed with " + (statusText || jq.statusText);
                     try {
                         err = JSON.parse(jq.responseText);
                     } catch (e) {
