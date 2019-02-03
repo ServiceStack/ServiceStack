@@ -76,7 +76,6 @@ namespace ServiceStack
                           (bodySuffix?.Length).GetValueOrDefault();
 
                 response.SetContentLength(len);
-                response.ContentType = MimeTypes.Binary;
 
                 if (bodyPrefix != null) await response.OutputStream.WriteAsync(bodyPrefix, token);
                 await response.OutputStream.WriteAsync(bytes, token);
@@ -216,6 +215,7 @@ namespace ServiceStack
                         response.Dto = result;
                     }
 
+                    var config = HostContext.Config;
                     if (!response.HasStarted)
                     {
                         /* Mono Error: Exception: Method not found: 'System.Web.HttpResponse.get_Headers' */
@@ -250,21 +250,23 @@ namespace ServiceStack
                         //Do not override if another has been set
                         if (response.ContentType == null || response.ContentType == MimeTypes.Html)
                         {
-                            response.ContentType = defaultContentType;
+                            response.ContentType = defaultContentType == (config.DefaultContentType ?? MimeTypes.Html) && result is byte[]
+                                ? MimeTypes.Binary
+                                : defaultContentType;
                         }
                         if (bodyPrefix != null && response.ContentType.IndexOf(MimeTypes.Json, StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             response.ContentType = MimeTypes.JavaScript;
                         }
 
-                        if (HostContext.Config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
+                        if (config.AppendUtf8CharsetOnContentTypes.Contains(response.ContentType))
                         {
                             response.ContentType += ContentFormat.Utf8Suffix;
                         }
                     }
 
                     using (resultScope)
-                    using (HostContext.Config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
+                    using (config.AllowJsConfig ? JsConfig.CreateScope(request.QueryString[Keywords.JsConfig]) : null)
                     {
                         if (WriteToOutputStream(response, result, bodyPrefix, bodySuffix))
                         {
