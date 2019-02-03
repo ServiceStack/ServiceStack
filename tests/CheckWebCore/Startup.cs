@@ -114,5 +114,27 @@ namespace CheckWebCore
 
         [Authenticate]
         public object Any(Session request) => SessionAs<AuthUserSession>();
+        
+        private static readonly byte[] TransparentGif =
+        {
+            0x47, 0x49, 0x46, 0x38, 0x39, 0x61, 0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x21, 0xF9, 0x04,
+            0x01, 0x00, 0x00, 0x00, 0x00, 0x2C, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0x02
+        };
+
+        public byte[] Any(TransGif request) => TransparentGif;
+
+        [AddHeader(ContentType="image/gif")]
+        public byte[] Any(TransGif2 request) => TransparentGif;
+
+        public object Any(TransGif3 request) => 
+            new HttpResult(TransparentGif) { ContentType = MimeTypes.ImageGif };
+
+        [Route("/gif")]
+        public class TransGif {}
+
+        [Route("/gif2")]
+        public class TransGif2 {}
+        [Route("/gif3")]
+        public class TransGif3 {}
     }
 }
