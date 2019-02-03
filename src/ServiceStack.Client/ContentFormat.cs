@@ -113,25 +113,23 @@ namespace ServiceStack
             
             int start = -1, matchStart = -1, matchEnd = -1;
 
-            for(int i=0; i < contentType.Length; i++)
+            for (var i=0; i < contentType.Length; i++)
             {
-                if (!char.IsWhiteSpace(contentType[i]))
-                {
-                    start = i;
-                    break;
-                }
+                if (char.IsWhiteSpace(contentType[i])) 
+                    continue;
+                start = i;
+                break;
             }
 
-            for(int i=0; i < matchesContentType.Length; i++)
+            for (var i=0; i < matchesContentType.Length; i++)
             {
-                if (!char.IsWhiteSpace(matchesContentType[i]))
-                {
-                    if (matchesContentType[i] == ';')
-                        break;
-                    if (matchStart == -1)
-                        matchStart = i;
-                    matchEnd = i;
-                }
+                if (char.IsWhiteSpace(matchesContentType[i])) 
+                    continue;
+                if (matchesContentType[i] == ';')
+                    break;
+                if (matchStart == -1)
+                    matchStart = i;
+                matchEnd = i;
             }
             
             return start != -1 && matchStart != -1 && matchEnd != -1
