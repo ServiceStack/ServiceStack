@@ -1,6 +1,6 @@
 {{ 'requires-auth' | partial }}
 
-{{ '/validation/server-js/contacts/' | assignTo: continue }}
+{{ '/validation/server-jquery/contacts/' | assignTo: continue }}
 
 {{ { id } | sendToGateway('GetContact', {catchError:'ex'}) | assignTo: response }}
 

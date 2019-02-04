@@ -51,7 +51,7 @@
     </div>
     <div class="form-group">
         <button class="btn btn-primary" type="submit">Add Contact</button>
-        <a href="/validation/server-js/contacts/">reset</a>
+        <a href="/validation/server-jquery/contacts/">reset</a>
     </div>
 </form>
 
@@ -86,7 +86,7 @@
     function contactRow(contact) {
         return '<tr style="background:' + contact.color + '">' +
                 '<td>' + contact.title + ' ' + contact.name + ' (' + contact.age + ')</td>' +
-                '<td><a href="/validation/server-js/contacts/' + contact.id + '/edit">edit</a></td>' +
+                '<td><a href="/validation/server-jquery/contacts/' + contact.id + '/edit">edit</a></td>' +
                 '<td><button class="btn btn-sm btn-primary" data-click="deleteContact:' + contact.id + '">delete</button></td>' +
             '</tr>';
     }
