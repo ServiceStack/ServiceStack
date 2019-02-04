@@ -38,7 +38,7 @@
     {{#each response.Results}}
         <tr style="background:{{Color}}">
             <td>{{Title}} {{Name}} ({{Age}})</td>
-            <td><a href="/validation/server/contacts/edit?Id={{Id}}">edit</a></td>
+            <td><a href="/validation/server/contacts/{{Id}}/edit">edit</a></td>
             <td><form method="post" action="/contacts/{{Id}}/delete" onsubmit="return confirm('Are you sure?')">
                 <button class="btn btn-sm btn-primary">delete</button></form></td>
         </tr>
