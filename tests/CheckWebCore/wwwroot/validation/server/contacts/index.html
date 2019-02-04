@@ -4,7 +4,7 @@
 
 <form action="/contacts" method="post" class="col-lg-4">
     <div class="form-group">
-        {{ 'title,name,color,age,agree' | validationSummary }}
+        {{ 'title,name,color,age,filmGenres,agree' | validationSummary }}
     </div>
     <div class="form-group">
         {{ {id:'title',type:'radio'} | formInput({values:contactTitles,inline:true}) }}
@@ -17,7 +17,10 @@
            | formSelect({label:'Favorite color',values:{'', ...contactColors}}) }}
     </div>
     <div class="form-group">
-        {{ {id:'age',placeholder:'Age',class:'col-2'} | formInput }}
+        {{ {id:'filmGenres',type:'checkbox'} | formInput({label:'Favorite Film Genres',values:contactGenres,help:"choose one or more"}) }}
+    </div>
+    <div class="form-group">
+        {{ {id:'age',type:'number',min:13,placeholder:'Age',class:'col-3'} | formInput }}
     </div>
     <div class="form-group">
         {{ {id:'agree',type:'checkbox'} | formInput({label:'Agree to terms and conditions'}) }}

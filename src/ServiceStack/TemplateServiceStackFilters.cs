@@ -217,6 +217,10 @@ namespace ServiceStack
             ? Context.DefaultFilters.httpForm(scope, name) 
             : null;
 
+        public string[] formValues(TemplateScopeContext scope, string name) => hasErrorStatus(scope) 
+            ? Context.DefaultFilters.httpFormValues(scope, name) 
+            : null;
+
         public bool formCheckValue(TemplateScopeContext scope, string name)
         {
             var value = formValue(scope, name);
