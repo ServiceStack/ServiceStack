@@ -50,7 +50,8 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
-            Plugins.Add(new TemplatePagesFeature()); // enable server-side rendering, see: http://templates.servicestack.net
+            // enable server-side rendering, see: http://templates.servicestack.net
+            Plugins.Add(new TemplatePagesFeature()); 
 
             if (Config.DebugMode)
             {
