@@ -248,6 +248,7 @@ namespace CheckWebCore
               (color.FirstCharEquals('#')
                   ? int.TryParse(color.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _)
                   : Color.FromName(color).IsKnownColor);
+            
         }
     
         /// <summary>
@@ -264,16 +265,14 @@ namespace CheckWebCore
     
             public Dictionary<string, string> contactColors() => Colors;
     
-            private static List<KeyValuePair<string, string>> Titles => Enum.GetValues(typeof(Title)).Cast<Title>()
+            private static List<KeyValuePair<string, string>> Titles => EnumUtils.GetValues<Title>()
                 .Where(x => x != Title.Unspecified)
-                .Map(x => KeyValuePair.Create(
-                        x.ToString(),
-                        typeof(Title).GetMember(x.ToString())[0].GetDescription()));
+                .ToKeyValuePairs();
     
             public List<KeyValuePair<string, string>> contactTitles() => Titles;
 
-            private static List<string> FilmGenres => Enum.GetValues(typeof(FilmGenres))
-                .Map(x => x.ToString());
+            private static List<string> FilmGenres => EnumUtils.GetValues<FilmGenres>()
+                .Map(x => x.ToDescription());
 
             public List<string> contactGenres() => FilmGenres;
         }
