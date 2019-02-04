@@ -287,7 +287,7 @@ layout: alt/alt-layout
 ");
 
                 files.WriteFile("rockstar-gateway-publish.html", @"
-{{ importRequestParams }}{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
+{{ 'id,firstName,lastName,age' | importRequestParams }}{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
 {{ 'rockstar-gateway' | partial({ firstName }) }}
 {{ htmlError }}");
 
