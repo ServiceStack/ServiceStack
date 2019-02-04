@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using ServiceStack.Web;
 
 namespace ServiceStack.Templates
@@ -47,7 +48,20 @@ namespace ServiceStack.Templates
             return httpReq.FormData[name] ?? httpReq.QueryString[name];
         }
 
+        public string[] httpFormValues(TemplateScopeContext scope, string name)
+        {
+            var httpReq = req(scope);
+            var values = httpReq.Verb == HttpMethods.Post 
+                ? httpReq.FormData.GetValues(name) 
+                : httpReq.QueryString.GetValues(name);
+
+            return values.Length == 1 // if it's only a single item can be returned in comma-delimited list
+                ? values[0].Split(',') 
+                : values;
+        }
+
         public string httpFormData(TemplateScopeContext scope, string name) => req(scope).FormData[name];
+        
         public string httpQueryString(TemplateScopeContext scope, string name) => req(scope).QueryString[name];
         public string httpParam(TemplateScopeContext scope, string name) => GetParam(req(scope), name);
 

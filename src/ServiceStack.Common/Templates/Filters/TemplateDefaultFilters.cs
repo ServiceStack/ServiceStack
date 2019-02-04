@@ -644,6 +644,9 @@ namespace ServiceStack.Templates
 
         public string toString(object target) => target?.ToString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
+        public List<string> toStringList(IEnumerable target) => target is string s 
+            ? new List<string> { s } 
+            : target.Map(x => x.AsString());
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
 
         public char fromCharCode(int charCode) => Convert.ToChar(charCode);

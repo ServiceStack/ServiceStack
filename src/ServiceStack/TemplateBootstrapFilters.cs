@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using ServiceStack;
 using ServiceStack.Templates;
@@ -115,8 +116,14 @@ namespace ServiceStack.Templates
                     args["placeholder"] = label;
             }
 
+            var values = options.TryGetValue("values", out var oValues)
+                ? oValues
+                : null;
+            var isSingleCheck = isCheck && values == null;
+
             string formValue = null;
-            var isGet = Context.DefaultFilters.isHttpGet(scope);
+            var defaultFilters = Context.DefaultFilters;
+            var isGet = defaultFilters.isHttpGet(scope);
             var preserveValue = !options.TryGetValue("preserveValue", out var oPreserve) || oPreserve as bool? == true;
             if (preserveValue)
             {
@@ -125,7 +132,7 @@ namespace ServiceStack.Templates
                 {
                     if (!isCheck)
                         args["value"] = formValue;
-                    else
+                    else if (isSingleCheck)
                         args["checked"] = formValue == "true";
                 }
             }
@@ -153,7 +160,9 @@ namespace ServiceStack.Templates
 
             args["class"] = className;
 
+            string inputHtml = null, labelHtml = null;
             var sb = StringBuilderCache.Allocate();
+
             if (label != null)
             {
                 var labelArgs = new Dictionary<string, object>
@@ -164,35 +173,62 @@ namespace ServiceStack.Templates
                 if (id != null)
                     labelArgs["for"] = id;
 
-                var labelHtml = htmlFilters.htmlLabel(labelArgs).AsString();
-                sb.AppendLine(labelHtml);
+                labelHtml = htmlFilters.htmlLabel(labelArgs).AsString();
             }
 
-            string inputHtml = null;
-            var values = options.TryGetValue("values", out var oValues)
-                ? oValues
-                : null;
+            var value = (args.TryGetValue("value", out var oValue)
+                    ? oValue as string
+                    : null)
+                ?? (oValue?.GetType().IsValueType == true
+                    ? oValue.ToString()
+                    : null);
 
-            var value = args.TryGetValue("value", out var oValue) ? oValue?.ToString() : null;
             if (type == "radio")
             {
                 if (values != null)
                 {
                     var sbInput = StringBuilderCacheAlt.Allocate();
-                    var kvps = Context.DefaultFilters.toKeyValues(values);
+                    var kvps = defaultFilters.toKeyValues(values);
                     foreach (var kvp in kvps)
                     {
                         var cls = inline ? " custom-control-inline" : "";
                         sbInput.AppendLine($"<div class=\"custom-control custom-radio{cls}\">");
-                        var radId = name + "-" + kvp.Key;
+                        var inputId = name + "-" + kvp.Key;
                         var selected = kvp.Key == formValue || kvp.Key == value ? " checked" : "";
-                        sbInput.AppendLine($"  <input type=\"radio\" id=\"{radId}\" name=\"{name}\" value=\"{kvp.Key}\" class=\"custom-control-input\"{selected}>");
-                        sbInput.AppendLine($"  <label class=\"custom-control-label\" for=\"{radId}\">{kvp.Value}</label>");
+                        sbInput.AppendLine($"  <input type=\"radio\" id=\"{inputId}\" name=\"{name}\" value=\"{kvp.Key}\" class=\"custom-control-input\"{selected}>");
+                        sbInput.AppendLine($"  <label class=\"custom-control-label\" for=\"{inputId}\">{kvp.Value}</label>");
                         sbInput.AppendLine("</div>");
                     }
                     inputHtml = StringBuilderCacheAlt.ReturnAndFree(sbInput);
                 }
                 else throw new NotSupportedException($"input type=radio requires 'values' inputOption containing a collection of Key/Value Pairs");
+            }
+            else if (type == "checkbox")
+            {
+                if (values != null)
+                {
+                    var sbInput = StringBuilderCacheAlt.Allocate();
+                    var kvps = defaultFilters.toKeyValues(values);
+
+                    var selectedValues = value != null && value != "true"
+                        ? new HashSet<string> {value}
+                        : oValue == null
+                            ? TypeConstants<string>.EmptyHashSet
+                            : (Context.GetServiceStackFilters().formValues(scope, name) ?? defaultFilters.toStringList(oValue as IEnumerable).ToArray())
+                                  .ToHashSet();
+                                
+                    foreach (var kvp in kvps)
+                    {
+                        var cls = inline ? " custom-control-inline" : "";
+                        sbInput.AppendLine($"<div class=\"custom-control custom-checkbox{cls}\">");
+                        var inputId = name + "-" + kvp.Key;
+                        var selected = selectedValues.Contains(formValue) || selectedValues.Contains(kvp.Key) ? " checked" : "";
+                        sbInput.AppendLine($"  <input type=\"checkbox\" id=\"{inputId}\" name=\"{name}\" value=\"{kvp.Key}\" class=\"form-check-input\"{selected}>");
+                        sbInput.AppendLine($"  <label class=\"form-check-label\" for=\"{inputId}\">{kvp.Value}</label>");
+                        sbInput.AppendLine("</div>");
+                    }
+                    inputHtml = StringBuilderCacheAlt.ReturnAndFree(sbInput);
+                }
             }
             else if (type == "select")
             {
@@ -207,11 +243,17 @@ namespace ServiceStack.Templates
 
             if (inputHtml == null)
                 inputHtml = htmlFilters.htmlTag(args, tagName).AsString();
-            
-            if (!isCheck)
+
+            if (isCheck)
+            {
                 sb.AppendLine(inputHtml);
+                if (isSingleCheck) 
+                    sb.AppendLine(labelHtml);
+            }
             else
-                sb.Insert(0, inputHtml).AppendLine();
+            {
+                sb.AppendLine(labelHtml).AppendLine(inputHtml);
+            }
 
             if (help != null)
             {
@@ -240,6 +282,9 @@ namespace ServiceStack.Templates
                 if (htmlError != null)
                     sb.AppendLine(htmlError);
             }
+
+            if (isCheck && !isSingleCheck) // multi-value checkbox/radio
+                sb.Insert(0, labelHtml);
 
             var html = StringBuilderCache.ReturnAndFree(sb);
             return html.ToRawString();

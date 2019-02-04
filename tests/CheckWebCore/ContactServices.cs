@@ -23,6 +23,7 @@ namespace CheckWebCore
             public Title Title { get; set; }
             public string Name { get; set; }
             public string Color { get; set; }
+            public FilmGenres[] FilmGenres { get; set; }
             public int Age { get; set; }
             public DateTime CreatedDate { get; set; }
             public DateTime ModifiedDate { get; set; }
@@ -58,6 +59,7 @@ namespace CheckWebCore
             public Title Title { get; set; }
             public string Name { get; set; }
             public string Color { get; set; }
+            public FilmGenres[] FilmGenres { get; set; }
             public int Age { get; set; }
             public bool Agree { get; set; }
         }
@@ -74,6 +76,7 @@ namespace CheckWebCore
             public Title Title { get; set; }
             public string Name { get; set; }
             public string Color { get; set; }
+            public FilmGenres[] FilmGenres { get; set; }
             public int Age { get; set; }
             
             public string Continue { get; set; }
@@ -100,6 +103,7 @@ namespace CheckWebCore
                 public Title Title { get; set; }
                 public string Name { get; set; }
                 public string Color { get; set; }
+                public FilmGenres[] FilmGenres { get; set; }
                 public int Age { get; set; }
             }
 
@@ -109,6 +113,14 @@ namespace CheckWebCore
                 [Description("Mr.")] Mr,
                 [Description("Mrs.")] Mrs,
                 [Description("Miss.")] Miss
+            }
+
+            public enum FilmGenres
+            {
+                Action,
+                Adventure,
+                Comedy,
+                Drama,
             }
         }
     }
@@ -124,8 +136,9 @@ namespace CheckWebCore
             {
                 RuleFor(r => r.Title).NotEqual(Title.Unspecified).WithMessage("Please choose a title");
                 RuleFor(r => r.Name).NotEmpty();
-                RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
                 RuleFor(r => r.Color).Must(x => x.IsValidColor()).WithMessage("Must be a valid color");
+                RuleFor(r => r.FilmGenres).NotEmpty().WithMessage("Please select at least 1 genre");
+                RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
                 RuleFor(x => x.Agree).Equal(true).WithMessage("You must agree before submitting");
             }
         }
@@ -137,8 +150,9 @@ namespace CheckWebCore
                 RuleFor(r => r.Id).GreaterThan(0);
                 RuleFor(r => r.Title).NotEqual(Title.Unspecified).WithMessage("Please choose a title");
                 RuleFor(r => r.Name).NotEmpty();
-                RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
                 RuleFor(r => r.Color).Must(x => x.IsValidColor()).WithMessage("Must be a valid color");
+                RuleFor(r => r.FilmGenres).NotEmpty().WithMessage("Please select at least 1 genre");
+                RuleFor(r => r.Age).GreaterThan(13).WithMessage("Contacts must be older than 13");
             }
         }
     
@@ -257,6 +271,11 @@ namespace CheckWebCore
                         typeof(Title).GetMember(x.ToString())[0].GetDescription()));
     
             public List<KeyValuePair<string, string>> contactTitles() => Titles;
+
+            private static List<string> FilmGenres => Enum.GetValues(typeof(FilmGenres))
+                .Map(x => x.ToString());
+
+            public List<string> contactGenres() => FilmGenres;
         }
     }
     
