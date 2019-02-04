@@ -261,7 +261,7 @@ namespace ServiceStack.NativeTypes.TypeScript
             if (type.IsEnum.GetValueOrDefault())
             {
                 var isIntEnum = type.IsEnumInt.GetValueOrDefault() || type.EnumNames.IsEmpty(); 
-                if (isIntEnum || (!UseUnionTypeEnums && !Config.ExportAsTypes))
+                if ((isIntEnum || !UseUnionTypeEnums) && Config.ExportAsTypes)
                 {
                     var typeDeclaration = !Config.ExportAsTypes
                         ? "enum"
