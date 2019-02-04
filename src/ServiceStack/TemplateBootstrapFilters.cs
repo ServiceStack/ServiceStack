@@ -214,7 +214,7 @@ namespace ServiceStack.Templates
                         ? new HashSet<string> {value}
                         : oValue == null
                             ? TypeConstants<string>.EmptyHashSet
-                            : (Context.GetServiceStackFilters().formValues(scope, name, defaultFilters.toStringList(oValue as IEnumerable)))
+                            : (Context.GetServiceStackFilters().formValues(scope, name) ?? defaultFilters.toStringList(oValue as IEnumerable).ToArray())
                                   .ToHashSet();
                                 
                     foreach (var kvp in kvps)
