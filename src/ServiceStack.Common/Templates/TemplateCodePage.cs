@@ -30,10 +30,22 @@ namespace ServiceStack.Templates
         {
             var renderParams = renderMethod.GetParameters();
             var args = new object[renderParams.Length];
+
+            Dictionary<string, string> requestParams = null;
+                
             for (var i = 0; i < renderParams.Length; i++)
             {
                 var renderParam = renderParams[i];
                 var arg = scope.GetValue(renderParam.Name);
+                if (arg == null)
+                {
+                    if (requestParams == null)
+                        requestParams = (scope.GetValue("Request") as Web.IRequest)?.GetRequestParams();
+
+                    if (requestParams != null && requestParams.TryGetValue(renderParam.Name, out var reqParam))
+                        arg = reqParam;
+                }
+                
                 args[i] = arg;
             }
 

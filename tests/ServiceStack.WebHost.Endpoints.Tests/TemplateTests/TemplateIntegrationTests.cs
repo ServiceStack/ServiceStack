@@ -280,14 +280,14 @@ layout: alt/alt-layout
                 files.WriteFile("rockstar-details.html", @"{{ it.FirstName }} {{ it.LastName }} ({{ it.Age }})");
 
                 files.WriteFile("rockstar-gateway.html", @"
-{{ { id, firstName }      | ensureAnyArgsNotNull | sendToGateway('GetRockstarTemplate') | assignTo: rockstar }}
-{{ rockstar | ifExists    | selectPartial: rockstar-details }}
-{{ rockstar | endIfExists | select: No rockstar with id: { id } }}
+{{ { qs.id, qs.firstName } | ensureAnyArgsNotNull | sendToGateway('GetRockstarTemplate') | assignTo: rockstar }}
+{{ rockstar | ifExists     | selectPartial: rockstar-details }}
+{{ rockstar | endIfExists  | select: No rockstar with id: { qs.id } }}
 {{ htmlError }}
 ");
 
                 files.WriteFile("rockstar-gateway-publish.html", @"
-{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
+{{ importRequestParams }}{{ { id, firstName, lastName, age } | ensureAllArgsNotNull | publishToGateway('AddRockstarTemplate') }}
 {{ 'rockstar-gateway' | partial({ firstName }) }}
 {{ htmlError }}");
 
@@ -615,7 +615,7 @@ Kurt Cobain (27)
 Parameter name: firstName
 
 StackTrace:
-   at JsObjectExpression: {:id,:firstName}".NormalizeNewLines()));
+   at JsObjectExpression: {:qs.:id,:qs.:firstName}".NormalizeNewLines()));
             
             html = BaseUrl.AppendPath("rockstar-gateway").AddQueryParam("id","Kurt").GetStringFromUrl();
             Assert.That(html.NormalizeNewLines(), Does.StartWith(@"<html>
@@ -626,7 +626,7 @@ StackTrace:
 <pre class=""alert alert-danger"">FormatException: Input string was not in a correct format.
 
 StackTrace:
-   at JsObjectExpression: {:id,:firstName}".NormalizeNewLines()));
+   at JsObjectExpression: {:qs.:id,:qs.:firstName}".NormalizeNewLines()));
         }
 
         [Test]

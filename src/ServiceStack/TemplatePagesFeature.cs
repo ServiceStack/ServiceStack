@@ -72,6 +72,12 @@ namespace ServiceStack
                 if (value) TemplateFilters.RemoveAll(x => x is TemplateProtectedFilters);
             }
         }
+        
+        /// <summary>
+        /// Whether to auto populate scoped args with Request.FormData[] and Request.QueryString[] params (default false).
+        /// Recommendation is to instead use `form.name` or `query.name` (or `qs.name`) to explicitly reference user input values.
+        /// </summary>
+        public bool ImportRequestParams { get; set; }
 
         public TemplatePagesFeature()
         {
@@ -595,7 +601,7 @@ namespace ServiceStack
             if (page == null)
                 throw HttpError.NotFound($"No API Page was found at '{pagePath}'");
             
-            var requestArgs = base.Request.GetTemplateRequestParams();
+            var requestArgs = base.Request.GetTemplateRequestParams(importRequestParams:feature.ImportRequestParams);
             requestArgs[TemplateConstants.PathInfo] = request.PathInfo;
             requestArgs[TemplateConstants.PathArgs] = pathArgs; 
 
@@ -839,8 +845,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                         ?? throw new FileNotFoundException($"Template Page not found '{layoutPath}'");
                 }
             }
+
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
             
-            var args = httpReq.GetTemplateRequestParams();
+            var args = httpReq.GetTemplateRequestParams(importRequestParams:feature.ImportRequestParams);
             if (Args != null)
             {
                 foreach (var entry in Args)
@@ -914,10 +922,13 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             if (page is IRequiresRequest requiresRequest)
                 requiresRequest.Request = httpReq;
+            
+            var feature = HostContext.GetPlugin<TemplatePagesFeature>();
 
             var result = new PageResult(page)
             {
-                Args = httpReq.GetTemplateRequestParams(),
+                //import request params for code pages so they can be accessed from render parameters
+                Args = httpReq.GetTemplateRequestParams(feature.ImportRequestParams), 
                 LayoutPage = layoutPage,
                 Model = Model,
             };
@@ -1036,17 +1047,17 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     public static class TemplatePagesFeatureExtensions
     {
-        public static Dictionary<string, object> GetTemplateRequestParams(this IRequest request)
+        public static Dictionary<string, object> GetTemplateRequestParams(this IRequest request, bool importRequestParams=false)
         {
-            var reqParams = request.GetRequestParams();
-
-            reqParams["RawUrl"] = request.RawUrl;
-            reqParams[TemplateConstants.PathInfo] = request.OriginalPathInfo;
-            reqParams["AbsoluteUri"] = request.AbsoluteUri;
-            reqParams["Verb"] = reqParams["Method"] = request.Verb;
-
-            var to = reqParams.ToObjectDictionary();
+            var to = importRequestParams
+                ? request.GetRequestParams().ToObjectDictionary()
+                : new Dictionary<string, object>();
             
+            to["RawUrl"] = request.RawUrl;
+            to[TemplateConstants.PathInfo] = request.OriginalPathInfo;
+            to["AbsoluteUri"] = request.AbsoluteUri;
+            to["Verb"] = to["Method"] = request.Verb;
+
             foreach (var item in request.Items)
             {
                 to[item.Key.Trim('_')] = item.Value; //Remove __ prefixes for internal Keywords

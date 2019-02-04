@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.Templates
@@ -67,12 +68,16 @@ namespace ServiceStack.Templates
                 return memberFn(targetValue);
             }
 
-            var indexerMethod = targetType.GetInstanceMethod("get_Item");
+            var methods = targetType.GetInstanceMethods();
+            var indexerMethod = 
+                methods.FirstOrDefault(x => x.Name == "get_Item" && x.GetParameters().Any(p => p.ParameterType == typeof(string))) ??
+                methods.FirstOrDefault(x => x.Name == "get_Item" && x.GetParameters().Any(p => p.ParameterType != typeof(string)));
+            
             if (indexerMethod != null)
             {
                 var fn = indexerMethod.GetInvoker();
                 var ret = fn(targetValue, name);
-                return ret ?? JsNull.Value;
+                return ret;
             }
 
             throw new ArgumentException($"'{targetType.Name}' does not have a '{name}' property or field");
