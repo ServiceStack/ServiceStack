@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using ServiceStack.Web;
 
 namespace ServiceStack.Templates
@@ -37,7 +38,21 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object ifHttpDelete(TemplateScopeContext scope) => isHttpDelete(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope, object ignoreTarget) => ifHttpPatch(scope);
         [HandleUnknownValue] public object ifHttpPatch(TemplateScopeContext scope) => isHttpPatch(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
- 
+
+        public object importRequestParams(TemplateScopeContext scope)
+        {
+            var args = req(scope).GetRequestParams();
+            foreach (var entry in args)
+            {
+                scope.ScopedParams[entry.Key] = entry.Value;
+            }
+            return StopExecution.Value;
+        }
+        
+        public NameValueCollection form(TemplateScopeContext scope) => req(scope).FormData;
+        public NameValueCollection query(TemplateScopeContext scope) => req(scope).QueryString;
+        public NameValueCollection qs(TemplateScopeContext scope) => req(scope).QueryString;
+        
         public string httpMethod(TemplateScopeContext scope) => req(scope)?.Verb;
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();

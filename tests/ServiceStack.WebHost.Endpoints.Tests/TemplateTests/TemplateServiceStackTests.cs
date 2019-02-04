@@ -103,19 +103,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 </html>
 ");
                 files.WriteFile("autoquery-data-products.html", @"
-{{ { category, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryProducts') 
+{{ importRequestParams }}{{ { category, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryProducts') 
    | toResults | select: { it.ProductName }\n }}");
 
                 files.WriteFile("autoquery-rockstars.html", @"
-{{ { age, orderBy, take } | withoutNullValues | sendToAutoQuery('QueryTemplateRockstars') 
+{{ { qs.age, qs.orderBy, qs.take } | withoutNullValues | sendToAutoQuery('QueryTemplateRockstars') 
    | toResults | select: { it.FirstName } { it.LastName }\n }}");
 
                 files.WriteFile("autoquery-customer.html", @"
-{{ { customerId } | sendToAutoQuery('QueryCustomers') 
+{{ { qs.customerId } | sendToAutoQuery('QueryCustomers') 
      | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.City }\n }}");
 
                 files.WriteFile("autoquery-customers.html", @"
-{{ { countryIn, orderBy } | sendToAutoQuery('QueryCustomers') 
+{{ { qs.countryIn, qs.orderBy } | sendToAutoQuery('QueryCustomers') 
      | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
 
                 files.WriteFile("autoquery-top5-de-uk.html", @"
@@ -123,21 +123,21 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
      | toResults | select: { it.CustomerId }: { it.CompanyName }, { it.Country }\n }}");
                 
                 files.WriteFile("api/customers.html", @"
-{{ limit | default(100) | assignTo: limit }}
+{{ query.limit ?? 100 | assignTo: limit }}
 
 {{ 'select CustomerId, CompanyName, City, Country from Customer' | assignTo: sql }}
 
-{{ PathArgs | endIfEmpty | useFmt('{0} where CustomerId = @id', sql) | dbSingle({ id: PathArgs[0] }) 
-            | return }}
+{{ PathArgs   | endIfEmpty | useFmt('{0} where CustomerId = @id', sql) | dbSingle({ id: PathArgs[0] }) 
+              | return }}
 
-{{ id       | endIfEmpty | use('CustomerId = @id')   | addTo: filters }}
-{{ city     | endIfEmpty | use('City = @city')       | addTo: filters }}
-{{ country  | endIfEmpty | use('Country = @country') | addTo: filters }}
-{{ filters  | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
+{{ qs.id      | endIfEmpty | use('CustomerId = @id')   | addTo: filters }}
+{{ qs.city    | endIfEmpty | use('City = @city')       | addTo: filters }}
+{{ qs.country | endIfEmpty | use('Country = @country') | addTo: filters }}
+{{ filters    | endIfEmpty | useFmt('{0} where {1}', sql, join(filters, ' and ')) | assignTo: sql }}
 
-{{ sql      | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
-            | dbSelect({ country, city, id }) 
-            | return }}
+{{ sql        | appendFmt(' ORDER BY CompanyName {0}', sqlLimit(limit)) 
+              | dbSelect({ qs.country, qs.city, qs.id }) 
+              | return }}
 ");
             }
         }
