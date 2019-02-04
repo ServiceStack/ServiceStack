@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -221,6 +222,10 @@ namespace ServiceStack
             ? Context.DefaultFilters.httpFormValues(scope, name) 
             : null;
 
+        public string[] formValues(TemplateScopeContext scope, string name, IEnumerable<string> defaultValues) => hasErrorStatus(scope) 
+            ? Context.DefaultFilters.httpFormValues(scope, name) 
+            : (defaultValues as string[] ?? defaultValues?.ToArray()) ?? TypeConstants.EmptyStringArray;
+    
         public bool formCheckValue(TemplateScopeContext scope, string name)
         {
             var value = formValue(scope, name);
