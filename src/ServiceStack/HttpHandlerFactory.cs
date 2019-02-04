@@ -290,13 +290,7 @@ namespace ServiceStack
                     : ForbiddenHttpHandler;
             }
 
-            if (appHost.Config.FallbackRestPath != null)
-            {
-                restPath = appHost.Config.FallbackRestPath(httpReq);
-                if (restPath != null)
-                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
-            }
-            
+            // Check for PagedBasedRouting before wildcard Fallback Service
             foreach (var httpHandlerResolver in appHost.FallbackHandlersArray)
             {
                 var httpHandler = httpHandlerResolver(httpMethod, pathInfo, filePath);
@@ -304,6 +298,13 @@ namespace ServiceStack
                     return httpHandler;
             }
 
+            if (appHost.Config.FallbackRestPath != null)
+            {
+                restPath = appHost.Config.FallbackRestPath(httpReq);
+                if (restPath != null)
+                    return new RestHandler { RestPath = restPath, RequestName = restPath.RequestType.GetOperationName(), ResponseContentType = contentType };
+            }
+            
             return null;
         }
 

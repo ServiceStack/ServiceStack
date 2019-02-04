@@ -447,6 +447,21 @@ namespace ServiceStack
                 }
             }
 
+            TemplatePage layoutPage = null;
+            var layoutName = req.GetItem(Keywords.Template) as string;
+            Dictionary<string, object> args = null;
+
+            if (codePage == null && viewPage == null && explicitView != null)
+            {
+                if (PageBasedRoutingHandler(req.Verb, explicitView, null) is TemplatePageHandler pageHandler)
+                {
+                    viewPage = pageHandler.Page;
+                    args = pageHandler.Args;
+                    if (layoutName == null)
+                        layoutPage = pageHandler.LayoutPage;
+                }
+            }
+
             if (codePage == null && viewPage == null)
                 return false;
 
@@ -455,14 +470,13 @@ namespace ServiceStack
             else
                 await viewPage.Init();
 
-            var layoutName = req.GetItem(Keywords.Template) as string;
-            var layoutPage = codePage != null 
+            layoutPage = layoutPage ?? (codePage != null 
                 ? Pages.ResolveLayoutPage(codePage, layoutName)
-                : Pages.ResolveLayoutPage(viewPage, layoutName);
-            
+                : Pages.ResolveLayoutPage(viewPage, layoutName));
+
             var handler = codePage != null
                 ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { OutputStream = outputStream, Model = dto }
-                : new TemplatePageHandler(viewPage, layoutPage) { OutputStream = outputStream, Model = dto };
+                : new TemplatePageHandler(viewPage, layoutPage) { OutputStream = outputStream, Model = dto, Args = args };
 
             await handler.ProcessRequestAsync(req, req.Response, req.OperationName);
 
@@ -810,8 +824,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     public class TemplatePageHandler : HttpAsyncTaskHandler
     {
-        private TemplatePage page;
-        private TemplatePage layoutPage;
+        public TemplatePage Page { get; private set; }
+        public TemplatePage LayoutPage { get; private set; }
         public Dictionary<string, object> Args { get; set; }
         public object Model { get; set; }
         public Stream OutputStream { get; set; }
@@ -827,21 +841,21 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public TemplatePageHandler(TemplatePage page, TemplatePage layoutPage = null)
         {
             this.RequestName = !string.IsNullOrEmpty(page.VirtualPath) ? page.VirtualPath : nameof(TemplatePageHandler);
-            this.page = page;
-            this.layoutPage = layoutPage;
+            this.Page = page;
+            this.LayoutPage = layoutPage;
         }
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            if (page == null && pagePath != null)
+            if (Page == null && pagePath != null)
             {
                 var pages = httpReq.TryResolve<ITemplatePages>();
-                page = pages.GetPage(pagePath)
+                Page = pages.GetPage(pagePath)
                    ?? throw new FileNotFoundException($"Template Page not found '{pagePath}'");
 
                 if (!string.IsNullOrEmpty(layoutPath))
                 {
-                    layoutPage = pages.GetPage(layoutPath) 
+                    LayoutPage = pages.GetPage(layoutPath) 
                         ?? throw new FileNotFoundException($"Template Page not found '{layoutPath}'");
                 }
             }
@@ -857,16 +871,16 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 }
             }
             
-            var pageResult = new PageResult(page)
+            var pageResult = new PageResult(Page)
             {
                 Args = args,
-                LayoutPage = layoutPage,
+                LayoutPage = LayoutPage,
                 Model = Model,
             };
 
             try
             {
-                httpRes.ContentType = page.Format.ContentType;
+                httpRes.ContentType = Page.Format.ContentType;
                 if (OutputStream != null)
                 {
                     await pageResult.WriteToAsync(OutputStream);
@@ -900,7 +914,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             }
             catch (Exception ex)
             {
-                await page.Format.OnViewException(pageResult, httpReq, ex);
+                await Page.Format.OnViewException(pageResult, httpReq, ex);
             }
         }
     }
@@ -911,6 +925,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         private readonly TemplatePage layoutPage;
         public object Model { get; set; }
         public Stream OutputStream { get; set; }
+        
+        public Dictionary<string, object> Args { get; set; }
 
         public TemplateCodePageHandler(TemplateCodePage page, TemplatePage layoutPage = null)
         {
@@ -932,6 +948,14 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 LayoutPage = layoutPage,
                 Model = Model,
             };
+
+            if (Args != null)
+            {
+                foreach (var entry in Args)
+                {
+                    result.Args[entry.Key] = entry.Value;
+                }
+            }
 
             try
             {

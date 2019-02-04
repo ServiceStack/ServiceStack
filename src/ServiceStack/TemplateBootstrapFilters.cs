@@ -222,7 +222,7 @@ namespace ServiceStack.Templates
                         var cls = inline ? " custom-control-inline" : "";
                         sbInput.AppendLine($"<div class=\"custom-control custom-checkbox{cls}\">");
                         var inputId = name + "-" + kvp.Key;
-                        var selected = selectedValues.Contains(formValue) || selectedValues.Contains(kvp.Key) ? " checked" : "";
+                        var selected = kvp.Key == formValue || selectedValues.Contains(kvp.Key) ? " checked" : "";
                         sbInput.AppendLine($"  <input type=\"checkbox\" id=\"{inputId}\" name=\"{name}\" value=\"{kvp.Key}\" class=\"form-check-input\"{selected}>");
                         sbInput.AppendLine($"  <label class=\"form-check-label\" for=\"{inputId}\">{kvp.Value}</label>");
                         sbInput.AppendLine("</div>");
