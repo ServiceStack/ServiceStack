@@ -48,6 +48,19 @@ namespace ServiceStack.Templates
             }
             return StopExecution.Value;
         }
+
+        public object importRequestParams(TemplateScopeContext scope, object onlyImportArgNames)
+        {
+            var args = req(scope).GetRequestParams();
+            var names = toVarNames(onlyImportArgNames);
+            foreach (var name in names)
+            {
+                if (args.TryGetValue(name, out var value))
+                    scope.ScopedParams[name] = value;
+
+            }
+            return StopExecution.Value;
+        }
         
         public NameValueCollection form(TemplateScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(TemplateScopeContext scope) => req(scope).QueryString;
