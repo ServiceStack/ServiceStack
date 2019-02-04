@@ -55,9 +55,9 @@ namespace ServiceStack.Templates
                 ? httpReq.FormData.GetValues(name) 
                 : httpReq.QueryString.GetValues(name);
 
-            return values.Length == 1 // if it's only a single item can be returned in comma-delimited list
+            return values?.Length == 1 // if it's only a single item can be returned in comma-delimited list
                 ? values[0].Split(',') 
-                : values;
+                : values ?? TypeConstants.EmptyStringArray;
         }
 
         public string httpFormData(TemplateScopeContext scope, string name) => req(scope).FormData[name];
