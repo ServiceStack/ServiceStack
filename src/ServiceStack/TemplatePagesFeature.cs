@@ -210,6 +210,17 @@ namespace ServiceStack
 
         protected virtual IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
         {
+            var page = GetRoutingPage(pathInfo, out var args);
+            return page != null
+                ? new TemplatePageHandler(page) {Args = args}
+                : null;
+        }
+
+        /// <summary>
+        /// Resolve Page-based Routing page from /path/info
+        /// </summary>
+        public TemplatePage GetRoutingPage(string pathInfo, out Dictionary<string,object> routingArgs)
+        {
             var path = pathInfo.Trim('/');
 
             var vfs = HostContext.VirtualFileSources;
@@ -227,13 +238,13 @@ namespace ServiceStack
                 return string.Compare(a.Name, b.Name, StringComparison.Ordinal);
             }
 
-            TemplatePageHandler GetPageHandler(IVirtualFile file, string[] pathParts)
+            TemplatePage GetPageFromPath(IVirtualFile file, string[] pathParts, out Dictionary<string,object> args)
             {
                 var filePath = file.VirtualPath.WithoutExtension();
                 var page = Pages.TryGetPage(filePath) ?? 
                            Pages.AddPage(filePath, file);
 
-                var args = new Dictionary<string, object>();
+                args = new Dictionary<string, object>();
                 var fileParts = filePath.Split('/');
 
                 for (var i = 0; i < pathParts.Length; i++)
@@ -246,10 +257,7 @@ namespace ServiceStack
                         args[part.Substring(1)] = pathParts[i];
                 }
 
-                return new TemplatePageHandler(page) 
-                {
-                    Args = args
-                };
+                return page;
             }
 
             List<IVirtualDirectory> GetCandidateDirs(IVirtualDirectory[] argDirs, string segment)
@@ -309,7 +317,7 @@ namespace ServiceStack
                                 if (file.Extension == format.Extension)
                                 {
                                     if (fileNameWithoutExt == segment || isWildPath)
-                                        return GetPageHandler(file, pathSegments);
+                                        return GetPageFromPath(file, pathSegments, out routingArgs);
                                 }
                             }
                         }
@@ -331,12 +339,13 @@ namespace ServiceStack
                         {
                             var file = dir.GetFile(IndexPage + "." + format.Extension);
                             if (file != null)
-                                return GetPageHandler(file, pathSegments);
+                                return GetPageFromPath(file, pathSegments, out routingArgs);
                         }
                     }
                 }
             }
-            
+
+            routingArgs = null;
             return null;
         }
 
@@ -447,20 +456,9 @@ namespace ServiceStack
                 }
             }
 
-            TemplatePage layoutPage = null;
-            var layoutName = req.GetItem(Keywords.Template) as string;
             Dictionary<string, object> args = null;
-
             if (codePage == null && viewPage == null && explicitView != null)
-            {
-                if (PageBasedRoutingHandler(req.Verb, explicitView, null) is TemplatePageHandler pageHandler)
-                {
-                    viewPage = pageHandler.Page;
-                    args = pageHandler.Args;
-                    if (layoutName == null)
-                        layoutPage = pageHandler.LayoutPage;
-                }
-            }
+                viewPage = GetRoutingPage(explicitView, out args);
 
             if (codePage == null && viewPage == null)
                 return false;
@@ -470,9 +468,10 @@ namespace ServiceStack
             else
                 await viewPage.Init();
 
-            layoutPage = layoutPage ?? (codePage != null 
+            var layoutName = req.GetItem(Keywords.Template) as string;
+            var layoutPage = codePage != null 
                 ? Pages.ResolveLayoutPage(codePage, layoutName)
-                : Pages.ResolveLayoutPage(viewPage, layoutName));
+                : Pages.ResolveLayoutPage(viewPage, layoutName);
 
             var handler = codePage != null
                 ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { OutputStream = outputStream, Model = dto }
@@ -511,15 +510,17 @@ namespace ServiceStack
 
         public async Task<HotReloadPageResponse> Any(HotReloadPage request)
         {
-            var page = Pages.GetPage(request.Path ?? "/");
+            var pathInfo = request.Path ?? "/";
+            var page = Pages.GetPage(pathInfo);
             if (page == null)
             {
                 var matchingRoute = RestHandler.FindMatchingRestPath(
-                    HttpMethods.Get, request.Path ?? "/", out var contentType);
+                    HttpMethods.Get, pathInfo, out var contentType);
+
+                var feature = HostContext.AppHost.AssertPlugin<TemplatePagesFeature>();
 
                 if (matchingRoute != null)
                 {
-                    var feature = HostContext.AppHost.AssertPlugin<TemplatePagesFeature>();
                     page = feature.GetViewPage(matchingRoute.RequestType.Name);
 
                     if (page == null)
@@ -528,8 +529,11 @@ namespace ServiceStack
                         page = feature.GetViewPage(responseType.Name);
                     }
                 }
+
+                if (page == null)
+                    page = feature.GetRoutingPage(pathInfo, out var args);
             }
-            
+
             if (page == null)
                 throw HttpError.NotFound("Page not found: " + request.Path);
 
