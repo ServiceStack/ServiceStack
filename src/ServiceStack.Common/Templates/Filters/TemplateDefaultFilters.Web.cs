@@ -70,13 +70,13 @@ namespace ServiceStack.Templates
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
 
-        public string httpForm(TemplateScopeContext scope, string name)
+        public string htmlForm(TemplateScopeContext scope, string name)
         {
             var httpReq = req(scope);
             return httpReq.FormData[name] ?? httpReq.QueryString[name];
         }
 
-        public string[] httpFormValues(TemplateScopeContext scope, string name)
+        public string[] htmlFormValues(TemplateScopeContext scope, string name)
         {
             var httpReq = req(scope);
             var values = httpReq.Verb == HttpMethods.Post 
@@ -88,9 +88,6 @@ namespace ServiceStack.Templates
                 : values ?? TypeConstants.EmptyStringArray;
         }
 
-        public string httpFormData(TemplateScopeContext scope, string name) => req(scope).FormData[name];
-        
-        public string httpQueryString(TemplateScopeContext scope, string name) => req(scope).QueryString[name];
         public string httpParam(TemplateScopeContext scope, string name) => GetParam(req(scope), name);
 
         private static string GetParam(IRequest httpReq, string name) //sync with IRequest.GetParam()
