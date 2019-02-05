@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
                         userSession.ProfileUrl = profileUrl.SanitizeOAuthUrl();
                 }
 
-                if (tokens.Email == null)
+                if (string.IsNullOrEmpty(tokens.Email))
                 {
                     var json = AuthHttpGateway.DownloadGithubUserEmailsInfo(tokens.AccessTokenSecret);
                     var objs = JsonArrayObjects.Parse(json);
@@ -174,7 +174,7 @@ namespace ServiceStack.Auth
                         }
                     }
                 }
-                userSession.UserAuthName = tokens.Email;
+                userSession.UserAuthName = tokens.UserName ?? tokens.Email;
             }
             catch (Exception ex)
             {
