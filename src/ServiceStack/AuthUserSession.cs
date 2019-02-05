@@ -18,6 +18,9 @@ namespace ServiceStack
         [DataMember(Order = 01)] public string ReferrerUrl { get; set; }
         [DataMember(Order = 02)] public string Id { get; set; }
         [DataMember(Order = 03)] public string UserAuthId { get; set; }
+        /// <summary>
+        /// User chosen Username when available or Email
+        /// </summary>
         [DataMember(Order = 04)] public string UserAuthName { get; set; }
         [DataMember(Order = 05)] public string UserName { get; set; }
         [DataMember(Order = 06)] public string TwitterUserId { get; set; }

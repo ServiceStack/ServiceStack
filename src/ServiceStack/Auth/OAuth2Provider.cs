@@ -126,6 +126,12 @@ namespace ServiceStack.Auth
 
         protected abstract Dictionary<string, string> CreateAuthInfo(string accessToken);
 
+        /// <summary>
+        /// Override to return User chosen username or Email for this AuthProvider
+        /// </summary>
+        protected virtual string GetUserAuthName(IAuthTokens tokens, Dictionary<string, string> authInfo) =>
+            tokens.Email;
+
         protected override void LoadUserAuthInfo(AuthUserSession userSession, IAuthTokens tokens, Dictionary<string, string> authInfo)
         {
             try
@@ -136,7 +142,7 @@ namespace ServiceStack.Auth
                 tokens.FirstName = authInfo.Get("first_name");
                 tokens.LastName = authInfo.Get("last_name");
                 tokens.Email = authInfo.Get("email");
-                userSession.UserAuthName = tokens.Email;
+                userSession.UserAuthName = GetUserAuthName(tokens, authInfo);
 
                 if (authInfo.TryGetValue(AuthMetadataProvider.ProfileUrlKey, out var profileUrl))
                 {
