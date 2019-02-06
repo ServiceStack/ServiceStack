@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
@@ -1553,6 +1554,29 @@ dir-file: dir/dir-file.txt
 {{ 'c' | prependToGlobal: string }}
 {{ string }}
 ".NormalizeNewLines()), Is.EqualTo("cba"));
+        }
+
+        [Test]
+        public void Can_addItem_and_toQueryString()
+        {
+            var context = new TemplateContext
+            {
+                Args =
+                {
+                    ["nvc"] = new NameValueCollection {["a"] = "1"},
+                    ["obj"] = new Dictionary<string, object> { ["a"] = "1" },
+                    ["str"] = new Dictionary<string, string> { ["a"] = "1" },
+                }
+            }.Init();
+
+            Assert.That(context.EvaluateTemplate("{{ nvc | addItem({b:2}) | toQueryString | raw }}"),
+                Is.EqualTo("a=1&b=2"));
+
+            Assert.That(context.EvaluateTemplate("{{ obj | addItem({b:2}) | toQueryString | raw }}"),
+                Is.EqualTo("a=1&b=2"));
+
+            Assert.That(context.EvaluateTemplate("{{ str | addItem({b:'2'}) | toQueryString | raw }}"),
+                Is.EqualTo("a=1&b=2"));
         }
 
         [Test]

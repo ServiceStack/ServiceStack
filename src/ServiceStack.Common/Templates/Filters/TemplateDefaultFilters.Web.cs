@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Linq;
+using ServiceStack.Text;
 using ServiceStack.Web;
 
 namespace ServiceStack.Templates
@@ -65,7 +67,48 @@ namespace ServiceStack.Templates
         public NameValueCollection form(TemplateScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(TemplateScopeContext scope) => req(scope).QueryString;
         public NameValueCollection qs(TemplateScopeContext scope) => req(scope).QueryString;
+        public string queryString(TemplateScopeContext scope) => req(scope).QueryString.ToString();
         
+        public string toQueryString(object keyValuePairs)
+        {
+            var sb = StringBuilderCache.Allocate();
+            var i = 0;
+            if (keyValuePairs is IEnumerable<KeyValuePair<string, object>> kvps)
+            {
+                foreach (var entry in kvps)
+                {
+                    if (i++ > 0)
+                        sb.Append('&');
+
+                    sb.Append(entry.Key + "=" + entry.Value?.ToString().UrlEncode());
+                }
+            }
+            else if (keyValuePairs is IDictionary d)
+            {
+                foreach (var key in d.Keys)
+                {
+                    if (i++ > 0)
+                        sb.Append('&');
+
+                    sb.Append(key + "=" + d[key]?.ToString().UrlEncode());
+                }
+            }
+            else if (keyValuePairs is NameValueCollection nvc)
+            {
+                foreach (string key in nvc)
+                {
+                    if (key == null)
+                        continue;
+                    if (i++ > 0)
+                        sb.Append('&');
+                    sb.Append(key + "=" + nvc[key].UrlEncode());
+                }
+            }
+            else throw new NotSupportedException($"{nameof(toQueryString)} expects a collection of KeyValuePair's but was '{keyValuePairs.GetType().Name}'");
+            
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+
         public string httpMethod(TemplateScopeContext scope) => req(scope)?.Verb;
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
