@@ -169,8 +169,11 @@ namespace ServiceStack.NativeTypes
                         return;
                 }
 
-                considered.Add(t);
-                queue.Enqueue(t);
+                if (!considered.Contains(t))
+                {
+                    considered.Add(t);
+                    queue.Enqueue(t);
+                }
 
                 if ((!(t.IsSystemType() && !t.IsTuple()) && (t.IsClass || t.IsEnum || t.IsInterface) && !t.IsGenericParameter) || exportTypes.ContainsMatch(t))
                 {

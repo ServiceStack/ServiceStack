@@ -8,5 +8,7 @@ namespace Check.ServiceInterface
         public object Any(Issue221Long request) => request;
 
         public object Any(TestAttributeExport request) => request;
+
+        public object Any(RecursiveNode request) => request;
     }
 }
