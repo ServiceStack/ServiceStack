@@ -70,13 +70,13 @@ namespace ServiceStack.Templates
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
 
-        public string htmlForm(TemplateScopeContext scope, string name)
+        public string formQuery(TemplateScopeContext scope, string name)
         {
             var httpReq = req(scope);
             return httpReq.FormData[name] ?? httpReq.QueryString[name];
         }
 
-        public string[] htmlFormValues(TemplateScopeContext scope, string name)
+        public string[] formQueryValues(TemplateScopeContext scope, string name)
         {
             var httpReq = req(scope);
             var values = httpReq.Verb == HttpMethods.Post 
