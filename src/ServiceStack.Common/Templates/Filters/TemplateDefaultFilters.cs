@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -440,52 +441,15 @@ namespace ServiceStack.Templates
         public IgnoreResult addToGlobal(TemplateScopeContext scope, object value, object argExpr) =>
             addToArgs(scope, nameof(addToGlobal), value, argExpr, scope.PageResult.Args);
 
-        private IgnoreResult addToArgs(TemplateScopeContext scope, string filterName, object value, object argExpr, Dictionary<string, object> args)
+        private IgnoreResult addToArgs(TemplateScopeContext scope, string filterName, object value, object argExprOrCollection, Dictionary<string, object> args)
         {
             if (value == null)
                 return IgnoreResult.Value;
 
-            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExpr);
-
+            var varName = GetVarNameFromStringOrArrowExpression(filterName, argExprOrCollection);
             if (args.TryGetValue(varName, out object collection))
             {
-                if (collection is IList l)
-                {
-                    if (value is IEnumerable e && !(value is string || value is IDictionary))
-                    {
-                        foreach (var item in e)
-                        {
-                            l.Add(item);
-                        }
-                    }
-                    else
-                    {
-                        l.Add(value);
-                    }
-                }                
-                else if (collection is IDictionary d)
-                {
-                    if (value is KeyValuePair<string, object> kvp)
-                    {
-                        d[kvp.Key] = kvp.Value;
-                    }
-                    else if (value is IEnumerable<KeyValuePair<string, object>> kvps)
-                    {
-                        foreach (var entry in kvps)
-                        {
-                            d[entry.Key] = entry.Value;
-                        }
-                    }
-                    else if (value is IDictionary dValue)
-                    {
-                        var keys = dValue.Keys;
-                        foreach (var key in keys)
-                        {
-                            d[key] = dValue[key];
-                        }
-                    }
-                }
-                else if (collection is IEnumerable e && !(collection is string))
+                if (!TryAddToCollection(collection, value) && collection is IEnumerable e && !(collection is string))
                 {
                     var to = new List<object>();
                     foreach (var item in e)
@@ -505,7 +469,7 @@ namespace ServiceStack.Templates
                     }
                     args[varName] = to;
                 }
-                else throw new NotSupportedException(nameof(addTo) + " can only add to an IEnumerable not a " + collection.GetType().Name);
+                else throw new NotSupportedException(filterName + " can only add to an IEnumerable not a " + collection.GetType().Name);
             }
             else
             {
@@ -516,6 +480,79 @@ namespace ServiceStack.Templates
             }
             
             return IgnoreResult.Value;
+        }
+
+        public object addItem(object collection, object value)
+        {
+            if (collection == null)
+                return null;
+            
+            if (!TryAddToCollection(collection, value))
+                throw new NotSupportedException($"{nameof(addItem)} can only add to an ICollection not a '{collection.GetType().Name}'");
+
+            return collection;
+        }
+
+        private static bool TryAddToCollection(object collection, object value)
+        {
+            if (collection is IList l)
+            {
+                if (value is IEnumerable e && !(value is string || value is IDictionary))
+                {
+                    foreach (var item in e)
+                    {
+                        l.Add(item);
+                    }
+                }
+                else
+                {
+                    l.Add(value);
+                }
+            }
+            else if (collection is IDictionary d)
+            {
+                if (value is KeyValuePair<string, object> kvp)
+                {
+                    d[kvp.Key] = kvp.Value;
+                }
+                else if (value is IEnumerable<KeyValuePair<string, object>> kvps)
+                {
+                    foreach (var entry in kvps)
+                    {
+                        d[entry.Key] = entry.Value;
+                    }
+                }
+                else if (value is IDictionary dValue)
+                {
+                    foreach (var key in dValue.Keys)
+                    {
+                        d[key] = dValue[key];
+                    }
+                }
+            }
+            else if (collection is NameValueCollection nvc)
+            {
+                if (value is KeyValuePair<string, object> kvp)
+                {
+                    nvc[kvp.Key] = kvp.Value?.ToString();
+                }
+                else if (value is IEnumerable<KeyValuePair<string, object>> kvps)
+                {
+                    foreach (var entry in kvps)
+                    {
+                        nvc[entry.Key] = entry.Value?.ToString();
+                    }
+                }
+                else if (value is IDictionary dValue)
+                {
+                    foreach (string key in dValue.Keys)
+                    {
+                        nvc[key] = dValue[key]?.ToString();
+                    }
+                }
+            }
+            else return false;
+            return true;
         }
 
         public object assign(TemplateScopeContext scope, string argExpr, object value) =>
@@ -687,6 +724,8 @@ namespace ServiceStack.Templates
         public TimeSpan toTimeSpan(object target) => target.ConvertTo<TimeSpan>();
         public TimeSpan time(int hours, int mins, int secs) => new TimeSpan(0, hours, mins, secs);
         public TimeSpan time(int days, int hours, int mins, int secs) => new TimeSpan(days, hours, mins, secs);
+        
+        public KeyValuePair<string, object> pair(string key, object value) => new KeyValuePair<string, object>(key, value);
 
         public List<string> toKeys(object target)
         {

@@ -41,15 +41,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(context.EvaluateTemplate(@"{{ hasOptionsFlag(options3, 'Option1') }}"),
                 Is.EqualTo("True"));
 
-            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option1') }},{{ hasFlag(options3, 1) }}"),
-                Is.EqualTo("True,True"));
-            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option4') }},{{ hasFlag(options3, 4) }}"),
-                Is.EqualTo("False,False"));
+            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option1') }},{{ hasFlag(options3, 1) }},{{ hasFlag(options3, options1) }}"),
+                Is.EqualTo("True,True,True"));
+            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option4') }},{{ hasFlag(options3, 4) }},{{ hasFlag(options3, options4) }}"),
+                Is.EqualTo("False,False,False"));
             
-            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options1, 'Option1') }},{{ isEnum(options1, 1) }}"),
-                Is.EqualTo("True,True"));
-            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options3, 'Option1') }},{{ isEnum(options3, 1) }}"),
-                Is.EqualTo("False,False"));
+            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options1, 'Option1') }},{{ isEnum(options1, 1) }},{{ isEnum(options1, options1) }}"),
+                Is.EqualTo("True,True,True"));
+            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options3, 'Option1') }},{{ isEnum(options3, 1) }},{{ isEnum(options3, options1) }}"),
+                Is.EqualTo("False,False,False"));
         }
     }
 }
