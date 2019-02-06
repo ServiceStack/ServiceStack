@@ -119,6 +119,18 @@ namespace ServiceStack.Templates
         [HandleUnknownValue]
         public bool IsNullOrWhiteSpace(object target) => target == null || target is string s && string.IsNullOrWhiteSpace(s);
         
+        public bool isEnum(Enum source, object value) => value is string strEnum
+            ? Equals(source, Enum.Parse(source.GetType(), strEnum, ignoreCase: true))
+            : value is Enum enumValue
+                ? Equals(source, enumValue)
+                : Equals(source, Enum.ToObject(source.GetType(), value));
+
+        public bool hasFlag(Enum source, object value) => value is string strEnum
+            ? source.HasFlag((Enum) Enum.Parse(source.GetType(), strEnum, ignoreCase: true))
+            : value is Enum enumValue
+                ? source.HasFlag(enumValue)
+                : source.HasFlag((Enum) Enum.ToObject(source.GetType(), value));
+
         [HandleUnknownValue] public StopExecution end() => StopExecution.Value;
         [HandleUnknownValue] public Task end(TemplateScopeContext scope, object ignore) => TypeConstants.EmptyTask;
         [HandleUnknownValue] public StopExecution end(object ignore) => StopExecution.Value;
