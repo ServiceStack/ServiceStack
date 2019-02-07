@@ -449,7 +449,8 @@ namespace ServiceStack.Templates
             var varName = GetVarNameFromStringOrArrowExpression(filterName, argExprOrCollection);
             if (args.TryGetValue(varName, out object collection))
             {
-                if (!TryAddToCollection(collection, value) && collection is IEnumerable e && !(collection is string))
+                if (TryAddToCollection(collection, value)) {}
+                else if (collection is IEnumerable e && !(collection is string))
                 {
                     var to = new List<object>();
                     foreach (var item in e)
