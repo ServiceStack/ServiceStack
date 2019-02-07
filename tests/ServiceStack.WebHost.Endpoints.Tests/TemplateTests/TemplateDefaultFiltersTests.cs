@@ -1574,8 +1574,12 @@ dir-file: dir/dir-file.txt
 
             Assert.That(context.EvaluateTemplate("{{ obj | addItem({b:2}) | toQueryString | raw }}"),
                 Is.EqualTo("a=1&b=2"));
+            Assert.That(context.EvaluateTemplate("{{ obj | addItem(pair('b',2)) | toQueryString | raw }}"),
+                Is.EqualTo("a=1&b=2"));
 
             Assert.That(context.EvaluateTemplate("{{ str | addItem({b:'2'}) | toQueryString | raw }}"),
+                Is.EqualTo("a=1&b=2"));
+            Assert.That(context.EvaluateTemplate("{{ str | addItem(pair('b','2')) | toQueryString | raw }}"),
                 Is.EqualTo("a=1&b=2"));
         }
 
