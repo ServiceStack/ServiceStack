@@ -198,11 +198,10 @@ namespace IdentityDemo
 //                            var user = userManager.FindByIdAsync(session.Id).Result;
 //                            var roles = userManager.GetRolesAsync(user).Result;
 
-                            session.Roles = ApplicationServices.DbExec(db => 
-                                req.GetMemoryCacheClient().GetOrCreate(
-                                    IdUtils.CreateUrn(nameof(session.Roles), session.Id), 
-                                    TimeSpan.FromMinutes(20),
-                            () => db.GetUserRolesById(session.Id)));
+                            session.Roles = req.GetMemoryCacheClient().GetOrCreate(
+                                IdUtils.CreateUrn(nameof(session.Roles), session.Id),
+                                TimeSpan.FromMinutes(20),
+                                () => ApplicationServices.DbExec(db => db.GetIdentityUserRolesById(session.Id)));
                         }
                     }, 
                 }));
