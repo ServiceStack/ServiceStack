@@ -36,18 +36,21 @@ namespace ServiceStack
             });
         }
 
-        public static string IdentityUserRolesByIdSql { get; set; } = @"SELECT r.Name 
-    FROM AspNetUsers u
-	INNER JOIN AspNetUserRoles ur ON (u.Id = ur.UserId)
-	INNER JOIN AspNetRoles r ON (r.Id = ur.RoleId)
-	WHERE u.Id = @userId";
+        const string IdentityUserRolesByIdSql = @"SELECT r.Name 
+          FROM AspNetUsers u 
+               INNER JOIN AspNetUserRoles ur ON (u.Id = ur.UserId) 
+               INNER JOIN AspNetRoles r ON (r.Id = ur.RoleId) 
+         WHERE u.Id = @userId";
 
-        public static List<string> GetUserRolesById(this IDbConnection db, string userId)
+        public static List<string> GetUserRolesById(this IDbConnection db, string userId) =>
+            db.GetUserRolesById(userId, IdentityUserRolesByIdSql);
+        
+        public static List<string> GetUserRolesById(this IDbConnection db, string userId, string sqlGetUserRoles)
         {
             var roles = new List<string>();
             using (var cmd = db.CreateCommand())
             {
-                cmd.CommandText = IdentityUserRolesByIdSql;
+                cmd.CommandText = sqlGetUserRoles;
                 var p = cmd.CreateParameter();
                 p.ParameterName = nameof(userId);
                 p.DbType = DbType.String;
