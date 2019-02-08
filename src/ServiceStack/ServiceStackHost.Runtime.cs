@@ -731,10 +731,7 @@ namespace ServiceStack
         /// </summary>
         /// <param name="req">Provided by services and pageView, can be helpful when overriding this method</param>
         /// <returns>Nullable MemoryCacheClient</returns>
-        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req)
-        {
-            return Container.TryResolve<MemoryCacheClient>();
-        }
+        public virtual MemoryCacheClient GetMemoryCacheClient(IRequest req) => Container.TryResolve<MemoryCacheClient>();
 
         /// <summary>
         /// Returns <see cref="IMessageProducer"></see> from the IOC container.

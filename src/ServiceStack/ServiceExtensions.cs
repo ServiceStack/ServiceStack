@@ -56,6 +56,8 @@ namespace ServiceStack
 
         public static ICacheClient GetCacheClient(this IRequest request) => HostContext.AppHost.GetCacheClient(request);
 
+        public static ICacheClient GetMemoryCacheClient(this IRequest request) => HostContext.AppHost.GetMemoryCacheClient(request);
+
         public static void SaveSession(this IServiceBase service, IAuthSession session, TimeSpan? expiresIn = null)
         {
             if (service == null || session == null) return;

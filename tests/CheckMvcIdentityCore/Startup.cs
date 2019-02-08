@@ -9,11 +9,15 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 using Funq;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ServiceStack;
 using ServiceStack.Auth;
+using ServiceStack.Text;
 
 namespace IdentityDemo
 {
@@ -118,6 +122,7 @@ namespace IdentityDemo
         
         private async Task CreateRoles(IApplicationBuilder app)
         {
+            var email = "test@gmail.com";
             var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
 
             using (var scope = scopeFactory.CreateScope())
@@ -137,8 +142,8 @@ namespace IdentityDemo
                         roleResult = await RoleManager.CreateAsync(new IdentityRole(roleName));
                     }
                 }
-            
-                var user = await UserManager.FindByEmailAsync("test@gmail.com");
+
+                var user = await UserManager.FindByEmailAsync(email);
                 if (user != null)
                 {
                     foreach (var role in roleNames)
@@ -146,25 +151,40 @@ namespace IdentityDemo
                         //here we tie the new user to the role
                         await UserManager.AddToRoleAsync(user, role);
                     }
+
+//                    var roles = app.ApplicationServices.DbContextExec<ApplicationDbContext,List<string>>(ctx => {
+//                            ctx.Database.OpenConnection();
+//                            return ctx.Database.GetDbConnection();
+//                        },
+//                        db => db.GetUserRolesById(user.Id));
+//                    Console.WriteLine(roles.Dump());
+
                 }
             }
         }
     }
-    
+
+    public static class AppExtensions
+    {
+        public static T DbExec<T>(this IServiceProvider services, Func<IDbConnection, T> fn) => 
+            services.DbContextExec<ApplicationDbContext,T>(ctx => {
+                ctx.Database.OpenConnection(); return ctx.Database.GetDbConnection(); }, fn);
+    }
+
     public class AppHost : AppHostBase
     {
         public AppHost() : base("IdentityDemo", typeof(HelloService).Assembly) { }
 
         public override void Configure(Container container)
         {
-            var authRepo = new InMemoryAuthRepository();
-            container.Register<IAuthRepository>(c => authRepo);
-            authRepo.CreateUserAuth(new UserAuth {
-                UserName = "test",
-                Email = "test@gmail.com",
-                DisplayName = "ServiceStack User",
-                Roles = new List<string> { "Member" },
-            }, "test");
+//            var authRepo = new InMemoryAuthRepository();
+//            container.Register<IAuthRepository>(c => authRepo);
+//            authRepo.CreateUserAuth(new UserAuth {
+//                UserName = "test",
+//                Email = "test@gmail.com",
+//                DisplayName = "ServiceStack User",
+//                Roles = new List<string> { "Member" },
+//            }, "test");
             
             Plugins.Add(new AuthFeature(() => new AuthUserSession(), 
                 new IAuthProvider[] {
@@ -174,10 +194,15 @@ namespace IdentityDemo
                         PopulateSessionFilter = (session, principal, req) => 
                         {
                             //Example of populating ServiceStack Session Roles for EF Identity DB
-                            var userManager = req.TryResolve<UserManager<ApplicationUser>>();
-                            var user = userManager.FindByIdAsync(session.Id).Result;
-                            var roles = userManager.GetRolesAsync(user).Result;
-                            session.Roles = roles.ToList();
+//                            var userManager = req.TryResolve<UserManager<ApplicationUser>>();
+//                            var user = userManager.FindByIdAsync(session.Id).Result;
+//                            var roles = userManager.GetRolesAsync(user).Result;
+
+                            session.Roles = ApplicationServices.DbExec(db => 
+                                req.GetMemoryCacheClient().GetOrCreate(
+                                    IdUtils.CreateUrn(nameof(session.Roles), session.Id), 
+                                    TimeSpan.FromMinutes(20),
+                            () => db.GetUserRolesById(session.Id)));
                         }
                     }, 
                 }));
