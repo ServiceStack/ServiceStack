@@ -67,7 +67,14 @@ namespace ServiceStack.Templates
         public NameValueCollection form(TemplateScopeContext scope) => req(scope).FormData;
         public NameValueCollection query(TemplateScopeContext scope) => req(scope).QueryString;
         public NameValueCollection qs(TemplateScopeContext scope) => req(scope).QueryString;
-        public string queryString(TemplateScopeContext scope) => req(scope).QueryString.ToString();
+        public string queryString(TemplateScopeContext scope)
+        {
+            var qs = req(scope).QueryString.ToString();
+            return string.IsNullOrEmpty(qs) ? qs : "?" + qs;
+        }
+
+        public Dictionary<string, object> queryDictionary(TemplateScopeContext scope) =>
+            req(scope).QueryString.ToObjectDictionary();
         
         public string toQueryString(object keyValuePairs)
         {
@@ -106,7 +113,7 @@ namespace ServiceStack.Templates
             }
             else throw new NotSupportedException($"{nameof(toQueryString)} expects a collection of KeyValuePair's but was '{keyValuePairs.GetType().Name}'");
             
-            return StringBuilderCache.ReturnAndFree(sb);
+            return StringBuilderCache.ReturnAndFree(sb.Length > 0 ? sb.Insert(0,'?') : sb);
         }
 
         public string httpMethod(TemplateScopeContext scope) => req(scope)?.Verb;
