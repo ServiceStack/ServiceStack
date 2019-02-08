@@ -31,6 +31,9 @@ namespace ServiceStack
 
         IApplicationBuilder app;
 
+        public IApplicationBuilder App => app;
+        public IServiceProvider ApplicationServices => app?.ApplicationServices;
+
         public Func<NetCoreRequest,Task> BeforeNextMiddleware { get; set; }
 
         public virtual void Bind(IApplicationBuilder app)
