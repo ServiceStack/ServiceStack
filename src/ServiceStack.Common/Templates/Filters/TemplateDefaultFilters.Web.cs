@@ -76,6 +76,9 @@ namespace ServiceStack.Templates
         public Dictionary<string, object> queryDictionary(TemplateScopeContext scope) =>
             req(scope).QueryString.ToObjectDictionary();
         
+        public Dictionary<string, object> formDictionary(TemplateScopeContext scope) =>
+            req(scope).FormData.ToObjectDictionary();
+        
         public string toQueryString(object keyValuePairs)
         {
             var sb = StringBuilderCache.Allocate();
