@@ -1,13 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.Diagnostics;
 using System.Globalization;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Templates;
-using ServiceStack.Text;
 using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -1570,17 +1567,17 @@ dir-file: dir/dir-file.txt
             }.Init();
 
             Assert.That(context.EvaluateTemplate("{{ nvc | addItem({b:2}) | toQueryString | raw }}"),
-                Is.EqualTo("a=1&b=2"));
+                Is.EqualTo("?a=1&b=2"));
 
             Assert.That(context.EvaluateTemplate("{{ obj | addItem({b:2}) | toQueryString | raw }}"),
-                Is.EqualTo("a=1&b=2"));
+                Is.EqualTo("?a=1&b=2"));
             Assert.That(context.EvaluateTemplate("{{ obj | addItem(pair('b',2)) | toQueryString | raw }}"),
-                Is.EqualTo("a=1&b=2"));
+                Is.EqualTo("?a=1&b=2"));
 
             Assert.That(context.EvaluateTemplate("{{ str | addItem({b:'2'}) | toQueryString | raw }}"),
-                Is.EqualTo("a=1&b=2"));
+                Is.EqualTo("?a=1&b=2"));
             Assert.That(context.EvaluateTemplate("{{ str | addItem(pair('b','2')) | toQueryString | raw }}"),
-                Is.EqualTo("a=1&b=2"));
+                Is.EqualTo("?a=1&b=2"));
         }
 
         [Test]
