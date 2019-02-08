@@ -42,10 +42,10 @@ namespace ServiceStack
                INNER JOIN AspNetRoles r ON (r.Id = ur.RoleId) 
          WHERE u.Id = @userId";
 
-        public static List<string> GetUserRolesById(this IDbConnection db, string userId) =>
-            db.GetUserRolesById(userId, IdentityUserRolesByIdSql);
+        public static List<string> GetIdentityUserRolesById(this IDbConnection db, string userId) =>
+            db.GetIdentityUserRolesById(userId, IdentityUserRolesByIdSql);
         
-        public static List<string> GetUserRolesById(this IDbConnection db, string userId, string sqlGetUserRoles)
+        public static List<string> GetIdentityUserRolesById(this IDbConnection db, string userId, string sqlGetUserRoles)
         {
             var roles = new List<string>();
             using (var cmd = db.CreateCommand())
