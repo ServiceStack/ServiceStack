@@ -182,6 +182,12 @@ namespace ServiceStack.Templates
         public string addHashParams(string url, object urlParams) =>
             urlParams.AssertOptions(nameof(addHashParams)).Aggregate(url, (current, entry) => current.AddHashParam(entry.Key, entry.Value));
 
+        public string setQueryString(string url, object urlParams) =>
+            urlParams.AssertOptions(nameof(setQueryString)).Aggregate(url, (current, entry) => current.SetQueryParam(entry.Key, entry.Value));
+
+        public string setHashParams(string url, object urlParams) =>
+            urlParams.AssertOptions(nameof(setHashParams)).Aggregate(url, (current, entry) => current.SetHashParam(entry.Key, entry.Value));
+
         public string repeating(int times, string text) => repeat(text, AssertWithinMaxQuota(times));
         public string repeat(string text, int times)
         {
