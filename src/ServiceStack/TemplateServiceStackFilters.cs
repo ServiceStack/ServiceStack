@@ -18,6 +18,8 @@ namespace ServiceStack
         public IHttpRequest getHttpRequest(TemplateScopeContext scope) => req(scope);
         private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
+        public object sendToGateway(TemplateScopeContext scope, string requestName) => 
+            sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName) => sendToGateway(scope, dto, requestName, null);
         public object sendToGateway(TemplateScopeContext scope, object dto, string requestName, object options)
         {
@@ -50,6 +52,8 @@ namespace ServiceStack
             }
         }
 
+        public object publishToGateway(TemplateScopeContext scope, string requestName) => 
+            publishToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
         public object publishToGateway(TemplateScopeContext scope, object dto, string requestName) => publishToGateway(scope, dto, requestName, null);
         public object publishToGateway(TemplateScopeContext scope, object dto, string requestName, object options)
         {
@@ -80,6 +84,8 @@ namespace ServiceStack
             }
         }
         
+        public object sendToAutoQuery(TemplateScopeContext scope, string requestName) => 
+            sendToAutoQuery(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
         public object sendToAutoQuery(TemplateScopeContext scope, object dto, string requestName) => sendToAutoQuery(scope, dto, requestName, null);
         public object sendToAutoQuery(TemplateScopeContext scope, object dto, string requestName, object options)
         {
