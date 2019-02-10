@@ -159,7 +159,13 @@ namespace ServiceStack.NativeTypes.TypeScript
                 .Where(x => conflictPartialNames.Any(name => x.Name.StartsWith(name)))
                 .Map(x => x.Name);
 
-            defaultImports.Each(x => sb.AppendLine("import {0};".Fmt(x)));
+            foreach (var import in defaultImports)
+            {
+                var pos = import.IndexOf(':');
+                sb.AppendLine(pos == -1
+                    ? $"import {import};"
+                    : $"import {{ {import.Substring(0, pos)} }} from \"{import.Substring(pos + 1).StripQuotes()}\";");
+            }
 
             if (!string.IsNullOrEmpty(globalNamespace))
             {
