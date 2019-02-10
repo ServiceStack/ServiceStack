@@ -12,6 +12,8 @@ namespace ServiceStack
         private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
         private ServiceStackHost appHost => HostContext.AppHost;
 
+        public object sendToAutoQuery(TemplateScopeContext scope, string requestName) => 
+            sendToAutoQuery(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
         public object sendToAutoQuery(TemplateScopeContext scope, object dto, string requestName) => sendToAutoQuery(scope, dto, requestName, null);
         public object sendToAutoQuery(TemplateScopeContext scope, object dto, string requestName, object options)
         {
