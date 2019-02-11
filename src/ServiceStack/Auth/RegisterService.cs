@@ -77,7 +77,7 @@ namespace ServiceStack.Auth
         public IAuthEvents AuthEvents { get; set; }
 
         /// <summary>
-        /// Update an existing registraiton
+        /// Update an existing registration
         /// </summary>
         public object Put(Register request)
         {

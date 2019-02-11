@@ -35,7 +35,7 @@ namespace ServiceStack.FluentValidation
         /// Defines a RuleSet that can be used to provide specific validation rules for specific HTTP methods (GET, POST...)
         /// </summary>
         /// <param name="appliesTo">The HTTP methods where this rule set should be used.</param>
-        /// <param name="action">Action that encapuslates the rules in the ruleset.</param>
+        /// <param name="action">Action that encapsulates the rules in the ruleset.</param>
         public void RuleSet(ApplyTo appliesTo, Action action)
         {
             var httpMethods = appliesTo.ToString().Split(',')

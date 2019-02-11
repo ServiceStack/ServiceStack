@@ -271,7 +271,7 @@ namespace ServiceStack.Host.Handlers
                     if (ex.ErrorCode == 1229)
                         return;
                     //Error: 1229 is "An operation was attempted on a nonexistent network connection"
-                    //This exception occures when http stream is terminated by web browser because user
+                    //This exception occurs when http stream is terminated by web browser because user
                     //seek video forward and new http request will be sent by browser
                     //with attribute in header "Range: bytes=newSeekPosition-"
                     throw;

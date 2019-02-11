@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceStack.Caching;
+using ServiceStack.FluentValidation;
 using ServiceStack.Web;
 
 namespace ServiceStack
