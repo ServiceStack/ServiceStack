@@ -130,7 +130,7 @@ namespace ServiceStack.Auth {
         }
 
         /// <summary>
-        /// If previous attemts failes, the subsequential calls 
+        /// If previous attempts fails, the sequential calls 
         /// build up code value like "code1,code2,code3"
         /// so we need the last one only
         /// </summary>

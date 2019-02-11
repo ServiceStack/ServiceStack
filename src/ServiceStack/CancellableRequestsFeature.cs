@@ -39,17 +39,17 @@ namespace ServiceStack
             if (request.Tag.IsNullOrEmpty())
                 throw new ArgumentNullException("Tag");
 
-            using (var cancallableReq = base.Request.GetCancellableRequest(request.Tag))
+            using (var cancellableReq = base.Request.GetCancellableRequest(request.Tag))
             {
-                if (cancallableReq == null)
+                if (cancellableReq == null)
                     throw HttpError.NotFound($"Request with Tag '{request.Tag}' does not exist");
 
-                cancallableReq.TokenSource.Cancel();
+                cancellableReq.TokenSource.Cancel();
 
                 return new CancelRequestResponse
                 {
                     Tag = request.Tag,
-                    Elapsed = cancallableReq.Elapsed,
+                    Elapsed = cancellableReq.Elapsed,
                 };
             }
         }
@@ -135,8 +135,7 @@ namespace ServiceStack
             if (feature == null)
                 throw new Exception("Requires CancellableRequestsFeature plugin");
 
-            ICancellableRequest cancellableReq;
-            if (feature.RequestsMap.TryGetValue(tag, out cancellableReq))
+            if (feature.RequestsMap.TryGetValue(tag, out var cancellableReq))
                 return cancellableReq;
 
             return null;

@@ -16,7 +16,7 @@ namespace ServiceStack
     /// Console Application, Windows Service, etc.
     /// 
     /// Usage of HttpListener allows you to host webservices on the same port (:80) as IIS 
-    /// however it requires admin user privillages.
+    /// however it requires admin user privileges.
     /// </summary>
     public abstract class AppHostHttpListenerBase
         : HttpListenerBase

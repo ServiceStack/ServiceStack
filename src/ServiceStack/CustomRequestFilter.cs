@@ -11,10 +11,7 @@ namespace ServiceStack
 
         public CustomRequestFilter(Action<IRequest, IResponse, object> filter)
         {
-            if (filter == null)
-                throw new ArgumentNullException(nameof(filter));
-
-            this.filter = filter;
+            this.filter = filter ?? throw new ArgumentNullException(nameof(filter));
         }
 
         public void Register(IAppHost appHost)
@@ -34,10 +31,7 @@ namespace ServiceStack
 
         public CustomResponseFilter(Action<IRequest, IResponse, object> filter)
         {
-            if (filter == null)
-                throw new ArgumentNullException(nameof(filter));
-
-            this.filter = filter;
+            this.filter = filter ?? throw new ArgumentNullException(nameof(filter));
         }
 
         public void Register(IAppHost appHost)

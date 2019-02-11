@@ -16,8 +16,8 @@ namespace ServiceStack.Validation
 
         public static IValidator GetValidator(IRequest httpReq, Type type)
         {
-            ResolveValidatorDelegate parseFn;
-            if (delegateCache.TryGetValue(type, out parseFn)) return parseFn.Invoke(httpReq);
+            if (delegateCache.TryGetValue(type, out var parseFn)) 
+                return parseFn.Invoke(httpReq);
 
             var genericType = typeof(ValidatorCache<>).MakeGenericType(type);
             var mi = genericType.GetMethod("GetValidator", BindingFlags.Public | BindingFlags.Static);
@@ -40,8 +40,7 @@ namespace ServiceStack.Validation
         public static IValidator GetValidator(IRequest httpReq)
         {
             var validator = httpReq.TryResolve<IValidator<T>>();
-            var hasRequest = validator as IRequiresRequest;
-            if (hasRequest != null)
+            if (validator is IRequiresRequest hasRequest)
                 hasRequest.Request = httpReq;
             return validator;
         }

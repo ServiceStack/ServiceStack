@@ -245,15 +245,15 @@ namespace ServiceStack
         {
             var scannedTypes = LoadFromAssemblies.SelectMany(x => x.GetTypes());
 
-            var misingRequestTypes = scannedTypes
+            var missingRequestTypes = scannedTypes
                 .Where(x => x.HasInterface(typeof(IQueryData)))
                 .Where(x => !appHost.Metadata.OperationsMap.ContainsKey(x))
                 .ToList();
 
-            if (misingRequestTypes.Count == 0)
+            if (missingRequestTypes.Count == 0)
                 return;
 
-            var serviceType = GenerateMissingServices(misingRequestTypes);
+            var serviceType = GenerateMissingServices(missingRequestTypes);
             appHost.RegisterService(serviceType);
         }
 
@@ -1490,8 +1490,7 @@ namespace ServiceStack
 
             if (attr.Condition != null)
             {
-                QueryCondition queryCondition;
-                if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out queryCondition))
+                if (!feature.ConditionsAliases.TryGetValue(attr.Condition, out var queryCondition))
                     throw new NotSupportedException($"No Condition registered with name '{attr.Condition}' on [QueryDataField({attr.Field ?? pi.Name})]");
 
                 to.QueryCondition = queryCondition;
@@ -1510,12 +1509,12 @@ namespace ServiceStack
             return autoQuery.CreateQuery(model, request.GetRequestParams(), request, db);
         }
 
-        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> soruce)
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, IEnumerable<T> source)
         {
-            return new MemoryDataSource<T>(ctx, soruce);
+            return new MemoryDataSource<T>(ctx, source);
         }
 
-        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> soruceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
+        public static IQueryDataSource<T> MemorySource<T>(this QueryDataContext ctx, Func<IEnumerable<T>> sourceFn, ICacheClient cache, TimeSpan? expiresIn = null, string cacheKey = null)
         {
             if (cacheKey == null)
                 cacheKey = "aqd:" + typeof(T).Name;
@@ -1524,7 +1523,7 @@ namespace ServiceStack
             if (cachedResults != null)
                 return new MemoryDataSource<T>(ctx, cachedResults);
 
-            var results = soruceFn();
+            var results = sourceFn();
             var source = new MemoryDataSource<T>(ctx, results);
             return source.CacheMemorySource(cache, cacheKey, expiresIn);
         }

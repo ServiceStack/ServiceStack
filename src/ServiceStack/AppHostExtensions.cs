@@ -27,7 +27,7 @@ namespace ServiceStack
         public static void AddPluginsFromAssembly(this IAppHost appHost, params Assembly[] assembliesWithPlugins)
         {
             var ssHost = (ServiceStackHost)appHost;
-            foreach (Assembly assembly in assembliesWithPlugins)
+            foreach (var assembly in assembliesWithPlugins)
             {
                 var pluginTypes =
                     from t in assembly.GetExportedTypes()
