@@ -505,7 +505,7 @@
         } else {
             fn = $.ss.handlers[attr];
             if (fn) {
-                fn.apply(e.target, [].splice(arguments));
+                fn.apply(e.target, [].slice.call(arguments));
             }
         }
     };
