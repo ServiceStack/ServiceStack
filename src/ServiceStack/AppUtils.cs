@@ -50,12 +50,7 @@ namespace ServiceStack
             var roles = new List<string>();
             using (var cmd = db.CreateCommand())
             {
-                cmd.CommandText = sqlGetUserRoles;
-                var p = cmd.CreateParameter();
-                p.ParameterName = nameof(userId);
-                p.DbType = DbType.String;
-                p.Value = userId;
-                cmd.Parameters.Add(p);
+                cmd.AddUserIdParameter(userId, sqlGetUserRoles);
 
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -68,6 +63,68 @@ namespace ServiceStack
 
             return roles;
         }
+
+        const string IdentityUserByIdSql = @"SELECT * FROM AspNetUsers WHERE Id = @userId";
+
+        public static Dictionary<string, object> GetIdentityUserById(this IDbConnection db, string userId) =>
+            db.GetIdentityUserById(userId, IdentityUserByIdSql);
+
+        public static Dictionary<string, object> GetIdentityUserById(this IDbConnection db, string userId,
+            string sqlGetUser)
+        {
+            using (var cmd = db.CreateCommand())
+            {
+                cmd.AddUserIdParameter(userId, sqlGetUser);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    var to = reader.ToObjectDictionary();
+                    return to;
+                }
+            }
+        }
+
+        public static Dictionary<string, object> ToObjectDictionary(this IDataReader reader)
+        {
+            Dictionary<string, object> to = null;
+            var fieldCount = reader.FieldCount;
+            while (reader.Read())
+            {
+                if (to == null)
+                    to = new Dictionary<string, object>();
+
+                for (var i = 0; i < fieldCount; i++)
+                {
+                    var value = reader.GetValue(i);
+                    if (value == DBNull.Value)
+                        continue;
+                    to[reader.GetName(i)] = value;
+                }
+            }
+            return to;
+        }
+
+        public static T GetIdentityUserById<T>(this IDbConnection db, string userId) =>
+            db.GetIdentityUserById<T>(userId, IdentityUserByIdSql);
+        
+        public static T GetIdentityUserById<T>(this IDbConnection db, string userId, string sqlGetUser)
+        {
+            var values = db.GetIdentityUserById(userId, sqlGetUser);
+            if (values == null)
+                return default;
+            var to = values.FromObjectDictionary<T>();
+            return to;
+        }
+
+        private static void AddUserIdParameter(this IDbCommand cmd, string userId, string sql)
+        {
+            cmd.CommandText = sql;
+            var p = cmd.CreateParameter();
+            p.ParameterName = nameof(userId);
+            p.DbType = DbType.String;
+            p.Value = userId;
+            cmd.Parameters.Add(p);
+        }
+
     }
 }
 

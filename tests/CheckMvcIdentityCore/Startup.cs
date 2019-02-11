@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using Funq;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -21,6 +22,11 @@ using ServiceStack.Text;
 
 namespace IdentityDemo
 {
+    /// <summary>
+    /// To create Identity SQL Server database, change "ConnectionStrings" in appsettings.json
+    ///   $ dotnet ef migrations add CreateCheckMvcCoreIdentitySchema
+    ///   $ dotnet ef database update
+    /// </summary>
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -122,7 +128,7 @@ namespace IdentityDemo
         
         private async Task CreateRoles(IApplicationBuilder app)
         {
-            var email = "test@gmail.com";
+            var email = "test@gmail.com"; // p@55wOrd
             var scopeFactory = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>();
 
             using (var scope = scopeFactory.CreateScope())
@@ -151,14 +157,6 @@ namespace IdentityDemo
                         //here we tie the new user to the role
                         await UserManager.AddToRoleAsync(user, role);
                     }
-
-//                    var roles = app.ApplicationServices.DbContextExec<ApplicationDbContext,List<string>>(ctx => {
-//                            ctx.Database.OpenConnection();
-//                            return ctx.Database.GetDbConnection();
-//                        },
-//                        db => db.GetUserRolesById(user.Id));
-//                    Console.WriteLine(roles.Dump());
-
                 }
             }
         }
@@ -198,10 +196,14 @@ namespace IdentityDemo
 //                            var user = userManager.FindByIdAsync(session.Id).Result;
 //                            var roles = userManager.GetRolesAsync(user).Result;
 
+                            var user = ApplicationServices.DbExec(db => 
+                                db.GetIdentityUserById<ApplicationUser>(session.Id));
+
                             session.Roles = req.GetMemoryCacheClient().GetOrCreate(
                                 IdUtils.CreateUrn(nameof(session.Roles), session.Id),
                                 TimeSpan.FromMinutes(20),
-                                () => ApplicationServices.DbExec(db => db.GetIdentityUserRolesById(session.Id)));
+                                () => ApplicationServices.DbExec(db => 
+                                    db.GetIdentityUserRolesById(session.Id)));
                         }
                     }, 
                 }));
