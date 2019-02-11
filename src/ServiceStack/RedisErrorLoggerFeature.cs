@@ -11,9 +11,9 @@ namespace ServiceStack
 {
     public class RedisErrorLoggerFeature : IPlugin
     {
-        public static ILog Log = LogManager.GetLogger(typeof(RedisErrorLoggerFeature));
+        private static ILog Log = LogManager.GetLogger(typeof(RedisErrorLoggerFeature));
 
-        public IRedisClientsManager redisManager;
+        private readonly IRedisClientsManager redisManager;
 
         public RedisErrorLoggerFeature(IRedisClientsManager redisManager)
         {
@@ -60,17 +60,17 @@ namespace ServiceStack
 
                     //Store the errors in predictable Redis-named lists i.e. 
                     //'urn:ServiceErrors:{ServiceName}' and 'urn:ServiceErrors:All' 
-                    var redisSeriviceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
+                    var redisServiceErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, operationName)];
                     var redisCombinedErrorList = redis.Lists[UrnId.Create(UrnServiceErrorType, CombinedServiceLogId)];
 
                     //Append the error at the start of the service-specific and combined error logs.
                     var responseStatus = ex.ToResponseStatus();
-                    redisSeriviceErrorList.Prepend(responseStatus);
+                    redisServiceErrorList.Prepend(responseStatus);
                     redisCombinedErrorList.Prepend(responseStatus);
 
                     //Clip old error logs from the managed logs
                     const int rollingErrorCount = 1000;
-                    redisSeriviceErrorList.Trim(0, rollingErrorCount);
+                    redisServiceErrorList.Trim(0, rollingErrorCount);
                     redisCombinedErrorList.Trim(0, rollingErrorCount);
                 }
             }

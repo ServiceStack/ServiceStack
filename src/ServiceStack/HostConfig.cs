@@ -176,7 +176,7 @@ namespace ServiceStack
 #endif
             };
 
-            Platform.Instance.InitHostConifg(config);
+            Platform.Instance.InitHostConfig(config);
 
             return config;
         }

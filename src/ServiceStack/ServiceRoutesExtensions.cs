@@ -95,7 +95,7 @@ namespace ServiceStack
         {
             while (toCheck != typeof(object))
             {
-                Type cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
+                var cur = toCheck.IsGenericType ? toCheck.GetGenericTypeDefinition() : toCheck;
                 if (generic == cur)
                 {
                     return true;
@@ -113,7 +113,7 @@ namespace ServiceStack
 
         private static string PropertyName(LambdaExpression lambdaExpression)
         {
-            return (lambdaExpression.Body is UnaryExpression ? (MemberExpression)((UnaryExpression)lambdaExpression.Body).Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
+            return (lambdaExpression.Body is UnaryExpression unary ? (MemberExpression)unary.Operand : (MemberExpression)lambdaExpression.Body).Member.Name;
         }
 
         public static IServiceRoutes Add<T>(this IServiceRoutes serviceRoutes, string restPath, ApplyTo verbs, params Expression<Func<T, object>>[] propertyExpressions)

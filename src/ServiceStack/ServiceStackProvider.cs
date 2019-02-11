@@ -162,8 +162,7 @@ namespace ServiceStack
         public object Execute(object requestDto)
         {
             var response = HostContext.ServiceController.Execute(requestDto, Request);
-            var ex = response as Exception;
-            if (ex != null)
+            if (response is Exception ex)
                 throw ex;
 
             return response;
@@ -177,8 +176,7 @@ namespace ServiceStack
         public object Execute(IRequest request)
         {
             var response = HostContext.ServiceController.Execute(request, applyFilters:true);
-            var ex = response as Exception;
-            if (ex != null)
+            if (response is Exception ex)
                 throw ex;
 
             return response;

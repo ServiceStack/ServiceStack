@@ -15,7 +15,7 @@ namespace ServiceStack.Platforms
     {
         const string NamespacesAppSettingsKey = "servicestack.razor.namespaces";
 
-        public override void InitHostConifg(HostConfig config)
+        public override void InitHostConfig(HostConfig config)
         {
             if (config.HandlerFactoryPath == null)
             {
