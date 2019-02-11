@@ -230,9 +230,23 @@ namespace ServiceStack.Auth
         {
             if (!AutoSignInSessionsMatching(req))
                 return;
-            
+
             if (req.HttpContext.User?.Identity?.IsAuthenticated == true)
+            {
+                if (req.HttpContext.User.Identity is ClaimsIdentity identity &&
+                    (HostContext.HasValidAuthSecret(req) || identity.HasClaim(RoleClaimType, RoleNames.Admin)))
+                {
+                    foreach (var adminRole in AdminRoles)
+                    {
+                        if (identity.HasClaim(RoleClaimType, adminRole))
+                            continue;
+
+                        identity.AddClaim(new Claim(RoleClaimType, adminRole, ClaimValueTypes.String, Issuer));
+                    }
+                }
+
                 return;
+            }
             
             var session = req.GetSession();
             if (session.IsAuthenticated)
