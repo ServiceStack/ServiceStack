@@ -394,16 +394,22 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 var typeDeclaration = !Config.ExportAsTypes
                     ? "interface"
-                    : $"export {(isClass ? "class" : "interface")}"; 
+                    : $"export {(isClass ? "class" : "interface")}";
 
-                sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}{extend}");
+                var typeName = Type(type.Name, type.GenericArgs);
+                sb.AppendLine($"{typeDeclaration} {typeName}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
 
-                if (EmitPartialConstructors && Config.ExportAsTypes && isClass && type.GenericArgs.IsEmpty())
+                if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
                 {
-                    sb.AppendLine($"public constructor(init?:Partial<{type.Name}>) {{ Object.assign(this, init); }}");
+                    var callSuper = type.Inherits != null 
+                        ? !extend.StartsWith(" extends Array<") 
+                            ? "super(init); " 
+                            : "super(); "
+                        : "";
+                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}Object.assign(this, init); }}");
                 }
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
