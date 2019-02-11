@@ -365,8 +365,8 @@ namespace ServiceStack
 
         public ServiceController ServiceController { get; set; }
 
-        // Rare for a user to auto register all avaialable services in ServiceStack.dll
-        // But happens when ILMerged, so exclude autoregistering SS services by default 
+        // Rare for a user to auto register all available services in ServiceStack.dll
+        // But happens when ILMerged, so exclude auto-registering SS services by default 
         // and let them register them manually
         public HashSet<Type> ExcludeAutoRegisteringServiceTypes { get; set; }
 
@@ -396,7 +396,7 @@ namespace ServiceStack
         /// Can be used to convert/change Input Dto
         /// Called after routing and model binding, but before request filters.
         /// All request converters are called unless <see cref="IResponse.IsClosed"></see>
-        /// Converter can return null, orginal model will be used.
+        /// Converter can return null, original model will be used.
         /// 
         /// Note one converter could influence the input for the next converter!
         /// </summary>

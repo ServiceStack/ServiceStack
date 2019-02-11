@@ -6,23 +6,23 @@ namespace ServiceStack
 {
     //adapted from  https://github.com/Haacked/CodeHaacks/blob/master/src/AspNetHaack/SuppressFormsAuthenticationRedirectModule.cs
     /// <summary>
-    /// This class interecepts 401 requests and changes them to 402 errors.   When this happens the FormAuthentication module
+    /// This class intercepts 401 requests and changes them to 402 errors.   When this happens the FormAuthentication module
     /// will no longer hijack it and redirect back to login because it is a 402 error, not a 401.
     /// When the request ends, this class sets the status code back to 401 and everything works as it should.
     /// 
-    /// PathToSupress is the path inside your website where the above swap should happen.
+    /// PathToSuppress is the path inside your website where the above swap should happen.
     /// 
     /// If you can build for .net 4.5, you do not have to do this swap. You can take advantage of a new flag (SuppressFormsAuthenticationRedirect)
     /// that tells the FormAuthenticationModule to not redirect, which also means you will not need the EndRequest code.
     /// </summary>
     public class SuppressFormsAuthenticationRedirectModule : IHttpModule
     {
-        public static string PathToSupress { get; set; }
+        public static string PathToSuppress { get; set; }
 
         public virtual void Init(HttpApplication context)
         {
-            if (string.IsNullOrEmpty(PathToSupress))
-                PathToSupress = "/api";
+            if (string.IsNullOrEmpty(PathToSuppress))
+                PathToSuppress = "/api";
             context.PostReleaseRequestState += OnPostReleaseRequestState;
             context.EndRequest += OnEndRequest;  //not needed if .net 4.5 
         }
@@ -31,7 +31,7 @@ namespace ServiceStack
         void OnEndRequest(object source, EventArgs e)
         {
             var context = (HttpApplication)source;
-            if (context.Response.StatusCode == 402 && context.Request.Url.PathAndQuery.StartsWith(PathToSupress))
+            if (context.Response.StatusCode == 402 && context.Request.Url.PathAndQuery.StartsWith(PathToSuppress))
                 context.Response.StatusCode = 401;
         }
 
@@ -42,9 +42,9 @@ namespace ServiceStack
 
         private void OnPostReleaseRequestState(object source, EventArgs args)
         {
-            //System.Web.Security.FormsAuthenticationModule  //swap error code to 402 ...then put it back on endrequest?
+            //System.Web.Security.FormsAuthenticationModule  //swap error code to 402 ...then put it back on end request?
             var context = (HttpApplication)source;
-            if (context.Response.StatusCode == 401 && context.Request.Url.PathAndQuery.StartsWith(PathToSupress))
+            if (context.Response.StatusCode == 401 && context.Request.Url.PathAndQuery.StartsWith(PathToSuppress))
                 context.Response.StatusCode = 402;                              //.net 4.0 solution.
                                                                                 //context.Response.SuppressFormsAuthenticationRedirect = true;  //.net 4.5 solution.
         }
