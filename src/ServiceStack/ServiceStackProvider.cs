@@ -5,6 +5,7 @@ using System.Linq;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
+using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Redis;
 using ServiceStack.Web;
@@ -100,6 +101,19 @@ namespace ServiceStack
 
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Resolve ServiceStack Validator in external ServiceStack provider class like ServiceStackController 
+        /// </summary>
+        public static IValidator<T> ResolveValidator<T>(this IHasServiceStackProvider provider)
+        {
+            var validator = provider.ServiceStackProvider.TryResolve<IValidator<T>>();
+            if (validator is IRequiresRequest requiresReq)
+            {
+                requiresReq.Request = provider.ServiceStackProvider.Request;
+            }
+            return validator;
         }
     }
 
