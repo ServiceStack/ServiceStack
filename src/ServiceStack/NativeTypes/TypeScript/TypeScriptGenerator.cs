@@ -23,6 +23,8 @@ namespace ServiceStack.NativeTypes.TypeScript
         
         public static bool UseUnionTypeEnums { get; set; }
 
+        public static bool EmitPartialConstructors { get; set; } = true;
+
         public static Action<StringBuilderWrapper, MetadataType> PreTypeFilter { get; set; }
         public static Action<StringBuilderWrapper, MetadataType> PostTypeFilter { get; set; }
 
@@ -394,10 +396,15 @@ namespace ServiceStack.NativeTypes.TypeScript
                     ? "interface"
                     : $"export {(isClass ? "class" : "interface")}"; 
 
-                sb.AppendLine("{0} {1}{2}".Fmt(typeDeclaration, Type(type.Name, type.GenericArgs), extend));
+                sb.AppendLine($"{typeDeclaration} {Type(type.Name, type.GenericArgs)}{extend}");
                 sb.AppendLine("{");
 
                 sb = sb.Indent();
+
+                if (EmitPartialConstructors && Config.ExportAsTypes && isClass && type.GenericArgs.IsEmpty())
+                {
+                    sb.AppendLine($"public constructor(init?:Partial<{type.Name}>) {{ Object.assign(this, init); }}");
+                }
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
