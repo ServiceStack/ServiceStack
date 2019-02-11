@@ -1,0 +1,15 @@
+{
+  "name": "checkwebcore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@servicestack/client": "^1.0.15"
+  }
+}
