@@ -215,8 +215,7 @@ namespace ServiceStack
 
             if (a.GetType() == b.GetType())
             {
-                var ac = a as IComparable;
-                if (ac != null)
+                if (a is IComparable ac)
                     return ac.CompareTo(b);
             }
 

@@ -132,7 +132,7 @@ namespace ServiceStack
         /// Response headers are customizable by implementing IHasOptions an returning Dictionary of Http headers.
         /// </summary>
         /// <param name="response">The response.</param>
-        /// <param name="result">Whether or not it was implicity handled by ServiceStack's built-in handlers.</param>
+        /// <param name="result">Whether or not it was implicitly handled by ServiceStack's built-in handlers.</param>
         /// <param name="defaultAction">The default action.</param>
         /// <param name="request">The serialization context.</param>
         /// <param name="bodyPrefix">Add prefix to response body if any</param>

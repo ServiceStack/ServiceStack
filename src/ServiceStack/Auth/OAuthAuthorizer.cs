@@ -346,7 +346,7 @@ namespace ServiceStack.Auth
         // 
         // This url encoder is different than regular Url encoding found in .NET 
         // as it is used to compute the signature based on a url.   Every document
-        // on the web omits this little detail leading to wasting everyone's time.
+        // on the web omits this little detail leading to wasting every ones time.
         //
         // This has got to be one of the lamest specs and requirements ever produced
         //

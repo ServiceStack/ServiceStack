@@ -12,8 +12,7 @@ namespace ServiceStack.Platforms
         public override Dictionary<string, string> GetCookiesAsDictionary(IRequest httpReq)
         {
             var map = new Dictionary<string, string>();
-            var aspNet = httpReq.OriginalRequest as HttpRequest;
-            if (aspNet != null)
+            if (httpReq.OriginalRequest is HttpRequest aspNet)
             {
                 foreach (var name in aspNet.Cookies.AllKeys)
                 {
@@ -24,8 +23,7 @@ namespace ServiceStack.Platforms
             }
             else
             {
-                var httpListener = httpReq.OriginalRequest as HttpListenerRequest;
-                if (httpListener != null)
+                if (httpReq.OriginalRequest is HttpListenerRequest httpListener)
                 {
                     for (var i = 0; i < httpListener.Cookies.Count; i++)
                     {
@@ -41,8 +39,7 @@ namespace ServiceStack.Platforms
         public override Dictionary<string, string> GetCookiesAsDictionary(IResponse httpRes)
         {
             var map = new Dictionary<string, string>();
-            var aspNet = httpRes.OriginalResponse as System.Web.HttpResponse;
-            if (aspNet != null)
+            if (httpRes.OriginalResponse is HttpResponse aspNet)
             {
                 foreach (var name in aspNet.Cookies.AllKeys)
                 {
@@ -53,8 +50,7 @@ namespace ServiceStack.Platforms
             }
             else
             {
-                var httpListener = httpRes.OriginalResponse as HttpListenerResponse;
-                if (httpListener != null)
+                if (httpRes.OriginalResponse is HttpListenerResponse httpListener)
                 {
                     for (var i = 0; i < httpListener.Cookies.Count; i++)
                     {

@@ -433,8 +433,8 @@ namespace ServiceStack.Auth
             using (var redis = factory.GetClient())
             {
                 var idx = IndexUserAuthAndApiKeyIdsSet(long.Parse(userId));
-                var authProiverIds = redis.GetAllItemsFromSet(idx);
-                var apiKeys = redis.As<ApiKey>().GetByIds(authProiverIds);
+                var authProviderIds = redis.GetAllItemsFromSet(idx);
+                var apiKeys = redis.As<ApiKey>().GetByIds(authProviderIds);
                 return apiKeys
                     .Where(x => x.CancelledDate == null 
                         && (x.ExpiryDate == null || x.ExpiryDate >= DateTime.UtcNow))

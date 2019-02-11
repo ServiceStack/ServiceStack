@@ -49,13 +49,13 @@ namespace ServiceStack
             {
                 if (Name.EqualsIgnoreCase(HttpHeaders.ContentType))
                 {
-                    req.ResponseContentType = Value; //Looked at in WriteRespone
+                    req.ResponseContentType = Value; //Looked at in WriteResponse
                 }
                 else if (Name == "DefaultContentType")
                 {
                     if (!req.HasExplicitResponseContentType)
                     {
-                        req.ResponseContentType = Value; //Looked at in WriteRespone
+                        req.ResponseContentType = Value; //Looked at in WriteResponse
                     }
                 }
                 else

@@ -608,8 +608,7 @@ namespace ServiceStack
                 if (format.Contains("jsv")) return MimeTypes.Jsv;
             }
 
-            string contentType;
-            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out contentType);
+            HostContext.ContentTypes.ContentTypeFormats.TryGetValue(format, out var contentType);
 
             return contentType;
         }
@@ -621,8 +620,7 @@ namespace ServiceStack
         public static object ResolveItem(this IRequest httpReq,
             string itemKey, Func<IRequest, object> resolveFn)
         {
-            object cachedItem;
-            if (httpReq.Items.TryGetValue(itemKey, out cachedItem))
+            if (httpReq.Items.TryGetValue(itemKey, out var cachedItem))
                 return cachedItem;
 
             var item = resolveFn(httpReq);

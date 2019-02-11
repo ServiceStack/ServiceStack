@@ -60,8 +60,7 @@ namespace ServiceStack
                     else
                     {
                         var res = next(innerTask);
-                        var t = res as Task;
-                        if (t != null && t.IsFaulted)
+                        if (res is Task t && t.IsFaulted)
                         {
                             tcs.TrySetException(t.Exception);
                         }

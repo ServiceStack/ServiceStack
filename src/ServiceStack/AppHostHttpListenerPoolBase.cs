@@ -19,17 +19,17 @@ namespace ServiceStack
             private readonly object syncRoot = new object();
             private volatile bool isDisposing;
             private readonly AutoResetEvent autoResetEvent;
-            private int avalaibleThreadCount = 0;
+            private int availableThreadCount = 0;
 
             public ThreadPoolManager(int poolSize)
             {
                 autoResetEvent = new AutoResetEvent(false);
-                avalaibleThreadCount = poolSize;
+                availableThreadCount = poolSize;
             }
 
             public Thread Peek(ThreadStart threadStart)
             {
-                while (!isDisposing && avalaibleThreadCount == 0)
+                while (!isDisposing && availableThreadCount == 0)
                     autoResetEvent.WaitOne();
 
                 lock (syncRoot)
@@ -37,7 +37,7 @@ namespace ServiceStack
                     if (isDisposing)
                         return null;
 
-                    if (Interlocked.Decrement(ref avalaibleThreadCount) < 0)
+                    if (Interlocked.Decrement(ref availableThreadCount) < 0)
                         return Peek(threadStart);
                 }
 
@@ -46,14 +46,10 @@ namespace ServiceStack
 
             public void Free()
             {
-                Interlocked.Increment(ref avalaibleThreadCount);
+                Interlocked.Increment(ref availableThreadCount);
                 autoResetEvent.Set();
             }
 
-            /// <summary>
-            /// Exécute les tâches définies par l'application associées à la libération ou à la redéfinition des ressources non managées.
-            /// </summary>
-            /// <filterpriority>2</filterpriority>
             public void Dispose()
             {
                 lock (this)

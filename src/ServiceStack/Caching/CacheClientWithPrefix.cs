@@ -5,7 +5,7 @@ using System.Linq;
 namespace ServiceStack.Caching
 {
     /// <summary>
-    /// Decorates the ICacheClient (and its sibblings) prefixing every key with the given prefix
+    /// Decorates the ICacheClient (and its siblings) prefixing every key with the given prefix
     /// 
     /// Usefull for multi-tenant environments
     /// </summary>
@@ -137,7 +137,7 @@ namespace ServiceStack.Caching
     public static class CacheClientWithPrefixExtensions
     {
         /// <summary>
-        /// Decorates the ICacheClient (and its sibblings) prefixing every key with the given prefix
+        /// Decorates the ICacheClient (and its siblings) prefixing every key with the given prefix
         /// 
         /// Usefull for multi-tenant environments
         /// </summary>
