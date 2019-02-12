@@ -36,54 +36,42 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@servicestack/client");
-var scripts_1 = require("../scripts");
+var dtos_1 = require("../../../dtos");
 var client = new client_1.JsonServiceClient();
 var form = document.querySelector("form");
-scripts_1.bootstrapForm(form, {
+client_1.bootstrapForm(form, {
     success: function (r) {
         form.reset();
         CONTACTS.push(r.result);
         render();
     }
 });
-scripts_1.bindHandlers({
+client_1.bindHandlers({
     deleteContact: function (id) {
         return __awaiter(this, void 0, void 0, function () {
-            var headers, r;
+            var response;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (!confirm('Are you sure?'))
                             return [2 /*return*/];
-                        headers = {
-                            Accept: 'application/json'
-                        };
-                        return [4 /*yield*/, fetch("/contacts/" + id, { method: "DELETE" })];
+                        return [4 /*yield*/, client.delete(new dtos_1.DeleteContact({ id: id }))];
                     case 1:
                         _a.sent();
-                        return [4 /*yield*/, fetch("/contacts")];
+                        return [4 /*yield*/, client.get(new dtos_1.GetContacts())];
                     case 2:
-                        r = _a.sent();
-                        //await r.json()
-                        $.post("/contacts/" + id + "/delete", function (r) {
-                            $.getJSON("/contacts", function (r) {
-                                CONTACTS = r.results;
-                                render();
-                            });
-                        });
+                        response = _a.sent();
+                        CONTACTS = response.results;
+                        render();
                         return [2 /*return*/];
                 }
             });
         });
     }
 });
-function contactRow(contact) {
-    return '<tr style="background:' + contact.color + '">' +
-        '<td>' + contact.title + ' ' + contact.name + ' (' + contact.age + ')</td>' +
-        '<td><a href="/validation/server-jquery/contacts/' + contact.id + '/edit">edit</a></td>' +
-        '<td><button class="btn btn-sm btn-primary" data-click="deleteContact:' + contact.id + '">delete</button></td>' +
-        '</tr>';
-}
+var contactRow = function (contact) {
+    return "<tr style=\"background:" + contact.color + "\">\n        <td>" + contact.title + " " + contact.name + " (" + contact.age + ")</td>\n        <td><a href=\"/validation/server-ts/contacts/" + contact.id + "/edit\">edit</a></td>\n        <td><button class=\"btn btn-sm btn-primary\" data-click=\"deleteContact:" + contact.id + "\">delete</button></td>\n    </tr>";
+};
 function render() {
     var sb = "";
     if (CONTACTS.length > 0) {
@@ -97,3 +85,4 @@ function render() {
     document.querySelector("#results").innerHTML = "<tbody>" + sb + "</tbody>";
 }
 render();
+//# sourceMappingURL=index.js.map

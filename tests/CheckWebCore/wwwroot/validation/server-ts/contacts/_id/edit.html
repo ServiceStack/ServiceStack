@@ -1,6 +1,6 @@
 {{ 'requires-auth' | partial }}
 
-{{ '/validation/server-jquery/contacts/' | assignTo: continue }}
+{{ '/validation/server-ts/contacts/' | assignTo: continue }}
 
 {{ { id } | sendToGateway('GetContact', {catchError:'ex'}) | assignTo: response }}
 
@@ -40,7 +40,7 @@
             {{#each contactGenres}}
             <div class="custom-control custom-checkbox">
                 <input type="checkbox" id="filmGenres-{{it}}" name="filmGenres" value="{{it}}" class="form-check-input"
-                    {{ {checked:any(FilmGenres,x => x == toString(it))} | htmlAttrs }}>
+                       {{ {checked:any(FilmGenres,x => x == toString(it))} | htmlAttrs }}>
                 <label class="form-check-label" for="filmGenres-{{it}}">{{it}}</label>
             </div>
             {{/each}}
@@ -61,14 +61,9 @@
     </div>
 {{/with}}
 
-{{#capture appendTo scripts}}
-<script>
-    $("form").bootstrapForm({
-        success: function (r) {
-            location.href = '{{continue}}';
-        }
-    });
-</script>
-{{/capture}}
+
+{{#raw appendTo scripts}}
+<script src="../edit.js"></script>
+{{/raw}}
 
 {{ htmlError }}

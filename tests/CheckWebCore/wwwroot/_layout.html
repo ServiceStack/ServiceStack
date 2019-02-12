@@ -42,8 +42,17 @@
     <script src="/assets/js/bootstrap.min.js"></script>
     <script src="/js/ss-utils.js"></script>
     <script src="/assets/js/default.js"></script>
+    
+    <script>
+        module = {exports:{}}; exports = {};
+        //SHIM FTW! - Give all objects access to all types in global exports namespace
+        window.require = function(name) { return exports; };
+    </script>
+    
+    <script src="/node_modules/@servicestack/client/src/index.js"></script>
+    <script src="/validation/server-ts/scripts.js"></script>
+    <script src="/dtos.js"></script>
 
-    <script>var exports = window;</script>
     {{ scripts | raw }}
 
 </body>
