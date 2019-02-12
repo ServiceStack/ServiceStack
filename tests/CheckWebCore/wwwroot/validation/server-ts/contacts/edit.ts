@@ -1,7 +1,10 @@
 import { bootstrapForm } from "@servicestack/client";
 
-const form = document.querySelector("form");
+declare var CONTACT:any;
+
+const form = document.querySelector("form")!;
 bootstrapForm(form,{
+    model: CONTACT,
     success: function () {
         location.href = '/validation/server-ts/contacts/';
     }
