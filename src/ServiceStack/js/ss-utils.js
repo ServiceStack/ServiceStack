@@ -378,6 +378,8 @@
     $.fn.bindForm = function (orig) { //bootstrap v3
         return this.each(function () {
             var f = $(this);
+            if (orig.model)
+                $.ss.populateForm(this,orig.model);
             f.submit(function (e) {
                 e.preventDefault();
                 return $(f).ajaxSubmit(orig);
@@ -387,6 +389,8 @@
     $.fn.bootstrapForm = function (orig) { //bootstrap v4
         return this.each(function () {
             var f = $(this);
+            if (orig.model) 
+                $.ss.populateForm(this,orig.model);
             f.submit(function (e) {
                 e.preventDefault();
                 orig.type = "bootstrap-v4";
@@ -517,6 +521,51 @@
             $el.off($.ss.listenOn, $.ss.__call);
             $el.on($.ss.listenOn, $.ss.__call);
         });
+    };
+
+    $.ss.populateForm = function(form, model) {
+        if (!model)
+            return;
+        var toggleCase = function (s) { return !s ? s :
+            s[0] === s[0].toUpperCase() ? exports.toCamelCase(s) : s[0] === s[0].toLowerCase() ? exports.toPascalCase(s) : s; };
+        for (var key in model) {
+            var val = model[key];
+            if (typeof val == 'undefined' || val === null)
+                val = '';
+            var el = form.elements.namedItem(key) || form.elements.namedItem(toggleCase(key));
+            var input = el;
+            if (!el)
+                continue;
+            var type = input.type || el[0].type;
+            switch (type) {
+                case 'radio':
+                case 'checkbox':
+                    var len = el.length;
+                    for (var i = 0; i < len; i++) {
+                        el[i].checked = (val.indexOf(el[i].value) > -1);
+                    }
+                    break;
+                case 'select-multiple':
+                    var values = $.isArray(val) ? val : [val];
+                    var select = el;
+                    for (var i = 0; i < select.options.length; i++) {
+                        select.options[i].selected = (values.indexOf(select.options[i].value) > -1);
+                    }
+                    break;
+                case 'select':
+                case 'select-one':
+                    input.value = val.toString() || val;
+                    break;
+                case 'date':
+                    var d = exports.toDate(val);
+                    if (d)
+                        input.value = d.toISOString().split('T')[0];
+                    break;
+                default:
+                    input.value = val;
+                    break;
+            }
+        }
     };
 
     $.fn.setActiveLinks = function () {
