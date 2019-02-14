@@ -1,0 +1,82 @@
+{{#raw}}
+<template>
+<v-layout justify-center>
+    <v-flex xs6>
+        <v-toolbar color="pink">
+            <v-toolbar-title class="white--text">
+                Register New User
+            </v-toolbar-title>
+        </v-toolbar>
+        <v-card>
+            <v-form v-model="valid" ref="form" lazy-validation @keyup.native.enter="submit">
+                <v-container>
+                    <v-alert outline color="error" icon="warning" :value="errorSummary">{{ errorSummary }}</v-alert>
+                    <v-layout column>
+
+                        <v-text-field
+                                label="Name"
+                                v-model="displayName"
+                                required
+                                :rules="nameRules"
+                                :error-messages="errorResponse('displayName')"
+                        ></v-text-field>
+
+                        <v-text-field
+                                label="Email"
+                                v-model="email"
+                                required
+                                :rules="emailRules"
+                                :error-messages="errorResponse('email')"
+                        ></v-text-field>
+
+                        <v-text-field
+                                label="Password"
+                                v-model="password"
+                                type="password"
+                                required
+                                :rules="passwordRules"
+                                :error-messages="errorResponse('password')"
+                        ></v-text-field>
+
+                        <v-text-field
+                                label="Confirm"
+                                v-model="confirmPassword"
+                                type="password"
+                                required
+                                :rules="confirmPasswordRules"
+                                :error-messages="errorResponse('confirmPassword')"
+                        ></v-text-field>
+
+                        <v-checkbox label="Auto Login" v-model="autoLogin"></v-checkbox>
+
+                    </v-layout>
+                </v-container>
+            </v-form>
+            <v-card-actions>
+                <v-flex>
+                    <v-btn large class="mb-2" color="primary" @click="submit" :disabled="!valid || loading">Register</v-btn>
+                </v-flex>
+            </v-card-actions>
+        </v-card>
+        <v-flex>
+            <v-toolbar>
+                <v-toolbar-title>
+                    Quick Populate
+                </v-toolbar-title>
+            </v-toolbar>
+            <v-card>
+                <v-layout>
+                    <v-flex>
+                        <v-btn @click="switchUser('new@user.com')" flat>new@user.com</v-btn>
+                    </v-flex>
+                </v-layout>
+            </v-card>
+        </v-flex>
+    </v-flex>
+</v-layout>
+</template>
+{{/raw}}
+
+{{#capture appendTo scripts}}
+<script src="register.js"></script>
+{{/capture}}

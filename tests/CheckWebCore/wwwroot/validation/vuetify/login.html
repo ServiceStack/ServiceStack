@@ -1,0 +1,70 @@
+{{#raw}}
+<template>
+<v-layout justify-center>
+    <v-flex xs5>
+        <v-toolbar color="pink">
+            <v-toolbar-title class="white--text">
+                Sign In using credentials
+            </v-toolbar-title>
+        </v-toolbar>
+        <v-card>
+            <v-form v-model="valid" ref="form" lazy-validation @keyup.native.enter="submit">
+                <v-container>
+                    <v-alert outline color="error" icon="warning" :value="errorSummary">{{ errorSummary }}</v-alert>
+                    <v-layout column>
+
+                        <v-text-field
+                                label="Email"
+                                v-model="userName"
+                                required
+                                :rules="emailRules"
+                                :error-messages="errorResponse('userName')"
+                        ></v-text-field>
+
+                        <v-text-field
+                                label="Password"
+                                v-model="password"
+                                type="password"
+                                required
+                                :rules="passwordRules"
+                                :error-messages="errorResponse('password')"
+                        ></v-text-field>
+
+                        <v-checkbox label="Remember Me" v-model="rememberMe"></v-checkbox>
+
+                    </v-layout>
+                </v-container>
+            </v-form>
+            <v-card-actions>
+                <v-flex offset-xs2 mb-2>
+                    <v-btn flat href="/validation/vuetify/register" :disabled="!valid || loading">Register New User</v-btn>
+                    <v-btn color="primary" @click="submit" :disabled="!valid || loading">Sign In</v-btn>
+                </v-flex>
+            </v-card-actions>
+        </v-card>
+        <v-flex>
+            <v-toolbar>
+                <v-toolbar-title>
+                    Quick Login
+                </v-toolbar-title>
+            </v-toolbar>
+            <v-card>
+                <v-layout>
+                    <v-flex>
+                        <v-btn @click="switchUser('admin@email.com')" flat>admin@email.com</v-btn>
+                    </v-flex>
+                    <v-flex>
+                        <v-btn @click="switchUser('new@user.com')" flat>new@user.com</v-btn>
+                    </v-flex>
+                </v-layout>
+            </v-card>
+        </v-flex>
+    </v-flex>
+</v-layout>
+</template>
+{{/raw}}
+
+{{#capture appendTo scripts}}
+<script>var CONTINUE = '{{ qs.continue ?? "/validation/vuetify/" }}';</script>
+<script src="login.js"></script>
+{{/capture}}

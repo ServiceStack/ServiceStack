@@ -1,0 +1,42 @@
+<template>
+<v-layout justify-center>
+    <v-flex xs5>
+
+        <v-toolbar color="pink">
+            <v-toolbar-title class="white--text">
+                Vuetify Validation Examples
+            </v-toolbar-title>
+        </v-toolbar>
+        <v-card>
+            <v-container grid-list-xl>
+                <v-layout column grid-list-sm>
+                    {{#if isAuthenticated}}
+
+                        <v-flex>
+                            <h3 class="title">Hi {{userSession.DisplayName}}!</h3>
+                        </v-flex>
+
+                        <v-flex>
+                            <v-btn color="primary" href="contacts/">Manage Contacts</v-btn>
+                            <v-btn href="/auth/logout">Sign Out</v-btn>
+                        </v-flex>
+                    
+                    {{else}}
+                    
+                        <v-flex>
+                            <h3 class="title">You're not authenticated, please Sign In:</h3>
+                        </v-flex>    
+
+                        <v-flex>
+                            <v-btn color="primary" href="login">Sign In</v-btn>
+                            <v-btn flat href="register">Register New User</v-btn>
+                        </v-flex>
+                        
+                    {{/if}}
+                </v-layout>
+            </v-container>
+        </v-card>
+        
+    </v-flex>
+</v-layout>
+</template>
