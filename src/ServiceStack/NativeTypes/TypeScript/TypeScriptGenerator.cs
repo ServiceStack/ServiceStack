@@ -409,7 +409,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                             ? "super(init); " 
                             : "super(); "
                         : "";
-                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}Object.assign(this, init); }}");
+                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}(<any>Object).assign(this, init); }}");
                 }
 
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
