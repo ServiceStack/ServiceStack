@@ -1,0 +1,58 @@
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet">
+    <link href="/lib/vuetify/dist/vuetify.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
+</head>
+<body>
+<div id="app">
+    <v-app>
+        <template>
+            <v-toolbar dark color="grey darken-3">
+                <v-toolbar-side-icon></v-toolbar-side-icon>
+                <v-toolbar-title>
+                    <v-btn flat x-large href="/validation/vuetify/">My App</v-btn>
+                </v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-toolbar-items class="hidden-sm-and-down">
+                    <v-btn flat href="/validation/vuetify/login">Sign In</v-btn>
+                    <v-btn flat href="/validation/vuetify/register">Register</v-btn>
+                    <v-btn flat href="/validation/vuetify/contacts/">Contacts</v-btn>
+                </v-toolbar-items>
+            </v-toolbar>
+        </template>
+        <v-content>
+            <v-container>
+
+                {{ page }}
+
+            </v-container>
+        </v-content>
+    </v-app>
+</div>
+
+<script src="/lib/vue/dist/vue.js"></script>
+<script src="/lib/vuetify/dist/vuetify.js"></script>
+
+<script>
+    module = {exports:{}}; exports = {};
+    //SHIM FTW! - Give all objects access to all types in global exports namespace
+    var wrapDefaultModules = {'vue': { Vue: Vue } };
+    window.require = function(name) {
+        return wrapDefaultModules[name] || exports;
+    };
+</script>
+
+<script src="/lib/@servicestack/client/index.js"></script>
+<script src="/dtos.js"></script>
+<script src="/validation/vuetify/shared.js"></script>
+
+<script>
+    Vue.use(Vuetify);
+</script>
+
+{{ scripts ?? `<script>new Vue({ el: '#app' })</script>` | raw }}
+
+</body>
+</html>

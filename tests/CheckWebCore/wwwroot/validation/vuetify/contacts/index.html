@@ -1,0 +1,123 @@
+{{ 'requires-auth' | partial }}
+
+{{#raw}}
+<template>
+    <v-layout justify-center>
+        <v-flex xs6>
+            <v-toolbar color="pink">
+                <v-toolbar-title class="white--text">
+                    {{ heading }}
+                </v-toolbar-title>
+            </v-toolbar>
+            <v-card>
+                <v-form v-model="valid" ref="form" lazy-validation @keyup.native.enter="submit">
+                    <v-container>
+                        <v-alert outline color="error" icon="warning" :value="errorSummary">{{ errorSummary }}</v-alert>
+                        <v-layout column>
+
+                            <v-radio-group 
+                                    v-model="title"
+                                    :error-messages="errorResponse('title')"
+                                    row
+                                ><v-radio
+                                        v-for="x in contactTitles"
+                                        :key="x.key"
+                                        :label="x.value"
+                                        :value="x.key"
+                                ></v-radio>
+                            </v-radio-group>                            
+
+                            <v-text-field
+                                    label="Name"
+                                    v-model="name"
+                                    required
+                                    :rules="nameRules"
+                                    :error-messages="errorResponse('name')"
+                            ></v-text-field>
+
+                            <v-select v-model="color"
+                                      :items="contactColors"
+                                      label="Favorite color"
+                                      :error-messages="errorResponse('color')"
+                                      solo
+                            ></v-select>
+
+                            <v-radio-group class="mb-3" :error-messages="errorResponse('filmGenres')">
+                                <v-checkbox
+                                        v-for="x in contactGenres"
+                                        v-model="filmGenres"
+                                        :key="x"
+                                        :label="x"
+                                        :value="x"
+                                ></v-checkbox>
+                            </v-radio-group>
+
+                            <v-layout>
+                                <v-flex xs4>
+                                    <v-text-field
+                                            v-model="age"
+                                            class="mt-0"
+                                            label="Age"
+                                            type="number"
+                                            :error-messages="errorResponse('age')"
+                                    ></v-text-field>
+                                </v-flex>
+                            </v-layout>
+
+                            <v-checkbox v-if="!update"
+                                    label="Agree to terms and conditions" 
+                                    v-model="agree"
+                                    :value="true"
+                                    :rules="[v => v || 'You must agree to our terms']"
+                                    :error-messages="errorResponse('agree')"
+                            ></v-checkbox>
+
+                        </v-layout>
+                    </v-container>
+                </v-form>
+                <v-card-actions>
+                    <v-flex>
+                        <v-btn large class="mb-2" color="primary" @click="submit" :disabled="!valid || loading">
+                            {{ action }}
+                        </v-btn>
+                        <v-btn flat @click="reset">reset</v-btn>
+                        <v-btn v-if="update" flat @click="cancel">cancel</v-btn>
+                    </v-flex>
+                </v-card-actions>
+            </v-card>
+            <v-flex>
+                <v-toolbar>
+                    <v-toolbar-title>
+                        Contacts
+                    </v-toolbar-title>
+                </v-toolbar>
+                <v-card>
+                    <v-layout v-for="c in contacts" :key="c.id" :style="`background:${c.color}`">
+                        <v-flex>
+                            <h3 class="pa-3 title">{{c.title}} {{c.name}} ({{c.age}})</h3>
+                        </v-flex>
+                        <v-btn flat @click="edit(c.id)">edit</v-btn>
+                        <v-btn @click="remove(c.id)">delete</v-btn>
+                    </v-layout>
+                </v-card>
+            </v-flex>
+            
+        </v-flex>
+    </v-layout>
+
+</template>
+{{/raw}}
+
+
+{{#capture appendTo scripts}}
+<script>
+var colors = {{ contactColors | json }};
+var DATA = {
+    contacts: {{ sendToGateway('GetContacts') | map => it.Results | json }},
+    contactTitles: {{ contactTitles | json }},
+    contactColors: Object.keys(colors).map(k => ({ text:colors[k], value:k })),
+    contactGenres: {{ contactGenres | json }}
+};
+</script>
+<script src="index.js"></script>
+{{/capture}}
