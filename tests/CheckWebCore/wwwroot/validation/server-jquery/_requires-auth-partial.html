@@ -1,5 +1,6 @@
 {{#if !isAuthenticated}}
-    {{ httpResult({ status:302, Location: `/validation/server-jquery/login?continue=/validation/server-jquery/contacts` }) | return }}
+    {{ httpResult({ status:302, Location: `/validation/server-jquery/login?continue=/validation/server-jquery/contacts` }) 
+       | return }}
 {{/if}}
 
 <div style="text-align:right">
