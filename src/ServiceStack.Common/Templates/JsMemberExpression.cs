@@ -55,7 +55,9 @@ namespace ServiceStack.Templates
         {
             var targetValue = Object.Evaluate(scope);
             var ret = GetValue(targetValue, scope);
-            return ret;
+            return Equals(ret, JsNull.Value) 
+                ? null 
+                : ret;
         }
 
         private static object PropValue(object targetValue, Type targetType, string name)
