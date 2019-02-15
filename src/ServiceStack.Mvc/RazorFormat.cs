@@ -50,6 +50,8 @@ namespace ServiceStack.Mvc
 
         public IRazorViewEngine ViewEngine => viewEngine ?? throw new Exception(ErrorMvcNotInit);
 
+        public bool DisablePageBasedRouting { get; set; }
+
         IRazorViewEngine viewEngine;
         ITempDataProvider tempDataProvider;
 
@@ -76,6 +78,11 @@ namespace ServiceStack.Mvc
             viewEngine = appHost.TryResolve<IRazorViewEngine>();
             tempDataProvider = appHost.TryResolve<ITempDataProvider>();
 
+            if (!DisablePageBasedRouting)
+            {
+                appHost.FallbackHandlers.Add(PageBasedRoutingHandler);
+            }
+            
             if (viewEngine == null || tempDataProvider == null)
                 throw new Exception(ErrorMvcNotInit);
         }
@@ -120,6 +127,156 @@ namespace ServiceStack.Mvc
 
         public string RenderPartial(string pageName, object model, bool renderHtml, StreamWriter writer = null,
             Html.IHtmlContext htmlHelper = null) => null;
+
+
+        public string IndexPage { get; set; } = "default";
+
+        protected virtual System.Web.IHttpHandler PageBasedRoutingHandler(string httpMethod, string pathInfo, string requestFilePath)
+        {
+            var extPos = pathInfo.LastIndexOf('.');
+            if (extPos >= 0 && pathInfo.Substring(extPos) != ".cshtml")
+                return null;
+            
+            var viewEngineResult = GetRoutingPage(pathInfo, out var args);
+            return viewEngineResult != null
+                ? new RazorHandler(viewEngineResult) { Args = args }
+                : null;
+        }
+
+        public ViewEngineResult GetRoutingPage(string pathInfo, out Dictionary<string, object> routingArgs)
+        {
+            var path = pathInfo.Trim('/');
+
+            var vfs = HostContext.VirtualFileSources;
+
+            int CompareByWeightedName(IVirtualNode a, IVirtualNode b)
+            {
+                var aIsWildPath = a.Name[0] == '_';
+                var bIsWildPath = b.Name[0] == '_';
+
+                if (aIsWildPath && !bIsWildPath)
+                    return 1;
+                if (bIsWildPath && !aIsWildPath)
+                    return -1;
+
+                return string.Compare(a.Name, b.Name, StringComparison.Ordinal);
+            }
+            
+            ViewEngineResult GetPageFromPath(IVirtualFile file, string[] pathParts, out Dictionary<string,object> args)
+            {
+                var viewEngineResult = GetPageFromPathInfo(file.VirtualPath);
+
+                args = null;
+                if (!viewEngineResult.Success)
+                    return null;
+
+                args = new Dictionary<string, object>();
+                var filePath = file.VirtualPath.WithoutExtension();
+                var fileParts = filePath.Split('/');
+
+                for (var i = 0; i < pathParts.Length; i++)
+                {
+                    if (i >= fileParts.Length)
+                        break;
+
+                    var part = fileParts[i];
+                    if (part[0] == '_')
+                        args[part.Substring(1)] = pathParts[i];
+                }
+
+                return viewEngineResult;
+            }
+
+            List<IVirtualDirectory> GetCandidateDirs(IVirtualDirectory[] argDirs, string segment)
+            {
+                var candidateDirs = new List<IVirtualDirectory>();
+                foreach (var parentDir in argDirs)
+                {
+                    var parentDirs = parentDir.GetDirectories().ToArray();
+                    Array.Sort(parentDirs, CompareByWeightedName);
+                    foreach (var dir in parentDirs)
+                    {
+                        var hasExactDirMatch = segment.EqualsIgnoreCase(dir.Name); 
+                        if (hasExactDirMatch || dir.Name[0] == '_')
+                        {
+                            candidateDirs.Add(dir);
+                        }
+
+                        if (hasExactDirMatch)
+                            return candidateDirs;
+                    }
+                }
+                return candidateDirs;
+            }
+
+            var dirs = new[] { vfs.RootDirectory };
+            
+            var segCounts = path.CountOccurrencesOf('/');
+
+            var index = 0;
+            var pos = 0;
+            var pathSegments = path.Split('/');
+
+            foreach (var segment in pathSegments)
+            {
+                var isLast = index++ == segCounts;
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        foreach (var file in dir.GetFiles())
+                        {
+                            var isWildPath = file.Name[0] == '_';
+                            if (isWildPath)
+                            {
+                                if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.StartsWith("_init"))                                
+                                    continue;
+                            }
+
+                            var fileNameWithoutExt = file.Name.WithoutExtension();
+                            if (fileNameWithoutExt == "index")
+                                continue;
+                                
+                            if (file.Extension == "cshtml")
+                            {
+                                if (fileNameWithoutExt == segment || isWildPath)
+                                {
+                                    var result = GetPageFromPath(file, pathSegments, out routingArgs);
+                                    if (result != null)
+                                        return result;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                var candidateDirs = GetCandidateDirs(dirs, segment);
+                if (candidateDirs.Count == 0)
+                    break;
+                
+                dirs = candidateDirs.ToArray();
+                Array.Sort(dirs, CompareByWeightedName);
+
+                if (isLast)
+                {
+                    foreach (var dir in dirs)
+                    {
+                        var file = dir.GetFile(IndexPage + ".cshtml");
+                        if (file != null)
+                        {
+                            var result = GetPageFromPath(file, pathSegments, out routingArgs);
+                            if (result != null)
+                                return result;
+                        }
+                    }
+                }
+            }
+
+            routingArgs = null;
+            return null;
+        }
 
         private const string RenderException = "RazorFormat.Exception";
 
@@ -258,6 +415,8 @@ namespace ServiceStack.Mvc
         private readonly ViewEngineResult viewEngineResult;
         protected object Model { get; set; }
         protected string PathInfo { get; set; }
+        
+        public Dictionary<string, object> Args { get; set; }
 
         public RazorHandler(string pathInfo, object model = null)
         {
@@ -287,7 +446,7 @@ namespace ServiceStack.Mvc
                     view = viewResult?.View ?? throw new ArgumentException("Could not find Razor Page at " + PathInfo);
                 }
 
-                await RenderView(format, req, res, view);
+                await RenderView(format, req, res, view, Args);
             }
             catch (Exception ex)
             {
@@ -296,7 +455,7 @@ namespace ServiceStack.Mvc
             }
         }
 
-        private async Task RenderView(RazorFormat format, IRequest req, IResponse res, IView view)
+        private async Task RenderView(RazorFormat format, IRequest req, IResponse res, IView view, Dictionary<string, object> args=null)
         {
             res.ContentType = MimeTypes.Html;
             var model = Model;
@@ -341,6 +500,14 @@ namespace ServiceStack.Mvc
                 foreach (var entry in req.Items)
                 {
                     viewData[entry.Key] = entry.Value;
+                }
+
+                if (args != null)
+                {
+                    foreach (var entry in args)
+                    {
+                        viewData[entry.Key] = entry.Value;
+                    }
                 }
             }
 
@@ -576,6 +743,8 @@ namespace ServiceStack.Mvc
         public virtual bool IsAuthenticated => ServiceStackProvider.IsAuthenticated;
 
         protected virtual IAuthSession GetSession(bool reload = true) => ServiceStackProvider.GetSession(reload);
+
+        protected virtual IAuthSession UserSession => GetSession();
 
         protected virtual TUserSession SessionAs<TUserSession>() => ServiceStackProvider.SessionAs<TUserSession>();
 
