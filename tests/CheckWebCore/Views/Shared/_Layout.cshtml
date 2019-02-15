@@ -34,7 +34,7 @@
     <!-- Page Content -->
     <div class="container">
       <div class="row">
-        <div class="col-lg-12 text-center">
+        <div class="col-lg-12">
           <h1 class="mt-5">@ViewBag.Title</h1>
           @RenderBody()
         </div>
@@ -47,7 +47,17 @@
 
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/js/bootstrap.min.js"></script>
+    <script src="/js/ss-utils.js"></script>
     <script src="/assets/js/default.js"></script>
+    
+    <script>
+        module = {exports:{}}; exports = {};
+        //SHIM FTW! - Give all objects access to all types in global exports namespace
+        window.require = function(name) { return exports; };
+    </script>
+    
+    <script src="/lib/@@servicestack/client/index.js"></script>
+    <script src="/dtos.js"></script>
 
     @RenderSection("scripts", required: false)
 

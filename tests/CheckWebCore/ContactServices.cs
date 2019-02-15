@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Drawing;
 using System.Globalization;
 using System.Threading;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
@@ -275,6 +276,16 @@ namespace CheckWebCore
 
             public List<string> contactGenres() => FilmGenres;
         }
+
+    }
+
+    public static class RazorHelpers
+    {
+        internal static readonly ServiceInterface.ContactServiceFilters Instance = new ServiceInterface.ContactServiceFilters();
+            
+        public static Dictionary<string, string> contactColors(this IHtmlHelper html) => Instance.contactColors();
+        public static List<KeyValuePair<string, string>> contactTitles(this IHtmlHelper html) => Instance.contactTitles();
+        public static List<string> contactGenres(this IHtmlHelper html) => Instance.contactGenres();
     }
 
     public class ContactsHostConfig : IConfigureAppHost
