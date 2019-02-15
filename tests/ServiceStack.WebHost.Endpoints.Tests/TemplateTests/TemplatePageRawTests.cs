@@ -950,7 +950,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             
             Assert.That(context.EvaluateTemplate("{{ c.name }}"), Is.EqualTo("the name"));
             Assert.That(context.EvaluateTemplate("{{ c.missing }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ it.customer | assign: c }}{{ c.missing }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateTemplate("{{ it.customer | assignTo: c }}{{ c.missing }}"), Is.EqualTo(""));
         }
 
     }

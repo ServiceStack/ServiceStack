@@ -328,10 +328,17 @@ namespace ServiceStack.Templates
                                 throw new NotSupportedException($"'{nameof(let)}' in '{scope.Page.VirtualPath}' expects a string Expression for its value but received '{entry.Value}' instead");
     
                             bindToLiteral.ParseJsExpression(out JsToken token);
-                            
-                            var bindValue = token.Evaluate(scope);
-                            scope.ScopedParams[bindTo] = bindValue;
-                            itemBindings[bindTo] = bindValue;
+
+                            try
+                            {
+                                var bindValue = token.Evaluate(scope);
+                                scope.ScopedParams[bindTo] = bindValue;
+                                itemBindings[bindTo] = bindValue;
+                            }
+                            catch (Exception exception)
+                            {
+                                Console.WriteLine(exception);
+                            }
                         }
                     }
 
