@@ -1,12 +1,18 @@
-import {bindHandlers, bootstrap, JsonServiceClient} from "@servicestack/client";
-import {Contact, DeleteContact, GetContacts} from "../../../dtos";
+import { bootstrapForm, bindHandlers, JsonServiceClient } from "@servicestack/client";
+import {Contact, DeleteContact, GetContact, GetContacts} from "../../../dtos";
 
 declare var CONTACTS:Contact[];
 
 const client = new JsonServiceClient();
 
-bootstrap(); //converts data-invalid attributes into Bootstrap v4 error messages.
-
+const form = document.querySelector("form")!;
+bootstrapForm(form,{
+    success: function (r:{result:Contact}) {
+        form.reset();
+        CONTACTS.push(r.result);
+        render();
+    }
+});
 bindHandlers({
     deleteContact: async function(id:number) {
         if (!confirm('Are you sure?'))
@@ -22,7 +28,7 @@ bindHandlers({
 const contactRow = (contact:Contact) =>
     `<tr style="background:${contact.color}">
         <td>${contact.title} ${contact.name} (${contact.age})</td>
-        <td><a href="/validation/server-ts/contacts/${contact.id}/edit">edit</a></td>
+        <td><a href="/validation/client-ts/contacts/${contact.id}/edit">edit</a></td>
         <td><button class="btn btn-sm btn-primary" data-click="deleteContact:${contact.id}">delete</button></td>
     </tr>`;
 

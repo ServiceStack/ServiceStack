@@ -1,11 +1,3 @@
-import { bootstrapForm } from "@servicestack/client";
+import { bootstrap } from "@servicestack/client";
 
-declare var CONTACT:any;
-
-const form = document.querySelector("form")!;
-bootstrapForm(form,{
-    model: CONTACT,
-    success: function () {
-        location.href = '/validation/server-ts/contacts/';
-    }
-});
+bootstrap(); //converts data-invalid attributes into Bootstrap v4 error messages.
