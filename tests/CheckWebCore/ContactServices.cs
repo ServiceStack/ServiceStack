@@ -62,6 +62,8 @@ namespace CheckWebCore
             public FilmGenres[] FilmGenres { get; set; }
             public int Age { get; set; }
             public bool Agree { get; set; }
+            public string Continue { get; set; }
+            public string ErrorView { get; set; }
         }
         public class CreateContactResponse 
         {
@@ -157,6 +159,7 @@ namespace CheckWebCore
         }
     
         [Authenticate]
+        [ErrorView(nameof(CreateContact.ErrorView))] // Display ErrorView if HTML request results in an Exception
         [DefaultView("/validation/server/contacts")]
         public class ContactServices : Service
         {
@@ -172,13 +175,13 @@ namespace CheckWebCore
                     Results = Contacts.Values
                         .Where(x => x.UserAuthId == userId)
                         .OrderByDescending(x => x.Id)
-                        .Map(x => x.ToDto())
+                        .Map(x => x.ConvertTo<Contact>())
                 };
             }
     
             public object Any(GetContact request) =>
                 Contacts.TryGetValue(request.Id, out var contact) && contact.UserAuthId == this.GetUserId()
-                    ? (object)new GetContactResponse { Result = contact.ToDto() }
+                    ? (object)new GetContactResponse { Result = contact.ConvertTo<Contact>() }
                     : HttpError.NotFound($"Contact was not found");
     
             public object Any(CreateContact request) 
@@ -187,22 +190,20 @@ namespace CheckWebCore
                 newContact.Id = Interlocked.Increment(ref Counter);
                 newContact.UserAuthId = this.GetUserId();
                 newContact.CreatedDate = newContact.ModifiedDate = DateTime.UtcNow;
-    
-                lock (Contacts)
-                {
-                    var alreadyExists = Contacts.Values.Any(x => x.UserAuthId == newContact.UserAuthId && x.Name == request.Name);
-                    if (alreadyExists)
-                        throw new ArgumentException($"You already have a contact named '{request.Name}'", nameof(request.Name));
-                }
+
+                var contacts = Contacts.Values.ToList();
+                var alreadyExists = contacts.Any(x => x.UserAuthId == newContact.UserAuthId && x.Name == request.Name);
+                if (alreadyExists)
+                    throw new ArgumentException($"You already have a contact named '{request.Name}'", nameof(request.Name));
                 
                 Contacts[newContact.Id] = newContact;
-                return new CreateContactResponse { Result = newContact.ToDto() };
+                return new CreateContactResponse { Result = newContact.ConvertTo<Contact>() };
             }
     
             public object AnyHtml(CreateContact request)
             {
                 Any(request);
-                return HttpResult.Redirect(Request.GetView());
+                return HttpResult.Redirect(request.Continue ?? Request.GetView());
             }
     
             public void Any(DeleteContact request)
@@ -242,15 +243,13 @@ namespace CheckWebCore
         {
             public static int GetUserId(this Service service) => int.Parse(service.GetSession().UserAuthId);
     
-            public static Contact ToDto(this Data.Contact from) => from.ConvertTo<Contact>();
-            
             public static bool IsValidColor(this string color) => !string.IsNullOrEmpty(color) && 
               (color.FirstCharEquals('#')
                   ? int.TryParse(color.Substring(1), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _)
                   : Color.FromName(color).IsKnownColor);
             
         }
-    
+        
         /// <summary>
         /// Custom filters for maintaining re-usable data sources and UI snippets
         /// </summary>
@@ -277,6 +276,14 @@ namespace CheckWebCore
             public List<string> contactGenres() => FilmGenres;
         }
     }
-    
+
+    public class ContactsHostConfig : IConfigureAppHost
+    {
+        public void Configure(IAppHost appHost)
+        {
+            AutoMapping.RegisterConverter((Data.Contact from) =>
+                from.ConvertTo<ServiceModel.Types.Contact>(skipConverters: true));
+        }
+    }
 
 }

@@ -1,5 +1,5 @@
 /* Options:
-Date: 2019-02-11 17:16:23
+Date: 2019-02-14 23:07:52
 Version: 5.41
 Tip: To override a DTO option, remove "//" prefix before updating
 BaseUrl: http://localhost:5000
@@ -62,7 +62,7 @@ export enum Title
 
 export class Contact
 {
-    public constructor(init?:Partial<Contact>) { Object.assign(this, init); }
+    public constructor(init?:Partial<Contact>) { (<any>Object).assign(this, init); }
     public id: number;
     public userAuthId: number;
     public title: Title;
@@ -75,7 +75,7 @@ export class Contact
 // @DataContract
 export class ResponseError
 {
-    public constructor(init?:Partial<ResponseError>) { Object.assign(this, init); }
+    public constructor(init?:Partial<ResponseError>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1, EmitDefaultValue=false)
     public errorCode: string;
 
@@ -92,7 +92,7 @@ export class ResponseError
 // @DataContract
 export class ResponseStatus
 {
-    public constructor(init?:Partial<ResponseStatus>) { Object.assign(this, init); }
+    public constructor(init?:Partial<ResponseStatus>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public errorCode: string;
 
@@ -119,14 +119,14 @@ export enum FilmGenres
 
 export class HelloResponse
 {
-    public constructor(init?:Partial<HelloResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<HelloResponse>) { (<any>Object).assign(this, init); }
     public result: string;
 }
 
 // @Route("/testauth")
 export class TestAuth implements IReturn<TestAuth>
 {
-    public constructor(init?:Partial<TestAuth>) { Object.assign(this, init); }
+    public constructor(init?:Partial<TestAuth>) { (<any>Object).assign(this, init); }
     public createResponse() { return new TestAuth(); }
     public getTypeName() { return 'TestAuth'; }
 }
@@ -134,7 +134,7 @@ export class TestAuth implements IReturn<TestAuth>
 // @DataContract
 export class AuthUserSession
 {
-    public constructor(init?:Partial<AuthUserSession>) { Object.assign(this, init); }
+    public constructor(init?:Partial<AuthUserSession>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public referrerUrl: string;
 
@@ -312,35 +312,35 @@ export class AuthUserSession
 
 export class GetContactsResponse
 {
-    public constructor(init?:Partial<GetContactsResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetContactsResponse>) { (<any>Object).assign(this, init); }
     public results: Contact[];
     public responseStatus: ResponseStatus;
 }
 
 export class GetContactResponse
 {
-    public constructor(init?:Partial<GetContactResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetContactResponse>) { (<any>Object).assign(this, init); }
     public result: Contact;
     public responseStatus: ResponseStatus;
 }
 
 export class CreateContactResponse
 {
-    public constructor(init?:Partial<CreateContactResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<CreateContactResponse>) { (<any>Object).assign(this, init); }
     public result: Contact;
     public responseStatus: ResponseStatus;
 }
 
 export class UpdateContactResponse
 {
-    public constructor(init?:Partial<UpdateContactResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<UpdateContactResponse>) { (<any>Object).assign(this, init); }
     public responseStatus: ResponseStatus;
 }
 
 // @DataContract
 export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
 {
-    public constructor(init?:Partial<AuthenticateResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<AuthenticateResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public userId: string;
 
@@ -372,7 +372,7 @@ export class AuthenticateResponse implements IHasSessionId, IHasBearerToken
 // @DataContract
 export class AssignRolesResponse
 {
-    public constructor(init?:Partial<AssignRolesResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<AssignRolesResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public allRoles: string[];
 
@@ -386,7 +386,7 @@ export class AssignRolesResponse
 // @DataContract
 export class UnAssignRolesResponse
 {
-    public constructor(init?:Partial<UnAssignRolesResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<UnAssignRolesResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public allRoles: string[];
 
@@ -400,7 +400,7 @@ export class UnAssignRolesResponse
 // @DataContract
 export class ConvertSessionToTokenResponse
 {
-    public constructor(init?:Partial<ConvertSessionToTokenResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<ConvertSessionToTokenResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public meta: { [index:string]: string; };
 
@@ -414,7 +414,7 @@ export class ConvertSessionToTokenResponse
 // @DataContract
 export class GetAccessTokenResponse
 {
-    public constructor(init?:Partial<GetAccessTokenResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetAccessTokenResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public accessToken: string;
 
@@ -425,7 +425,7 @@ export class GetAccessTokenResponse
 // @DataContract
 export class RegisterResponse
 {
-    public constructor(init?:Partial<RegisterResponse>) { Object.assign(this, init); }
+    public constructor(init?:Partial<RegisterResponse>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public userId: string;
 
@@ -455,7 +455,7 @@ export class RegisterResponse
 // @Route("/hello/{Name}")
 export class Hello implements IReturn<HelloResponse>
 {
-    public constructor(init?:Partial<Hello>) { Object.assign(this, init); }
+    public constructor(init?:Partial<Hello>) { (<any>Object).assign(this, init); }
     public name: string;
     public createResponse() { return new HelloResponse(); }
     public getTypeName() { return 'Hello'; }
@@ -464,7 +464,7 @@ export class Hello implements IReturn<HelloResponse>
 // @Route("/session")
 export class Session implements IReturn<AuthUserSession>
 {
-    public constructor(init?:Partial<Session>) { Object.assign(this, init); }
+    public constructor(init?:Partial<Session>) { (<any>Object).assign(this, init); }
     public createResponse() { return new AuthUserSession(); }
     public getTypeName() { return 'Session'; }
 }
@@ -472,7 +472,7 @@ export class Session implements IReturn<AuthUserSession>
 // @Route("/contacts", "GET")
 export class GetContacts implements IReturn<GetContactsResponse>
 {
-    public constructor(init?:Partial<GetContacts>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetContacts>) { (<any>Object).assign(this, init); }
     public createResponse() { return new GetContactsResponse(); }
     public getTypeName() { return 'GetContacts'; }
 }
@@ -480,7 +480,7 @@ export class GetContacts implements IReturn<GetContactsResponse>
 // @Route("/contacts/{Id}", "GET")
 export class GetContact implements IReturn<GetContactResponse>
 {
-    public constructor(init?:Partial<GetContact>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetContact>) { (<any>Object).assign(this, init); }
     public id: number;
     public createResponse() { return new GetContactResponse(); }
     public getTypeName() { return 'GetContact'; }
@@ -489,13 +489,15 @@ export class GetContact implements IReturn<GetContactResponse>
 // @Route("/contacts", "POST")
 export class CreateContact implements IReturn<CreateContactResponse>
 {
-    public constructor(init?:Partial<CreateContact>) { Object.assign(this, init); }
+    public constructor(init?:Partial<CreateContact>) { (<any>Object).assign(this, init); }
     public title: Title;
     public name: string;
     public color: string;
     public filmGenres: FilmGenres[];
     public age: number;
     public agree: boolean;
+    public continue: string;
+    public errorView: string;
     public createResponse() { return new CreateContactResponse(); }
     public getTypeName() { return 'CreateContact'; }
 }
@@ -504,7 +506,7 @@ export class CreateContact implements IReturn<CreateContactResponse>
 // @Route("/contacts/{Id}/delete", "POST")
 export class DeleteContact implements IReturnVoid
 {
-    public constructor(init?:Partial<DeleteContact>) { Object.assign(this, init); }
+    public constructor(init?:Partial<DeleteContact>) { (<any>Object).assign(this, init); }
     public id: number;
     public createResponse() {}
     public getTypeName() { return 'DeleteContact'; }
@@ -513,7 +515,7 @@ export class DeleteContact implements IReturnVoid
 // @Route("/contacts/{Id}", "POST PUT")
 export class UpdateContact implements IReturn<UpdateContactResponse>
 {
-    public constructor(init?:Partial<UpdateContact>) { Object.assign(this, init); }
+    public constructor(init?:Partial<UpdateContact>) { (<any>Object).assign(this, init); }
     public id: number;
     public title: Title;
     public name: string;
@@ -533,7 +535,7 @@ export class UpdateContact implements IReturn<UpdateContactResponse>
 // @DataContract
 export class Authenticate implements IReturn<AuthenticateResponse>, IPost
 {
-    public constructor(init?:Partial<Authenticate>) { Object.assign(this, init); }
+    public constructor(init?:Partial<Authenticate>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public provider: string;
 
@@ -598,7 +600,7 @@ export class Authenticate implements IReturn<AuthenticateResponse>, IPost
 // @DataContract
 export class AssignRoles implements IReturn<AssignRolesResponse>, IPost
 {
-    public constructor(init?:Partial<AssignRoles>) { Object.assign(this, init); }
+    public constructor(init?:Partial<AssignRoles>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public userName: string;
 
@@ -615,7 +617,7 @@ export class AssignRoles implements IReturn<AssignRolesResponse>, IPost
 // @DataContract
 export class UnAssignRoles implements IReturn<UnAssignRolesResponse>, IPost
 {
-    public constructor(init?:Partial<UnAssignRoles>) { Object.assign(this, init); }
+    public constructor(init?:Partial<UnAssignRoles>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public userName: string;
 
@@ -632,7 +634,7 @@ export class UnAssignRoles implements IReturn<UnAssignRolesResponse>, IPost
 // @DataContract
 export class ConvertSessionToToken implements IReturn<ConvertSessionToTokenResponse>, IPost
 {
-    public constructor(init?:Partial<ConvertSessionToToken>) { Object.assign(this, init); }
+    public constructor(init?:Partial<ConvertSessionToToken>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public preserveSession: boolean;
     public createResponse() { return new ConvertSessionToTokenResponse(); }
@@ -643,7 +645,7 @@ export class ConvertSessionToToken implements IReturn<ConvertSessionToTokenRespo
 // @DataContract
 export class GetAccessToken implements IReturn<GetAccessTokenResponse>, IPost
 {
-    public constructor(init?:Partial<GetAccessToken>) { Object.assign(this, init); }
+    public constructor(init?:Partial<GetAccessToken>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public refreshToken: string;
     public createResponse() { return new GetAccessTokenResponse(); }
@@ -654,7 +656,7 @@ export class GetAccessToken implements IReturn<GetAccessTokenResponse>, IPost
 // @DataContract
 export class Register implements IReturn<RegisterResponse>, IPost
 {
-    public constructor(init?:Partial<Register>) { Object.assign(this, init); }
+    public constructor(init?:Partial<Register>) { (<any>Object).assign(this, init); }
     // @DataMember(Order=1)
     public userName: string;
 
