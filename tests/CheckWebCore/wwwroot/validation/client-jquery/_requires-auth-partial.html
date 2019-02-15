@@ -1,0 +1,11 @@
+{{#if !isAuthenticated}}
+    {{ httpResult({ status:302, Location: `/validation/client-jquery/login?continue=/validation/client-jquery/contacts` }) 
+       | return }}
+{{/if}}
+
+<div style="text-align:right">
+    <small class="text-muted">
+        {{ userSession.DisplayName }}
+        | <a href="/auth/logout?continue=/validation/client-jquery/">Sign Out</a>
+    </small>
+</div>

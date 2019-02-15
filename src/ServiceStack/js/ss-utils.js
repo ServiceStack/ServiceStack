@@ -208,7 +208,7 @@
         var errorMsg = this.getAttribute('data-invalid');
         if (errorMsg) {
             var isCheck = this.type === "checkbox" || this.type === "radio" || hasClass(this, 'form-check');
-            var elFormCheck = isCheck ? parent(this.parentElement,'form-check') : null;
+            var elFormCheck = isCheck ? parent(this,'form-check') : null;
             if (!isCheck)
                 addClass(this, 'is-invalid');
             else
