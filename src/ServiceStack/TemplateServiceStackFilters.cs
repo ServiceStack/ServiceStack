@@ -151,6 +151,22 @@ namespace ServiceStack
             return authSession?.IsAuthenticated == true;
         }
 
+        public object redirectIfNotAuthenticated(TemplateScopeContext scope, string path)
+        {
+            if (!isAuthenticated(scope))
+            {
+                return Context.DefaultFilters.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
+                    Headers = {
+                        [HttpHeaders.Location] = path.FirstCharEquals('~')
+                            ? req(scope).ResolveAbsoluteUrl(path)
+                            : path
+                    }
+                });                
+            }
+            
+            return IgnoreResult.Value;
+        }
+
         [HandleUnknownValue] public object ifAuthenticated(TemplateScopeContext scope) => isAuthenticated(scope) 
             ? (object)IgnoreResult.Value : StopExecution.Value;
        

@@ -1,7 +1,5 @@
-{{#if !isAuthenticated}}
-    {{ httpResult({ status:302, Location: `/validation/client-ts/login?continue=/validation/client-ts/contacts/` }) 
-       | return }}
-{{/if}}
+{{ `/validation/client-ts/login?continue=/validation/client-ts/contacts`
+   | redirectIfNotAuthenticated }}
 
 <div style="text-align:right">
     <small class="text-muted">

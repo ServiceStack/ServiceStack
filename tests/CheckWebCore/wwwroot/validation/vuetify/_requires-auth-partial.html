@@ -1,7 +1,5 @@
-{{#if !isAuthenticated}}
-    {{ httpResult({ status:302, Location: `/validation/vuetify/login?continue=/validation/vuetify/contacts/` }) 
-       | return }}
-{{/if}}
+{{ `/validation/vuetify/login?continue=/validation/vuetify/contacts`
+   | redirectIfNotAuthenticated }}
 
 <div style="text-align:right">
     <small class="body-2">
