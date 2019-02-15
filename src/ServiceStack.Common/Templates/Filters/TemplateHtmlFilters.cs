@@ -388,7 +388,10 @@ namespace ServiceStack.Templates
                 if (key == "text" || key == "html") 
                     continue;
 
-                var value = attrs[key];                
+                var value = attrs[key];             
+                if (TemplateUtils.IsNull(value)) 
+                    continue;
+                
                 var useKey = key == "className"
                     ? "class"
                     : key == "htmlFor"
