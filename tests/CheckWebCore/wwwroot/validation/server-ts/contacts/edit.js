@@ -1,11 +1,5 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@servicestack/client");
-var form = document.querySelector("form");
-client_1.bootstrapForm(form, {
-    model: CONTACT,
-    success: function () {
-        location.href = '/validation/server-ts/contacts/';
-    }
-});
+client_1.bootstrap(); //converts data-invalid attributes into Bootstrap v4 error messages.
 //# sourceMappingURL=edit.js.map

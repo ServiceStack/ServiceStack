@@ -1,6 +1,6 @@
 {{ 'requires-auth' | partial }}
 
-{{ '/validation/server-ts/contacts/' | assignTo: continue }}
+{{ '/validation/client-ts/contacts/' | assignTo: continue }}
 
 {{ { id } | sendToGateway('GetContact', {catchError:'ex'}) | assignTo: response }}
 
@@ -56,11 +56,8 @@
     
     {{#capture appendTo scripts}}
     <script>var CONTACT = {{response.Result | json}};</script>
-    {{/capture}}
-    
-    {{#raw appendTo scripts}}
     <script src="../edit.js"></script>
-    {{/raw}}
+    {{/capture}}
     
 {{else if ex}}
     <div class="col-6">
@@ -68,6 +65,3 @@
         <p><a href="{{continue}}">&lt; back</a></p>
     </div>
 {{/with}}
-
-
-{{ htmlError }}

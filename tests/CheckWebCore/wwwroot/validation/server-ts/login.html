@@ -45,13 +45,5 @@
 </div>
 
 {{#raw appendTo scripts}}
-<script>
-bootstrap();
-bindHandlers({
-    switchUser: function(u) {
-        document.querySelector("[name=userName]").value = u;
-        document.querySelector("[name=password]").value = 'p@55wOrd';
-    }
-});
-</script>
+<script src="/validation/server-ts/login.js"></script>
 {{/raw}}

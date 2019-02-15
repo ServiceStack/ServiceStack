@@ -38,7 +38,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var client_1 = require("@servicestack/client");
 var dtos_1 = require("../../../dtos");
 var client = new client_1.JsonServiceClient();
-client_1.bootstrap(); //converts data-invalid attributes into Bootstrap v4 error messages.
+var form = document.querySelector("form");
+client_1.bootstrapForm(form, {
+    success: function (r) {
+        form.reset();
+        CONTACTS.push(r.result);
+        render();
+    }
+});
 client_1.bindHandlers({
     deleteContact: function (id) {
         return __awaiter(this, void 0, void 0, function () {
@@ -63,7 +70,7 @@ client_1.bindHandlers({
     }
 });
 var contactRow = function (contact) {
-    return "<tr style=\"background:" + contact.color + "\">\n        <td>" + contact.title + " " + contact.name + " (" + contact.age + ")</td>\n        <td><a href=\"/validation/server-ts/contacts/" + contact.id + "/edit\">edit</a></td>\n        <td><button class=\"btn btn-sm btn-primary\" data-click=\"deleteContact:" + contact.id + "\">delete</button></td>\n    </tr>";
+    return "<tr style=\"background:" + contact.color + "\">\n        <td>" + contact.title + " " + contact.name + " (" + contact.age + ")</td>\n        <td><a href=\"/validation/client-ts/contacts/" + contact.id + "/edit\">edit</a></td>\n        <td><button class=\"btn btn-sm btn-primary\" data-click=\"deleteContact:" + contact.id + "\">delete</button></td>\n    </tr>";
 };
 function render() {
     var sb = "";
