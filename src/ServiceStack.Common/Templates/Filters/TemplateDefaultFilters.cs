@@ -82,7 +82,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
         [HandleUnknownValue] public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
-        [HandleUnknownValue] public bool isNull(object test) => test == null || test == JsNull.Value;
+        [HandleUnknownValue] public bool isNull(object test) => TemplateUtils.IsNull(test);
         [HandleUnknownValue] public bool isNotNull(object test) => !isNull(test);
         [HandleUnknownValue] public bool exists(object test) => !isNull(test);
 

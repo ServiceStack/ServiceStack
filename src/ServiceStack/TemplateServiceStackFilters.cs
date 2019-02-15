@@ -220,9 +220,11 @@ namespace ServiceStack
         /// <summary>
         /// Only return form input value if form submission was invalid
         /// </summary>
-        public string formValue(TemplateScopeContext scope, string name) => hasErrorStatus(scope) 
+        public string formValue(TemplateScopeContext scope, string name) => formValue(scope, name, null);
+
+        public string formValue(TemplateScopeContext scope, string name, string defaultValue) => hasErrorStatus(scope) 
             ? Context.DefaultFilters.formQuery(scope, name) 
-            : null;
+            : defaultValue;
 
         public string[] formValues(TemplateScopeContext scope, string name) => hasErrorStatus(scope) 
             ? Context.DefaultFilters.formQueryValues(scope, name) 
