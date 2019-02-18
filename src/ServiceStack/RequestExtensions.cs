@@ -188,6 +188,29 @@ namespace ServiceStack
             cacheClient.ClearCaches(cacheKeys);
         }
 
+        /// <summary>
+        /// Store an entry in the IHttpRequest.Items Dictionary
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void SetItem(this IRequest httpReq, string key, object value)
+        {
+            if (httpReq == null) return;
+
+            httpReq.Items[key] = value;
+        }
+
+        /// <summary>
+        /// Get an entry from the IHttpRequest.Items Dictionary
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static object GetItem(this IRequest httpReq, string key)
+        {
+            if (httpReq == null) return null;
+
+            httpReq.Items.TryGetValue(key, out var value);
+            return value;
+        }
+
 #if !NETSTANDARD2_0
         public static RequestBaseWrapper ToHttpRequestBase(this IRequest httpReq)
         {
