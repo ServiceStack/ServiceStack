@@ -31,7 +31,7 @@
     </div>
 </form>
 
-{{ {} | sendToGateway('GetContacts') | assignTo: response }}
+{{ sendToGateway('GetContacts') | assignTo: response }}
 
 <table id="results">
     <tbody>

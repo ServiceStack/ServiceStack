@@ -28,7 +28,7 @@
     </div>
     <div class="form-row">
         <div class="form-group col-md-4">
-            <a class="lnk" href="/validation/razor/register">Register New User</a>
+            <a class="lnk" href="/validation/client-razor/register">Register New User</a>
         </div>
     </div>
 </form>
@@ -44,7 +44,7 @@
 @section scripts {
 
 <script>
-    var CONTINUE = '@(Html.GetQueryString("continue") ?? "/validation/razor/")';
+    var CONTINUE = '@(Html.GetQueryString("continue") ?? "/validation/client-razor/")';
 
     $('form').bootstrapForm({
         success: function(r) {
