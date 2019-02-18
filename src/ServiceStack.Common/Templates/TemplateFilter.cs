@@ -274,7 +274,6 @@ namespace ServiceStack.Templates
             return true;
         }
         
-        
         public static TemplateContext CreateNewContext(this TemplateScopeContext scope, Dictionary<string, object> args)
         {
             if (args == null)

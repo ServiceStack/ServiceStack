@@ -28,6 +28,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
+using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;
@@ -282,30 +283,42 @@ namespace ServiceStack.Mvc
 
         public async Task<bool> ProcessRequestAsync(IRequest req, object dto, Stream outputStream)
         {
-            if (req.Dto == null || dto == null)
+            var explicitView = req.GetView();
+            
+            if (dto is IHttpResult httpResult)
+            {
+                dto = httpResult.Response;
+                if (httpResult is HttpResult viewResult && viewResult.View != null)
+                    explicitView = viewResult.View;
+            }
+
+            if (explicitView == null && (req.Dto == null || dto == null))
                 return false;
 
             if (req.Items.ContainsKey(RenderException))
                 return false;
 
-            if (dto is IHttpResult httpResult)
-                dto = httpResult.Response;
+            var errorStatus = dto.GetResponseStatus() ?? 
+                (dto is Exception ex ? ex.ToResponseStatus() : null);
+            if (errorStatus?.ErrorCode != null)
+                req.Items[Keywords.ErrorStatus] = errorStatus;
 
-            var viewNames = new List<string> { req.Dto.GetType().Name, dto.GetType().Name };
+            var viewNames = new List<string>();
+            if (explicitView != null)
+                viewNames.Add(explicitView);
 
-            var useView = req.GetView();
-            if (useView != null)
-            {
-                viewNames.Insert(0, req.GetView());
-            }
+            if (req.Dto != null)
+                viewNames.Add(req.Dto.GetType().Name);
+            if (dto != null)
+                viewNames.Add(dto.GetType().Name);
 
-            var viewEngineResult = FindView(viewNames);
+            var viewEngineResult = FindView(viewNames, out var routingArgs);
             if (viewEngineResult == null)
                 return false;
 
             ViewDataDictionary viewData = null;
 
-            if (dto is ErrorResponse errorDto)
+            if (errorStatus?.ErrorCode != null)
             {
                 var razorView = viewEngineResult.View as RazorView;
                 var genericDef = razorView.RazorPage.GetType().FirstGenericType();
@@ -314,29 +327,50 @@ namespace ServiceStack.Mvc
                 {
                     var model = modelType.CreateInstance();
                     viewData = CreateViewData(model);
-                    req.Items[Keywords.ErrorStatus] = errorDto.ResponseStatus;
                 }
             }
 
             if (viewData == null)
                 viewData = CreateViewData(dto);
 
+            if (routingArgs != null)
+            {
+                foreach (var entry in routingArgs)
+                {
+                    viewData[entry.Key] = entry.Value;
+                }
+            }
+
             await RenderView(req, outputStream, viewData, viewEngineResult.View, req.GetTemplate());
 
             return true;
         }
 
-        private ViewEngineResult FindView(IEnumerable<string> viewNames)
+        private ViewEngineResult FindView(IEnumerable<string> viewNames, out Dictionary<string, object> routingArgs)
         {
+            routingArgs = null;
             const string execPath = "";
             foreach (var viewName in viewNames)
             {
-                foreach (var location in ViewLocations)
+                if (viewName.StartsWith("/"))
                 {
-                    var viewPath = location.CombineWith(viewName) + ".cshtml";
-                    var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                    var viewEngineResult = GetPageFromPathInfo(viewName);                
                     if (viewEngineResult.Success)
                         return viewEngineResult;
+            
+                    viewEngineResult = GetRoutingPage(viewName, out routingArgs);                
+                    if (viewEngineResult.Success)
+                        return viewEngineResult;
+                }
+                else
+                {
+                    foreach (var location in ViewLocations)
+                    {
+                        var viewPath = location.CombineWith(viewName) + ".cshtml";
+                        var viewEngineResult = ViewEngine.GetView(execPath, viewPath, isMainPage: false);
+                        if (viewEngineResult.Success)
+                            return viewEngineResult;
+                    }
                 }
             }
 
@@ -554,6 +588,8 @@ namespace ServiceStack.Mvc
             return htmlHelper.ViewContext.ViewData[Keywords.IRequest] as IRequest
                 ?? HostContext.AppHost.TryGetCurrentRequest();
         }
+        private static T req<T>(this IHtmlHelper html, Func<IRequest, T> fn) => fn(html.GetRequest());
+
 
         public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
             htmlHelper.GetRequest().Response;
@@ -627,6 +663,109 @@ namespace ServiceStack.Mvc
                 ? new HtmlString(file.ReadAllText())
                 : HtmlString.Empty;
         }
+
+        public static HtmlString ToHtmlString(this string str) => str == null ? HtmlString.Empty : new HtmlString(str);
+
+        public static object GetItem(this IHtmlHelper html, string key) =>
+            ViewUtils.GetItem(html.GetRequest(), key);
+
+        public static ResponseStatus GetErrorStatus(this IHtmlHelper html) =>
+            ViewUtils.GetErrorStatus(html.GetRequest());
+
+        public static bool HasErrorStatus(this IHtmlHelper html) =>
+            ViewUtils.HasErrorStatus(html.GetRequest());
+        
+        public static string Form(this IHtmlHelper html, string name) => html.GetRequest().FormData[name];
+        public static string Query(this IHtmlHelper html, string name) => html.GetRequest().QueryString[name];
+        
+        public static string FormQuery(this IHtmlHelper html, string name) => 
+            html.req(req => req.FormData[name] ?? req.QueryString[name]);
+
+        public static string[] FormQueryValues(this IHtmlHelper html, string name) =>
+            ViewUtils.FormQueryValues(html.GetRequest(), name);
+
+        public static string FormValue(this IHtmlHelper html, string name) => 
+            ViewUtils.FormValue(html.GetRequest(), name, null);
+
+        public static string FormValue(this IHtmlHelper html, string name, string defaultValue) =>
+            ViewUtils.FormValue(html.GetRequest(), name, defaultValue);
+
+        public static string[] FormValues(this IHtmlHelper html, string name) =>
+            ViewUtils.FormValues(html.GetRequest(), name);
+
+        public static bool FormCheckValue(this IHtmlHelper html, string name) =>
+            ViewUtils.FormCheckValue(html.GetRequest(), name);
+
+        public static string GetParam(this IHtmlHelper html, string name) =>
+            ViewUtils.GetParam(html.GetRequest(), name);
+
+        public static string ErrorResponseExcept(this IHtmlHelper html, string fieldNames) =>
+            ViewUtils.ErrorResponseExcept(html.GetErrorStatus(), fieldNames);
+
+        public static string ErrorResponseExcept(this IHtmlHelper html, ICollection<string> fieldNames) =>
+            ViewUtils.ErrorResponseExcept(html.GetErrorStatus(), fieldNames);
+
+        public static string ErrorResponseSummary(this IHtmlHelper html) =>
+            ViewUtils.ErrorResponseSummary(html.GetErrorStatus());
+
+        public static string ErrorResponse(this IHtmlHelper html, string fieldName) =>
+            ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
+
+
+        /// <summary>
+        /// Alias for ServiceStack Html.ValidationSummary() with comma-delimited field names 
+        /// </summary>
+        public static HtmlString ErrorSummary(this IHtmlHelper html, string exceptFor) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFor).ToHtmlString();
+        public static HtmlString ValidationSummary(this IHtmlHelper html) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), null).ToHtmlString();
+
+        public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, null).ToHtmlString();
+
+        public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, Dictionary<string, object> divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs).ToHtmlString();
+        public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs.ToObjectDictionary()).ToHtmlString();
+
+        public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, string>> kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
+        public static HtmlString HiddenInputs(this IHtmlHelper html, IEnumerable<KeyValuePair<string, object>> kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps).ToHtmlString();
+        public static HtmlString HiddenInputs(this IHtmlHelper html, object kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
+
+        public static HtmlString FormTextarea(this IHtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "textarea", null);
+        public static HtmlString FormTextarea(this IHtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "textarea", null);
+        public static HtmlString FormTextarea(this IHtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "textarea", inputOptions);
+        public static HtmlString FormTextarea(this IHtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "textarea", inputOptions);
+
+        public static HtmlString FormSelect(this IHtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "select", null);
+        public static HtmlString FormSelect(this IHtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "select", null);
+        public static HtmlString FormSelect(this IHtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "select", inputOptions);
+        public static HtmlString FormSelect(this IHtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "select", inputOptions);
+
+        public static HtmlString FormInput(this IHtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "input", null);
+        public static HtmlString FormInput(this IHtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "input", null);
+        public static HtmlString FormInput(this IHtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "input", inputOptions);
+        public static HtmlString FormInput(this IHtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "input", inputOptions);
+
+        public static HtmlString FormControl(this IHtmlHelper html, object inputAttrs, string tagName, InputOptions inputOptions) =>
+            ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
+        public static HtmlString FormControl(this IHtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
+            ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
     }
 
     public abstract class ViewPage : ViewPage<object>

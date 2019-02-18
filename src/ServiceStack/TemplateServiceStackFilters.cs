@@ -16,7 +16,7 @@ namespace ServiceStack
         private ServiceStackHost appHost => HostContext.AppHost;
 
         public IHttpRequest getHttpRequest(TemplateScopeContext scope) => req(scope);
-        private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        internal IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
         public object sendToGateway(TemplateScopeContext scope, string requestName) => 
             sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
@@ -231,7 +231,7 @@ namespace ServiceStack
 
         public ResponseStatus getErrorStatus(TemplateScopeContext scope) => 
             scope.GetValue("errorStatus") as ResponseStatus ??
-            req(scope)?.GetItem(Keywords.ErrorStatus) as ResponseStatus;
+            ViewUtils.GetErrorStatus(req(scope));
 
         /// <summary>
         /// Only return form input value if form submission was invalid
@@ -239,11 +239,11 @@ namespace ServiceStack
         public string formValue(TemplateScopeContext scope, string name) => formValue(scope, name, null);
 
         public string formValue(TemplateScopeContext scope, string name, string defaultValue) => hasErrorStatus(scope) 
-            ? Context.DefaultFilters.formQuery(scope, name) 
+            ? ViewUtils.FormQuery(req(scope), name) 
             : defaultValue;
 
         public string[] formValues(TemplateScopeContext scope, string name) => hasErrorStatus(scope) 
-            ? Context.DefaultFilters.formQueryValues(scope, name) 
+            ? ViewUtils.FormQueryValues(req(scope), name) 
             : null;
     
         public bool formCheckValue(TemplateScopeContext scope, string name)
@@ -253,15 +253,9 @@ namespace ServiceStack
         }
         
         public string errorResponseSummary(TemplateScopeContext scope) => errorResponseSummary(scope, getErrorStatus(scope));
-        public string errorResponseSummary(TemplateScopeContext scope, ResponseStatus errorStatus)
-        {
-            if (errorStatus == null)
-                return null;
 
-            return errorStatus.Errors.IsEmpty()
-                ? errorStatus.Message ?? errorStatus.ErrorCode
-                : null;
-        }
+        public string errorResponseSummary(TemplateScopeContext scope, ResponseStatus errorStatus) =>
+            ViewUtils.ErrorResponseSummary(errorStatus);
 
         public string errorResponseExcept(TemplateScopeContext scope, object fields) =>
             errorResponseExcept(scope, getErrorStatus(scope), fields);
@@ -271,45 +265,14 @@ namespace ServiceStack
                 return null;
 
             var fieldNames = Context.DefaultFilters.toVarNames(fields);
-
-            var fieldNamesLookup = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var fieldName in fieldNames)
-            {
-                fieldNamesLookup.Add(fieldName);
-            }
-
-            if (!fieldNames.IsEmpty() && !errorStatus.Errors.IsEmpty())
-            {
-                foreach (var fieldError in errorStatus.Errors)
-                {
-                    if (fieldNamesLookup.Contains(fieldError.FieldName))
-                        return null;
-                }
-
-                var firstFieldError = errorStatus.Errors[0];
-                return firstFieldError.Message ?? firstFieldError.ErrorCode;
-            }
-
-            return errorStatus.Message ?? errorStatus.ErrorCode;
+            return ViewUtils.ErrorResponseExcept(errorStatus, fieldNames);
         }
 
         public string errorResponse(TemplateScopeContext scope) => errorResponse(scope, getErrorStatus(scope), null);
         public string errorResponse(TemplateScopeContext scope, string fieldName) =>
             errorResponse(scope, getErrorStatus(scope), fieldName);
-        public string errorResponse(TemplateScopeContext scope, ResponseStatus errorStatus, string fieldName)
-        {
-            if (fieldName == null)
-                return errorResponseSummary(scope, errorStatus);
-            if (errorStatus == null || errorStatus.Errors.IsEmpty())
-                return null;
 
-            foreach (var fieldError in errorStatus.Errors)
-            {
-                if (fieldName.EqualsIgnoreCase(fieldError.FieldName))
-                    return fieldError.Message ?? fieldError.ErrorCode;
-            }
-
-            return null;
-        }
+        public string errorResponse(TemplateScopeContext scope, ResponseStatus errorStatus, string fieldName) =>
+            ViewUtils.ErrorResponse(errorStatus, fieldName);
     }
 }

@@ -389,7 +389,7 @@ namespace ServiceStack.Templates
                     continue;
 
                 var value = attrs[key];             
-                if (TemplateUtils.IsNull(value)) 
+                if (ViewUtils.IsNull(value)) 
                     continue;
                 
                 var useKey = key == "className"
@@ -526,19 +526,8 @@ namespace ServiceStack.Templates
             return htmlImg(new Dictionary<string, object>(attrs ?? TypeConstants.EmptyObjectDictionary) { ["src"] = src });
         }
 
-        public IRawString htmlHiddenInputs(Dictionary<string, object> inputValues)
-        {
-            if (inputValues != null)
-            {
-                var sb = StringBuilderCache.Allocate();
-                foreach (var entry in inputValues)
-                {
-                    sb.AppendLine($"<input type=\"hidden\" name=\"{entry.Key.HtmlEncode()}\" value=\"{entry.Value?.ToString().HtmlEncode()}\">");
-                }
-                return StringBuilderCache.ReturnAndFree(sb).ToRawString();
-            }
-            return RawString.Empty;
-        }
+        public IRawString htmlHiddenInputs(Dictionary<string, object> inputValues) =>
+            ViewUtils.HtmlHiddenInputs(inputValues).ToRawString();
 
         public IRawString htmlOptions(object values) => htmlOptions(values, null);
         
@@ -574,7 +563,7 @@ namespace ServiceStack.Templates
                     sb.AppendLine($"<option{selAttr}>{str?.HtmlEncode()}</option>");
                 }
             }
-            else throw new NotSupportedException($"Could convert '{values.GetType().Name}' values into List<string>");
+            else throw new NotSupportedException($"Could not convert '{values.GetType().Name}' values into List<string>");
 
             return StringBuilderCache.ReturnAndFree(sb).ToRawString();
         }

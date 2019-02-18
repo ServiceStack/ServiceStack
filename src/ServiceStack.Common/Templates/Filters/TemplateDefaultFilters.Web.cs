@@ -12,7 +12,7 @@ namespace ServiceStack.Templates
     
     public partial class TemplateDefaultFilters
     {
-        private IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
+        internal IHttpRequest req(TemplateScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
         public bool matchesPathInfo(TemplateScopeContext scope, string pathInfo) => 
             scope.GetValue("PathInfo")?.ToString().TrimEnd('/') == pathInfo?.TrimEnd('/');
@@ -123,43 +123,10 @@ namespace ServiceStack.Templates
         public string httpRequestUrl(TemplateScopeContext scope) => req(scope)?.AbsoluteUri;
         public string httpPathInfo(TemplateScopeContext scope) => scope.GetValue("PathInfo")?.ToString();
 
-        public string formQuery(TemplateScopeContext scope, string name)
-        {
-            var httpReq = req(scope);
-            return httpReq.FormData[name] ?? httpReq.QueryString[name];
-        }
+        public string formQuery(TemplateScopeContext scope, string name) => ViewUtils.FormQuery(req(scope), name);
 
-        public string[] formQueryValues(TemplateScopeContext scope, string name)
-        {
-            var httpReq = req(scope);
-            var values = httpReq.Verb == HttpMethods.Post 
-                ? httpReq.FormData.GetValues(name) 
-                : httpReq.QueryString.GetValues(name);
-
-            return values?.Length == 1 // if it's only a single item can be returned in comma-delimited list
-                ? values[0].Split(',') 
-                : values ?? TypeConstants.EmptyStringArray;
-        }
-
-        public string httpParam(TemplateScopeContext scope, string name) => GetParam(req(scope), name);
-
-        private static string GetParam(IRequest httpReq, string name) //sync with IRequest.GetParam()
-        {
-            string value;
-            if ((value = httpReq.Headers[HttpHeaders.XParamOverridePrefix + name]) != null) return value;
-            if ((value = httpReq.QueryString[name]) != null) return value;
-            if ((value = httpReq.FormData[name]) != null) return value;
-
-            //IIS will assign null to params without a name: .../?some_value can be retrieved as req.Params[null]
-            //TryGetValue is not happy with null dictionary keys, so we should bail out here
-            if (string.IsNullOrEmpty(name)) return null;
-
-            if (httpReq.Cookies.TryGetValue(name, out var cookie)) return cookie.Value;
-
-            if (httpReq.Items.TryGetValue(name, out var oValue)) return oValue.ToString();
-
-            return null;
-        }
+        public string[] formQueryValues(TemplateScopeContext scope, string name) => ViewUtils.FormQueryValues(req(scope), name);
+        public string httpParam(TemplateScopeContext scope, string name) => ViewUtils.GetParam(req(scope), name);
 
         public string urlEncode(string value, bool upperCase) => value.UrlEncode(upperCase);
         public string urlEncode(string value) => value.UrlEncode();
