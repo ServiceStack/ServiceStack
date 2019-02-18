@@ -305,8 +305,9 @@ namespace ServiceStack.Templates
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IRawString ToRawString(this string value) => 
-            new RawString(value ?? "");
+        public static IRawString ToRawString(this string value) => value != null
+            ? new RawString(value)
+            : RawString.Empty;
         
         public static ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>> BinderCache { get; } = new ConcurrentDictionary<string, Func<TemplateScopeContext, object, object>>();
 

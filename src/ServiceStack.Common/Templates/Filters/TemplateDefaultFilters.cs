@@ -82,7 +82,7 @@ namespace ServiceStack.Templates
         [HandleUnknownValue] public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
         [HandleUnknownValue] public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
-        [HandleUnknownValue] public bool isNull(object test) => TemplateUtils.IsNull(test);
+        [HandleUnknownValue] public bool isNull(object test) => ViewUtils.IsNull(test);
         [HandleUnknownValue] public bool isNotNull(object test) => !isNull(test);
         [HandleUnknownValue] public bool exists(object test) => !isNull(test);
 
@@ -694,9 +694,7 @@ namespace ServiceStack.Templates
 
         public string toString(object target) => target?.ToString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
-        public List<string> toStringList(IEnumerable target) => target is string s 
-            ? new List<string> { s } 
-            : target.Map(x => x.AsString());
+        public List<string> toStringList(IEnumerable target) => ViewUtils.ToStringList(target);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
 
         public char fromCharCode(int charCode) => Convert.ToChar(charCode);
@@ -816,21 +814,6 @@ namespace ServiceStack.Templates
                         : names is string strFields
                             ? strFields.Split(',').Map(x => x.Trim())
                             : throw new NotSupportedException($"Cannot convert '{names.GetType().Name}' to List<string>");
-
-        public List<KeyValuePair<string, string>> toKeyValues(object values)
-        {
-            var to = new List<KeyValuePair<string, string>>();
-            if (values != null)
-            {
-                if (values is IEnumerable<KeyValuePair<string, object>> kvps)
-                    foreach (var kvp in kvps) to.Add(new KeyValuePair<string,string>(kvp.Key, kvp.Value?.ToString()));
-                else if (values is IEnumerable<KeyValuePair<string, string>> kvpsStr)
-                    foreach (var kvp in kvpsStr) to.Add(new KeyValuePair<string,string>(kvp.Key, kvp.Value));
-                else if (values is IEnumerable<object> list)
-                    to.AddRange(from string item in list select item.AsString() into s select new KeyValuePair<string, string>(s, s));
-            }
-            return to;
-        }
 
         public int AssertWithinMaxQuota(int value)
         {

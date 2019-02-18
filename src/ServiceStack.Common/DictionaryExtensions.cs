@@ -107,4 +107,18 @@ public static class DictionaryExtensions
         return map;
     }
 
+    public static Dictionary<TKey, TValue> Merge<TKey, TValue>(this IDictionary<TKey, TValue> initial,
+        params IEnumerable<KeyValuePair<TKey,TValue>>[] withSources)
+    {
+        var to = new Dictionary<TKey, TValue>(initial);
+        foreach (var kvps in withSources)
+        {
+            foreach (var kvp in kvps)
+            {
+                to[kvp.Key] = kvp.Value;
+            }
+        }
+        return to;
+    }
+
 }
