@@ -58,7 +58,7 @@
 <table id="results"></table>
 
 {{#capture appendTo scripts}}
-<script>var CONTACTS = {{ {} | sendToGateway('GetContacts') | map => it.Results | json }};</script>
+<script>var CONTACTS = {{ sendToGateway('GetContacts') | map => it.Results | json }};</script>
 {{/capture}}
 
 {{#raw appendTo scripts}}

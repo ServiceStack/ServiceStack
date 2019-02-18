@@ -10,6 +10,7 @@ using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Templates;
+using ServiceStack.Text;
 
 namespace CheckWebCore
 {
@@ -95,6 +96,7 @@ namespace CheckWebCore
         public class DeleteContact : IReturnVoid
         {
             public int Id { get; set; }
+            public string Continue { get; set; }
         }
 
         namespace Types
@@ -166,7 +168,7 @@ namespace CheckWebCore
         {
             private static int Counter = 0;
     
-            internal static ConcurrentDictionary<int, Data.Contact> Contacts = new ConcurrentDictionary<int, Data.Contact>();
+            internal static readonly ConcurrentDictionary<int, Data.Contact> Contacts = new ConcurrentDictionary<int, Data.Contact>();
     
             public object Any(GetContacts request)
             {
@@ -218,7 +220,7 @@ namespace CheckWebCore
             public object PostHtml(DeleteContact request) // only called by html POST requests where it takes precedence
             {
                 Any(request);
-                return HttpResult.Redirect(Request.GetView()); //added by [DefaultView]
+                return HttpResult.Redirect(request.Continue ?? Request.GetView()); //added by [DefaultView]
             }
         }
     
@@ -252,7 +254,7 @@ namespace CheckWebCore
         }
         
         /// <summary>
-        /// Custom filters for maintaining re-usable data sources and UI snippets
+        /// Custom filters for App data sources and re-usable UI snippets in Templates
         /// </summary>
         public class ContactServiceFilters : TemplateFilter
         {
@@ -279,13 +281,16 @@ namespace CheckWebCore
 
     }
 
+    /// <summary>
+    /// Razor Helpers for App data sources and re-usable UI snippets in Razor pages
+    /// </summary>
     public static class RazorHelpers
     {
         internal static readonly ServiceInterface.ContactServiceFilters Instance = new ServiceInterface.ContactServiceFilters();
             
-        public static Dictionary<string, string> contactColors(this IHtmlHelper html) => Instance.contactColors();
-        public static List<KeyValuePair<string, string>> contactTitles(this IHtmlHelper html) => Instance.contactTitles();
-        public static List<string> contactGenres(this IHtmlHelper html) => Instance.contactGenres();
+        public static Dictionary<string, string> ContactColors(this IHtmlHelper html) => Instance.contactColors();
+        public static List<KeyValuePair<string, string>> ContactTitles(this IHtmlHelper html) => Instance.contactTitles();
+        public static List<string> ContactGenres(this IHtmlHelper html) => Instance.contactGenres();
     }
 
     public class ContactsHostConfig : IConfigureAppHost

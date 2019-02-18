@@ -1,7 +1,7 @@
 @await Html.PartialAsync("_RequiresAuth")
 
 @{ 
-    var Continue = "/validation/razor/contacts/";
+    var Continue = "/validation/client-razor/contacts/";
     var id = int.Parse(ViewBag.id);
     Exception error = null;
     Contact contact = null;
@@ -21,7 +21,7 @@
     
         <div class="form-group">
             <div class="form-check">
-            @foreach (var it in Html.contactTitles())
+            @foreach (var it in Html.ContactTitles())
             {
                 <div class="custom-control custom-radio custom-control-inline">
                     <input type="radio" id="title-@it.Key" name="title" value="@it.Key" class="custom-control-input">
@@ -39,7 +39,7 @@
             <label class="form-label" for="color">Favorite color</label>
             <select id="color" name="color" class="col-4 form-control">
                 <option value=""></option>
-            @foreach (var it in Html.contactColors())
+            @foreach (var it in Html.ContactColors())
             {
                 <option value="@it.Key">@it.Value</option>
             }
@@ -48,7 +48,7 @@
         <div class="form-group">
             <label class="form-check-label">Favorite Film Genres</label>
             <div class="form-check">
-            @foreach (var it in Html.contactGenres())
+            @foreach (var it in Html.ContactGenres())
             {
                 <div class="custom-control custom-checkbox">
                     <input type="checkbox" id="filmGenres-@it" name="filmGenres" value="@it" class="form-check-input">
@@ -62,7 +62,7 @@
         </div>
         <div class="form-group">
             <button class="btn btn-primary" type="submit">Update Contact</button>
-            <a href="{{continue}}">cancel</a>
+            <a href="@Continue">cancel</a>
         </div>
     </form>
     
