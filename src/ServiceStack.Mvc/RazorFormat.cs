@@ -588,8 +588,6 @@ namespace ServiceStack.Mvc
             return htmlHelper.ViewContext.ViewData[Keywords.IRequest] as IRequest
                 ?? HostContext.AppHost.TryGetCurrentRequest();
         }
-        private static T req<T>(this IHtmlHelper html, Func<IRequest, T> fn) => fn(html.GetRequest());
-
 
         public static IResponse GetResponse(this IHtmlHelper htmlHelper) => 
             htmlHelper.GetRequest().Response;
@@ -678,8 +676,11 @@ namespace ServiceStack.Mvc
         public static string Form(this IHtmlHelper html, string name) => html.GetRequest().FormData[name];
         public static string Query(this IHtmlHelper html, string name) => html.GetRequest().QueryString[name];
         
-        public static string FormQuery(this IHtmlHelper html, string name) => 
-            html.req(req => req.FormData[name] ?? req.QueryString[name]);
+        public static string FormQuery(this IHtmlHelper html, string name)
+        {
+            var req = html.GetRequest();
+            return req.FormData[name] ?? req.QueryString[name];
+        }
 
         public static string[] FormQueryValues(this IHtmlHelper html, string name) =>
             ViewUtils.FormQueryValues(html.GetRequest(), name);

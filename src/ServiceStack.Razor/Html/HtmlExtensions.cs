@@ -1,4 +1,6 @@
-﻿using ServiceStack.Text;
+﻿using System.Collections.Generic;
+using System.Web;
+using ServiceStack.Web;
 
 namespace ServiceStack.Html
 {
@@ -15,5 +17,110 @@ namespace ServiceStack.Html
             return MvcHtmlString.Create(
                 (model != null ? model : default(T))?.ToString());
         }
+
+        public static IRequest GetRequest(this HtmlHelper html) => html.HttpRequest; 
+        
+        public static HtmlString ToHtmlString(this string str) => str == null ? MvcHtmlString.Empty : new HtmlString(str);
+
+        public static object GetItem(this HtmlHelper html, string key) =>
+            html.GetRequest().GetItem(key);
+
+        public static ResponseStatus GetErrorStatus(this HtmlHelper html) =>
+            ViewUtils.GetErrorStatus(html.GetRequest());
+
+        public static bool HasErrorStatus(this HtmlHelper html) =>
+            ViewUtils.HasErrorStatus(html.GetRequest());
+        
+        public static string Form(this HtmlHelper html, string name) => html.GetRequest().FormData[name];
+        public static string Query(this HtmlHelper html, string name) => html.GetRequest().QueryString[name];
+
+        public static string FormQuery(this HtmlHelper html, string name) => 
+            html.HttpRequest.FormData[name] ?? html.HttpRequest.QueryString[name];
+
+        public static string[] FormQueryValues(this HtmlHelper html, string name) =>
+            ViewUtils.FormQueryValues(html.GetRequest(), name);
+
+        public static string FormValue(this HtmlHelper html, string name) => 
+            ViewUtils.FormValue(html.GetRequest(), name, null);
+
+        public static string FormValue(this HtmlHelper html, string name, string defaultValue) =>
+            ViewUtils.FormValue(html.GetRequest(), name, defaultValue);
+
+        public static string[] FormValues(this HtmlHelper html, string name) =>
+            ViewUtils.FormValues(html.GetRequest(), name);
+
+        public static bool FormCheckValue(this HtmlHelper html, string name) =>
+            ViewUtils.FormCheckValue(html.GetRequest(), name);
+
+        public static string GetParam(this HtmlHelper html, string name) =>
+            ViewUtils.GetParam(html.GetRequest(), name);
+
+        public static string ErrorResponseExcept(this HtmlHelper html, string fieldNames) =>
+            ViewUtils.ErrorResponseExcept(html.GetErrorStatus(), fieldNames);
+
+        public static string ErrorResponseExcept(this HtmlHelper html, ICollection<string> fieldNames) =>
+            ViewUtils.ErrorResponseExcept(html.GetErrorStatus(), fieldNames);
+
+        public static string ErrorResponseSummary(this HtmlHelper html) =>
+            ViewUtils.ErrorResponseSummary(html.GetErrorStatus());
+
+        public static string ErrorResponse(this HtmlHelper html, string fieldName) =>
+            ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
+
+
+        /// <summary>
+        /// Alias for ServiceStack Html.ValidationSummary() with comma-delimited field names 
+        /// </summary>
+        public static HtmlString ErrorSummary(this HtmlHelper html, string exceptFor) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFor).ToHtmlString();
+        public static HtmlString ValidationSummary(this HtmlHelper html) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), null).ToHtmlString();
+
+        public static HtmlString ValidationSummary(this HtmlHelper html, ICollection<string> exceptFields) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, null).ToHtmlString();
+
+        public static HtmlString ValidationSummary(this HtmlHelper html, ICollection<string> exceptFields, Dictionary<string, object> divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs).ToHtmlString();
+        public static HtmlString ValidationSummary(this HtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs.ToObjectDictionary()).ToHtmlString();
+
+        public static HtmlString HiddenInputs(this HtmlHelper html, IEnumerable<KeyValuePair<string, string>> kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
+        public static HtmlString HiddenInputs(this HtmlHelper html, IEnumerable<KeyValuePair<string, object>> kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps).ToHtmlString();
+        public static HtmlString HiddenInputs(this HtmlHelper html, object kvps) =>
+            ViewUtils.HtmlHiddenInputs(kvps.ToObjectDictionary()).ToHtmlString();
+
+        public static HtmlString FormTextarea(this HtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "textarea", null);
+        public static HtmlString FormTextarea(this HtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "textarea", null);
+        public static HtmlString FormTextarea(this HtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "textarea", inputOptions);
+        public static HtmlString FormTextarea(this HtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "textarea", inputOptions);
+
+        public static HtmlString FormSelect(this HtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "select", null);
+        public static HtmlString FormSelect(this HtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "select", null);
+        public static HtmlString FormSelect(this HtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "select", inputOptions);
+        public static HtmlString FormSelect(this HtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "select", inputOptions);
+
+        public static HtmlString FormInput(this HtmlHelper html, object inputAttrs) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "input", null);
+        public static HtmlString FormInput(this HtmlHelper html, Dictionary<string, object> inputAttrs) =>
+            FormControl(html, inputAttrs, "input", null);
+        public static HtmlString FormInput(this HtmlHelper html, object inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs.ToObjectDictionary(), "input", inputOptions);
+        public static HtmlString FormInput(this HtmlHelper html, Dictionary<string, object> inputAttrs, InputOptions inputOptions) =>
+            FormControl(html, inputAttrs, "input", inputOptions);
+
+        public static HtmlString FormControl(this HtmlHelper html, object inputAttrs, string tagName, InputOptions inputOptions) =>
+            ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
+        public static HtmlString FormControl(this HtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
+            ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
     }
 }
