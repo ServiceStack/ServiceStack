@@ -62,22 +62,7 @@ namespace ServiceStack
             return null;
         }
 
-        /// <summary>
-        /// Store an entry in the IHttpRequest.Items Dictionary
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetItem(this IRequest httpReq, string key, object value)
-        {
-            if (httpReq == null) return;
-
-            httpReq.Items[key] = value;
-        }
-
-        /// <summary>
-        /// Get an entry from the IHttpRequest.Items Dictionary
-        /// </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static object GetItem(this IRequest httpReq, string key)
+        internal static object GetItem(this IRequest httpReq, string key)
         {
             if (httpReq == null) return null;
 
