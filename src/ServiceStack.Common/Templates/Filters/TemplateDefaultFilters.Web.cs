@@ -141,7 +141,7 @@ namespace ServiceStack.Templates
             {
                 return MatchesStringValue(target, ContainsXss);
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
                 throw new NotSupportedException($"containsXss cannot validate {target.GetType().Name}");
             }

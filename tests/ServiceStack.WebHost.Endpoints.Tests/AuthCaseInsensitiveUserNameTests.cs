@@ -279,7 +279,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 
                 Assert.Fail("Should fail");
             }
-            catch (WebServiceException e) {}
+            catch (WebServiceException) {}
         }
     }
 

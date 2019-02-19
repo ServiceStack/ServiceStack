@@ -224,8 +224,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ResultScope = () => JsConfig.With(new Text.Config
                 {
-                    EmitLowercaseUnderscoreNames = true,
-                    EmitCamelCaseNames = false,
+                    TextCase = TextCase.SnakeCase,
                 })
             };
     }
@@ -273,7 +272,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 JsConfig.Init(new Text.Config
                 {
-                    EmitCamelCaseNames = true
+                    TextCase = TextCase.CamelCase,
                 });
 
                 SetConfig(new HostConfig

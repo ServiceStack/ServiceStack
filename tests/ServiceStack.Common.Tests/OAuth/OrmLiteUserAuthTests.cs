@@ -25,7 +25,7 @@ namespace ServiceStack.Common.Tests.OAuth
         private static UserAuth GetUserAuth()
         {
             var jsv = "{Id:0,UserName:UserName,Email:as@if.com,PrimaryEmail:as@if.com,FirstName:FirstName,LastName:LastName,DisplayName:DisplayName,Salt:WMQi/g==,PasswordHash:oGdE40yKOprIgbXQzEMSYZe3vRCRlKGuqX2i045vx50=,Roles:[],Permissions:[],CreatedDate:2012-03-20T07:53:48.8720739Z,ModifiedDate:2012-03-20T07:53:48.8720739Z}";
-            var userAuth = jsv.To<UserAuth>();
+            var userAuth = jsv.ConvertTo<UserAuth>();
             return userAuth;
         }
         

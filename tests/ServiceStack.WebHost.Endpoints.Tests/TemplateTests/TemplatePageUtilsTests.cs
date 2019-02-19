@@ -481,10 +481,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_support_shorthand_object_initializers()
         {
-            object value;
-            JsToken token;
-
-            "{key}".ParseJsExpression(out token);
+            "{key}".ParseJsExpression(out var token);
             Assert.That(token, Is.EqualTo(
                 new JsObjectExpression(
                     new JsProperty(new JsIdentifier("key"), new JsIdentifier("key"), shorthand:true)

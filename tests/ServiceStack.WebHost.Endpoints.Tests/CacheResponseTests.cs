@@ -205,7 +205,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 ResultScope = () => JsConfig.With(new Text.Config
                 {
-                    EmitCamelCaseNames = true,
+                    TextCase = TextCase.CamelCase,
                     IncludeNullValues = true,
                 })
             };

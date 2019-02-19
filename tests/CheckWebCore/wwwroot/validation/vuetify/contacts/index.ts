@@ -40,6 +40,7 @@ new Vue({
                     }
 
                     this.update = false;
+                    this.responseStatus = null;
                     form.reset();
                     
                 } catch (e) {

@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void To_ValueType_on_null_or_empty_string_returns_default_value()
         {
-            Assert.That("".To<int>(), Is.EqualTo(default(int)));
+            Assert.That("".ConvertTo<int>(), Is.EqualTo(default(int)));
         }
 
         [Test]

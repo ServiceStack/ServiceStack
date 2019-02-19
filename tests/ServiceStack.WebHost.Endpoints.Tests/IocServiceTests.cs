@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -46,7 +47,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override IServiceClient CreateClient(ResetIoc request = null)
         {
             var client = new JsonServiceClient(Config.AspNetServiceStackBaseUri);
-            client.Post(request ?? new ResetIoc());
+            using(client.Post<HttpWebResponse>(request ?? new ResetIoc())){}
             return client;
         }
     }
@@ -78,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public override IServiceClient CreateClient(ResetIoc request = null)
         {
             var client = new JsonServiceClient(ListeningOn);
-            client.Post(request ?? new ResetIoc());
+            using(client.Post<HttpWebResponse>(request ?? new ResetIoc())){}
             return client;
         }
     }

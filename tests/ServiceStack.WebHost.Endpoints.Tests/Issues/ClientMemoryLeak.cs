@@ -109,7 +109,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.Issues
 
             for (int i = 0; i < 10001; i++)
             {
-                using (HttpWebResponse response = client.Get("/leak/request" + i)) {}
+                using (HttpWebResponse response = client.Get<HttpWebResponse>("/leak/request" + i)) {}
                 elapsedTicks.Add(sw.ElapsedTicks);
             }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net;
@@ -8,8 +7,6 @@ using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.Templates;
-using ServiceStack.Text;
-using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {

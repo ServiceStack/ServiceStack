@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.FluentValidation;
@@ -97,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Get(new CustomValidation { Name = "Joan" });
+                using(var response = client.Get<HttpWebResponse>(new CustomValidation { Name = "Joan" })){}
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
@@ -125,7 +126,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             try
             {
-                var response = client.Get(new CustomValidation());
+                using (var response = client.Get<HttpWebResponse>(new CustomValidation())) {}
                 Assert.Fail("Should throw");
             }
             catch (WebServiceException ex)
