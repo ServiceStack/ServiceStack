@@ -384,6 +384,17 @@ ObjectKey {SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}";
             Assert.That(value.Keys, Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
             Assert.That(value.Values, Is.EqualTo(new List<string> { "1", "2", "3", "4", "5" }));
         }
+        
+        [Test]
+        public void GetKeyValuePairs_Parses_Dictionary_From_Setting()
+        {
+            var appSettings = GetAppSettings();
+            var kvps = appSettings.GetKeyValuePairs("DictionaryKey");
+
+            Assert.That(kvps, Has.Count.EqualTo(5));
+            Assert.That(kvps.Map(x => x.Key), Is.EqualTo(new List<string> { "A", "B", "C", "D", "E" }));
+            Assert.That(kvps.Map(x => x.Value), Is.EqualTo(new List<string> { "1", "2", "3", "4", "5" }));
+        }
 
         [Test]
         public void GetDictionary_Throws_Exception_On_Null_Key()

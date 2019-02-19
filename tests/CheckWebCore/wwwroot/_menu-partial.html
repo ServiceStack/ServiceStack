@@ -1,10 +1,4 @@
-{{ { '/':         'Home',
-     '/about':    'About',
-     '/services': 'Services',
-     '/services/acme': 'ACME Services',
-     '/services/acme/widget': 'ACME Widget Service',
-     '/contact':  'Contact',
-   } | toList | assignTo: links }}
+{{ menuItems | assignTo: links }}
 
 <div class="collapse navbar-collapse" id="navbarResponsive">
     <ul class="navbar-nav ml-auto">

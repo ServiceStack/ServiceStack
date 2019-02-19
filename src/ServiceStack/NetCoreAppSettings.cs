@@ -96,6 +96,18 @@ namespace ServiceStack
             return to;
         }
 
+        public List<KeyValuePair<string, string>> GetKeyValuePairs(string key)
+        {
+            var section = GetRequiredSection(key);
+            var members = section.GetChildren();
+            var to = new List<KeyValuePair<string,string>>();
+            foreach (var member in members)
+            {
+                to.Add(new KeyValuePair<string, string>(member.Key, member.Value));
+            }
+            return to;
+        }
+
         public T Get<T>(string name)
         {
             return Bind<T>(Configuration.GetSection(name));

@@ -258,6 +258,10 @@ namespace CheckWebCore
         /// </summary>
         public class ContactServiceFilters : TemplateFilter
         {
+            internal readonly List<KeyValuePair<string, string>> MenuItems =
+                HostContext.AppSettings.GetKeyValuePairs("Menu");
+            public List<KeyValuePair<string, string>> menuItems() => MenuItems;
+
             static Dictionary<string, string> Colors = new Dictionary<string, string>
             {
                 {"#ffa4a2","Red"},
@@ -291,6 +295,7 @@ namespace CheckWebCore
         public static Dictionary<string, string> ContactColors(this IHtmlHelper html) => Instance.contactColors();
         public static List<KeyValuePair<string, string>> ContactTitles(this IHtmlHelper html) => Instance.contactTitles();
         public static List<string> ContactGenres(this IHtmlHelper html) => Instance.contactGenres();
+        public static List<KeyValuePair<string, string>> MenuItems(this IHtmlHelper html) => Instance.MenuItems;
     }
 
     public class ContactsHostConfig : IConfigureAppHost

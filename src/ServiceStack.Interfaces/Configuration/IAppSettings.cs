@@ -18,6 +18,8 @@ namespace ServiceStack.Configuration
 
         IDictionary<string, string> GetDictionary(string key);
 
+        List<KeyValuePair<string, string>> GetKeyValuePairs(string key);
+
         T Get<T>(string name);
 
         T Get<T>(string name, T defaultValue);
