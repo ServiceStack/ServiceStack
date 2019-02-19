@@ -268,18 +268,14 @@ namespace CheckWebCore
                 {"#b2fab4","Green"},
                 {"#9be7ff","Blue"}
             };
-    
             public Dictionary<string, string> contactColors() => Colors;
-    
+
             private static List<KeyValuePair<string, string>> Titles => EnumUtils.GetValues<Title>()
                 .Where(x => x != Title.Unspecified)
                 .ToKeyValuePairs();
-    
             public List<KeyValuePair<string, string>> contactTitles() => Titles;
 
-            private static List<string> FilmGenres => EnumUtils.GetValues<FilmGenres>()
-                .Map(x => x.ToDescription());
-
+            private static List<string> FilmGenres => EnumUtils.GetValues<FilmGenres>().Map(x => x.ToDescription());
             public List<string> contactGenres() => FilmGenres;
         }
 

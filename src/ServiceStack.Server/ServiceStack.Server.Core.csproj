@@ -5,7 +5,7 @@
     <AssemblyName>ServiceStack.Server</AssemblyName>
     <RootNamespace>ServiceStack.Server</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>ServiceStack Server integration with Redis and OrmLite</Title>
+    <Title>ServiceStack.Server .NET Standard 2.0</Title>
     <PackageDescription>
       Integration libraries and adapters with other major ServiceStack server components.
       Includes high-level API's that use OrmLite and Redis including:

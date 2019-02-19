@@ -5,7 +5,7 @@
         <AssemblyName>ServiceStack.RabbitMq</AssemblyName>
         <RootNamespace>ServiceStack.RabbitMq</RootNamespace>
         <TargetFrameworks>netstandard2.0</TargetFrameworks>
-        <Title>ServiceStack.RabbitMq</Title>
+        <Title>ServiceStack.RabbitMq .NET Standard 2.0</Title>
         <PackageDescription>
             Rabbit MQ client and server adapters for the ServiceStack web services framework.
             This library enables consuming and publishing to ServiceStack services when hosted within a Rabbit MQ Server Host.

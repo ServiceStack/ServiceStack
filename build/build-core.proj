@@ -147,6 +147,11 @@
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
+    <!-- ServiceStack.Kestrel.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- Copy all *.nupkg to /NuGet -->
     <ItemGroup>

@@ -4,7 +4,7 @@
     <AssemblyName>ServiceStack.ProtoBuf</AssemblyName>
     <RootNamespace>ServiceStack.ProtoBuf</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>Protocol Buffers support for ServiceStack. Includes typed ProtoBuf Client</Title>
+    <Title>ServiceStack.ProtoBuf .NET Standard 2.0</Title>
     <PackageDescription>
       Add the ProtoBuf binary format and endpoint to a ServiceStack web service host.
     </PackageDescription>

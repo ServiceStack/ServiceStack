@@ -5,7 +5,7 @@
     <AssemblyName>ServiceStack.HttpClient</AssemblyName>
     <RootNamespace>ServiceStack.HttpClient</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>Common libraries for ServiceStack projects</Title>
+    <Title>ServiceStack.HttpClient .NET Standard 2.0</Title>
     <PackageDescription>
       Typed .NET Core and .NET Framework ServiceClients based on .NET's HttpClient
     </PackageDescription>

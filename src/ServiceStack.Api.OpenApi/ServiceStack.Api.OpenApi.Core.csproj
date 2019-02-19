@@ -5,7 +5,7 @@
     <AssemblyName>ServiceStack.Api.OpenApi</AssemblyName>
     <RootNamespace>ServiceStack.Api.OpenApi</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>ServiceStack support for Open API v2.0 and integrated Swagger UI</Title>
+    <Title>ServiceStack.Api.OpenApi .NET Standard 2.0</Title>
     <PackageDescription>
       Implements v2.0 of the Open API Specification (https://www.openapis.org).
       Open API is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
