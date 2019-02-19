@@ -177,8 +177,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
-            JsToken token;
-            
             Assert.That(context.EvaluateTemplate("{{ true ? 1 : 0 }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateTemplate("{{ false ? 1 : 0 }}"), Is.EqualTo("0"));
             Assert.That(context.EvaluateTemplate("{{ (1 < 2) ? 3 + 4 : -5 + (add(6,a) + 7) }}"), Is.EqualTo("7"));

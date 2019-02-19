@@ -93,6 +93,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             public SessionAppHost() : base(typeof(SessionTests).Name, typeof(SessionTests).Assembly) { }
 
+            static bool UseOrmLiteCache = false;
+
             public override void Configure(Container container)
             {
                 Plugins.Add(new SessionFeature());
@@ -102,7 +104,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     AllowSessionIdsInHttpParams = true,
                 });
 
-                const bool UseOrmLiteCache = false;
                 if (UseOrmLiteCache)
                 {
                     container.Register<IDbConnectionFactory>(c =>

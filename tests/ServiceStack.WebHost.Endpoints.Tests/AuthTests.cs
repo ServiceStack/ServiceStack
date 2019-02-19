@@ -966,15 +966,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Send<SecureResponse>(request);
-            } catch (WebServiceException ex)
-            {
+            } 
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
                 throw;
-            } 
+            }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var loginPath = "/".CombineWith(VirtualDirectory).CombineWith(LoginUrl);
@@ -996,15 +999,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Send<SecureResponse>(request);
-            } catch (WebServiceException ex)
-            {
+            }
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
-                throw;
             }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var queryString = HttpUtility.ParseQueryString(locationUri.Query);
@@ -1037,15 +1042,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             try
             {
                 client.Get(request);
-            } catch (WebServiceException ex)
-            {
+            }
 #if NETCORE
+            catch (WebServiceException ex)
+            {
                 //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
                 if (ex.StatusCode == (int)HttpStatusCode.Found)
                     return;
-#endif
-                throw;
             }
+#else
+            catch (WebServiceException) {}
+#endif
 
             var locationUri = new Uri(lastResponseLocationHeader);
             var locationUriQueryString = HttpUtility.ParseQueryString(locationUri.Query);
@@ -1079,15 +1086,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     Password = PasswordForSessionRedirect,
                     RememberMe = true,
                 });
-            } catch (WebServiceException ex)
-            {
-#if NETCORE
-                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
-                if (ex.StatusCode == (int)HttpStatusCode.Redirect)
-                    return;
-#endif
-                throw;
             }
+#if NETCORE
+            catch (WebServiceException ex)
+            {
+                //AllowAutoRedirect=false is not implemented in .NET Core and throws NotFound exception
+                if (ex.StatusCode == (int)HttpStatusCode.Found)
+                    return;
+            }
+#else
+            catch (WebServiceException) {}
+#endif
 
             Assert.That(lastResponseLocationHeader, Is.EqualTo(SessionRedirectUrl));
         }
