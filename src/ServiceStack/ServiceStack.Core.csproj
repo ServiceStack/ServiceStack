@@ -4,7 +4,7 @@
     <AssemblyName>ServiceStack</AssemblyName>
     <RootNamespace>ServiceStack</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>ServiceStack webservice framework: Faster, Cleaner, Modern WCF alternative</Title>
+    <Title>ServiceStack .NET Standard 2.0</Title>
     <PackageDescription>
       ServiceStack is a simple and fast alternative to WCF, MVC and Web API in one cohesive framework for all your services
       and web apps that's intuitive and Easy to use!

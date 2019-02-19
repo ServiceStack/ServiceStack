@@ -4,7 +4,7 @@
     <AssemblyName>ServiceStack.Logging.Log4Net</AssemblyName>
     <RootNamespace>ServiceStack.Logging.Log4Net</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>ServiceStack.Logging.Log4Net</Title>
+    <Title>ServiceStack.Logging.Log4Net .NET Standard 2.0</Title>
     <PackageDescription>
       Provides log4net logging integration for other ServiceStack projects
     </PackageDescription>

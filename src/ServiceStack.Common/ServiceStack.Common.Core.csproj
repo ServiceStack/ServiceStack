@@ -5,7 +5,7 @@
     <RootNamespace>ServiceStack.Common</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <RootNamespace>ServiceStack</RootNamespace>
-    <Title>Common libraries for ServiceStack projects</Title>
+    <Title>ServiceStack.Common .NET Standard 2.0</Title>
     <PackageDescription>
       ServiceStack Templates, Virtual File System, SimpleContainer and Common library for ServiceStack projects.
     </PackageDescription>

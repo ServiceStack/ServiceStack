@@ -5,7 +5,7 @@
     <AssemblyName>ServiceStack.Logging.NLog</AssemblyName>
     <RootNamespace>ServiceStack.Logging.NLog</RootNamespace>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <Title>ServiceStack.Logging.NLog</Title>
+    <Title>ServiceStack.Logging.NLog .NET Standard 2.0</Title>
     <PackageDescription>
       Provides NLog logging integration for other ServiceStack projects
     </PackageDescription>
