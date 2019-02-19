@@ -14,27 +14,6 @@ namespace ServiceStack.Common.Tests
     public class StringExtensionTests
     {
         [Test]
-        public void To_works_with_ValueTypes()
-        {
-            Assert.That(1.ToString().To<int>(), Is.EqualTo(1));
-        }
-
-        [Test]
-        public void To_on_null_or_empty_string_returns_default_value_supplied()
-        {
-            const string nullString = null;
-            Assert.That("".To(1), Is.EqualTo(1));
-            Assert.That("".To(default(int)), Is.EqualTo(default(int)));
-            Assert.That(nullString.To(1), Is.EqualTo(1));
-        }
-
-        [Test]
-        public void To_ValueType_on_null_or_empty_string_returns_default_value()
-        {
-            Assert.That("".ConvertTo<int>(), Is.EqualTo(default(int)));
-        }
-
-        [Test]
         public void To_UrlEncode()
         {
             const string url = "http://www.servicestack.net/a?b=c&d=f";
