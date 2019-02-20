@@ -4,7 +4,7 @@
     <PackageId>ServiceStack.Kestrel.Core</PackageId>
     <AssemblyName>ServiceStack.Kestrel</AssemblyName>
     <RootNamespace>ServiceStack.Kestrel</RootNamespace>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <Title>ServiceStack.Kestrel .NET Standard 2.0</Title>
     <PackageDescription>
       Provides AppSelfHostBase implementation for .NET Core's Kestrel Self Host HTTP Server

@@ -46,6 +46,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Interfaces/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.Log4Net/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Logging.NLog/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.MsgPack/obj" />
@@ -53,7 +54,6 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.ProtoBuf/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.RabbitMq/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Server/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -69,6 +69,12 @@
   </Target>
 
   <Target Name="Default" DependsOnTargets="$(DoBuildSolutionsDependsOn)">
+
+    <!-- ServiceStack.Kestrel.Core -->
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj" Targets="Restore" />
+    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
 
     <!-- ServiceStack.Api.OpenApi.Core -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Api.OpenApi/ServiceStack.Api.OpenApi.Core.csproj" Targets="Restore" />
@@ -145,12 +151,6 @@
     <!-- ServiceStack.Server.Core -->
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj" Targets="Restore" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Server/ServiceStack.Server.Core.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.Kestrel.Core -->
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.Kestrel/ServiceStack.Kestrel.Core.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
