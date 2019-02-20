@@ -1,6 +1,7 @@
 ﻿#if NETSTANDARD2_0
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -271,6 +272,14 @@ namespace ServiceStack
         }
 
         public static IHttpRequest ToRequest(this HttpRequest request, string operationName = null) => request.HttpContext.ToRequest();
+
+        public static T TryResolveScoped<T>(this IRequest req) => (T)((IServiceProvider)req).GetService(typeof(T));
+        public static object TryResolveScoped(this IRequest req, Type type) => ((IServiceProvider)req).GetService(type);
+        public static T ResolveScoped<T>(this IRequest req) => (T)((IServiceProvider) req).GetRequiredService(typeof(T));
+        public static object ResolveScoped(this IRequest req, Type type) => ((IServiceProvider)req).GetRequiredService(type);
+        public static IServiceScope CreateScope(this IRequest req) => ((IServiceProvider)req).CreateScope();
+        public static IEnumerable<object> GetServices(this IRequest req, Type type) => ((IServiceProvider)req).GetServices(type);
+        public static IEnumerable<T> GetServices<T>(this IRequest req) => ((IServiceProvider)req).GetServices<T>();
     }
 }
 
