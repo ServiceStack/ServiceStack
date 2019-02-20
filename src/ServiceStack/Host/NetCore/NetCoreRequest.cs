@@ -19,7 +19,7 @@ using ServiceStack.NetCore;
 
 namespace ServiceStack.Host.NetCore
 {
-    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles
+    public class NetCoreRequest : IHttpRequest, IHasResolver, IHasVirtualFiles, IServiceProvider
     {
         public static ILog log = LogManager.GetLogger(typeof(NetCoreRequest));
 
@@ -54,6 +54,8 @@ namespace ServiceStack.Host.NetCore
 
             return this.TryResolveInternal<T>();
         }
+
+        public object GetService(Type serviceType) => context.RequestServices.GetService(serviceType);
 
         public HttpContext HttpContext => context;
         public HttpRequest HttpRequest => request;
