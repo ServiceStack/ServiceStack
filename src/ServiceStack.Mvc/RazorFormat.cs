@@ -767,6 +767,20 @@ namespace ServiceStack.Mvc
             ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
         public static HtmlString FormControl(this IHtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
+
+        public static T Exec<T>(this IHtmlHelper html, Func<T> fn, out Exception ex)
+        {
+            try
+            {
+                ex = null;
+                return fn();
+            }
+            catch (Exception e)
+            {
+                ex = e;
+                return default(T);
+            }
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
