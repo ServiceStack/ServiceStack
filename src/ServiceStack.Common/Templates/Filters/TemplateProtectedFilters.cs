@@ -345,7 +345,7 @@ namespace ServiceStack.Templates
                 var expireAt = DateTime.UtcNow.Add(expireIn);
 
                 var bytes = ms.ToArray();
-                Context.ExpiringCache[cacheKey] = cacheEntry = Tuple.Create(DateTime.UtcNow.Add(expireIn),(object)bytes);
+                Context.ExpiringCache[cacheKey] = cacheEntry = Tuple.Create(expireAt,(object)bytes);
                 await scope.OutputStream.WriteAsync(bytes);
             }
         }
