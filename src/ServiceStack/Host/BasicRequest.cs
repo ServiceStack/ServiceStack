@@ -127,7 +127,13 @@ namespace ServiceStack.Host
 
         public string RemoteIp { get; set; }
 
-        public string Authorization { get; set; }
+        public string Authorization
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.Authorization])
+                ? null
+                : Headers[HttpHeaders.Authorization];
+            set => Headers[HttpHeaders.Authorization] = value;
+        }
 
         public bool IsSecureConnection
         {

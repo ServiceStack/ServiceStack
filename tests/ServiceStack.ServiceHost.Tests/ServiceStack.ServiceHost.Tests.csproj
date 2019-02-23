@@ -200,7 +200,7 @@
     <Compile Include="Formats\TextBlockUtils.cs" />
     <Compile Include="Formats\UseCaseTests.cs" />
     <Compile Include="Formats\ViewTests.cs" />
-    <Compile Include="HttpRequestAuthenticatonTests.cs" />
+    <Compile Include="HttpRequestAuthenticationTests.cs" />
     <Compile Include="HttpRequestMock.cs" />
     <Compile Include="IoCTests.cs" />
     <Compile Include="RequestContextExtensionsTest.cs" />
