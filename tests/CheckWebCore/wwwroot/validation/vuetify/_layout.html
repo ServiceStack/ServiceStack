@@ -33,21 +33,39 @@
     </v-app>
 </div>
 
-<script src="/lib/vue/dist/vue.js"></script>
-<script src="/lib/vuetify/dist/vuetify.js"></script>
-
 <script>
-    module = {exports:{}}; exports = {};
-    //SHIM FTW! - Give all objects access to all types in global exports namespace
-    var wrapDefaultModules = {'vue': { Vue: Vue } };
+    var exports = window;
+    var IMPORT = { 
+        jquery: '$',
+        vue: function(){ 
+            var e = require('Vue'); 
+            e.Vue = e; // workaround TypeScript not allowing default imports  
+            return e; 
+        } 
+    };
     window.require = function(name) {
-        return wrapDefaultModules[name] || exports;
+        var w = IMPORT[name];
+        if (w) return typeof w == "function" ? w() : typeof w == 'string' ? exports[w] : w;
+        return exports[name] || exports;
     };
 </script>
 
-<script src="/lib/@servicestack/client/index.js"></script>
-<script src="/dtos.js"></script>
-<script src="/validation/vuetify/shared.js"></script>
+
+    {{#if !debug}}
+    <script src="/lib/vue/dist/vue.js"></script>
+    <script src="/lib/vuetify/dist/vuetify.js"></script>
+    <script src="/lib/@servicestack/client/index.js"></script>
+    <script src="/dtos.js"></script>
+    <script src="/validation/vuetify/shared.js"></script>
+    {{else}}
+        {{ ['/lib/vue/dist/vue.js',
+            '/lib/vuetify/dist/vuetify.js',
+            '/lib/@servicestack/client/index.js',
+            '/dtos.js',
+            '/validation/vuetify/shared.js',
+            ] | bundleJs({ out: '/validation/vuetify/bundle.js' }) }}
+    {{/if}}
+
 
 <script>
     Vue.use(Vuetify);
