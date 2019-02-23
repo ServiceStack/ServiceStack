@@ -8,6 +8,20 @@ namespace ServiceStack
     /// </summary>
     public interface IService { }
 
+    public interface IServiceBeforeFilter
+    {
+        void OnBeforeExecute(object requestDto);
+    }
+    public interface IServiceAfterFilter
+    {
+        object OnAfterExecute(object response);
+    }
+    public interface IServiceErrorFilter
+    {
+        System.Threading.Tasks.Task<object> OnExceptionAsync(object requestDto, System.Exception ex);
+    }
+    public interface IServiceFilters : IServiceBeforeFilter, IServiceAfterFilter, IServiceErrorFilter {}
+
     public interface IReturn { }
     public interface IReturn<T> : IReturn { }
     public interface IReturnVoid : IReturn { }

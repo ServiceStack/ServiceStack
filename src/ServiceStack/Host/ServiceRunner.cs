@@ -44,7 +44,7 @@ namespace ServiceStack.Host
             return service;
         }
 
-        public virtual void BeforeEachRequest(IRequest req, TRequest request)
+        public virtual void BeforeEachRequest(IRequest req, TRequest request, object service)
         {
             var requestLogger = AppHost.TryResolve<IRequestLogger>();
             if (requestLogger != null)
@@ -52,10 +52,10 @@ namespace ServiceStack.Host
                 req.SetItem(Keywords.RequestDuration, Stopwatch.StartNew());
             }
             
-            OnBeforeExecute(req, request);
+            OnBeforeExecute(req, request, service);
         }
 
-        public virtual object AfterEachRequest(IRequest req, TRequest request, object response)
+        public virtual object AfterEachRequest(IRequest req, TRequest request, object response, object service)
         {
             if (response.IsErrorResponse())
             {
@@ -74,13 +74,26 @@ namespace ServiceStack.Host
             }
 
             //only call OnAfterExecute if no exception occured
-            return response.IsErrorResponse() ? response : OnAfterExecute(req, response);
+            return response.IsErrorResponse() ? response : OnAfterExecute(req, response, service);
         }
 
+        [Obsolete("Use OnBeforeExecute(req, requestDto, service)")]
         public virtual void OnBeforeExecute(IRequest req, TRequest request) { }
-
-        public virtual object OnAfterExecute(IRequest req, object response)
+        public void OnBeforeExecute(IRequest req, TRequest request, object service)
         {
+            OnBeforeExecute(req, request);
+            if (service is IServiceBeforeFilter filter)
+                filter.OnBeforeExecute(request);
+        }
+
+        [Obsolete("Use OnAfterExecute(req, requestDto, service)")]
+        public virtual object OnAfterExecute(IRequest req, object response) => response;
+
+        public object OnAfterExecute(IRequest req, object response, object service)
+        {
+            response = OnAfterExecute(req, response);
+            if (service is IServiceAfterFilter filter)
+                return filter.OnAfterExecute(response);
             return response;
         }
 
@@ -94,7 +107,7 @@ namespace ServiceStack.Host
         {
             try
             {
-                BeforeEachRequest(req, requestDto);
+                BeforeEachRequest(req, requestDto, instance);
 
                 var res = req.Response;
                 var container = HostContext.Container;
@@ -117,7 +130,7 @@ namespace ServiceStack.Host
                     }
                 }
 
-                var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto));
+                var response = AfterEachRequest(req, requestDto, ServiceAction(instance, requestDto), instance);
 
                 if (HostContext.StrictMode)
                 {
@@ -141,7 +154,7 @@ namespace ServiceStack.Host
                 if (response is IHttpError error)
                 {
                     var ex = (Exception) error;
-                    var result = await HandleExceptionAsync(req, requestDto, ex);
+                    var result = await HandleExceptionAsync(req, requestDto, ex, instance);
 
                     if (result == null)
                         throw ex;
@@ -173,7 +186,7 @@ namespace ServiceStack.Host
             catch (Exception ex)
             {
                 //Sync Exception Handling
-                var result = await HandleExceptionAsync(req, requestDto, ex);
+                var result = await HandleExceptionAsync(req, requestDto, ex, instance);
 
                 if (result == null)
                     throw;
@@ -208,16 +221,18 @@ namespace ServiceStack.Host
             return task.Result;
         }
 
-        [Obsolete("Override HandleExceptionAsync instead")]
-        public virtual object HandleException(IRequest request, TRequest requestDto, Exception ex) => null;
+        [Obsolete("Use HandleExceptionAsync(req, requestDto, ex, service)")]
+        public virtual Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex) => 
+            TypeConstants.EmptyTask;
 
-        public virtual async Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex)
+        public virtual async Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex, object service)
         {
-            var errorResponse = HandleException(request, requestDto, ex)
+            var errorResponse = (service is IServiceErrorFilter filter ? await filter.OnExceptionAsync(requestDto, ex) : null)
+                ?? await HandleExceptionAsync(request, requestDto, ex)
                 ?? await HostContext.RaiseServiceException(request, requestDto, ex)
                 ?? DtoUtils.CreateErrorResponse(requestDto, ex);
 
-            AfterEachRequest(request, requestDto, errorResponse ?? ex);
+            AfterEachRequest(request, requestDto, errorResponse ?? ex, service);
             
             return errorResponse;
         }
