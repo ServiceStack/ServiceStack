@@ -42,6 +42,7 @@
         public const string Template = "Template";
         public const string Error = "__error";
         public const string ErrorStatus = "__errorStatus";
+        public const string Authorization = "__authorization";
         public const string Model = "Model";
     }
 
