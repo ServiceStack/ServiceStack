@@ -252,8 +252,14 @@ namespace ServiceStack.Host.AspNet
         public string RemoteIp => 
             remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? request.UserHostAddress));
 
-        public string Authorization => 
-            string.IsNullOrEmpty(request.Headers[HttpHeaders.Authorization]) ? null : request.Headers[HttpHeaders.Authorization];
+        public string Authorization
+        {
+            get
+            {
+                var auth = request.Headers[HttpHeaders.Authorization];
+                return string.IsNullOrEmpty(auth) ? null : auth;
+            }
+        }
 
         public bool IsSecureConnection => request.IsSecureConnection 
             || XForwardedProtocol == "https" 
