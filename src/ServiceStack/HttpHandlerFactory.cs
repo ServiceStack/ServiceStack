@@ -42,7 +42,7 @@ namespace ServiceStack
                 var config = appHost.Config;
 
                 var isAspNetHost = HostContext.IsAspNetHost;
-                WebHostPhysicalPath = appHost.VirtualFileSources.RootDirectory.RealPath;
+                WebHostPhysicalPath = appHost.RootDirectory.RealPath;
 
                 //Apache+mod_mono treats path="servicestack*" as path="*" so takes over root path, so we need to serve matching resources
                 var hostedAtRootPath = config.HandlerFactoryPath == null;

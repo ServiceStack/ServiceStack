@@ -104,6 +104,26 @@ namespace ServiceStack
         /// </summary>
         public static IVirtualPathProvider VirtualFileSources => AssertAppHost().VirtualFileSources;
 
+        /// <summary>
+        /// The WebRoot VFS Directory of VirtualFilesSources
+        /// </summary>
+        public static IVirtualDirectory RootDirectory => AssertAppHost().RootDirectory;
+
+        /// <summary>
+        /// The ContentRoot VFS Directory of VirtualFiles
+        /// </summary>
+        public static IVirtualDirectory ContentRootDirectory => AssertAppHost().ContentRootDirectory;
+
+        /// <summary>
+        /// The FileSystem VirtualFiles provider in VirtualFileSources
+        /// </summary>
+        public static FileSystemVirtualFiles FileSystemVirtualFiles => AssertAppHost().VirtualFileSources.GetFileSystemVirtualFiles();
+
+        /// <summary>
+        /// The Memory VirtualFiles provider in VirtualFileSources
+        /// </summary>
+        public static MemoryVirtualFiles MemoryVirtualFiles => AssertAppHost().VirtualFileSources.GetMemoryVirtualFiles();
+
         public static ICacheClient Cache => TryResolve<ICacheClient>();
 
         public static MemoryCacheClient LocalCache => TryResolve<MemoryCacheClient>();

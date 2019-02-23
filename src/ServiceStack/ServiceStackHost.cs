@@ -503,18 +503,17 @@ namespace ServiceStack
         public IVirtualFiles VirtualFiles { get; set; }
 
         /// <summary>
-        /// Virtual File Sources from webroot, typically a MultiVirtualFiles containing a cascading list of Sources
+        /// Virtual File Sources from WebRoot, typically a MultiVirtualFiles containing a cascading list of Sources
         /// </summary>
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
-        /// <summary>
-        /// Insert Virtual File Sources at the beginning so they take precedence over built-in sources 
-        /// </summary>
+        public IVirtualDirectory RootDirectory =>
+            (VirtualFileSources.GetFileSystemVirtualFiles() ?? VirtualFileSources).RootDirectory;
+
+        public IVirtualDirectory ContentRootDirectory => VirtualFiles.RootDirectory;
+        
         public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
         
-        /// <summary>
-        /// Add additional Virtual File Sources at the end after built-in sources 
-        /// </summary>
         public List<IVirtualPathProvider> AddVirtualFileSources { get; set; }
 
         public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
@@ -989,7 +988,7 @@ namespace ServiceStack
 
         public virtual string ResolvePhysicalPath(string virtualPath, IRequest httpReq)
         {
-            return VirtualFileSources.CombineVirtualPath(VirtualFileSources.RootDirectory.RealPath, virtualPath);
+            return VirtualFileSources.CombineVirtualPath(RootDirectory.RealPath, virtualPath);
         }
 
         private bool delayedLoadPlugin;

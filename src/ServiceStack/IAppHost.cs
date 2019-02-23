@@ -282,7 +282,22 @@ namespace ServiceStack
         IVirtualFiles VirtualFiles { get; set; }
         
         /// <summary>
-        /// Register additional Virtual File Sources
+        /// The WebRoot VFS Directory of the cascading VirtualFileSources 
+        /// </summary>
+        IVirtualDirectory RootDirectory { get; }
+        
+        /// <summary>
+        /// The ContentRoot VFS Directory of the read/write VirtualFiles Provider 
+        /// </summary>
+        IVirtualDirectory ContentRootDirectory { get; }
+        
+        /// <summary>
+        /// Insert Virtual File Sources at the beginning so they take precedence over built-in sources 
+        /// </summary>
+        List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
+        
+        /// <summary>
+        /// Add additional Virtual File Sources at the end after built-in Virtual File Sources 
         /// </summary>
         List<IVirtualPathProvider> AddVirtualFileSources { get; }
 
