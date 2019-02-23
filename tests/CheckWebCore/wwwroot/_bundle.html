@@ -1,0 +1,6 @@
+{{ ['/assets/js/jquery.min.js',
+    '/assets/js/',
+    '/js/ss-utils.js',
+    '/lib/@servicestack/client/index.js',
+    '/dtos.js',
+    ] | bundleJs({ disk:true, out:'/js/bundle.js' }) }}
