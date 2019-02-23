@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using Funq;
 using NUnit.Framework;
@@ -42,8 +43,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [SetUp]
         public void SetUp()
         {
-            appHost.VirtualFileSources.GetMemoryVirtualFiles().Clear();
-            appHost.VirtualFileSources.GetFileSystemVirtualFiles().DeleteFolder("dir");
+            try
+            {
+                appHost.VirtualFileSources.GetMemoryVirtualFiles().Clear();
+                appHost.VirtualFileSources.GetFileSystemVirtualFiles().DeleteFolder("dir");
+            }
+            catch (IOException e)
+            {
+                //sometimes throws The process cannot access the file 'bundle.js' because it is being used by another process.
+            }
         }
         
         public static StringDictionary Files = new StringDictionary {
