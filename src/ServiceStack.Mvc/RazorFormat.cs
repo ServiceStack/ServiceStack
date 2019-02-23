@@ -145,9 +145,10 @@ namespace ServiceStack.Mvc
                 : null;
         }
 
-        // Sync with TemplatePagesFeature GetRoutingPage()
         public ViewEngineResult GetRoutingPage(string pathInfo, out Dictionary<string, object> routingArgs)
         {
+            // Sync with TemplatePagesFeature GetRoutingPage()
+
             var path = pathInfo.Trim('/');
 
             var vfs = HostContext.VirtualFileSources;
@@ -192,21 +193,20 @@ namespace ServiceStack.Mvc
 
             List<IVirtualDirectory> GetCandidateDirs(IVirtualDirectory[] argDirs, string segment)
             {
+                var exactDirMatches = new List<IVirtualDirectory>();
                 var candidateDirs = new List<IVirtualDirectory>();
                 foreach (var parentDir in argDirs)
                 {
                     var parentDirs = parentDir.GetDirectories().ToArray();
-                    Array.Sort(parentDirs, CompareByWeightedName);
                     foreach (var dir in parentDirs)
                     {
-                        var hasExactDirMatch = segment.EqualsIgnoreCase(dir.Name); 
-                        if (hasExactDirMatch || dir.Name[0] == '_')
-                        {
+                        if (segment.EqualsIgnoreCase(dir.Name))
+                            exactDirMatches.Add(dir);
+                        else if (dir.Name[0] == '_')
                             candidateDirs.Add(dir);
-                        }
                     }
                 }
-                return candidateDirs;
+                return exactDirMatches.Count > 0 ? exactDirMatches : candidateDirs;
             }
 
             var dirs = vfs.GetAllRootDirectories();
