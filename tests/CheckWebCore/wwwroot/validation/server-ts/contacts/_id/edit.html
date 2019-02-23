@@ -57,13 +57,13 @@
     </div>
     <div class="form-group">
         <button class="btn btn-primary" type="submit">Update Contact</button>
-        <a href="{{continue}}">cancel</a>
+        <a href="{{contactsDir}}">cancel</a>
     </div>
 </form>
 {{else if ex}}
     <div class="col-6">
         <div class="alert alert-warning">{{ex.Message}}</div>
-        <p><a href="{{continue}}">&lt; back</a></p>
+        <p><a href="{{contactsDir}}">&lt; back</a></p>
     </div>
 {{/with}}
 
