@@ -34,6 +34,9 @@ namespace ServiceStack.IO
 
         public override IVirtualFile GetFile(string virtualPath)
         {
+            if (Files.Count == 0)
+                return null;
+                
             var filePath = SanitizePath(virtualPath);
             return Files.FirstOrDefault(x => x.FilePath == filePath);
         }
@@ -81,7 +84,6 @@ namespace ServiceStack.IO
         public void WriteFile(string filePath, string textContents)
         {
             filePath = SanitizePath(filePath);
-            DeleteFile(filePath);
             AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
@@ -93,7 +95,6 @@ namespace ServiceStack.IO
         public void WriteFile(string filePath, Stream stream)
         {
             filePath = SanitizePath(filePath);
-            DeleteFile(filePath);
             AddFile(new InMemoryVirtualFile(this, CreateDirectory(GetDirPath(filePath)))
             {
                 FilePath = filePath,
@@ -151,7 +152,9 @@ namespace ServiceStack.IO
             do
             {
                 snapshot = files;
-                newFiles = new List<InMemoryVirtualFile>(files) { file };
+                newFiles = new List<InMemoryVirtualFile>(files.Where(x => x.FilePath != file.FilePath)) {
+                    file
+                };
             } while (!ReferenceEquals(
                 Interlocked.CompareExchange(ref files, newFiles, snapshot), snapshot));
         }
@@ -179,6 +182,9 @@ namespace ServiceStack.IO
 
         public IEnumerable<InMemoryVirtualDirectory> GetImmediateDirectories(string fromDirPath)
         {
+            if (Files.Count == 0)
+                return TypeConstants<InMemoryVirtualDirectory>.EmptyArray;
+            
             var dirPaths = Files
                 .Map(x => x.DirPath)
                 .Distinct()
@@ -191,6 +197,9 @@ namespace ServiceStack.IO
 
         public IEnumerable<InMemoryVirtualFile> GetImmediateFiles(string fromDirPath)
         {
+            if (Files.Count == 0)
+                return TypeConstants<InMemoryVirtualFile>.EmptyArray;
+            
             return Files.Where(x => x.DirPath == fromDirPath);
         }
 
@@ -229,6 +238,8 @@ namespace ServiceStack.IO
                 ? subDirPath
                 : null;
         }
+
+        public void Clear() => Files.Clear();
     }
 
     public class InMemoryVirtualDirectory : AbstractVirtualDirectoryBase
@@ -272,6 +283,9 @@ namespace ServiceStack.IO
 
         protected override IEnumerable<IVirtualFile> GetMatchingFilesInDir(string globPattern)
         {
+            if (pathProvider.Files.Count == 0)
+                return TypeConstants<IVirtualFile>.EmptyArray;
+            
             var matchingFilesInBackingDir = EnumerateFiles(globPattern);
             return matchingFilesInBackingDir;
         }
@@ -302,6 +316,9 @@ namespace ServiceStack.IO
 
         public bool HasFiles()
         {
+            if (pathProvider.Files.Count == 0)
+                return false;
+                
             if (IsRoot)
                 return pathProvider.Files.Count > 0;
             
@@ -311,6 +328,9 @@ namespace ServiceStack.IO
 
         public override IEnumerable<IVirtualFile> GetAllMatchingFiles(string globPattern, int maxDepth = int.MaxValue)
         {
+            if (pathProvider.Files.Count == 0)
+                return TypeConstants<IVirtualFile>.EmptyArray;
+            
             if (IsRoot)
                 return pathProvider.Files.Where(x => 
                     (x.DirPath == null || x.DirPath.CountOccurrencesOf('/') < maxDepth-1)
@@ -327,6 +347,7 @@ namespace ServiceStack.IO
 
     public class InMemoryVirtualFile : AbstractVirtualFileBase
     {
+
         public InMemoryVirtualFile(IVirtualPathProvider owningProvider, IVirtualDirectory directory) 
             : base(owningProvider, directory)
         {
@@ -344,15 +365,26 @@ namespace ServiceStack.IO
         public DateTime FileLastModified { get; set; }
         public override DateTime LastModified => FileLastModified;
 
-        public override long Length => TextContents?.Length ?? (ByteContents?.Length ?? 0);
+        public override long Length => (ByteContents?.Length ?? 0);
 
-        public string TextContents { get; set; }
+        private string textContents;
+        public string TextContents
+        {
+            get => textContents;
+            set
+            {
+                textContents = value;
+                ByteContents = value.ToUtf8Bytes();
+            }
+        }
 
         public byte[] ByteContents { get; set; }
 
         public override Stream OpenRead()
         {
-            return MemoryStreamFactory.GetStream(ByteContents ?? (TextContents ?? "").ToUtf8Bytes());
+            if (ByteContents == null)
+                throw new ArgumentNullException(nameof(ByteContents));
+            return MemoryStreamFactory.GetStream(ByteContents);
         }
 
         public override void Refresh()
