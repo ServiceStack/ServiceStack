@@ -328,5 +328,22 @@ namespace ServiceStack
                     Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
                 }).ToRawString();
         }
+        
+        public IRawString bundleHtml(TemplateScopeContext scope, object virtualPaths) =>
+            bundleHtml(scope, virtualPaths, null);
+        public IRawString bundleHtml(TemplateScopeContext scope, object virtualPaths, object options)
+        {
+            var args = options.AssertOptions(nameof(bundleHtml));
+            return ViewUtils.BundleHtml(nameof(bundleHtml),
+                Context.VirtualFiles,
+                Minifiers.Html,
+                new BundleOptions {
+                    Sources = ViewUtils.ToStringList((IEnumerable)virtualPaths),
+                    OutputTo =  args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
+                    SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,                    
+                    Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                }).ToRawString();
+        }
     }
 }
