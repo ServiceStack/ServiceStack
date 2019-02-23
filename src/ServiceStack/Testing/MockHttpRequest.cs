@@ -117,13 +117,51 @@ namespace ServiceStack.Testing
 
         public string UserHostAddress { get; set; }
 
-        public string RemoteIp { get; set; }
-        public string Authorization { get; set; }
-        public string XForwardedFor { get; set; }
-        public int? XForwardedPort { get; set; }
-        public string XForwardedProtocol { get; set; }
-        public string XRealIp { get; set; }
-        public string Accept { get; set; }
+        public string XForwardedFor
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.XForwardedFor]) ? null : Headers[HttpHeaders.XForwardedFor];
+            set => Headers[HttpHeaders.XForwardedFor] = value;
+        }
+
+        public int? XForwardedPort
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.XForwardedPort])
+                ? (int?) null
+                : int.Parse(Headers[HttpHeaders.XForwardedPort]);
+            set => Headers[HttpHeaders.XForwardedPort] = value?.ToString();
+        }
+
+        public string XForwardedProtocol
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.XForwardedProtocol])
+                ? null
+                : Headers[HttpHeaders.XForwardedProtocol];
+            set => Headers[HttpHeaders.XForwardedProtocol] = value;
+        }
+
+        public string XRealIp
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.XRealIp]) ? null : Headers[HttpHeaders.XRealIp];
+            set => Headers[HttpHeaders.XRealIp] = value;
+        }
+
+        public string Accept
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.Accept]) ? null : Headers[HttpHeaders.Accept];
+            set => Headers[HttpHeaders.Accept] = value;
+        }
+
+        private string remoteIp;
+        public string RemoteIp => 
+            remoteIp ?? (remoteIp = XForwardedFor ?? (XRealIp ?? UserHostAddress));
+
+        public string Authorization
+        {
+            get => string.IsNullOrEmpty(Headers[HttpHeaders.Authorization])
+                ? null
+                : Headers[HttpHeaders.Authorization];
+            set => Headers[HttpHeaders.Authorization] = value;
+        }
 
         public bool IsSecureConnection
         {
