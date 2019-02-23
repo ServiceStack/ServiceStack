@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -37,7 +38,20 @@ namespace ServiceStack
 
         public bool ShowErrors { get; set; } = true;
     }
-        
+
+    public class BundleOptions
+    {
+        public List<string> Sources { get; set; } = new List<string>();
+        public string OutputTo { get; set; }
+        public bool Minify { get; set; } = true;
+        public bool SaveToDisk { get; set; }
+        public bool Cache { get; set; } = true;
+        /// <summary>
+        /// Whether to call AMD define for CommonJS modules
+        /// </summary>
+        public bool RegisterModuleInAmd { get; set; }
+    }
+
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
     /// </summary>
@@ -134,6 +148,22 @@ namespace ServiceStack
         public static List<string> ToVarNames(string fieldNames) =>
             fieldNames.Split(',').Map(x => x.Trim());
 
+        public static IEnumerable<string> ToStrings(string filterName, object arg)
+        {
+            if (arg == null)
+                return TypeConstants.EmptyStringArray;
+            
+            var strings = arg is IEnumerable<string> ls
+                ? ls
+                : arg is string s
+                    ? (IEnumerable<string>)new [] { s }
+                    : arg is IEnumerable<object> e
+                        ? e.Map(x => x.AsString())
+                        : throw new NotSupportedException($"{filterName} expected a collection of strings but was '{arg.GetType().Name}'");
+
+            return strings;
+        }
+
         public static string ValidationSummary(ResponseStatus errorStatus, string exceptFor) =>
             ValidationSummary(errorStatus, ToVarNames(exceptFor), null); 
         public static string ValidationSummary(ResponseStatus errorStatus, ICollection<string> exceptFields, Dictionary<string,object> divAttrs)
@@ -222,8 +252,11 @@ namespace ServiceStack
             }
             return to;
         }
-        public static List<string> ToStringList(IEnumerable target) => target is string s 
+        public static List<string> ToStringList(IEnumerable target) => target is List<string> l ? l
+            : target is string s 
             ? new List<string> { s } 
+            : target is IEnumerable<string> e
+            ? new List<string>(e)
             : target.Map(x => x.AsString());
 
         public static string FormControl(IRequest req, Dictionary<string,object> args, string tagName, InputOptions inputOptions)
@@ -459,5 +492,121 @@ namespace ServiceStack
             var html = StringBuilderCache.ReturnAndFree(sb);
             return html;
         }
-     }
+        
+        private static IVirtualFiles GetBundleVfs(string filterName, IVirtualPathProvider virtualFiles, bool toDisk)
+        {
+            var vfs = !toDisk
+                ? (IVirtualFiles)virtualFiles.GetMemoryVirtualFiles() ??
+                    throw new NotSupportedException($"{nameof(MemoryVirtualFiles)} is required in {filterName} when disk=false")
+                : virtualFiles.GetFileSystemVirtualFiles() ??
+                    throw new NotSupportedException($"{nameof(FileSystemVirtualFiles)} is required in {filterName} when disk=true");
+            return vfs;
+        }
+
+        public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider vfs, IEnumerable<string> virtualPaths)
+        {
+            foreach (var source in virtualPaths)
+            {
+                var file = vfs.GetFile(source);
+                if (file != null)
+                {
+                    yield return file;
+                    continue;
+                }
+
+                var dir = vfs.GetDirectory(source);
+                if (dir != null)
+                {
+                    var files = dir.GetFiles();
+                    foreach (var dirFile in files)
+                    {
+                        yield return dirFile;
+                    }
+                }
+                else throw new NotSupportedException($"Could not find resource at virtual path '{source}' in '{filterName}'");
+            }
+        }
+
+        public static string BundleJs(string filterName, 
+            IVirtualPathProvider vfSources, 
+            ICompressor jsCompressor,
+            BundleOptions options)
+        {
+            var assetExt = "js";
+            var outFile = options.OutputTo ?? (options.Minify 
+                  ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
+            var htmlTag = "<script src=\"" + outFile + "\"></script>";
+
+            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTag, assetExt);
+        }
+
+        public static string BundleCss(string filterName, 
+            IVirtualPathProvider vfSources, 
+            ICompressor jsCompressor,
+            BundleOptions options)
+        {
+            var assetExt = "css";
+            var outFile = options.OutputTo ?? (options.Minify 
+                ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
+            var htmlTag = "<link rel=\"stylesheet\" href=\"" + outFile + "\">";
+
+            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTag, assetExt);
+        }
+
+        private static string BundleAsset(string filterName, IVirtualPathProvider vfSources, ICompressor jsCompressor,
+            BundleOptions options, string outFile, string htmlTag, string assetExt)
+        {
+            try
+            {
+                if (!options.Sources.IsEmpty() && options.Cache && vfSources.FileExists(outFile))
+                    return htmlTag;
+
+                var vfs = GetBundleVfs(filterName, vfSources, options.SaveToDisk);
+
+                var sources = GetBundleFiles(filterName, vfSources, options.Sources);
+
+                var existing = new HashSet<string>();
+                var sb = StringBuilderCache.Allocate();
+                foreach (var file in sources)
+                {
+                    var src = file.ReadAllText();
+                    if (file.Name.EndsWith("bundle." + assetExt) ||
+                        file.Name.EndsWith("bundle.min." + assetExt) ||
+                        existing.Contains(file.VirtualPath))
+                        continue;
+
+                    if (options.Minify && !file.Name.EndsWith(".min." + assetExt))
+                    {
+                        var minJs = jsCompressor.Compress(src);
+                        sb.AppendLine(minJs);
+                    }
+                    else
+                    {
+                        sb.AppendLine(src);
+                    }
+
+                    // Also define ES6 module in AMD's define(), required by /js/ss-require.js
+                    if (options.RegisterModuleInAmd && assetExt == "js")
+                    {
+                        sb.AppendLine("if (typeof define === 'function' && define.amd && typeof module !== 'undefined') define('" +
+                                      file.Name.WithoutExtension() + "', [], function(){ return module.exports; });");
+                    }
+
+                    existing.Add(file.VirtualPath);
+                }
+
+                var bundled = StringBuilderCache.ReturnAndFree(sb);
+
+                vfs.WriteFile(outFile, bundled);
+
+                return htmlTag;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+    }
+    
 }

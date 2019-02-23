@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using ServiceStack.Auth;
 using ServiceStack.Host;
+using ServiceStack.Html;
+using ServiceStack.IO;
 using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -274,5 +276,57 @@ namespace ServiceStack
 
         public string errorResponse(TemplateScopeContext scope, ResponseStatus errorStatus, string fieldName) =>
             ViewUtils.ErrorResponse(errorStatus, fieldName);
+
+        private static IVirtualPathProvider GetBundleVfs(IVirtualPathProvider virtualFiles, string filterName, bool toDisk)
+        {
+            var vfs = !toDisk
+                ? (virtualFiles as MemoryVirtualFiles ??
+                   ((virtualFiles is MultiVirtualFiles memVfs
+                        ? memVfs.ChildProviders.FirstOrDefault(x => x is MemoryVirtualFiles)
+                        : null) ??
+                    throw new NotSupportedException($"MemoryVirtualFiles is required in {filterName} when disk=false")))
+                : (virtualFiles as FileSystemVirtualFiles ??
+                   ((virtualFiles is MultiVirtualFiles fsVfs
+                        ? fsVfs.ChildProviders.FirstOrDefault(x => x is FileSystemVirtualFiles)
+                        : null) ??
+                    throw new NotSupportedException($"FileSystemVirtualFiles is required in {filterName} when disk=true"))
+                );
+            return vfs;
+        }
+        
+        public IRawString bundleJs(TemplateScopeContext scope, object virtualPaths) =>
+            bundleJs(scope, virtualPaths, null);
+        public IRawString bundleJs(TemplateScopeContext scope, object virtualPaths, object options)
+        {
+            var args = options.AssertOptions(nameof(bundleJs));
+            return ViewUtils.BundleJs(nameof(bundleJs),
+                Context.VirtualFiles,
+                Minifiers.JavaScript,
+                new BundleOptions {
+                    Sources = ViewUtils.ToStringList((IEnumerable)virtualPaths),
+                    OutputTo =  args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
+                    SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
+                    Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                    RegisterModuleInAmd = args.TryGetValue("amd", out var oReg) && oReg is bool bReg && bReg,                    
+                }).ToRawString();
+        }
+        
+        public IRawString bundleCss(TemplateScopeContext scope, object virtualPaths) =>
+            bundleCss(scope, virtualPaths, null);
+        public IRawString bundleCss(TemplateScopeContext scope, object virtualPaths, object options)
+        {
+            var args = options.AssertOptions(nameof(bundleCss));
+            return ViewUtils.BundleCss(nameof(bundleCss),
+                Context.VirtualFiles,
+                Minifiers.Css,
+                new BundleOptions {
+                    Sources = ViewUtils.ToStringList((IEnumerable)virtualPaths),
+                    OutputTo =  args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
+                    SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,                    
+                    Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                }).ToRawString();
+        }
     }
 }
