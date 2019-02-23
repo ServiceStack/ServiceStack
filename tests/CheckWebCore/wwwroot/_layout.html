@@ -38,19 +38,39 @@
       </div>
     </div>
 
+    <script>
+        var exports = window;
+        var IMPORT = {
+            jquery: '$',
+            vue: function(){
+                var e = require('Vue');
+                e.Vue = e; // workaround TypeScript not allowing default imports  
+                return e;
+            }
+        };
+        window.require = function(name) {
+            var w = IMPORT[name];
+            if (w) return typeof w == "function" ? w() : typeof w == 'string' ? exports[w] : w;
+            return exports[name] || exports;
+        };
+    </script>
+
+    {{#if !debug}}
     <script src="/assets/js/jquery.min.js"></script>
     <script src="/assets/js/bootstrap.min.js"></script>
-    <script src="/js/ss-utils.js"></script>
     <script src="/assets/js/default.js"></script>
-    
-    <script>
-        module = {exports:{}}; exports = {};
-        //SHIM FTW! - Give all objects access to all types in global exports namespace
-        window.require = function(name) { return exports; };
-    </script>
-    
+    <script src="/js/ss-utils.js"></script>
     <script src="/lib/@servicestack/client/index.js"></script>
     <script src="/dtos.js"></script>
+    {{else}}
+        {{ ['/assets/js/jquery.min.js',
+            '/assets/js/',
+            '/js/ss-utils.js',
+            '/lib/@servicestack/client/index.js',
+            '/dtos.js',
+            ] | bundleJs({ minify: false }) }}
+    {{/if}}
+    
 
     {{ scripts | raw }}
 

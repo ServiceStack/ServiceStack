@@ -1,11 +1,12 @@
 ;(function (root, f) {
-    if (typeof define === "function" && define.amd) {
-        define(["jquery"], f);
-    } else if (typeof exports === "object") {
+    if (typeof exports === 'object' && typeof module === 'object')
         module.exports = f(require("jquery"));
-    } else {
+    if (typeof define === "function" && define.amd)
+        define(["jquery"], f);
+    else if (typeof exports === "object")
+        f(require("jquery"));
+    else
         f(root.jQuery);
-    }
 })(this, function ($) {
 
     if (!$.ss) $.ss = {};
