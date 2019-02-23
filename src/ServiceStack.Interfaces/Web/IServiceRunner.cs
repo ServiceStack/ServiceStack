@@ -11,16 +11,10 @@ namespace ServiceStack.Web
 
     public interface IServiceRunner<TRequest> : IServiceRunner
     {
-        void OnBeforeExecute(IRequest req, TRequest request);
-        object OnAfterExecute(IRequest req, object response);
+        void OnBeforeExecute(IRequest req, TRequest request, object service);
+        object OnAfterExecute(IRequest req, object response, object service);
 
-        [Obsolete("Implement HandleExceptionAsync")]
-        object HandleException(IRequest request, TRequest requestDto, Exception ex);
-
-        Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex);
-
-        [Obsolete("Implement ExecuteAsync")]
-        object Execute(IRequest req, object instance, TRequest requestDto);
+        Task<object> HandleExceptionAsync(IRequest request, TRequest requestDto, Exception ex, object instance);
 
         Task<object> ExecuteAsync(IRequest req, object instance, TRequest requestDto);
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
@@ -13,7 +14,7 @@ namespace ServiceStack
     /// <summary>
     /// Generic + Useful IService base class
     /// </summary>
-    public class Service : IService, IServiceBase, IDisposable
+    public class Service : IService, IServiceBase, IDisposable, IServiceFilters
     {
         public static IResolver GlobalResolver { get; set; }
 
@@ -141,6 +142,10 @@ namespace ServiceStack
 
             Request.ReleaseIfInProcessRequest();
         }
+
+        public virtual void OnBeforeExecute(object requestDto) {}
+        public virtual object OnAfterExecute(object response) => response;
+        public virtual Task<object> OnExceptionAsync(object requestDto, Exception ex) => TypeConstants.EmptyTask;
     }
 
 }
