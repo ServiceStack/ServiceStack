@@ -94,6 +94,7 @@ new vue_1.Vue({
                             _a.label = 5;
                         case 5:
                             this.update = false;
+                            this.responseStatus = null;
                             form.reset();
                             return [3 /*break*/, 8];
                         case 6:
