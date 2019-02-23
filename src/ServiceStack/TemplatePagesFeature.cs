@@ -720,7 +720,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                     RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
                 }
             }
-            
+
+            var appHost = HostContext.AppHost;
             var context = new TemplateContext
             {
                 TemplateFilters = { new TemplateInfoFilters() },
@@ -728,10 +729,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 {
                     {TemplateConstants.Request, base.Request},
                     {"request", base.Request},
-                    {"appHost", HostContext.AppHost},
-                    {"appConfig", HostContext.Config},
-                    {"appVirtualFilesPath", HostContext.VirtualFiles.RootDirectory.RealPath},
-                    {"appVirtualFileSourcesPath", HostContext.VirtualFileSources.RootDirectory.RealPath},
+                    {"appHost", appHost},
+                    {"appConfig", appHost.Config},
+                    {"appVirtualFilesPath", appHost.ContentRootDirectory.RealPath},
+                    {"appVirtualFileSourcesPath", appHost.RootDirectory.RealPath},
                     {"meta", HostContext.Metadata},
                 }
             }.Init();
