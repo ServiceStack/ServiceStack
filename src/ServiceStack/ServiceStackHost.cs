@@ -122,6 +122,9 @@ namespace ServiceStack
             AfterInitCallbacks = new List<Action<IAppHost>>();
             OnDisposeCallbacks = new List<Action<IAppHost>>();
             OnEndRequestCallbacks = new List<Action<IRequest>>();
+            InsertVirtualFileSources = new List<IVirtualPathProvider> {
+                new MemoryVirtualFiles(), //allow injecting files
+            };
             AddVirtualFileSources = new List<IVirtualPathProvider>();
             RawHttpHandlers = new List<Func<IHttpRequest, IHttpHandler>> {
                 ReturnRedirectHandler,
@@ -317,10 +320,12 @@ namespace ServiceStack
         /// Gets Full Directory Path of where the app is running
         /// </summary>
         public virtual string GetWebRootPath() => Config.WebHostPhysicalPath;
+        
+        
 
         public virtual List<IVirtualPathProvider> GetVirtualFileSources()
         {
-            var pathProviders = new List<IVirtualPathProvider> {
+            var pathProviders = new List<IVirtualPathProvider>(InsertVirtualFileSources ?? TypeConstants<IVirtualPathProvider>.EmptyList) {                 
                 new FileSystemVirtualFiles(GetWebRootPath())
             };
 
@@ -492,10 +497,24 @@ namespace ServiceStack
         /// </summary>
         public List<IPlugin> Plugins { get; set; }
 
+        /// <summary>
+        /// Writable Virtual File Source, uses FileSystemVirtualFiles at content root by default 
+        /// </summary>
         public IVirtualFiles VirtualFiles { get; set; }
 
+        /// <summary>
+        /// Virtual File Sources from webroot, typically a MultiVirtualFiles containing a cascading list of Sources
+        /// </summary>
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
+        /// <summary>
+        /// Insert Virtual File Sources at the beginning so they take precedence over built-in sources 
+        /// </summary>
+        public List<IVirtualPathProvider> InsertVirtualFileSources { get; set; }
+        
+        /// <summary>
+        /// Add additional Virtual File Sources at the end after built-in sources 
+        /// </summary>
         public List<IVirtualPathProvider> AddVirtualFileSources { get; set; }
 
         public List<Action<IRequest, object>> GatewayRequestFilters { get; set; }
