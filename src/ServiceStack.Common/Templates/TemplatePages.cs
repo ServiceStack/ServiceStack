@@ -132,11 +132,11 @@ namespace ServiceStack.Templates
             if (string.IsNullOrEmpty(pathInfo))
                 return null;
 
-            var santizePath = pathInfo.Replace('\\','/').TrimPrefixes("/");
-            var isDirectory = santizePath.Length == 0 || santizePath[santizePath.Length - 1] == '/';
+            var sanitizePath = pathInfo.Replace('\\','/').TrimPrefixes("/");
+            var isDirectory = sanitizePath.Length == 0 || sanitizePath[sanitizePath.Length - 1] == '/';
 
             TemplatePage page = null;
-            var mappedPath = Context.GetPathMapping(nameof(TemplatePages), santizePath);
+            var mappedPath = Context.GetPathMapping(nameof(TemplatePages), sanitizePath);
             if (mappedPath != null)
             {
                 page = TryGetPage(mappedPath);
@@ -145,7 +145,7 @@ namespace ServiceStack.Templates
                 Context.RemovePathMapping(nameof(TemplatePages), mappedPath);
             }
 
-            var fileNameParts = santizePath.LastRightPart('/').SplitOnLast('.');
+            var fileNameParts = sanitizePath.LastRightPart('/').SplitOnLast('.');
             var ext = fileNameParts.Length > 1 ? fileNameParts[1] : null;
             if (ext != null)
             {
@@ -154,7 +154,7 @@ namespace ServiceStack.Templates
                     return null;
             }
 
-            var filePath = santizePath.LastLeftPart('.');
+            var filePath = sanitizePath.LastLeftPart('.');
             page = TryGetPage(filePath) ?? (!isDirectory ? TryGetPage(filePath + '/') : null);
             if (page != null)
                 return page;
@@ -168,7 +168,7 @@ namespace ServiceStack.Templates
                 if (file != null)
                 {
                     var pageVirtualPath = file.VirtualPath.WithoutExtension();
-                    Context.SetPathMapping(nameof(TemplatePages), santizePath, pageVirtualPath);
+                    Context.SetPathMapping(nameof(TemplatePages), sanitizePath, pageVirtualPath);
                     return AddPage(pageVirtualPath, file);
                 }
             }
@@ -182,7 +182,7 @@ namespace ServiceStack.Templates
                     if (file != null)
                     {
                         var pageVirtualPath = file.VirtualPath.WithoutExtension();
-                        Context.SetPathMapping(nameof(TemplatePages), santizePath, pageVirtualPath);
+                        Context.SetPathMapping(nameof(TemplatePages), sanitizePath, pageVirtualPath);
                         return AddPage(pageVirtualPath, file);
                     }
                 }

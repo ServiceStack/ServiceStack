@@ -290,7 +290,7 @@ namespace ServiceStack.Templates
 
                 // Use same ThreadSafe plugin instance to preserve configuration 
                 var plugins = use.TryGetValue("plugins", out var oPlugins)
-                    ? ToStrings("plugins", oPlugins)
+                    ? ViewUtils.ToStrings("plugins", oPlugins)
                     : null;
                 if (plugins != null)
                 {
@@ -306,7 +306,7 @@ namespace ServiceStack.Templates
 
                 // Use new filter and block instances which cannot be shared between contexts
                 var filters = use.TryGetValue("filters", out var oFilters)
-                    ? ToStrings("filters", oFilters)
+                    ? ViewUtils.ToStrings("filters", oFilters)
                     : null;
                 if (filters != null)
                 {
@@ -321,7 +321,7 @@ namespace ServiceStack.Templates
                 }
                     
                 var blocks = use.TryGetValue("blocks", out var oBlocks)
-                    ? ToStrings("blocks", oBlocks)
+                    ? ViewUtils.ToStrings("blocks", oBlocks)
                     : null;
                 if (blocks != null)
                 {
@@ -340,22 +340,6 @@ namespace ServiceStack.Templates
             context.Init();
 
             return context;
-        }
-
-        private static IEnumerable<string> ToStrings(string argName, object arg)
-        {
-            if (arg == null)
-                return null;
-            
-            var strings = arg is IEnumerable<string> ls
-                ? ls
-                : arg is string s
-                    ? new List<string> {s}
-                    : arg is IEnumerable<object> e
-                        ? e.Map(x => (string) x)
-                        : throw new NotSupportedException($"{argName} expected a collection of strings but was '{arg.GetType().Name}'");
-
-            return strings;
         }
         
     }

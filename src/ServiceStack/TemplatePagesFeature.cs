@@ -274,16 +274,12 @@ namespace ServiceStack
                         {
                             candidateDirs.Add(dir);
                         }
-
-                        if (hasExactDirMatch)
-                            return candidateDirs;
                     }
                 }
                 return candidateDirs;
             }
 
-            var dirs = new[] { vfs.RootDirectory };
-            
+            var dirs = vfs.GetAllRootDirectories();
             var segCounts = path.CountOccurrencesOf('/');
 
             var index = 0;

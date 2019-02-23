@@ -23,6 +23,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Host.Handlers;
+using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Logging;
 using ServiceStack.Messaging;
@@ -144,6 +145,7 @@ namespace ServiceStack.Mvc
                 : null;
         }
 
+        // Sync with TemplatePagesFeature GetRoutingPage()
         public ViewEngineResult GetRoutingPage(string pathInfo, out Dictionary<string, object> routingArgs)
         {
             var path = pathInfo.Trim('/');
@@ -202,15 +204,12 @@ namespace ServiceStack.Mvc
                         {
                             candidateDirs.Add(dir);
                         }
-
-                        if (hasExactDirMatch)
-                            return candidateDirs;
                     }
                 }
                 return candidateDirs;
             }
 
-            var dirs = new[] { vfs.RootDirectory };
+            var dirs = vfs.GetAllRootDirectories();
             
             var segCounts = path.CountOccurrencesOf('/');
 
@@ -767,6 +766,12 @@ namespace ServiceStack.Mvc
             ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
         public static HtmlString FormControl(this IHtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
+
+        public static HtmlString BundleJs(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
+            nameof(BundleJs), HostContext.VirtualFileSources, Minifiers.JavaScript, options).ToHtmlString();
+
+        public static HtmlString BundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
+            nameof(BundleCss), HostContext.VirtualFileSources, Minifiers.Css, options).ToHtmlString();
 
         public static T Exec<T>(this IHtmlHelper html, Func<T> fn, out Exception ex)
         {

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using ServiceStack.IO;
 using ServiceStack.VirtualPath;
 
@@ -121,6 +122,19 @@ namespace ServiceStack
             }
             return false;
         }
+        
+        public static IVirtualDirectory[] GetAllRootDirectories(this IVirtualPathProvider vfs) => vfs is MultiVirtualFiles mvfs
+            ? mvfs.ChildProviders.Select(x => x.RootDirectory).ToArray()
+            : new[] { vfs.RootDirectory };
+
+        public static T GetVirtualFileSource<T>(this IVirtualPathProvider vfs) where T : class => vfs as T ??
+            (vfs is MultiVirtualFiles mvfs ? mvfs.ChildProviders.FirstOrDefault(x => x is T) as T : null);
+
+        public static MemoryVirtualFiles GetMemoryVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<MemoryVirtualFiles>();
+
+        public static FileSystemVirtualFiles GetFileSystemVirtualFiles(this IVirtualPathProvider vfs) =>
+            vfs.GetVirtualFileSource<FileSystemVirtualFiles>();
     }
     
 }
