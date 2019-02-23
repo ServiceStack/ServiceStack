@@ -773,6 +773,9 @@ namespace ServiceStack.Mvc
         public static HtmlString BundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
             nameof(BundleCss), HostContext.VirtualFileSources, Minifiers.Css, options).ToHtmlString();
 
+        public static HtmlString BundleHtml(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
+            nameof(BundleHtml), HostContext.VirtualFileSources, Minifiers.Html, options).ToHtmlString();
+
         public static T Exec<T>(this IHtmlHelper html, Func<T> fn, out Exception ex)
         {
             try

@@ -542,7 +542,7 @@ namespace ServiceStack
 
         public static string BundleCss(string filterName, 
             IVirtualPathProvider vfSources, 
-            ICompressor jsCompressor,
+            ICompressor cssCompressor,
             BundleOptions options)
         {
             var assetExt = "css";
@@ -550,7 +550,22 @@ namespace ServiceStack
                 ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
             var htmlTag = "<link rel=\"stylesheet\" href=\"" + outFile + "\">";
 
-            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTag, assetExt);
+            return BundleAsset(filterName, vfSources, cssCompressor, options, outFile, htmlTag, assetExt);
+        }
+
+        public static string BundleHtml(string filterName, 
+            IVirtualPathProvider vfSources, 
+            ICompressor htmlCompressor,
+            BundleOptions options)
+        {
+            var assetExt = "html";
+            var outFile = options.OutputTo ?? (options.Minify 
+                  ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
+            var id = options.OutputTo != null
+                ? $" id=\"{options.OutputTo.LastRightPart('/').LeftPart('.')}\"" : "";
+            var htmlTag = "<link rel=\"import\" href=\"" + outFile + $"\"{id}>";
+
+            return BundleAsset(filterName, vfSources, htmlCompressor, options, outFile, htmlTag, assetExt);
         }
 
         private static string BundleAsset(string filterName, IVirtualPathProvider vfSources, ICompressor jsCompressor,
