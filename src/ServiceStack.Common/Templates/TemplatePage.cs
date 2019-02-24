@@ -87,12 +87,8 @@ namespace ServiceStack.Templates
                     if (line.StartsWith(Format.ArgsSuffix))
                         break;
 
-                    ReadOnlyMemory<char> first, last;
-
-                    if (line.IndexOf(':') >= 0)
-                        line.SplitOnFirst(':', out first, out last);
-                    else 
-                        line.SplitOnFirst(' ', out first, out last);
+                    var sep = line.IndexOf(':') >= 0 ? ':' : ' ';
+                    line.SplitOnFirst(sep, out var first, out var last);
 
                     pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";
                 }
