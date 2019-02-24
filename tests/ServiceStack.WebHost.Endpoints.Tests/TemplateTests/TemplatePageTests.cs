@@ -101,6 +101,13 @@ title: Variable Layout
 -->
 
 <h1>Variable Page</h1>" },
+                { "variable-layout-page-space-delim.html", @"
+<!--
+layout alt-layout.html
+title Variable Layout
+-->
+
+<h1>Variable Page</h1>" },
                 { "htmlencode-layout.html", @"
 <!--
 layoutvar: layoutvar(< & > "" ')
@@ -268,6 +275,18 @@ title: We encode < & >
         public async Task Can_parse_page_with_page_variables()
         {
             var file = HostContext.AppHost.VirtualFileSources.GetFile("variable-layout-page.html");
+            
+            var page = await CreatePage(file).Init();
+
+            Assert.That(page.Args["layout"], Is.EqualTo("alt-layout.html"));
+            Assert.That(page.Args["title"], Is.EqualTo("Variable Layout"));
+            Assert.That(((PageStringFragment)page.PageFragments[0]).Value.ToString(), Is.EqualTo("<h1>Variable Page</h1>"));
+        }
+
+        [Test]
+        public async Task Can_parse_page_with_page_variables_without_colon_separators()
+        {
+            var file = HostContext.AppHost.VirtualFileSources.GetFile("variable-layout-page-space-delim.html");
             
             var page = await CreatePage(file).Init();
 
