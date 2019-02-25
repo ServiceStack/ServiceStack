@@ -323,7 +323,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         //Override with custom impl
         public object Any(QueryDataOverridedRockstars dto)
         {
-            var q = AutoQuery.CreateQuery(dto, Request.GetRequestParams(), Request);
+            var q = AutoQuery.CreateQuery(dto, Request);
             q.Take(1);
             return AutoQuery.Execute(dto, q);
         }
