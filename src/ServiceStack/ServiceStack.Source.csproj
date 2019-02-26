@@ -11,6 +11,7 @@
       To get started see: https://servicestack.net/getting-started
     </PackageDescription>
     <PackageTags>Fast;JSON;XML;CSV;HTML;SOAP;JSV;REST;Web;Service;Framework;ServiceStack</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Templates\*.*;js\*.*" Exclude="bin\**;obj\**;**\*.xproj;packages\**;@(EmbeddedResource)" />

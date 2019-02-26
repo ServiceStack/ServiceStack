@@ -9,6 +9,7 @@
       JSON, XML, CSV, JSV, SOAP and MQ Generic Service Clients.
     </PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

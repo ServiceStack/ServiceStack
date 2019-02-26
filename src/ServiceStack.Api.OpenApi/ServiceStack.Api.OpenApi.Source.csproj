@@ -10,6 +10,7 @@
       Open API is a specification and complete framework implementation for describing, producing, consuming, and visualizing RESTful web services.
     </PackageDescription>
     <PackageTags>OpenAPI;metadata;Swagger;API;REST;Metadata;Docs;ServiceStack</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
