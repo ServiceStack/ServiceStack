@@ -35,9 +35,9 @@
     <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite.MySql" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.10.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
-    <PackageReference Include="NUnit" Version="3.10.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.13.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.109.2" />
     <PackageReference Include="System.Memory" Version="4.5.2" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
