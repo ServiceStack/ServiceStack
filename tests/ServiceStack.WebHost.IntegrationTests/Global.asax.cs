@@ -5,8 +5,8 @@ using System.Runtime.Serialization;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.Admin;
+using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
-using ServiceStack.Authentication.OpenId;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
@@ -18,7 +18,6 @@ using ServiceStack.MiniProfiler.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.ProtoBuf;
 using ServiceStack.Redis;
-using ServiceStack.Api.Swagger;
 using ServiceStack.Common.Tests;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Formats;
@@ -135,19 +134,13 @@ namespace ServiceStack.WebHost.IntegrationTests
                     //RequestLogger = new RedisRequestLogger(container.Resolve<IRedisClientsManager>())
                     RequestLogger = new CsvRequestLogger(),
                 });
-                Plugins.Add(new SwaggerFeature
+                Plugins.Add(new OpenApiFeature
                 {
-                    //UseBootstrapTheme = true
-                    OperationFilter = x => x.Consumes = x.Produces = new[] { MimeTypes.Json, MimeTypes.Xml }.ToList(),
-                    RouteSummary =
-                    {
-                        { "/swaggerexamples", "Swagger Examples Summary" }
-                    }
                 });
                 Plugins.Add(new PostmanFeature());
                 Plugins.Add(new CorsFeature());
                 Plugins.Add(new AutoQueryFeature { MaxLimit = 100 });
-                Plugins.Add(new AdminFeature());
+                //Plugins.Add(new AdminFeature());
 
                 container.RegisterValidators(typeof(CustomersValidator).Assembly);
 
@@ -194,8 +187,7 @@ namespace ServiceStack.WebHost.IntegrationTests
                         new CredentialsAuthProvider(appSettings),
                         new FacebookAuthProvider(appSettings),
                         new TwitterAuthProvider(appSettings),
-                        new GoogleOpenIdOAuthProvider(appSettings),
-                        new OpenIdOAuthProvider(appSettings),
+                        new GoogleAuthProvider(appSettings),
                         new DigestAuthProvider(appSettings),
                         new BasicAuthProvider(appSettings),
                     }));
