@@ -9,7 +9,6 @@ using Check.ServiceInterface;
 using Funq;
 using ServiceStack;
 using ServiceStack.Api.OpenApi;
-using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Mvc;
