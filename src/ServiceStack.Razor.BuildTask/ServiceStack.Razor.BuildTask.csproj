@@ -15,7 +15,7 @@
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.6" />
+    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
     <PackageReference Include="System.Memory" Version="4.5.2" />
     <Reference Include="System" />
     <Reference Include="System.Web" />
@@ -82,7 +82,7 @@
   </PropertyGroup>
   <Target Name="GetMyPackageFiles" DependsOnTargets="Publish">
     <ItemGroup>
-      <TfmSpecificPackageFiles Include="$(PublishDir)/**/*.*"/>
+      <TfmSpecificPackageFiles Include="$(PublishDir)/**/*.*" />
     </ItemGroup>
     <!--All published file in different tools/tfm-->
     <ItemGroup>

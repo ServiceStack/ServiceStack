@@ -26,7 +26,7 @@
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite" Version="$(Version)" />
-    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.6" />
+    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.7" />
     <Reference Include="System" />
     <Reference Include="System.Web" />
     <Reference Include="System.Configuration" />

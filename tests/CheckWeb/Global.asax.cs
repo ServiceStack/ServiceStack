@@ -653,7 +653,15 @@ namespace CheckWeb
     {
         protected void Application_Start(object sender, EventArgs e)
         {
-            new AppHost().Init();
+            try 
+            { 
+                new AppHost().Init();
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine(exception);
+                throw exception;
+            }
         }
 
         protected void Application_BeginRequest(object src, EventArgs e)
