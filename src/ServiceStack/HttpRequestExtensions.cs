@@ -120,8 +120,7 @@ namespace ServiceStack
         public static string GetUrlHostName(this IRequest httpReq)
         {
 #if !NETSTANDARD2_0
-            var aspNetReq = httpReq as ServiceStack.Host.AspNet.AspNetRequest;
-            if (aspNetReq != null)
+            if (httpReq is ServiceStack.Host.AspNet.AspNetRequest aspNetReq)
             {
                 return aspNetReq.UrlHostName;
             }
@@ -139,12 +138,12 @@ namespace ServiceStack
         public static string GetPhysicalPath(this IRequest httpReq) => HostContext.ResolvePhysicalPath(httpReq.PathInfo, httpReq);
 
         public static IVirtualNode GetVirtualNode(this IRequest httpReq) => httpReq is IHasVirtualFiles vfsReq ?
-            (vfsReq.IsFile 
+            (vfsReq.IsFile
                 ? (IVirtualNode) vfsReq.GetFile()
                 : vfsReq.IsDirectory
                     ? vfsReq.GetDirectory()
                 : null)
-            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests 
+            : (IVirtualNode) HostContext.VirtualFileSources.GetFile(httpReq.PathInfo) ?? // non HTTP Requests
               HostContext.VirtualFileSources.GetDirectory(httpReq.PathInfo);
 
         public static string GetDirectoryPath(this IRequest request)
