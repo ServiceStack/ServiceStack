@@ -43,15 +43,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 : base(appHost, actionContext) {
             }
 
-            public override object OnAfterExecute(Web.IRequest req, object response)
+            public override object OnAfterExecute(Web.IRequest req, object response, object service)
             {
-                var dto = response as CustomRunnerResponse;
-                if (dto != null)
+                if (response is CustomRunnerResponse dto)
                 {
                     dto.ServiceName = base.ActionContext.ServiceType.Name;
                     dto.RequestName = base.ActionContext.RequestType.Name;
                 }
-                return base.OnAfterExecute(req, response);
+                return base.OnAfterExecute(req, response, service);
             }
         }
 

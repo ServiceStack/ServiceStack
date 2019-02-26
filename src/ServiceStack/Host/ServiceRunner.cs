@@ -79,7 +79,7 @@ namespace ServiceStack.Host
 
         [Obsolete("Use OnBeforeExecute(req, requestDto, service)")]
         public virtual void OnBeforeExecute(IRequest req, TRequest request) { }
-        public void OnBeforeExecute(IRequest req, TRequest request, object service)
+        public virtual void OnBeforeExecute(IRequest req, TRequest request, object service)
         {
             OnBeforeExecute(req, request);
             if (service is IServiceBeforeFilter filter)
@@ -89,7 +89,7 @@ namespace ServiceStack.Host
         [Obsolete("Use OnAfterExecute(req, requestDto, service)")]
         public virtual object OnAfterExecute(IRequest req, object response) => response;
 
-        public object OnAfterExecute(IRequest req, object response, object service)
+        public virtual object OnAfterExecute(IRequest req, object response, object service)
         {
             response = OnAfterExecute(req, response);
             if (service is IServiceAfterFilter filter)
