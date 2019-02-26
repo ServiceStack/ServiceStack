@@ -9,6 +9,7 @@
       ServiceStack Templates, Virtual File System, SimpleContainer and Common library for ServiceStack projects.
     </PackageDescription>
     <PackageTags>ServiceStack;Common;Framework;Clients;ServiceClients;Gateway</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />

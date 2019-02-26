@@ -12,6 +12,7 @@
       RedisServerEvents and RedisRequestLogger.
     </PackageDescription>
     <PackageTags>ServiceStack;AutoQuery;OrmLite;Redis;MQ;Caching;ServerEvents</PackageTags>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
