@@ -47,6 +47,9 @@ namespace CheckIIS
 
         public override void Configure(Container container)
         {
+            SetConfig(new HostConfig {
+                EnableAutoHtmlResponses = false,
+            });
         }
     }
 }

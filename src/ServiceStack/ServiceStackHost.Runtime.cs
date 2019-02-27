@@ -788,6 +788,24 @@ namespace ServiceStack
 
             messageProducer.Publish(message);
         }
+
+        public virtual async Task WriteAutoHtmlResponseAsync(IRequest request, object response, string html, Stream outputStream)
+        {
+            if (!Config.EnableAutoHtmlResponses)
+            {
+                request.ResponseContentType = Config.DefaultContentType
+                    ?? Config.PreferredContentTypesArray[0];
+
+                if (request.ResponseContentType.MatchesContentType(MimeTypes.Html))
+                    request.ResponseContentType = Config.PreferredContentTypesArray.First(x => !x.MatchesContentType(MimeTypes.Html));
+
+                await request.Response.WriteToResponse(request, response);
+                return;
+            }
+
+            var utf8Bytes = html.ToUtf8Bytes();
+            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+        }
     }
 
 }

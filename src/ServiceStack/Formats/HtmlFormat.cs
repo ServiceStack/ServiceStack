@@ -108,9 +108,8 @@ namespace ServiceStack.Formats
                     .Replace("${ServiceUrl}", url)
                     .Replace("${Humanize}", Humanize.ToString().ToLower());
             }
-
-            var utf8Bytes = html.ToUtf8Bytes();
-            await outputStream.WriteAsync(utf8Bytes, 0, utf8Bytes.Length);
+            
+            await ((ServiceStackHost)AppHost).WriteAutoHtmlResponseAsync(req, response, html, outputStream);
         }
     }
 }
