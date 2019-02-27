@@ -16,53 +16,69 @@ namespace ServiceStack.Templates
         
         public string Render()
         {
+            if (Rows.Count == 0)
+                return null;
+            
             var sb = StringBuilderCache.Allocate();
 
-            var offset = IncludeRowNumbers ? -1 : 0;
-            var columnCount = Headers.Count - offset;
-            var rowLengths = new int[columnCount];
+            var headersCount = Headers.Count;
+            var colSize = new int[headersCount];
             var i=0;
-            if (IncludeRowNumbers)
-                rowLengths[i++] = Rows.Count.ToString().Length;
 
-            for (; i < columnCount; i++)
+            var rowNumLength = IncludeRowNumbers ? (Rows.Count + 1).ToString().Length : 0;
+
+            var noOfCols = IncludeHeaders && headersCount > 0
+                ? headersCount
+                : Rows[0].Count;
+
+            for (; i < noOfCols; i++)
             {
-                rowLengths[i] = Headers[i + offset].Length;
+                colSize[i] = IncludeHeaders && i < headersCount 
+                    ? Headers[i].Length 
+                    : 0;
 
                 foreach (var row in Rows)
                 {
-                    var rowLen = row[i + offset]?.Length ?? 0;
-                    if (rowLen > rowLengths[i])
-                        rowLengths[i] = rowLen;
+                    var rowLen = i < row.Count ? row[i]?.Length ?? 0 : 0;
+                    if (rowLen > colSize[i])
+                        colSize[i] = rowLen;
                 }
             }
 
             if (!string.IsNullOrEmpty(Caption))
-                sb.AppendLine(" " + Caption);
-
-            if (IncludeHeaders)
             {
-                for (i = 0; i < columnCount; i++)
+                sb.AppendLine(" " + Caption)
+                    .AppendLine();
+            }
+
+            if (IncludeHeaders && headersCount > 0)
+            {
+                sb.Append("| ");
+                if (IncludeRowNumbers)
                 {
-                    if (IncludeRowNumbers)
-                    {
-                        sb.Append("| ")
-                            .Append("#".PadRight(rowLengths[i], ' '))
-                            .Append(" |");
-                    }
-                    
-                    var header = Headers[i + offset];
-                    sb.Append("| ")
-                        .Append(header.PadRight(rowLengths[i], ' '))
-                        .Append(" |");
+                    sb.Append("#".PadRight(rowNumLength, ' '))
+                        .Append(" | ");
+                }
+
+                for (i = 0; i < headersCount; i++)
+                {
+                    var header = Headers[i];
+                    sb.Append(header.PadRight(colSize[i], ' '))
+                        .Append( i + 1 < headersCount ? " | " : " |");
                 }
                 sb.AppendLine();
 
-                for (i = 0; i < columnCount; i++)
+                sb.Append("|-");
+                if (IncludeRowNumbers)
                 {
-                    sb.Append("|-")
-                        .Append("".PadRight(rowLengths[i], '-'))
-                        .Append("-|");
+                    sb.Append("".PadRight(rowNumLength, '-'))
+                        .Append("-|-");
+                }
+
+                for (i = 0; i < headersCount; i++)
+                {
+                    sb.Append("".PadRight(colSize[i], '-'))
+                        .Append( i + 1 < headersCount ? "-|-" : "-|");
                 }
                 sb.AppendLine();
             }
@@ -70,19 +86,19 @@ namespace ServiceStack.Templates
             for (var rowIndex = 0; rowIndex < Rows.Count; rowIndex++)
             {
                 var row = Rows[rowIndex];
-                for (i = 0; i < columnCount; i++)
+                sb.Append("| ");
+
+                if (IncludeRowNumbers)
                 {
-                    if (IncludeRowNumbers)
-                    {
-                        sb.Append("| ")
-                            .Append($"{rowIndex}".PadRight(rowLengths[i], ' '))
-                            .Append(" |");
-                    }
+                    sb.Append($"{rowIndex + 1}".PadRight(rowNumLength, ' '))
+                        .Append(" | ");
+                }
                     
-                    var field = row[i + offset];
-                    sb.Append("| ")
-                        .Append(field.PadRight(rowLengths[i], ' '))
-                        .Append(" |");                    
+                for (i = 0; i < headersCount; i++)
+                {
+                    var field = i < row.Count ? row[i] : null;
+                    sb.Append((field ?? "").PadRight(colSize[i], ' '))
+                        .Append( i + 1 < headersCount ? " | " : " |");
                 }
                 sb.AppendLine();
             }
@@ -94,8 +110,8 @@ namespace ServiceStack.Templates
 
     public partial class TemplateDefaultFilters
     {
-        public string textList(TemplateScopeContext scope, object target) => textList(scope, target, null);
-        public string textList(TemplateScopeContext scope, object target, object scopeOptions)
+        public IRawString textList(TemplateScopeContext scope, object target) => textList(scope, target, null);
+        public IRawString textList(TemplateScopeContext scope, object target, object scopeOptions)
         {
             if (target is IDictionary<string, object> single)
                 target = new[] { single };
@@ -112,8 +128,11 @@ namespace ServiceStack.Templates
                 var headerStyle = oHeaderStyle as string ?? "splitCase";
 
                 List<string> keys = null;
-                
+
                 var table = new MarkdownTable();
+
+                if (scopedParams.TryGetValue("rowNumbers", out object rowNumbers))
+                    table.IncludeRowNumbers = !(rowNumbers is bool b) || b;
 
                 foreach (var item in items)
                 {
@@ -142,7 +161,7 @@ namespace ServiceStack.Templates
                             else
                             {
                                 var cellValue = textDump(scope, value, scopeOptions);
-                                row.Add(cellValue);
+                                row.Add(cellValue.ToRawString());
                             }
                         }
                         table.Rows.Add(row);
@@ -151,7 +170,7 @@ namespace ServiceStack.Templates
 
                 var isEmpty = table.Rows.Count == 0;
                 if (isEmpty && captionIfEmpty == null)
-                    return string.Empty;
+                    return RawString.Empty;
 
                 scopedParams.TryGetValue("caption", out object caption);
                 if (isEmpty)
@@ -164,7 +183,7 @@ namespace ServiceStack.Templates
                 }
 
                 var txt = table.Render();
-                return txt;
+                return txt.ToRawString();
             }
             finally
             {
@@ -172,8 +191,8 @@ namespace ServiceStack.Templates
             }
         }
 
-        public string textDump(TemplateScopeContext scope, object target) => textDump(scope, target, null);
-        public string textDump(TemplateScopeContext scope, object target, object scopeOptions)
+        public IRawString textDump(TemplateScopeContext scope, object target) => textDump(scope, target, null);
+        public IRawString textDump(TemplateScopeContext scope, object target, object scopeOptions)
         {
             var scopedParams = scope.AssertOptions(nameof(textDump), scopeOptions);
             var depth = scopedParams.TryGetValue("depth", out object oDepth) ? (int)oDepth : 0;
@@ -182,7 +201,7 @@ namespace ServiceStack.Templates
             try
             {
                 if (!isComplexType(target))
-                    return GetScalarText(target);
+                    return GetScalarText(target).ToRawString();
 
                 scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
                 scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
@@ -194,7 +213,7 @@ namespace ServiceStack.Templates
 
                     var isEmpty = objs.Count == 0;
                     if (isEmpty && captionIfEmpty == null)
-                        return string.Empty;
+                        return RawString.Empty;
 
                     var first = !isEmpty ? objs[0] : null;
                     if (first is IDictionary)
@@ -206,14 +225,18 @@ namespace ServiceStack.Templates
                     
                     var sb = StringBuilderCacheAlt.Allocate();
 
+                    string writeCaption = null; 
                     if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
                     {
-                        sb.AppendLine(caption.ToString());
+                        writeCaption = caption.ToString();
                         scopedParams["hasCaption"] = true;
                     }
 
                     if (!isEmpty)
                     {
+                        var keys = new List<string>();
+                        var values = new List<string>();
+
                         if (first is KeyValuePair<string, object>)
                         {
                             foreach (var o in objs)
@@ -222,50 +245,82 @@ namespace ServiceStack.Templates
                                 {
                                     if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
 
-                                    var header = Context.DefaultFilters?.textStyle(kvp.Key, headerStyle) ?? "";
+                                    keys.Add(Context.DefaultFilters?.textStyle(kvp.Key, headerStyle) ?? "");
+                                    
                                     var field = !isComplexType(kvp.Value)
                                         ? GetScalarText(kvp.Value)
-                                        : textDump(scope, kvp.Value, scopeOptions);
-
-                                    sb.AppendLine(header);
-                                    sb.AppendLine(field);
+                                        : textDump(scope, kvp.Value, scopeOptions).ToRawString();
+                                    
+                                    values.Add(field);
                                 }
                             }
-                        }
-                        else if (!isComplexType(first))
-                        {
-                            foreach (var o in objs)
+
+                            var keySize = keys.Max(x => x.Length);
+                            var valuesSize = values.Max(x => x.Length);
+
+                            sb.AppendLine(writeCaption != null 
+                                ? $"| {writeCaption} ||" 
+                                : $"|||");
+                            sb.AppendLine("|-|-|");
+                            
+                            for (var i = 0; i < keys.Count; i++)
                             {
-                                sb.AppendLine(GetScalarText(o));
+                                sb.Append("| ")
+                                  .Append(keys[i].PadRight(keySize, ' '))
+                                  .Append(" | ")
+                                  .Append(values[i].PadRight(valuesSize, ' '))
+                                  .Append(" |")
+                                  .AppendLine();
                             }
                         }
                         else
                         {
-                            if (objs.Count > 1)
+                            if (!isComplexType(first))
                             {
-                                var rows = objs.Map(x => x.ToObjectDictionary());
-                                var list = textList(scope, rows, scopeOptions);
-                                sb.AppendLine(list);
+                                sb.AppendLine(writeCaption != null 
+                                    ? $"| {writeCaption} |" 
+                                    : $"||");
+                                sb.AppendLine("|-|");
+
+                                foreach (var o in objs)
+                                {
+                                    sb.Append("| ")
+                                      .Append(GetScalarText(o))
+                                      .Append(" |")
+                                      .AppendLine();
+                                }
                             }
                             else
                             {
-                                foreach (var o in objs)
+                                if (writeCaption != null)
+                                    sb.AppendLine(writeCaption);
+                            
+                                if (objs.Count > 1)
                                 {
-                                    if (!isComplexType(o))
+                                    var rows = objs.Map(x => x.ToObjectDictionary());
+                                    var list = textList(scope, rows, scopeOptions).ToRawString();
+                                    sb.AppendLine(list);
+                                }
+                                else
+                                {
+                                    foreach (var o in objs)
                                     {
-                                        sb.AppendLine(GetScalarText(o));
-                                    }
-                                    else
-                                    {
-                                        var body = textDump(scope, o, scopeOptions);
-                                        sb.AppendLine(body);
+                                        if (!isComplexType(o))
+                                        {
+                                            sb.AppendLine(GetScalarText(o));
+                                        }
+                                        else
+                                        {
+                                            var body = textDump(scope, o, scopeOptions).ToRawString();
+                                            sb.AppendLine(body);
+                                        }
                                     }
                                 }
                             }
                         }
                     }
 
-                    return StringBuilderCache.ReturnAndFree(sb);
+                    return StringBuilderCache.ReturnAndFree(sb).ToRawString();
                 }
 
                 return textDump(scope, target.ToObjectDictionary(), scopeOptions);
@@ -282,7 +337,7 @@ namespace ServiceStack.Templates
                 return string.Empty;
 
             if (target is string s)
-                return s.HtmlEncode();
+                return s;
 
             if (target is decimal dec)
             {
@@ -307,6 +362,5 @@ namespace ServiceStack.Templates
         {
             return !(first == null || first is string || first.GetType().IsValueType);
         }
-        
     }
 }
