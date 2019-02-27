@@ -15,7 +15,7 @@
     <RootNamespace>CheckIIS</RootNamespace>
     <AssemblyName>CheckIIS</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -180,7 +180,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>62166</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost/CheckIIS</IISUrl>
+          <IISUrl>http://localhost:62166/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
