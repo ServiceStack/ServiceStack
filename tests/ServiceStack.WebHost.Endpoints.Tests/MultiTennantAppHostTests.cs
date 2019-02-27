@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     public class MultiTenantChangeDbAppHost : AppSelfHostBase
     {
         public MultiTenantChangeDbAppHost()
-            : base("Multi Tennant Test", typeof (MultiTenantChangeDbAppHost).Assembly) {}
+            : base("Multi Tenant Test", typeof (MultiTenantChangeDbAppHost).Assembly) {}
 
         public override void Configure(Container container)
         {

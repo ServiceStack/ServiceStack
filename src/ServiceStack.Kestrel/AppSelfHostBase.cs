@@ -74,9 +74,9 @@ namespace ServiceStack
             if (!string.IsNullOrEmpty(mode))
             {
                 var includedInPathInfo = pathInfo.IndexOf(mode, StringComparison.Ordinal) == 1;
-                var includedInPathPase = context.Request.PathBase.HasValue &&
+                var includedInPathBase = context.Request.PathBase.HasValue &&
                                          context.Request.PathBase.Value.IndexOf(mode, StringComparison.Ordinal) == 1;
-                if (!includedInPathInfo && !includedInPathPase)
+                if (!includedInPathInfo && !includedInPathBase)
                 {
                     await next();
                     return;
