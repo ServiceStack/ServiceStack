@@ -77,8 +77,11 @@ namespace ServiceStack
                 Config.WebHostPhysicalPath = env.ContentRootPath;
                 Config.DebugMode = env.IsDevelopment();
 
-                //Set VirtualFiles to point to ContentRootPath (Project Folder)
-                VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                if (VirtualFiles == null)
+                {
+                    //Set VirtualFiles to point to ContentRootPath (Project Folder)
+                    VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                }
                 RegisterLicenseFromAppSettings(AppSettings);
             }
         }
