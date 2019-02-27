@@ -87,7 +87,14 @@ namespace ServiceStack.Templates
                     if (line.StartsWith(Format.ArgsSuffix))
                         break;
 
-                    var sep = line.IndexOf(':') >= 0 ? ':' : ' ';
+                    var colonPos = line.IndexOf(':');
+                    var spacePos = line.IndexOf(' ');
+                    var bracePos = line.IndexOf('{');
+                    var sep = colonPos >= 0 ? ':' : ' ';
+
+                    if (bracePos > 0 && spacePos > 0 && colonPos > spacePos)
+                        sep = ' ';
+                    
                     line.SplitOnFirst(sep, out var first, out var last);
 
                     pageVars[first.Trim().ToString()] = !last.IsEmpty ? last.Trim().ToString() : "";

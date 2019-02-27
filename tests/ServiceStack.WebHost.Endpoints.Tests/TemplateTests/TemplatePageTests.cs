@@ -105,6 +105,7 @@ title: Variable Layout
 <!--
 layout alt-layout.html
 title Variable Layout
+files.config {AccessKey:$AWS_S3_ACCESS_KEY}
 -->
 
 <h1>Variable Page</h1>" },
@@ -292,6 +293,7 @@ title: We encode < & >
 
             Assert.That(page.Args["layout"], Is.EqualTo("alt-layout.html"));
             Assert.That(page.Args["title"], Is.EqualTo("Variable Layout"));
+            Assert.That(page.Args["files.config"], Is.EqualTo("{AccessKey:$AWS_S3_ACCESS_KEY}"));
             Assert.That(((PageStringFragment)page.PageFragments[0]).Value.ToString(), Is.EqualTo("<h1>Variable Page</h1>"));
         }
 
