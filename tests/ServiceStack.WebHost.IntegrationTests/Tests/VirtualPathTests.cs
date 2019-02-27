@@ -89,7 +89,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             var contents = "{0}/swagger-ui/".Fmt(ServiceStackBaseUri).GetStringFromUrl();
             Assert.That(contents, Does.Contain(ServiceStackBaseUri));
 
-            contents = "{0}/api/openapi".Fmt(ServiceStackBaseUri).GetStringFromUrl();
+            contents = "{0}/api/openapi".Fmt(ServiceStackBaseUri).GetJsonFromUrl();
             Assert.That(contents, Does.Contain("ServiceStack WebHost IntegrationTests"));
         }
 
