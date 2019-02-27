@@ -13,7 +13,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public class TemplateServiceStackFilters : TemplateFilter
+    public partial class TemplateServiceStackFilters : TemplateFilter
     {
         private ServiceStackHost appHost => HostContext.AppHost;
 
