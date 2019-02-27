@@ -259,9 +259,11 @@ namespace ServiceStack.Templates
                             var valuesSize = values.Max(x => x.Length);
 
                             sb.AppendLine(writeCaption != null 
-                                ? $"| {writeCaption} ||" 
+                                ? $"| {writeCaption.PadRight(keySize + valuesSize + 2, ' ')} ||" 
                                 : $"|||");
-                            sb.AppendLine("|-|-|");
+                            sb.AppendLine(writeCaption != null 
+                                ? $"|-{"".PadRight(keySize,'-')}-|-{"".PadRight(valuesSize,'-')}-|" 
+                                : "|-|-|");
                             
                             for (var i = 0; i < keys.Count; i++)
                             {
@@ -277,26 +279,37 @@ namespace ServiceStack.Templates
                         {
                             if (!isComplexType(first))
                             {
-                                sb.AppendLine(writeCaption != null 
-                                    ? $"| {writeCaption} |" 
-                                    : $"||");
-                                sb.AppendLine("|-|");
-
                                 foreach (var o in objs)
                                 {
+                                    values.Add(GetScalarText(o));
+                                }
+                                
+                                var valuesSize = values.Max(MaxLineLength);
+                                if (writeCaption?.Length > valuesSize)
+                                    valuesSize = writeCaption.Length;
+
+                                sb.AppendLine(writeCaption != null 
+                                    ? $"| {writeCaption.PadRight(valuesSize)} |" 
+                                    : $"||");
+                                sb.AppendLine(writeCaption != null 
+                                    ? $"|-{"".PadRight(valuesSize,'-')}-|" 
+                                    : "|-|");
+
+                                foreach (var value in values)
+                                {
                                     sb.Append("| ")
-                                      .Append(GetScalarText(o))
-                                      .Append(" |")
-                                      .AppendLine();
+                                        .Append(value.PadRight(valuesSize, ' '))
+                                        .Append(" |")
+                                        .AppendLine();
                                 }
                             }
                             else
                             {
-                                if (writeCaption != null)
-                                    sb.AppendLine(writeCaption);
-                            
                                 if (objs.Count > 1)
                                 {
+                                    if (writeCaption != null)
+                                        sb.AppendLine(writeCaption);
+                            
                                     var rows = objs.Map(x => x.ToObjectDictionary());
                                     var list = textList(scope, rows, scopeOptions).ToRawString();
                                     sb.AppendLine(list);
@@ -307,13 +320,30 @@ namespace ServiceStack.Templates
                                     {
                                         if (!isComplexType(o))
                                         {
-                                            sb.AppendLine(GetScalarText(o));
+                                            values.Add(GetScalarText(o));
                                         }
                                         else
                                         {
                                             var body = textDump(scope, o, scopeOptions).ToRawString();
-                                            sb.AppendLine(body);
+                                            values.Add(body);
                                         }
+                                    }
+                                    
+                                    var valuesSize = values.Max(MaxLineLength);
+                                    if (writeCaption?.Length > valuesSize)
+                                        valuesSize = writeCaption.Length;
+
+                                    sb.AppendLine(writeCaption != null 
+                                        ? $"| {writeCaption.PadRight(valuesSize, ' ')} |" 
+                                        : $"||");
+                                    sb.AppendLine(writeCaption != null ? $"|-{"".PadRight(valuesSize,'-')}-|" : "|-|");
+
+                                    foreach (var value in values)
+                                    {
+                                        sb.Append("| ")
+                                            .Append(value.PadRight(valuesSize, ' '))
+                                            .Append(" |")
+                                            .AppendLine();
                                     }
                                 }
                             }
@@ -329,6 +359,20 @@ namespace ServiceStack.Templates
             {
                 scopedParams["depth"] = depth;
             }
+        }
+
+        private int MaxLineLength(string s)
+        {
+            if (string.IsNullOrEmpty(s))
+                return 0;
+
+            var len = 0;
+            foreach (var line in s.ReadLines())
+            {
+                if (line.Length > len)
+                    len = line.Length;                
+            }
+            return len;
         }
 
         private string GetScalarText(object target)
