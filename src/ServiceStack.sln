@@ -7,29 +7,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{4EBD29DD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771-6C97-4D64-8E11-FD88AE48A41A}"
 	ProjectSection(SolutionItems) = preProject
+		..\build\build-common-core.proj = ..\build\build-common-core.proj
 		..\build\build-common.proj = ..\build\build-common.proj
+		..\build\build-core.proj = ..\build\build-core.proj
 		..\build\build.bat = ..\build\build.bat
 		..\build\build.proj = ..\build\build.proj
 		..\build\build.tasks = ..\build\build.tasks
 		..\CONTRIBUTORS.md = ..\CONTRIBUTORS.md
-		..\README.md = ..\README.md
 		Directory.Build.props = Directory.Build.props
-		ServiceStack\ServiceStack.Core.csproj = ServiceStack\ServiceStack.Core.csproj
-		ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj = ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj
-		ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj = ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj
+		..\README.md = ..\README.md
 		ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.Core.csproj = ServiceStack.Api.OpenApi\ServiceStack.Api.OpenApi.Core.csproj
+		ServiceStack.Client\ServiceStack.Client.Core.csproj = ServiceStack.Client\ServiceStack.Client.Core.csproj
+		ServiceStack.Common\ServiceStack.Common.Core.csproj = ServiceStack.Common\ServiceStack.Common.Core.csproj
+		ServiceStack\ServiceStack.Core.csproj = ServiceStack\ServiceStack.Core.csproj
+		ServiceStack.HttpClient\ServiceStack.HttpClient.Core.csproj = ServiceStack.HttpClient\ServiceStack.HttpClient.Core.csproj
+		ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj = ServiceStack.Interfaces\ServiceStack.Interfaces.Core.csproj
+		ServiceStack.Kestrel\ServiceStack.Kestrel.Core.csproj = ServiceStack.Kestrel\ServiceStack.Kestrel.Core.csproj
 		ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.Core.csproj = ServiceStack.Logging.Log4Net\ServiceStack.Logging.Log4Net.Core.csproj
 		ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj = ServiceStack.Logging.NLog\ServiceStack.Logging.NLog.Core.csproj
-		ServiceStack.HttpClient\ServiceStack.HttpClient.Core.csproj = ServiceStack.HttpClient\ServiceStack.HttpClient.Core.csproj
 		ServiceStack.MsgPack\ServiceStack.MsgPack.Core.csproj = ServiceStack.MsgPack\ServiceStack.MsgPack.Core.csproj
-		ServiceStack.Client\ServiceStack.Client.Core.csproj = ServiceStack.Client\ServiceStack.Client.Core.csproj
+		ServiceStack.Mvc\ServiceStack.Mvc.Core.csproj = ServiceStack.Mvc\ServiceStack.Mvc.Core.csproj
+		ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj = ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj
 		ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj = ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj
 		ServiceStack.Server\ServiceStack.Server.Core.csproj = ServiceStack.Server\ServiceStack.Server.Core.csproj
-		ServiceStack.Common\ServiceStack.Common.Core.csproj = ServiceStack.Common\ServiceStack.Common.Core.csproj
-		ServiceStack.Mvc\ServiceStack.Mvc.Core.csproj = ServiceStack.Mvc\ServiceStack.Mvc.Core.csproj
-		..\build\build-common-core.proj = ..\build\build-common-core.proj
-		..\build\build-core.proj = ..\build\build-core.proj
-		ServiceStack.Kestrel\ServiceStack.Kestrel.Core.csproj = ServiceStack.Kestrel\ServiceStack.Kestrel.Core.csproj
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
@@ -100,7 +100,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckHttpListener", "..\tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Check.ServiceInterface", "..\tests\Check.ServiceInterface\Check.ServiceInterface.csproj", "{9982317F-831C-478B-9CC3-57F888BCD97A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceStack.Razor.BuildTask", "ServiceStack.Razor.BuildTask\ServiceStack.Razor.BuildTask.csproj", "{E6150672-5EA1-4E87-A66A-1884259F1319}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceStack.Razor.BuildTask", "ServiceStack.Razor.BuildTask\ServiceStack.Razor.BuildTask.csproj", "{E6150672-5EA1-4E87-A66A-1884259F1319}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Check.ServiceModel", "..\tests\Check.ServiceModel\Check.ServiceModel.csproj", "{213EF4BA-786A-432F-B147-5702B18DE3CC}"
 EndProject
@@ -126,9 +126,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTests", "..\tests\Ne
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckWebCore", "..\tests\CheckWebCore\CheckWebCore.csproj", "{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckMvcIdentityCore", "..\tests\CheckMvcIdentityCore\CheckMvcIdentityCore.csproj", "{9CC2A806-0CE7-4DC3-B78B-CD1760713378}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckMvcIdentityCore", "..\tests\CheckMvcIdentityCore\CheckMvcIdentityCore.csproj", "{9CC2A806-0CE7-4DC3-B78B-CD1760713378}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckTemplatesCore", "..\tests\CheckTemplatesCore\CheckTemplatesCore.csproj", "{6BF52B7D-4F38-469A-84A7-263C22CB9553}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CheckTemplatesCore", "..\tests\CheckTemplatesCore\CheckTemplatesCore.csproj", "{6BF52B7D-4F38-469A-84A7-263C22CB9553}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckIIS", "..\tests\CheckIIS\CheckIIS.csproj", "{4EB53207-13DA-47B2-A638-A4EC1534FE47}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -618,6 +620,18 @@ Global
 		{6BF52B7D-4F38-469A-84A7-263C22CB9553}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6BF52B7D-4F38-469A-84A7-263C22CB9553}.Release|x86.ActiveCfg = Release|Any CPU
 		{6BF52B7D-4F38-469A-84A7-263C22CB9553}.Release|x86.Build.0 = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Debug|x86.Build.0 = Debug|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.ActiveCfg = Release|Any CPU
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -654,6 +668,7 @@ Global
 		{7A0AFA23-09DC-4D69-80A1-7FEECA756C9E} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{9CC2A806-0CE7-4DC3-B78B-CD1760713378} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 		{6BF52B7D-4F38-469A-84A7-263C22CB9553} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
+		{4EB53207-13DA-47B2-A638-A4EC1534FE47} = {4EBD29DD-21A1-47B5-80DB-F9D58C91BED5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {55441DE1-559F-4064-BB8F-907A9E898A6C}
