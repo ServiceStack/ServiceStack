@@ -38,6 +38,7 @@ namespace ServiceStack
                 EmbeddedResourceBaseTypes = new[] { HostContext.AppHost.GetType(), typeof(Service) }.ToList(),
                 EmbeddedResourceTreatAsFiles = new HashSet<string>(),
                 EnableAccessRestrictions = true,
+                EnableAutoHtmlResponses = true,
                 WebHostPhysicalPath = "~".MapServerPath(),
                 HandlerFactoryPath = ServiceStackPath,
                 MetadataRedirectPath = null,
@@ -192,10 +193,10 @@ namespace ServiceStack
             this.EmbeddedResourceBaseTypes = instance.EmbeddedResourceBaseTypes;
             this.EmbeddedResourceTreatAsFiles = instance.EmbeddedResourceTreatAsFiles;
             this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
+            this.EnableAutoHtmlResponses = instance.EnableAutoHtmlResponses;
             this.ServiceEndpointsMetadataConfig = instance.ServiceEndpointsMetadataConfig;
             this.SoapServiceName = instance.SoapServiceName;
             this.XmlWriterSettings = instance.XmlWriterSettings;
-            this.EnableAccessRestrictions = instance.EnableAccessRestrictions;
             this.WebHostUrl = instance.WebHostUrl;
             this.WebHostPhysicalPath = instance.WebHostPhysicalPath;
             this.DefaultRedirectPath = instance.DefaultRedirectPath;
@@ -306,6 +307,7 @@ namespace ServiceStack
         public string SoapServiceName { get; set; }
         public XmlWriterSettings XmlWriterSettings { get; set; }
         public bool EnableAccessRestrictions { get; set; }
+        public bool EnableAutoHtmlResponses { get; set; }
         public bool UseBclJsonSerializers { get; set; }
         public Regex IsMobileRegex { get; set; }
         public Dictionary<string, Func<IHttpRequest, bool>> RequestRules { get; set; }
