@@ -81,7 +81,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     },
                     ScriptMethods =
                     {
-                        new TemplateDbFiltersAsync(),
+                        new DbScriptsAsync(),
                         new AutoQueryScripts(),
                     },
                 });

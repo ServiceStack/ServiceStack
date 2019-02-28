@@ -281,9 +281,9 @@ pageArg: 2
         {
             OrmLiteConfig.BeforeExecFilter = cmd => cmd.GetDebugString().Print();
 
-            var context = new Templates.TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateDbFiltersAsync() },
+                ScriptMethods = { new DbScriptsAsync() },
                 Args = {
                     ["objectCount"] = Task.FromResult((object)1)
                 }
