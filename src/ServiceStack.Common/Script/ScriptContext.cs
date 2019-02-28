@@ -478,7 +478,7 @@ namespace ServiceStack.Script
             args.Each((x,y) => pageResult.Args[x] = y);
             var output = pageResult.Result;
             if (pageResult.LastFilterError != null)
-                throw new PageResultException(pageResult.);
+                throw new PageResultException(pageResult);
             return pageResult.Args.TryGetValue(ScriptConstants.Return, out var oReturn) 
                 ? oReturn 
                 : null;
