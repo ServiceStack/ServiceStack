@@ -811,6 +811,7 @@ namespace ServiceStack.Script
                         if (!string.IsNullOrEmpty(errorBinding))
                         {
                             scope.ScopedParams[errorBinding] = ex.InnerException;
+                            scope.ScopedParams[errorBinding + "StackTrace"] = stackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
                             return string.Empty;
                         }
                     }
