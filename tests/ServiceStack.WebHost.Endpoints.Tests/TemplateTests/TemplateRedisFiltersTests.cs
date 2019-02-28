@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             {
                 ScriptMethods =
                 {
-                    new TemplateRedisFilters { RedisManager = new RedisManagerPool() },
+                    new RedisScripts { RedisManager = new RedisManagerPool() },
                 }
             }.Init();
             
