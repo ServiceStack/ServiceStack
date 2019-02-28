@@ -438,18 +438,65 @@ namespace ServiceStack.Script
 
     public static class ScriptContextExtensions
     {
-        public static string EvaluateScript(this ScriptContext context, string template, Dictionary<string, object> args=null)
+        public static string EvaluateScript(this ScriptContext context, string script, out PageResultException error) => 
+            context.EvaluateScript(script, null, out error);
+        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out PageResultException error)
         {
-            var pageResult = new PageResult(context.OneTimePage(template));
+            var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return pageResult.Result;
+            var output = pageResult.Result;
+            error = pageResult.LastFilterError != null ? new PageResultException(pageResult) : null;
+            return output;
         }
         
-        public static Task<string> EvaluateScriptAsync(this ScriptContext context, string template, Dictionary<string, object> args=null)
+        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
-            var pageResult = new PageResult(context.OneTimePage(template));
+            var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            return pageResult.RenderToStringAsync();
+            var output = pageResult.Result;
+            if (pageResult.LastFilterError != null)
+                throw new PageResultException(pageResult);
+            return output;
+        }
+        
+        public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(script));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            var output = await pageResult.RenderToStringAsync();
+            if (pageResult.LastFilterError != null)
+                throw new PageResultException(pageResult);
+            return output;
+        }
+
+        public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+            context.Evaluate(script, args) is T t ? t : default;
+        
+        public static object Evaluate(this ScriptContext context, string script, Dictionary<string, object> args=null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(script));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            var output = pageResult.Result;
+            if (pageResult.LastFilterError != null)
+                throw new PageResultException(pageResult.);
+            return pageResult.Args.TryGetValue(ScriptConstants.Return, out var oReturn) 
+                ? oReturn 
+                : null;
+        }
+
+        public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
+            (await context.EvaluateAsync(script, args)) is T t ? t : default;
+        
+        public static async Task<object> EvaluateAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(script));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            var output = await pageResult.RenderToStringAsync();
+            if (pageResult.LastFilterError != null)
+                throw new PageResultException(pageResult);
+            return pageResult.Args.TryGetValue(ScriptConstants.Return, out var oReturn) 
+                ? oReturn 
+                : null;
         }
     }
 }
