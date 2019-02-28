@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -67,13 +67,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_nested_call_expressions()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["it"] = 10
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ { a: add(it % 3,1) * 2, b: 2 * 3 + incr(4 + decr(5)) } | values | sum | currency }}"), 
+            Assert.That(context.EvaluateScript("{{ { a: add(it % 3,1) * 2, b: 2 * 3 + incr(4 + decr(5)) } | values | sum | currency }}"), 
                 Is.EqualTo("$19.00"));
         }
     }

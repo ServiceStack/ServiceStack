@@ -6,7 +6,7 @@ using NUnit.Framework;
 using ServiceStack.Data;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -52,13 +52,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     }
 
     [Page("shadowed-page")]
-    public class ShadowedPage : TemplateCodePage
+    public class ShadowedPage : SharpCodePage
     {
         string render() => @"<h1>Shadowed Template Code Page</h1>";
     }
 
     [Page("shadowed/index")]
-    public class ShadowedIndexPage : TemplateCodePage
+    public class ShadowedIndexPage : SharpCodePage
     {
         string render() => @"<h1>Shadowed Index Code Page</h1>";
     }
@@ -87,7 +87,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     
     [Page("products")]
     [PageArg("title", "Products")]
-    public class ProductsPage : TemplateCodePage
+    public class ProductsPage : SharpCodePage
     {
         string render(Product[] products) => $@"
         <table class='table'>
@@ -105,7 +105,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     
     [Page("products-sidebar", "layout-with-sidebar")]
     [PageArg("title", "Products with Sidebar")]
-    public class ProductsSidebarPage : TemplateCodePage
+    public class ProductsSidebarPage : SharpCodePage
     {
         string render(Product[] products) => $@"
         <table class='table'>
@@ -122,7 +122,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     }
 
     [Page("sidebar")]
-    public class SidebarPage : TemplateCodePage
+    public class SidebarPage : SharpCodePage
     {
         string render(Dictionary<string, object> links) => $@"<ul>
     {links.Map(entry => $"<li><a href='{entry.Key}'>{entry.Value}</a></li>\n").Join("")}
@@ -157,7 +157,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     db.InsertAll(UnitTestExample.SeedData);
                 }
                 
-                Plugins.Add(new TemplatePagesFeature
+                Plugins.Add(new SharpPagesFeature
                 {
                     Args =
                     {

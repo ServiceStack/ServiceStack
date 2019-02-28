@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -96,35 +96,35 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_shorthand_Arrow_Expressions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | map(it => it * it) | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | map(it => it * it) | sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | map(n => n * n) | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | map(n => n * n) | sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | map => it * it | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | map => it * it | sum }}"),  Is.EqualTo("14"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | where => it % 2 == 1 | map => it * it | sum }}"),  Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | where => it % 2 == 1 | map => it * it | sum }}"),  Is.EqualTo("10"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | all => it > 2 | lower }}"),  Is.EqualTo("false"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | all => it > 2 | lower }}"),  Is.EqualTo("false"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | any => it > 2 | show: Y }}"),  Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | any => it > 2 | show: Y }}"),  Is.EqualTo("Y"));
             
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | orderByDesc => it | join }}"),  Is.EqualTo("3,2,1"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | orderByDesc => it | join }}"),  Is.EqualTo("3,2,1"));
             
-            Assert.That(context.EvaluateTemplate("{{ [3,2,1] | orderBy => it | join }}"),  Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateScript("{{ [3,2,1] | orderBy => it | join }}"),  Is.EqualTo("1,2,3"));
 
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | map => it * it | assignTo => values }}{{ values | sum }}"),  Is.EqualTo("14"));
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | map => it * it | assignTo => values }}{{ values | sum }}"),  Is.EqualTo("14"));
 
-            Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | join('') }}"),  Is.EqualTo("abc"));
+            Assert.That(context.EvaluateScript("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | join('') }}"),  Is.EqualTo("abc"));
 
-            Assert.That(context.EvaluateTemplate("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | concat }}"),  Is.EqualTo("abc"));
+            Assert.That(context.EvaluateScript("{{ ['A','B','C'] | map => lower(it) | map => `${it}` | concat }}"),  Is.EqualTo("abc"));
         }
 
         [Test]
         public void Does_evaluate_let_bindings_Arrow_Expressions()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -132,25 +132,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{ [1,2,3] | let => { a: it * it, b: isOdd(it) } | select: ({a},{b}), }}"),  
+            Assert.That(context.EvaluateScript("{{ [1,2,3] | let => { a: it * it, b: isOdd(it) } | select: ({a},{b}), }}"),  
                 Is.EqualTo("(1,True),(4,False),(9,True),"));
 
-            Assert.That(context.EvaluateTemplate("{{ people | let => { a: it.Name, b: it.Age * 2 } | select: ({a},{b}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people | let => { a: it.Name, b: it.Age * 2 } | select: ({a},{b}), }}"),  
                 Is.EqualTo("(name1,2),(name2,4),(name3,6),"));
             
-            Assert.That(context.EvaluateTemplate("{{ people | let => { it.Name, it.Age } | select: ({Name},{Age}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people | let => { it.Name, it.Age } | select: ({Name},{Age}), }}"),  
                 Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
             
-            Assert.That(context.EvaluateTemplate("{{ people | map => { it.Name, it.Age } | select: ({it.Name},{it.Age}), }}"),  
+            Assert.That(context.EvaluateScript("{{ people | map => { it.Name, it.Age } | select: ({it.Name},{it.Age}), }}"),  
                 Is.EqualTo("(name1,1),(name2,2),(name3,3),"));
         }
 
         [Test]
         public void Does_evaluate_toDictionary_Arrow_Expressions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate(@"{{ [{name:'Alice',score:50},{name:'Bob',score:40},{name:'Cathy',score:45}] | assignTo=>scoreRecords }}
+            Assert.That(context.EvaluateScript(@"{{ [{name:'Alice',score:50},{name:'Bob',score:40},{name:'Cathy',score:45}] | assignTo=>scoreRecords }}
 Bob's score: {{ scoreRecords 
    | toDictionary => it.name
    | map => it.Bob
@@ -161,9 +161,9 @@ Bob's score: {{ scoreRecords
         [Test]
         public void Does_evaluate_reduce_Arrow_Expressions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate(@"{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
+            Assert.That(context.EvaluateScript(@"{{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
    | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
             { initialValue: 100.0, })
@@ -186,7 +186,7 @@ Bob's score: {{ scoreRecords
         [Test]
         public void Does_evaluate_groupBy_Arrow_Expressions()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -194,12 +194,12 @@ Bob's score: {{ scoreRecords
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate(@"{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
+            Assert.That(context.EvaluateScript(@"{{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{#each groupBy(anagrams, w => trim(w), { map: x => upper(x), comparer: anagramComparer }) }}{{it | json}}{{/each}}"),
                 Is.EqualTo(@"[""FROM   "","" FORM  ""]["" SALT"",""  LAST   ""]["" EARN "","" NEAR ""]"));
         }
 
-        class MyFilters : TemplateFilter
+        class MyFilters : ScriptMethods
         {
             public double pow(double arg1, double arg2) => arg1 / arg2;
         }
@@ -207,7 +207,7 @@ Bob's score: {{ scoreRecords
         [Test]
         public void Can_Invoke_Arrow_Expressions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             var expr = JS.expression("pow(2,2) + pow(4,2)");
             Assert.That(expr.Evaluate(), Is.EqualTo(20));

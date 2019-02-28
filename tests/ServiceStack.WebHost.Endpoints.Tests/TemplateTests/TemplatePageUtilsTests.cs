@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -12,8 +12,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_no_vars()
         {
-            Assert.That(TemplatePageUtils.ParseTemplatePage("").Count, Is.EqualTo(0));
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>title</h1>");
+            Assert.That(SharpPageUtils.ParseTemplatePage("").Count, Is.EqualTo(0));
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>title</h1>");
             Assert.That(fragments.Count, Is.EqualTo(1));
 
             var strFragment = fragments[0] as PageStringFragment;
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_variable()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title }}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -40,7 +40,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_filter()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter }}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -55,7 +55,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.FilterExpressions[0].Arguments.Length, Is.EqualTo(0));
             Assert.That(strFragment3.Value.ToString(), Is.EqualTo("</h1>"));
 
-            fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter() }}</h1>");
+            fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter() }}</h1>");
 
             varFragment2 = fragments[1] as PageVariableFragment;
             Assert.That(varFragment2.OriginalText.ToString(), Is.EqualTo("{{ title | filter() }}"));
@@ -68,7 +68,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_filter_without_whitespace()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title}}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{title}}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Assert.That(varFragment2.Binding, Is.EqualTo("title"));
             Assert.That(varFragment2.FilterExpressions.Length, Is.EqualTo(0));
 
-            fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{title|filter}}</h1>");
+            fragments = SharpPageUtils.ParseTemplatePage("<h1>{{title|filter}}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             strFragment1 = fragments[0] as PageStringFragment;
@@ -98,7 +98,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_filter_with_arg()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter(1) }}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter(1) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_filter_with_multiple_args()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -142,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_multiple_filters_and_multiple_args()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}</h1>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter1 | filter2(1) | filter3(1,2.2,'a',\"b\",true) }}</h1>");
             Assert.That(fragments.Count, Is.EqualTo(3));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_multiple_variables_and_filters()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("<h1>{{ title | filter1 }}</h1>\n<p>{{ content | filter2(a) }}</p>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<h1>{{ title | filter1 }}</h1>\n<p>{{ content | filter2(a) }}</p>");
             Assert.That(fragments.Count, Is.EqualTo(5));
 
             var strFragment1 = fragments[0] as PageStringFragment;
@@ -207,7 +207,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_only_variable()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("{{ filter }}");
+            var fragments = SharpPageUtils.ParseTemplatePage("{{ filter }}");
             Assert.That(fragments.Count, Is.EqualTo(1));
             Assert.That(((PageVariableFragment)fragments[0]).Binding, Is.EqualTo("filter"));
         }
@@ -215,7 +215,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_template_with_arg_and_multiple_filters()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("{{ ' - {{it}}' | forEach(items) | markdown }}");
+            var fragments = SharpPageUtils.ParseTemplatePage("{{ ' - {{it}}' | forEach(items) | markdown }}");
             var varFragment = fragments[0] as PageVariableFragment;
             
             Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ ' - {{it}}' | forEach(items) | markdown }}"));
@@ -229,7 +229,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_parse_filter_with_different_arg_types()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("{{ array(['a',1,'c']) }}");
+            var fragments = SharpPageUtils.ParseTemplatePage("{{ array(['a',1,'c']) }}");
             var varFragment = (PageVariableFragment)fragments[0];
             
             Assert.That(varFragment.OriginalText.ToString(), Is.EqualTo("{{ array(['a',1,'c']) }}"));
@@ -419,7 +419,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             "'<li>{{it}}</li>'".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsLiteral("<li>{{it}}</li>")));
 
-            var fragments = TemplatePageUtils.ParseTemplatePage("<ul>{{ '<li>{{it}}</li>' }}</ul>");
+            var fragments = SharpPageUtils.ParseTemplatePage("<ul>{{ '<li>{{it}}</li>' }}</ul>");
             Assert.That(fragments.Count, Is.EqualTo(3));
         }
 
@@ -535,20 +535,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_cleaner_whitespace_sensitive_syntax_for_string_arguments()
         {
-            var fragments1 = TemplatePageUtils.ParseTemplatePage(
+            var fragments1 = SharpPageUtils.ParseTemplatePage(
                 @"{{ 
 products 
   | where: it.UnitsInStock = 0 
   | select: { it.productName | raw } is sold out!\n 
 }}");
             
-            var fragments2 = TemplatePageUtils.ParseTemplatePage(
+            var fragments2 = SharpPageUtils.ParseTemplatePage(
             @"{{ products 
                  | where: it.UnitsInStock = 0 
                  | select: { it.productName | raw } is sold out!\n }}");
             
             // i.e. is rewritten and is equivalent to:
-            var fragments3 = TemplatePageUtils.ParseTemplatePage(
+            var fragments3 = SharpPageUtils.ParseTemplatePage(
                 @"{{ products | where(′it.UnitsInStock = 0′) | select(′{{ it.productName | raw }} is sold out!\n′)}}");
             Assert.That(fragments3.Count, Is.EqualTo(1));
             
@@ -580,7 +580,7 @@ products
         [Test]
         public void Can_parse_pages_starting_with_values()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage(
+            var fragments = SharpPageUtils.ParseTemplatePage(
                 @"{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
 
             var varFragment = (PageVariableFragment) fragments[0];
@@ -599,7 +599,7 @@ products
         [Test]
         public void Can_parse_pages_starting_with_values_newLine()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             var page = context.OneTimePage("{{ [c.CustomerId, o.OrderId, o.OrderDate] | jsv }}\n");
             var fragments = page.PageFragments;
             
@@ -622,7 +622,7 @@ products
         {
             try
             {
-                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter(' 1) }}");
+                var fragments = SharpPageUtils.ParseTemplatePage("{{ arg | filter(' 1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -632,7 +632,7 @@ products
 
             try
             {
-                var fragments = TemplatePageUtils.ParseTemplatePage("square = {{ 'square-partial | partial({ ten }) }}");
+                var fragments = SharpPageUtils.ParseTemplatePage("square = {{ 'square-partial | partial({ ten }) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -642,7 +642,7 @@ products
 
             try
             {
-                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter({ unterminated:1) }}");
+                var fragments = SharpPageUtils.ParseTemplatePage("{{ arg | filter({ unterminated:1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -652,7 +652,7 @@ products
 
             try
             {
-                var fragments = TemplatePageUtils.ParseTemplatePage("{{ arg | filter([ 1) }}");
+                var fragments = SharpPageUtils.ParseTemplatePage("{{ arg | filter([ 1) }}");
                 Assert.Fail("should throw");
             }
             catch (ArgumentException e)
@@ -665,18 +665,18 @@ products
         [Test]
         public void Does_remove_new_line_between_var_literals()
         {
-            var fragments = TemplatePageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\n{{ bar }}");
+            var fragments = SharpPageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = TemplatePageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\r\n{{ bar }}");
+            fragments = SharpPageUtils.ParseTemplatePage("{{ 'foo' | assignTo: bar }}\r\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
 
-            fragments = TemplatePageUtils.ParseTemplatePage("{{ ['foo'] | do: assign('bar', it) }}\n{{ bar }}");
+            fragments = SharpPageUtils.ParseTemplatePage("{{ ['foo'] | do: assign('bar', it) }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = TemplatePageUtils.ParseTemplatePage("{{ do: assign('bar', 'foo') }}\n{{ bar }}");
+            fragments = SharpPageUtils.ParseTemplatePage("{{ do: assign('bar', 'foo') }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = TemplatePageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\n{{ bar }}");
+            fragments = SharpPageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\n{{ bar }}");
             Assert.That(fragments.Count, Is.EqualTo(2));
-            fragments = TemplatePageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\nbar");
+            fragments = SharpPageUtils.ParseTemplatePage("{{ 10 | times | do: assign('bar', 'foo') }}\nbar");
             Assert.That(fragments.Count, Is.EqualTo(2));
             var stringFragment = (PageStringFragment) fragments[1];
             Assert.That(stringFragment.Value.ToString(), Is.EqualTo("bar"));

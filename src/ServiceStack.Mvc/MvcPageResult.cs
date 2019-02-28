@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.Mvc
 {

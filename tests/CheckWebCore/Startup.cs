@@ -51,7 +51,7 @@ namespace CheckWebCore
         public override void Configure(Container container)
         {
             // enable server-side rendering, see: http://templates.servicestack.net
-            Plugins.Add(new TemplatePagesFeature()); 
+            Plugins.Add(new SharpPagesFeature()); 
 
             if (Config.DebugMode)
             {

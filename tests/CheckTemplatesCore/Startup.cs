@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
-using ServiceStack.Templates;
 
 namespace CheckTemplatesCore
 {
@@ -53,7 +52,7 @@ namespace CheckTemplatesCore
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), true)
             });
 
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new SharpPagesFeature());
             
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = 
                 new TemplatePageHandler("/notfound");

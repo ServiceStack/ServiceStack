@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -13,7 +13,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_execute_live_document()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             var template = @"{{ 11200 | assignTo: balance }}
 {{ 3     | assignTo: projectedMonths }}
@@ -45,7 +45,7 @@ Total            <b>{{ totalExpenses | currency }}</b>
 Monthly Savings: <b>{{ totalSavings | currency }}</b>
 {{ htmlErrorDebug }}";
 
-            var output = context.EvaluateTemplate(template);
+            var output = context.EvaluateScript(template);
             
             Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 Current Balance: <b>$11,200.00</b>
@@ -68,24 +68,24 @@ Total            <b>$1,700.00</b>
 Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
         }
 
-        class FilterInfoFilters : TemplateFilter
+        class FilterInfoFilters : ScriptMethods
         {
             Type GetFilterType(string name)
             {
                 switch(name)
                 {
-                    case nameof(TemplateDefaultFilters):
-                        return typeof(TemplateDefaultFilters);
-                    case nameof(TemplateHtmlFilters):
-                        return typeof(TemplateHtmlFilters);
-                    case nameof(TemplateProtectedFilters):
-                        return typeof(TemplateProtectedFilters);
-                    case nameof(TemplateInfoFilters):
-                        return typeof(TemplateInfoFilters);
-                    case nameof(TemplateServiceStackFilters):
-                        return typeof(TemplateServiceStackFilters);
-                    case nameof(TemplateAutoQueryFilters):
-                        return typeof(TemplateAutoQueryFilters);
+                    case nameof(DefaultScripts):
+                        return typeof(DefaultScripts);
+                    case nameof(HtmlScripts):
+                        return typeof(HtmlScripts);
+                    case nameof(ProtectedScripts):
+                        return typeof(ProtectedScripts);
+                    case nameof(InfoScripts):
+                        return typeof(InfoScripts);
+                    case nameof(ServiceStackScripts):
+                        return typeof(ServiceStackScripts);
+                    case nameof(AutoQueryScripts):
+                        return typeof(AutoQueryScripts);
                 }
 
                 throw new NotSupportedException("Unknown Filter: " + name);
@@ -98,7 +98,7 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
                 var to = filters
                     .OrderBy(x => x.Name)
                     .ThenBy(x => x.GetParameters().Count())
-                    .Where(x => x.DeclaringType != typeof(TemplateFilter) && x.DeclaringType != typeof(object))
+                    .Where(x => x.DeclaringType != typeof(ScriptMethods) && x.DeclaringType != typeof(object))
                     .Where(m => !m.IsSpecialName)                
                     .Select(x => FilterInfo.Create(x));
 
@@ -117,7 +117,7 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
             public static FilterInfo Create(MethodInfo mi)
             {
                 var paramNames = mi.GetParameters()
-                    .Where(x => x.ParameterType != typeof(TemplateScopeContext))
+                    .Where(x => x.ParameterType != typeof(ScriptScopeContext))
                     .Select(x => x.Name)
                     .ToArray();
 
@@ -150,12 +150,12 @@ Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
         [Test]
         public void Can_query_filters()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new FilterInfoFilters() }
+                ScriptMethods = { new FilterInfoFilters() }
             }.Init();
 
-            var results = context.EvaluateTemplate(@"{{ 'TemplateDefaultFilters' | assignTo: filter }}
+            var results = context.EvaluateScript(@"{{ 'DefaultScripts' | assignTo: filter }}
 {{ filter | filtersAvailable | where => contains(lower(it.Name), lower(nameContains ?? ''))  
           | assignTo: filters }}
 {{#each filters}}

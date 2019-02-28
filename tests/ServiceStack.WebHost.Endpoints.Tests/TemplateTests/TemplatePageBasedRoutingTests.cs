@@ -15,7 +15,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new TemplatePagesFeature());
+                Plugins.Add(new SharpPagesFeature());
             }
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>

@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -9,42 +9,42 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_void_img_html_block()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{#img {alt:'image',src:'image.png'} }}{{/img}}"), 
+            Assert.That(context.EvaluateScript("{{#img {alt:'image',src:'image.png'} }}{{/img}}"), 
                 Is.EqualTo("<img alt=\"image\" src=\"image.png\">"));
         }
 
         [Test]
         public void Does_evaluate_ul_html_block()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["numbers"] = new int[]{1, 2, 3},
                     ["letters"] = new[]{ "A", "B", "C" },
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{#ul}}{{/ul}}").RemoveNewLines(), Is.EqualTo("<ul></ul>"));
+            Assert.That(context.EvaluateScript("{{#ul}}{{/ul}}").RemoveNewLines(), Is.EqualTo("<ul></ul>"));
             
-            Assert.That(context.EvaluateTemplate("{{#ul {class:'nav'} }} <li>item</li> {{/ul}}").RemoveNewLines(), 
+            Assert.That(context.EvaluateScript("{{#ul {class:'nav'} }} <li>item</li> {{/ul}}").RemoveNewLines(), 
                 Is.EqualTo(@"<ul class=""nav""> <li>item</li> </ul>"));
             
-            Assert.That(context.EvaluateTemplate("{{#ul {each:letters, class:'nav', id:'menu'} }}<li>{{it}}</li>{{/ul}}").RemoveNewLines(), 
+            Assert.That(context.EvaluateScript("{{#ul {each:letters, class:'nav', id:'menu'} }}<li>{{it}}</li>{{/ul}}").RemoveNewLines(), 
                 Is.EqualTo(@"<ul class=""nav"" id=""menu""><li>A</li><li>B</li><li>C</li></ul>"));
             
-            Assert.That(context.EvaluateTemplate("{{#ul {each:numbers, it:'num'} }}<li>{{num}}</li>{{/ul}}").RemoveNewLines(), 
+            Assert.That(context.EvaluateScript("{{#ul {each:numbers, it:'num'} }}<li>{{num}}</li>{{/ul}}").RemoveNewLines(), 
                 Is.EqualTo(@"<ul><li>1</li><li>2</li><li>3</li></ul>"));
             
-            Assert.That(context.EvaluateTemplate("{{#ul {each:none} }}<li>{{it}}</li>{{/ul}}").RemoveNewLines(), Is.EqualTo(@""));
+            Assert.That(context.EvaluateScript("{{#ul {each:none} }}<li>{{it}}</li>{{/ul}}").RemoveNewLines(), Is.EqualTo(@""));
             
-            Assert.That(context.EvaluateTemplate("{{#ul {each:none} }}<li>{{it}}</li>{{else}}no items{{/ul}}").RemoveNewLines(), 
+            Assert.That(context.EvaluateScript("{{#ul {each:none} }}<li>{{it}}</li>{{else}}no items{{/ul}}").RemoveNewLines(), 
                 Is.EqualTo(@"no items"));
         }
 
-        private static TemplateContext CreateContext()
+        private static ScriptContext CreateContext()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["items"] = new[] {new Person("foo", 1), new Person("bar", 2), new Person("baz", 3)},
                     ["id"] = "menu",
@@ -71,7 +71,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     <div>no items</div>
 {{/ul}}";
 
-            var result = context.EvaluateTemplate(template);
+            var result = context.EvaluateScript(template);
             
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <ul class=""nav blur"" id=""ul-menu"">
@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
    <div>no items</div>
 {{/if}}";
 
-            var withoutBlockResult = context.EvaluateTemplate(withoutHtmlBlock);
+            var withoutBlockResult = context.EvaluateScript(withoutHtmlBlock);
             
             Assert.That(withoutBlockResult.RemoveNewLines(), Is.EqualTo(result.RemoveNewLines()));
         }
@@ -118,7 +118,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     <div>no items</div>
 {{/ul}}";
 
-            var result = context.EvaluateTemplate(template);
+            var result = context.EvaluateScript(template);
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <ul class=""nav blur"" id=""ul-menu"">
     <li>
@@ -146,11 +146,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
      <div>no items</div>
  {{/if}}".NormalizeNewLines();
 
-            var withoutBlockResult = context.EvaluateTemplate(withoutHtmlBlock);
+            var withoutBlockResult = context.EvaluateScript(withoutHtmlBlock);
             withoutBlockResult.Print();
             Assert.That(withoutBlockResult.RemoveNewLines(), Is.EqualTo(result.RemoveNewLines()));
 
-            result = context.EvaluateTemplate(template.Replace("hasAccess","!hasAccess"));
+            result = context.EvaluateScript(template.Replace("hasAccess","!hasAccess"));
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@""));
         }
 
@@ -164,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 The word {{d}} is shorter than its value.
 {{/each}}";
 
-            var result = context.EvaluateTemplate(template);
+            var result = context.EvaluateScript(template);
             Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 The word five is shorter than its value.
 The word six is shorter than its value.

@@ -4,7 +4,7 @@ using Funq;
 using NUnit.Framework;
 using ServiceStack.Formats;
 using ServiceStack.IO;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new TemplatePagesFeature());
+                Plugins.Add(new SharpPagesFeature());
 
                 var files = TemplateFiles[0];
                 
@@ -275,7 +275,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
     public class TemplatePageFeatureTests
     {
-        class InitFilter : TemplateFilter
+        class InitFilter : ScriptMethods
         {
             public static bool HasInit = false;
 
@@ -291,8 +291,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     var templateFiles = new MemoryVirtualFiles();
                     templateFiles.WriteFile("_init.html", "{{ initFilter }}");
                     host.AddVirtualFileSources.Add(templateFiles);
-                    host.Plugins.Add(new TemplatePagesFeature {
-                        TemplateFilters = { new InitFilter() }
+                    host.Plugins.Add(new SharpPagesFeature {
+                        ScriptMethods = { new InitFilter() }
                     });
                 }
             }.Init())

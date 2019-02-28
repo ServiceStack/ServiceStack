@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }));
         }
 
-        public class CustomFilter : TemplateFilter
+        public class CustomFilter : ScriptMethods
         {
             public string reverse(string text) => new string(text.Reverse().ToArray());
         }

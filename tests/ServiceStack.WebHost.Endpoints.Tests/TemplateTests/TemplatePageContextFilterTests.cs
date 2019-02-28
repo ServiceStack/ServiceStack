@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 using ServiceStack.IO;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -11,7 +11,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_pass_variables_into_partials()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args = { ["defaultMessage"] = "this is the default message" }
             }.Init();
@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_load_page_with_partial_and_scoped_variables()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -92,7 +92,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_load_page_with_page_or_partial_with_scoped_variables_containing_bindings()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -134,7 +134,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_replace_bindings()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -199,7 +199,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_using_forEach()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -218,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_escaped_chars_in_forEach()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -226,7 +226,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
 
-            var result = context.EvaluateTemplate("<ul>\n{{ '<li> {{it}} </li>\n' | forEach(letters) }}</ul>");
+            var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' | forEach(letters) }}</ul>");
             Assert.That(result.NormalizeNewLines(),
                 Is.EqualTo(@"<ul>
 <li> A </li>
@@ -238,7 +238,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_using_forEach_in_page_and_layouts()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -286,7 +286,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_with_bindings_using_forEach()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -306,7 +306,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_repeat_templates_with_bindings_and_custom_scope_using_forEach()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -332,7 +332,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             using (new BasicAppHost().Init())
             {
-                var context = new TemplatePagesFeature
+                var context = new SharpPagesFeature
                 {
                     Args =
                     {
@@ -348,7 +348,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_access_partial_arguments()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("component.html", @"{{ files | toList | select: { it.Key }: { it.Value }\n }}");
             

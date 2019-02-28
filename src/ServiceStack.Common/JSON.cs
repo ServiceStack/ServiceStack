@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Text.Json;
 
@@ -68,18 +68,18 @@ namespace ServiceStack
 
         public static void UnConfigure() => JsonTypeSerializer.Instance.ObjectDeserializer = null;
 
-        public static TemplateScopeContext CreateScope(Dictionary<string, object> args = null, TemplateFilter functions = null)
+        public static ScriptScopeContext CreateScope(Dictionary<string, object> args = null, ScriptMethods functions = null)
         {
-            var context = new TemplateContext();
+            var context = new ScriptContext();
             if (functions != null)
-                context.TemplateFilters.Insert(0, functions);
+                context.ScriptMethods.Insert(0, functions);
 
             context.Init();
-            return new TemplateScopeContext(new PageResult(context.OneTimePage("")), null, args);
+            return new ScriptScopeContext(new PageResult(context.OneTimePage("")), null, args);
         }
 
         public static object eval(string js) => eval(js, CreateScope());
-        public static object eval(string js, TemplateScopeContext scope)
+        public static object eval(string js, ScriptScopeContext scope)
         {
             js.ParseJsExpression(out var token);
             var result = token.Evaluate(scope);
