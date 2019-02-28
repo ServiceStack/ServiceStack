@@ -2,13 +2,13 @@ using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 using ServiceStack.Configuration;
-using ServiceStack.Templates;
 using ServiceStack.IO;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     [Page("foreach-code")]
-    public class ForEachCodeExample : TemplateCodePage
+    public class ForEachCodeExample : SharpCodePage
     {
         public string render(string title, string[] items) => $@"
 <h1>{title}</h1>
@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
     [Page("dir/foreach-code")]
     [PageArg("title", "Dir foreach code")]
-    public class DirForEachCodeExample : TemplateCodePage
+    public class DirForEachCodeExample : SharpCodePage
     {
         public string render(string title, string[] items) => $@"
 <h1>{title}</h1>
@@ -31,7 +31,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     }
 
     [Page("codepage-dep")]
-    public class CodePageWithDep : TemplateCodePage
+    public class CodePageWithDep : SharpCodePage
     {
         public IAppSettings AppSettings { get; set; }
 
@@ -48,32 +48,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_remove_TemplateContext_defaults()
         {
-            var context = new TemplateContext()
+            var context = new ScriptContext()
                 .RemoveFilters(x => true)
                 .RemoveBlocks(x => true)
                 .RemovePlugins(x => true)
             .Init();
             
-            Assert.That(context.TemplateFilters.Count, Is.EqualTo(0));
-            Assert.That(context.TemplateBlocks.Count, Is.EqualTo(0));
+            Assert.That(context.ScriptMethods.Count, Is.EqualTo(0));
+            Assert.That(context.ScriptBlocks.Count, Is.EqualTo(0));
             Assert.That(context.Plugins.Count, Is.EqualTo(0));
         }
 
         [Test]
         public void Can_remove_individual_blocks()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                     OnAfterPlugins = ctx => ctx.RemoveBlocks(x => x.Name == "capture")
                 }
                 .Init();
             
-            Assert.That(context.TemplateBlocks.Any(x => x is TemplateCaptureBlock), Is.False);
+            Assert.That(context.ScriptBlocks.Any(x => x is CaptureScriptBlock), Is.False);
         }
         
         [Test]
         public void Can_execute_CodePage()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -99,7 +99,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 ".NormalizeNewLines()));
         }
 
-        private static void WriteLayouts(TemplateContext context)
+        private static void WriteLayouts(ScriptContext context)
         {
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -121,7 +121,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_execute_CodePage_with_Layout()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -158,7 +158,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_execute_nested_CodePage_with_Layout()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -189,7 +189,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_execute_CodePage_with_Dep()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 ScanTypes = {typeof(CodePageWithDep)}
             }.Init();

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ServiceStack.IO;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -57,7 +57,7 @@ namespace ServiceStack
     /// </summary>
     public static class ViewUtils
     {
-        private static readonly TemplateHtmlFilters HtmlFilters = new TemplateHtmlFilters();
+        private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;
@@ -181,7 +181,7 @@ namespace ServiceStack
             if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
                 divAttrs["class"] = "alert alert-danger";
             
-            return HtmlFilters.htmlDiv(errorSummaryMsg, divAttrs).ToRawString();
+            return HtmlScripts.htmlDiv(errorSummaryMsg, divAttrs).ToRawString();
         }
 
         public static string ErrorResponseExcept(ResponseStatus errorStatus, string fieldNames) =>
@@ -350,17 +350,17 @@ namespace ServiceStack
             }
 
             var className = args.TryGetValue("class", out var oCls) || args.TryGetValue("className", out oCls)
-                ? HtmlFilters.htmlClassList(oCls)
+                ? HtmlScripts.htmlClassList(oCls)
                 : "";
             
-            className = HtmlFilters.htmlAddClass(className, inputClass);
+            className = HtmlScripts.htmlAddClass(className, inputClass);
 
             if (size != null)
-                className = HtmlFilters.htmlAddClass(className, inputClass + "-" + size);
+                className = HtmlScripts.htmlAddClass(className, inputClass + "-" + size);
 
             var errorMsg = ErrorResponse(GetErrorStatus(req), name);
             if (errorMsg != null)
-                className = HtmlFilters.htmlAddClass(className, "is-invalid");
+                className = HtmlScripts.htmlAddClass(className, "is-invalid");
 
             args["class"] = className;
 
@@ -377,7 +377,7 @@ namespace ServiceStack
                 if (id != null)
                     labelArgs["for"] = id;
 
-                labelHtml = HtmlFilters.htmlLabel(labelArgs).AsString();
+                labelHtml = HtmlScripts.htmlLabel(labelArgs).AsString();
             }
 
             var value = (args.TryGetValue("value", out var oValue)
@@ -438,7 +438,7 @@ namespace ServiceStack
             {
                 if (values != null)
                 {
-                    args["html"] = HtmlFilters.htmlOptions(values, 
+                    args["html"] = HtmlScripts.htmlOptions(values, 
                         new Dictionary<string, object> { {"selected",formValue ?? value} });
                 }
                 else if (!args.ContainsKey("html"))
@@ -446,7 +446,7 @@ namespace ServiceStack
             }
 
             if (inputHtml == null)
-                inputHtml = HtmlFilters.htmlTag(args, tagName).AsString();
+                inputHtml = HtmlScripts.htmlTag(args, tagName).AsString();
 
             if (isCheck)
             {

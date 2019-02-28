@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 using System.Web.UI;
 using NUnit.Framework;
 using ServiceStack.Caching;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.IO;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -58,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public async Task Can_generate_html_template_with_layout_in_memory()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
 <html>
@@ -93,7 +93,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public async Task Can_generate_markdown_template_with_layout_in_memory()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 PageFormats =
                 {
@@ -132,7 +132,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Can_generate_markdown_template_with_html_layout_in_memory()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 PageFormats =
                 {
@@ -175,7 +175,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_into_scope()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -190,7 +190,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_explode_Model_properties_of_anon_object_into_scope()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("page.html", @"Id: {{ Id }}, Name: {{ Name }}");
             
@@ -205,7 +205,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_reload_modified_page_contents_in_DebugMode()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 DebugMode = true, //default
             }.Init();
@@ -222,7 +222,7 @@ Brackets in Layout < & >
         [Test]
         public void Context_Throws_FileNotFoundException_when_page_does_not_exist()
         {
-            var context = new TemplateContext();
+            var context = new ScriptContext();
 
             Assert.That(context.Pages.GetPage("not-exists.html"), Is.Null);
 
@@ -237,7 +237,7 @@ Brackets in Layout < & >
             }
         }
 
-        class MyFilter : TemplateFilter
+        class MyFilter : ScriptMethods
         {
             public string echo(string text) => $"{text} {text}";
             public double squared(double value) => value * value;
@@ -250,28 +250,28 @@ Brackets in Layout < & >
         [Test]
         public void Does_use_custom_filter()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
                     ["contextArg"] = "foo"
                 },
-                TemplateFilters = { new MyFilter() }
+                ScriptMethods = { new MyFilter() }
             }.Init();
             
-            var output = context.EvaluateTemplate("<p>{{ 'contextArg' | greetArg }}</p>"); 
+            var output = context.EvaluateScript("<p>{{ 'contextArg' | greetArg }}</p>"); 
             Assert.That(output, Is.EqualTo("<p>Hello foo</p>"));
 
-            output = context.EvaluateTemplate("<p>{{ 10 | squared }}</p>");
+            output = context.EvaluateScript("<p>{{ 10 | squared }}</p>");
             Assert.That(output, Is.EqualTo("<p>100</p>"));
             
             output = new PageResult(context.OneTimePage("<p>{{ 'hello' | echo }}</p>"))
             {
-                TemplateFilters = { new MyFilter() }
+                ScriptMethods = { new MyFilter() }
             }.Result;
             Assert.That(output, Is.EqualTo("<p>hello hello</p>"));
 
-            context = new TemplateContext
+            context = new ScriptContext
             {
                 ScanTypes = { typeof(MyFilter) },
             };
@@ -279,14 +279,14 @@ Brackets in Layout < & >
             context.Container.Resolve<ICacheClient>().Set("key", "foo");
             context.Init();
             
-            output = context.EvaluateTemplate("<p>{{ 'key' | fromCache }}</p>");
+            output = context.EvaluateScript("<p>{{ 'key' | fromCache }}</p>");
             Assert.That(output, Is.EqualTo("<p>foo</p>"));
         }
 
         [Test]
         public async Task Does_embed_partials()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -388,7 +388,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_evaluate_variable_binding_expressions()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -466,7 +466,7 @@ Brackets in Layout < & >
         [Test]
         public async Task Does_evaluate_variable_binding_expressions_in_template()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -496,7 +496,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_render_onetime_page_and_layout()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {                
                 Args = { ["key"] = "the-key" }
             }.Init();
@@ -521,7 +521,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public async Task Can_render_onetime_page_with_real_layout()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {                
                 Args = { ["key"] = "the-key" }
             }.Init();
@@ -571,7 +571,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Does_not_allow_invoking_method_on_MemberExpression()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             var model = new ModelWithMethods { Nested = new ModelWithMethods { Name = "Nested" } };
             
@@ -599,7 +599,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Binding_expressions_with_null_references_evaluate_to_null()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ model.Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
             Assert.That(new PageResult(context.OneTimePage("{{ Object.Prop }}")) { Model = new ModelBinding() }.Result, Is.Empty);
@@ -612,7 +612,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void when_only_shows_code_when_true()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | when(auth) }}"))
             {
@@ -641,7 +641,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void unless_shows_code_when_not_true()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) }}"))
             {
@@ -671,7 +671,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void can_use_if_and_ifNot_as_alias_to_when_and_unless()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Is Authenticated' | if(auth) }}"))
             {
@@ -687,7 +687,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_use_else_and_otherwise_filter_to_show_alternative_content()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'Not Authenticated' | unless(auth) | otherwise('Is Authenticated') }}"))
             {
@@ -713,7 +713,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Returns_original_string_with_unknown_variable()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -733,7 +733,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Filters_with_HandleUnknownValueAttribute_handles_unkownn_values()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | otherwise('undefined serverArg') }}")).Result, Is.EqualTo("undefined serverArg"));
         }
@@ -741,7 +741,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_truthy_and_falsy_conditions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ undefined | falsy('undefined value') }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ null      | falsy('null value') }}")).Result, Is.EqualTo("null value"));
@@ -767,7 +767,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_ifTruthy_and_ifFalsy_conditions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifFalsy(undefined) }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifFalsy(null) }}")).Result, Is.EqualTo("null value"));
@@ -793,7 +793,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Handles_strict_if_and_else_conditions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'undefined value' | ifNot(undefined) }}")).Result, Is.EqualTo("undefined value"));
             Assert.That(new PageResult(context.OneTimePage("{{ 'null value'      | ifNot(null) }}")).Result, Is.EqualTo("null value"));
@@ -819,7 +819,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Null_exceptions_render_empty_string()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
 //                RenderExpressionExceptions = true,
                 Args =
@@ -835,7 +835,7 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_use_whitespace_for_last_string_arg()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -843,27 +843,27 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate(@"{{ ten | multiply(ten) | assignTo: result }}
+            Assert.That(context.EvaluateScript(@"{{ ten | multiply(ten) | assignTo: result }}
                 10 x 10 = {{ result }}").Trim(), Is.EqualTo("10 x 10 = 100"));
         }
 
         [Test]
         public void Can_emit_var_fragment_example()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            var output = context.EvaluateTemplate("The time is now:{{ pass: now | dateFormat('HH:mm:ss') }}");
+            var output = context.EvaluateScript("The time is now:{{ pass: now | dateFormat('HH:mm:ss') }}");
             Assert.That(output, Is.EqualTo("The time is now:{{ now | dateFormat('HH:mm:ss') }}"));
         }
 
         [Test]
         public void Does_escape_quotes_in_strings()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            Assert.That(context.EvaluateTemplate("{{ \"string \\\"in\\\" quotes\" | raw }}"), Is.EqualTo("string \"in\" quotes"));
-            Assert.That(context.EvaluateTemplate("{{ 'string \\'in\\' quotes' | raw }}"), Is.EqualTo("string 'in' quotes"));
-            Assert.That(context.EvaluateTemplate("{{ `string \\`in\\` quotes` | raw }}"), Is.EqualTo("string `in` quotes"));
+            Assert.That(context.EvaluateScript("{{ \"string \\\"in\\\" quotes\" | raw }}"), Is.EqualTo("string \"in\" quotes"));
+            Assert.That(context.EvaluateScript("{{ 'string \\'in\\' quotes' | raw }}"), Is.EqualTo("string 'in' quotes"));
+            Assert.That(context.EvaluateScript("{{ `string \\`in\\` quotes` | raw }}"), Is.EqualTo("string `in` quotes"));
         }
 
         [Test]
@@ -871,26 +871,26 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         {
             //times / range / itemsOf / repeat / repeating / padLeft / padRight
             
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | times }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ range(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ range(1,10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | itemsOf(1) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | repeat(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 10001 | repeating('text') }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padLeft(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padLeft(10001,'.') }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padRight(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateTemplate("{{ 'text' | padRight(10001,'.') }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | times }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ range(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ range(1,10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | itemsOf(1) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | repeat(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | repeating('text') }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001,'.') }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padRight(10001) }}"));
+            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padRight(10001,'.') }}"));
         }
 
         [Test]
         public void Can_exceute_filters_in_let_binding()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            var output = context.EvaluateTemplate(
+            var output = context.EvaluateScript(
             @"{{ [{name:'Alice',score:50},{name:'Bob',score:40}] | assignTo:scoreRecords }}
 {{ scoreRecords 
    | let({ name: `it['name']`, score: `it['score']`, i:`incr(index)` })
@@ -905,9 +905,9 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_use_map_to_transform_lists_into_dictionaries()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            var output = context.EvaluateTemplate(@"{{ [[1,-1],[2,-2],[3,-3]] | assignTo:coords }}
+            var output = context.EvaluateScript(@"{{ [[1,-1],[2,-2],[3,-3]] | assignTo:coords }}
 {{ coords 
    | map('{ x: it[0], y: it[1] }')
    | scopeVars
@@ -924,22 +924,22 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
         [Test]
         public void Can_control_whats_emitted_on_Unhandled_expression()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 OnUnhandledExpression = var => var.OriginalTextUtf8
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo("{{ unknownArg | lower }}"));
+            Assert.That(context.EvaluateScript("{{ unknownArg | lower }}"), Is.EqualTo("{{ unknownArg | lower }}"));
 
             context.OnUnhandledExpression = var => null;
-            Assert.That(context.EvaluateTemplate("{{ unknownArg | lower }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ unknownArg | lower }}"), Is.EqualTo(""));
         }
 
         [Test]
         public void null_binding_on_existing_object_renders_empty_string()
         {
             var c = new Dictionary<string, object> { {"name", "the name"} };
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -948,9 +948,9 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ c.name }}"), Is.EqualTo("the name"));
-            Assert.That(context.EvaluateTemplate("{{ c.missing }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ it.customer | assignTo: c }}{{ c.missing }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ c.name }}"), Is.EqualTo("the name"));
+            Assert.That(context.EvaluateScript("{{ c.missing }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ it.customer | assignTo: c }}{{ c.missing }}"), Is.EqualTo(""));
         }
 
     }

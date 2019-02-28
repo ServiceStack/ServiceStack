@@ -5,11 +5,11 @@ using NUnit.Framework;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
 using ServiceStack.DataAnnotations;
-using ServiceStack.Templates;
 using ServiceStack.Testing;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
 using ServiceStack.OrmLite.Sqlite;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -28,7 +28,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public string SayHi(string name) => Greeting + name;
     }
     
-    public class FilterExamples : TemplateFilter
+    public class FilterExamples : ScriptMethods
     {
         public IDep Dep { get; set; }
         
@@ -47,17 +47,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var contexts = new[]
             {
-                new TemplateContext
+                new ScriptContext
                 {
                     ScanTypes = {typeof(FilterExamples)}
                 },
-                new TemplateContext
+                new ScriptContext
                 {
                     ScanAssemblies = {typeof(FilterExamples).Assembly}
                 },
-                new TemplateContext
+                new ScriptContext
                 {
-                    TemplateFilters = {new FilterExamples { Dep = new Dep()} }
+                    ScriptMethods = {new FilterExamples { Dep = new Dep()} }
                 },
             };
 
@@ -66,8 +66,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 context.Container.AddSingleton<IDep>(() => new Dep());
 
                 context.Init();
-                Assert.That(context.TemplateFilters.Count, Is.GreaterThanOrEqualTo(2));
-                var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
+                Assert.That(context.ScriptMethods.Count, Is.GreaterThanOrEqualTo(2));
+                var filter = (FilterExamples)context.ScriptMethods.First(x => x is FilterExamples);
                 Assert.That(filter.Pages, Is.EqualTo(context.Pages));
                 Assert.That(filter.Dep, Is.Not.Null);
             }
@@ -83,18 +83,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             using (new AppHost().Init())
             {
-                var context = new TemplatePagesFeature().Init();
+                var context = new SharpPagesFeature().Init();
 
-                Assert.That(context.TemplateFilters.Count, Is.GreaterThanOrEqualTo(2));
-                var filter = (FilterExamples)context.TemplateFilters.First(x => x is FilterExamples);
+                Assert.That(context.ScriptMethods.Count, Is.GreaterThanOrEqualTo(2));
+                var filter = (FilterExamples)context.ScriptMethods.First(x => x is FilterExamples);
                 Assert.That(filter.Pages, Is.EqualTo(context.Pages));
                 Assert.That(filter.AppSettings, Is.Not.Null);
             }
         }
 
-        public TemplateContext CreateContext()
+        public ScriptContext CreateContext()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 ScanAssemblies = {typeof(FilterExamples).Assembly}
             };
@@ -215,7 +215,7 @@ pageArg: 2
         [Test]
         public void Can_disable_disable_filters()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 ExcludeFiltersNamed = { "repeat" }
             }.Init();
@@ -231,9 +231,9 @@ pageArg: 2
         [Test]
         public void Caches_are_kept_isolated_in_each_Context_Filter_instance()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateProtectedFilters() }
+                ScriptMethods = { new ProtectedScripts() }
             }.Init();
             context.VirtualFiles.WriteFile("file.txt", "foo");
             context.VirtualFiles.WriteFile("page.html", "{{ 'file.txt' | includeFileWithCache | assignTo: contents }}" +
@@ -241,12 +241,12 @@ pageArg: 2
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("FOOBARFOOBAR"));
             Assert.That(context.ExpiringCache.Count, Is.EqualTo(1));
-            Assert.That(context.TemplateFilters.First(x => x is TemplateDefaultFilters).InvokerCache.Count, Is.EqualTo(4));
+            Assert.That(context.ScriptMethods.First(x => x is DefaultScripts).InvokerCache.Count, Is.EqualTo(4));
             
             /* TEMP START */
-            var tempContext = new TemplateContext
+            var tempContext = new ScriptContext
             {
-                TemplateFilters = { new TemplateProtectedFilters() }
+                ScriptMethods = { new ProtectedScripts() }
             }.Init();
             tempContext.VirtualFiles.WriteFile("file.txt", "...");
             
@@ -256,29 +256,23 @@ pageArg: 2
             Assert.That(new PageResult(tmpPage).Result, Is.EqualTo("...bar...bar...bar"));
             
             Assert.That(tempContext.ExpiringCache.Count, Is.EqualTo(1));
-            Assert.That(tempContext.TemplateFilters.First(x => x is TemplateDefaultFilters).InvokerCache.Count, Is.EqualTo(3));
+            Assert.That(tempContext.ScriptMethods.First(x => x is DefaultScripts).InvokerCache.Count, Is.EqualTo(3));
             /* TEMP END */
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("FOOBARFOOBAR"));
             Assert.That(context.ExpiringCache.Count, Is.EqualTo(1));
-            Assert.That(context.TemplateFilters.First(x => x is TemplateDefaultFilters).InvokerCache.Count, Is.EqualTo(4));
+            Assert.That(context.ScriptMethods.First(x => x is DefaultScripts).InvokerCache.Count, Is.EqualTo(4));
         }
 
         class Post
         {
             [AutoIncrement]
             public int Id { get; set; }
-            
             public string Title { get; set; }
-            
             public string Content { get; set; }
-            
             public DateTime Created { get; set; }
-            
             public string CreatedBy { get; set; }
-
             public DateTime Modified { get; set; }
-            
             public string ModifiedBy { get; set; }
         }
 
@@ -287,7 +281,7 @@ pageArg: 2
         {
             OrmLiteConfig.BeforeExecFilter = cmd => cmd.GetDebugString().Print();
 
-            var context = new TemplateContext
+            var context = new Templates.TemplateContext
             {
                 TemplateFilters = { new TemplateDbFiltersAsync() },
                 Args = {

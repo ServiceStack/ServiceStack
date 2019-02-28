@@ -29,7 +29,6 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
-using ServiceStack.Templates;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Funq;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -120,22 +120,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_evaluate_TemplateLiterals_with_escape_chars()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate(@"{{ `\\` }}"), 
+            Assert.That(context.EvaluateScript(@"{{ `\\` }}"), 
                 Is.EqualTo(@"\"));
             
-            Assert.That(context.EvaluateTemplate(@"{{ `\\ \n` }}"), 
+            Assert.That(context.EvaluateScript(@"{{ `\\ \n` }}"), 
                 Is.EqualTo("\\ \n"));
             
-            Assert.That(context.EvaluateTemplate(@"{{ `""#key"".replace(/\\s+/g,'')` | raw }}"), 
+            Assert.That(context.EvaluateScript(@"{{ `""#key"".replace(/\\s+/g,'')` | raw }}"), 
                 Is.EqualTo(@"""#key"".replace(/\s+/g,'')"));
         }
 
         [Test]
         public void Does_evaluate_TemplateLiteral()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = 1,
                     ["b"] = 2,
@@ -144,19 +144,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{``}}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{`a`}}"), Is.EqualTo("a"));
-            Assert.That(context.EvaluateTemplate("{{`a${b}`}}"), Is.EqualTo("a2"));
-            Assert.That(context.EvaluateTemplate("{{`a ${b} c`}}"), Is.EqualTo("a 2 c"));
-            Assert.That(context.EvaluateTemplate("{{`a ${b + 1} c ${incr(d + 1)}`}}"), Is.EqualTo("a 3 c 6"));
-            Assert.That(context.EvaluateTemplate("{{`\n`}}"), Is.EqualTo("\n"));
-            Assert.That(context.EvaluateTemplate("{{`a\n${b}`}}"), Is.EqualTo("a\n2"));
-            Assert.That(context.EvaluateTemplate("{{`\"\"` | raw}}"), Is.EqualTo("\"\""));
-            Assert.That(context.EvaluateTemplate("{{`''` | raw}}"), Is.EqualTo("''"));
-            Assert.That(context.EvaluateTemplate("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
-            Assert.That(context.EvaluateTemplate("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
+            Assert.That(context.EvaluateScript("{{``}}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{`a`}}"), Is.EqualTo("a"));
+            Assert.That(context.EvaluateScript("{{`a${b}`}}"), Is.EqualTo("a2"));
+            Assert.That(context.EvaluateScript("{{`a ${b} c`}}"), Is.EqualTo("a 2 c"));
+            Assert.That(context.EvaluateScript("{{`a ${b + 1} c ${incr(d + 1)}`}}"), Is.EqualTo("a 3 c 6"));
+            Assert.That(context.EvaluateScript("{{`\n`}}"), Is.EqualTo("\n"));
+            Assert.That(context.EvaluateScript("{{`a\n${b}`}}"), Is.EqualTo("a\n2"));
+            Assert.That(context.EvaluateScript("{{`\"\"` | raw}}"), Is.EqualTo("\"\""));
+            Assert.That(context.EvaluateScript("{{`''` | raw}}"), Is.EqualTo("''"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` | raw}}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
 
-            Assert.That(context.EvaluateTemplate("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
         }
     }
 }

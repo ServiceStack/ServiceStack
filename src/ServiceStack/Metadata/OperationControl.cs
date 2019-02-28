@@ -4,7 +4,6 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Templates;
 using ServiceStack.Web;
 
 namespace ServiceStack.Metadata
@@ -52,16 +51,16 @@ namespace ServiceStack.Metadata
                 }
 
                 var endpointConfig = MetadataConfig.GetEndpointConfig(ServiceStack.ContentFormat.GetContentFormat(ContentType));
-                var endpontPath = ResponseMessage != null
+                var endpointPath = ResponseMessage != null
                     ? endpointConfig.SyncReplyUri : endpointConfig.AsyncOneWayUri;
-                return $"{endpontPath}/{OperationName}";
+                return $"{endpointPath}/{OperationName}";
             }
         }
 
         public virtual void Render(Stream output)
         {
             var baseUrl = HttpRequest.ResolveAbsoluteUrl("~/");
-            var renderedTemplate = HtmlTemplates.Format(HtmlTemplates.GetOperationControlTemplate(),
+            var renderedTemplate = Templates.HtmlTemplates.Format(Templates.HtmlTemplates.GetOperationControlTemplate(),
                 Title,
                 baseUrl.CombineWith(MetadataConfig.DefaultMetadataUri),
                 ContentFormat.ToUpper(),

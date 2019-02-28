@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Redis;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -10,9 +10,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_pass_filter_by_argument_to_partial() 
         {   
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters =
+                ScriptMethods =
                 {
                     new TemplateRedisFilters { RedisManager = new RedisManagerPool() },
                 }

@@ -3,21 +3,21 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.IO;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateQueryFilterTests
     {
-        private static TemplateContext CreateContext()
+        private static ScriptContext CreateContext()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
-                    [TemplateConstants.DefaultDateFormat] = "yyyy/MM/dd",
+                    [ScriptConstants.DefaultDateFormat] = "yyyy/MM/dd",
                     ["products"] = TemplateQueryData.Products,
                     ["customers"] = TemplateQueryData.Customers,
                     ["comparer"] = new CaseInsensitiveComparer(),
@@ -29,12 +29,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
         [SetUp]
         public void Setup() => context = CreateContext();
-        private TemplateContext context;
+        private ScriptContext context;
 
         [Test]
         public void Linq01() // alternative with clean whitespace sensitive string argument syntax:
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers < 5:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
@@ -55,7 +55,7 @@ Numbers < 5:
         [Test]
         public void Linq02() // alternative with clean whitespace sensitive string argument syntax:
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
     | where: it.UnitsInStock = 0 
@@ -75,7 +75,7 @@ Perth Pasties is sold out!
         [Test]
         public void Linq03()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 In-stock products that cost more than 3.00:
 {{ products 
     | where: it.UnitsInStock > 0 and it.UnitPrice > 3 
@@ -100,7 +100,7 @@ Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
 
             context.VirtualFiles.WriteFile("order.html", "  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat }}\n");
             
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | where: it.Region = 'WA' 
    | assignTo: waCustomers 
@@ -126,7 +126,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         [Test]
         public void Linq05()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Short digits:
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
@@ -147,7 +147,7 @@ The word nine is shorter than its value.
         [Test]
         public void Linq06()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers + 1:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it | incr }\n }}
@@ -171,7 +171,7 @@ Numbers + 1:
         [Test]
         public void Linq07()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Product Names:
 {{ products | select: { it.ProductName | raw }\n }}
 ").NormalizeNewLines(),
@@ -189,7 +189,7 @@ Chef Anton's Gumbo Mix
         [Test]
         public void Linq08()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Number strings:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
@@ -214,7 +214,7 @@ zero
         [Test]
         public void Linq09()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'BlUeBeRrY', 'cHeRry'] | assignTo: words }}
 {{ words | select: Uppercase: { it | upper }, Lowercase: { it | lower }\n }}
 ").NormalizeNewLines(),
@@ -229,7 +229,7 @@ Uppercase: CHERRY, Lowercase: cherry
         [Test]
         public void Linq10()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
@@ -252,7 +252,7 @@ The digit zero is even.
         [Test]
         public void Linq11()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Product Info:
 {{ products | select: { it.ProductName | raw } is in the category { it.Category } and costs { it.UnitPrice | currency } per unit.\n }}
 ").NormalizeNewLines(),
@@ -268,7 +268,7 @@ Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
         [Test]
         public void Linq12()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Number: In-place?
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it }: { it | equals(index) | lower }\n }}
@@ -292,7 +292,7 @@ Number: In-place?
         [Test]
         public void Linq13()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers < 5:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
@@ -315,7 +315,7 @@ zero
         [Test]
         public void Linq14()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
 {{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
 Pairs where a < b:
@@ -350,7 +350,7 @@ Pairs where a < b:
         [Test]
         public void Linq15()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip => it.Orders
    | let => { c: it[0], o: it[1] }
    | where => o.Total < 500
@@ -368,7 +368,7 @@ Pairs where a < b:
         [Test]
         public void Linq15_literal()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.Total < 500
@@ -386,7 +386,7 @@ Pairs where a < b:
         [Test]
         public void Linq16()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.OrderDate >= '1998-01-01' 
@@ -405,7 +405,7 @@ Pairs where a < b:
         [Test]
         public void Linq17()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.Total >= 2000 
@@ -433,7 +433,7 @@ Pairs where a < b:
    | where: o.OrderDate  >= cutoffDate 
    | select: ({ c.CustomerId }, { o.OrderId })\n }}
 ";
-            Assert.That(context.EvaluateTemplate(template.NormalizeNewLines()).NormalizeNewLines(),
+            Assert.That(context.EvaluateScript(template.NormalizeNewLines()).NormalizeNewLines(),
                 
                 Does.StartWith(@"
 (LAZYK, 10482)
@@ -459,7 +459,7 @@ Pairs where a < b:
         [Test]
         public void Linq19()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ cust: 'it', custIndex: 'index' })
    | zip: cust.Orders
@@ -484,7 +484,7 @@ Customer #2 has an order with OrderID 10926
         [Test]
         public void Linq20()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 numbers:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | take(3) | select: { it }\n }}
@@ -501,7 +501,7 @@ First 3 numbers:
         [Test]
         public void Linq21()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
 {{ customers | zip: it.Orders 
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -521,7 +521,7 @@ First 3 orders in WA:
         [Test]
         public void Linq22()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 All but first 4 numbers:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | skip(4) | select: { it }\n }}
@@ -541,7 +541,7 @@ All but first 4 numbers:
         [Test]
         public void Linq23()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 All but first 2 orders in WA:
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -576,7 +576,7 @@ All but first 2 orders in WA:
         [Test]
         public void Linq24()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First numbers less than 6:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
@@ -596,7 +596,7 @@ First numbers less than 6:
         [Test]
         public void Linq25()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First numbers not less than their position:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
@@ -614,7 +614,7 @@ First numbers not less than their position:
         [Test]
         public void Linq26()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 All elements starting from first element divisible by 3:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
@@ -637,7 +637,7 @@ All elements starting from first element divisible by 3:
         [Test]
         public void Linq27()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 All elements starting from first element less than its position:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
@@ -661,7 +661,7 @@ All elements starting from first element less than its position:
         [Test]
         public void Linq28()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 The sorted list of words:
 {{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
@@ -680,7 +680,7 @@ cherry
         [Test]
         public void Linq29()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 The sorted list of words (by length):
 {{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
@@ -699,7 +699,7 @@ blueberry
         [Test]
         public void Linq30()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderBy: it.ProductName 
    | select: { it | jsv }\n }}
@@ -717,7 +717,7 @@ blueberry
         [Test]
         public void Linq31()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy('it', { comparer }) 
@@ -737,7 +737,7 @@ ClOvEr
         [Test]
         public void Linq32()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 The doubles from highest to lowest:
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
@@ -758,7 +758,7 @@ The doubles from highest to lowest:
         [Test]
         public void Linq33()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderByDescending: it.UnitsInStock
    | select: { it | jsv }\n }}
@@ -776,7 +776,7 @@ The doubles from highest to lowest:
         [Test]
         public void Linq34()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderByDescending('it', { comparer }) 
@@ -796,7 +796,7 @@ AbAcUs
         [Test]
         public void Linq35()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Sorted digits:
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
@@ -823,7 +823,7 @@ three
         [Test]
         public void Linq36()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
@@ -844,7 +844,7 @@ BlUeBeRrY
         [Test]
         public void Linq37()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderBy: it.Category
    | thenByDescending: it.UnitPrice
@@ -867,7 +867,7 @@ BlUeBeRrY
         [Test]
         public void Linq38()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
@@ -888,7 +888,7 @@ BlUeBeRrY
         [Test]
         public void Linq39()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 A backwards list of the digits with a second character of 'i':
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
@@ -909,7 +909,7 @@ five
         [Test]
         public void Linq40()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | groupBy: mod(it,5)
@@ -939,7 +939,7 @@ Numbers with a remainder of 2 when divided by 5:
         [Test]
         public void Linq41()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['blueberry', 'chimpanzee', 'abacus', 'banana', 'apple', 'cheese'] | assignTo: words }}
 {{ words 
    | groupBy: it[0]
@@ -963,7 +963,7 @@ apple
         [Test]
         public void Linq42()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', products: 'it' })
@@ -997,7 +997,7 @@ Condiments:
 {{ year }}
 {{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
             
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ 
         companyName: 'it.CompanyName', 
@@ -1054,7 +1054,7 @@ Condiments:
         [Test]
         public void Linq44()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { comparer: anagramComparer })
@@ -1072,7 +1072,7 @@ Condiments:
         [Test]
         public void Linq45()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
@@ -1090,7 +1090,7 @@ Condiments:
         [Test]
         public void Linq46()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Prime factors of 300:
 {{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 {{ factorsOf300 | distinct | select: { it }\n }}
@@ -1107,7 +1107,7 @@ Prime factors of 300:
         [Test]
         public void Linq47()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Category names:
 {{ products 
    | map: it.Category 
@@ -1131,7 +1131,7 @@ Grains/Cereals
         [Test]
         public void Linq48()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Unique numbers from both arrays:
@@ -1156,7 +1156,7 @@ Unique numbers from both arrays:
         [Test]
         public void Linq49()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1201,7 +1201,7 @@ H
         [Test]
         public void Linq50()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Common numbers shared by both arrays:
@@ -1218,7 +1218,7 @@ Common numbers shared by both arrays:
         [Test]
         public void Linq51()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1258,7 +1258,7 @@ O
         [Test]
         public void Linq52()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Numbers in first array but not second array:
@@ -1278,7 +1278,7 @@ Numbers in first array but not second array:
         [Test]
         public void Linq53()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1302,7 +1302,7 @@ Z
         [Test]
         public void Linq54()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 1.7, 2.3, 1.9, 4.1, 2.9 ] | assignTo: doubles }}
 Every other double from highest to lowest:
 {{ doubles 
@@ -1322,7 +1322,7 @@ Every other double from highest to lowest:
         [Test]
         public void Linq55()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 The sorted word list:
 {{ words
@@ -1342,7 +1342,7 @@ cherry
         [Test]
         public void Linq56()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}] | assignTo: scoreRecords }}
 Bob's score: 
 {{ scoreRecords 
@@ -1361,7 +1361,7 @@ Bob = 40
         [Test]
         public void Linq57()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [null, 1.0, 'two', 3, 'four', 5, 'six', 7.0] | assignTo: numbers }}
 Numbers stored as doubles:
 {{ numbers 
@@ -1379,7 +1379,7 @@ Numbers stored as doubles:
         [Test]
         public void Linq58()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products
    | where: it.ProductId = 12 
    | first
@@ -1394,7 +1394,7 @@ Numbers stored as doubles:
         [Test]
         public void Linq59()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ strings
    | first: it[0] = 'o'
@@ -1409,7 +1409,7 @@ A string starting with 'o': one
         [Test]
         public void Linq61()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [] | assignTo: numbers }}
 {{ numbers | first | otherwise('null') }} 
 ").NormalizeNewLines(),
@@ -1422,7 +1422,7 @@ null
         [Test]
         public void Linq62()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Product 789 exists: {{ products 
    | first: it.ProductId = 789 
    | isNotNull }} 
@@ -1436,7 +1436,7 @@ Product 789 exists: False
         [Test]
         public void Linq64()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 ] | assignTo: numbers }} 
 {{ numbers
    | where: it > 5
@@ -1452,7 +1452,7 @@ Second number > 5: 8
         [Test]
         public void Linq65()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ range(100,50)
    | select: The number {it} is { 'even' | if(isEven(it)) | otherwise('odd') }.\n }} 
 ").NormalizeNewLines(),
@@ -1475,7 +1475,7 @@ The number 110 is even.
         [Test]
         public void Linq66()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 10 | itemsOf(7) | select: {it}\n }} 
 ").NormalizeNewLines(),
                 
@@ -1496,7 +1496,7 @@ The number 110 is even.
         [Test]
         public void Linq67()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['believe', 'relief', 'receipt', 'field'] | assignTo: words }}
 {{ words 
    | any: contains(it, 'ei')
@@ -1510,7 +1510,7 @@ There is a word that contains in the list that contains 'ei': true".NormalizeNew
         [Test]
         public void Linq69()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | where: any(it, 'it.UnitsInStock = 0')
@@ -1527,7 +1527,7 @@ Condiments
         [Test]
         public void Linq70()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1, 11, 3, 19, 41, 65, 19] | assignTo: numbers }}
 {{ numbers 
    | all: isOdd(it)
@@ -1541,7 +1541,7 @@ The list contains only odd numbers: true".NormalizeNewLines()));
         [Test]
         public void Linq72()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | where: all(it, 'it.UnitsInStock > 0')
@@ -1558,7 +1558,7 @@ Beverages
         [Test]
         public void Linq73()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 {{ factorsOf300 | distinct | count | select: There are {it} unique factors of 300. }} 
 ").NormalizeNewLines(),
@@ -1570,7 +1570,7 @@ There are 3 unique factors of 300.".NormalizeNewLines()));
         [Test]
         public void Linq74()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | count: isOdd(it) 
@@ -1584,7 +1584,7 @@ There are 5 odd numbers in the list.".NormalizeNewLines()));
         [Test]
         public void Linq76()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ customerId: 'it.CustomerId', ordersCount: 'count(it.Orders)' }) 
    | select: {customerId}, {ordersCount}\n }} 
@@ -1604,7 +1604,7 @@ BLONP, 11
         [Test]
         public void Linq77()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', productCount: 'count(it)' }) 
@@ -1626,7 +1626,7 @@ Grains/Cereals, 7
         [Test]
         public void Linq78()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | sum | select: The sum of the numbers is {it}. }} 
 ").NormalizeNewLines(),
@@ -1638,7 +1638,7 @@ The sum of the numbers is 45.".NormalizeNewLines()));
         [Test]
         public void Linq79()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words
    | sum: it.Length 
@@ -1652,7 +1652,7 @@ There are a total of 20 characters in these words.".NormalizeNewLines()));
         [Test]
         public void Linq80()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', totalUnitsInStock: 'sum(it, `it.UnitsInStock`)' }) 
@@ -1674,7 +1674,7 @@ Grains/Cereals, 308
         [Test]
         public void Linq81()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | min | select: The minimum number is {it}. }} 
 ").NormalizeNewLines(),
@@ -1686,7 +1686,7 @@ The minimum number is 0.".NormalizeNewLines()));
         [Test]
         public void Linq82()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | min: it.Length 
@@ -1700,7 +1700,7 @@ The shortest word is 5 characters long.".NormalizeNewLines()));
         [Test]
         public void Linq83()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', cheapestPrice: 'min(it, `it.UnitPrice`)' }) 
@@ -1722,7 +1722,7 @@ Grains/Cereals, 7
         [Test]
         public void Linq84()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ 
@@ -1757,7 +1757,7 @@ Grains/Cereals
         [Test]
         public void Linq85()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | max | select: The maximum number is {it}. }} 
 ").NormalizeNewLines(),
@@ -1769,7 +1769,7 @@ The maximum number is 9.".NormalizeNewLines()));
         [Test]
         public void Linq86()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | max: it.Length 
@@ -1783,7 +1783,7 @@ The longest word is 9 characters long.".NormalizeNewLines()));
         [Test]
         public void Linq87()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', mostExpensivePrice: 'max(it, `it.UnitPrice`)' }) 
@@ -1805,7 +1805,7 @@ Category: Grains/Cereals, MaximumPrice: 38
         [Test]
         public void Linq88()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ 
@@ -1840,7 +1840,7 @@ Grains/Cereals
         [Test]
         public void Linq89()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | average | select: The average number is {it}. }} 
 ").NormalizeNewLines(),
@@ -1852,7 +1852,7 @@ The average number is 4.5.".NormalizeNewLines()));
         [Test]
         public void Linq90()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | average: it.Length 
@@ -1866,7 +1866,7 @@ The average word length is 6.66666666666667 characters.".NormalizeNewLines()));
         [Test]
         public void Linq91()
         {
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', averagePrice: 'average(it, `it.UnitPrice`)' }) 
@@ -1888,7 +1888,7 @@ Category: Grains/Cereals, AveragePrice: 20.25
         [Test]
         public void Linq92()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
    | reduce((accumulator,it) => accumulator * it)
@@ -1902,7 +1902,7 @@ Total product of all numbers: 88.3308".NormalizeNewLines()));
         [Test]
         public void Linq93()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
    | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
@@ -1917,7 +1917,7 @@ Ending balance: 20".NormalizeNewLines()));
         [Test]
         public void Linq94()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
 {{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
 All numbers from both arrays:
@@ -1944,7 +1944,7 @@ All numbers from both arrays:
         [Test]
         public void Linq95()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | map('it.CompanyName') | assignTo: customerNames }}
 {{ products | map('it.ProductName') | assignTo: productNames }}
 Customer and product names:
@@ -1965,7 +1965,7 @@ Blauer See Delikatessen
         [Test]
         public void Linq96()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsB }}
 {{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
@@ -1978,7 +1978,7 @@ The sequences match: true".NormalizeNewLines()));
         [Test]
         public void linq97()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
 {{ [ 'apple', 'blueberry', 'cherry' ] | assignTo: wordsB }}
 {{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
@@ -1991,7 +1991,7 @@ The sequences match: false".NormalizeNewLines()));
         [Test]
         public void Linq99()
         { 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ 0 | assignTo: i }}
 {{ numbers | let({ i: 'incr(i)' }) | select: v = {index | incr}, i = {i}\n }} 
@@ -2015,7 +2015,7 @@ v = 10, i = 10
         public void Linq100()
         {
             // lowNumbers is assigned the result not a reusable query
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | where: it <= 3

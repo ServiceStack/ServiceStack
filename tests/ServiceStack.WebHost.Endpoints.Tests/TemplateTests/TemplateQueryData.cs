@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -145,5 +146,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 return customers;
             }
         }
+
+        public static Customer GetCustomer(string id) => Customers.FirstOrDefault(x => x.CustomerId == id);
     }
 }

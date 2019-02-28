@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Templates;
 using ServiceStack.IO;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
     public class TemplateQueryFilterAlternativeTests
     {
-        private static TemplateContext CreateContext(Dictionary<string, object> optionalArgs = null)
+        private static ScriptContext CreateContext(Dictionary<string, object> optionalArgs = null)
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 Args =
                 {
@@ -27,7 +27,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = CreateContext();
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers < 5:
 {{ numbers | where('it < 5') | select('{{ it }}\n') }}").NormalizeNewLines(),
 
@@ -46,7 +46,7 @@ Numbers < 5:
         {
             var context = CreateContext();
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
    | where('it.UnitsInStock = 0') 
@@ -69,7 +69,7 @@ Perth Pasties is sold out!
         {
             var context = CreateContext();
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
    | where('product.UnitsInStock = 0', { it: 'product' }) 
@@ -92,7 +92,7 @@ Perth Pasties is sold out!
         {
             var context = CreateContext(new Dictionary<string, object>
             {
-                {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
+                {ScriptConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
@@ -124,7 +124,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         {
             var context = CreateContext(new Dictionary<string, object>
             {
-                {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
+                {ScriptConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
@@ -160,7 +160,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
         {
             var context = CreateContext(new Dictionary<string, object>
             {
-                {TemplateConstants.DefaultDateFormat, "yyyy/MM/dd"}
+                {ScriptConstants.DefaultDateFormat, "yyyy/MM/dd"}
             });
 
             context.VirtualFiles.WriteFile("page.html", @"{{ 
@@ -205,7 +205,7 @@ Customer TRAIH Trail's Head Gourmet Provisioners
                 {"numbersB", new[] {1, 3, 5, 7, 8}},
             });
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Pairs where a < b:
 {{ numbersA | zip(numbersB)
    | where: it[0] < it[1] 
@@ -243,7 +243,7 @@ Pairs where a < b:
                 {"numbersB", new[] {1, 3, 5, 7, 8}},
             });
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 Pairs where a < b:
 {{ numbersA | zip(numbersB)
    | let({ a: 'it[0]', b: 'it[1]' })  
@@ -287,7 +287,7 @@ Pairs where a < b:
    | where: o.OrderDate  >= cutoffDate 
    | select: ({ c.CustomerId }, { o.OrderId })\n }}
 ".NormalizeNewLines();
-            Assert.That(context.EvaluateTemplate(template).NormalizeNewLines(),
+            Assert.That(context.EvaluateScript(template).NormalizeNewLines(),
 
                 Does.StartWith(@"
 (LAZYK, 10482)
@@ -301,7 +301,7 @@ Pairs where a < b:
         {
             var context = CreateContext();
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
 {{ customers | zip: it.Orders 
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -323,7 +323,7 @@ First 3 orders in WA:
         {
             var context = CreateContext();
 
-            Assert.That(context.EvaluateTemplate(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
 {{ customers | zip: it.Orders 
    | let({ c: 'it[0]', o: 'it[1]' })

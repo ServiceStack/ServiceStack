@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -169,7 +169,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_ConditionalExpression()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["varTrue"] = true,
                     ["varFalse"] = false,
@@ -177,10 +177,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ true ? 1 : 0 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ false ? 1 : 0 }}"), Is.EqualTo("0"));
-            Assert.That(context.EvaluateTemplate("{{ (1 < 2) ? 3 + 4 : -5 + (add(6,a) + 7) }}"), Is.EqualTo("7"));
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 > subtract(3, 4) ? 'YES' : 'NO' }}"), Is.EqualTo("YES"));
+            Assert.That(context.EvaluateScript("{{ true ? 1 : 0 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ false ? 1 : 0 }}"), Is.EqualTo("0"));
+            Assert.That(context.EvaluateScript("{{ (1 < 2) ? 3 + 4 : -5 + (add(6,a) + 7) }}"), Is.EqualTo("7"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 > subtract(3, 4) ? 'YES' : 'NO' }}"), Is.EqualTo("YES"));
         }
     }
 }

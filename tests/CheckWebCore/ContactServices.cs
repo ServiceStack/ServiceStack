@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using ServiceStack;
 using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace CheckWebCore
@@ -256,7 +256,7 @@ namespace CheckWebCore
         /// <summary>
         /// Custom filters for App data sources and re-usable UI snippets in Templates
         /// </summary>
-        public class ContactServiceFilters : TemplateFilter
+        public class ContactServiceFilters : ScriptMethods
         {
             internal readonly List<KeyValuePair<string, string>> MenuItems =
                 HostContext.AppSettings.GetKeyValuePairs("Menu");

@@ -14,19 +14,19 @@ namespace ServiceStack.Templates
         public static string GetIndexOperationsTemplate()
         {
             return LoadTemplate("IndexOperations.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
         public static string GetOperationControlTemplate()
         {
             return LoadTemplate("OperationControl.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
         public static string GetMetadataDebugTemplate()
         {
             return LoadTemplate("MetadataDebugTemplate.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", TemplateInfoFilters.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
         public static string GetHtmlFormatTemplate()

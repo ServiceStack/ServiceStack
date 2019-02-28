@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -25,7 +25,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
     
     public class TemplatePagesService : Service
     {
-        public ITemplatePages Pages { get; set; }
+        public ISharpPages Pages { get; set; }
         
         public object AnyHtml(GetProduct request)
         {
@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             public override void Configure(Container container)
             {
-                Plugins.Add(new TemplatePagesFeature());
+                Plugins.Add(new SharpPagesFeature());
             }
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>
@@ -147,8 +147,8 @@ title: We encode < & >
 
         [OneTimeTearDown] public void OneTimeTearDown() => appHost.Dispose();
 
-        TemplatePage CreatePage(IVirtualFile file) =>
-            new TemplatePage(appHost.GetPlugin<TemplatePagesFeature>(), file);
+        SharpPage CreatePage(IVirtualFile file) =>
+            new SharpPage(appHost.GetPlugin<SharpPagesFeature>(), file);
 
         [Test]
         public void Request_for_partial_page_returns_complete_page_with_default_layout()
@@ -322,7 +322,7 @@ title: We encode < & >
         [Test]
         public void Does_limit_file_changes_checks_to_specified_time()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 DebugMode = false,
                 CheckForModifiedPagesAfter = TimeSpan.FromMilliseconds(100)
@@ -380,7 +380,7 @@ title: We encode < & >
         [Test]
         public void Never_checks_for_changes_if_CheckForModifiedPagesAfter_is_null()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 DebugMode = false,
                 CheckForModifiedPagesAfter = null
@@ -424,9 +424,9 @@ title: We encode < & >
         [Test]
         public void Does_find_last_modified_file_in_page()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateProtectedFilters() }
+                ScriptMethods = { new ProtectedScripts() }
             }.Init();
 
             context.VirtualFiles.WriteFile("_layout.html", "layout {{ page }} {{ 'layout-partial' | partial }}  {{ 'layout-file.txt' | includeFile }} ");
@@ -456,7 +456,7 @@ title: We encode < & >
             Assert.That(lastModified, Is.EqualTo(new DateTime(2001, 01, 09)));
         }
 
-        public class AsyncFilters : TemplateFilter
+        public class AsyncFilters : ScriptMethods
         {
             public async Task<object> reverseString(string text)
             {
@@ -470,19 +470,19 @@ title: We encode < & >
         [Test]
         public void Can_call_async_filters()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new AsyncFilters() }
+                ScriptMethods = { new AsyncFilters() }
             }.Init();
 
-            var output = context.EvaluateTemplate("{{ 'foo' | reverseString }}");
+            var output = context.EvaluateScript("{{ 'foo' | reverseString }}");
             Assert.That(output, Is.EqualTo("oof"));
         }
 
         [Test]
         public void Can_ignore_page_template_and_layout_with_Page_args()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
             context.VirtualFiles.WriteFile("_layout.html", "<html><body>{{ page }}</body></html>");
             context.VirtualFiles.WriteFile("page.html", "<pre>{{ 12.34 | currency }}</pre>");
@@ -499,7 +499,7 @@ title: We encode < & >
         [Test]
         public void Can_comment_out_filters()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             context.VirtualFiles.WriteFile("page.html", "<pre>currency: {{* 12.34 | currency *}}, date: {{* now *}}</pre>");
             
             Assert.That(new PageResult(context.GetPage("page")).Result, Is.EqualTo("<pre>currency: , date: </pre>"));
@@ -508,7 +508,7 @@ title: We encode < & >
         [Test]
         public void Does_preverve_content_after_html_comments()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             context.VirtualFiles.WriteFile("_layout.html", "<html><body><h1>{{title}}</h1>{{ page }}</body></html>");
             context.VirtualFiles.WriteFile("page.html", "<!--\ntitle:The Title\n--><p>para</p>");
 
@@ -519,7 +519,7 @@ title: We encode < & >
         [Test]
         public void Can_resolve_hidden_partials_without_prefix()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             context.VirtualFiles.WriteFile("page.html", "Page {{ 'menu' | partial }} {{ '_test-partial' | partial }}");
             context.VirtualFiles.WriteFile("_menu-partial.html", "MENU");
             context.VirtualFiles.WriteFile("_test-partial.html", "TEST");

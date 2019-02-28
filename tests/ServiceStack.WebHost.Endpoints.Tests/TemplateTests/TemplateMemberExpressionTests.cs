@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -115,15 +115,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Does_Evaluate_property_binding_expression()
         {
             var a = new A { Name = "foo", Prop = new A { Name = "bar", Prop = new A { Name = "qux" }}};
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = a
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ a.Name }}"), Is.EqualTo("foo"));
-            Assert.That(context.EvaluateTemplate("{{ a.Prop.Name }}"), Is.EqualTo("bar"));
-            Assert.That(context.EvaluateTemplate("{{ a.Prop.Prop.Name }}"), Is.EqualTo("qux"));
+            Assert.That(context.EvaluateScript("{{ a.Name }}"), Is.EqualTo("foo"));
+            Assert.That(context.EvaluateScript("{{ a.Prop.Name }}"), Is.EqualTo("bar"));
+            Assert.That(context.EvaluateScript("{{ a.Prop.Prop.Name }}"), Is.EqualTo("qux"));
         }
 
         [Test]
@@ -148,7 +148,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 StringIndexer = new StringIndexer(),
                 IntIndexer = new IntIndexer(), 
             };
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = a,
                     ["keyName"] = "key",
@@ -156,44 +156,44 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ a.ArrayStrings[0] }}"), Is.EqualTo("A"));
-            Assert.That(context.EvaluateTemplate("{{ a.ArrayInts[0] }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ a.ListStrings[0] }}"), Is.EqualTo("A"));
-            Assert.That(context.EvaluateTemplate("{{ a.ListInts[0] }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ a.ArrayStrings[0] }}"), Is.EqualTo("A"));
+            Assert.That(context.EvaluateScript("{{ a.ArrayInts[0] }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ a.ListStrings[0] }}"), Is.EqualTo("A"));
+            Assert.That(context.EvaluateScript("{{ a.ListInts[0] }}"), Is.EqualTo("1"));
             
-            Assert.That(context.EvaluateTemplate("{{ a.Array[0].Name }}"), Is.EqualTo("array[0]"));
-            Assert.That(context.EvaluateTemplate("{{ a.List[0].Name }}"), Is.EqualTo("list[0]"));
+            Assert.That(context.EvaluateScript("{{ a.Array[0].Name }}"), Is.EqualTo("array[0]"));
+            Assert.That(context.EvaluateScript("{{ a.List[0].Name }}"), Is.EqualTo("list[0]"));
             
-            Assert.That(context.EvaluateTemplate("{{ a.Enumerable[0].Name }}"), Is.EqualTo("enumerable[0]"));
-            Assert.That(context.EvaluateTemplate("{{ a.StringDictionary['key'].Name }}"), Is.EqualTo("StringDictionary[key]"));
-            Assert.That(context.EvaluateTemplate("{{ a.StringDictionary[keyName].Name }}"), Is.EqualTo("StringDictionary[key]"));
-            Assert.That(context.EvaluateTemplate("{{ a.StringDictionary.key.Name }}"), Is.EqualTo("StringDictionary[key]"));
+            Assert.That(context.EvaluateScript("{{ a.Enumerable[0].Name }}"), Is.EqualTo("enumerable[0]"));
+            Assert.That(context.EvaluateScript("{{ a.StringDictionary['key'].Name }}"), Is.EqualTo("StringDictionary[key]"));
+            Assert.That(context.EvaluateScript("{{ a.StringDictionary[keyName].Name }}"), Is.EqualTo("StringDictionary[key]"));
+            Assert.That(context.EvaluateScript("{{ a.StringDictionary.key.Name }}"), Is.EqualTo("StringDictionary[key]"));
 
-            Assert.That(context.EvaluateTemplate("{{ a[propName].Name }}"), Is.EqualTo("prop"));
-            Assert.That(context.EvaluateTemplate("{{ a['Prop'].Name }}"), Is.EqualTo("prop"));
+            Assert.That(context.EvaluateScript("{{ a[propName].Name }}"), Is.EqualTo("prop"));
+            Assert.That(context.EvaluateScript("{{ a['Prop'].Name }}"), Is.EqualTo("prop"));
 
-            Assert.That(context.EvaluateTemplate("{{ a.Indexer.idx.Name }}"), Is.EqualTo("idx"));
-            Assert.That(context.EvaluateTemplate("{{ a.Indexer['idx'].Name }}"), Is.EqualTo("idx"));
+            Assert.That(context.EvaluateScript("{{ a.Indexer.idx.Name }}"), Is.EqualTo("idx"));
+            Assert.That(context.EvaluateScript("{{ a.Indexer['idx'].Name }}"), Is.EqualTo("idx"));
             
-            Assert.That(context.EvaluateTemplate("{{ a.ArrayStrings[1+1] }}"), Is.EqualTo("C"));
-            Assert.That(context.EvaluateTemplate("{{ a.ListStrings[1+1] }}"), Is.EqualTo("C"));
-            Assert.That(context.EvaluateTemplate("{{ a['Pr' + 'op'].Name }}"), Is.EqualTo("prop"));
+            Assert.That(context.EvaluateScript("{{ a.ArrayStrings[1+1] }}"), Is.EqualTo("C"));
+            Assert.That(context.EvaluateScript("{{ a.ListStrings[1+1] }}"), Is.EqualTo("C"));
+            Assert.That(context.EvaluateScript("{{ a['Pr' + 'op'].Name }}"), Is.EqualTo("prop"));
         }
 
         [Test]
         public void Can_evaluate_MemberExpression_of_Method()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{ toDateTime('2001-01-01').Day }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ toDateTime('2001-01-01').Day }}"), Is.EqualTo("1"));
         }
 
         [Test]
         public void Can_evaluate_MemberExpression_of_Array()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{ [toDateTime('2001-01-01')][0].Day }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ [toDateTime('2001-01-01')][0].Day }}"), Is.EqualTo("1"));
         }
 
         [Test]
@@ -202,14 +202,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var a = new A {
                 StringDictionary = new Dictionary<string, object>()
             };
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = a,
                     ["keyName"] = "key",
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate("{{ a.StringDictionary['notfound'] }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ a.StringDictionary['notfound'] }}"), Is.EqualTo(""));
         }
 
         [Test]
@@ -218,7 +218,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var a = new A {
                 StringDictionary = new Dictionary<string, object>()
             };
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = a,
                     ["keyName"] = "key",
@@ -226,7 +226,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }.Init();
 
             Assert.Throws<BindingExpressionException>(() => 
-                context.EvaluateTemplate("{{ a.notfound }}"));
+                context.EvaluateScript("{{ a.notfound }}"));
         }
     }
 }

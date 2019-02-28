@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
 using ServiceStack.Host;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -193,8 +192,8 @@ namespace ServiceStack.Metadata
                         : "";
             }
 
-            var renderedTemplate = HtmlTemplates.Format(
-                HtmlTemplates.GetIndexOperationsTemplate(),
+            var renderedTemplate = Templates.HtmlTemplates.Format(
+                Templates.HtmlTemplates.GetIndexOperationsTemplate(),
                 this.Title,
                 this.XsdServiceTypesIndex,
                 operationsPart,

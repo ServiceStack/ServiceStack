@@ -7,7 +7,7 @@ namespace ServiceStack
     /// <summary>
     /// 
     /// </summary>
-    public partial class TemplateServiceStackFilters 
+    public partial class ServiceStackScripts 
     {
         IVirtualFiles VirtualFiles => HostContext.VirtualFiles;
         

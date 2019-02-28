@@ -38,7 +38,7 @@ namespace CheckMvc
 
             SetConfig(new HostConfig { DebugMode = true });
             
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new SharpPagesFeature());
             
             Plugins.Add(new OpenApiFeature());
         }

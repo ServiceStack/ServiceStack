@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -46,9 +46,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Unique_Template_Should_Be_Cached_Only_Once()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateBlocks = { new TemplateEvalBlock() },
+                ScriptBlocks = { new EvalScriptBlock() },
                 Args = {
                     ["templates"] = new List<string> {
                         "1. {{income ?? 1000}} - {{expenses}}",
@@ -60,7 +60,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 
             10000.Times(() =>
             {
-                var result = context.EvaluateTemplate(@"{{#each templates}}{{index}}{{/each}}");
+                var result = context.EvaluateScript(@"{{#each templates}}{{index}}{{/each}}");
                 Assert.That(result, Is.EqualTo("012"));
             });
 

@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.Serialization;
-using ServiceStack.Templates;
 using ServiceStack.Web;
 
 namespace ServiceStack.Formats
@@ -100,7 +99,7 @@ namespace ServiceStack.Formats
                 var now = DateTime.UtcNow;
                 var requestName = req.OperationName ?? dto.GetType().GetOperationName();
 
-                html = HtmlTemplates.GetHtmlFormatTemplate()
+                html = Templates.HtmlTemplates.GetHtmlFormatTemplate()
                     .Replace("${Dto}", json)
                     .Replace("${Title}", string.Format(TitleFormat, requestName, now))
                     .Replace("${MvcIncludes}", MiniProfiler.Profiler.RenderIncludes().ToString())

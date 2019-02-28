@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
@@ -17,7 +17,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             Option4 = 1 << 2,
         }
 
-        public class EnumFilter : TemplateFilter
+        public class EnumFilter : ScriptMethods
         {
             public bool hasOptionsFlag(Options source, Options value) => source.HasFlag(value);
         }
@@ -25,9 +25,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_access_flag_enums()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = {new EnumFilter()},
+                ScriptMethods = {new EnumFilter()},
                 Args =
                 {
                     ["options0"] = Options.None,
@@ -38,17 +38,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
 
-            Assert.That(context.EvaluateTemplate(@"{{ hasOptionsFlag(options3, 'Option1') }}"),
+            Assert.That(context.EvaluateScript(@"{{ hasOptionsFlag(options3, 'Option1') }}"),
                 Is.EqualTo("True"));
 
-            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option1') }},{{ hasFlag(options3, 1) }},{{ hasFlag(options3, options1) }}"),
+            Assert.That(context.EvaluateScript(@"{{ hasFlag(options3, 'Option1') }},{{ hasFlag(options3, 1) }},{{ hasFlag(options3, options1) }}"),
                 Is.EqualTo("True,True,True"));
-            Assert.That(context.EvaluateTemplate(@"{{ hasFlag(options3, 'Option4') }},{{ hasFlag(options3, 4) }},{{ hasFlag(options3, options4) }}"),
+            Assert.That(context.EvaluateScript(@"{{ hasFlag(options3, 'Option4') }},{{ hasFlag(options3, 4) }},{{ hasFlag(options3, options4) }}"),
                 Is.EqualTo("False,False,False"));
             
-            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options1, 'Option1') }},{{ isEnum(options1, 1) }},{{ isEnum(options1, options1) }}"),
+            Assert.That(context.EvaluateScript(@"{{ isEnum(options1, 'Option1') }},{{ isEnum(options1, 1) }},{{ isEnum(options1, options1) }}"),
                 Is.EqualTo("True,True,True"));
-            Assert.That(context.EvaluateTemplate(@"{{ isEnum(options3, 'Option1') }},{{ isEnum(options3, 1) }},{{ isEnum(options3, options1) }}"),
+            Assert.That(context.EvaluateScript(@"{{ isEnum(options3, 'Option1') }},{{ isEnum(options3, 1) }},{{ isEnum(options3, options1) }}"),
                 Is.EqualTo("False,False,False"));
         }
     }

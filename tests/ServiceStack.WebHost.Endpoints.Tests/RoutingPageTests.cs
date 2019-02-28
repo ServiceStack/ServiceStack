@@ -20,7 +20,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 SetConfig(new HostConfig {
                     DebugMode = true, // need this to disable caching
                 });
-                Plugins.Add(new TemplatePagesFeature());
+                Plugins.Add(new SharpPagesFeature());
             }
         }
 

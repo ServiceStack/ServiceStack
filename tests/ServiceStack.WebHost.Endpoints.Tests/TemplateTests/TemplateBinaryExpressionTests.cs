@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
-using ServiceStack.Templates;
 using ServiceStack.Text;
 using System.Collections.Generic;
+using ServiceStack.Script;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
 {
@@ -216,64 +216,64 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_evaluate_templates_with_expressions()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateTemplate("{{ 1 - 2 }}"), Is.EqualTo("-1"));
-            Assert.That(context.EvaluateTemplate("{{ 1 * 2 }}"), Is.EqualTo("2"));
-            Assert.That(context.EvaluateTemplate("{{ 1 / 2 }}"), Is.EqualTo("0.5"));
-            Assert.That(context.EvaluateTemplate("{{ 1 / 2.0 }}"), Is.EqualTo("0.5"));
-            Assert.That(context.EvaluateTemplate("{{ 1 & 2 }}"), Is.EqualTo("0"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ 1 - 2 }}"), Is.EqualTo("-1"));
+            Assert.That(context.EvaluateScript("{{ 1 * 2 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateScript("{{ 1 / 2 }}"), Is.EqualTo("0.5"));
+            Assert.That(context.EvaluateScript("{{ 1 / 2.0 }}"), Is.EqualTo("0.5"));
+            Assert.That(context.EvaluateScript("{{ 1 & 2 }}"), Is.EqualTo("0"));
             //Needs to be in brackets so it's not considered as different filter expressions
-            Assert.That(context.EvaluateTemplate("{{ (1 | 2) }}"), Is.EqualTo("3")); 
-            Assert.That(context.EvaluateTemplate("{{ 1 ^ 2 }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateTemplate("{{ 1 << 2 }}"), Is.EqualTo("4"));
-            Assert.That(context.EvaluateTemplate("{{ 1 >> 2 }}"), Is.EqualTo("0"));
+            Assert.That(context.EvaluateScript("{{ (1 | 2) }}"), Is.EqualTo("3")); 
+            Assert.That(context.EvaluateScript("{{ 1 ^ 2 }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ 1 << 2 }}"), Is.EqualTo("4"));
+            Assert.That(context.EvaluateScript("{{ 1 >> 2 }}"), Is.EqualTo("0"));
             
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 + 3 }}"), Is.EqualTo("6"));
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 + 3 + 4 }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 + 3 }}"), Is.EqualTo("6"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 + 3 + 4 }}"), Is.EqualTo("10"));
             
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 }}"), Is.EqualTo("7"));
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 / 5 }}"), Is.EqualTo("6.2"));
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 - 4 / 5.0 }}"), Is.EqualTo("6.2"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 * 3 }}"), Is.EqualTo("7"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 * 3 - 4 }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 * 3 - 4 / 5 }}"), Is.EqualTo("6.2"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 * 3 - 4 / 5.0 }}"), Is.EqualTo("6.2"));
             
-            Assert.That(context.EvaluateTemplate("{{ (1 + 2) }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateTemplate("{{ (1 + 2) * 3 }}"), Is.EqualTo("9"));
-            Assert.That(context.EvaluateTemplate("{{ (1 + 2) * (3 - 4) }}"), Is.EqualTo("-3"));
-            Assert.That(context.EvaluateTemplate("{{ (1 + 2) * ((3 - 4) / 5.0) }}"), Is.EqualTo("-0.6"));
+            Assert.That(context.EvaluateScript("{{ (1 + 2) }}"), Is.EqualTo("3"));
+            Assert.That(context.EvaluateScript("{{ (1 + 2) * 3 }}"), Is.EqualTo("9"));
+            Assert.That(context.EvaluateScript("{{ (1 + 2) * (3 - 4) }}"), Is.EqualTo("-3"));
+            Assert.That(context.EvaluateScript("{{ (1 + 2) * ((3 - 4) / 5.0) }}"), Is.EqualTo("-0.6"));
         }
 
         [Test]
         public void Does_evaluate_binary_expressions_with_filters()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            Assert.That(context.EvaluateTemplate("{{ 1 + 2 * 3 | add(3) }}"), Is.EqualTo("10"));
-            Assert.That(context.EvaluateTemplate("{{ (1 | 2) | add(3) }}"), Is.EqualTo("6"));
+            Assert.That(context.EvaluateScript("{{ 1 + 2 * 3 | add(3) }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ (1 | 2) | add(3) }}"), Is.EqualTo("6"));
 
-            Assert.That(context.EvaluateTemplate("{{ add(1 + 2 * 3, 4) | add(-5) }}"), Is.EqualTo("6"));
+            Assert.That(context.EvaluateScript("{{ add(1 + 2 * 3, 4) | add(-5) }}"), Is.EqualTo("6"));
 
-            Assert.That(context.EvaluateTemplate("{{ [1+2,1+2*3] | sum }}"), Is.EqualTo("10"));
-            Assert.That(context.EvaluateTemplate("{{ {a:1+2*3} | get('a') }}"), Is.EqualTo("7"));
+            Assert.That(context.EvaluateScript("{{ [1+2,1+2*3] | sum }}"), Is.EqualTo("10"));
+            Assert.That(context.EvaluateScript("{{ {a:1+2*3} | get('a') }}"), Is.EqualTo("7"));
         }
 
         [Test]
         public void Does_evaluate_binary_and_logical_expressions()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["one"] = 1,
                     ["ten"] = 10,                    
                 },
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ [1 + 2 * 3 > one && 1 * 2 < ten] | get(0) }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{ [1 + 2 * 3 > one && 1 * 2 < ten] | get(0) }}"), Is.EqualTo("True"));
         }
 
-        private static TemplateContext CreateContext()
+        private static ScriptContext CreateContext()
         {
-            var context = new TemplateContext {
+            var context = new ScriptContext {
                 Args = {
                     ["a"] = null,
                     ["b"] = 2,
@@ -294,24 +294,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = CreateContext();
             
-            Assert.That(context.EvaluateTemplate("{{ null ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ a ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ '' ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ empty ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ false ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ f ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ 0 ?? 1 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ zero ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ null ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ a ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ '' ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ empty ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ false ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ f ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ 0 ?? 1 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ zero ?? 1 }}"), Is.EqualTo("1"));
 
-            Assert.That(context.EvaluateTemplate("{{ true ?? 1 }}"), Is.EqualTo("True"));
-            Assert.That(context.EvaluateTemplate("{{ t ?? 1 }}"), Is.EqualTo("True"));
-            Assert.That(context.EvaluateTemplate("{{ b ?? 1 }}"), Is.EqualTo("2"));
-            Assert.That(context.EvaluateTemplate("{{ 2 ?? 1 }}"), Is.EqualTo("2"));
-            Assert.That(context.EvaluateTemplate("{{ 1 ?? 2 }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ one ?? 2 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ true ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{ t ?? 1 }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{ b ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateScript("{{ 2 ?? 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateScript("{{ 1 ?? 2 }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ one ?? 2 }}"), Is.EqualTo("1"));
 
-            Assert.That(context.EvaluateTemplate("{{ 0 ?? 2 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
-            Assert.That(context.EvaluateTemplate("{{ 2 ?? 0 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ 0 ?? 2 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ 2 ?? 0 > 1 ? 'Y' : 'N' }}"), Is.EqualTo("Y"));
         }
 
         [Test]
@@ -319,33 +319,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         {
             var context = CreateContext();
             
-            Assert.That(context.EvaluateTemplate("{{#if null}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if 0}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if ''}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if false}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if null}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if 0}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if ''}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if false}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
 
-            Assert.That(context.EvaluateTemplate("{{#if a && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if a && t}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true && a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if unknown && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true && unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if empty && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true && empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if a && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if a && t}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true && a}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if unknown && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true && unknown}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if empty && true}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true && empty}}f{{else}}t{{/if}}"), Is.EqualTo("t"));
 
-            Assert.That(context.EvaluateTemplate("{{#if a || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true || a}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if unknown || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true || unknown}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if empty || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if true || empty}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if a || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true || a}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if unknown || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true || unknown}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if empty || true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if true || empty}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
             
-            Assert.That(context.EvaluateTemplate("{{#if {} && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if obj && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if [] && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
-            Assert.That(context.EvaluateTemplate("{{#if array && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if {} && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if obj && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if [] && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
+            Assert.That(context.EvaluateScript("{{#if array && true}}t{{else}}f{{/if}}"), Is.EqualTo("t"));
         }
 
     }

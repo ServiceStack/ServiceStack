@@ -7,7 +7,7 @@ using System.Threading;
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -57,7 +57,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     UseCamelCase = false, //normalize with .NET Core
                 });
 
-                Plugins.Add(new TemplatePagesFeature
+                Plugins.Add(new SharpPagesFeature
                 {
                     Args =
                     {
@@ -84,13 +84,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Does_not_include_protected_filters_by_default()
         {
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
             context.VirtualFiles.WriteFile("index.txt", "file contents");
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
                 Is.EqualTo(""));
 
-            var feature = new TemplatePagesFeature().Init();
+            var feature = new SharpPagesFeature().Init();
             feature.VirtualFiles.WriteFile("index.txt", "file contents");
 
             Assert.That(new PageResult(context.OneTimePage("{{ 'index.txt' | includeFile }}")).Result, 
@@ -100,9 +100,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_protected_includeFiles_in_context_or_PageResult()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateProtectedFilters() }
+                ScriptMethods = { new ProtectedScripts() }
             }.Init();
             context.VirtualFiles.WriteFile("index.txt", "file contents");
             
@@ -113,9 +113,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_use_transformers_on_block_filter_outputs()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateProtectedFilters() },
+                ScriptMethods = { new ProtectedScripts() },
                 FilterTransformers =
                 {
                     ["markdown"] = MarkdownPageFormat.TransformToHtml
@@ -131,7 +131,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         public void Can_use_includeUrl()
         {
             string urlContents;
-            var context = appHost.GetPlugin<TemplatePagesFeature>();
+            var context = appHost.GetPlugin<SharpPagesFeature>();
 
             urlContents = new PageResult(context.OneTimePage(
                 "{{ baseUrl | addPath('includeUrl-echo') | addQueryString({ id:1, name:'foo'}) | includeUrl | htmlencode }}")).Result;
@@ -177,7 +177,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Filter_includeFile_does_load_modiifed_contents()
         {
-            var context = appHost.GetPlugin<TemplatePagesFeature>();
+            var context = appHost.GetPlugin<SharpPagesFeature>();
             context.VirtualFiles.WriteFile("page.txt", "Original Content");
             
             var includeFilePage = context.OneTimePage("{{ 'page.txt' | includeFile }}");
@@ -192,7 +192,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_cache_contents_with_includeUrlWithCache_and_includeFileWithCache()
         {
-            var context = appHost.GetPlugin<TemplatePagesFeature>();
+            var context = appHost.GetPlugin<SharpPagesFeature>();
             context.VirtualFiles.WriteFile("page.txt", "Original Content");
 
             var urlWithDefaultCache = context.OneTimePage("{{ baseUrl | addPath('includeUrl-time') | includeUrlWithCache }}");
@@ -220,10 +220,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
         [Test]
         public void Can_exclude_individual_filters()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
                 ExcludeFiltersNamed = { "includeUrl" },
-                TemplateFilters = { new TemplateProtectedFilters() },
+                ScriptMethods = { new ProtectedScripts() },
             }.Init();
             
             context.VirtualFiles.WriteFile("file.txt", "File Contents");
@@ -246,9 +246,9 @@ includFile = File Contents
             var hold = Thread.CurrentThread.CurrentCulture; 
             Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
             
-            var context = new TemplateContext().Init();
+            var context = new ScriptContext().Init();
 
-            var output = context.EvaluateTemplate("{{ 12.345 | currency }}");
+            var output = context.EvaluateScript("{{ 12.345 | currency }}");
             Assert.That(output, Is.EqualTo("$12.35"));
 
             Thread.CurrentThread.CurrentCulture = hold;

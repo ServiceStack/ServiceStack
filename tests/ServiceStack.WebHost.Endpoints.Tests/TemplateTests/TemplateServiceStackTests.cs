@@ -8,7 +8,7 @@ using ServiceStack.Formats;
 using ServiceStack.Host;
 using ServiceStack.IO;
 using ServiceStack.OrmLite;
-using ServiceStack.Templates;
+using ServiceStack.Script;
 using ServiceStack.Testing;
 using ServiceStack.Text;
 
@@ -72,17 +72,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                     db.InsertAll(TemplateQueryData.Customers);
                 }
 
-                Plugins.Add(new TemplatePagesFeature
+                Plugins.Add(new SharpPagesFeature
                 {
                     ApiPath = "/api",
                     Args =
                     {
                         ["products"] = TemplateQueryData.Products,
                     },
-                    TemplateFilters =
+                    ScriptMethods =
                     {
                         new TemplateDbFiltersAsync(),
-                        new TemplateAutoQueryFilters(),
+                        new AutoQueryScripts(),
                     },
                 });
                 
@@ -395,12 +395,12 @@ CONSH: Consolidated Holdings, UK
         [Test]
         public void Can_use_ifAuthenticated_filters_when_authenticated()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateServiceStackFilters() },
+                ScriptMethods = { new ServiceStackScripts() },
                 Args =
                 {
-                    [TemplateConstants.Request] = new MockHttpRequest
+                    [ScriptConstants.Request] = new MockHttpRequest
                     {
                         Items =
                         {
@@ -410,26 +410,26 @@ CONSH: Consolidated Holdings, UK
                 }
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ isAuthenticated }}"), Is.EqualTo("True"));
-            Assert.That(context.EvaluateTemplate("{{ ifAuthenticated | show: Y }}"), Is.EqualTo("Y"));
-            Assert.That(context.EvaluateTemplate("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo("1"));
-            Assert.That(context.EvaluateTemplate("{{ 1 | endIfAuthenticated }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ isAuthenticated }}"), Is.EqualTo("True"));
+            Assert.That(context.EvaluateScript("{{ ifAuthenticated | show: Y }}"), Is.EqualTo("Y"));
+            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ 1 | endIfAuthenticated }}"), Is.EqualTo(""));
         }
 
         [Test]
         public void Can_use_ifAuthenticated_filters_when_not_authenticated()
         {
-            var context = new TemplateContext
+            var context = new ScriptContext
             {
-                TemplateFilters = { new TemplateServiceStackFilters() },
+                ScriptMethods = { new ServiceStackScripts() },
             }.Init();
             
-            Assert.That(context.EvaluateTemplate("{{ isAuthenticated }}"), Is.EqualTo("False"));
-            Assert.That(context.EvaluateTemplate("{{ ifAuthenticated | show: Y }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo("N"));
-            Assert.That(context.EvaluateTemplate("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo(""));
-            Assert.That(context.EvaluateTemplate("{{ 1 | endIfAuthenticated }}"), Is.EqualTo("1"));
+            Assert.That(context.EvaluateScript("{{ isAuthenticated }}"), Is.EqualTo("False"));
+            Assert.That(context.EvaluateScript("{{ ifAuthenticated | show: Y }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ ifNotAuthenticated | show: N }}"), Is.EqualTo("N"));
+            Assert.That(context.EvaluateScript("{{ 1 | onlyIfAuthenticated }}"), Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ 1 | endIfAuthenticated }}"), Is.EqualTo("1"));
         }
     }
 }
