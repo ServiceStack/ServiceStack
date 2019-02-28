@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             }.Init();
 
             Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}
-<var>{{ error.Message }}</var>"),
+<var>{{ error.Message }}</var>", out _),
                 Is.EqualTo("<var>in filter</var>"));
         }
 
@@ -60,11 +60,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
             var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw({ assignError: 'myError' }) }}
-<var>{{ myError.Message }}</var>"),
+<var>{{ myError.Message }}</var>", out _),
                 Is.EqualTo("<var>in filter</var>"));
 
             Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw({ assignError: 'myError' }) }}
-<var>{{ myError.Message }}</var><pre>{{ lastErrorStackTrace }}</pre>"),
+<var>{{ myError.Message }}</var><pre>{{ lastErrorStackTrace }}</pre>", out _),
+                Does.StartWith("<var>in filter</var><pre>   at "));
+        }
+
+        [Test]
+        public void Can_capture_and_suppress_exception_using_catchError()
+        {
+            var context = new ScriptContext().Init();
+
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw({ catchError: 'myError' }) }}
+<var>{{ myError.Message }}</var>"),
+                Is.EqualTo("<var>in filter</var>"));
+
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw({ catchError: 'myError' }) }}
+<var>{{ myError.Message }}</var><pre>{{ myErrorStackTrace }}</pre>"),
                 Does.StartWith("<var>in filter</var><pre>   at "));
         }
 
@@ -76,13 +90,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 AssignExceptionsTo = "error"
             }.Init();
 
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ lastError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ lastError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ lastErrorMessage | format('<h1>FAIL! {0}</h1>') | raw }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}{{ lastErrorMessage | format('<h1>FAIL! {0}</h1>') | raw }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}<h1>{{ lastError | ifExists | map: it.Message }}</h1>"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throw }}<h1>{{ lastError | ifExists | map: it.Message }}</h1>", out _),
                 Is.EqualTo("<h1>in filter</h1>"));
             
 
@@ -106,22 +120,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 AssignExceptionsTo = "error"
             }.Init();
 
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true) }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true) }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true) }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true) }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter') }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter') }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter') }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter') }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
 
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false) }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false) }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo(""));
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false) }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false) }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo(""));
-            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter') }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter') }}{{ ifError | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo(""));
-            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter') }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter') }}{{ error | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo(""));
         }
 
@@ -133,14 +147,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 AssignExceptionsTo = "error"
             }.Init();
 
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true, { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true, { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo("<h1>FAIL! in filter</h1>"));
 
-            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false, { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false, { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
                 Is.EqualTo(""));
-            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}", out _),
+                Is.EqualTo(""));
+        }
+
+        [Test]
+        public void Can_throw_on_conditions_and_suppresses_with_catchError()
+        {
+            var context = new ScriptContext
+            {
+                AssignExceptionsTo = "error"
+            }.Init();
+
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(true, { catchError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+                Is.EqualTo("<h1>FAIL! in filter</h1>"));
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrow('in filter', { catchError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+                Is.EqualTo("<h1>FAIL! in filter</h1>"));
+
+            Assert.That(context.EvaluateScript(@"{{ 'in filter' | throwIf(false, { catchError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
+                Is.EqualTo(""));
+            Assert.That(context.EvaluateScript(@"{{ false | ifThrow('in filter', { catchError: 'ex' }) }}{{ ex | ifExists | select: <h1>FAIL! { it.Message }</h1> }}"),
                 Is.EqualTo(""));
         }
 
@@ -152,17 +185,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 AssignExceptionsTo = "error"
             }.Init();
 
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}")
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)
                 .NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}")
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)
                 .NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
 
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}")
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)
                 .NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
-            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}")
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)
                 .NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
         }

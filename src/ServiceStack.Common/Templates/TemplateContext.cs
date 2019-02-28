@@ -98,11 +98,15 @@ namespace ServiceStack.Templates
 
     public static class TemplateContextExtensions
     {
-        public static string EvaluateTemplate(this TemplateContext context, string template,
-            Dictionary<string, object> args = null) => context.EvaluateScript(template, args);
+        public static string EvaluateTemplate(this TemplateContext context, string script,
+            Dictionary<string, object> args = null) => context.EvaluateScript(script, args, out _);
 
-        public static Task<string> EvaluateTemplateAsync(this TemplateContext context, string template,
-            Dictionary<string, object> args = null) => context.EvaluateScriptAsync(template, args);
+        public static Task<string> EvaluateTemplateAsync(this TemplateContext context, string script, Dictionary<string, object> args = null)
+        {
+            var pageResult = new PageResult(context.OneTimePage(script));
+            args.Each((x,y) => pageResult.Args[x] = y);
+            return pageResult.RenderToStringAsync();
+        }
     }
     
     [Obsolete("Use ScriptConstants")]
