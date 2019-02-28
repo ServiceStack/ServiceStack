@@ -53,7 +53,7 @@ namespace ServiceStack.Script
         [HandleUnknownValue] public Exception lastError(ScriptScopeContext scope) => scope.PageResult.LastFilterError;
         [HandleUnknownValue] public string lastErrorMessage(ScriptScopeContext scope) => scope.PageResult.LastFilterError?.Message;
         [HandleUnknownValue] public string lastErrorStackTrace(ScriptScopeContext scope) => scope.PageResult.LastFilterStackTrace?.Length > 0
-            ? scope.PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join("\n")
+            ? scope.PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join(Environment.NewLine)
             : null;
 
         public object ensureAllArgsNotNull(ScriptScopeContext scope, object args) => ensureAllArgsNotNull(scope, args, null);
