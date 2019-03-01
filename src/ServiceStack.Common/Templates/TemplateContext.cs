@@ -11,6 +11,15 @@ using ServiceStack.Script;
 namespace ServiceStack.Script
 {
     public partial class SharpPages : ISharpPages, Templates.ITemplatePages {}
+    
+    public partial class ScriptContext
+    {
+        [Obsolete("Use DefaultScripts")]
+        public DefaultScripts DefaultFilters => DefaultScripts;
+
+        [Obsolete("Use ProtectedScripts")]
+        public ProtectedScripts ProtectedFilters => ProtectedScripts;
+    }
 }
 
 namespace ServiceStack.Templates
@@ -84,7 +93,9 @@ namespace ServiceStack.Templates
         }
     }
     
+    [Obsolete("Use ISharpPages")]
     public interface ITemplatePages : ISharpPages {}
+    [Obsolete("Use IScriptPlugin")]
     public interface ITemplatePlugin : IScriptPlugin { }
 
     [Obsolete("Use SharpPage")]

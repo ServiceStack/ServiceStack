@@ -13,7 +13,7 @@ using ServiceStack.Web;
 namespace ServiceStack
 {
     // ReSharper disable InconsistentNaming
-    
+    [Obsolete("Use InfoScripts")]
     public class TemplateInfoFilters : InfoScripts {}
     
     public class InfoScripts : ScriptMethods
