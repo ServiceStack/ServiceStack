@@ -13,6 +13,9 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
+    [Obsolete("Use ServiceStackScripts")]
+    public class TemplateServiceStackFilters : ServiceStackScripts {}
+    
     public partial class ServiceStackScripts : ScriptMethods
     {
         private ServiceStackHost appHost => HostContext.AppHost;

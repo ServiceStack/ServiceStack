@@ -12,7 +12,7 @@ using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
-    public class ScriptContext : IDisposable
+    public partial class ScriptContext : IDisposable
     {
         public List<PageFormat> PageFormats { get; set; } = new List<PageFormat>();
         
