@@ -1589,12 +1589,12 @@ dir-file: dir/dir-file.txt
             
             var pageResult = new PageResult(context.OneTimePage("A{{ 1 | return }}B"));
             Assert.That(pageResult.Result, Is.EqualTo("A"));
-            Assert.That(pageResult.Args[ScriptConstants.Return], Is.EqualTo(1));
+            Assert.That(pageResult.ReturnValue.Result, Is.EqualTo(1));
             
             pageResult = new PageResult(context.OneTimePage("A{{ 1 | return({ a: 1 }) }}B"));
             Assert.That(pageResult.Result, Is.EqualTo("A"));
-            Assert.That(pageResult.Args[ScriptConstants.Return], Is.EqualTo(1));
-            Assert.That(pageResult.Args[ScriptConstants.ReturnArgs], Is.EquivalentTo(new Dictionary<string,object>
+            Assert.That(pageResult.ReturnValue.Result, Is.EqualTo(1));
+            Assert.That(pageResult.ReturnValue.Args, Is.EquivalentTo(new Dictionary<string,object>
             {
                 { "a", 1 }
             }));

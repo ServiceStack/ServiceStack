@@ -1361,17 +1361,16 @@ namespace ServiceStack.Script
     {
         [HandleUnknownValue] public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
         [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
-        [HandleUnknownValue] public object @default(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        [HandleUnknownValue] public object @default(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
 
         public object @throw(ScriptScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(ScriptScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
         
         [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope) => @return(scope, null, null);
         [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope, object returnValue) => @return(scope, returnValue, null);
-        [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope, object returnValue, object returnArgs)
+        [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs)
         {
-            scope.PageResult.Args[ScriptConstants.Return] = returnValue;
-            scope.PageResult.Args[ScriptConstants.ReturnArgs] = returnArgs;
+            scope.PageResult.ReturnValue = new ReturnValue(returnValue, returnArgs); 
             scope.PageResult.HaltExecution = true;
             return StopExecution.Value;
         }

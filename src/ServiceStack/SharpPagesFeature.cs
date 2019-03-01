@@ -651,9 +651,10 @@ namespace ServiceStack
 
             var discardedOutput = await pageResult.RenderToStringAsync();
 
-            if (!pageResult.Args.TryGetValue(ScriptConstants.Return, out var response))
+            if (pageResult.ReturnValue == null)
                 throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
 
+            var response = pageResult.ReturnValue.Result;
             if (response is Task<object> responseTask)
                 response = await responseTask;
             if (response is IRawString raw)
@@ -667,9 +668,9 @@ namespace ServiceStack
         {
             if (!(response is IHttpResult httpResult))
             {
-                if (pageResult.Args.TryGetValue(ScriptConstants.ReturnArgs, out var oArgs) && oArgs is Dictionary<string, object> returnArgs)
+                if (pageResult.ReturnValue?.Args != null)
                 {
-                    httpResult = ServiceStackScripts.ToHttpResult(returnArgs);
+                    httpResult = ServiceStackScripts.ToHttpResult(pageResult.ReturnValue.Args);
                     httpResult.Response = response;
                 }
                 else
@@ -917,7 +918,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                     {
                         await pageResult.WriteToAsync(ms);
 
-                        if (pageResult.Args.TryGetValue(ScriptConstants.Return, out var response))
+                        var response = pageResult.ReturnValue?.Result; 
+                        if (response != null)
                         {
                             if (response is Task<object> responseTask)
                                 response = await responseTask;

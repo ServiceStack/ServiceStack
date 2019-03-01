@@ -16,8 +16,6 @@ namespace ServiceStack.Script
         public const string DefaultTableClassName = nameof(ScriptConfig.DefaultTableClassName);
         public const string DefaultErrorClassName = nameof(ScriptConfig.DefaultErrorClassName);
 
-        public const string Return = "return";
-        public const string ReturnArgs = "returnArgs";
         public const string Debug = "debug";
         public const string AssignError = "assignError";
         public const string CatchError = "catchError"; //assigns error and continues

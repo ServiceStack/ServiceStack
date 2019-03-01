@@ -126,8 +126,6 @@ namespace ServiceStack.Templates
         public const string DefaultTableClassName = ScriptConstants.DefaultTableClassName;
         public const string DefaultErrorClassName = ScriptConstants.DefaultErrorClassName;
 
-        public const string Return = ScriptConstants.Return;
-        public const string ReturnArgs = ScriptConstants.ReturnArgs;
         public const string Debug = ScriptConstants.Debug;
         public const string AssignError = ScriptConstants.AssignError;
         public const string CatchError = ScriptConstants.CatchError; //assigns error and continues
