@@ -143,6 +143,11 @@ namespace ServiceStack.Script
         /// </summary>
         public bool DisableBuffering { get; set; }
         
+        /// <summary>
+        /// The Return value of the page (if any)
+        /// </summary>
+        public ReturnValue ReturnValue { get; set; }
+        
         private readonly Stack<string> stackTrace = new Stack<string>();
 
         private PageResult(PageFormat format)

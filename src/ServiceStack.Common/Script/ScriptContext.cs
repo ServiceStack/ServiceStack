@@ -436,6 +436,18 @@ namespace ServiceStack.Script
         }
     }
 
+    public class ReturnValue
+    {
+        public object Result { get; }
+        public Dictionary<string, object> Args { get; }
+
+        public ReturnValue(object result, Dictionary<string, object> args)
+        {
+            Result = result;
+            Args = args;
+        }
+    }
+
     public static class ScriptContextExtensions
     {
         public static string EvaluateScript(this ScriptContext context, string script, out PageResultException error) => 
@@ -470,7 +482,7 @@ namespace ServiceStack.Script
         }
 
         public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            context.Evaluate(script, args) is T t ? t : default;
+            context.Evaluate(script, args).ConvertTo<T>();
         
         public static object Evaluate(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
@@ -479,13 +491,11 @@ namespace ServiceStack.Script
             var output = pageResult.Result;
             if (pageResult.LastFilterError != null)
                 throw new PageResultException(pageResult);
-            return pageResult.Args.TryGetValue(ScriptConstants.Return, out var oReturn) 
-                ? oReturn 
-                : null;
+            return pageResult.ReturnValue?.Result;
         }
 
         public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
-            (await context.EvaluateAsync(script, args)) is T t ? t : default;
+            (await context.EvaluateAsync(script, args)).ConvertTo<T>();
         
         public static async Task<object> EvaluateAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
@@ -494,9 +504,7 @@ namespace ServiceStack.Script
             var output = await pageResult.RenderToStringAsync();
             if (pageResult.LastFilterError != null)
                 throw new PageResultException(pageResult);
-            return pageResult.Args.TryGetValue(ScriptConstants.Return, out var oReturn) 
-                ? oReturn 
-                : null;
+            return pageResult.ReturnValue?.Result;
         }
     }
 }
