@@ -205,12 +205,12 @@ namespace ServiceStack.Script
 
         public SharpCodePage GetCodePage(string virtualPath)
         {
-            var santizePath = virtualPath.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
+            var sanitizePath = virtualPath.Replace('\\','/').TrimPrefixes("/").LastLeftPart('.');
 
-            var isIndexPage = santizePath == string.Empty || santizePath.EndsWith("/");
+            var isIndexPage = sanitizePath == string.Empty || sanitizePath.EndsWith("/");
             var lookupPath = !isIndexPage
-                ? santizePath
-                : santizePath + IndexPage;
+                ? sanitizePath
+                : sanitizePath + IndexPage;
             
             if (!CodePages.TryGetValue(lookupPath, out Type type)) 
                 return null;
