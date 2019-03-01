@@ -175,7 +175,6 @@ namespace ServiceStack.Templates
     [Obsolete("Use ScriptConfig")]
     public static class TemplateConfig
     {
-        public static bool HideUnknownExpressions => ScriptConfig.HideUnknownExpressions;
         public static HashSet<string> RemoveNewLineAfterFiltersNamed => ScriptConfig.RemoveNewLineAfterFiltersNamed;
         public static HashSet<string> OnlyEvaluateFiltersWhenSkippingPageFilterExecution =>
             ScriptConfig.OnlyEvaluateFiltersWhenSkippingPageFilterExecution;

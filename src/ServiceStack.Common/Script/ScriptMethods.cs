@@ -10,9 +10,6 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Script
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public class HandleUnknownValueAttribute : AttributeBase {}
-
     public enum InvokerType
     {
         Filter,
@@ -95,14 +92,6 @@ namespace ServiceStack.Script
             type + "::" + methodName.ToLower() + "`" + argsCount;
 
         private MethodInfo GetFilterMethod(string cacheKey) => lookupIndex.TryGetValue(cacheKey, out MethodInfo method) ? method : null;
-
-        public virtual bool HandlesUnknownValue(string name, int argsCount)
-        {
-            var method = GetFilterMethod(CacheKey(InvokerType.Filter, name, argsCount))
-                ?? GetFilterMethod(CacheKey(InvokerType.ContextFilter, name, argsCount + 1))
-                ?? GetFilterMethod(CacheKey(InvokerType.ContextBlock, name, argsCount + 1));
-            return method != null && method.HasAttribute<HandleUnknownValueAttribute>();
-        }
 
         public List<MethodInfo> QueryFilters(string filterName)
         {

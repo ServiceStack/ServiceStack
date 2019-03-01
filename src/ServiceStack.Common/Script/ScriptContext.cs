@@ -102,7 +102,7 @@ namespace ServiceStack.Script
         /// </summary>
         public bool SkipExecutingFiltersIfError { get; set; }
 
-        public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; } = DefaultOnUnhandledExpression;
+        public Func<PageVariableFragment, ReadOnlyMemory<byte>> OnUnhandledExpression { get; set; }
 
         public SharpPage GetPage(string virtualPath)
         {
@@ -426,9 +426,6 @@ namespace ServiceStack.Script
 
             return fn;
         }
-
-        protected static ReadOnlyMemory<byte> DefaultOnUnhandledExpression(PageVariableFragment var) => 
-            ScriptConfig.HideUnknownExpressions ? null : var.OriginalTextUtf8;
 
         public void Dispose()
         {

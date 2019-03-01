@@ -36,23 +36,23 @@ namespace ServiceStack.Script
             return StopExecution.Value;
         }
 
-        [HandleUnknownValue] public object endIfError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfError(ScriptScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
+        public object endIfError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object endIfError(ScriptScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
 
-        [HandleUnknownValue] public object ifNoError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNoError(ScriptScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
+        public object ifNoError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifNoError(ScriptScopeContext scope, object value) => scope.PageResult.LastFilterError != null ? StopExecution.Value : value;
 
-        [HandleUnknownValue] public object ifError(ScriptScopeContext scope, object ignoreTarget) => ifError(scope);
-        [HandleUnknownValue] public object ifError(ScriptScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
-        [HandleUnknownValue] public object ifDebug(ScriptScopeContext scope, object ignoreTarget) => ifDebug(scope);
-        [HandleUnknownValue] public object ifDebug(ScriptScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifError(ScriptScopeContext scope, object ignoreTarget) => ifError(scope);
+        public object ifError(ScriptScopeContext scope) => (object) scope.PageResult.LastFilterError ?? StopExecution.Value;
+        public object ifDebug(ScriptScopeContext scope, object ignoreTarget) => ifDebug(scope);
+        public object ifDebug(ScriptScopeContext scope) => scope.Context.DebugMode ? (object)IgnoreResult.Value : StopExecution.Value;
         public object debug(ScriptScopeContext scope) => scope.Context.DebugMode;
 
         public bool hasError(ScriptScopeContext scope) => scope.PageResult.LastFilterError != null;
         
-        [HandleUnknownValue] public Exception lastError(ScriptScopeContext scope) => scope.PageResult.LastFilterError;
-        [HandleUnknownValue] public string lastErrorMessage(ScriptScopeContext scope) => scope.PageResult.LastFilterError?.Message;
-        [HandleUnknownValue] public string lastErrorStackTrace(ScriptScopeContext scope) => scope.PageResult.LastFilterStackTrace?.Length > 0
+        public Exception lastError(ScriptScopeContext scope) => scope.PageResult.LastFilterError;
+        public string lastErrorMessage(ScriptScopeContext scope) => scope.PageResult.LastFilterError?.Message;
+        public string lastErrorStackTrace(ScriptScopeContext scope) => scope.PageResult.LastFilterStackTrace?.Length > 0
             ? scope.PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join(Environment.NewLine)
             : null;
 

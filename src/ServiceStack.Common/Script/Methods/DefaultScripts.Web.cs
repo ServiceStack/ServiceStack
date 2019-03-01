@@ -31,16 +31,16 @@ namespace ServiceStack.Script
         public bool isHttpDelete(ScriptScopeContext scope) => req(scope)?.Verb == HttpMethods.Delete;
         public bool isHttpPatch(ScriptScopeContext scope) => req(scope)?.Verb == HttpMethods.Patch;
 
-        [HandleUnknownValue] public object ifHttpGet(ScriptScopeContext scope, object ignoreTarget) => ifHttpGet(scope);
-        [HandleUnknownValue] public object ifHttpGet(ScriptScopeContext scope) => isHttpGet(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object ifHttpPost(ScriptScopeContext scope, object ignoreTarget) => ifHttpPost(scope);
-        [HandleUnknownValue] public object ifHttpPost(ScriptScopeContext scope) => isHttpPost(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object ifHttpPut(ScriptScopeContext scope, object ignoreTarget) => ifHttpPut(scope);
-        [HandleUnknownValue] public object ifHttpPut(ScriptScopeContext scope) => isHttpPut(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object ifHttpDelete(ScriptScopeContext scope, object ignoreTarget) => ifHttpDelete(scope);
-        [HandleUnknownValue] public object ifHttpDelete(ScriptScopeContext scope) => isHttpDelete(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object ifHttpPatch(ScriptScopeContext scope, object ignoreTarget) => ifHttpPatch(scope);
-        [HandleUnknownValue] public object ifHttpPatch(ScriptScopeContext scope) => isHttpPatch(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifHttpGet(ScriptScopeContext scope, object ignoreTarget) => ifHttpGet(scope);
+        public object ifHttpGet(ScriptScopeContext scope) => isHttpGet(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifHttpPost(ScriptScopeContext scope, object ignoreTarget) => ifHttpPost(scope);
+        public object ifHttpPost(ScriptScopeContext scope) => isHttpPost(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifHttpPut(ScriptScopeContext scope, object ignoreTarget) => ifHttpPut(scope);
+        public object ifHttpPut(ScriptScopeContext scope) => isHttpPut(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifHttpDelete(ScriptScopeContext scope, object ignoreTarget) => ifHttpDelete(scope);
+        public object ifHttpDelete(ScriptScopeContext scope) => isHttpDelete(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifHttpPatch(ScriptScopeContext scope, object ignoreTarget) => ifHttpPatch(scope);
+        public object ifHttpPatch(ScriptScopeContext scope) => isHttpPatch(scope) ? (object)IgnoreResult.Value : StopExecution.Value;
 
         public object importRequestParams(ScriptScopeContext scope)
         {

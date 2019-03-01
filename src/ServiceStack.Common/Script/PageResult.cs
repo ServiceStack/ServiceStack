@@ -569,9 +569,12 @@ namespace ServiceStack.Script
                 }
                 else
                 {
-                    var bytes = Context.OnUnhandledExpression(var);
-                    if (bytes.Length > 0)
-                        await scope.OutputStream.WriteAsync(bytes, token);
+                    if (Context.OnUnhandledExpression != null)
+                    {
+                        var bytes = Context.OnUnhandledExpression(var);
+                        if (bytes.Length > 0)
+                            await scope.OutputStream.WriteAsync(bytes, token);
+                    }
                 }
             }
 
@@ -610,7 +613,9 @@ namespace ServiceStack.Script
             var value = var.Evaluate(scope);
             if (value == null)
             {
-                var handlesUnknownValue = HandlesUnknownValue(var);
+                var handlesUnknownValue = Context.OnUnhandledExpression == null &&
+                    var.FilterExpressions.Length > 0;
+                
                 if (!handlesUnknownValue)
                 {
                     if (var.Expression is JsMemberExpression memberExpr)
@@ -677,7 +682,7 @@ namespace ServiceStack.Script
                             return null; // ignore on server (i.e. assume it's on client) if first filter is missing  
 
                         var errorMsg = CreateMissingFilterErrorMessage(filterName);
-                        throw new Exception(errorMsg);
+                        throw new NotSupportedException(errorMsg);
                     }
 
                     if (value is Task<object> valueObjectTask)
@@ -846,23 +851,12 @@ namespace ServiceStack.Script
             return value;
         }
 
-        private bool HandlesUnknownValue(PageVariableFragment var)
-        {
-            if (var.FilterExpressions.Length > 0)
-            {
-                var filterName = var.FilterExpressions[0].Name;
-                var filterArgs = 1 + var.FilterExpressions[0].Arguments.Length;
-                return ScriptMethods.Any(x => x.HandlesUnknownValue(filterName, filterArgs)) 
-                    || Context.ScriptMethods.Any(x => x.HandlesUnknownValue(filterName, filterArgs));
-            }
-            return false;
-        }
-
         internal string CreateMissingFilterErrorMessage(string filterName)
         {
-            var registeredFilters = ScriptMethods.Union(Context.ScriptMethods).ToList();
-            var similarNonMatchingFilters = registeredFilters
+            var registeredMethods = ScriptMethods.Union(Context.ScriptMethods).ToList();
+            var similarNonMatchingFilters = registeredMethods
                 .SelectMany(x => x.QueryFilters(filterName))
+                .Where(x => !(Context.ExcludeFiltersNamed.Contains(x.Name) || ExcludeFiltersNamed.Contains(x.Name)))
                 .ToList();
 
             var sb = StringBuilderCache.Allocate()
@@ -911,7 +905,7 @@ namespace ServiceStack.Script
             }
             else
             {
-                var registeredFilterNames = registeredFilters.Map(x => $"'{x.GetType().Name}'").Join(", ");
+                var registeredFilterNames = registeredMethods.Map(x => $"'{x.GetType().Name}'").Join(", ");
                 sb.Append($"No similar filters named '{filterName}' were found in registered filter(s): {registeredFilterNames}.");
             }
 
