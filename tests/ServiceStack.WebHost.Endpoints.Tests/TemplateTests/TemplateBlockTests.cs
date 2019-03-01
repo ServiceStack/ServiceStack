@@ -784,9 +784,9 @@ partialArg in page scope is <b>from page</b>"));
                 }
             }.Init();
 
-            Assert.Throws<NotSupportedException>(() => 
+            Assert.Throws<ScriptException>(() => 
                 context.EvaluateScript("{{#eval}}{{evalContent}}{{/eval}}"));
-            Assert.Throws<NotSupportedException>(() => 
+            Assert.Throws<ScriptException>(() => 
                 context.EvaluateScript("{{ evalContent | evalTemplate}}"));
 
             Assert.That(context.EvaluateScript("{{#eval {use:{plugins:'MarkdownScriptPlugin'} }}{{evalContent}}{{/eval}}"), 

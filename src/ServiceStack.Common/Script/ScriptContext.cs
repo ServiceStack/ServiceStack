@@ -448,37 +448,81 @@ namespace ServiceStack.Script
         }
     }
 
-    public static class ScriptContextExtensions
+    public static class ScriptContextUtils
     {
-        public static string EvaluateScript(this ScriptContext context, string script, out PageResultException error) => 
+        public static string ErrorNoReturn = "Script did not return a value. Use EvaluateScript() to return script output instead";
+        
+        private static string GetPageResultOutput(PageResult pageResult)
+        {
+            try
+            {
+                var output = pageResult.Result;
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+                return output;
+            }
+            catch (ScriptException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                pageResult.LastFilterError = e;
+                throw new ScriptException(pageResult);
+            }
+        }
+
+        private static async Task<string> GetPageResultOutputAsync(PageResult pageResult)
+        {
+            try
+            {
+                var output = await pageResult.RenderToStringAsync();
+                if (pageResult.LastFilterError != null)
+                    throw new ScriptException(pageResult);
+                return output;
+            }
+            catch (ScriptException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                pageResult.LastFilterError = e;
+                throw new ScriptException(pageResult);
+            }
+        }
+
+        public static string EvaluateScript(this ScriptContext context, string script, out ScriptException error) => 
             context.EvaluateScript(script, null, out error);
-        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out PageResultException error)
+        public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args, out ScriptException error)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var output = pageResult.Result;
-            error = pageResult.LastFilterError != null ? new PageResultException(pageResult) : null;
-            return output;
+            try { 
+                var output = pageResult.Result;
+                error = pageResult.LastFilterError != null ? new ScriptException(pageResult) : null;
+                return output;
+            }
+            catch (Exception e)
+            {
+                pageResult.LastFilterError = e;
+                error = new ScriptException(pageResult);
+                return null;
+            }
         }
         
         public static string EvaluateScript(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var output = pageResult.Result;
-            if (pageResult.LastFilterError != null)
-                throw new PageResultException(pageResult);
-            return output;
+            return GetPageResultOutput(pageResult);
         }
         
         public static async Task<string> EvaluateScriptAsync(this ScriptContext context, string script, Dictionary<string, object> args=null)
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var output = await pageResult.RenderToStringAsync();
-            if (pageResult.LastFilterError != null)
-                throw new PageResultException(pageResult);
-            return output;
+            return await GetPageResultOutputAsync(pageResult);
         }
 
         public static T Evaluate<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
@@ -488,10 +532,10 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var output = pageResult.Result;
-            if (pageResult.LastFilterError != null)
-                throw new PageResultException(pageResult);
-            return pageResult.ReturnValue?.Result;
+            var discard = GetPageResultOutput(pageResult);
+            if (pageResult.ReturnValue == null)
+                throw new NotSupportedException(ErrorNoReturn);
+            return pageResult.ReturnValue.Result;
         }
 
         public static async Task<T> EvaluateAsync<T>(this ScriptContext context, string script, Dictionary<string, object> args = null) =>
@@ -501,10 +545,10 @@ namespace ServiceStack.Script
         {
             var pageResult = new PageResult(context.OneTimePage(script));
             args.Each((x,y) => pageResult.Args[x] = y);
-            var output = await pageResult.RenderToStringAsync();
-            if (pageResult.LastFilterError != null)
-                throw new PageResultException(pageResult);
-            return pageResult.ReturnValue?.Result;
+            var discard = await GetPageResultOutputAsync(pageResult);
+            if (pageResult.ReturnValue == null)
+                throw new NotSupportedException(ErrorNoReturn);
+            return pageResult.ReturnValue.Result;
         }
     }
 }

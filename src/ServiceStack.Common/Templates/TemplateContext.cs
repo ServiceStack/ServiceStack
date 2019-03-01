@@ -98,14 +98,27 @@ namespace ServiceStack.Templates
 
     public static class TemplateContextExtensions
     {
-        public static string EvaluateTemplate(this TemplateContext context, string script,
-            Dictionary<string, object> args = null) => context.EvaluateScript(script, args, out _);
-
-        public static Task<string> EvaluateTemplateAsync(this TemplateContext context, string script, Dictionary<string, object> args = null)
+        public static string EvaluateTemplate(this TemplateContext context, string script, Dictionary<string, object> args = null)
         {
-            var pageResult = new PageResult(context.OneTimePage(script));
-            args.Each((x,y) => pageResult.Args[x] = y);
-            return pageResult.RenderToStringAsync();
+            var result = context.EvaluateScript(script, args, out var ex);
+            if (ex?.InnerException is NotSupportedException)
+                throw ex.InnerException;
+            return result;
+        }
+
+        public static async Task<string> EvaluateTemplateAsync(this TemplateContext context, string script, Dictionary<string, object> args = null)
+        {
+            try
+            {
+                var result = await context.EvaluateScriptAsync(script, args);
+                return result;
+            }
+            catch (ScriptException ex)
+            {
+                if (ex.InnerException is NotSupportedException)
+                    throw ex.InnerException;
+                throw;
+            }
         }
     }
     
