@@ -995,7 +995,7 @@ Condiments:
 {{ year }}
 {{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
             
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ 
         companyName: 'it.CompanyName', 
@@ -1012,9 +1012,9 @@ Condiments:
      })
    | select: \n# { companyName | raw }{ yearGroups | scopeVars | selectPartial('month-orders') } 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 # Alfreds Futterkiste
 1997
 	8
@@ -1034,7 +1034,56 @@ Condiments:
 1996
 	9
 		[{OrderId:10308,OrderDate:1996-09-18,Total:88.8}]
-")));
+".NormalizeNewLines()));
+        }
+
+        [Test]
+        public void Linq43_alt()
+        { 
+            context.VirtualFiles.WriteFile("month-orders.html", @"
+{{ year }}
+{{ monthGroups | scopeVars | select: { indent }{ month }\n{ 2 | indents }{ orders | jsv }\n }}");
+            
+            Assert.That(context.EvaluateScript(@"
+{{ customers 
+   | map => { 
+        companyName: it.CompanyName, 
+        yearGroups: map (
+            groupBy(it.Orders, it => it.OrderDate.Year),
+            yg => { 
+                year: yg.Key,
+                monthGroups: map (
+                    groupBy(yg, o => o.OrderDate.Month),
+                    mg => { month: mg.Key, orders: mg }
+                ) 
+            }
+        ) 
+     }
+   | select: \n# { it.companyName | raw }{ it.yearGroups | scopeVars | selectPartial('month-orders') } 
+}}
+").NormalizeNewLines(),
+                
+                Does.StartWith(@"
+# Alfreds Futterkiste
+1997
+	8
+		[{OrderId:10643,OrderDate:1997-08-25,Total:814.5}]
+	10
+		[{OrderId:10692,OrderDate:1997-10-03,Total:878},{OrderId:10702,OrderDate:1997-10-13,Total:330}]
+
+1998
+	1
+		[{OrderId:10835,OrderDate:1998-01-15,Total:845.8}]
+	3
+		[{OrderId:10952,OrderDate:1998-03-16,Total:471.2}]
+	4
+		[{OrderId:11011,OrderDate:1998-04-09,Total:933.5}]
+
+# Ana Trujillo Emparedados y helados
+1996
+	9
+		[{OrderId:10308,OrderDate:1996-09-18,Total:88.8}]
+".NormalizeNewLines()));
         }
  
         public class AnagramEqualityComparer : IEqualityComparer<string> 

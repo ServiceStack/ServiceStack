@@ -18,19 +18,33 @@ namespace ServiceStack.Script
     {
         public override string Name => "capture";
 
+        internal struct Tuple
+        {
+            internal string name;
+            internal Dictionary<string, object> scopeArgs;
+            internal bool appendTo;
+            internal Tuple(string name, Dictionary<string, object> scopeArgs, bool appendTo)
+            {
+                this.name = name;
+                this.scopeArgs = scopeArgs;
+                this.appendTo = appendTo;
+            }
+        }
+
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
-            var (name, scopeArgs, appendTo) = Parse(scope, block);
+            var tuple = Parse(scope, block);
+            var name = tuple.name;
 
             using (var ms = MemoryStreamFactory.GetStream())
             {
-                var useScope = scope.ScopeWith(scopeArgs, ms);
+                var useScope = scope.ScopeWith(tuple.scopeArgs, ms);
 
                 await WriteBodyAsync(useScope, block, token);
 
                 var capturedOutput = ms.ReadToEnd();
 
-                if (appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
+                if (tuple.appendTo && scope.PageResult.Args.TryGetValue(name, out var oVar)
                              && oVar is string existingString)
                 {
                     scope.PageResult.Args[name] = existingString + capturedOutput;
@@ -42,7 +56,7 @@ namespace ServiceStack.Script
         }
 
         //Extract usages of Span outside of async method 
-        private (string name, Dictionary<string, object> scopeArgs, bool appendTo) Parse(ScriptScopeContext scope, PageBlockFragment block)
+        private Tuple Parse(ScriptScopeContext scope, PageBlockFragment block)
         {
             if (block.Argument.IsNullOrWhiteSpace())
                 throw new NotSupportedException("'capture' block is missing name of variable to assign captured output to");
@@ -68,7 +82,7 @@ namespace ServiceStack.Script
             if (argValue != null && scopeArgs == null)
                 throw new NotSupportedException("Any 'capture' argument must be an Object Dictionary");
 
-            return (name.ToString(), scopeArgs, appendTo);
+            return new Tuple(name.ToString(), scopeArgs, appendTo);
         }
     }
 }
