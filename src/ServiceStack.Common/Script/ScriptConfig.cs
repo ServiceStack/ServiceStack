@@ -6,8 +6,6 @@ namespace ServiceStack.Script
 {
     public static class ScriptConfig
     {
-        public static bool HideUnknownExpressions { get; set; } = true;
-        
         public static HashSet<string> RemoveNewLineAfterFiltersNamed { get; set; } = new HashSet<string>
         {
             "assignTo",

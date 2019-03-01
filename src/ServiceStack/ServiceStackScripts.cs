@@ -172,16 +172,16 @@ namespace ServiceStack
             return IgnoreResult.Value;
         }
 
-        [HandleUnknownValue] public object ifAuthenticated(ScriptScopeContext scope) => isAuthenticated(scope) 
+        public object ifAuthenticated(ScriptScopeContext scope) => isAuthenticated(scope) 
             ? (object)IgnoreResult.Value : StopExecution.Value;
        
-        [HandleUnknownValue] public object ifNotAuthenticated(ScriptScopeContext scope) => !isAuthenticated(scope) 
+        public object ifNotAuthenticated(ScriptScopeContext scope) => !isAuthenticated(scope) 
             ? (object)IgnoreResult.Value : StopExecution.Value;
         
-        [HandleUnknownValue] public object onlyIfAuthenticated(ScriptScopeContext scope, object value) => isAuthenticated(scope) 
+        public object onlyIfAuthenticated(ScriptScopeContext scope, object value) => isAuthenticated(scope) 
             ? value : StopExecution.Value;
 
-        [HandleUnknownValue] public object endIfAuthenticated(ScriptScopeContext scope, object value) => !isAuthenticated(scope) 
+        public object endIfAuthenticated(ScriptScopeContext scope, object value) => !isAuthenticated(scope) 
             ? value : StopExecution.Value;
 
         public IHttpResult getHttpResult(ScriptScopeContext scope, object options) => httpResult(scope, options);

@@ -226,13 +226,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             context.VirtualFiles.WriteFile("page.html", @"
 includeUrl = {{ baseUrl | addPath('includeUrl-time') | includeUrl }}
-includFile = {{ 'file.txt' | includeFile }}
+includeFile = {{ 'file.txt' | includeFile }}
 ");
-            
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page")).Result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
-includeUrl = 
-includFile = File Contents
-")));
+
+            Assert.Throws<NotSupportedException>(() => {
+                var ignore = new PageResult(context.GetPage("page")).Result; });
         }
 
         #if NET45

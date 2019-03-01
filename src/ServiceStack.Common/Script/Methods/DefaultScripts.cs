@@ -68,40 +68,39 @@ namespace ServiceStack.Script
             return false;
         }
 
-        [HandleUnknownValue] public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
-        [HandleUnknownValue] public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
+        public object iif(object test, object ifTrue, object ifFalse) => isTrue(test) ? ifTrue : ifFalse;
+        public object when(object returnTarget, object test) => @if(returnTarget, test);     //alias
 
-        [HandleUnknownValue] public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
-        [HandleUnknownValue] public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
+        public object ifNot(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object unless(object returnTarget, object test) => ifNot(returnTarget, test); //alias
 
-        [HandleUnknownValue] public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
+        public object otherwise(object returnTaget, object elseReturn) => returnTaget ?? elseReturn;
 
-        [HandleUnknownValue] public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
-        [HandleUnknownValue] public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
-        [HandleUnknownValue] public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
-        [HandleUnknownValue] public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
+        public object ifFalsy(object returnTarget, object test) => isFalsy(test) ? returnTarget : null;
+        public object ifTruthy(object returnTarget, object test) => !isFalsy(test) ? returnTarget : null;
+        public object falsy(object test, object returnIfFalsy) => isFalsy(test) ? returnIfFalsy : null;
+        public object truthy(object test, object returnIfTruthy) => !isFalsy(test) ? returnIfTruthy : null;
 
-        [HandleUnknownValue] public bool isNull(object test) => ViewUtils.IsNull(test);
-        [HandleUnknownValue] public bool isNotNull(object test) => !isNull(test);
-        [HandleUnknownValue] public bool exists(object test) => !isNull(test);
+        public bool isNull(object test) => ViewUtils.IsNull(test);
+        public bool isNotNull(object test) => !isNull(test);
+        public bool exists(object test) => !isNull(test);
 
-        [HandleUnknownValue] public bool isZero(double value) => value.Equals(0d);
-        [HandleUnknownValue] public bool isPositive(double value) => value > 0;
-        [HandleUnknownValue] public bool isNegative(double value) => value < 0;
-        [HandleUnknownValue] public bool isNaN(double value) => double.IsNaN(value);
-        [HandleUnknownValue] public bool isInfinity(double value) => double.IsInfinity(value);
+        public bool isZero(double value) => value.Equals(0d);
+        public bool isPositive(double value) => value > 0;
+        public bool isNegative(double value) => value < 0;
+        public bool isNaN(double value) => double.IsNaN(value);
+        public bool isInfinity(double value) => double.IsInfinity(value);
 
-        [HandleUnknownValue] public object ifExists(object target) => target;
-        [HandleUnknownValue] public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
-        [HandleUnknownValue] public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
-        [HandleUnknownValue] public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
-        [HandleUnknownValue] public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
-        [HandleUnknownValue] public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
-        [HandleUnknownValue] public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
-        [HandleUnknownValue] public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
-        [HandleUnknownValue] public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
+        public object ifExists(object target) => target;
+        public object ifExists(object returnTarget, object test) => test != null ? returnTarget : null;
+        public object ifNotExists(object returnTarget, object target) => target == null ? returnTarget : null;
+        public object ifNo(object returnTarget, object target) => target == null ? returnTarget : null;
+        public object ifNotEmpty(object target) => isEmpty(target) ? null : target;
+        public object ifNotEmpty(object returnTarget, object test) => isEmpty(test) ? null : returnTarget;
+        public object ifEmpty(object returnTarget, object test) => isEmpty(test) ? returnTarget : null;
+        public object ifTrue(object returnTarget, object test) => isTrue(test) ? returnTarget : null;
+        public object ifFalse(object returnTarget, object test) => !isTrue(test) ? returnTarget : null;
 
-        [HandleUnknownValue]
         public bool isEmpty(object target)
         {
             if (isNull(target))
@@ -116,7 +115,6 @@ namespace ServiceStack.Script
             return false;
         }
 
-        [HandleUnknownValue]
         public bool IsNullOrWhiteSpace(object target) => target == null || target is string s && string.IsNullOrWhiteSpace(s);
         
         public bool isEnum(Enum source, object value) => value is string strEnum
@@ -131,32 +129,31 @@ namespace ServiceStack.Script
                 ? source.HasFlag(enumValue)
                 : source.HasFlag((Enum) Enum.ToObject(source.GetType(), value));
 
-        [HandleUnknownValue] public StopExecution end() => StopExecution.Value;
-        [HandleUnknownValue] public Task end(ScriptScopeContext scope, object ignore) => TypeConstants.EmptyTask;
-        [HandleUnknownValue] public StopExecution end(object ignore) => StopExecution.Value;
+        public StopExecution end() => StopExecution.Value;
+        public Task end(ScriptScopeContext scope, object ignore) => TypeConstants.EmptyTask;
+        public StopExecution end(object ignore) => StopExecution.Value;
 
-        [HandleUnknownValue] public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfNotNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfNotNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfExists(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfExists(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfEmpty(object ignoreTarget, object target) => isEmpty(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfNotEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfNotEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfFalsy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfFalsy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfTruthy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIfTruthy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object endIfNull(object target) => isNull(target) ? StopExecution.Value : target;
+        public object endIfNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
+        public object endIfNotNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfNotNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfExists(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfExists(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfEmpty(object target) => isEmpty(target) ? StopExecution.Value : target;
+        public object endIfEmpty(object ignoreTarget, object target) => isEmpty(target) ? StopExecution.Value : target;
+        public object endIfNotEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfNotEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfFalsy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        public object endIfFalsy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        public object endIfTruthy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIfTruthy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object endIf(object test) => isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
-        [HandleUnknownValue] public object endIf(object returnTarget, bool test) => test ? StopExecution.Value : returnTarget;
-        [HandleUnknownValue] public object endIfAny(ScriptScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endIfAll(ScriptScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object endWhere(ScriptScopeContext scope, object target, object expression) => endWhere(scope, target, expression, null);
+        public object endIf(object returnTarget, bool test) => test ? StopExecution.Value : returnTarget;
+        public object endIfAny(ScriptScopeContext scope, object target, object expression) => any(scope, target, expression) ? StopExecution.Value : target;
+        public object endIfAll(ScriptScopeContext scope, object target, object expression) => all(scope, target, expression) ? StopExecution.Value : target;
+        public object endWhere(ScriptScopeContext scope, object target, object expression) => endWhere(scope, target, expression, null);
 
-        [HandleUnknownValue]
         public object endWhere(ScriptScopeContext scope, object target, object expression, object scopeOptions)
         {
             var literal = scope.AssertExpression(nameof(count), expression);
@@ -171,33 +168,32 @@ namespace ServiceStack.Script
                 : target;
         }
         
-        [HandleUnknownValue] public object ifEnd(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifEnd(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotEnd(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotEnd(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifEnd(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifEnd(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifNotEnd(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifNotEnd(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
         
-        [HandleUnknownValue] public object onlyIfNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfNotNull(object target) => isNull(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfNotNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfExists(object target) => isNull(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfExists(object ignoreTarget, object target) => isNull(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfNotEmpty(object target) => isEmpty(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfNotEmpty(object ignoreTarget, object target) => isEmpty(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfFalsy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfFalsy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object onlyIfTruthy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfTruthy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIf(object test) => !isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfNull(object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfNull(object ignoreTarget, object target) => !isNull(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfNotNull(object target) => isNull(target) ? StopExecution.Value : target;
+        public object onlyIfNotNull(object ignoreTarget, object target) => isNull(target) ? StopExecution.Value : target;
+        public object onlyIfExists(object target) => isNull(target) ? (object) StopExecution.Value : target;
+        public object onlyIfExists(object ignoreTarget, object target) => isNull(target) ? (object) StopExecution.Value : target;
+        public object onlyIfEmpty(object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfEmpty(object ignoreTarget, object target) => !isEmpty(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfNotEmpty(object target) => isEmpty(target) ? (object) StopExecution.Value : target;
+        public object onlyIfNotEmpty(object ignoreTarget, object target) => isEmpty(target) ? (object) StopExecution.Value : target;
+        public object onlyIfFalsy(object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfFalsy(object ignoreTarget, object target) => !isFalsy(target) ? (object) StopExecution.Value : IgnoreResult.Value;
+        public object onlyIfTruthy(object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        public object onlyIfTruthy(object ignoreTarget, object target) => isFalsy(target) ? (object) StopExecution.Value : target;
+        public object onlyIf(object test) => !isTrue(test) ? (object)StopExecution.Value : IgnoreResult.Value;
 
-        [HandleUnknownValue] public object onlyIf(object returnTarget, bool test) => !test ? StopExecution.Value : returnTarget;
-        [HandleUnknownValue] public object onlyIfAny(ScriptScopeContext scope, object target, object expression) => !any(scope, target, expression) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyIfAll(ScriptScopeContext scope, object target, object expression) => !all(scope, target, expression) ? StopExecution.Value : target;
-        [HandleUnknownValue] public object onlyWhere(ScriptScopeContext scope, object target, object expression) => onlyWhere(scope, target, expression, null);
+        public object onlyIf(object returnTarget, bool test) => !test ? StopExecution.Value : returnTarget;
+        public object onlyIfAny(ScriptScopeContext scope, object target, object expression) => !any(scope, target, expression) ? StopExecution.Value : target;
+        public object onlyIfAll(ScriptScopeContext scope, object target, object expression) => !all(scope, target, expression) ? StopExecution.Value : target;
+        public object onlyWhere(ScriptScopeContext scope, object target, object expression) => onlyWhere(scope, target, expression, null);
 
-        [HandleUnknownValue]
         public object onlyWhere(ScriptScopeContext scope, object target, object expression, object scopeOptions)
         {
             var literal = scope.AssertExpression(nameof(count), expression);
@@ -212,24 +208,24 @@ namespace ServiceStack.Script
                 : StopExecution.Value;
         }
         
-        [HandleUnknownValue] public object ifOnly(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifOnly(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotOnly(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
-        [HandleUnknownValue] public object ifNotOnly(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifOnly(bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifOnly(object ignoreTarget, bool test) => !test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifNotOnly(bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
+        public object ifNotOnly(object ignoreTarget, bool test) => test ? (object)StopExecution.Value : IgnoreResult.Value;
 
 
-        [HandleUnknownValue] public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object ifDo(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object doIf(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifDo(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object ifDo(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object doIf(object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
+        public object doIf(object ignoreTarget, object test) => isTrue(test) ? (object)IgnoreResult.Value : StopExecution.Value;
 
-        [HandleUnknownValue] public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue] public object ifShow(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue] public object ifShowRaw(object test, object useValue) => isTrue(test) ? (object) raw(useValue) : StopExecution.Value;
+        public object ifUse(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
+        public object ifShow(object test, object useValue) => isTrue(test) ? useValue : StopExecution.Value;
+        public object ifShowRaw(object test, object useValue) => isTrue(test) ? (object) raw(useValue) : StopExecution.Value;
 
-        [HandleUnknownValue] public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue] public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
-        [HandleUnknownValue] public object showIfExists(object useValue, object test) => !isNull(test) ? useValue : StopExecution.Value;
+        public object useIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        public object showIf(object useValue, object test) => isTrue(test) ? useValue : StopExecution.Value;
+        public object showIfExists(object useValue, object test) => !isNull(test) ? useValue : StopExecution.Value;
 
         public object use(object ignoreTarget, object useValue) => useValue;
         public object show(object ignoreTarget, object useValue) => useValue;
@@ -249,40 +245,40 @@ namespace ServiceStack.Script
         public IRawString showFmtRaw(object ignoreTarget, string format, object arg1, object arg2) => raw(fmt(format, arg1, arg2));
         public IRawString showFmtRaw(object ignoreTarget, string format, object arg1, object arg2, object arg3) => raw(fmt(format, arg1, arg2, arg3));
 
-        [HandleUnknownValue] public bool isString(object target) => target is string;
-        [HandleUnknownValue] public bool isInt(object target) => target is int;
-        [HandleUnknownValue] public bool isLong(object target) => target is long;
-        [HandleUnknownValue] public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
-        [HandleUnknownValue] public bool isDouble(object target) => target is double;
-        [HandleUnknownValue] public bool isFloat(object target) => target is float;
-        [HandleUnknownValue] public bool isDecimal(object target) => target is decimal;
-        [HandleUnknownValue] public bool isBool(object target) => target is bool;
-        [HandleUnknownValue] public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
-        [HandleUnknownValue] public bool isEnumerable(object target) => target is IEnumerable;
-        [HandleUnknownValue] public bool isDictionary(object target) => target is IDictionary;
-        [HandleUnknownValue] public bool isChar(object target) => target is char;
-        [HandleUnknownValue] public bool isChars(object target) => target is char[];
-        [HandleUnknownValue] public bool isByte(object target) => target is byte;
-        [HandleUnknownValue] public bool isBytes(object target) => target is byte[];
-        [HandleUnknownValue] public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
-        [HandleUnknownValue] public bool isStringDictionary(object target) => target is IDictionary<string, string>;
+        public bool isString(object target) => target is string;
+        public bool isInt(object target) => target is int;
+        public bool isLong(object target) => target is long;
+        public bool isInteger(object target) => target?.GetType()?.IsIntegerType() == true;
+        public bool isDouble(object target) => target is double;
+        public bool isFloat(object target) => target is float;
+        public bool isDecimal(object target) => target is decimal;
+        public bool isBool(object target) => target is bool;
+        public bool isList(object target) => target is IEnumerable && !(target is IDictionary) && !(target is string);
+        public bool isEnumerable(object target) => target is IEnumerable;
+        public bool isDictionary(object target) => target is IDictionary;
+        public bool isChar(object target) => target is char;
+        public bool isChars(object target) => target is char[];
+        public bool isByte(object target) => target is byte;
+        public bool isBytes(object target) => target is byte[];
+        public bool isObjectDictionary(object target) => target is IDictionary<string, object>;
+        public bool isStringDictionary(object target) => target is IDictionary<string, string>;
 
-        [HandleUnknownValue] public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
-        [HandleUnknownValue] public bool isNumber(object target) => target?.GetType().IsNumericType() == true;
-        [HandleUnknownValue] public bool isRealNumber(object target) => target?.GetType().IsRealNumberType() == true;
-        [HandleUnknownValue] public bool isEnum(object target) => target?.GetType().IsEnum == true;
-        [HandleUnknownValue] public bool isArray(object target) => target?.GetType().IsArray == true;
-        [HandleUnknownValue] public bool isAnonObject(object target) => target?.GetType().IsAnonymousType() == true;
-        [HandleUnknownValue] public bool isClass(object target) => target?.GetType().IsClass == true;
-        [HandleUnknownValue] public bool isValueType(object target) => target?.GetType().IsValueType == true;
-        [HandleUnknownValue] public bool isDto(object target) => target?.GetType().IsDto() == true;
-        [HandleUnknownValue] public bool isTuple(object target) => target?.GetType().IsTuple() == true;
-        [HandleUnknownValue] public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType().Name);
+        public bool isType(object target, string typeName) => typeName.EqualsIgnoreCase(target?.GetType()?.Name);
+        public bool isNumber(object target) => target?.GetType().IsNumericType() == true;
+        public bool isRealNumber(object target) => target?.GetType().IsRealNumberType() == true;
+        public bool isEnum(object target) => target?.GetType().IsEnum == true;
+        public bool isArray(object target) => target?.GetType().IsArray == true;
+        public bool isAnonObject(object target) => target?.GetType().IsAnonymousType() == true;
+        public bool isClass(object target) => target?.GetType().IsClass == true;
+        public bool isValueType(object target) => target?.GetType().IsValueType == true;
+        public bool isDto(object target) => target?.GetType().IsDto() == true;
+        public bool isTuple(object target) => target?.GetType().IsTuple() == true;
+        public bool isKeyValuePair(object target) => "KeyValuePair`2".Equals(target?.GetType().Name);
 
-        [HandleUnknownValue] public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
+        public int length(object target) => target is IEnumerable e ? e.Cast<object>().Count() : 0;
 
-        [HandleUnknownValue] public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
-        [HandleUnknownValue] public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
+        public bool hasMinCount(object target, int minCount) => target is IEnumerable e && e.Cast<object>().Count() >= minCount;
+        public bool hasMaxCount(object target, int maxCount) => target is IEnumerable e && e.Cast<object>().Count() <= maxCount;
 
         public bool OR(object lhs, object rhs) => isTrue(lhs) || isTrue(rhs);
         public bool AND(object lhs, object rhs) => isTrue(lhs) && isTrue(rhs);
@@ -858,9 +854,7 @@ namespace ServiceStack.Script
             return IgnoreResult.Value;
         }
 
-        [HandleUnknownValue]
         public Task @do(ScriptScopeContext scope, object target, object expression) => @do(scope, target, expression, null);
-        [HandleUnknownValue]
         public Task @do(ScriptScopeContext scope, object target, object expression, object scopeOptions)
         {
             if (isNull(target) || target is bool b && !b)
@@ -1043,9 +1037,7 @@ namespace ServiceStack.Script
             }
         }
 
-        [HandleUnknownValue]
         public Task select(ScriptScopeContext scope, object target, object selectTemplate) => select(scope, target, selectTemplate, null);
-        [HandleUnknownValue]
         public async Task select(ScriptScopeContext scope, object target, object selectTemplate, object scopeOptions)
         {
             if (isNull(target))
@@ -1071,9 +1063,7 @@ namespace ServiceStack.Script
             }
         }
 
-        [HandleUnknownValue]
         public Task selectPartial(ScriptScopeContext scope, object target, string pageName) => selectPartial(scope, target, pageName, null);
-        [HandleUnknownValue]
         public async Task selectPartial(ScriptScopeContext scope, object target, string pageName, object scopedParams)
         {
             if (isNull(target))
@@ -1359,16 +1349,16 @@ namespace ServiceStack.Script
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
     {
-        [HandleUnknownValue] public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
-        [HandleUnknownValue] public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
-        [HandleUnknownValue] public object @default(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
+        public object @if(object test) => test is bool b && b ? (object) IgnoreResult.Value : StopExecution.Value;
+        public object @if(object returnTarget, object test) => test is bool b && b ? returnTarget : null;
+        public object @default(object returnTarget, object elseReturn) => returnTarget ?? elseReturn;
 
         public object @throw(ScriptScopeContext scope, string message) => new Exception(message).InStopFilter(scope, null);
         public object @throw(ScriptScopeContext scope, string message, object options) => new Exception(message).InStopFilter(scope, options);
         
-        [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope) => @return(scope, null, null);
-        [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope, object returnValue) => @return(scope, returnValue, null);
-        [HandleUnknownValue] public StopExecution @return(ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs)
+        public StopExecution @return(ScriptScopeContext scope) => @return(scope, null, null);
+        public StopExecution @return(ScriptScopeContext scope, object returnValue) => @return(scope, returnValue, null);
+        public StopExecution @return(ScriptScopeContext scope, object returnValue, Dictionary<string, object> returnArgs)
         {
             scope.PageResult.ReturnValue = new ReturnValue(returnValue, returnArgs); 
             scope.PageResult.HaltExecution = true;

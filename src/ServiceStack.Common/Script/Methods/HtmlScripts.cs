@@ -308,13 +308,13 @@ namespace ServiceStack.Script
         }
 
         public IRawString htmlError(ScriptScopeContext scope) => htmlError(scope, scope.PageResult.LastFilterError);
-        [HandleUnknownValue] public IRawString htmlError(ScriptScopeContext scope, Exception ex) => htmlError(scope, ex, null);
-        [HandleUnknownValue] public IRawString htmlError(ScriptScopeContext scope, Exception ex, object options) => 
+        public IRawString htmlError(ScriptScopeContext scope, Exception ex) => htmlError(scope, ex, null);
+        public IRawString htmlError(ScriptScopeContext scope, Exception ex, object options) => 
             Context.DebugMode ? htmlErrorDebug(scope, ex, options) : htmlErrorMessage(ex, options);
 
         public IRawString htmlErrorMessage(ScriptScopeContext scope) => htmlErrorMessage(scope.PageResult.LastFilterError);
-        [HandleUnknownValue] public IRawString htmlErrorMessage(Exception ex) => htmlErrorMessage(ex, null);
-        [HandleUnknownValue] public IRawString htmlErrorMessage(Exception ex, object options)
+        public IRawString htmlErrorMessage(Exception ex) => htmlErrorMessage(ex, null);
+        public IRawString htmlErrorMessage(Exception ex, object options)
         {
             if (ex == null)
                 return RawString.Empty;
@@ -327,10 +327,10 @@ namespace ServiceStack.Script
         }
 
         public IRawString htmlErrorDebug(ScriptScopeContext scope) => htmlErrorDebug(scope, scope.PageResult.LastFilterError);
-        [HandleUnknownValue] public IRawString htmlErrorDebug(ScriptScopeContext scope, object ex) => 
+        public IRawString htmlErrorDebug(ScriptScopeContext scope, object ex) => 
             htmlErrorDebug(scope, ex as Exception ?? scope.PageResult.LastFilterError, ex as Dictionary<string, object>);
         
-        [HandleUnknownValue] 
+        
         public IRawString htmlErrorDebug(ScriptScopeContext scope, Exception ex, object options)
         {
             if (ex == null)
@@ -509,8 +509,8 @@ namespace ServiceStack.Script
             return string.Format(htmlWithFormat, Context.DefaultScripts.htmlEncode(arg)).ToRawString();
         }
 
-        [HandleUnknownValue] public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
-        [HandleUnknownValue] public IRawString htmlLink(string href, Dictionary<string, object> attrs)
+        public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });
+        public IRawString htmlLink(string href, Dictionary<string, object> attrs)
         {
             if (string.IsNullOrEmpty(href))
                 return RawString.Empty;
@@ -518,8 +518,8 @@ namespace ServiceStack.Script
             return htmlA(new Dictionary<string, object>(attrs ?? TypeConstants.EmptyObjectDictionary) { ["href"] = href });
         }
 
-        [HandleUnknownValue] public IRawString htmlImage(string src) => htmlImage(src, null);
-        [HandleUnknownValue] public IRawString htmlImage(string src, Dictionary<string, object> attrs)
+        public IRawString htmlImage(string src) => htmlImage(src, null);
+        public IRawString htmlImage(string src, Dictionary<string, object> attrs)
         {
             if (string.IsNullOrEmpty(src))
                 return RawString.Empty;

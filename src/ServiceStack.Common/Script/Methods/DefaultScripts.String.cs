@@ -14,7 +14,7 @@ namespace ServiceStack.Script
     
     public partial class DefaultScripts
     {
-        [HandleUnknownValue] public IRawString raw(object value)
+        public IRawString raw(object value)
         {
             if (value == null || Equals(value, JsNull.Value))
                 return ScriptConstants.EmptyRawString;
@@ -50,7 +50,7 @@ namespace ServiceStack.Script
             return fmt;
         }
 
-        [HandleUnknownValue] public IRawString formatRaw(object obj, string fmt) => raw(string.Format(fmt.Replace("{{","{").Replace("}}","}"), obj));
+        public IRawString formatRaw(object obj, string fmt) => raw(string.Format(fmt.Replace("{{","{").Replace("}}","}"), obj));
         
         public string format(object obj, string format) => obj is IFormattable formattable
             ? formattable.ToString(format, null)
@@ -207,10 +207,10 @@ namespace ServiceStack.Script
         public string escapePrimeQuotes(string text) => text?.Replace("′", "\\′");
         public string escapeNewLines(string text) => text?.Replace("\r", "\\r").Replace("\n", "\\n");
 
-        [HandleUnknownValue] public IRawString jsString(string text) => string.IsNullOrEmpty(text) 
+        public IRawString jsString(string text) => string.IsNullOrEmpty(text) 
             ? RawString.Empty 
             : escapeNewLines(escapeSingleQuotes(text)).ToRawString();
-        [HandleUnknownValue] public IRawString jsQuotedString(string text) => 
+        public IRawString jsQuotedString(string text) => 
             ("'" + escapeNewLines(escapeSingleQuotes(text ?? "")) + "'").ToRawString();
 
         private async Task serialize(ScriptScopeContext scope, object items, string jsconfig, Func<object, string> fn)
