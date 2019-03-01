@@ -160,7 +160,7 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                return Context.DefaultScripts.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
+                return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
                     Headers = {
                         [HttpHeaders.Location] = path.FirstCharEquals('~')
                             ? req(scope).ResolveAbsoluteUrl(path)
@@ -269,7 +269,7 @@ namespace ServiceStack
             if (errorStatus == null)
                 return null;
 
-            var fieldNames = Context.DefaultScripts.toVarNames(fields);
+            var fieldNames = Context.DefaultMethods.toVarNames(fields);
             return ViewUtils.ErrorResponseExcept(errorStatus, fieldNames);
         }
 

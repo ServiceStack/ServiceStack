@@ -233,7 +233,7 @@ namespace ServiceStack.Script
 
                 if (htmlAttrs.TryGetValue("class", out var oClass))
                 {
-                    var cls = scope.Context.HtmlScripts.htmlClassList(oClass);
+                    var cls = scope.Context.HtmlMethods.htmlClassList(oClass);
                     if (string.IsNullOrEmpty(cls))
                         htmlAttrs.Remove("class");
                     else
@@ -241,7 +241,7 @@ namespace ServiceStack.Script
                 }
             }
 
-            var attrString = scope.Context.HtmlScripts.htmlAttrsList(htmlAttrs);
+            var attrString = scope.Context.HtmlMethods.htmlAttrsList(htmlAttrs);
 
             if (HtmlScripts.VoidElements.Contains(Tag)) //e.g. img, input, br, etc
             {

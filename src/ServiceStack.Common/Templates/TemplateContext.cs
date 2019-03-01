@@ -15,10 +15,10 @@ namespace ServiceStack.Script
     public partial class ScriptContext
     {
         [Obsolete("Use DefaultScripts")]
-        public DefaultScripts DefaultFilters => DefaultScripts;
+        public DefaultScripts DefaultFilters => DefaultMethods;
 
         [Obsolete("Use ProtectedScripts")]
-        public ProtectedScripts ProtectedFilters => ProtectedScripts;
+        public ProtectedScripts ProtectedFilters => ProtectedMethods;
     }
 }
 
@@ -54,11 +54,11 @@ namespace ServiceStack.Templates
         public List<Script.ScriptBlock> TemplateBlocks => ScriptBlocks;
 
         [Obsolete("Use DefaultScripts")]
-        public Script.DefaultScripts DefaultFilters => DefaultScripts;
+        public Script.DefaultScripts DefaultFilters => DefaultMethods;
         [Obsolete("Use ProtectedScripts")]
-        public Script.ProtectedScripts ProtectedFilters => ProtectedScripts;
+        public Script.ProtectedScripts ProtectedFilters => ProtectedMethods;
         [Obsolete("Use HtmlScripts")]
-        public Script.HtmlScripts HtmlFilters => HtmlScripts;
+        public Script.HtmlScripts HtmlFilters => HtmlMethods;
 
         public new TemplateContext Init()
         {

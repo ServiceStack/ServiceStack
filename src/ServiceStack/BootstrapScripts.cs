@@ -30,7 +30,7 @@ namespace ServiceStack
             if (!divAttrs.ContainsKey("class") && !divAttrs.ContainsKey("className"))
                 divAttrs["class"] = "alert alert-danger";
             
-            return Context.HtmlScripts.htmlDiv(errorSummaryMsg, divAttrs);
+            return Context.HtmlMethods.htmlDiv(errorSummaryMsg, divAttrs);
         }
 
         public IRawString formTextarea(ScriptScopeContext scope, object args) => formTextarea(scope, args, null);

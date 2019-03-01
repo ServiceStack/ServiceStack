@@ -52,7 +52,7 @@ namespace ServiceStack.Script
                             foreach (var key in keys)
                             {
                                 sbHeader.Append('<').Append(headerTag).Append('>');
-                                sbHeader.Append(Context.DefaultScripts?.textStyle(key, headerStyle)?.HtmlEncode());
+                                sbHeader.Append(Context.DefaultMethods?.textStyle(key, headerStyle)?.HtmlEncode());
                                 sbHeader.Append("</").Append(headerTag).Append('>');
                             }
                             sbHeader.Append("</tr>");
@@ -193,7 +193,7 @@ namespace ServiceStack.Script
 
                                     sb.Append("<tr>");
                                     sb.Append("<th>");
-                                    sb.Append(Context.DefaultScripts?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
+                                    sb.Append(Context.DefaultMethods?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
                                     sb.Append("</th>");
                                     sb.Append("<td>");
                                     if (!isComplexType(kvp.Value))
@@ -287,17 +287,17 @@ namespace ServiceStack.Script
             {
                 var isMoney = dec == Math.Floor(dec * 100);
                 if (isMoney)
-                    return Context.DefaultScripts?.currency(dec) ?? dec.ToString();
+                    return Context.DefaultMethods?.currency(dec) ?? dec.ToString();
             }
 
             if (target.GetType().IsNumericType() || target is bool)
                 return target.ToString();
 
             if (target is DateTime d)
-                return Context.DefaultScripts?.dateFormat(d) ?? d.ToString();
+                return Context.DefaultMethods?.dateFormat(d) ?? d.ToString();
 
             if (target is TimeSpan t)
-                return Context.DefaultScripts?.timeFormat(t) ?? t.ToString();
+                return Context.DefaultMethods?.timeFormat(t) ?? t.ToString();
 
             return (target.ToString() ?? "").HtmlEncode();
         }
@@ -344,7 +344,7 @@ namespace ServiceStack.Script
             sb.Append($"<pre class=\"{className}\">");
             sb.AppendLine($"{ex.GetType().Name}: {ex.Message}");
 
-            var stackTrace = scope.Context.DefaultScripts.lastErrorStackTrace(scope);
+            var stackTrace = scope.Context.DefaultMethods.lastErrorStackTrace(scope);
             if (!string.IsNullOrEmpty(stackTrace))
             {
                 sb.AppendLine();
@@ -506,7 +506,7 @@ namespace ServiceStack.Script
             if (string.IsNullOrEmpty(arg))
                 return null;
 
-            return string.Format(htmlWithFormat, Context.DefaultScripts.htmlEncode(arg)).ToRawString();
+            return string.Format(htmlWithFormat, Context.DefaultMethods.htmlEncode(arg)).ToRawString();
         }
 
         public IRawString htmlLink(string href) => htmlLink(href, new Dictionary<string, object> { ["text"] = href });

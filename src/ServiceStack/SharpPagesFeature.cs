@@ -31,12 +31,12 @@ namespace ServiceStack
         [Obsolete("Use ScriptBlocks")]
         public List<ScriptBlock> TemplateBlocks => ScriptBlocks;
 
-        [Obsolete("Use DefaultScripts")]
-        public DefaultScripts DefaultFilters => DefaultScripts;
-        [Obsolete("Use ProtectedScripts")]
-        public ProtectedScripts ProtectedFilters => ProtectedScripts;
-        [Obsolete("Use HtmlScripts")]
-        public HtmlScripts HtmlFilters => HtmlScripts;
+        [Obsolete("Use DefaultMethods")]
+        public DefaultScripts DefaultFilters => DefaultMethods;
+        [Obsolete("Use ProtectedMethods")]
+        public ProtectedScripts ProtectedFilters => ProtectedMethods;
+        [Obsolete("Use HtmlMethods")]
+        public HtmlScripts HtmlFilters => HtmlMethods;
 
         public override void Register(IAppHost appHost)
         {
@@ -788,7 +788,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 HostContext.Config.AdminAuthSecret == authsecret)
             {
                 html = html.Replace("{ template: template }", 
-                    "{ template: template, authsecret:" + feature.DefaultScripts.jsQuotedString(authsecret).ToRawString() + " }");
+                    "{ template: template, authsecret:" + feature.DefaultMethods.jsQuotedString(authsecret).ToRawString() + " }");
             }
  
             return html;
@@ -835,7 +835,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 var scope = new ScriptScopeContext(new PageResult(feature.EmptyPage), ms, new Dictionary<string, object>());
             
                 if (actions.Any(x => x.EqualsIgnoreCase(nameof(ProtectedScripts.invalidateAllCaches))))
-                    results.Add(nameof(ProtectedScripts.invalidateAllCaches) + ": " + feature.ProtectedScripts.invalidateAllCaches(scope).ToJsv());
+                    results.Add(nameof(ProtectedScripts.invalidateAllCaches) + ": " + feature.ProtectedMethods.invalidateAllCaches(scope).ToJsv());
                 
                 if (actions.Any(x => x.EqualsIgnoreCase(nameof(SharpPagesFeature.RunInitPage))))
                     results.Add(nameof(SharpPagesFeature.RunInitPage) + ": " + feature.RunInitPage());
