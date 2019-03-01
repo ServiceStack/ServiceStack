@@ -562,6 +562,9 @@ namespace ServiceStack.Script
         public IEnumerable<IGrouping<object, object>> groupBy(ScriptScopeContext scope, IEnumerable<object> items, object expression) => groupBy(scope, items, expression, null);
         public IEnumerable<IGrouping<object, object>> groupBy(ScriptScopeContext scope, IEnumerable<object> items, object expression, object scopeOptions)
         {
+            if (items == null)
+                return TypeConstants<IGrouping<object, object>>.EmptyArray;
+                
             var expr = scope.AssertExpression(nameof(groupBy), expression, scopeOptions, out var itemBinding);
 
             var scopedParams = scopeOptions as Dictionary<string, object> ?? new Dictionary<string, object>();
