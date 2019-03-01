@@ -144,7 +144,7 @@ namespace ServiceStack.Script
                             keys = d.Keys.ToList();
                             foreach (var key in keys)
                             {
-                                table.Headers.Add(Context.DefaultScripts?.textStyle(key, headerStyle));
+                                table.Headers.Add(Context.DefaultMethods?.textStyle(key, headerStyle));
                             }
                         }
 
@@ -246,7 +246,7 @@ namespace ServiceStack.Script
                                 {
                                     if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
 
-                                    keys.Add(Context.DefaultScripts?.textStyle(kvp.Key, headerStyle) ?? "");
+                                    keys.Add(Context.DefaultMethods?.textStyle(kvp.Key, headerStyle) ?? "");
                                     
                                     var field = !isComplexType(kvp.Value)
                                         ? GetScalarText(kvp.Value)
@@ -388,17 +388,17 @@ namespace ServiceStack.Script
             {
                 var isMoney = dec == Math.Floor(dec * 100);
                 if (isMoney)
-                    return Context.DefaultScripts?.currency(dec) ?? dec.ToString();
+                    return Context.DefaultMethods?.currency(dec) ?? dec.ToString();
             }
 
             if (target.GetType().IsNumericType() || target is bool)
                 return target.ToString();
 
             if (target is DateTime d)
-                return Context.DefaultScripts?.dateFormat(d) ?? d.ToString();
+                return Context.DefaultMethods?.dateFormat(d) ?? d.ToString();
 
             if (target is TimeSpan t)
-                return Context.DefaultScripts?.timeFormat(t) ?? t.ToString();
+                return Context.DefaultMethods?.timeFormat(t) ?? t.ToString();
 
             return target.ToString() ?? "";
         }

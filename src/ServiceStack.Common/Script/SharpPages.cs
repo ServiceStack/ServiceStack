@@ -270,7 +270,7 @@ namespace ServiceStack.Script
                 {
                     if (fragment.InitialValue is string filePath)
                     {
-                        var file = Context.ProtectedScripts.ResolveFile(Context.VirtualFiles, page.VirtualPath, filePath);
+                        var file = Context.ProtectedMethods.ResolveFile(Context.VirtualFiles, page.VirtualPath, filePath);
                         maxLastModified = GetMaxLastModified(file, maxLastModified);
                     }
                 }

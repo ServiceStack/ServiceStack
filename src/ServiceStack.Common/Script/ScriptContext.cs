@@ -113,9 +113,9 @@ namespace ServiceStack.Script
             return page;
         }
 
-        public DefaultScripts DefaultScripts => ScriptMethods.FirstOrDefault(x => x is DefaultScripts) as DefaultScripts;
-        public ProtectedScripts ProtectedScripts => ScriptMethods.FirstOrDefault(x => x is ProtectedScripts) as ProtectedScripts;
-        public HtmlScripts HtmlScripts => ScriptMethods.FirstOrDefault(x => x is HtmlScripts) as HtmlScripts;
+        public DefaultScripts DefaultMethods => ScriptMethods.FirstOrDefault(x => x is DefaultScripts) as DefaultScripts;
+        public ProtectedScripts ProtectedMethods => ScriptMethods.FirstOrDefault(x => x is ProtectedScripts) as ProtectedScripts;
+        public HtmlScripts HtmlMethods => ScriptMethods.FirstOrDefault(x => x is HtmlScripts) as HtmlScripts;
 
         public void GetPage(string fromVirtualPath, string virtualPath, out SharpPage page, out SharpCodePage codePage)
         {
