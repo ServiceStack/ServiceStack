@@ -225,7 +225,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.TemplateTests
                 }
             }.Init();
 
-            Assert.Throws<BindingExpressionException>(() => 
+            Assert.Throws<ScriptException>(() => 
                 context.EvaluateScript("{{ a.notfound }}"));
         }
     }

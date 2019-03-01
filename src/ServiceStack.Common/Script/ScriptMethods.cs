@@ -46,12 +46,12 @@ namespace ServiceStack.Script
         }
     }
 
-    public class PageResultException : Exception
+    public class ScriptException : Exception
     {
         public PageResult PageResult { get; }
         public string PageStackTrace => PageResult.LastFilterStackTrace.Map(x => "   at " + x).Join(Environment.NewLine);
 
-        public PageResultException(PageResult pageResult) : base(
+        public ScriptException(PageResult pageResult) : base(
             pageResult.LastFilterError?.Message ?? throw new ArgumentNullException(nameof(pageResult)),
             pageResult.LastFilterError)
         {

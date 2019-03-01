@@ -873,16 +873,16 @@ model.Dictionary['map-key'].Object.AltNested.Field | lower = 'dictionary altnest
             
             var context = new ScriptContext().Init();
 
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | times }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ range(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ range(1,10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | itemsOf(1) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | repeat(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 10001 | repeating('text') }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001,'.') }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padRight(10001) }}"));
-            Assert.Throws<TargetInvocationException>(() => context.EvaluateScript("{{ 'text' | padRight(10001,'.') }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 10001  | times }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ range(10001) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ range(1,10001) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 10001  | itemsOf(1) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 'text' | repeat(10001) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 10001  | repeating('text') }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 'text' | padLeft(10001,'.') }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 'text' | padRight(10001) }}"));
+            Assert.Throws<ScriptException>(() => context.EvaluateScript("{{ 'text' | padRight(10001,'.') }}"));
         }
 
         [Test]
