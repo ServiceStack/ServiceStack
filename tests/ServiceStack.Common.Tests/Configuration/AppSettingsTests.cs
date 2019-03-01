@@ -34,7 +34,7 @@ namespace ServiceStack.Common.Tests
                 {"DictionaryKey:C", "3"},
                 {"DictionaryKey:D", "4"},
                 {"DictionaryKey:E", "5"},
-                {"BadDictionaryKey", "A1,B:"},
+                {"BadDictionaryKey", "A1,B"},
                 {"ObjectNoLineFeed", "{SomeSetting:Test,SomeOtherSetting:12,FinalSetting:Final}"},
                 {"ObjectWithLineFeed", "{SomeSetting:Test,\r\nSomeOtherSetting:12,\r\nFinalSetting:Final}"},
                 {"Email:From", "test@email.com"},

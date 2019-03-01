@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Linq;
 using System.Net.NetworkInformation;
-using Moq;
 using NUnit.Framework;
+using ServiceStack.Host;
 using ServiceStack.Host.Handlers;
 using ServiceStack.Testing;
 using ServiceStack.Web;
@@ -35,12 +35,13 @@ namespace ServiceStack.WebHost.Endpoints.Support.Tests
         public void GetEndpointAttributes_AcceptsUserHostAddressFormats(string format, RequestAttributes expected)
         {
             var handler = new TestHandler();
-            var request = new Mock<IHttpRequest>();
-            request.Setup(req => req.UserHostAddress).Returns(format);
-            request.Setup(req => req.IsSecureConnection).Returns(false);
-            request.Setup(req => req.Verb).Returns("GET");
+            var request = new BasicRequest {
+                UserHostAddress = format,
+                IsSecureConnection = false,
+                Verb = "GET"
+            };
 
-            Assert.AreEqual(expected | RequestAttributes.HttpGet | RequestAttributes.InSecure, request.Object.GetAttributes());
+            Assert.AreEqual(expected | RequestAttributes.HttpGet | RequestAttributes.InSecure, request.GetAttributes());
         }
 
         public static IEnumerable EndpointExpectations
