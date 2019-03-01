@@ -1,6 +1,5 @@
 ﻿#if !NETCORE_SUPPORT
 using System.Collections.Generic;
-using Moq;
 using NUnit.Framework;
 using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
@@ -39,13 +38,8 @@ namespace ServiceStack.Common.Tests.OAuth
 
         public static IUserAuthRepository GetStubRepo()
         {
-            var mock = new Mock<IUserAuthRepository>();
-            mock.Setup(x => x.GetUserAuthByUserName(It.IsAny<string>()))
-                .Returns((UserAuth)null);
-            mock.Setup(x => x.CreateUserAuth(It.IsAny<UserAuth>(), It.IsAny<string>()))
-                .Returns(new UserAuth { Id = 1 });
-
-            return mock.Object;
+            var authRepo = new InMemoryAuthRepository();
+            return authRepo;
         }
 
         public static RegisterService GetRegistrationService(
@@ -68,6 +62,8 @@ namespace ServiceStack.Common.Tests.OAuth
             };
 
             HostContext.Container.Register(userAuthRepository);
+            
+            (HostContext.TryResolve<IAuthRepository>() as InMemoryAuthRepository)?.Clear();
 
             return service;
         }
@@ -144,13 +140,14 @@ namespace ServiceStack.Common.Tests.OAuth
         [Test]
         public void Requires_unique_UserName_and_Email()
         {
-            var mockExistingUser = new UserAuth();
+            (HostContext.TryResolve<IAuthRepository>() as InMemoryAuthRepository)?.Clear();
 
-            var mock = new Mock<IUserAuthRepository>();
-            mock.Setup(x => x.GetUserAuthByUserName(It.IsAny<string>()))
-                .Returns(() => mockExistingUser);
-            var mockUserAuth = mock.Object;
-            appHost.Register<IAuthRepository>(mockUserAuth);
+            var authRepo = new InMemoryAuthRepository();
+            authRepo.CreateUserAuth(new UserAuth {
+                Email = "my@email.com",
+                UserName = "UserName",
+            }, "password");
+            appHost.Register<IAuthRepository>(authRepo);
 
             var service = new RegisterService
             {

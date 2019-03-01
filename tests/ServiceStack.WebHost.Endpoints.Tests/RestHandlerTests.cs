@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using Moq;
+using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.Host;
 using ServiceStack.Web;
@@ -27,61 +27,43 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
 		[Test]
-		public void Throws_binding_exception_when_unable_to_match_path_values()
+		public async Task Throws_binding_exception_when_unable_to_match_path_values()
 		{
 			var path = "/request/{will_not_match_property_id}/pathh";
 			var request = ConfigureRequest(path);
-			var response = new Mock<IHttpResponse>().Object;
+			var response = request.Response;
 
 			var handler = new RestHandler
 			{
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-		    try
-		    {
-    		    handler.ProcessRequestAsync(request, response, string.Empty).Wait();
-                Assert.Fail("Should throw ArgumentException");
-		    }
-		    catch (AggregateException aex)
-		    {
-                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
-                Assert.That(aex.InnerException.GetType().Name, Is.EqualTo("ArgumentException"));
-		    }
+			await handler.ProcessRequestAsync(request, response, string.Empty);
+			Assert.That(response.StatusCode, Is.EqualTo(400));
 		}
 
 		[Test]
-		public void Throws_binding_exception_when_unable_to_bind_request()
+		public async Task Throws_binding_exception_when_unable_to_bind_request()
 		{
 			var path = "/request/{id}/path";
 			var request = ConfigureRequest(path);
-			var response = new Mock<IHttpResponse>().Object;
+			var response = request.Response;
 
 			var handler = new RestHandler
 			{
 				RestPath = new RestPath(typeof(RequestType), path)
 			};
 
-            try
-            {
-                handler.ProcessRequestAsync(request, response, string.Empty).Wait();
-                Assert.Fail("Should throw SerializationException");
-            }
-            catch (AggregateException aex)
-            {
-                Assert.That(aex.InnerExceptions.Count, Is.EqualTo(1));
-                Assert.That(aex.InnerException.GetType().Name, Is.EqualTo("SerializationException"));
-            }
+			await handler.ProcessRequestAsync(request, response, string.Empty);
+			Assert.That(response.StatusCode, Is.EqualTo(400));
         }
 
         private IHttpRequest ConfigureRequest(string path)
         {
-            var request = new Mock<IHttpRequest>();
-            request.Setup(x => x.Items).Returns(new Dictionary<string, object>());
-            request.Setup(x => x.QueryString).Returns(new NameValueCollection());
-            request.Setup(x => x.PathInfo).Returns(path);
-
-            return request.Object;
+            var request = new BasicHttpRequest {
+	            PathInfo = path
+            };
+            return request;
         }
 
 		public class RequestType
