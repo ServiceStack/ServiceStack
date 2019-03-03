@@ -1,13 +1,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
 {
+    // ReSharper disable InconsistentNaming
+
     public class MarkdownTable
     {
         public bool IncludeHeaders { get; set; } = true;
@@ -112,13 +113,13 @@ namespace ServiceStack.Script
 
     public partial class DefaultScripts
     {
-        public IRawString textList(IEnumerable target) => TextList(target, null).ToRawString();
+        public IRawString textList(IEnumerable target) => TextList(target, new TextDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
         public IRawString textList(IEnumerable target, Dictionary<string, object> options) => 
-            TextList(target, TextDumpOptions.Parse(options)).ToRawString();
+            TextList(target, TextDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();
         
-        public IRawString textDump(object target) => TextDump(target, null).ToRawString();
+        public IRawString textDump(object target) => TextDump(target, new TextDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
         public IRawString textDump(object target, Dictionary<string, object> options) => 
-            TextDump(target, TextDumpOptions.Parse(options)).ToRawString();
+            TextDump(target, TextDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();
         
         public static string TextList(IEnumerable items, TextDumpOptions options)
         {

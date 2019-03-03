@@ -791,6 +791,10 @@ namespace ServiceStack.Mvc
 
         public static string TextDump(this IHtmlHelper html, object target) => target.TextDump();
         public static string TextDump(this IHtmlHelper html, object target, TextDumpOptions options) => target.TextDump(options);
+
+        public static HtmlString HtmlDump(this IHtmlHelper html, object target) => ViewUtils.HtmlDump(target).ToHtmlString();
+        public static HtmlString HtmlDump(this IHtmlHelper html, object target, HtmlDumpOptions options) => 
+            ViewUtils.HtmlDump(target,options).ToHtmlString();
     }
 
     public abstract class ViewPage : ViewPage<object>

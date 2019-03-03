@@ -65,7 +65,7 @@ namespace ServiceStack
         internal int Depth { get; set; }
         internal bool HasCaption { get; set; }
 
-        public static TextDumpOptions Parse(Dictionary<string, object> options)
+        public static TextDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
         {
             return new TextDumpOptions 
             {
@@ -80,6 +80,57 @@ namespace ServiceStack
                     : null,
                 IncludeRowNumbers = !options.TryGetValue("rowNumbers", out var rowNumbers) 
                     || (!(rowNumbers is bool b) || b),
+                Defaults = defaults ?? ViewUtils.DefaultScripts,
+            };
+        }
+    }
+
+    public class HtmlDumpOptions
+    {
+        public string Id { get; set; }
+        public string ClassName { get; set; }
+        public string ChildClass { get; set; }
+
+        public TextStyle HeaderStyle { get; set; }
+        public string HeaderTag { get; set; }
+        
+        public string Caption { get; set; }
+        public string CaptionIfEmpty { get; set; }
+
+        public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
+        
+        internal int Depth { get; set; }
+        internal int ChildDepth { get; set; } = 1;
+        internal bool HasCaption { get; set; }
+        
+        public static HtmlDumpOptions Parse(Dictionary<string, object> options, DefaultScripts defaults=null)
+        {
+            return new HtmlDumpOptions 
+            {
+                Id = options.TryGetValue("id", out var oId)
+                    ? (string)oId
+                    : null,
+                ClassName = options.TryGetValue("className", out var oClassName)
+                    ? (string)oClassName
+                    : null,
+                ChildClass = options.TryGetValue("childClass", out var oChildClass)
+                    ? (string)oChildClass
+                    : null,
+
+                HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
+                    ? oHeaderStyle.ConvertTo<TextStyle>()
+                    : TextStyle.SplitCase,
+                HeaderTag = options.TryGetValue("headerTag", out var oHeaderTag)
+                    ? (string)oHeaderTag
+                    : null,
+                
+                Caption = options.TryGetValue("caption", out var caption)
+                    ? caption?.ToString()
+                    : null,
+                CaptionIfEmpty = options.TryGetValue("captionIfEmpty", out var captionIfEmpty)
+                    ? captionIfEmpty?.ToString()
+                    : null,
+                Defaults = defaults ?? ViewUtils.DefaultScripts,
             };
         }
     }
@@ -106,9 +157,15 @@ namespace ServiceStack
         
         public static CultureInfo GetDefaultCulture(this DefaultScripts defaultScripts) => 
             defaultScripts?.Context?.Args[ScriptConstants.DefaultCulture] as CultureInfo ?? ScriptConfig.DefaultCulture;
+        
+        public static string GetDefaultTableClassName(this DefaultScripts defaultScripts) => 
+            defaultScripts?.Context?.Args[ScriptConstants.DefaultTableClassName] as string;
 
         public static string TextDump(this object target) => DefaultScripts.TextDump(target, null); 
         public static string TextDump(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
+        
+        public static string HtmlDump(object target) => HtmlScripts.HtmlDump(target, null); 
+        public static string HtmlDump(object target, HtmlDumpOptions options) => HtmlScripts.HtmlDump(target, options); 
         
         public static string StyleText(string text, TextStyle textStyle)
         {
