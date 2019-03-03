@@ -58,4 +58,14 @@ namespace ServiceStack.DataAnnotations
     {
         public PgSqlDecimalArrayAttribute() : base("numeric[]") { }
     }
+
+    public class PgSqlTimestampAttribute : CustomFieldAttribute
+    {
+        public PgSqlTimestampAttribute() : base("timestamp[]") { }
+    }
+
+    public class PgSqlTimestampTzAttribute : CustomFieldAttribute
+    {
+        public PgSqlTimestampTzAttribute() : base("timestamp with time zone[]") { }
+    }
 }
