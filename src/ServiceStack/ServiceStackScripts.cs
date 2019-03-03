@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
-using ServiceStack.Host;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Script;
@@ -354,24 +354,45 @@ namespace ServiceStack
     
     public abstract class MinifyScriptBlockBase : ScriptBlock
     {
-        public abstract ICompressor Minifier { get; } 
+        public abstract ICompressor Minifier { get; }
+        
+        //reduce string allocation of block contents at runtime
+        ConcurrentDictionary<ReadOnlyMemory<char>, string[]> AllocatedStringsCache = new ConcurrentDictionary<ReadOnlyMemory<char>, string[]>();
+
+        public ReadOnlyMemory<char> GetMinifiedOutputCache(ReadOnlyMemory<char> contents)
+        {
+            if (Context.DebugMode)
+                return contents;
+            
+            var cachedStrings = AllocatedStringsCache.GetOrAdd(contents, c => {
+                    var str = c.ToString();
+                    return new[] { Name + "::" + str, str }; //cache allocated key + string
+                });
+            
+            if (Context.Cache.TryGetValue(cachedStrings[0], out var oMinified))
+                return (ReadOnlyMemory<char>)oMinified;
+            
+            var minified = Minifier.Compress(cachedStrings[1]).AsMemory();
+            Context.Cache[cachedStrings[0]] = minified;
+            return minified;
+        }
+        
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
         {
             var strFragment = (PageStringFragment)block.Body[0];
 
             if (!block.Argument.IsNullOrWhiteSpace())
             {
-                Capture(scope, block, strFragment, Minifier);
+                Capture(scope, block, strFragment);
             }
             else
             {
-                var minified = Minifier.Compress(strFragment.Value.ToString());
-                await scope.OutputStream.WriteAsync(minified, token);
+               var minified = GetMinifiedOutputCache(strFragment.Value);
+                await scope.OutputStream.WriteAsync(minified.Span, token);
             }
         }
 
-        private static void Capture(ScriptScopeContext scope, PageBlockFragment block, PageStringFragment strFragment,
-            ICompressor minifier)
+        private void Capture(ScriptScopeContext scope, PageBlockFragment block, PageStringFragment strFragment)
         {
             var literal = block.Argument.Span.AdvancePastWhitespace();
             bool appendTo = false;
@@ -381,7 +402,7 @@ namespace ServiceStack
                 literal = literal.Advance("appendTo ".Length);
             }
 
-            var minified = minifier.Compress(strFragment.Value.ToString());
+            var minified = GetMinifiedOutputCache(strFragment.Value);
 
             literal = literal.ParseVarName(out var name);
             var nameString = name.Value();
@@ -392,7 +413,7 @@ namespace ServiceStack
                 return;
             }
 
-            scope.PageResult.Args[nameString] = minified;
+            scope.PageResult.Args[nameString] = minified.ToString();
         }
     }
 

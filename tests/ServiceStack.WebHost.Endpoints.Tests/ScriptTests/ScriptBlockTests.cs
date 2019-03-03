@@ -844,6 +844,7 @@ partialArg in page scope is <b>from page</b>"));
         {
             var context = new ScriptContext {
                 Plugins = { new ServiceStackScriptBlocks() },
+                DebugMode = false,
             }.Init();
 
             var output = context.EvaluateScript("{{#minifyjs}}var a = 1; var b = 2;{{/minifyjs}}");
@@ -858,6 +859,7 @@ partialArg in page scope is <b>from page</b>"));
         {
             var context = new ScriptContext {
                 Plugins = { new ServiceStackScriptBlocks() },
+                DebugMode = false,
             }.Init();
 
             var output = context.EvaluateScript("{{#minifycss}} a { width: 1px; } b { height: 1px; } {{/minifycss}}");
@@ -872,6 +874,7 @@ partialArg in page scope is <b>from page</b>"));
         {
             var context = new ScriptContext {
                 Plugins = { new ServiceStackScriptBlocks() },
+                DebugMode = false,
             }.Init();
 
             var output = context.EvaluateScript("{{#minifyhtml}} <h1 >  Title  </h1>  <p >  Content  </p> {{/minifyhtml}}");
@@ -879,6 +882,61 @@ partialArg in page scope is <b>from page</b>"));
             
             output = context.EvaluateScript("{{#minifyhtml appendTo html}} <h1 >  Title  </h1> {{/minifyhtml}} | {{#minifyhtml appendTo html}} <p >  Content  </p> {{/minifyhtml}} | {{html | raw}}");
             Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  | <h1> Title </h1><p> Content </p>"));
+        }
+
+        [Test]
+        public void Can_use_minifyjs_script_block_with_cache() 
+        {
+            // all js/css/html has same base impl/behavior
+            
+            var context = new ScriptContext {
+                Plugins = { new ServiceStackScriptBlocks() },
+                DebugMode = false,
+            }.Init();
+
+            var js = "var a = 1; var b = 2;";
+            var minified = "var a=1;var b=2;";
+
+            var output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(minified));
+
+            Assert.That(context.Cache["minifyjs::" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
+            output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}"); 
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(minified));
+            
+            context.Cache.Clear();
+
+            var js2 = "function fn ( a ) { }";
+            var minified2 = "function fn(a){}";
+            
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));
+            
+            Assert.That(context.Cache["minifyjs::" + js].ToString().NormalizeNewLines(), Is.EqualTo(minified));
+            Assert.That(context.Cache["minifyjs::" + js2].ToString().NormalizeNewLines(), Is.EqualTo(minified2));
+            
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}" + js + "{{/minifyjs}} | {{#minifyjs appendTo scripts}}" + js2 + "{{/minifyjs}} | {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo($"|  | \n{minified}\n{minified2}"));
+        }
+
+        [Test]
+        public void Does_not_minify_or_cache_in_DebugMode()
+        {
+            // all js/css/html has same base impl/behavior
+            
+            var context = new ScriptContext {
+                Plugins = { new ServiceStackScriptBlocks() },
+                DebugMode = true,
+            }.Init();
+
+            var js = "var a = 1; var b = 2;";
+
+            var output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(js));
+
+            Assert.That(context.Cache.ContainsKey("minifyjs::" + js), Is.False);
+            output = context.EvaluateScript("{{#minifyjs}}" + js + "{{/minifyjs}}"); 
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(js));
         }
 
     }
