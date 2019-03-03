@@ -38,8 +38,24 @@ namespace ServiceStack.DataAnnotations
         public PgSqlIntArrayAttribute() : base("integer[]") { }
     }
 
-    public class PgSqlBigIntArrayAttribute : CustomFieldAttribute
+    public class PgSqlBigIntArrayAttribute : PgSqlLongArrayAttribute { }
+    public class PgSqlLongArrayAttribute : CustomFieldAttribute
     {
-        public PgSqlBigIntArrayAttribute() : base("bigint[]") { }
+        public PgSqlLongArrayAttribute() : base("bigint[]") { }
+    }
+
+    public class PgSqlFloatArrayAttribute : CustomFieldAttribute
+    {
+        public PgSqlFloatArrayAttribute() : base("real[]") { }
+    }
+
+    public class PgSqlDoubleArrayAttribute : CustomFieldAttribute
+    {
+        public PgSqlDoubleArrayAttribute() : base("double precision[]") { }
+    }
+
+    public class PgSqlDecimalArrayAttribute : CustomFieldAttribute
+    {
+        public PgSqlDecimalArrayAttribute() : base("numeric[]") { }
     }
 }
