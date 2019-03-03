@@ -48,7 +48,7 @@ namespace ServiceStack.Script
 
             if (!string.IsNullOrEmpty(Caption))
             {
-                sb.AppendLine(" " + Caption)
+                sb.AppendLine(Caption)
                     .AppendLine();
             }
 

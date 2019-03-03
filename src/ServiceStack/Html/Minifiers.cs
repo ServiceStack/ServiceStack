@@ -29,12 +29,12 @@ namespace ServiceStack.Html
             if (html == null)
                 return html;
 
-            var mymatch = BetweenScriptTagsRegEx.Matches(html);
+            var matches = BetweenScriptTagsRegEx.Matches(html);
             html = BetweenScriptTagsRegEx.Replace(html, string.Empty);
             html = BetweenTagsRegex.Replace(html, string.Empty);
 
             var str = string.Empty;
-            foreach (Match match in mymatch)
+            foreach (Match match in matches)
             {
                 str += match.ToString();
             }
