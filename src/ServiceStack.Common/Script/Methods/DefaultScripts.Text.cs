@@ -1,8 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using ServiceStack.Script;
+using System.Text;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
@@ -111,29 +112,34 @@ namespace ServiceStack.Script
 
     public partial class DefaultScripts
     {
-        public IRawString textList(ScriptScopeContext scope, object target) => textList(scope, target, null);
-        public IRawString textList(ScriptScopeContext scope, object target, object scopeOptions)
+        public IRawString textList(IEnumerable target) => TextList(target, null).ToRawString();
+        public IRawString textList(IEnumerable target, Dictionary<string, object> options) => 
+            TextList(target, TextDumpOptions.Parse(options)).ToRawString();
+        
+        public IRawString textDump(object target) => TextDump(target, null).ToRawString();
+        public IRawString textDump(object target, Dictionary<string, object> options) => 
+            TextDump(target, TextDumpOptions.Parse(options)).ToRawString();
+        
+        public static string TextList(IEnumerable items, TextDumpOptions options)
         {
-            if (target is IDictionary<string, object> single)
-                target = new[] { single };
+            if (options == null)
+                options = new TextDumpOptions();
             
-            var items = target.AssertEnumerable(nameof(textList));
-            var scopedParams = scope.AssertOptions(nameof(textList), scopeOptions);
-            var depth = scopedParams.TryGetValue("depth", out object oDepth) ? (int)oDepth : 0;
-            scopedParams["depth"] = depth + 1;
+            if (items is IDictionary<string, object> single)
+                items = new[] { single };
+
+            var depth = options.Depth;
+            options.Depth += 1;
 
             try
             {
-                scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
-                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
-                var headerStyle = oHeaderStyle as string ?? "splitCase";
+                var headerStyle = options.HeaderStyle;
 
                 List<string> keys = null;
 
-                var table = new MarkdownTable();
-
-                if (scopedParams.TryGetValue("rowNumbers", out object rowNumbers))
-                    table.IncludeRowNumbers = !(rowNumbers is bool b) || b;
+                var table = new MarkdownTable {
+                    IncludeRowNumbers = options.IncludeRowNumbers
+                };
 
                 foreach (var item in items)
                 {
@@ -144,7 +150,7 @@ namespace ServiceStack.Script
                             keys = d.Keys.ToList();
                             foreach (var key in keys)
                             {
-                                table.Headers.Add(Context.DefaultMethods?.textStyle(key, headerStyle));
+                                table.Headers.Add(ViewUtils.StyleText(key, headerStyle));
                             }
                         }
 
@@ -153,16 +159,16 @@ namespace ServiceStack.Script
                         foreach (var key in keys)
                         {
                             var value = d[key];
-                            if (value == target) break; // Prevent cyclical deps like 'it' binding
+                            if (ReferenceEquals(value, items)) break; // Prevent cyclical deps like 'it' binding
                             
                             if (!isComplexType(value))
                             {
-                                row.Add(GetScalarText(value));
+                                row.Add(GetScalarText(value, options.Defaults));
                             }
                             else
                             {
-                                var cellValue = textDump(scope, value, scopeOptions);
-                                row.Add(cellValue.ToRawString());
+                                var cellValue = TextDump(value, options);
+                                row.Add(cellValue);
                             }
                         }
                         table.Rows.Add(row);
@@ -170,67 +176,60 @@ namespace ServiceStack.Script
                 }
 
                 var isEmpty = table.Rows.Count == 0;
-                if (isEmpty && captionIfEmpty == null)
-                    return RawString.Empty;
-
-                scopedParams.TryGetValue("caption", out object caption);
                 if (isEmpty)
-                    caption = captionIfEmpty;
+                    return options.CaptionIfEmpty ?? string.Empty;
 
-                if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                var caption = options.Caption;
+                if (caption != null && !options.HasCaption)
                 {
-                    table.Caption = caption.ToString();
-                    scopedParams["hasCaption"] = true;
+                    table.Caption = caption;
+                    options.HasCaption = true;
                 }
 
                 var txt = table.Render();
-                return txt.ToRawString();
+                return txt;
             }
             finally
             {
-                scopedParams["depth"] = depth;
+                options.Depth = depth;
             }
         }
 
-        public IRawString textDump(ScriptScopeContext scope, object target) => textDump(scope, target, null);
-        public IRawString textDump(ScriptScopeContext scope, object target, object scopeOptions)
+        public static string TextDump(object target, TextDumpOptions options)
         {
-            var scopedParams = scope.AssertOptions(nameof(textDump), scopeOptions);
-            var depth = scopedParams.TryGetValue("depth", out object oDepth) ? (int)oDepth : 0;
-            scopedParams["depth"] = depth + 1;
+            if (options == null)
+                options = new TextDumpOptions();
+            
+            var depth = options.Depth;
+            options.Depth += 1;
 
             try
             {
                 if (!isComplexType(target))
-                    return GetScalarText(target).ToRawString();
+                    return GetScalarText(target, options.Defaults);
 
-                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
-                scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
-                var headerStyle = oHeaderStyle as string ?? "splitCase";
+                var headerStyle = options.HeaderStyle;
 
                 if (target is IEnumerable e)
                 {
                     var objs = e.Map(x => x);
 
                     var isEmpty = objs.Count == 0;
-                    if (isEmpty && captionIfEmpty == null)
-                        return RawString.Empty;
-
-                    var first = !isEmpty ? objs[0] : null;
-                    if (first is IDictionary)
-                        return textList(scope, target, scopeOptions);
-
-                    scopedParams.TryGetValue("caption", out object caption);
                     if (isEmpty)
-                        caption = captionIfEmpty;
-                    
+                        return options.CaptionIfEmpty ?? string.Empty;
+
+                    var first = objs[0];
+                    if (first is IDictionary && objs.Count > 1)
+                        return TextList(objs, options);
+
                     var sb = StringBuilderCacheAlt.Allocate();
 
                     string writeCaption = null; 
-                    if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                    var caption = options.Caption;
+                    if (caption != null && !options.HasCaption)
                     {
-                        writeCaption = caption.ToString();
-                        scopedParams["hasCaption"] = true;
+                        writeCaption = caption;
+                        options.HasCaption = true;
                     }
 
                     if (!isEmpty)
@@ -238,43 +237,48 @@ namespace ServiceStack.Script
                         var keys = new List<string>();
                         var values = new List<string>();
 
-                        if (first is KeyValuePair<string, object>)
+                        string TextKvps(StringBuilder s, IEnumerable<KeyValuePair<string, object>> kvps)
                         {
-                            foreach (var o in objs)
+                            foreach (var kvp in kvps)
                             {
-                                if (o is KeyValuePair<string, object> kvp)
-                                {
-                                    if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
+                                if (kvp.Value == target) 
+                                    break; // Prevent cyclical deps like 'it' binding
 
-                                    keys.Add(Context.DefaultMethods?.textStyle(kvp.Key, headerStyle) ?? "");
-                                    
-                                    var field = !isComplexType(kvp.Value)
-                                        ? GetScalarText(kvp.Value)
-                                        : textDump(scope, kvp.Value, scopeOptions).ToRawString();
-                                    
-                                    values.Add(field);
-                                }
+                                keys.Add(ViewUtils.StyleText(kvp.Key, headerStyle) ?? "");
+
+                                var field = !isComplexType(kvp.Value)
+                                    ? GetScalarText(kvp.Value, options.Defaults)
+                                    : TextDump(kvp.Value, options);
+
+                                values.Add(field);
                             }
 
                             var keySize = keys.Max(x => x.Length);
                             var valuesSize = values.Max(x => x.Length);
 
-                            sb.AppendLine(writeCaption != null 
-                                ? $"| {writeCaption.PadRight(keySize + valuesSize + 2, ' ')} ||" 
+                            s.AppendLine(writeCaption != null
+                                ? $"| {writeCaption.PadRight(keySize + valuesSize + 2, ' ')} ||"
                                 : $"|||");
-                            sb.AppendLine(writeCaption != null 
-                                ? $"|-{"".PadRight(keySize,'-')}-|-{"".PadRight(valuesSize,'-')}-|" 
+                            s.AppendLine(writeCaption != null
+                                ? $"|-{"".PadRight(keySize, '-')}-|-{"".PadRight(valuesSize, '-')}-|"
                                 : "|-|-|");
-                            
+
                             for (var i = 0; i < keys.Count; i++)
                             {
-                                sb.Append("| ")
-                                  .Append(keys[i].PadRight(keySize, ' '))
-                                  .Append(" | ")
-                                  .Append(values[i].PadRight(valuesSize, ' '))
-                                  .Append(" |")
-                                  .AppendLine();
+                                s.Append("| ")
+                                    .Append(keys[i].PadRight(keySize, ' '))
+                                    .Append(" | ")
+                                    .Append(values[i].PadRight(valuesSize, ' '))
+                                    .Append(" |")
+                                    .AppendLine();
                             }
+
+                            return StringBuilderCache.ReturnAndFree(s);
+                        }
+
+                        if (first is KeyValuePair<string, object>)
+                        {
+                            return TextKvps(sb, objs.Cast<KeyValuePair<string, object>>());
                         }
                         else
                         {
@@ -282,7 +286,7 @@ namespace ServiceStack.Script
                             {
                                 foreach (var o in objs)
                                 {
-                                    values.Add(GetScalarText(o));
+                                    values.Add(GetScalarText(o, options.Defaults));
                                 }
                                 
                                 var valuesSize = values.Max(MaxLineLength);
@@ -309,11 +313,13 @@ namespace ServiceStack.Script
                                 if (objs.Count > 1)
                                 {
                                     if (writeCaption != null)
-                                        sb.AppendLine(writeCaption);
+                                        sb.AppendLine(writeCaption)
+                                          .AppendLine();
                             
                                     var rows = objs.Map(x => x.ToObjectDictionary());
-                                    var list = textList(scope, rows, scopeOptions).ToRawString();
+                                    var list = TextList(rows, options);
                                     sb.AppendLine(list);
+                                    return StringBuilderCache.ReturnAndFree(sb);
                                 }
                                 else
                                 {
@@ -321,11 +327,11 @@ namespace ServiceStack.Script
                                     {
                                         if (!isComplexType(o))
                                         {
-                                            values.Add(GetScalarText(o));
+                                            values.Add(GetScalarText(o, options.Defaults));
                                         }
                                         else
                                         {
-                                            var body = textDump(scope, o, scopeOptions).ToRawString();
+                                            var body = TextDump(o, options);
                                             values.Add(body);
                                         }
                                     }
@@ -351,18 +357,18 @@ namespace ServiceStack.Script
                         }
                     }
 
-                    return StringBuilderCache.ReturnAndFree(sb).ToRawString();
+                    return StringBuilderCache.ReturnAndFree(sb);
                 }
 
-                return textDump(scope, target.ToObjectDictionary(), scopeOptions);
+                return TextDump(target.ToObjectDictionary(), options);
             }
             finally 
             {
-                scopedParams["depth"] = depth;
+                options.Depth = depth;
             }
         }
 
-        private int MaxLineLength(string s)
+        private static int MaxLineLength(string s)
         {
             if (string.IsNullOrEmpty(s))
                 return 0;
@@ -376,7 +382,7 @@ namespace ServiceStack.Script
             return len;
         }
 
-        private string GetScalarText(object target)
+        private static string GetScalarText(object target, DefaultScripts defaults)
         {
             if (target == null || target.ToString() == string.Empty)
                 return string.Empty;
@@ -388,17 +394,17 @@ namespace ServiceStack.Script
             {
                 var isMoney = dec == Math.Floor(dec * 100);
                 if (isMoney)
-                    return Context.DefaultMethods?.currency(dec) ?? dec.ToString();
+                    return defaults?.currency(dec) ?? dec.ToString(defaults.GetDefaultCulture());
             }
 
             if (target.GetType().IsNumericType() || target is bool)
                 return target.ToString();
 
             if (target is DateTime d)
-                return Context.DefaultMethods?.dateFormat(d) ?? d.ToString();
+                return defaults?.dateFormat(d) ?? d.ToString(defaults.GetDefaultCulture());
 
             if (target is TimeSpan t)
-                return Context.DefaultMethods?.timeFormat(t) ?? t.ToString();
+                return defaults?.timeFormat(t) ?? t.ToString();
 
             return target.ToString() ?? "";
         }

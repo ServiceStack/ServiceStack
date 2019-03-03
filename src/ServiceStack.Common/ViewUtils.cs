@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using ServiceStack.IO;
@@ -52,15 +53,81 @@ namespace ServiceStack
         public bool RegisterModuleInAmd { get; set; }
     }
 
+    public class TextDumpOptions
+    {
+        public TextStyle HeaderStyle { get; set; }
+        public string Caption { get; set; }
+        public string CaptionIfEmpty { get; set; }
+        public bool IncludeRowNumbers { get; set; } = true;
+
+        public DefaultScripts Defaults { get; set; } = ViewUtils.DefaultScripts;
+        
+        internal int Depth { get; set; }
+        internal bool HasCaption { get; set; }
+
+        public static TextDumpOptions Parse(Dictionary<string, object> options)
+        {
+            return new TextDumpOptions 
+            {
+                HeaderStyle = options.TryGetValue("headerStyle", out var oHeaderStyle)
+                    ? oHeaderStyle.ConvertTo<TextStyle>()
+                    : TextStyle.SplitCase,
+                Caption = options.TryGetValue("caption", out var caption)
+                    ? caption?.ToString()
+                    : null,
+                CaptionIfEmpty = options.TryGetValue("captionIfEmpty", out var captionIfEmpty)
+                    ? captionIfEmpty?.ToString()
+                    : null,
+                IncludeRowNumbers = !options.TryGetValue("rowNumbers", out var rowNumbers) 
+                    || (!(rowNumbers is bool b) || b),
+            };
+        }
+    }
+
+    public enum TextStyle
+    {
+        SplitCase,
+        Humanize,
+        TitleCase,
+        PascalCase,
+        CamelCase,
+    }
+
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
     /// </summary>
     public static class ViewUtils
     {
+        internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
         private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;
+        
+        public static CultureInfo GetDefaultCulture(this DefaultScripts defaultScripts) => 
+            defaultScripts?.Context?.Args[ScriptConstants.DefaultCulture] as CultureInfo ?? ScriptConfig.DefaultCulture;
+
+        public static string TextDump(this object target) => DefaultScripts.TextDump(target, null); 
+        public static string TextDump(this object target, TextDumpOptions options) => DefaultScripts.TextDump(target, options); 
+        
+        public static string StyleText(string text, TextStyle textStyle)
+        {
+            if (text == null) return null;
+            switch (textStyle)
+            {
+                case TextStyle.SplitCase:
+                    return DefaultScripts.splitCase(text);
+                case TextStyle.Humanize:
+                    return DefaultScripts.humanize(text);
+                case TextStyle.TitleCase:
+                    return DefaultScripts.titleCase(text);
+                case TextStyle.PascalCase:
+                    return DefaultScripts.pascalCase(text);
+                case TextStyle.CamelCase:
+                    return DefaultScripts.camelCase(text);
+            }
+            return text;
+        }
         
         public static string HtmlHiddenInputs(IEnumerable<KeyValuePair<string,object>> inputValues)
         {
