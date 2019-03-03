@@ -111,6 +111,7 @@ namespace ServiceStack
             ScriptMethods.Add(new InfoScripts());
             ScriptMethods.Add(new ServiceStackScripts());
             ScriptMethods.Add(new BootstrapScripts());
+            Plugins.Add(new ServiceStackScriptBlocks());
             Plugins.Add(new MarkdownScriptPlugin { RegisterPageFormat = false });
             SkipExecutingFiltersIfError = true;
         }

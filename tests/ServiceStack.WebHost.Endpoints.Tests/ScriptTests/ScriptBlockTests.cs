@@ -838,5 +838,48 @@ partialArg in page scope is <b>from page</b>"));
             result = context.EvaluateScript(@"{{#each templates}}{{index}} =>{{ ` ${it} ` | evalTemplate({expenses: 100 * index}) }}| {{/each}}");
             Assert.That(result, Is.EqualTo("0 => 1. 1000 - 0 | 1 => 2. 2000 - 100 | 2 => 3. 3000 - 200 | "));
         }
+
+        [Test]
+        public void Can_use_minifyjs_script_block()
+        {
+            var context = new ScriptContext {
+                Plugins = { new ServiceStackScriptBlocks() },
+            }.Init();
+
+            var output = context.EvaluateScript("{{#minifyjs}}var a = 1; var b = 2;{{/minifyjs}}");
+            Assert.That(output.Trim(), Is.EqualTo("var a=1;var b=2;"));
+            
+            output = context.EvaluateScript("{{#minifyjs appendTo scripts}}var a = 1; var b = 2;{{/minifyjs}} | {{#minifyjs appendTo scripts}}function fn ( a ) { }{{/minifyjs}} | {{scripts}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  | \nvar a=1;var b=2;\nfunction fn(a){}"));
+        }
+
+        [Test]
+        public void Can_use_minifycss_script_block()
+        {
+            var context = new ScriptContext {
+                Plugins = { new ServiceStackScriptBlocks() },
+            }.Init();
+
+            var output = context.EvaluateScript("{{#minifycss}} a { width: 1px; } b { height: 1px; } {{/minifycss}}");
+            Assert.That(output.Trim(), Is.EqualTo("a{width:1px}b{height:1px}"));
+            
+            output = context.EvaluateScript("{{#minifycss appendTo css}} a { width: 1px; } {{/minifycss}} | {{#minifycss appendTo css}} b { height: 1px; } {{/minifycss}} | {{css}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  |  a{width:1px} b{height:1px}"));
+        }
+
+        [Test]
+        public void Can_use_minifyhtml_script_block()
+        {
+            var context = new ScriptContext {
+                Plugins = { new ServiceStackScriptBlocks() },
+            }.Init();
+
+            var output = context.EvaluateScript("{{#minifyhtml}} <h1 >  Title  </h1>  <p >  Content  </p> {{/minifyhtml}}");
+            Assert.That(output.Trim(), Is.EqualTo("<h1> Title </h1> <p> Content </p>"));
+            
+            output = context.EvaluateScript("{{#minifyhtml appendTo html}} <h1 >  Title  </h1> {{/minifyhtml}} | {{#minifyhtml appendTo html}} <p >  Content  </p> {{/minifyhtml}} | {{html | raw}}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("|  | <h1> Title </h1><p> Content </p>"));
+        }
+
     }
 }

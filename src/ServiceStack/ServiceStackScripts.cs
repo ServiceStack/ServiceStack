@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 using ServiceStack.Auth;
 using ServiceStack.Host;
 using ServiceStack.Html;
@@ -349,4 +351,79 @@ namespace ServiceStack
                 }).ToRawString();
         }
     }
+    
+    public abstract class MinifyScriptBlockBase : ScriptBlock
+    {
+        public abstract ICompressor Minifier { get; } 
+        public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
+        {
+            var strFragment = (PageStringFragment)block.Body[0];
+
+            if (!block.Argument.IsNullOrWhiteSpace())
+            {
+                Capture(scope, block, strFragment, Minifier);
+            }
+            else
+            {
+                var minified = Minifier.Compress(strFragment.Value.ToString());
+                await scope.OutputStream.WriteAsync(minified, token);
+            }
+        }
+
+        private static void Capture(ScriptScopeContext scope, PageBlockFragment block, PageStringFragment strFragment,
+            ICompressor minifier)
+        {
+            var literal = block.Argument.Span.AdvancePastWhitespace();
+            bool appendTo = false;
+            if (literal.StartsWith("appendTo "))
+            {
+                appendTo = true;
+                literal = literal.Advance("appendTo ".Length);
+            }
+
+            var minified = minifier.Compress(strFragment.Value.ToString());
+
+            literal = literal.ParseVarName(out var name);
+            var nameString = name.Value();
+            if (appendTo && scope.PageResult.Args.TryGetValue(nameString, out var oVar)
+                         && oVar is string existingString)
+            {
+                scope.PageResult.Args[nameString] = existingString + minified;
+                return;
+            }
+
+            scope.PageResult.Args[nameString] = minified;
+        }
+    }
+
+    public class MinifyJsScriptBlock : MinifyScriptBlockBase
+    {
+        public override string Name => "minifyjs";
+        public override ICompressor Minifier => Minifiers.JavaScript;
+    }
+
+    public class MinifyCssScriptBlock : MinifyScriptBlockBase
+    {
+        public override string Name => "minifycss";
+        public override ICompressor Minifier => Minifiers.Css;
+    }
+
+    public class MinifyHtmlScriptBlock : MinifyScriptBlockBase
+    {
+        public override string Name => "minifyhtml";
+        public override ICompressor Minifier => Minifiers.Html;
+    }    
+    
+    public class ServiceStackScriptBlocks : IScriptPlugin
+    {
+        public void Register(ScriptContext context)
+        {
+            context.ScriptBlocks.AddRange(new ScriptBlock[] {
+                new MinifyJsScriptBlock(), 
+                new MinifyCssScriptBlock(), 
+                new MinifyHtmlScriptBlock(), 
+            });
+        }
+    }
+
 }
