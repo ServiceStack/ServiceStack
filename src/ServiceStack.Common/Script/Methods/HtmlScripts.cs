@@ -12,30 +12,35 @@ namespace ServiceStack.Script
     
     public class HtmlScripts : ScriptMethods
     {
-        public IRawString htmlList(ScriptScopeContext scope, object target) => htmlList(scope, target, null);
-        public IRawString htmlList(ScriptScopeContext scope, object target, object scopeOptions)
+        public IRawString htmlList(IEnumerable target) => HtmlList(target, new HtmlDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
+        public IRawString htmlList(IEnumerable target, Dictionary<string, object> options) => 
+            HtmlList(target, HtmlDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();
+        
+        public IRawString htmlDump(object target) => HtmlDump(target, new HtmlDumpOptions { Defaults = Context.DefaultMethods }).ToRawString();
+        public IRawString htmlDump(object target, Dictionary<string, object> options) => 
+            HtmlDump(target, HtmlDumpOptions.Parse(options, Context.DefaultMethods)).ToRawString();
+
+        public static string HtmlList(IEnumerable items, HtmlDumpOptions options)
         {
-            if (target is IDictionary<string, object> single)
-                target = new[] { single };
+            if (options == null)
+                options = new HtmlDumpOptions();
             
-            var items = target.AssertEnumerable(nameof(htmlList));
-            var scopedParams = scope.AssertOptions(nameof(htmlList), scopeOptions);
-            var depth = scopedParams.TryGetValue("depth", out object oDepth) ? (int)oDepth : 0;
-            var childDepth = scopedParams.TryGetValue("childDepth", out object oChildDepth) ? oChildDepth.ConvertTo<int>() : 1;
-            scopedParams["depth"] = depth + 1;
+            if (items is IDictionary<string, object> single)
+                items = new[] { single };
+            
+            var depth = options.Depth;
+            var childDepth = options.ChildDepth;
+            options.Depth += 1;
 
             try
             {
-                scopedParams.TryGetValue("className", out object parentClass);
-                scopedParams.TryGetValue("childClass", out object childClass);
+                var parentClass = options.ClassName;
+                var childClass = options.ChildClass;
                 var className = ((depth < childDepth ? parentClass : childClass ?? parentClass) 
-                                 ?? Context.Args[ScriptConstants.DefaultTableClassName]).ToString();
+                                 ?? options.Defaults.GetDefaultTableClassName());
 
-                scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
-                scopedParams.TryGetValue("headerTag", out object oHeaderTag);
-                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
-                var headerTag = oHeaderTag as string ?? "th";
-                var headerStyle = oHeaderStyle as string ?? "splitCase";
+                var headerStyle = options.HeaderStyle;
+                var headerTag = options.HeaderTag ?? "th";
 
                 var sbHeader = StringBuilderCache.Allocate();
                 var sbRows = StringBuilderCacheAlt.Allocate();
@@ -52,7 +57,7 @@ namespace ServiceStack.Script
                             foreach (var key in keys)
                             {
                                 sbHeader.Append('<').Append(headerTag).Append('>');
-                                sbHeader.Append(Context.DefaultMethods?.textStyle(key, headerStyle)?.HtmlEncode());
+                                sbHeader.Append(ViewUtils.StyleText(key, headerStyle)?.HtmlEncode());
                                 sbHeader.Append("</").Append(headerTag).Append('>');
                             }
                             sbHeader.Append("</tr>");
@@ -62,17 +67,18 @@ namespace ServiceStack.Script
                         foreach (var key in keys)
                         {
                             var value = d[key];
-                            if (value == target) break; // Prevent cyclical deps like 'it' binding
+                            if (ReferenceEquals(value, items)) 
+                                break; // Prevent cyclical deps like 'it' binding
                             
                             sbRows.Append("<td>");
 
                             if (!isComplexType(value))
                             {
-                                sbRows.Append(GetScalarHtml(value));
+                                sbRows.Append(GetScalarHtml(value, options.Defaults));
                             }
                             else
                             {
-                                var htmlValue = htmlDump(scope, value, scopeOptions);
+                                var htmlValue = HtmlDump(value, options);
                                 sbRows.Append(htmlValue.ToRawString());
                             }
 
@@ -83,8 +89,8 @@ namespace ServiceStack.Script
                 }
 
                 var isEmpty = sbRows.Length == 0;
-                if (isEmpty && captionIfEmpty == null)
-                    return RawString.Empty;
+                if (isEmpty && options.CaptionIfEmpty == null)
+                    return string.Empty;
 
                 var htmlHeaders = StringBuilderCache.ReturnAndFree(sbHeader);
                 var htmlRows = StringBuilderCacheAlt.ReturnAndFree(sbRows);
@@ -92,21 +98,21 @@ namespace ServiceStack.Script
                 var sb = StringBuilderCache.Allocate();
                 sb.Append("<table");
 
-                if (scopedParams.TryGetValue("id", out object id))
-                    sb.Append(" id=\"").Append(id).Append("\"");
+                if (options.Id != null)
+                    sb.Append(" id=\"").Append(options.Id).Append("\"");
                 if (!string.IsNullOrEmpty(className))
                     sb.Append(" class=\"").Append(className).Append("\"");
 
                 sb.Append(">");
 
-                scopedParams.TryGetValue("caption", out object caption);
+                var caption = options.Caption;
                 if (isEmpty)
-                    caption = captionIfEmpty;
+                    caption = options.CaptionIfEmpty;
 
-                if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                if (caption != null && !options.HasCaption)
                 {
-                    sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
-                    scopedParams["hasCaption"] = true;
+                    sb.Append("<caption>").Append(caption.HtmlEncode()).Append("</caption>");
+                    options.HasCaption = true;
                 }
 
                 if (htmlHeaders.Length > 0)
@@ -117,66 +123,68 @@ namespace ServiceStack.Script
                 sb.Append("</table>");
 
                 var html = StringBuilderCache.ReturnAndFree(sb);
-                return html.ToRawString();
+                return html;
             }
             finally
             {
-                scopedParams["depth"] = depth;
+                options.Depth = depth;
             }
         }
 
-        public IRawString htmlDump(ScriptScopeContext scope, object target) => htmlDump(scope, target, null);
-        public IRawString htmlDump(ScriptScopeContext scope, object target, object scopeOptions)
+        public static string HtmlDump(object target, HtmlDumpOptions options)
         {
-            var scopedParams = scope.AssertOptions(nameof(htmlDump), scopeOptions);
-            var depth = scopedParams.TryGetValue("depth", out object oDepth) ? (int)oDepth : 0;
-            var childDepth = scopedParams.TryGetValue("childDepth", out object oChildDepth) ? oChildDepth.ConvertTo<int>() : 1;
-            scopedParams["depth"] = depth + 1;
+            if (options == null)
+                options = new HtmlDumpOptions();
+            
+            var depth = options.Depth;
+            var childDepth = options.ChildDepth;
+            options.Depth += 1;
 
             try
             {
                 if (!isComplexType(target))
-                    return GetScalarHtml(target).ToRawString();
+                    return GetScalarHtml(target, options.Defaults);
 
-                scopedParams.TryGetValue("captionIfEmpty", out object captionIfEmpty);
-                scopedParams.TryGetValue("headerStyle", out object oHeaderStyle);
-                scopedParams.TryGetValue("className", out object parentClass);
-                scopedParams.TryGetValue("childClass", out object childClass);
-                var headerStyle = oHeaderStyle as string ?? "splitCase";
+                var parentClass = options.ClassName;
+                var childClass = options.ChildClass;
                 var className = ((depth < childDepth ? parentClass : childClass ?? parentClass) 
-                                 ?? Context.Args[ScriptConstants.DefaultTableClassName]).ToString();
+                                 ?? options.Defaults.GetDefaultTableClassName());
+
+                var headerStyle = options.HeaderStyle;
+                var headerTag = options.HeaderTag ?? "th";
 
                 if (target is IEnumerable e)
                 {
                     var objs = e.Map(x => x);
 
                     var isEmpty = objs.Count == 0;
-                    if (isEmpty && captionIfEmpty == null)
-                        return RawString.Empty;
+                    if (isEmpty && options.CaptionIfEmpty == null)
+                        return string.Empty;
 
                     var first = !isEmpty ? objs[0] : null;
-                    if (first is IDictionary)
-                        return htmlList(scope, target, scopeOptions);
+                    if (first is IDictionary && objs.Count > 1)
+                        return HtmlList(objs, options);
 
                     var sb = StringBuilderCacheAlt.Allocate();
 
                     sb.Append("<table");
 
-                    if (scopedParams.TryGetValue("id", out object id))
-                        sb.Append(" id=\"").Append(id).Append("\"");
-                    
-                    sb.Append(" class=\"").Append(className).Append("\"");
+                    if (options.Id != null)
+                        sb.Append(" id=\"").Append(options.Id).Append("\"");
+                    if (!string.IsNullOrEmpty(className))
+                        sb.Append(" class=\"").Append(className).Append("\"");
 
                     sb.Append(">");
 
-                    scopedParams.TryGetValue("caption", out object caption);
+                    var caption = options.Caption;
                     if (isEmpty)
-                        caption = captionIfEmpty;
+                        caption = options.CaptionIfEmpty;
 
-                    if (caption != null && !scopedParams.TryGetValue("hasCaption", out _))
+                    var holdCaption = options.HasCaption;
+                    if (caption != null && !options.HasCaption)
                     {
-                        sb.Append("<caption>").Append(caption.ToString().HtmlEncode()).Append("</caption>");
-                        scopedParams["hasCaption"] = true;
+                        sb.Append("<caption>").Append(caption.HtmlEncode()).Append("</caption>");
+                        options.HasCaption = true;
                     }
 
                     if (!isEmpty)
@@ -192,17 +200,17 @@ namespace ServiceStack.Script
                                     if (kvp.Value == target) break; // Prevent cyclical deps like 'it' binding
 
                                     sb.Append("<tr>");
-                                    sb.Append("<th>");
-                                    sb.Append(Context.DefaultMethods?.textStyle(kvp.Key, headerStyle)?.HtmlEncode());
-                                    sb.Append("</th>");
+                                    sb.Append('<').Append(headerTag).Append('>');
+                                    sb.Append(ViewUtils.StyleText(kvp.Key, headerStyle)?.HtmlEncode());
+                                    sb.Append("</").Append(headerTag).Append('>');
                                     sb.Append("<td>");
                                     if (!isComplexType(kvp.Value))
                                     {
-                                        sb.Append(GetScalarHtml(kvp.Value));
+                                        sb.Append(GetScalarHtml(kvp.Value, options.Defaults));
                                     }
                                     else
                                     {
-                                        var body = htmlDump(scope, kvp.Value, scopeOptions);
+                                        var body = HtmlDump(kvp.Value, options);
                                         sb.Append(body.ToRawString());
                                     }
                                     sb.Append("</td>");
@@ -216,7 +224,7 @@ namespace ServiceStack.Script
                             {
                                 sb.Append("<tr>");
                                 sb.Append("<td>");
-                                sb.Append(GetScalarHtml(o));
+                                sb.Append(GetScalarHtml(o, options.Defaults));
                                 sb.Append("</td>");
                                 sb.Append("</tr>");
                             }
@@ -226,12 +234,9 @@ namespace ServiceStack.Script
                             if (objs.Count > 1)
                             {
                                 var rows = objs.Map(x => x.ToObjectDictionary());
-                                sb.Append("<tr>");
-                                sb.Append("<td>");
-                                var list = htmlList(scope, rows, scopeOptions);
-                                sb.Append(list.ToRawString());
-                                sb.Append("</td>");
-                                sb.Append("</tr>");
+                                StringBuilderCache.Free(sb);
+                                options.HasCaption = holdCaption;
+                                return HtmlList(rows, options);
                             }
                             else
                             {
@@ -242,13 +247,13 @@ namespace ServiceStack.Script
                                     if (!isComplexType(o))
                                     {
                                         sb.Append("<td>");
-                                        sb.Append(GetScalarHtml(o));
+                                        sb.Append(GetScalarHtml(o, options.Defaults));
                                         sb.Append("</td>");
                                     }
                                     else
                                     {
                                         sb.Append("<td>");
-                                        var body = htmlDump(scope, o, scopeOptions);
+                                        var body = HtmlDump(o, options);
                                         sb.Append(body.ToRawString());
                                         sb.Append("</td>");
                                     }
@@ -264,18 +269,18 @@ namespace ServiceStack.Script
                     sb.Append("</table>");
 
                     var html = StringBuilderCacheAlt.ReturnAndFree(sb);
-                    return html.ToRawString();
+                    return html;
                 }
 
-                return htmlDump(scope, target.ToObjectDictionary(), scopeOptions);
+                return HtmlDump(target.ToObjectDictionary(), options);
             }
             finally 
             {
-                scopedParams["depth"] = depth;
+                options.Depth = depth;
             }
         }
 
-        private string GetScalarHtml(object target)
+        private static string GetScalarHtml(object target, DefaultScripts defaults)
         {
             if (target == null || target.ToString() == string.Empty)
                 return string.Empty;
@@ -287,17 +292,17 @@ namespace ServiceStack.Script
             {
                 var isMoney = dec == Math.Floor(dec * 100);
                 if (isMoney)
-                    return Context.DefaultMethods?.currency(dec) ?? dec.ToString();
+                    return defaults?.currency(dec) ?? dec.ToString(defaults.GetDefaultCulture());
             }
 
             if (target.GetType().IsNumericType() || target is bool)
                 return target.ToString();
 
             if (target is DateTime d)
-                return Context.DefaultMethods?.dateFormat(d) ?? d.ToString();
+                return defaults?.dateFormat(d) ?? d.ToString(defaults.GetDefaultCulture());
 
             if (target is TimeSpan t)
-                return Context.DefaultMethods?.timeFormat(t) ?? t.ToString();
+                return defaults?.timeFormat(t) ?? t.ToString();
 
             return (target.ToString() ?? "").HtmlEncode();
         }
