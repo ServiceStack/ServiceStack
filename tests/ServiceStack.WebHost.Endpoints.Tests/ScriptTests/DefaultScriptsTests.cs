@@ -1672,5 +1672,72 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
         }
 
+        class A
+        {
+            public int a { get; set; }
+            public A(int a) => this.a = a;
+        }
+
+        class B 
+        {
+            public int a { get; set; }
+            public string b { get; set; }
+            public B(int a, string b)
+            {
+                this.a = a;
+                this.b = b;
+            }
+        }
+
+        [Test]
+        public void Can_use_textDump()
+        {
+            var context = new ScriptContext().Init();
+
+            
+            Assert.That(context.EvaluateScript("{{ {a:1} | textDump }}").NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |".NormalizeNewLines()));
+            
+            Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | textDump }}").NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |\n| b | x |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | textDump }}", new ObjectDictionary { ["o"] = new B(1, "x") }).NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |\n| b | x |".NormalizeNewLines()));
+
+
+            Assert.That(context.EvaluateScript("{{ {a:1} | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("| C    ||\n|---|---|\n| a | 1 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
+                Is.EqualTo("| C    ||\n|---|---|\n| a | 1 |".NormalizeNewLines()));
+            
+            
+            Assert.That(context.EvaluateScript("{{ [{a:1},{a:2}] | textDump({ caption: 'C', rowNumbers:false }) }}").NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new A(1), new A(2) } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
+
+            Assert.That(context.EvaluateScript("{{ [{a:1,b:'x'},{a:2,b:'y'}] | textDump({ caption: 'C', rowNumbers:false }) }}").NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
+            
+
+            Assert.That(context.EvaluateScript("{{ [{a:1},{a:2}] | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new A(1), new A(2) } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |".NormalizeNewLines()));
+
+            Assert.That(context.EvaluateScript("{{ [{a:1,b:'x'},{a:2,b:'y'}] | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
+
+            
+            Assert.That(context.EvaluateScript("{{ [] | textDump({ caption: 'C', captionIfEmpty: 'E' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("E".NormalizeNewLines()));
+        }
+
+
     }
 }

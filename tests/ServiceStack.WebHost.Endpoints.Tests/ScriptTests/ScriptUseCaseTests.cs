@@ -2,8 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using NUnit.Framework;
+using ServiceStack.Data;
+using ServiceStack.IO;
+using ServiceStack.OrmLite;
+using ServiceStack.OrmLite.Sqlite;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -161,9 +167,68 @@ Monthly Savings: <b>$2,500.00</b>")));
 {{Body}}
 {{/each}}", new Dictionary<string, object> { ["nameContains"] = "atan" });
             
-            Assert.That(TestUtils.NormalizeNewLines(results), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(results.NormalizeNewLines(), Is.EqualTo(@"
 | atan
-| atan2(x)")));
+| atan2(x)".NormalizeNewLines()));
         }
+        
+
+        [Test]
+        public void Can_convert_dbScript_Results_to_Customer_Poco()
+        {
+//            OrmLiteUtils.PrintSql();
+
+            void AssertProduct(Product actual, Product expected)
+            {
+                Assert.That(actual.ProductId, Is.EqualTo(expected.ProductId));
+                Assert.That(actual.ProductName, Is.EqualTo(expected.ProductName));
+                Assert.That(actual.Category, Is.EqualTo(expected.Category));
+                Assert.That(actual.UnitPrice, Is.EqualTo(expected.UnitPrice));
+                Assert.That(actual.UnitsInStock, Is.EqualTo(expected.UnitsInStock));
+            }
+
+            var product1 = QueryData.Products[0];
+            var product2 = QueryData.Products[1];
+            var context = new ScriptContext
+            {
+                ScriptMethods = { new DbScriptsAsync() },
+                Args = {
+                    ["id"] = product1.ProductId,
+                }
+            };
+            
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteOrmLiteDialectProvider.Instance);
+            context.Container.AddSingleton<IDbConnectionFactory>(() => dbFactory);
+            context.Init();
+            
+            using (var db = context.Container.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<Product>();
+                db.Insert(product1);
+                db.Insert(product2);
+            }
+                
+
+            var result = context.Evaluate<Product>("{{ `select * from product where productId=@id` | dbSingle({ id }) | return }}");
+
+            result.TextDump().Print();
+            
+            AssertProduct(result, product1);
+
+            var results = context.Evaluate<Product[]>("{{ `select * from product where productId IN (@ids) order by productId` | dbSelect({ ids }) | return }}", 
+                new ObjectDictionary {
+                    ["ids"] = new[]{ product1.ProductId, product2.ProductId },
+                });
+
+            results.TextDump().Print();
+            
+            Assert.That(results.Length, Is.EqualTo(2));
+
+            AssertProduct(results[0], product1);
+            AssertProduct(results[1], product2);
+            
+//            OrmLiteUtils.UnPrintSql();
+        }
+
     }
 }
