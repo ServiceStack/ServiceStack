@@ -75,6 +75,8 @@ namespace ServiceStack
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
+        
+        public bool AllowGetLoginRequests { get; set; }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
