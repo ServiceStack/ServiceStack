@@ -176,8 +176,6 @@ Monthly Savings: <b>$2,500.00</b>")));
         [Test]
         public void Can_convert_dbScript_Results_to_Customer_Poco()
         {
-//            OrmLiteUtils.PrintSql();
-
             void AssertProduct(Product actual, Product expected)
             {
                 Assert.That(actual.ProductId, Is.EqualTo(expected.ProductId));
@@ -226,8 +224,34 @@ Monthly Savings: <b>$2,500.00</b>")));
 
             AssertProduct(results[0], product1);
             AssertProduct(results[1], product2);
+        }
+
+        [Test]
+        public void Can_use_GetTableNames_with_textDump()
+        {
+            var context = new ScriptContext
+            {
+                ScriptMethods = { new DbScriptsAsync() },
+            };
             
-//            OrmLiteUtils.UnPrintSql();
+            var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteOrmLiteDialectProvider.Instance);
+            context.Container.AddSingleton<IDbConnectionFactory>(() => dbFactory);
+            context.Init();
+            
+            using (var db = context.Container.Resolve<IDbConnectionFactory>().Open())
+            {
+                db.DropAndCreateTable<Customer>();
+                db.DropAndCreateTable<Product>();
+                
+                QueryData.Customers.Take(1).Each(x => db.Insert(x));
+                QueryData.Products.Take(3).Each(x => db.Insert(x));
+            }
+
+            var output = context.EvaluateScript("{{ dbTableNames | textDump({ caption:'Tables' }) }}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("| Tables   |\n|----------|\n| Customer |\n| Product  |"));
+            
+            output = context.EvaluateScript("{{ dbTableNamesWithRowCounts | textDump({ caption:'Tables' }) }}");
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo("| Tables      ||\n|----------|---|\n| Product  | 3 |\n| Customer | 1 |"));
         }
 
     }
