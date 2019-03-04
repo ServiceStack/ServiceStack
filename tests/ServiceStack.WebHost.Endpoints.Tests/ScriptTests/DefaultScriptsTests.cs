@@ -1694,15 +1694,24 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
 
+            var kvpA1 = new KeyValuePair<string,object>("a",1);
+            var kvpA2 = new KeyValuePair<string,object>("a",2);
+            var kvpBx = new KeyValuePair<string,object>("b","x");
+            var kvpBy = new KeyValuePair<string,object>("b","y");
+            
             
             Assert.That(context.EvaluateScript("{{ {a:1} | textDump }}").NormalizeNewLines(), 
                 Is.EqualTo("|||\n|-|-|\n| a | 1 |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
                 Is.EqualTo("|||\n|-|-|\n| a | 1 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump }}", new ObjectDictionary { ["o"] = kvpA1 }).NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |".NormalizeNewLines()));
             
             Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | textDump }}").NormalizeNewLines(), 
                 Is.EqualTo("|||\n|-|-|\n| a | 1 |\n| b | x |".NormalizeNewLines()));
-            Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | textDump }}", new ObjectDictionary { ["o"] = new B(1, "x") }).NormalizeNewLines(), 
+            Assert.That(context.EvaluateScript("{{ o | textDump }}", new ObjectDictionary { ["o"] = new B(1, "x") }).NormalizeNewLines(), 
+                Is.EqualTo("|||\n|-|-|\n| a | 1 |\n| b | x |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump }}", new ObjectDictionary { ["o"] = new[]{ kvpA1, kvpBx } }).NormalizeNewLines(), 
                 Is.EqualTo("|||\n|-|-|\n| a | 1 |\n| b | x |".NormalizeNewLines()));
 
 
@@ -1710,16 +1719,22 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("| C    ||\n|---|---|\n| a | 1 |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
                 Is.EqualTo("| C    ||\n|---|---|\n| a | 1 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = kvpA1 }).NormalizeNewLines(), 
+                Is.EqualTo("| C    ||\n|---|---|\n| a | 1 |".NormalizeNewLines()));
             
             
             Assert.That(context.EvaluateScript("{{ [{a:1},{a:2}] | textDump({ caption: 'C', rowNumbers:false }) }}").NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new A(1), new A(2) } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ kvpA1, kvpA2 } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
 
             Assert.That(context.EvaluateScript("{{ [{a:1,b:'x'},{a:2,b:'y'}] | textDump({ caption: 'C', rowNumbers:false }) }}").NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy },  } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
             
 
@@ -1727,12 +1742,26 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("C\n\n| # | a |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new A(1), new A(2) } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| # | a |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ kvpA1, kvpA2 } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a |\n|---|---|\n| 1 | 1 |\n| 2 | 2 |".NormalizeNewLines()));
 
             Assert.That(context.EvaluateScript("{{ [{a:1,b:'x'},{a:2,b:'y'}] | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy }, } }).NormalizeNewLines(), 
+                Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
 
+            
+            Assert.That(context.EvaluateScript("{{ [1,2] | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("| C |\n|---|\n| 1 |\n| 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ ['a','b'] | textDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("| C |\n|---|\n| a |\n| b |".NormalizeNewLines()));
+            
+            Assert.That(context.EvaluateScript("{{ [1,2] | textDump }}").NormalizeNewLines(), 
+                Is.EqualTo("||\n|-|\n| 1 |\n| 2 |".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ ['a','b'] | textDump }}").NormalizeNewLines(), 
+                Is.EqualTo("||\n|-|\n| a |\n| b |".NormalizeNewLines()));
             
             Assert.That(context.EvaluateScript("{{ [] | textDump({ caption: 'C', captionIfEmpty: 'E' }) }}").NormalizeNewLines(), 
                 Is.EqualTo("E".NormalizeNewLines()));
@@ -1743,15 +1772,24 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
 
+            var kvpA1 = new KeyValuePair<string,object>("a",1);
+            var kvpA2 = new KeyValuePair<string,object>("a",2);
+            var kvpBx = new KeyValuePair<string,object>("b","x");
+            var kvpBy = new KeyValuePair<string,object>("b","y");
+
             
             Assert.That(context.EvaluateScript("{{ {a:1} | htmlDump }}").NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | htmlDump }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | htmlDump }}", new ObjectDictionary { ["o"] = kvpA1 }).NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
             
             Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | htmlDump }}").NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr><tr><th>b</th><td>x</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | htmlDump }}", new ObjectDictionary { ["o"] = new B(1, "x") }).NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr><tr><th>b</th><td>x</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ {a:1,b:'x'} | htmlDump }}", new ObjectDictionary { ["o"] = new[]{ kvpA1, kvpBx } }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><tbody><tr><th>a</th><td>1</td></tr><tr><th>b</th><td>x</td></tr></tbody></table>".NormalizeNewLines()));
 
 
@@ -1759,17 +1797,34 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new A(1) }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = kvpA1 }).NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><caption>C</caption><tbody><tr><th>a</th><td>1</td></tr></tbody></table>".NormalizeNewLines()));
             
             
             Assert.That(context.EvaluateScript("{{ [{a:1},{a:2}] | htmlDump({ caption: 'C' }) }}").NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new A(1), new A(2) } }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ kvpA1, kvpA2 } }).NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th></tr></thead><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>".NormalizeNewLines()));
 
             Assert.That(context.EvaluateScript("{{ [{a:1,b:'x'},{a:2,b:'y'}] | htmlDump({ caption: 'C' }) }}").NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy }, } }).NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
+            
+            
+            Assert.That(context.EvaluateScript("{{ [1,2] | htmlDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><caption>C</caption><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ ['a','b'] | htmlDump({ caption: 'C' }) }}").NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><caption>C</caption><tbody><tr><td>a</td></tr><tr><td>b</td></tr></tbody></table>".NormalizeNewLines()));
+            
+            Assert.That(context.EvaluateScript("{{ [1,2] | htmlDump }}").NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><tbody><tr><td>1</td></tr><tr><td>2</td></tr></tbody></table>".NormalizeNewLines()));
+            Assert.That(context.EvaluateScript("{{ ['a','b'] | htmlDump }}").NormalizeNewLines(), 
+                Is.EqualTo("<table class=\"table\"><tbody><tr><td>a</td></tr><tr><td>b</td></tr></tbody></table>".NormalizeNewLines()));
             
             
             Assert.That(context.EvaluateScript("{{ [] | htmlDump({ caption: 'C', captionIfEmpty: 'E', className:'table-bordered' }) }}").NormalizeNewLines(), 

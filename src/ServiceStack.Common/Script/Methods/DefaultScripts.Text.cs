@@ -206,6 +206,8 @@ namespace ServiceStack.Script
 
             try
             {
+                target = ConvertDumpType(target);
+                
                 if (!isComplexType(target))
                     return GetScalarText(target, options.Defaults);
 
@@ -367,6 +369,49 @@ namespace ServiceStack.Script
             {
                 options.Depth = depth;
             }
+        }
+
+        internal static object ConvertDumpType(object target)
+        {
+            var targetType = target.GetType();
+            if (targetType.GetTypeWithGenericTypeDefinitionOf(typeof(KeyValuePair<,>)) != null)
+                return target.ToObjectDictionary();
+
+            if (target is IEnumerable e)
+            {
+                if (targetType.GetKeyValuePairsTypes(out var keyType, out var valueType, out var kvpType))
+                {
+                    var keyGetter = TypeProperties.Get(kvpType).GetPublicGetter("Key");
+                    var valueGetter = TypeProperties.Get(kvpType).GetPublicGetter("Value");
+
+                    string key1 = null, key2 = null; 
+                    foreach (var kvp in e)
+                    {
+                        if (key1 == null)
+                        {
+                            key1 = keyGetter(kvp).ConvertTo<string>();
+                            continue;
+                        }
+                        key2 = keyGetter(kvp).ConvertTo<string>();
+                        break;
+                    }
+
+                    var isColumn = key1 == key2;
+                    if (isColumn)
+                    {
+                        var to = new List<Dictionary<string, object>>();
+                        foreach (var kvp in e)
+                        {
+                            to.Add(new Dictionary<string, object> { {keyGetter(kvp).ConvertTo<string>(), valueGetter(kvp) } });
+                        }
+                        return to;
+                    }
+                    
+                    return target.ToObjectDictionary();
+                }
+            }
+
+            return target;
         }
 
         private static int MaxLineLength(string s)

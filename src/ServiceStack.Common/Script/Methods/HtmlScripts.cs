@@ -142,6 +142,8 @@ namespace ServiceStack.Script
 
             try
             {
+                target = DefaultScripts.ConvertDumpType(target);
+                
                 if (!isComplexType(target))
                     return GetScalarHtml(target, options.Defaults);
 
