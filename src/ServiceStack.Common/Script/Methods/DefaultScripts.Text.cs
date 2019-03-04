@@ -374,8 +374,15 @@ namespace ServiceStack.Script
         internal static object ConvertDumpType(object target)
         {
             var targetType = target.GetType();
-            if (targetType.GetTypeWithGenericTypeDefinitionOf(typeof(KeyValuePair<,>)) != null)
-                return target.ToObjectDictionary();
+            var genericKvps = targetType.GetTypeWithGenericTypeDefinitionOf(typeof(KeyValuePair<,>));
+            if (genericKvps != null)
+            {
+                var keyGetter = TypeProperties.Get(targetType).GetPublicGetter("Key");
+                var valueGetter = TypeProperties.Get(targetType).GetPublicGetter("Value");
+                return new Dictionary<string, object> {
+                    { keyGetter(target).ConvertTo<string>(), valueGetter(target) },
+                };
+            }
 
             if (target is IEnumerable e)
             {
