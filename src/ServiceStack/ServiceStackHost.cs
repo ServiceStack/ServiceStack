@@ -58,7 +58,7 @@ namespace ServiceStack
         public DateTime? ReadyAt { get; set; }
         /// <summary>
         /// If app currently runs for unit tests.
-        /// Used for overwritting AuthSession.
+        /// Used for overwriting AuthSession.
         /// </summary>
         public bool TestMode { get; set; }
 
