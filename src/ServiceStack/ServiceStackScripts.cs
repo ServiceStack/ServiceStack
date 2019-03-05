@@ -313,6 +313,7 @@ namespace ServiceStack
                     Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                    Bundle =  !args.TryGetValue("bundle", out var oBundle) || oBundle is bool bBundle && bBundle,
                     RegisterModuleInAmd = args.TryGetValue("amd", out var oReg) && oReg is bool bReg && bReg,                    
                 }).ToRawString();
         }
@@ -331,6 +332,7 @@ namespace ServiceStack
                     Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,                    
                     Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                    Bundle =  !args.TryGetValue("bundle", out var oBundle) || oBundle is bool bBundle && bBundle,
                 }).ToRawString();
         }
         
@@ -348,6 +350,7 @@ namespace ServiceStack
                     Minify =  !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,                    
                     Cache =  !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
+                    Bundle =  !args.TryGetValue("bundle", out var oBundle) || oBundle is bool bBundle && bBundle,
                 }).ToRawString();
         }
     }
