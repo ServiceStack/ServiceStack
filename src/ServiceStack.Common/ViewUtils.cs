@@ -48,6 +48,10 @@ namespace ServiceStack
         public bool SaveToDisk { get; set; }
         public bool Cache { get; set; } = true;
         /// <summary>
+        /// Whether to bundle and emit single or not bundle and emit multiple html tags
+        /// </summary>
+        public bool Bundle { get; set; } = true;
+        /// <summary>
         /// Whether to call AMD define for CommonJS modules
         /// </summary>
         public bool RegisterModuleInAmd { get; set; }
@@ -660,9 +664,9 @@ namespace ServiceStack
             var assetExt = "js";
             var outFile = options.OutputTo ?? (options.Minify 
                   ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
-            var htmlTag = "<script src=\"" + outFile + "\"></script>";
+            var htmlTagFmt = "<script src=\"{0}\"></script>";
 
-            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTag, assetExt);
+            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTagFmt, assetExt);
         }
 
         public static string BundleCss(string filterName, 
@@ -673,9 +677,9 @@ namespace ServiceStack
             var assetExt = "css";
             var outFile = options.OutputTo ?? (options.Minify 
                 ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
-            var htmlTag = "<link rel=\"stylesheet\" href=\"" + outFile + "\">";
+            var htmlTagFmt = "<link rel=\"stylesheet\" href=\"{0}\">";
 
-            return BundleAsset(filterName, vfSources, cssCompressor, options, outFile, htmlTag, assetExt);
+            return BundleAsset(filterName, vfSources, cssCompressor, options, outFile, htmlTagFmt, assetExt);
         }
 
         public static string BundleHtml(string filterName, 
@@ -688,18 +692,18 @@ namespace ServiceStack
                   ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
             var id = options.OutputTo != null
                 ? $" id=\"{options.OutputTo.LastRightPart('/').LeftPart('.')}\"" : "";
-            var htmlTag = "<link rel=\"import\" href=\"" + outFile + $"\"{id}>";
+            var htmlTagFmt = "<link rel=\"import\" href=\"{0}\"" + id + ">";
 
-            return BundleAsset(filterName, vfSources, htmlCompressor, options, outFile, htmlTag, assetExt);
+            return BundleAsset(filterName, vfSources, htmlCompressor, options, outFile, htmlTagFmt, assetExt);
         }
 
         private static string BundleAsset(string filterName, IVirtualPathProvider vfSources, ICompressor jsCompressor,
-            BundleOptions options, string outFile, string htmlTag, string assetExt)
+            BundleOptions options, string outFile, string htmlTagFmt, string assetExt)
         {
             try
             {
-                if (!options.Sources.IsEmpty() && options.Cache && vfSources.FileExists(outFile))
-                    return htmlTag;
+                if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && vfSources.FileExists(outFile))
+                    return htmlTagFmt.Replace("{0}", outFile);
 
                 var vfs = GetBundleVfs(filterName, vfSources, options.SaveToDisk);
 
@@ -707,39 +711,72 @@ namespace ServiceStack
 
                 var existing = new HashSet<string>();
                 var sb = StringBuilderCache.Allocate();
-                foreach (var file in sources)
+
+                var minExt = ".min." + assetExt;
+                if (options.Bundle)
                 {
-                    var src = file.ReadAllText();
-                    if (file.Name.EndsWith("bundle." + assetExt) ||
-                        file.Name.EndsWith("bundle.min." + assetExt) ||
-                        existing.Contains(file.VirtualPath))
-                        continue;
-
-                    if (options.Minify && !file.Name.EndsWith(".min." + assetExt))
+                    foreach (var file in sources)
                     {
-                        var minJs = jsCompressor.Compress(src);
-                        sb.AppendLine(minJs);
-                    }
-                    else
-                    {
-                        sb.AppendLine(src);
+                        var src = file.ReadAllText();
+                        if (file.Name.EndsWith("bundle." + assetExt) ||
+                            file.Name.EndsWith("bundle.min." + assetExt) ||
+                            existing.Contains(file.VirtualPath))
+                            continue;
+
+                        if (options.Minify && !file.Name.EndsWith(minExt))
+                        {
+                            var minJs = jsCompressor.Compress(src);
+                            sb.AppendLine(minJs);
+                        }
+                        else
+                        {
+                            sb.AppendLine(src);
+                        }
+    
+                        // Also define ES6 module in AMD's define(), required by /js/ss-require.js
+                        if (options.RegisterModuleInAmd && assetExt == "js")
+                        {
+                            sb.AppendLine("if (typeof define === 'function' && define.amd && typeof module !== 'undefined') define('" +
+                                          file.Name.WithoutExtension() + "', [], function(){ return module.exports; });");
+                        }
+
+                        existing.Add(file.VirtualPath);
                     }
 
-                    // Also define ES6 module in AMD's define(), required by /js/ss-require.js
-                    if (options.RegisterModuleInAmd && assetExt == "js")
-                    {
-                        sb.AppendLine("if (typeof define === 'function' && define.amd && typeof module !== 'undefined') define('" +
-                                      file.Name.WithoutExtension() + "', [], function(){ return module.exports; });");
-                    }
-
-                    existing.Add(file.VirtualPath);
+                    var bundled = StringBuilderCache.ReturnAndFree(sb);
+                    vfs.WriteFile(outFile, bundled);
+                    return htmlTagFmt.Replace("{0}", outFile);
                 }
+                else
+                {
+                    var filePaths = new List<string>();
+                    
+                    foreach (var file in sources)
+                    {
+                        if (file.Name.EndsWith("bundle." + assetExt) ||
+                            file.Name.EndsWith("bundle.min." + assetExt) ||
+                            existing.Contains(file.VirtualPath))
+                            continue;
+                        
+                        filePaths.Add("/".CombineWith(file.VirtualPath));
+                        existing.Add(file.VirtualPath);
+                    }
 
-                var bundled = StringBuilderCache.ReturnAndFree(sb);
+                    foreach (var filePath in filePaths)
+                    {
+                        if (filePath.EndsWith(minExt))
+                        {
+                            var withoutMin = filePath.Substring(0, filePath.Length - minExt.Length) + "." + assetExt;
+                            if (filePaths.Contains(withoutMin))
+                                continue;
+                        }
 
-                vfs.WriteFile(outFile, bundled);
-
-                return htmlTag;
+                        sb.AppendLine(htmlTagFmt.Replace("{0}", filePath));
+                    }
+                    
+                    var htmlTags = StringBuilderCache.ReturnAndFree(sb);
+                    return htmlTags;
+                }
             }
             catch (Exception e)
             {

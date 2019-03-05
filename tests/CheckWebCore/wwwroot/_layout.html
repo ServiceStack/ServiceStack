@@ -8,8 +8,10 @@
     <meta name="author" content="">
 
     {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
-    <link rel="stylesheet" href="/assets/css/bootstrap.css">
-    <link rel="stylesheet" href="/assets/css/default.css">
+    
+    {{#noop}}{{ false | assignTo: debug }}{{/noop}}
+    
+    {{ ['/assets/css/'] | bundleCss({ minify: debug, bundle:!debug }) }}
 </head>
 <body>
 
@@ -55,21 +57,21 @@
         };
     </script>
 
-    {{#if !debug}}
-    <script src="/assets/js/jquery.min.js"></script>
-    <script src="/assets/js/bootstrap.min.js"></script>
-    <script src="/assets/js/default.js"></script>
-    <script src="/js/ss-utils.js"></script>
-    <script src="/lib/@servicestack/client/index.js"></script>
-    <script src="/dtos.js"></script>
-    {{else}}
-        {{ ['/assets/js/jquery.min.js',
-            '/assets/js/',
-            '/js/ss-utils.js',
-            '/lib/@servicestack/client/index.js',
-            '/dtos.js',
-            ] | bundleJs({ minify: false }) }}
-    {{/if}}
+    {{#noop}}
+        <script src="/assets/js/jquery.min.js"></script>
+        <script src="/assets/js/bootstrap.min.js"></script>
+        <script src="/assets/js/default.js"></script>
+        <script src="/js/ss-utils.js"></script>
+        <script src="/lib/@servicestack/client/index.js"></script>
+        <script src="/dtos.js"></script>
+    {{/noop}}
+    
+    {{ ['/assets/js/jquery.min.js',
+        '/assets/js/',
+        '/js/ss-utils.js',
+        '/lib/@servicestack/client/index.js',
+        '/dtos.js',
+        ] | bundleJs({ minify: debug, bundle:!debug }) }}
     
 
     {{ scripts | raw }}
