@@ -32,61 +32,61 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [Test]
         public void Linq01() // alternative with clean whitespace sensitive string argument syntax:
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers < 5:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | where: it < 5 
    | select: { it }\n 
-}}")), 
+}}").NormalizeNewLines(), 
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Numbers < 5:
 4
 1
 3
 2
 0
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq02() // alternative with clean whitespace sensitive string argument syntax:
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Sold out products:
 {{ products 
     | where: it.UnitsInStock = 0 
     | select: { it.productName | raw } is sold out!\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Sold out products:
 Chef Anton's Gumbo Mix is sold out!
 Alice Mutton is sold out!
 Thüringer Rostbratwurst is sold out!
 Gorgonzola Telino is sold out!
 Perth Pasties is sold out!
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq03()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 In-stock products that cost more than 3.00:
 {{ products 
     | where: it.UnitsInStock > 0 and it.UnitPrice > 3 
     | select: { it.productName | raw } is in stock and costs more than 3.00.\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 In-stock products that cost more than 3.00:
 Chai is in stock and costs more than 3.00.
 Chang is in stock and costs more than 3.00.
 Aniseed Syrup is in stock and costs more than 3.00.
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -98,16 +98,16 @@ Customer {{ it.CustomerId }} {{ it.CompanyName | raw }}
 
             context.VirtualFiles.WriteFile("order.html", "  Order {{ it.OrderId }}: {{ it.OrderDate | dateFormat }}\n");
             
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | where: it.Region = 'WA' 
    | assignTo: waCustomers 
 }}
 Customers from Washington and their orders:
 {{ waCustomers | selectPartial: customer }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Customers from Washington and their orders:
 
 Customer LAZYK Lazy K Kountry Store
@@ -118,40 +118,40 @@ Customer TRAIH Trail's Head Gourmet Provisioners
   Order 10574: 1997/06/19
   Order 10577: 1997/06/23
   Order 10822: 1998/01/08
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq05()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Short digits:
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | where: it.Length < index
    | select: The word {it} is shorter than its value.\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Short digits:
 The word five is shorter than its value.
 The word six is shorter than its value.
 The word seven is shorter than its value.
 The word eight is shorter than its value.
 The word nine is shorter than its value.
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq06()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers + 1:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it | incr }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Numbers + 1:
 6
 5
@@ -163,38 +163,38 @@ Numbers + 1:
 8
 3
 1
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq07()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Product Names:
 {{ products | select: { it.ProductName | raw }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Product Names:
 Chai
 Chang
 Aniseed Syrup
 Chef Anton's Cajun Seasoning
 Chef Anton's Gumbo Mix
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq08()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Number strings:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ numbers | select: { strings[it] }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Number strings:
 five
 four
@@ -206,34 +206,34 @@ six
 seven
 two
 zero
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq09()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'BlUeBeRrY', 'cHeRry'] | assignTo: words }}
 {{ words | select: Uppercase: { it | upper }, Lowercase: { it | lower }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Uppercase: APPLE, Lowercase: apple
 Uppercase: BLUEBERRY, Lowercase: blueberry
 Uppercase: CHERRY, Lowercase: cherry
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq10()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ numbers | select: The digit { strings[it] } is { 'even' | if (isEven(it)) | otherwise('odd') }.\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 The digit five is odd.
 The digit four is even.
 The digit one is odd.
@@ -244,35 +244,35 @@ The digit six is even.
 The digit seven is odd.
 The digit two is even.
 The digit zero is even.
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq11()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Product Info:
 {{ products | select: { it.ProductName | raw } is in the category { it.Category } and costs { it.UnitPrice | currency } per unit.\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Product Info:
 Chai is in the category Beverages and costs $18.00 per unit.
 Chang is in the category Beverages and costs $19.00 per unit.
 Aniseed Syrup is in the category Condiments and costs $10.00 per unit.
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq12()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Number: In-place?
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | select: { it }: { it | equals(index) | lower }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Number: In-place?
 5: false
 4: false
@@ -284,13 +284,13 @@ Number: In-place?
 7: true
 2: false
 0: false
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq13()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Numbers < 5:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
@@ -298,22 +298,22 @@ Numbers < 5:
    | where: it < 5 
    | select: { digits[it] }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Numbers < 5:
 four
 one
 three
 two
 zero
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq14()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
 {{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
 Pairs where a < b:
@@ -322,9 +322,9 @@ Pairs where a < b:
    | where: a < b 
    | select: { a } is less than { b }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Pairs where a < b:
 0 is less than 1
 0 is less than 3
@@ -342,81 +342,81 @@ Pairs where a < b:
 5 is less than 8
 6 is less than 7
 6 is less than 8
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq15()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip => it.Orders
    | let => { c: it[0], o: it[1] }
    | where => o.Total < 500
    | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 (ALFKI, 10702, 330.0)
 (ALFKI, 10952, 471.2)
 (ANATR, 10308, 88.8)
 (ANATR, 10625, 479.75)
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq15_literal()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.Total < 500
    | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 (ALFKI, 10702, 330.0)
 (ALFKI, 10952, 471.2)
 (ANATR, 10308, 88.8)
 (ANATR, 10625, 479.75)
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq16()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.OrderDate >= '1998-01-01' 
    | select: ({ c.CustomerId }, { o.OrderId }, { o.OrderDate })\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 (ALFKI, 10835, 1/15/1998 12:00:00 AM)
 (ALFKI, 10952, 3/16/1998 12:00:00 AM)
 (ALFKI, 11011, 4/9/1998 12:00:00 AM)
 (ANATR, 10926, 3/4/1998 12:00:00 AM)
 (ANTON, 10856, 1/28/1998 12:00:00 AM)
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq17()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: o.Total >= 2000 
    | select: ({ c.CustomerId }, { o.OrderId }, { o.Total | format('0.0#') })\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 (ANTON, 10573, 2082.0)
 (AROUT, 10558, 2142.9)
 (AROUT, 10953, 4441.25)
 (BERGS, 10384, 2222.4)
 (BERGS, 10524, 3192.65)
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
@@ -431,9 +431,9 @@ Pairs where a < b:
    | where: o.OrderDate  >= cutoffDate 
    | select: ({ c.CustomerId }, { o.OrderId })\n }}
 ";
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(TestUtils.NormalizeNewLines(template))),
+            Assert.That(context.EvaluateScript(template.NormalizeNewLines()).NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 (LAZYK, 10482)
 (LAZYK, 10545)
 (TRAIH, 10574)
@@ -451,21 +451,21 @@ Pairs where a < b:
 (WHITC, 10904)
 (WHITC, 11032)
 (WHITC, 11066)
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq19()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ cust: 'it', custIndex: 'index' })
    | zip: cust.Orders
    | let({ o: 'it[1]' })
    | select: Customer #{ custIndex | incr } has an order with OrderID { o.OrderId }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Customer #1 has an order with OrderID 10643
 Customer #1 has an order with OrderID 10692
 Customer #1 has an order with OrderID 10702
@@ -476,56 +476,56 @@ Customer #2 has an order with OrderID 10308
 Customer #2 has an order with OrderID 10625
 Customer #2 has an order with OrderID 10759
 Customer #2 has an order with OrderID 10926
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq20()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 numbers:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | take(3) | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 First 3 numbers:
 5
 4
 1
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq21()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 First 3 orders in WA:
 {{ customers | zip: it.Orders 
    | let({ c: 'it[0]', o: 'it[1]' })
    | where: c.Region = 'WA'
    | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 First 3 orders in WA:
 [LAZYK,10482,1997-03-21]
 [LAZYK,10545,1997-05-22]
 [TRAIH,10574,1997-06-19]
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq22()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 All but first 4 numbers:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | skip(4) | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 All but first 4 numbers:
 9
 8
@@ -533,13 +533,13 @@ All but first 4 numbers:
 7
 2
 0
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq23()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 All but first 2 orders in WA:
 {{ customers | zip: it.Orders
    | let({ c: 'it[0]', o: 'it[1]' })
@@ -547,9 +547,9 @@ All but first 2 orders in WA:
    | skip(2)
    | select: { [c.CustomerId, o.OrderId, o.OrderDate] | jsv }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 All but first 2 orders in WA:
 [TRAIH,10574,1997-06-19]
 [TRAIH,10577,1997-06-23]
@@ -568,59 +568,59 @@ All but first 2 orders in WA:
 [WHITC,10904,1998-02-24]
 [WHITC,11032,1998-04-17]
 [WHITC,11066,1998-05-01]
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq24()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 First numbers less than 6:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | takeWhile: it < 6 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 First numbers less than 6:
 5
 4
 1
 3
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq25()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 First numbers not less than their position:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | takeWhile: it >= index 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 First numbers not less than their position:
 5
 4
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq26()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 All elements starting from first element divisible by 3:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | skipWhile: mod(it,3) != 0 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 All elements starting from first element divisible by 3:
 3
 9
@@ -629,21 +629,21 @@ All elements starting from first element divisible by 3:
 7
 2
 0
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq27()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 All elements starting from first element less than its position:
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | skipWhile: it >= index 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 All elements starting from first element less than its position:
 1
 3
@@ -653,157 +653,157 @@ All elements starting from first element less than its position:
 7
 2
 0
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq28()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 The sorted list of words:
 {{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
    | orderBy: it 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 The sorted list of words:
 apple
 blueberry
 cherry
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq29()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 The sorted list of words (by length):
 {{ ['cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words 
    | orderBy: it.Length 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 The sorted list of words (by length):
 apple
 cherry
 blueberry
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq30()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderBy: it.ProductName 
    | select: { it | jsv }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 {ProductId:17,ProductName:Alice Mutton,Category:Meat/Poultry,UnitPrice:39,UnitsInStock:0}
 {ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}
 {ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
 {ProductId:60,ProductName:Camembert Pierrot,Category:Dairy Products,UnitPrice:34,UnitsInStock:19}
 {ProductId:18,ProductName:Carnarvon Tigers,Category:Seafood,UnitPrice:62.5,UnitsInStock:42}
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq31()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy('it', { comparer }) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 AbAcUs
 aPPLE
 BlUeBeRrY
 bRaNcH
 cHeRry
 ClOvEr
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq32()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 The doubles from highest to lowest:
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
    | orderByDescending: it 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 The doubles from highest to lowest:
 4.1
 2.9
 2.3
 1.9
 1.7
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq33()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderByDescending: it.UnitsInStock
    | select: { it | jsv }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 {ProductId:75,ProductName:Rhönbräu Klosterbier,Category:Beverages,UnitPrice:7.75,UnitsInStock:125}
 {ProductId:40,ProductName:Boston Crab Meat,Category:Seafood,UnitPrice:18.4,UnitsInStock:123}
 {ProductId:6,ProductName:Grandma's Boysenberry Spread,Category:Condiments,UnitPrice:25,UnitsInStock:120}
 {ProductId:55,ProductName:Pâté chinois,Category:Meat/Poultry,UnitPrice:24,UnitsInStock:115}
 {ProductId:61,ProductName:Sirop d'érable,Category:Condiments,UnitPrice:28.5,UnitsInStock:113}
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq34()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderByDescending('it', { comparer }) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 ClOvEr
 cHeRry
 bRaNcH
 BlUeBeRrY
 aPPLE
 AbAcUs
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq35()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Sorted digits:
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | orderBy: it.length
    | thenBy: it
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Sorted digits:
 one
 six
@@ -815,41 +815,41 @@ zero
 eight
 seven
 three
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq36()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
    | thenBy('it', { comparer }) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 aPPLE
 AbAcUs
 bRaNcH
 cHeRry
 ClOvEr
 BlUeBeRrY
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq37()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | orderBy: it.Category
    | thenByDescending: it.UnitPrice
    | select: { it | jsv }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 {ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}
 {ProductId:43,ProductName:Ipoh Coffee,Category:Beverages,UnitPrice:46,UnitsInStock:17}
 {ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
@@ -859,63 +859,63 @@ BlUeBeRrY
 {ProductId:76,ProductName:Lakkalikööri,Category:Beverages,UnitPrice:18,UnitsInStock:57}
 {ProductId:70,ProductName:Outback Lager,Category:Beverages,UnitPrice:15,UnitsInStock:15}
 {ProductId:34,ProductName:Sasquatch Ale,Category:Beverages,UnitPrice:14,UnitsInStock:111}
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq38()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['aPPLE', 'AbAcUs', 'bRaNcH', 'BlUeBeRrY', 'ClOvEr', 'cHeRry'] | assignTo: words }}
 {{ words 
    | orderBy: it.length
    | thenByDescending('it', { comparer }) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 aPPLE
 ClOvEr
 cHeRry
 bRaNcH
 AbAcUs
 BlUeBeRrY
-")));
+".NormalizeNewLines()));
         }
          
         [Test]
         public void Linq39()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 A backwards list of the digits with a second character of 'i':
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: digits }}
 {{ digits 
    | where: it[1] = 'i'
    | reverse
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 A backwards list of the digits with a second character of 'i':
 nine
 eight
 six
 five
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq40()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | groupBy: mod(it,5)
    | let({ remainder: 'it.Key', numbers: 'it' })
    | select: Numbers with a remainder of { remainder } when divided by 5:\n{ numbers | select('{it}\n') } }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Numbers with a remainder of 0 when divided by 5:
 5
 0
@@ -931,21 +931,21 @@ Numbers with a remainder of 3 when divided by 5:
 Numbers with a remainder of 2 when divided by 5:
 7
 2
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq41()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['blueberry', 'chimpanzee', 'abacus', 'banana', 'apple', 'cheese'] | assignTo: words }}
 {{ words 
    | groupBy: it[0]
    | let({ firstLetter: 'it.Key', words: 'it' })
    | select: Words that start with the letter '{firstLetter}':\n{ words | select('{it}\n') } }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Words that start with the letter 'b':
 blueberry
 banana
@@ -955,20 +955,20 @@ cheese
 Words that start with the letter 'a':
 abacus
 apple
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq42()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', products: 'it' })
    | select: {category}:\n{ products | select('{it | jsv}\n') } }}
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages:
 {ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39}
 {ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
@@ -985,7 +985,7 @@ Beverages:
 Condiments:
 {ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13}
 {ProductId:4,ProductName:Chef Anton's Cajun Seasoning,Category:Condiments,UnitPrice:22,UnitsInStock:53}
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
@@ -1101,68 +1101,68 @@ Condiments:
         [Test]
         public void Linq44()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { comparer: anagramComparer })
    | select: { it | json }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 [""from   "","" form  ""]
 ["" salt"",""  last   ""]
 ["" earn "","" near ""]
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq45()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['from   ', ' salt', ' earn ', '  last   ', ' near ', ' form  '] | assignTo: anagrams }}
 {{ anagrams 
    | groupBy('trim(it)', { map: 'upper(it)', comparer: anagramComparer })
    | select: { it | json }\n 
 }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 [""FROM   "","" FORM  ""]
 ["" SALT"",""  LAST   ""]
 ["" EARN "","" NEAR ""]
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq46()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Prime factors of 300:
 {{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 {{ factorsOf300 | distinct | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Prime factors of 300:
 2
 3
 5
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq47()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Category names:
 {{ products 
    | map: it.Category 
    | distinct
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Category names:
 Beverages
 Condiments
@@ -1172,20 +1172,20 @@ Seafood
 Dairy Products
 Confections
 Grains/Cereals
-")));
+".NormalizeNewLines()));
         }
          
         [Test]
         public void Linq48()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Unique numbers from both arrays:
 {{ numbersA | union(numbersB) | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Unique numbers from both arrays:
 0
 2
@@ -1197,13 +1197,13 @@ Unique numbers from both arrays:
 1
 3
 7
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq49()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1214,9 +1214,9 @@ Unique first letters from Product names and Customer names:
 {{ productFirstChars 
    | union(customerFirstChars) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Unique first letters from Product names and Customer names:
 C
 A
@@ -1242,30 +1242,30 @@ L
 O
 D
 H
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq50()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Common numbers shared by both arrays:
 {{ numbersA | intersect(numbersB) | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Common numbers shared by both arrays:
 5
 8
-")));
+".NormalizeNewLines()));
         }
         
         [Test]
         public void Linq51()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1276,9 +1276,9 @@ Common first letters from Product names and Customer names:
 {{ productFirstChars 
    | intersect(customerFirstChars) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Common first letters from Product names and Customer names:
 C
 A
@@ -1299,33 +1299,33 @@ E
 W
 L
 O
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
         public void Linq52()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 0, 2, 4, 5, 6, 8, 9 ] | assignTo: numbersA }}
 {{ [ 1, 3, 5, 7, 8 ] | assignTo: numbersB }}
 Numbers in first array but not second array:
 {{ numbersA | except(numbersB) | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Numbers in first array but not second array:
 0
 2
 4
 6
 9
-")));
+".NormalizeNewLines()));
         }
          
         [Test]
         public void Linq53()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products  
    | map: it.ProductName[0] 
    | assignTo: productFirstChars }}
@@ -1336,60 +1336,60 @@ First letters from Product names, but not from Customer names:
 {{ productFirstChars 
    | except(customerFirstChars) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 First letters from Product names, but not from Customer names:
 U
 J
 Z
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
         public void Linq54()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 1.7, 2.3, 1.9, 4.1, 2.9 ] | assignTo: doubles }}
 Every other double from highest to lowest:
 {{ doubles 
    | orderByDescending: it
    | step({ by: 2 }) 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Every other double from highest to lowest:
 4.1
 2.3
 1.7
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
         public void Linq55()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 The sorted word list:
 {{ words
    | orderBy: it 
    | toList 
    | select: { it }\n }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 The sorted word list:
 apple
 blueberry
 cherry
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
         public void Linq56()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [{name:'Alice', score:50}, {name: 'Bob', score:40}, {name:'Cathy', score:45}] | assignTo: scoreRecords }}
 Bob's score: 
 {{ scoreRecords 
@@ -1397,114 +1397,114 @@ Bob's score:
    | get: Bob
    | select: { it['name'] } = { it['score'] }
 }} 
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Bob's score: 
 Bob = 40
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
         public void Linq57()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [null, 1.0, 'two', 3, 'four', 5, 'six', 7.0] | assignTo: numbers }}
 Numbers stored as doubles:
 {{ numbers 
    | of({ type: 'Double' })
    | select: { it | format('#.0') }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Numbers stored as doubles:
 1.0
 7.0
-")));
+".NormalizeNewLines()));
         }
   
         [Test]
         public void Linq58()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products
    | where: it.ProductId = 12 
    | first
    | select: { it | jsv } }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 {ProductId:12,ProductName:Queso Manchego La Pastora,Category:Dairy Products,UnitPrice:38,UnitsInStock:86}
-")));
+".NormalizeNewLines()));
         }
   
         [Test]
         public void Linq59()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'] | assignTo: strings }}
 {{ strings
    | first: it[0] = 'o'
    | select: A string starting with 'o': { it } }}
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 A string starting with 'o': one
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq61()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [] | assignTo: numbers }}
 {{ numbers | first | otherwise('null') }} 
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 null
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq62()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 Product 789 exists: {{ products 
    | first: it.ProductId = 789 
    | isNotNull }} 
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Product 789 exists: False
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq64()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 5, 4, 1, 3, 9, 8, 6, 7, 2, 0 ] | assignTo: numbers }} 
 {{ numbers
    | where: it > 5
    | elementAt(1) 
    | select: Second number > 5: { it } }} 
-")),
+").NormalizeNewLines(),
                 
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+                Is.EqualTo(@"
 Second number > 5: 8
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq65()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ range(100,50)
    | select: The number {it} is { 'even' | if(isEven(it)) | otherwise('odd') }.\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 The number 100 is even.
 The number 101 is odd.
 The number 102 is even.
@@ -1516,17 +1516,17 @@ The number 107 is odd.
 The number 108 is even.
 The number 109 is odd.
 The number 110 is even.
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq66()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 10 | itemsOf(7) | select: {it}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 7
 7
 7
@@ -1537,107 +1537,107 @@ The number 110 is even.
 7
 7
 7
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq67()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ ['believe', 'relief', 'receipt', 'field'] | assignTo: words }}
 {{ words 
    | any: contains(it, 'ei')
    | select: There is a word that contains in the list that contains 'ei': { it | lower } }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-There is a word that contains in the list that contains 'ei': true")));
+                Does.StartWith(@"
+There is a word that contains in the list that contains 'ei': true".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq69()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | where: any(it, 'it.UnitsInStock = 0')
    | let({ category: 'it.Key', products: 'it' }) 
    | select: { category }\n{ products | jsv }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Condiments
 [{ProductId:3,ProductName:Aniseed Syrup,Category:Condiments,UnitPrice:10,UnitsInStock:13},{ProductId:4,ProductName:Chef Anton's Cajun Seasoning,Category:Condiments,UnitPrice:22,UnitsInStock:53}
-")));
+".NormalizeNewLines()));
         }
     
         [Test]
         public void Linq70()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1, 11, 3, 19, 41, 65, 19] | assignTo: numbers }}
 {{ numbers 
    | all: isOdd(it)
    | select: The list contains only odd numbers: { it | lower } }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The list contains only odd numbers: true")));
+                Does.StartWith(@"
+The list contains only odd numbers: true".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq72()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | where: all(it, 'it.UnitsInStock > 0')
    | let({ category: 'it.Key', products: 'it' }) 
    | select: { category }\n{ products | jsv }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages
 [{ProductId:1,ProductName:Chai,Category:Beverages,UnitPrice:18,UnitsInStock:39},{ProductId:2,ProductName:Chang,Category:Beverages,UnitPrice:19,UnitsInStock:17}
-")));
+".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq73()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [2, 2, 3, 5, 5] | assignTo: factorsOf300 }}
 {{ factorsOf300 | distinct | count | select: There are {it} unique factors of 300. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-There are 3 unique factors of 300.")));
+                Does.StartWith(@"
+There are 3 unique factors of 300.".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq74()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | count: isOdd(it) 
    | select: There are {it} odd numbers in the list. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-There are 5 odd numbers in the list.")));
+                Does.StartWith(@"
+There are 5 odd numbers in the list.".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq76()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers 
    | let({ customerId: 'it.CustomerId', ordersCount: 'count(it.Orders)' }) 
    | select: {customerId}, {ordersCount}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 ALFKI, 6
 ANATR, 4
 ANTON, 7
@@ -1645,20 +1645,20 @@ AROUT, 13
 BERGS, 18
 BLAUS, 7
 BLONP, 11
-")));
+".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq77()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', productCount: 'count(it)' }) 
    | select: {category}, {productCount}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages, 12
 Condiments, 12
 Produce, 5
@@ -1667,46 +1667,46 @@ Seafood, 12
 Dairy Products, 10
 Confections, 13
 Grains/Cereals, 7
-")));
+".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq78()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | sum | select: The sum of the numbers is {it}. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The sum of the numbers is 45.")));
+                Does.StartWith(@"
+The sum of the numbers is 45.".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq79()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry'] | assignTo: words }}
 {{ words
    | sum: it.Length 
    | select: There are a total of {it} characters in these words. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-There are a total of 20 characters in these words.")));
+                Does.StartWith(@"
+There are a total of 20 characters in these words.".NormalizeNewLines()));
         }
      
         [Test]
         public void Linq80()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', totalUnitsInStock: 'sum(it, `it.UnitsInStock`)' }) 
    | select: {category}, {totalUnitsInStock}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages, 559
 Condiments, 507
 Produce, 100
@@ -1715,46 +1715,46 @@ Seafood, 701
 Dairy Products, 393
 Confections, 386
 Grains/Cereals, 308
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq81()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | min | select: The minimum number is {it}. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The minimum number is 0.")));
+                Does.StartWith(@"
+The minimum number is 0.".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq82()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | min: it.Length 
    | select: The shortest word is {it} characters long. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The shortest word is 5 characters long.")));
+                Does.StartWith(@"
+The shortest word is 5 characters long.".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq83()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', cheapestPrice: 'min(it, `it.UnitPrice`)' }) 
    | select: {category}, {cheapestPrice}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages, 4.5
 Condiments, 10
 Produce, 10
@@ -1763,13 +1763,13 @@ Seafood, 6
 Dairy Products, 2.5
 Confections, 9.2
 Grains/Cereals, 7
-")));
+".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq84()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ 
@@ -1779,9 +1779,9 @@ Grains/Cereals, 7
         cheapestProducts: 'where(g, `it.UnitPrice = minPrice`)' 
      })
    | select: { category }\n{ cheapestProducts | jsv }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages
 [{ProductId:24,ProductName:Guaraná Fantástica,Category:Beverages,UnitPrice:4.5,UnitsInStock:20}]
 Condiments
@@ -1798,46 +1798,46 @@ Confections
 [{ProductId:19,ProductName:Teatime Chocolate Biscuits,Category:Confections,UnitPrice:9.2,UnitsInStock:25}]
 Grains/Cereals
 [{ProductId:52,ProductName:Filo Mix,Category:Grains/Cereals,UnitPrice:7,UnitsInStock:38}]
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq85()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | max | select: The maximum number is {it}. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The maximum number is 9.")));
+                Does.StartWith(@"
+The maximum number is 9.".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq86()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | max: it.Length 
    | select: The longest word is {it} characters long. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The longest word is 9 characters long.")));
+                Does.StartWith(@"
+The longest word is 9 characters long.".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq87()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', mostExpensivePrice: 'max(it, `it.UnitPrice`)' }) 
    | select: Category: {category}, MaximumPrice: {mostExpensivePrice}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Category: Beverages, MaximumPrice: 263.5
 Category: Condiments, MaximumPrice: 43.9
 Category: Produce, MaximumPrice: 53
@@ -1846,13 +1846,13 @@ Category: Seafood, MaximumPrice: 62.5
 Category: Dairy Products, MaximumPrice: 55
 Category: Confections, MaximumPrice: 81
 Category: Grains/Cereals, MaximumPrice: 38
-")));
+".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq88()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ 
@@ -1862,9 +1862,9 @@ Category: Grains/Cereals, MaximumPrice: 38
         mostExpensiveProducts: 'where(g, `it.UnitPrice = maxPrice`)' 
      })
    | select: { category }\n{ mostExpensiveProducts | jsv }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Beverages
 [{ProductId:38,ProductName:Côte de Blaye,Category:Beverages,UnitPrice:263.5,UnitsInStock:17}]
 Condiments
@@ -1881,46 +1881,46 @@ Confections
 [{ProductId:20,ProductName:Sir Rodney's Marmalade,Category:Confections,UnitPrice:81,UnitsInStock:40}]
 Grains/Cereals
 [{ProductId:56,ProductName:Gnocchi di nonna Alice,Category:Grains/Cereals,UnitPrice:38,UnitsInStock:21}]
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq89()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers | average | select: The average number is {it}. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The average number is 4.5.")));
+                Does.StartWith(@"
+The average number is 4.5.".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq90()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: words }}
 {{ words
    | average: it.Length 
    | select: The average word length is {it} characters. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The average word length is 6.66666666666667 characters.")));
+                Does.StartWith(@"
+The average word length is 6.66666666666667 characters.".NormalizeNewLines()));
         }
       
         [Test]
         public void Linq91()
         {
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ products 
    | groupBy: it.Category
    | let({ category: 'it.Key', averagePrice: 'average(it, `it.UnitPrice`)' }) 
    | select: Category: {category}, AveragePrice: {averagePrice}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Category: Beverages, AveragePrice: 37.9791666666667
 Category: Condiments, AveragePrice: 23.0625
 Category: Produce, AveragePrice: 32.37
@@ -1929,49 +1929,49 @@ Category: Seafood, AveragePrice: 20.6825
 Category: Dairy Products, AveragePrice: 28.73
 Category: Confections, AveragePrice: 25.16
 Category: Grains/Cereals, AveragePrice: 20.25
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq92()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1.7, 2.3, 1.9, 4.1, 2.9] | assignTo: doubles }}
 {{ doubles 
    | reduce((accumulator,it) => accumulator * it)
    | select: Total product of all numbers: { it | format('#.####') }. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-Total product of all numbers: 88.3308")));
+                Does.StartWith(@"
+Total product of all numbers: 88.3308".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq93()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [20, 10, 40, 50, 10, 70, 30] | assignTo: attemptedWithdrawals }}
 {{ attemptedWithdrawals 
    | reduce((balance, nextWithdrawal) => ((nextWithdrawal <= balance) ? (balance - nextWithdrawal) : balance), 
             { initialValue: 100.0, })
    | select: Ending balance: { it }. }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-Ending balance: 20")));
+                Does.StartWith(@"
+Ending balance: 20".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq94()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [0, 2, 4, 5, 6, 8, 9] | assignTo: numbersA }}
 {{ [1, 3, 5, 7, 8] | assignTo: numbersB }}
 All numbers from both arrays:
 {{ numbersA | concat(numbersB) | select: {it}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 All numbers from both arrays:
 0
 2
@@ -1985,20 +1985,20 @@ All numbers from both arrays:
 5
 7
 8
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq95()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ customers | map('it.CompanyName') | assignTo: customerNames }}
 {{ products | map('it.ProductName') | assignTo: productNames }}
 Customer and product names:
 {{ customerNames | concat(productNames) | select: { it | raw }\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 Customer and product names:
 Alfreds Futterkiste
 Ana Trujillo Emparedados y helados
@@ -2006,45 +2006,45 @@ Antonio Moreno Taquería
 Around the Horn
 Berglunds snabbköp
 Blauer See Delikatessen
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq96()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsB }}
 {{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The sequences match: true")));
+                Does.StartWith(@"
+The sequences match: true".NormalizeNewLines()));
         }
        
         [Test]
         public void linq97()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [ 'cherry', 'apple', 'blueberry' ] | assignTo: wordsA }}
 {{ [ 'apple', 'blueberry', 'cherry' ] | assignTo: wordsB }}
 {{ wordsA | equivalentTo(wordsB) | select: The sequences match: { it | lower } }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
-The sequences match: false")));
+                Does.StartWith(@"
+The sequences match: false".NormalizeNewLines()));
         }
 
         [Test]
         public void Linq99()
         { 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ 0 | assignTo: i }}
 {{ numbers | let({ i: 'incr(i)' }) | select: v = {index | incr}, i = {i}\n }} 
-")),
+").NormalizeNewLines(),
                 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 v = 1, i = 1
 v = 2, i = 2
 v = 3, i = 3
@@ -2055,14 +2055,14 @@ v = 7, i = 7
 v = 8, i = 8
 v = 9, i = 9
 v = 10, i = 10
-")));
+".NormalizeNewLines()));
         }
        
         [Test]
         public void Linq100()
         {
             // lowNumbers is assigned the result not a reusable query
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [5, 4, 1, 3, 9, 8, 6, 7, 2, 0] | assignTo: numbers }}
 {{ numbers 
    | where: it <= 3
@@ -2074,9 +2074,9 @@ Second run numbers <= 3:
 {{ lowNumbers | select: {it}\n }}
 Contents of numbers:
 {{ numbers | select: {it}\n }}
-")),
+").NormalizeNewLines(),
 
-                Does.StartWith(TestUtils.NormalizeNewLines(@"
+                Does.StartWith(@"
 First run numbers <= 3:
 1
 3
@@ -2100,7 +2100,7 @@ Contents of numbers:
 -7
 -2
 0
-")));
+".NormalizeNewLines()));
         }
     }
 }

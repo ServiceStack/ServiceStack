@@ -386,6 +386,27 @@ namespace ServiceStack.Script
 
             if (target is IEnumerable e)
             {
+                //Convert IEnumerable<object> to concrete generic collection so generic args can be inferred
+                if (e is IEnumerable<object> enumObjs)
+                {
+                    Type elType = null;
+                    foreach (var item in enumObjs)
+                    {
+                        elType = item.GetType();
+                        break;
+                    }
+                    if (elType != null)
+                    {
+                        targetType = typeof(List<>).MakeGenericType(elType); 
+                        var genericList = (IList)targetType.CreateInstance();
+                        foreach (var item in e)
+                        {
+                            genericList.Add(item.ConvertTo(elType));
+                        }
+                        target = genericList;
+                    }
+                }
+                
                 if (targetType.GetKeyValuePairsTypes(out var keyType, out var valueType, out var kvpType))
                 {
                     var keyGetter = TypeProperties.Get(kvpType).GetPublicGetter("Key");
