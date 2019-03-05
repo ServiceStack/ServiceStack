@@ -76,7 +76,7 @@ namespace ServiceStack
 
         public int? MaxLoginAttempts { get; set; }
         
-        public bool AllowGetLoginRequests { get; set; }
+        public bool AllowGetAuthenticateRequests { get; set; }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
