@@ -155,8 +155,8 @@ namespace ServiceStack.Auth
 
         public object Get(Authenticate request)
         {
-            if (!HostContext.AssertPlugin<AuthFeature>().AllowGetAuthenticateRequests)
-                throw new NotSupportedException("GET Login requests are disabled, to enable set AuthFeature.AllowGetLoginRequests=true");
+            if (!LogoutAction.EqualsIgnoreCase(request.provider) && !HostContext.AssertPlugin<AuthFeature>().AllowGetAuthenticateRequests)
+                throw new NotSupportedException("GET Login requests are disabled, to enable set AuthFeature.AllowGetAuthenticateRequests=true");
             
             return Post(request);
         }
