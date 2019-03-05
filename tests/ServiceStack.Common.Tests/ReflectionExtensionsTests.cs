@@ -42,8 +42,8 @@ namespace ServiceStack.Common.Tests
             var values = new[] { "A", "B", "C" };
             var testA = new TestClassA
             {
-                FromStringList = new ArrayOfString(values),
                 ToStringList = new List<string>(values),
+                FromStringList = new ArrayOfString(values),
                 FromUserFileTypes = new List<UserFileType>
                 {
                     UserFileType.DefaultProfile, UserFileType.OriginalProfile
@@ -57,8 +57,8 @@ namespace ServiceStack.Common.Tests
             var userFileTypeValues = testA.FromUserFileTypes.Map(x => x.ToString());
             var testB = new TestClassB
             {
-                FromStringList = new List<string>(values),
                 ToStringList = new ArrayOfString(values),
+                FromStringList = new List<string>(values),
                 FromUserFileTypes = new ArrayOfString(userFileTypeValues),
             };
 
