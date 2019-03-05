@@ -137,6 +137,7 @@ namespace ServiceStack
 
     public enum TextStyle
     {
+        None,
         SplitCase,
         Humanize,
         TitleCase,
