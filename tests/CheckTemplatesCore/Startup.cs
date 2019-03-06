@@ -55,9 +55,9 @@ namespace CheckTemplatesCore
             Plugins.Add(new SharpPagesFeature());
             
             this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = 
-                new TemplatePageHandler("/notfound");
+                new SharpPageHandler("/notfound");
             
-            this.GlobalHtmlErrorHttpHandler = new TemplatePageHandler("/error");
+            this.GlobalHtmlErrorHttpHandler = new SharpPageHandler("/error");
         }
     }
 

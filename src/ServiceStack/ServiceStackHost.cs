@@ -156,10 +156,10 @@ namespace ServiceStack
                 typeof(UnAssignRolesService),
                 typeof(NativeTypesService),
                 typeof(PostmanService),
-                typeof(TemplateHotReloadService),
+                typeof(HotReloadPageService),
                 typeof(HotReloadFilesService),
-                typeof(TemplateApiPagesService),
-                typeof(TemplateMetadataDebugService),
+                typeof(SharpApiService),
+                typeof(MetadataDebugService),
                 typeof(ServerEventsSubscribersService),
                 typeof(ServerEventsUnRegisterService),
             };

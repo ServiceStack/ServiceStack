@@ -137,7 +137,7 @@ namespace ServiceStack
 
             if (EnableHotReload.GetValueOrDefault(DebugMode))
             {
-                appHost.RegisterService(typeof(TemplateHotReloadService));
+                appHost.RegisterService(typeof(HotReloadPageService));
 
                 // Also enable hot-fileloader.js for hot reloading when static files changed in /wwwroot
                 if (!appHost.Plugins.Any(x => x is HotReloadFeature)) 
@@ -147,13 +147,13 @@ namespace ServiceStack
             }
             
             if (!string.IsNullOrEmpty(ApiPath))
-                appHost.RegisterService(typeof(TemplateApiPagesService), 
+                appHost.RegisterService(typeof(SharpApiService), 
                     (ApiPath[0] == '/' ? ApiPath : '/' + ApiPath).CombineWith("/{PageName}/{PathInfo*}"));
 
             if (DebugMode || MetadataDebugAdminRole != null)
             {
-                appHost.RegisterService(typeof(TemplateMetadataDebugService), TemplateMetadataDebugService.Route);
-                appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Inspector");
+                appHost.RegisterService(typeof(MetadataDebugService), MetadataDebugService.Route);
+                appHost.GetPlugin<MetadataFeature>().AddDebugLink(MetadataDebugService.Route, "Debug Inspector");
             }
 
             if (!string.IsNullOrEmpty(ScriptAdminRole))
@@ -209,7 +209,7 @@ namespace ServiceStack
 
             var codePage = Pages.GetCodePage(pathInfo);
             if (codePage != null)
-                return new TemplateCodePageHandler(codePage);
+                return new SharpCodePageHandler(codePage);
 
             var page = Pages.GetPage(pathInfo);
             if (page != null)
@@ -221,7 +221,7 @@ namespace ServiceStack
                 if (pathInfo[pathInfo.Length - 1] != '/' && pathInfo.Substring(1) == page.File.Directory?.VirtualPath)
                     return null;
 
-                return new TemplatePageHandler(page);
+                return new SharpPageHandler(page);
             }
 
             if (!DebugMode)
@@ -238,7 +238,7 @@ namespace ServiceStack
         {
             var page = GetRoutingPage(pathInfo, out var args);
             return page != null
-                ? new TemplatePageHandler(page) {Args = args}
+                ? new SharpPageHandler(page) {Args = args}
                 : null;
         }
 
@@ -497,8 +497,8 @@ namespace ServiceStack
                 : Pages.ResolveLayoutPage(viewPage, layoutName);
 
             var handler = codePage != null
-                ? (HttpAsyncTaskHandler)new TemplateCodePageHandler(codePage, layoutPage) { OutputStream = outputStream, Model = dto }
-                : new TemplatePageHandler(viewPage, layoutPage) { OutputStream = outputStream, Model = dto, Args = args };
+                ? (HttpAsyncTaskHandler)new SharpCodePageHandler(codePage, layoutPage) { OutputStream = outputStream, Model = dto }
+                : new SharpPageHandler(viewPage, layoutPage) { OutputStream = outputStream, Model = dto, Args = args };
 
             await handler.ProcessRequestAsync(req, req.Response, req.OperationName);
 
@@ -507,7 +507,7 @@ namespace ServiceStack
     }
 
     [ExcludeMetadata]
-    [Route("/hotreload/templates")]
+    [Route("/hotreload/page")]
     public class HotReloadPage : IReturn<HotReloadPageResponse>
     {
         public string Path { get; set; }
@@ -523,7 +523,7 @@ namespace ServiceStack
 
     [DefaultRequest(typeof(HotReloadPage))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplateHotReloadService : Service
+    public class HotReloadPageService : Service
     {
         public static TimeSpan LongPollDuration = TimeSpan.FromSeconds(60);
         public static TimeSpan CheckDelay = TimeSpan.FromMilliseconds(50);
@@ -598,7 +598,7 @@ namespace ServiceStack
 
     [DefaultRequest(typeof(ApiPages))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplateApiPagesService : Service
+    public class SharpApiService : Service
     {
         public async Task<object> Any(ApiPages request) 
         {
@@ -640,9 +640,9 @@ namespace ServiceStack
             var pagePath = feature.ApiPath.CombineWith(pageName).TrimStart('/');
             var page = base.Request.GetPage(pagePath);
             if (page == null)
-                throw HttpError.NotFound($"No API Page was found at '{pagePath}'");
+                throw HttpError.NotFound($"No Sharp API was found at '{pagePath}'");
             
-            var requestArgs = base.Request.GetTemplateRequestParams(importRequestParams:feature.ImportRequestParams);
+            var requestArgs = base.Request.GetScriptRequestParams(importRequestParams:feature.ImportRequestParams);
             requestArgs[ScriptConstants.PathInfo] = request.PathInfo;
             requestArgs[ScriptConstants.PathArgs] = pathArgs; 
 
@@ -655,7 +655,7 @@ namespace ServiceStack
             var discardedOutput = await pageResult.RenderToStringAsync();
 
             if (pageResult.ReturnValue == null)
-                throw HttpError.NotFound($"The API Page did not specify a response. Use the 'return' filter to set a return value for the page.");
+                throw HttpError.NotFound($"The Sharp API did not specify a response. Use the 'return' filter to set a return value for the page.");
 
             var response = pageResult.ReturnValue.Result;
             if (response is Task<object> responseTask)
@@ -687,16 +687,16 @@ namespace ServiceStack
     }
 
     [ExcludeMetadata]
-    public class TemplateMetadataDebug : IReturn<string>
+    public class MetadataDebug : IReturn<string>
     {
-        public string Template { get; set; }
+        public string Script { get; set; }
         public string AuthSecret { get; set; }
     }
 
     [ReturnExceptionsInJson]
-    [DefaultRequest(typeof(TemplateMetadataDebug))]
+    [DefaultRequest(typeof(MetadataDebug))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplateMetadataDebugService : Service
+    public class MetadataDebugService : Service
     {
         public static string Route = "/metadata/debug"; 
         
@@ -734,9 +734,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 <td>{{#each ip in networkIpv4Addresses}}<div>{{ip}}</div>{{/each}}</td><td>{{#each ip in networkIpv6Addresses}}<div>{{ip}}</div>{{/each}}<td></tr></pre></td>
 </tr></table>";
         
-        public object Any(TemplateMetadataDebug request)
+        public object Any(MetadataDebug request)
         {
-            if (string.IsNullOrEmpty(request.Template))
+            if (string.IsNullOrEmpty(request.Script))
                 return null;
 
             var feature = HostContext.GetPlugin<SharpPagesFeature>();
@@ -766,11 +766,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             feature.Args.Each(x => context.Args[x.Key] = x.Value);
 
-            var result = context.EvaluateScript(request.Template);
+            var result = context.EvaluateScript(request.Script);
             return new HttpResult(result) { ContentType = MimeTypes.PlainText }; 
         }
 
-        public object GetHtml(TemplateMetadataDebug request)
+        public object GetHtml(MetadataDebug request)
         {
             var feature = HostContext.GetPlugin<SharpPagesFeature>();
             if (!HostContext.DebugMode)
@@ -778,7 +778,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                 RequiredRoleAttribute.AssertRequiredRoles(Request, feature.MetadataDebugAdminRole);
             }
             
-            if (request.Template != null)
+            if (request.Script != null)
                 return Any(request);
 
             var defaultTemplate = feature.DebugDefaultTemplate ?? DefaultTemplate;
@@ -799,18 +799,18 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
     }
 
     [ExcludeMetadata]
-    public class TemplatesAdmin : IReturn<TemplatesAdminResponse>
+    public class ScriptAdmin : IReturn<ScriptAdminResponse>
     {
         public string Actions { get; set; }
     }
 
-    public class TemplatesAdminResponse
+    public class ScriptAdminResponse
     {
         public string[] Results { get; set; }
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [DefaultRequest(typeof(TemplatesAdmin))]
+    [DefaultRequest(typeof(ScriptAdmin))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class ScriptAdminService : Service
     {
@@ -821,14 +821,14 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             nameof(SharpPagesFeature.RunInitPage),
         };
         
-        public object Any(TemplatesAdmin request)
+        public object Any(ScriptAdmin request)
         {
             var feature = HostContext.AssertPlugin<SharpPagesFeature>();
             
             RequiredRoleAttribute.AssertRequiredRoles(Request, feature.ScriptAdminRole);
             
             if (string.IsNullOrEmpty(request.Actions))
-                return new TemplatesAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
+                return new ScriptAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
 
             var actions = request.Actions.Split(',');
 
@@ -844,14 +844,14 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                     results.Add(nameof(SharpPagesFeature.RunInitPage) + ": " + feature.RunInitPage());
                 
                 if (results.Count > 0)
-                    return new TemplatesAdminResponse { Results = results.ToArray() };
+                    return new ScriptAdminResponse { Results = results.ToArray() };
             }
             
             throw new NotSupportedException("Unknown Action. Available actions: " + string.Join(",", Actions));
         }
     }
 
-    public class TemplatePageHandler : HttpAsyncTaskHandler
+    public class SharpPageHandler : HttpAsyncTaskHandler
     {
         public SharpPage Page { get; private set; }
         public SharpPage LayoutPage { get; private set; }
@@ -861,15 +861,15 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         private readonly string pagePath; 
         private readonly string layoutPath;
 
-        public TemplatePageHandler(string pagePath, string layoutPath=null)
+        public SharpPageHandler(string pagePath, string layoutPath=null)
         {
             this.RequestName = this.pagePath = pagePath ?? throw new ArgumentNullException(nameof(pagePath));
             this.layoutPath = layoutPath;
         }
 
-        public TemplatePageHandler(SharpPage page, SharpPage layoutPage = null)
+        public SharpPageHandler(SharpPage page, SharpPage layoutPage = null)
         {
-            this.RequestName = !string.IsNullOrEmpty(page.VirtualPath) ? page.VirtualPath : nameof(TemplatePageHandler);
+            this.RequestName = !string.IsNullOrEmpty(page.VirtualPath) ? page.VirtualPath : nameof(SharpPageHandler);
             this.Page = page;
             this.LayoutPage = layoutPage;
         }
@@ -891,7 +891,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
             var feature = HostContext.GetPlugin<SharpPagesFeature>();
             
-            var args = httpReq.GetTemplateRequestParams(importRequestParams:feature.ImportRequestParams);
+            var args = httpReq.GetScriptRequestParams(importRequestParams:feature.ImportRequestParams);
             if (Args != null)
             {
                 foreach (var entry in Args)
@@ -949,7 +949,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         }
     }
 
-    public class TemplateCodePageHandler : HttpAsyncTaskHandler
+    public class SharpCodePageHandler : HttpAsyncTaskHandler
     {
         private readonly SharpCodePage page;
         private readonly SharpPage layoutPage;
@@ -958,7 +958,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         
         public Dictionary<string, object> Args { get; set; }
 
-        public TemplateCodePageHandler(SharpCodePage page, SharpPage layoutPage = null)
+        public SharpCodePageHandler(SharpCodePage page, SharpPage layoutPage = null)
         {
             this.page = page;
             this.layoutPage = layoutPage;
@@ -974,7 +974,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             var result = new PageResult(page)
             {
                 //import request params for code pages so they can be accessed from render parameters
-                Args = httpReq.GetTemplateRequestParams(feature.ImportRequestParams), 
+                Args = httpReq.GetScriptRequestParams(feature.ImportRequestParams), 
                 LayoutPage = layoutPage,
                 Model = Model,
             };
@@ -1099,9 +1099,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         }
     }
 
-    public static class TemplatePagesFeatureExtensions
+    public static class SharpPagesFeatureExtensions
     {
-        public static Dictionary<string, object> GetTemplateRequestParams(this IRequest request, bool importRequestParams=false)
+        public static Dictionary<string, object> GetScriptRequestParams(this IRequest request, bool importRequestParams=false)
         {
             var to = importRequestParams
                 ? request.GetRequestParams().ToObjectDictionary()
