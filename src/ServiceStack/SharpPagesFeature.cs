@@ -58,10 +58,12 @@ namespace ServiceStack
         public string ApiDefaultContentType { get; set; } = MimeTypes.Json;
 
         /// <summary>
-        /// Role Required to call Templates Admin Service (/templates/admin), Default is Admin.
+        /// Role Required to call Templates Admin Service (/script/admin), Default is Admin.
         /// If null Templates Admin Service will not be registered.
         /// </summary>
-        public string TemplatesAdminRole { get; set; } = RoleNames.Admin;
+        public string ScriptAdminRole { get; set; } = RoleNames.Admin;
+        [Obsolete("Use ScriptAdminRole")]
+        public string TemplatesAdminRole { set => ScriptAdminRole = value; }
 
         /// <summary>
         /// Role Required to call Metadata Debug Service (/metadata/debug).
@@ -154,9 +156,9 @@ namespace ServiceStack
                 appHost.GetPlugin<MetadataFeature>().AddDebugLink(TemplateMetadataDebugService.Route, "Debug Inspector");
             }
 
-            if (!string.IsNullOrEmpty(TemplatesAdminRole))
+            if (!string.IsNullOrEmpty(ScriptAdminRole))
             {
-                appHost.RegisterService(typeof(TemplatesAdminService), TemplatesAdminService.Routes);
+                appHost.RegisterService(typeof(ScriptAdminService), ScriptAdminService.Routes);
             }
 
             InitPage = Pages.GetPage("_init");
@@ -810,9 +812,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     [DefaultRequest(typeof(TemplatesAdmin))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
-    public class TemplatesAdminService : Service
+    public class ScriptAdminService : Service
     {
-        public static string[] Routes { get; set; } = { "/templates/admin", "/templates/admin/{Actions}" }; 
+        public static string[] Routes { get; set; } = { "/script/admin", "/script/admin/{Actions}" }; 
         
         public static string[] Actions = {
             nameof(ProtectedScripts.invalidateAllCaches),
@@ -823,7 +825,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             var feature = HostContext.AssertPlugin<SharpPagesFeature>();
             
-            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.TemplatesAdminRole);
+            RequiredRoleAttribute.AssertRequiredRoles(Request, feature.ScriptAdminRole);
             
             if (string.IsNullOrEmpty(request.Actions))
                 return new TemplatesAdminResponse { Results = new[]{ "Available actions: " + string.Join(",", Actions) } };
