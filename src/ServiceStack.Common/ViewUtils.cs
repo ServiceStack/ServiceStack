@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -702,8 +703,9 @@ namespace ServiceStack
         {
             try
             {
+                var outHtmlTag = htmlTagFmt.Replace("{0}", outFile);
                 if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && vfSources.FileExists(outFile))
-                    return htmlTagFmt.Replace("{0}", outFile);
+                    return outHtmlTag;
 
                 var vfs = GetBundleVfs(filterName, vfSources, options.SaveToDisk);
 
@@ -711,13 +713,33 @@ namespace ServiceStack
 
                 var existing = new HashSet<string>();
                 var sb = StringBuilderCache.Allocate();
+                var sbLog = StringBuilderCacheAlt.Allocate();
+
+                void LogWarning(string msg)
+                {
+                    sbLog.AppendLine()
+                        .Append(assetExt == "html" ? "<!--" : "/*")
+                        .Append(" WARNING: ")
+                        .Append(msg)
+                        .Append(assetExt == "html" ? "-->" : "*/");
+                }
 
                 var minExt = ".min." + assetExt;
                 if (options.Bundle)
                 {
                     foreach (var file in sources)
-                    {
-                        var src = file.ReadAllText();
+                    {                        
+                        string src;
+                        try
+                        {
+                            src = file.ReadAllText();
+                        }
+                        catch (Exception e)
+                        {
+                            LogWarning($"Could not read '{file.VirtualPath}': {e.Message}");
+                            continue;
+                        }
+                        
                         if (file.Name.EndsWith("bundle." + assetExt) ||
                             file.Name.EndsWith("bundle.min." + assetExt) ||
                             existing.Contains(file.VirtualPath))
@@ -725,8 +747,18 @@ namespace ServiceStack
 
                         if (options.Minify && !file.Name.EndsWith(minExt))
                         {
-                            var minJs = jsCompressor.Compress(src);
-                            sb.AppendLine(minJs);
+                            string minified;
+                            try
+                            {
+                                minified = jsCompressor.Compress(src);
+                            }
+                            catch (Exception e)
+                            {
+                                LogWarning($"Could not Compress '{file.VirtualPath}': {e.Message}");
+                                minified = src;
+                            }
+                            
+                            sb.AppendLine(minified);
                         }
                         else
                         {
@@ -744,8 +776,20 @@ namespace ServiceStack
                     }
 
                     var bundled = StringBuilderCache.ReturnAndFree(sb);
-                    vfs.WriteFile(outFile, bundled);
-                    return htmlTagFmt.Replace("{0}", outFile);
+                    try
+                    {
+                        vfs.WriteFile(outFile, bundled);
+                    }
+                    catch (Exception e)
+                    {
+                        LogWarning($"Could not write to '{outFile}': {e.Message}");
+                    }
+
+                    if (sbLog.Length != 0) 
+                        return outHtmlTag + StringBuilderCacheAlt.ReturnAndFree(sbLog);
+                    
+                    StringBuilderCacheAlt.Free(sbLog);
+                    return outHtmlTag;
                 }
                 else
                 {
@@ -774,8 +818,7 @@ namespace ServiceStack
                         sb.AppendLine(htmlTagFmt.Replace("{0}", filePath));
                     }
                     
-                    var htmlTags = StringBuilderCache.ReturnAndFree(sb);
-                    return htmlTags;
+                    return StringBuilderCache.ReturnAndFree(sb);
                 }
             }
             catch (Exception e)

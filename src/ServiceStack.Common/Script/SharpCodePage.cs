@@ -88,7 +88,7 @@ namespace ServiceStack.Script
                     Args[pageArg.Name] = pageArg.Value;
                 }
 
-                if (!Context.CodePageInvokers.TryGetValue(type, out Tuple<MethodInfo, MethodInvoker> tuple))
+                if (!Context.CodePageInvokers.TryGetValue(type, out var tuple))
                 {                    
                     var method = type.GetInstanceMethods().FirstOrDefault(x => x.Name.EndsWithIgnoreCase("render"));
                     if (method == null)
