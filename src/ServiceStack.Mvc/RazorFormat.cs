@@ -768,12 +768,18 @@ namespace ServiceStack.Mvc
 
         public static HtmlString BundleJs(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
             nameof(BundleJs), HostContext.VirtualFileSources, Minifiers.JavaScript, options).ToHtmlString();
+        public static HtmlString ContentBundleJs(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
+            nameof(ContentBundleJs), HostContext.VirtualFiles, Minifiers.JavaScript, options).ToHtmlString();
 
         public static HtmlString BundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
             nameof(BundleCss), HostContext.VirtualFileSources, Minifiers.Css, options).ToHtmlString();
+        public static HtmlString ContentBundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
+            nameof(ContentBundleCss), HostContext.VirtualFiles, Minifiers.Css, options).ToHtmlString();
 
         public static HtmlString BundleHtml(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
             nameof(BundleHtml), HostContext.VirtualFileSources, Minifiers.Html, options).ToHtmlString();
+        public static HtmlString ContentBundleHtml(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
+            nameof(ContentBundleHtml), HostContext.VirtualFiles, Minifiers.Html, options).ToHtmlString();
 
         public static T Exec<T>(this IHtmlHelper html, Func<T> fn, out Exception ex)
         {
