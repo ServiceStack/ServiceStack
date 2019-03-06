@@ -2,6 +2,10 @@
 using Funq;
 using NUnit.Framework;
 using ServiceStack.IO;
+using System.Collections.Generic;
+using Funq;
+using NUnit.Framework;
+using ServiceStack.IO;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -93,9 +97,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         [TestCase("/tech/redis", "<html><body>tech/_slug/index.html slug: redis</body></html>")]
         [TestCase("/tech/redis/edit", "<html><body>tech/_slug/edit.html slug: redis</body></html>")]
         [TestCase("/top", "<html><body>top/index.html</body></html>")]
-        [TestCase("returnpages", "<html><body>returnpages/index.html </body></html>")]
-        [TestCase("returnpages/qux", "<html><body>returnpages/_arg.html qux </body></html>")]
-        [TestCase("returnpages/if", "<html><body>returnpages/if.html </body></html>")]
+        [TestCase("returnpages", "")]
+        [TestCase("returnpages/qux", "")]
+        [TestCase("returnpages/if", "")]
         public void Can_use_page_based_routing(string path, string expectedHtml)
         {
             var html = Config.ListeningOn.CombineWith(path)
