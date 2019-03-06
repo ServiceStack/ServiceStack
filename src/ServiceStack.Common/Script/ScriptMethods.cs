@@ -308,12 +308,14 @@ namespace ServiceStack.Script
                 }
 
                 // Use new filter and block instances which cannot be shared between contexts
-                var filters = use.TryGetValue("filters", out var oFilters)
-                    ? ViewUtils.ToStrings("filters", oFilters)
-                    : null;
-                if (filters != null)
+                var methods = use.TryGetValue("methods", out var oMethods)
+                    ? ViewUtils.ToStrings("methods", oMethods)
+                    : use.TryGetValue("filters", out var oFilters)
+                        ? ViewUtils.ToStrings("filters", oFilters)
+                        : null;
+                if (methods != null)
                 {
-                    foreach (var name in filters)
+                    foreach (var name in methods)
                     {
                         var filter = scope.Context.ScriptMethods.FirstOrDefault(x => x.GetType().Name == name);
                         if (filter == null)
