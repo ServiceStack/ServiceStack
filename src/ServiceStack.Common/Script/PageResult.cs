@@ -774,7 +774,7 @@ namespace ServiceStack.Script
                             else if (rethrow)
                                 throw;
 
-                            throw new TargetInvocationException($"Failed to invoke filter: {expr.GetDisplayName()}", ex);
+                            throw new TargetInvocationException($"Failed to invoke filter '{expr.GetDisplayName()}': {ex.Message}", ex);
                         }
 
                         return IgnoreResult.Value;
@@ -841,7 +841,7 @@ namespace ServiceStack.Script
                     if (filterName.StartsWith("throw"))
                         throw ex.InnerException;
 
-                    throw new TargetInvocationException($"Failed to invoke filter: {filterName}", ex.InnerException);
+                    throw new TargetInvocationException($"Failed to invoke filter '{filterName}': {ex.InnerException.Message}", ex.InnerException);
                 }
             }
 
@@ -935,7 +935,7 @@ namespace ServiceStack.Script
                 if (binding.StartsWith("throw"))
                     throw;
 
-                throw new TargetInvocationException($"Failed to invoke filter {binding}", ex);
+                throw new TargetInvocationException($"Failed to invoke filter '{binding}': {ex.Message}", ex);
             }
         }
 

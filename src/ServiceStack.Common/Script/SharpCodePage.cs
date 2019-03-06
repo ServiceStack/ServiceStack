@@ -59,7 +59,7 @@ namespace ServiceStack.Script
             }
             catch (Exception ex)
             {
-                throw new TargetInvocationException($"Failed to invoke render method on {GetType().Name}", ex);
+                throw new TargetInvocationException($"Failed to invoke render method on '{GetType().Name}': {ex.Message}", ex);
             }
         }
         
