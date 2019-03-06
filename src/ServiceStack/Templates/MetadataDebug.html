@@ -120,11 +120,12 @@
 
 <div class="live-template">
     <p>
-        This Debug script has access to
-        <a href="http://templates.servicestack.net/docs/default-filters">Default Fitlers</a>, <a href="http://templates.servicestack.net/docs/info-filters">Info Fitlers</a>
-        as well as arguments registered in <a href="http://templates.servicestack.net/docs/view-engine">TemplatePagesFeature</a>.
+        This Debug <a href="https://sharpscript.net">#Script</a> has access to
+        <a href="https://sharpscript.net/docs/default-scripts">Default Scripts</a>,
+        <a href="https://sharpscript.net/docs/servicestack-scripts#info-scripts">Info Scripts</a>
+        as well as arguments registered in <a href="https://sharpscript.net/docs/sharp-pages">SharpPagesFeature</a>.
     </p>
-    <div class="template">
+        <div class="template">
         <textarea autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">{0}</textarea>
     </div>
     <div class="result"><div class="output"></div></div>
@@ -134,11 +135,11 @@
     var textarea = document.querySelector('textarea');
     var output = document.querySelector('.output');
     textarea.oninput = function () {
-        var template = this.value;
+        var script = this.value;
         
         fetch(location.pathname, {
             method: "POST",
-            body: JSON.stringify({ template: template }), //sync with: TemplateMetadataDebug
+            body: JSON.stringify({ script: script }), //sync with: MetadataDebug
             credentials: 'include',
             headers: {
                 'Accept': 'text/html, */*',
@@ -158,7 +159,7 @@
         })
         .catch (function (res) {
             try {
-                console.log('template error:', res.status, res.statusText);
+                console.log('script error:', res.status, res.statusText);
                 el.classList.add('error');
                 res.text().then(function (text) {
                     var status = parseResponseStatus(text, res.status + ' ' + res.statusText);

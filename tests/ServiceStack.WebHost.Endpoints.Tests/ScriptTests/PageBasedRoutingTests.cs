@@ -10,7 +10,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(SharpPageTests), typeof(TemplatePagesService).Assembly) { }
+                : base(nameof(SharpPageTests), typeof(SharpPagesService).Assembly) { }
 
             public override void Configure(Container container)
             {

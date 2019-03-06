@@ -25,7 +25,7 @@ namespace ServiceStack.Templates
 
         public static string GetMetadataDebugTemplate()
         {
-            return LoadTemplate("MetadataDebugTemplate.html")
+            return LoadTemplate("MetadataDebug.html")
                 .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
         }
 
