@@ -1328,6 +1328,9 @@ namespace ServiceStack.Script
         public Task<object> evalTemplate(ScriptScopeContext scope, string source) => evalTemplate(scope, source, null);
         public async Task<object> evalTemplate(ScriptScopeContext scope, string source, Dictionary<string, object> args)
         {
+            if (string.IsNullOrEmpty(source))
+                return null;
+            
             var context = scope.CreateNewContext(args);
             
             using (var ms = MemoryStreamFactory.GetStream())
