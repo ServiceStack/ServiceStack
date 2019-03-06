@@ -1,0 +1,1 @@
+function source() { return "source.js"; }

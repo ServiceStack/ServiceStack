@@ -310,7 +310,6 @@ namespace ServiceStack
             var segCounts = path.CountOccurrencesOf('/');
 
             var index = 0;
-            var pos = 0;
             var pathSegments = path.Split('/');
 
             foreach (var segment in pathSegments)

@@ -213,7 +213,6 @@ namespace ServiceStack.Mvc
             var segCounts = path.CountOccurrencesOf('/');
 
             var index = 0;
-            var pos = 0;
             var pathSegments = path.Split('/');
 
             foreach (var segment in pathSegments)
@@ -767,19 +766,13 @@ namespace ServiceStack.Mvc
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
 
         public static HtmlString BundleJs(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
-            nameof(BundleJs), HostContext.VirtualFileSources, Minifiers.JavaScript, options).ToHtmlString();
-        public static HtmlString ContentBundleJs(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleJs(
-            nameof(ContentBundleJs), HostContext.VirtualFiles, Minifiers.JavaScript, options).ToHtmlString();
+            nameof(BundleJs), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.JavaScript, options).ToHtmlString();
 
         public static HtmlString BundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
-            nameof(BundleCss), HostContext.VirtualFileSources, Minifiers.Css, options).ToHtmlString();
-        public static HtmlString ContentBundleCss(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleCss(
-            nameof(ContentBundleCss), HostContext.VirtualFiles, Minifiers.Css, options).ToHtmlString();
+            nameof(BundleCss), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.Css, options).ToHtmlString();
 
         public static HtmlString BundleHtml(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
-            nameof(BundleHtml), HostContext.VirtualFileSources, Minifiers.Html, options).ToHtmlString();
-        public static HtmlString ContentBundleHtml(this IHtmlHelper html, BundleOptions options) => ViewUtils.BundleHtml(
-            nameof(ContentBundleHtml), HostContext.VirtualFiles, Minifiers.Html, options).ToHtmlString();
+            nameof(BundleHtml), HostContext.VirtualFileSources, HostContext.VirtualFiles, Minifiers.Html, options).ToHtmlString();
 
         public static T Exec<T>(this IHtmlHelper html, Func<T> fn, out Exception ex)
         {

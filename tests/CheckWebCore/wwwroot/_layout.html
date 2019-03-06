@@ -66,12 +66,14 @@
         <script src="/dtos.js"></script>
     {{/noop}}
     
-    {{ ['/assets/js/jquery.min.js',
+    {{ ['content:/src/source.js',
+        'content:/src/components/',
+        '/assets/js/jquery.min.js',
         '/assets/js/',
         '/js/ss-utils.js',
         '/lib/@servicestack/client/index.js',
         '/dtos.js',
-        ] | bundleJs({ minify: debug, bundle:!debug }) }}
+        ] | bundleJs({ minify: debug }) }}
     
 
     {{ scripts | raw }}

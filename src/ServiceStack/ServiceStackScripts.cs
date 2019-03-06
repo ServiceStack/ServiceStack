@@ -299,25 +299,18 @@ namespace ServiceStack
             return vfs;
         }
         
-        public IRawString bundleJs(ScriptScopeContext scope, object virtualPaths) =>
-            bundleJs(scope, virtualPaths, null);
-        public IRawString bundleJs(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleJsInternal(virtualPaths, options, Context.VirtualFiles);
-
-        public IRawString contentBundleJs(ScriptScopeContext scope, object virtualPaths) =>
-            contentBundleJs(scope, virtualPaths, null);
-        public IRawString contentBundleJs(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleJsInternal(virtualPaths, options, HostContext.VirtualFiles);
-
-        private static IRawString bundleJsInternal(object virtualPaths, object options, IVirtualPathProvider vfs)
+        public IRawString bundleJs(object virtualPaths) => bundleJs(virtualPaths, null);
+        public IRawString bundleJs(object virtualPaths, object options)
         {
             var args = options.AssertOptions(nameof(bundleJs));
             return ViewUtils.BundleJs(nameof(bundleJs),
-                vfs,
+                Context.VirtualFiles,
+                HostContext.VirtualFiles,
                 Minifiers.JavaScript,
                 new BundleOptions {
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
@@ -326,25 +319,18 @@ namespace ServiceStack
                 }).ToRawString();
         }
 
-        public IRawString bundleCss(ScriptScopeContext scope, object virtualPaths) =>
-            bundleCss(scope, virtualPaths, null);
-        public IRawString bundleCss(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleCssInternal(virtualPaths, options, Context.VirtualFiles);
-
-        public IRawString contentBundleCss(ScriptScopeContext scope, object virtualPaths) =>
-            contentBundleCss(scope, virtualPaths, null);
-        public IRawString contentBundleCss(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleCssInternal(virtualPaths, options, HostContext.VirtualFiles);
-
-        private static IRawString bundleCssInternal(object virtualPaths, object options, IVirtualPathProvider vfs)
+        public IRawString bundleCss(object virtualPaths) => bundleCss(virtualPaths, null);
+        public IRawString bundleCss(object virtualPaths, object options) 
         {
             var args = options.AssertOptions(nameof(bundleCss));
             return ViewUtils.BundleCss(nameof(bundleCss),
-                vfs,
+                Context.VirtualFiles,
+                HostContext.VirtualFiles,
                 Minifiers.Css,
                 new BundleOptions {
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
@@ -352,25 +338,18 @@ namespace ServiceStack
                 }).ToRawString();
         }
 
-        public IRawString bundleHtml(ScriptScopeContext scope, object virtualPaths) =>
-            bundleHtml(scope, virtualPaths, null);
-        public IRawString bundleHtml(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleHtmlInternal(virtualPaths, options, Context.VirtualFiles);
-
-        public IRawString contentBundleHtml(ScriptScopeContext scope, object virtualPaths) =>
-            contentBundleHtml(scope, virtualPaths, null);
-        public IRawString contentBundleHtml(ScriptScopeContext scope, object virtualPaths, object options) => 
-            bundleHtmlInternal(virtualPaths, options, Context.VirtualFiles);
-
-        private static IRawString bundleHtmlInternal(object virtualPaths, object options, IVirtualPathProvider vfs)
+        public IRawString bundleHtml(object virtualPaths) => bundleHtml(virtualPaths, null);
+        public IRawString bundleHtml(object virtualPaths, object options) 
         {
             var args = options.AssertOptions(nameof(bundleHtml));
             return ViewUtils.BundleHtml(nameof(bundleHtml),
-                vfs,
+                Context.VirtualFiles,
+                HostContext.VirtualFiles,
                 Minifiers.Html,
                 new BundleOptions {
                     Sources = ViewUtils.ToStringList((IEnumerable) virtualPaths),
                     OutputTo = args.TryGetValue("out", out var oOut) ? oOut as string : null,
+                    OutputWebPath = args.TryGetValue("outWebPath", out var oOutWebPath) ? oOutWebPath as string : null,
                     Minify = !args.TryGetValue("minify", out var oMinify) || oMinify is bool bMinify && bMinify,
                     SaveToDisk = args.TryGetValue("disk", out var oDisk) && oDisk is bool bDisk && bDisk,
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
