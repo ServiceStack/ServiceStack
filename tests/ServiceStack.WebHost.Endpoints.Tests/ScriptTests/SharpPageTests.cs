@@ -23,7 +23,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public string RequestVar { get; set; }
     }
     
-    public class TemplatePagesService : Service
+    public class SharpPagesService : Service
     {
         public ISharpPages Pages { get; set; }
         
@@ -61,11 +61,19 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         class AppHost : AppSelfHostBase
         {
             public AppHost()
-                : base(nameof(SharpPageTests), typeof(TemplatePagesService).Assembly) { }
+                : base(nameof(SharpPageTests), typeof(SharpPagesService).Assembly) { }
 
             public override void Configure(Container container)
             {
                 Plugins.Add(new SharpPagesFeature());
+                
+                AfterInitCallbacks.Add(host => {
+                    var memFs = VirtualFileSources.GetMemoryVirtualFiles();
+                    foreach (var entry in HtmlFiles)
+                    {
+                        memFs.AppendFile(entry.Key, entry.Value);
+                    }
+                });
             }
 
             static readonly Dictionary<string,string> HtmlFiles = new Dictionary<string, string>
@@ -121,20 +129,6 @@ title: We encode < & >
 -->
 <h1>/htmlencode-page!</h1>" },
             };
-
-            public override List<IVirtualPathProvider> GetVirtualFileSources()
-            {
-                var existingProviders = base.GetVirtualFileSources();
-                var memFs = new MemoryVirtualFiles();
-
-                foreach (var entry in HtmlFiles)
-                {
-                    memFs.AppendFile(entry.Key, entry.Value);
-                }
-
-                existingProviders.Insert(0, memFs);
-                return existingProviders;
-            }
         }
 
         private readonly ServiceStackHost appHost;
