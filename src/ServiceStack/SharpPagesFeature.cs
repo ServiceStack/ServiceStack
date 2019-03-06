@@ -921,9 +921,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
                     {
                         await pageResult.WriteToAsync(ms);
 
-                        var response = pageResult.ReturnValue?.Result; 
-                        if (response != null)
+                        if (pageResult.ReturnValue != null)
                         {
+                            var response = pageResult.ReturnValue?.Result; 
                             if (response is Task<object> responseTask)
                                 response = await responseTask;
                             if (response is IRawString raw)
@@ -931,10 +931,10 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
                             if (response != null)
                             {
-                                var httpResult = TemplateApiPagesService.ToHttpResult(pageResult, response);
+                                var httpResult = SharpApiService.ToHttpResult(pageResult, response);
                                 await httpRes.WriteToResponse(httpReq, httpResult);
-                                return;
                             }
+                            return;
                         }
 
                         ms.Position = 0;
