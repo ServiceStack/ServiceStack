@@ -687,7 +687,7 @@ namespace ServiceStack
                             : throw new NotSupportedException($"Unknown Virtual File System provider '{name}' used in '{filterName}'. Valid providers: web,content,filesystem,memory");
         }
 
-        public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, IEnumerable<string> virtualPaths)
+        public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, IEnumerable<string> virtualPaths, string assetExt)
         {
             foreach (var source in virtualPaths)
             {
@@ -706,6 +706,9 @@ namespace ServiceStack
                     var files = dir.GetFiles();
                     foreach (var dirFile in files)
                     {
+                        if (!assetExt.EqualsIgnoreCase(dirFile.Extension))
+                            continue;
+                        
                         yield return dirFile;
                     }
                 }
@@ -784,7 +787,7 @@ namespace ServiceStack
                 if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && webVfs.FileExists(outWebPath ?? outFilePath))
                     return outHtmlTag;
 
-                var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources);
+                var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources, assetExt);
 
                 var existing = new HashSet<string>();
                 var sb = StringBuilderCache.Allocate();
