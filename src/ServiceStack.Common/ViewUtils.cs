@@ -41,12 +41,37 @@ namespace ServiceStack
         public bool ShowErrors { get; set; } = true;
     }
 
+    /// <summary>
+    /// Customize JS/CSS/HTML bundles
+    /// </summary>
     public class BundleOptions
     {
+        /// <summary>
+        /// List of file and directory sources to include in this bundle, directory sources must end in `/`.
+        /// Sources can include prefixes to specify which Virtual File System Source to use, options:
+        /// 'content:' (ContentRoot HostContext.VirtualFiles), 'filesystem:' (WebRoot FileSystem), 'memory:' (WebRoot Memory)
+        /// </summary>
         public List<string> Sources { get; set; } = new List<string>();
+        
+        /// <summary>
+        /// Write bundled file to this Virtual Path
+        /// </summary>
         public string OutputTo { get; set; }
+        /// <summary>
+        /// If needed, use alternative OutputTo Virtual Path in html tag
+        /// </summary>
+        public string OutputWebPath { get; set; }
+        /// <summary>
+        /// Whether to minify sources in bundle (default true)
+        /// </summary>
         public bool Minify { get; set; } = true;
+        /// <summary>
+        /// Whether to save to disk or Memory File System (default Memory)
+        /// </summary>
         public bool SaveToDisk { get; set; }
+        /// <summary>
+        /// Whether to return cached bundle if exists (default true)
+        /// </summary>
         public bool Cache { get; set; } = true;
         /// <summary>
         /// Whether to bundle and emit single or not bundle and emit multiple html tags
@@ -623,28 +648,59 @@ namespace ServiceStack
             return html;
         }
         
-        private static IVirtualFiles GetBundleVfs(string filterName, IVirtualPathProvider virtualFiles, bool toDisk)
+        private static IVirtualFiles ResolveWriteVfs(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, string outFile, bool toDisk, out string useOutFile)
         {
+            if (outFile.IndexOf(':') >= 0)
+            {
+                ResolveVfsAndSource(filterName, webVfs, contentVfs, outFile, out var useVfs, out useOutFile);
+                return (IVirtualFiles)useVfs;
+            }
+
+            useOutFile = outFile;
             var vfs = !toDisk
-                ? (IVirtualFiles)virtualFiles.GetMemoryVirtualFiles() ??
+                ? (IVirtualFiles)webVfs.GetMemoryVirtualFiles() ??
                     throw new NotSupportedException($"{nameof(MemoryVirtualFiles)} is required in {filterName} when disk=false")
-                : virtualFiles.GetFileSystemVirtualFiles() ??
+                : webVfs.GetFileSystemVirtualFiles() ??
                     throw new NotSupportedException($"{nameof(FileSystemVirtualFiles)} is required in {filterName} when disk=true");
             return vfs;
         }
 
-        public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider vfs, IEnumerable<string> virtualPaths)
+        private static void ResolveVfsAndSource(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, string source, out IVirtualPathProvider useVfs, out string useSource)
+        {
+            useVfs = webVfs;
+            useSource = source;
+
+            var parts = source.SplitOnFirst(':');
+            if (parts.Length != 2)
+                return;
+
+            useSource = parts[1];
+            var name = parts[0];
+            useVfs = name == "content"
+                ? contentVfs
+                : name == "web"
+                    ? webVfs
+                    : name == "filesystem"
+                        ? (IVirtualPathProvider) webVfs.GetFileSystemVirtualFiles()
+                        : name == "memory"
+                            ? webVfs.GetMemoryVirtualFiles()
+                            : throw new NotSupportedException($"Unknown Virtual File System provider '{name}' used in '{filterName}'. Valid providers: web,content,filesystem,memory");
+        }
+
+        public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, IEnumerable<string> virtualPaths)
         {
             foreach (var source in virtualPaths)
             {
-                var file = vfs.GetFile(source);
+                ResolveVfsAndSource(filterName, webVfs, contentVfs, source, out var vfs, out var virtualPath);
+                
+                var file = vfs.GetFile(virtualPath);
                 if (file != null)
                 {
                     yield return file;
                     continue;
                 }
 
-                var dir = vfs.GetDirectory(source);
+                var dir = vfs.GetDirectory(virtualPath);
                 if (dir != null)
                 {
                     var files = dir.GetFiles();
@@ -658,7 +714,8 @@ namespace ServiceStack
         }
 
         public static string BundleJs(string filterName, 
-            IVirtualPathProvider vfSources, 
+            IVirtualPathProvider webVfs, 
+            IVirtualPathProvider contentVfs, 
             ICompressor jsCompressor,
             BundleOptions options)
         {
@@ -667,11 +724,15 @@ namespace ServiceStack
                   ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
             var htmlTagFmt = "<script src=\"{0}\"></script>";
 
-            return BundleAsset(filterName, vfSources, jsCompressor, options, outFile, htmlTagFmt, assetExt);
+            return BundleAsset(filterName, 
+                webVfs, 
+                contentVfs,
+                jsCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
         }
 
         public static string BundleCss(string filterName, 
-            IVirtualPathProvider vfSources, 
+            IVirtualPathProvider webVfs, 
+            IVirtualPathProvider contentVfs, 
             ICompressor cssCompressor,
             BundleOptions options)
         {
@@ -680,11 +741,15 @@ namespace ServiceStack
                 ? $"/{assetExt}/bundle.min.{assetExt}" : $"/{assetExt}/bundle.{assetExt}");
             var htmlTagFmt = "<link rel=\"stylesheet\" href=\"{0}\">";
 
-            return BundleAsset(filterName, vfSources, cssCompressor, options, outFile, htmlTagFmt, assetExt);
+            return BundleAsset(filterName, 
+                webVfs, 
+                contentVfs, 
+                cssCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
         }
 
         public static string BundleHtml(string filterName, 
-            IVirtualPathProvider vfSources, 
+            IVirtualPathProvider webVfs, 
+            IVirtualPathProvider contentVfs, 
             ICompressor htmlCompressor,
             BundleOptions options)
         {
@@ -695,21 +760,31 @@ namespace ServiceStack
                 ? $" id=\"{options.OutputTo.LastRightPart('/').LeftPart('.')}\"" : "";
             var htmlTagFmt = "<link rel=\"import\" href=\"{0}\"" + id + ">";
 
-            return BundleAsset(filterName, vfSources, htmlCompressor, options, outFile, htmlTagFmt, assetExt);
+            return BundleAsset(filterName, 
+                webVfs, 
+                contentVfs,
+                htmlCompressor, options, outFile, options.OutputWebPath, htmlTagFmt, assetExt);
         }
 
-        private static string BundleAsset(string filterName, IVirtualPathProvider vfSources, ICompressor jsCompressor,
-            BundleOptions options, string outFile, string htmlTagFmt, string assetExt)
+        private static string BundleAsset(string filterName, 
+            IVirtualPathProvider webVfs, 
+            IVirtualPathProvider contentVfs, 
+            ICompressor jsCompressor,
+            BundleOptions options, 
+            string origOutFile, 
+            string outWebPath, 
+            string htmlTagFmt, 
+            string assetExt)
         {
             try
             {
-                var outHtmlTag = htmlTagFmt.Replace("{0}", outFile);
-                if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && vfSources.FileExists(outFile))
+                var writeVfs = ResolveWriteVfs(filterName, webVfs, contentVfs, origOutFile, options.SaveToDisk, out var outFilePath);
+
+                var outHtmlTag = htmlTagFmt.Replace("{0}", outFilePath);
+                if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && webVfs.FileExists(outWebPath ?? outFilePath))
                     return outHtmlTag;
 
-                var vfs = GetBundleVfs(filterName, vfSources, options.SaveToDisk);
-
-                var sources = GetBundleFiles(filterName, vfSources, options.Sources);
+                var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources);
 
                 var existing = new HashSet<string>();
                 var sb = StringBuilderCache.Allocate();
@@ -778,11 +853,11 @@ namespace ServiceStack
                     var bundled = StringBuilderCache.ReturnAndFree(sb);
                     try
                     {
-                        vfs.WriteFile(outFile, bundled);
+                        writeVfs.WriteFile(outFilePath, bundled);
                     }
                     catch (Exception e)
                     {
-                        LogWarning($"Could not write to '{outFile}': {e.Message}");
+                        LogWarning($"Could not write to '{origOutFile}': {e.Message}");
                     }
 
                     if (sbLog.Length != 0) 
