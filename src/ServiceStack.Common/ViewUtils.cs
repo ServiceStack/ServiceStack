@@ -836,7 +836,7 @@ namespace ServiceStack
                                 minified = src;
                             }
                             
-                            sb.AppendLine().AppendLine(minified);
+                            sb.Append(minified).Append(assetExt == "js" ? ";" : "").AppendLine();
                         }
                         else
                         {
