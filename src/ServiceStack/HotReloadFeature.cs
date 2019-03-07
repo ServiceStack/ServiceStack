@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
+using ServiceStack.IO;
 
 namespace ServiceStack
 {
@@ -11,6 +12,15 @@ namespace ServiceStack
     /// </summary>
     public class HotReloadFeature : IPlugin
     {
+        public IVirtualPathProvider VirtualFiles
+        {
+            set => HotReloadFilesService.UseVirtualFiles = value;
+        }
+        public string DefaultPattern
+        {
+            set => HotReloadFilesService.DefaultPattern = value;
+        }
+        
         public void Register(IAppHost appHost)
         {
             appHost.RegisterService(typeof(HotReloadFilesService));
@@ -29,6 +39,9 @@ namespace ServiceStack
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class HotReloadFilesService : Service
     {
+        public static IVirtualPathProvider UseVirtualFiles { get; set; }
+        public static string DefaultPattern { get; set; } = "*";
+        
         public static List<string> ExcludePatterns { get; } = new List<string> {
             "*.sqlite",
             "*.db",
@@ -41,7 +54,8 @@ namespace ServiceStack
 
         public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
-            var pattern = request.Pattern ?? "*";
+            var vfs = UseVirtualFiles ?? VirtualFileSources;
+            var pattern = request.Pattern ?? DefaultPattern;
 
             var startedAt = DateTime.UtcNow;
             var maxLastModified = DateTime.MinValue;
@@ -50,7 +64,7 @@ namespace ServiceStack
             while (DateTime.UtcNow - startedAt < LongPollDuration)
             {
                 maxLastModified = DateTime.MinValue;
-                var files = VirtualFileSources.GetAllMatchingFiles(pattern);
+                var files = vfs.GetAllMatchingFiles(pattern);
                 foreach (var file in files)
                 {
                     if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)) == true)
