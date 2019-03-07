@@ -144,7 +144,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             { "dir/contacts/edit/1", BundledJsPageHtml("<h2>/edit/_id.html 1</h2>") },
         };
 
-        public static string ExpectedBundleJs = "function a(){}\n\nfunction b(){}\n\nfunction c(){}\n\nfunction fn(){}";
+        public static string ExpectedBundleJs = "function a(){};\n\nfunction b(){};\n\nfunction c(){};\n\nfunction fn(){};";
 
         [Test]
         public void Can_get_Routing_Page_after_in_Memory_js_Bundle()
