@@ -16,11 +16,11 @@ namespace ServiceStack
         public static string WebHostPhysicalPath;
         public static string DefaultRootFileName;
 
-        private static IHttpHandler DefaultHttpHandler;
-        private static RedirectHttpHandler NonRootModeDefaultHttpHandler;
-        private static IHttpHandler ForbiddenHttpHandler;
-        private static IHttpHandler NotFoundHttpHandler;
-        private static readonly IHttpHandler StaticFilesHandler = new StaticFileHandler();
+        public static IHttpHandler DefaultHttpHandler;
+        public static RedirectHttpHandler NonRootModeDefaultHttpHandler;
+        public static IHttpHandler ForbiddenHttpHandler;
+        public static IHttpHandler NotFoundHttpHandler;
+        public static IHttpHandler StaticFilesHandler = new StaticFileHandler();
 
         [ThreadStatic]
         public static string DebugLastHandlerArgs;
