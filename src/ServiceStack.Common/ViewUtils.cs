@@ -836,7 +836,7 @@ namespace ServiceStack
                                 minified = src;
                             }
                             
-                            sb.AppendLine(minified);
+                            sb.AppendLine().AppendLine(minified);
                         }
                         else
                         {
