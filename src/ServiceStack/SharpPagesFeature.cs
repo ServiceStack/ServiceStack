@@ -121,8 +121,13 @@ namespace ServiceStack
         public virtual void Register(IAppHost appHost)
         {
             DebugMode = appHost.Config.DebugMode;
-            VirtualFiles = appHost.VirtualFileSources;
-            AppSettings = appHost.AppSettings;
+            
+            if (VirtualFiles != null)
+                VirtualFiles = appHost.VirtualFileSources;
+            
+            if (AppSettings != null)
+                AppSettings = appHost.AppSettings;
+            
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
