@@ -122,10 +122,10 @@ namespace ServiceStack
         {
             DebugMode = appHost.Config.DebugMode;
             
-            if (VirtualFiles != null)
+            if (VirtualFiles == null)
                 VirtualFiles = appHost.VirtualFileSources;
             
-            if (AppSettings != null)
+            if (AppSettings == null)
                 AppSettings = appHost.AppSettings;
             
             appHost.Register(Pages);
