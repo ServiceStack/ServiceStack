@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ServiceStack.Auth;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -75,8 +76,21 @@ namespace ServiceStack
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
-        
-        public bool AllowGetAuthenticateRequests { get; set; }
+
+        /// <summary>
+        /// Allow or deny all GET Authenticate Requests
+        /// </summary>
+        public Func<IRequest, bool> AllowGetAuthenticateRequests { get; set; } = DefaultAllowGetAuthenticateRequests;
+
+        public static bool DefaultAllowGetAuthenticateRequests(IRequest req)
+        {
+            var provider = (req.Dto as Authenticate)?.provider;
+            return string.IsNullOrEmpty(provider) // "" allows empty /auth requests to check if Authenticated
+                   // allows /auth/logout
+                   || AuthenticateService.LogoutAction.EqualsIgnoreCase(provider) 
+                   // allow all OAuth Providers
+                   || AuthenticateService.GetAuthProvider(provider) is OAuthProvider; 
+        }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
 
