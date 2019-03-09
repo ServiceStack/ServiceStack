@@ -80,11 +80,11 @@ namespace ServiceStack.Common.Tests
         [Test]
         public void Can_GetAll_see_NestedKeys()
         {
-            var appSettings = GetAppSettings();
-            var allKeyValues = appSettings.GetAll();
+            var appSettings = (GetAppSettings() as NetCoreAppSettings).Configuration;
+            var allKeyValues = appSettings.AsEnumerable();
             foreach (var key in Settings.Keys)
             {
-                Assert.That(allKeyValues.ContainsKey(key));
+                Assert.That(allKeyValues.Any(x => x.Key == key));
             }
         }
 
