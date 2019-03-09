@@ -1672,6 +1672,21 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
         }
 
+        [Test]
+        public void Arguments_can_shadow_existing_filters()
+        {
+            var context = new ScriptContext {
+                Args = {
+                    ["min"] = -1
+                }
+            }.Init();
+
+            var output = context.EvaluateScript("{{ 1 | assignTo: max}}{{min}}:{{max}}", new ObjectDictionary {
+                ["max"] = 1
+            });
+            Assert.That(output, Is.EqualTo("-1:1"));
+        }
+
         class A
         {
             public int a { get; set; }
