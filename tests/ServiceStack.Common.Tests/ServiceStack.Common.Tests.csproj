@@ -54,6 +54,7 @@
   <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.1' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="2.2.2" />
     <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="2.2.0" />
     <ProjectReference Include="..\..\src\ServiceStack.Kestrel\ServiceStack.Kestrel.csproj" />
   </ItemGroup>
   <ItemGroup>
