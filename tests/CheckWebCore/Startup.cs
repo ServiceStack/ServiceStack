@@ -64,7 +64,7 @@ namespace CheckWebCore
             {
                 AddRedirectParamsToQueryString = true,
                 DebugMode = AppSettings.Get(nameof(HostConfig.DebugMode), false),
-                UseSameSiteCookies = true,
+                UseSameSiteCookies = true, // prevents OAuth providers which use Sessions like Twitter from working
             });
 
             container.Register<ICacheClient>(new MemoryCacheClient());

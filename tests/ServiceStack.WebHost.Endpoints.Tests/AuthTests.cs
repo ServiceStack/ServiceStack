@@ -325,7 +325,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Plugins.Add(new AuthFeature(() => new CustomUserSession(),
                 GetAuthProviders(), "~/" + AuthTests.LoginUrl)
             {
-                AllowGetAuthenticateRequests = true,
+                AllowGetAuthenticateRequests = req => true,
                 RegisterPlugins = { new WebSudoFeature() },
             });
 
