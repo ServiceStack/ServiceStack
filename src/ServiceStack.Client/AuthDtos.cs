@@ -265,6 +265,9 @@ namespace ServiceStack
         public string AccessToken { get; set; }
 
         [DataMember(Order = 3)]
+        public string RefreshToken { get; set; }
+
+        [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
