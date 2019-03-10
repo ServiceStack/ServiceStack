@@ -10,17 +10,18 @@ namespace ServiceStack
         public IRawString validationSummary(ScriptScopeContext scope) =>
             validationSummary(scope, null, null);
 
-        public IRawString validationSummary(ScriptScopeContext scope, IEnumerable<object> exceptFields) =>
+        public IRawString validationSummary(ScriptScopeContext scope, object exceptFields) =>
             validationSummary(scope, exceptFields, null);
         
-        public IRawString validationSummary(ScriptScopeContext scope, IEnumerable<object> exceptFields, object htmlAttrs)
+        
+        public IRawString validationSummary(ScriptScopeContext scope, object exceptFields, object htmlAttrs)
         {
             var ssFilters = Context.GetServiceStackFilters();
             if (ssFilters == null)
                 return null;
 
             var errorSummaryMsg = exceptFields != null
-                ? ssFilters.errorResponseExcept(scope, exceptFields)
+                ? ssFilters.errorResponseExcept(scope, exceptFields) // string | string[]
                 : ssFilters.errorResponseSummary(scope);
 
             if (string.IsNullOrEmpty(errorSummaryMsg))
