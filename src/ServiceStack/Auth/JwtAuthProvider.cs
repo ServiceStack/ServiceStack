@@ -334,9 +334,11 @@ namespace ServiceStack.Auth
                 Request.ResponseContentType = MimeTypes.Json;
 
             var token = Request.GetJwtToken();
-            if (string.IsNullOrEmpty(token))
+            IAuthSession session = null;
+            var includeTokensInResponse = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse;
+            if (string.IsNullOrEmpty(token) || includeTokensInResponse)
             {
-                var session = Request.GetSession();
+                session = Request.GetSession();
                 token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
                 if (!request.PreserveSession)
@@ -344,8 +346,11 @@ namespace ServiceStack.Auth
             }
 
             return new HttpResult(new ConvertSessionToTokenResponse {
-                AccessToken = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse
+                AccessToken = includeTokensInResponse
                     ? token
+                    : null,
+                RefreshToken = includeTokensInResponse && !request.PreserveSession
+                    ? jwtAuthProvider.CreateJwtRefreshToken(Request, session.UserAuthId, jwtAuthProvider.ExpireRefreshTokensIn)
                     : null
             })
             {
