@@ -339,7 +339,9 @@ namespace ServiceStack.Auth
             if (string.IsNullOrEmpty(token) || includeTokensInResponse)
             {
                 session = Request.GetSession();
-                token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
+
+                if (string.IsNullOrEmpty(token))
+                    token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
                 if (!request.PreserveSession)
                     Request.RemoveSession(session.Id);
@@ -349,7 +351,7 @@ namespace ServiceStack.Auth
                 AccessToken = includeTokensInResponse
                     ? token
                     : null,
-                RefreshToken = includeTokensInResponse && !request.PreserveSession
+                RefreshToken = string.IsNullOrEmpty(token) && includeTokensInResponse && !request.PreserveSession
                     ? jwtAuthProvider.CreateJwtRefreshToken(Request, session.UserAuthId, jwtAuthProvider.ExpireRefreshTokensIn)
                     : null
             })
