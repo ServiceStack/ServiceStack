@@ -85,11 +85,14 @@ namespace ServiceStack
         public static bool DefaultAllowGetAuthenticateRequests(IRequest req)
         {
             var provider = (req.Dto as Authenticate)?.provider;
-            return string.IsNullOrEmpty(provider) // "" allows empty /auth requests to check if Authenticated
-                   // allows /auth/logout
-                   || AuthenticateService.LogoutAction.EqualsIgnoreCase(provider) 
-                   // allow all OAuth Providers
-                   || AuthenticateService.GetAuthProvider(provider) is OAuthProvider; 
+            
+            if (string.IsNullOrEmpty(provider) ||  // Allows empty /auth requests to check if Authenticated                 
+                AuthenticateService.LogoutAction.EqualsIgnoreCase(provider)) // allows /auth/logout
+                return true;
+                   
+            var authProvider = AuthenticateService.GetAuthProvider(provider);
+            return authProvider  == null ||        // throw unknown provider in AuthService 
+                   authProvider is OAuthProvider;  // Allow all OAuth Providers by default 
         }
 
         public Func<AuthFilterContext, object> AuthResponseDecorator { get; set; }
