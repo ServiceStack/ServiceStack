@@ -143,7 +143,11 @@ namespace ServiceStack
                 var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
                                   HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
 
-                url = url.AddQueryParam(returnParam, redirectPath);
+                if (url.IndexOf("?" + returnParam, StringComparison.OrdinalIgnoreCase) == -1 &&
+                    url.IndexOf("&" + returnParam, StringComparison.OrdinalIgnoreCase) == -1)
+                {
+                    return url.AddQueryParam(returnParam, redirectPath);
+                }
             }
             return url;
         }
