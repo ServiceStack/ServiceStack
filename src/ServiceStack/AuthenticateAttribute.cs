@@ -123,20 +123,29 @@ namespace ServiceStack
 
         public static void DoHtmlRedirect(string redirectUrl, IRequest req, IResponse res, bool includeRedirectParam)
         {
+            var url = GetHtmlRedirectUrl(req, redirectUrl, includeRedirectParam);
+            res.RedirectToUrl(url);
+        }
+
+        public static string GetHtmlRedirectUrl(IRequest req) => GetHtmlRedirectUrl(req,
+            AuthenticateService.HtmlRedirectAccessDenied ?? AuthenticateService.HtmlRedirect,
+            includeRedirectParam: true);
+        
+        public static string GetHtmlRedirectUrl(IRequest req, string redirectUrl, bool includeRedirectParam)
+        {
             var url = req.ResolveAbsoluteUrl(redirectUrl);
             if (includeRedirectParam)
             {
-                var redirectPath = !AuthenticateService.HtmlRedirectReturnPathOnly 
+                var redirectPath = !AuthenticateService.HtmlRedirectReturnPathOnly
                     ? req.ResolveAbsoluteUrl("~" + req.PathInfo + ToQueryString(req.QueryString))
                     : req.PathInfo + ToQueryString(req.QueryString);
 
                 var returnParam = HostContext.ResolveLocalizedString(AuthenticateService.HtmlRedirectReturnParam) ??
                                   HostContext.ResolveLocalizedString(LocalizedStrings.Redirect);
-                
+
                 url = url.AddQueryParam(returnParam, redirectPath);
             }
-
-            res.RedirectToUrl(url);
+            return url;
         }
 
         private static string ToQueryString(NameValueCollection queryStringCollection)
