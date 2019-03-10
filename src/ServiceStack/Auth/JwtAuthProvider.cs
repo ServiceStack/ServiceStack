@@ -336,11 +336,12 @@ namespace ServiceStack.Auth
             var token = Request.GetJwtToken();
             IAuthSession session = null;
             var includeTokensInResponse = jwtAuthProvider.IncludeJwtInConvertSessionToTokenResponse;
-            if (string.IsNullOrEmpty(token) || includeTokensInResponse)
+            var createFromSession = string.IsNullOrEmpty(token);
+            if (createFromSession || includeTokensInResponse)
             {
                 session = Request.GetSession();
 
-                if (string.IsNullOrEmpty(token))
+                if (createFromSession)
                     token = jwtAuthProvider.CreateJwtBearerToken(Request, session);
 
                 if (!request.PreserveSession)
@@ -351,7 +352,7 @@ namespace ServiceStack.Auth
                 AccessToken = includeTokensInResponse
                     ? token
                     : null,
-                RefreshToken = string.IsNullOrEmpty(token) && includeTokensInResponse && !request.PreserveSession
+                RefreshToken = createFromSession && includeTokensInResponse && !request.PreserveSession
                     ? jwtAuthProvider.CreateJwtRefreshToken(Request, session.UserAuthId, jwtAuthProvider.ExpireRefreshTokensIn)
                     : null
             })
