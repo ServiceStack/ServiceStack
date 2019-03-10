@@ -1,0 +1,8 @@
+{{ redirectIfNotAuthenticated }}
+
+<div style="text-align:right" class="mr-2">
+    <small class="text-muted">
+        {{ userSession.DisplayName }}
+        | <a href="/auth/logout?continue=/">Sign Out</a>
+    </small>
+</div>

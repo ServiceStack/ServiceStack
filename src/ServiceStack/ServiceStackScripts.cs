@@ -158,6 +158,20 @@ namespace ServiceStack
             return authSession?.IsAuthenticated == true;
         }
 
+        public object redirectIfNotAuthenticated(ScriptScopeContext scope)
+        {
+            if (!isAuthenticated(scope))
+            {
+                var url = AuthenticateAttribute.GetHtmlRedirectUrl(req(scope));
+                return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
+                    Headers = {
+                        [HttpHeaders.Location] = url
+                    }
+                });                
+            }
+            return IgnoreResult.Value;
+        }
+
         public object redirectIfNotAuthenticated(ScriptScopeContext scope, string path)
         {
             if (!isAuthenticated(scope))
