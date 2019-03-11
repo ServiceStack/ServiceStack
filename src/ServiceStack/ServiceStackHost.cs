@@ -198,6 +198,16 @@ namespace ServiceStack
 
             RegisterLicenseKey(AppSettings.GetNullableString("servicestack:license"));
 
+            var scanAssemblies = new List<Assembly>(ServiceAssemblies);
+            scanAssemblies.AddIfNotExists(GetType().Assembly);
+            var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
+                .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) ||
+                            x.HasInterface(typeof(IConfigureAppHost)) ||
+                            x.HasInterface(typeof(IPostConfigureAppHost)))
+                .ToArray();
+            
+            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPreConfigureAppHost))));
+
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
@@ -210,16 +220,13 @@ namespace ServiceStack
             OnBeforeInit();
             ServiceController.Init();
 
-            var scanAssemblies = new List<Assembly>(ServiceAssemblies);
-            scanAssemblies.AddIfNotExists(GetType().Assembly);
-
-            RunConfigureAppHosts(scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IConfigureAppHost))));
+            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IConfigureAppHost))));
             BeforeConfigure.Each(fn => fn(this));
+
             Configure(Container);
+
             AfterConfigure.Each(fn => fn(this));
-            RunConfigureAppHosts(scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IPostConfigureAppHost))));
+            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPostConfigureAppHost))));
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
