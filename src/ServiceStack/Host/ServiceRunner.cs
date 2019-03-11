@@ -206,7 +206,8 @@ namespace ServiceStack.Host
                 {
                     req.Items[Keywords.HasLogged] = true;
                     var stopWatch = req.GetItem(Keywords.RequestDuration) as Stopwatch;
-                    requestLogger.Log(req, requestDto, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
+                    var logDto = !req.IsMultiRequest() ? requestDto : req.Dto;
+                    requestLogger.Log(req, logDto, response, stopWatch?.Elapsed ?? TimeSpan.Zero);
                 }
                 catch (Exception ex)
                 {

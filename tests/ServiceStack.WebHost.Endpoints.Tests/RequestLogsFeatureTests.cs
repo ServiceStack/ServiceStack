@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
@@ -77,6 +78,36 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(request.Name, Is.EqualTo("foo1"));
             Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
         }
+        
+        [Test]
+        public void Does_log_autobatch_request()
+        {
+            var client = new JsonServiceClient(Config.ListeningOn)
+            {
+                RequestFilter = req => req.Referer = Config.ListeningOn
+            };
+
+            var request = new[]
+            {
+                new RequestLogsTest { Name = "foo1" },
+                new RequestLogsTest { Name = "bar1" }
+            };
+            var response = client.SendAll(request);
+
+            var json = Config.ListeningOn.CombineWith("requestlogs").GetJsonFromUrl();
+            var requestLogs = json.FromJson<RequestLogsResponse>();
+            var requestLog = requestLogs.Results.First();
+
+            var loggedRequests = requestLog.RequestDto.ConvertTo<List<RequestLogsTest>>();
+
+            Assert.That(request is IEnumerable<RequestLogsTest>);
+            Assert.That(loggedRequests is IEnumerable<RequestLogsTest>);
+
+            Assert.That(loggedRequests.First().Name, Is.EqualTo("foo1"));
+            Assert.That(loggedRequests.Last().Name, Is.EqualTo("bar1"));
+
+            Assert.That(requestLog.Referer, Is.EqualTo(Config.ListeningOn));
+        }        
 
         [Test]
         public void Does_log_Error_request()
