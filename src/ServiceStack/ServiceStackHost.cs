@@ -797,8 +797,10 @@ namespace ServiceStack
                 try
                 {
                     var instance = configureAppHostType.CreateInstance();
-                    if (instance is IConfigureAppHost preConfigureAppHost)
+                    if (instance is IPreConfigureAppHost preConfigureAppHost)
                         preConfigureAppHost.Configure(this);
+                    else if (instance is IConfigureAppHost configureAppHost)
+                        configureAppHost.Configure(this);
                     else if (instance is IPostConfigureAppHost postConfigureAppHost)
                         postConfigureAppHost.Configure(this);
                 }
