@@ -36,8 +36,7 @@ public static class DictionaryExtensions
 
         foreach (var entry in thisMap)
         {
-            V otherValue;
-            if (!otherMap.TryGetValue(entry.Key, out otherValue)) return false;
+            if (!otherMap.TryGetValue(entry.Key, out var otherValue)) return false;
             if (!Equals(entry.Value, otherValue)) return false;
         }
 
