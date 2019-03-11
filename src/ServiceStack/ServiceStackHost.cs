@@ -775,19 +775,21 @@ namespace ServiceStack
 
             if (config.LogUnobservedTaskExceptions)
             {
-                TaskScheduler.UnobservedTaskException += (sender, args) =>
-                {
-                    args.SetObserved();
-                    args.Exception.Handle(ex =>
-                    {
-                        lock (AsyncErrors)
-                        {
-                            AsyncErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
-                            return true;
-                        }
-                    });
-                };
+                TaskScheduler.UnobservedTaskException += this.HandleUnobservedTaskException;
             }
+        }
+
+        private void HandleUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs args)
+        {
+            args.SetObserved();
+            args.Exception.Handle(ex =>
+            {
+                lock (AsyncErrors)
+                {
+                    AsyncErrors.Add(DtoUtils.CreateErrorResponse(null, ex).GetResponseStatus());
+                    return true;
+                }
+            });
         }
 
         private void RunConfigureAppHosts(IEnumerable<Type> configureAppHosts)
