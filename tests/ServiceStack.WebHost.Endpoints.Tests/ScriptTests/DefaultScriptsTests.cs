@@ -53,7 +53,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Model = new Model
                 {
                     Id = 1,
-                    Name = "foo",
+                    Name = "foo"
                 }
             }.RenderToStringAsync();
 
@@ -72,17 +72,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 'single quotes' }}
 {{ ""double quotes"" }}
 {{ `backticks` }}
 {{ ′prime quoutes′ }}
-")), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+".NormalizeNewLines()), Is.EqualTo(@"
 single quotes
 double quotes
 backticks
 prime quoutes
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -94,7 +94,7 @@ prime quoutes
                 {
                     ["json"] = "{\"key\":\"single'back`tick\"}",
                     ["prime"] = "{\"key\":\"single'prime′quote\"}",
-                    ["hasNewLines"] = "has\nnew\r\nlines",
+                    ["hasNewLines"] = "has\nnew\r\nlines"
                 }
             }.Init();
 
@@ -109,7 +109,7 @@ prime quoutes
             Assert.That(context.EvaluateScript(@"{{ [{x:1,y:2},{x:3,y:4}] | json | assignTo:json }}var s = '{{ json | jsString }}';"), 
                 Is.EqualTo("var s = '[{\"x\":1,\"y\":2},{\"x\":3,\"y\":4}]';"));
 
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"{{ `[
+            Assert.That(context.EvaluateScript(@"{{ `[
   {""name"":""Mc Donald's""}
 ]` | raw | assignTo:json }}
 var obj = {{ json }};
@@ -117,7 +117,7 @@ var str = '{{ json | jsString }}';
 var str = {{ json | jsQuotedString }};
 var escapeSingle = '{{ ""single' quote's"" | escapeSingleQuotes | escapeNewLines | raw }}';
 var escapeDouble = ""{{ 'double"" quote""s' | escapeDoubleQuotes | escapeNewLines | raw }}"";
-")), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+".NormalizeNewLines()), Is.EqualTo(@"
 var obj = [
   {""name"":""Mc Donald's""}
 ];
@@ -125,7 +125,7 @@ var str = '[\n  {""name"":""Mc Donald\'s""}\n]';
 var str = '[\n  {""name"":""Mc Donald\'s""}\n]';
 var escapeSingle = 'single\' quote\'s';
 var escapeDouble = ""double\"" quote\""s"";
-")));
+".NormalizeNewLines()));
 
         }
 
@@ -153,12 +153,12 @@ var escapeDouble = ""double\"" quote\""s"";
 
             var result = await new PageResult(context.GetPage("page")).RenderToStringAsync();
 
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 1 + 1 = 2
 2 x 2 = 4 or 4
 3 - 3 = 0 or 0
 4 / 4 = 1 or 1
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -173,12 +173,12 @@ var escapeDouble = ""double\"" quote\""s"";
 
             var html = await new PageResult(context.GetPage("page")).RenderToStringAsync();
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 1 + 1 = 2
 2 x 2 = 4 or 4
 3 - 3 = 0 or 0
 4 / 4 = 1 or 1
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -199,8 +199,8 @@ square = {{ 'square-partial' | partial({ ten }) }}
             
             context.VirtualFiles.WriteFile("square-partial.html", "{{ ten }} x {{ ten }} = {{ ten | multiply(ten) }}");
             
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page")).Result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
-square = 10 x 10 = 100")));
+            Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(), Is.EqualTo(@"
+square = 10 x 10 = 100".NormalizeNewLines()));
         }
         
         [Test]
@@ -285,7 +285,7 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["foo"] = "foo",
-                    ["bar"] = "bar",
+                    ["bar"] = "bar"
                 }
             }.Init();
             
@@ -308,7 +308,7 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["year2000"] = new DateTime(2000,1,1),
-                    ["year2100"] = new DateTime(2100,1,1),
+                    ["year2100"] = new DateTime(2100,1,1)
                 }
             }.Init();
             
@@ -340,7 +340,7 @@ square = 10 x 10 = 100")));
                     ["year2000"] = new DateTime(2000,1,1),
                     ["year2100"] = new DateTime(2100,1,1),
                     ["contextTrue"] = true,
-                    ["contextFalse"] = false,
+                    ["contextFalse"] = false
                 }
             }.Init();
             
@@ -398,12 +398,12 @@ square = 10 x 10 = 100")));
             context.VirtualFiles.WriteFile("page-chained.html",
                 @"(((1 + 2) * 3) / 4) - 5 = {{ 1 | add(2) | multiply(3) | divide(4) | subtract(5) }}");
             var result = await new PageResult(context.GetPage("page-chained")).RenderToStringAsync();
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"(((1 + 2) * 3) / 4) - 5 = -2.75")));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"(((1 + 2) * 3) / 4) - 5 = -2.75".NormalizeNewLines()));
 
             context.VirtualFiles.WriteFile("page-ordered.html",
                 @"1 + 2 * 3 / 4 - 5 = {{ 1 | add( divide(multiply(2,3), 4) ) | subtract(5) }}");
             result = await new PageResult(context.GetPage("page-ordered")).RenderToStringAsync();
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"1 + 2 * 3 / 4 - 5 = -2.5")));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"1 + 2 * 3 / 4 - 5 = -2.5".NormalizeNewLines()));
         }
 
         [Test]
@@ -463,7 +463,7 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc),
-                    ["format"] = "dd.MM.yyyy",
+                    ["format"] = "dd.MM.yyyy"
                 }
             }.RenderToStringAsync();
             Assert.That(result, Is.EqualTo("01.01.2001"));
@@ -477,7 +477,7 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["time"] = new TimeSpan(1,2,3,4,5),
-                    ["date"] = new DateTime(2001,2,3,4,5,6,7),
+                    ["date"] = new DateTime(2001,2,3,4,5,6,7)
                 }
             }.Init();
 
@@ -543,7 +543,7 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["date"] = new DateTime(2001,01,01,1,1,1,1, DateTimeKind.Utc),
-                    ["format"] = "dd.MM.yyyy hh.mm.ss",
+                    ["format"] = "dd.MM.yyyy hh.mm.ss"
                 }
             }.RenderToStringAsync();
             Assert.That(result, Is.EqualTo("01.01.2001 01.01.01"));
@@ -652,6 +652,17 @@ square = 10 x 10 = 100")));
         }
 
         [Test]
+        public void Can_build_urls_using_empty_strings()
+        {
+            var context = new ScriptContext().Init();
+            
+            Assert.That(context.EvaluateScript("{{ '' | addQueryString({ redirect:null }) }}"),
+                Is.EqualTo(""));
+            Assert.That(context.EvaluateScript("{{ '/' | addQueryString({ redirect:null }) }}"),
+                Is.EqualTo("/"));
+        }
+
+        [Test]
         public void Can_assign_result_to_variable()
         {
             string result;
@@ -660,11 +671,11 @@ square = 10 x 10 = 100")));
                 Args =
                 {
                     ["num"] = 1,
-                    ["items"] = new[]{ "foo", "bar", "qux" },
+                    ["items"] = new[]{ "foo", "bar", "qux" }
                 },
                 FilterTransformers =
                 {
-                    ["markdown"] = MarkdownPageFormat.TransformToHtml,
+                    ["markdown"] = MarkdownPageFormat.TransformToHtml
                 }
             }.Init();
 
@@ -672,26 +683,25 @@ square = 10 x 10 = 100")));
 {{ num | incr | assignTo('result') }}
 result={{ result }}
 ")).Result;
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo("result=2"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("result=2"));
             
             result = new PageResult(context.OneTimePage(@"
 {{ '<li> {{it}} </li>' | forEach(items) | assignTo('result') }}
 <ul>{{ result | raw }}</ul>
 ")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("<ul><li> foo </li><li> bar </li><li> qux </li></ul>"));
             
             result = new PageResult(context.OneTimePage(@"
 {{ ' - {{it}}' | appendLine | forEach(items) | markdown | assignTo('result') }}
 <div>{{ result | raw }}</div>
 ")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo("<div><ul>\n<li>foo</li>\n<li>bar</li>\n<li>qux</li>\n</ul>\n</div>"));
         }
 
         [Test]
         public void Can_assign_to_array_index()
         {
-            var context = new ScriptContext {
-            }.Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
 {{ [1,2,3,4,5] | assignTo: numbers }}
@@ -707,8 +717,7 @@ result={{ result }}
         [Test]
         public void Can_assign_to_array_index_with_arrow_function()
         {
-            var context = new ScriptContext {
-            }.Init();
+            var context = new ScriptContext().Init();
 
             Assert.That(context.EvaluateScript(@"
 {{ [1,2,3,4,5] | assignTo => numbers }}
@@ -728,8 +737,8 @@ result={{ result }}
             {
                 Args =
                 {
-                    ["num"] = 1,
-                },
+                    ["num"] = 1
+                }
             }.Init();
 
             context.VirtualFiles.WriteFile("_layout.html", @"
@@ -842,7 +851,7 @@ Expenses:
 Total    {{ expenses | values | sum }}
 ");
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 Expenses:
 Rent      1000
 TV        50
@@ -852,7 +861,7 @@ Food      400
 
 ---------------
 Total    1550
-")));
+".NormalizeNewLines()));
 
         }
 
@@ -869,7 +878,7 @@ Total    1550
             var items = new[]
             {
                 new ModelValues { Id = 1, DateTime = new DateTime(2001,01,01), TimeSpan = TimeSpan.FromSeconds(1) }, 
-                new ModelValues { Id = 2, DateTime = new DateTime(2001,01,02), TimeSpan = TimeSpan.FromSeconds(2) },
+                new ModelValues { Id = 2, DateTime = new DateTime(2001,01,02), TimeSpan = TimeSpan.FromSeconds(2) }
             };
 
             var context = new ScriptContext
@@ -959,7 +968,7 @@ Total    1550
                     ["list"] = new[]{ 1, 2, 3 },
                     ["emptyList"] = new int[0],
                     ["map"] = new Dictionary<string, object> { {"a", 1}, {"b", 2} },
-                    ["emptyMap"] = new Dictionary<string, object> { },
+                    ["emptyMap"] = new Dictionary<string, object>()
                 }
             }.Init();
             
@@ -1003,7 +1012,7 @@ Total    1550
                     {
                         new KeyValuePair<string, object>("arg", "value"),
                         new KeyValuePair<string, object>("enmptyArg", ""),
-                        new KeyValuePair<string, object>("nullArg", null),
+                        new KeyValuePair<string, object>("nullArg", null)
                     } 
                 }
             }.Init();
@@ -1051,29 +1060,29 @@ root-file: {{ 'root-file.txt' | includeFile }}
 dir-partial: {{ 'dir-partial' | partial }}
 dir-file: {{ 'dir-file.txt' | includeFile }}");
             
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page")).Result),
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(new PageResult(context.GetPage("page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
 partial: partial.html
 file: file.txt
 root-partial: root-partial.html
-root-file: root-file.txt")));
+root-file: root-file.txt".NormalizeNewLines()));
             
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("dir/page")).Result),
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(new PageResult(context.GetPage("dir/page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
 partial: dir/partial.html
 file: dir/file.txt
 root-partial: root-partial.html
-root-file: root-file.txt")));
+root-file: root-file.txt".NormalizeNewLines()));
             
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("dir/sub/page")).Result),
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(new PageResult(context.GetPage("dir/sub/page")).Result.NormalizeNewLines(),
+                Is.EqualTo(@"
 partial: dir/sub/partial.html
 file: dir/sub/file.txt
 root-partial: root-partial.html
 root-file: root-file.txt
 dir-partial: dir/dir-partial.html
 dir-file: dir/dir-file.txt
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -1107,7 +1116,7 @@ dir-file: dir/dir-file.txt
             {
                 Args =
                 {
-                    ["items"] = new[]{1,2,3},
+                    ["items"] = new[]{1,2,3}
                 }
             }.Init();
 
@@ -1133,7 +1142,7 @@ dir-file: dir/dir-file.txt
                     ["int"] = 1,
                     ["long"] = (long)1,
                     ["byte"] = (byte)1,
-                    ["double"] = (double)1.1,
+                    ["double"] = 1.1,
                     ["float"] = (float)1.1,
                     ["decimal"] = (decimal)1.1,
                     ["bool"] = true,
@@ -1282,7 +1291,7 @@ dir-file: dir/dir-file.txt
                     ["empty"] = "",
                     ["nil"] = null,
                     ["items"] = new[]{1,2,3},
-                    ["none"] = new int[]{},
+                    ["none"] = new int[]{}
                 }
             }.Init();
 
@@ -1364,7 +1373,7 @@ dir-file: dir/dir-file.txt
                     ["empty"] = "",
                     ["nil"] = null,
                     ["items"] = new[]{1,2,3},
-                    ["none"] = new int[]{},
+                    ["none"] = new int[]{}
                 }
             }.Init();
 
@@ -1440,19 +1449,19 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 1  | addTo: nums }}
 {{ 2  | addTo: nums }}
 {{ 3  | addTo: nums }}
 {{ nums | join }}
-")), Is.EqualTo("1,2,3"));
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1]  | addTo: nums }}
 {{ [2]  | addTo: nums }}
 {{ [3]  | addTo: nums }}
 {{ nums | join }}
-")), Is.EqualTo("1,2,3"));
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
         }
 
         [Test]
@@ -1460,19 +1469,19 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 1  | addToGlobal: nums }}
 {{ 2  | addToGlobal: nums }}
 {{ 3  | addToGlobal: nums }}
 {{ nums | join }}
-")), Is.EqualTo("1,2,3"));
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ [1]  | addToGlobal: nums }}
 {{ [2]  | addToGlobal: nums }}
 {{ [3]  | addToGlobal: nums }}
 {{ nums | join }}
-")), Is.EqualTo("1,2,3"));
+".NormalizeNewLines()), Is.EqualTo("1,2,3"));
         }
 
         [Test]
@@ -1480,12 +1489,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 1  | addToStart: nums }}
 {{ 2  | addToStart: nums }}
 {{ 3  | addToStart: nums }}
 {{ nums | join }}
-")), Is.EqualTo("3,2,1"));
+".NormalizeNewLines()), Is.EqualTo("3,2,1"));
         }
 
         [Test]
@@ -1493,12 +1502,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 1  | addToStartGlobal: nums }}
 {{ 2  | addToStartGlobal: nums }}
 {{ 3  | addToStartGlobal: nums }}
 {{ nums | join }}
-")), Is.EqualTo("3,2,1"));
+".NormalizeNewLines()), Is.EqualTo("3,2,1"));
         }
 
         [Test]
@@ -1506,12 +1515,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 'a' | appendTo: string }}
 {{ 'b' | appendTo: string }}
 {{ 'c' | appendTo: string }}
 {{ string }}
-")), Is.EqualTo("abc"));
+".NormalizeNewLines()), Is.EqualTo("abc"));
         }
 
         [Test]
@@ -1519,12 +1528,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 'a' | appendToGlobal: string }}
 {{ 'b' | appendToGlobal: string }}
 {{ 'c' | appendToGlobal: string }}
 {{ string }}
-")), Is.EqualTo("abc"));
+".NormalizeNewLines()), Is.EqualTo("abc"));
         }
 
         [Test]
@@ -1532,12 +1541,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 'a' | prependTo: string }}
 {{ 'b' | prependTo: string }}
 {{ 'c' | prependTo: string }}
 {{ string }}
-")), Is.EqualTo("cba"));
+".NormalizeNewLines()), Is.EqualTo("cba"));
         }
 
         [Test]
@@ -1545,12 +1554,12 @@ dir-file: dir/dir-file.txt
         {
             var context = new ScriptContext().Init();
             
-            Assert.That(context.EvaluateScript(TestUtils.NormalizeNewLines(@"
+            Assert.That(context.EvaluateScript(@"
 {{ 'a' | prependToGlobal: string }}
 {{ 'b' | prependToGlobal: string }}
 {{ 'c' | prependToGlobal: string }}
 {{ string }}
-")), Is.EqualTo("cba"));
+".NormalizeNewLines()), Is.EqualTo("cba"));
         }
 
         [Test]
@@ -1562,7 +1571,7 @@ dir-file: dir/dir-file.txt
                 {
                     ["nvc"] = new NameValueCollection {["a"] = "1"},
                     ["obj"] = new Dictionary<string, object> { ["a"] = "1" },
-                    ["str"] = new Dictionary<string, string> { ["a"] = "1" },
+                    ["str"] = new Dictionary<string, string> { ["a"] = "1" }
                 }
             }.Init();
 
@@ -1649,7 +1658,7 @@ dir-file: dir/dir-file.txt
                     ["nullArg"] = null,
                     ["emptyArg"] = "",
                     ["whitespace"] = " ",
-                    ["foo"] = "foo",
+                    ["foo"] = "foo"
                 }
             }.Init();
 
@@ -1749,7 +1758,7 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
-            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy },  } }).NormalizeNewLines(), 
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C', rowNumbers:false }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy }  } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| a | b |\n|---|---|\n| 1 | x |\n| 2 | y |".NormalizeNewLines()));
             
 
@@ -1764,7 +1773,7 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
-            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy }, } }).NormalizeNewLines(), 
+            Assert.That(context.EvaluateScript("{{ o | textDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy } } }).NormalizeNewLines(), 
                 Is.EqualTo("C\n\n| # | a | b |\n|---|---|---|\n| 1 | 1 | x |\n| 2 | 2 | y |".NormalizeNewLines()));
 
             
@@ -1827,7 +1836,7 @@ dir-file: dir/dir-file.txt
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
             Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new B(1, "x"), new B(2, "y") } }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
-            Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy }, } }).NormalizeNewLines(), 
+            Assert.That(context.EvaluateScript("{{ o | htmlDump({ caption: 'C' }) }}", new ObjectDictionary { ["o"] = new[]{ new[]{ kvpA1, kvpBx }, new[]{ kvpA2, kvpBy } } }).NormalizeNewLines(), 
                 Is.EqualTo("<table class=\"table\"><caption>C</caption><thead><tr><th>a</th><th>b</th></tr></thead><tbody><tr><td>1</td><td>x</td></tr><tr><td>2</td><td>y</td></tr></tbody></table>".NormalizeNewLines()));
             
             
