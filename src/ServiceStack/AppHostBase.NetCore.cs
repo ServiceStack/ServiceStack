@@ -214,9 +214,8 @@ namespace ServiceStack
 
         public override string MapProjectPath(string relativePath)
         {
-            var env = app?.ApplicationServices.GetService<IHostingEnvironment>();
-            if (env?.ContentRootPath != null && relativePath?.StartsWith("~") == true)
-                return Path.GetFullPath(env.ContentRootPath.CombineWith(relativePath.Substring(1)));
+            if (HostingEnvironment?.ContentRootPath != null && relativePath?.StartsWith("~") == true)
+                return Path.GetFullPath(HostingEnvironment.ContentRootPath.CombineWith(relativePath.Substring(1)));
 
             return relativePath.MapHostAbsolutePath();
         }
