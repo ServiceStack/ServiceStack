@@ -73,7 +73,7 @@ namespace ServiceStack.Html
         /// </summary>
         public static HtmlString ErrorSummary(this HtmlHelper html, string exceptFor) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFor).ToHtmlString();
-        public static HtmlString ValidationSummary(this HtmlHelper html) =>
+        public static HtmlString ErrorSummary(this HtmlHelper html) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), null).ToHtmlString();
 
         public static HtmlString ValidationSummary(this HtmlHelper html, ICollection<string> exceptFields) =>
