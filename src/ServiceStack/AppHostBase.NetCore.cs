@@ -63,9 +63,13 @@ namespace ServiceStack
             if (app == null)
                 return base.GetWebRootPath();
 
-            var env = app.ApplicationServices.GetService<IHostingEnvironment>();
-            return env.WebRootPath ?? env.ContentRootPath;
+            return HostingEnvironment.WebRootPath ?? HostingEnvironment.ContentRootPath;
         }
+
+        private IHostingEnvironment env;
+
+        public IHostingEnvironment HostingEnvironment => env 
+            ?? (env = app?.ApplicationServices.GetService<IHostingEnvironment>());  
 
         public override void OnConfigLoad()
         {
@@ -73,14 +77,13 @@ namespace ServiceStack
             if (app != null)
             {
                 //Initialize VFS
-                var env = app.ApplicationServices.GetService<IHostingEnvironment>();
-                Config.WebHostPhysicalPath = env.ContentRootPath;
-                Config.DebugMode = env.IsDevelopment();
+                Config.WebHostPhysicalPath = HostingEnvironment.ContentRootPath;
+                Config.DebugMode = HostingEnvironment.IsDevelopment();
 
                 if (VirtualFiles == null)
                 {
                     //Set VirtualFiles to point to ContentRootPath (Project Folder)
-                    VirtualFiles = new FileSystemVirtualFiles(env.ContentRootPath);
+                    VirtualFiles = new FileSystemVirtualFiles(HostingEnvironment.ContentRootPath);
                 }
                 RegisterLicenseFromAppSettings(AppSettings);
             }
