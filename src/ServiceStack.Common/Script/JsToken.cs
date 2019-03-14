@@ -147,6 +147,10 @@ namespace ServiceStack.Script
             index >= 0 && index < literal.Length ? literal[index] : default(char);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool SafeCharEquals(this ReadOnlySpan<char> literal, int index, char c) =>
+            index >= 0 && index < literal.Length && literal[index] == c;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static char SafeGetChar(this ReadOnlyMemory<char> literal, int index) => literal.Span.SafeGetChar(index);
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -356,7 +360,8 @@ namespace ServiceStack.Script
                     c = literal[i];
                     if (c == quoteChar)
                     {
-                        if (literal.SafeGetChar(i - 1) != '\\' || literal.SafeGetChar(i - 2) == '\\')
+                        if (!literal.SafeCharEquals(i - 1,'\\') ||
+                            (literal.SafeCharEquals(i - 2,'\\') && !literal.SafeCharEquals(i - 3,'\\')))
                             break;
                     }
                     
