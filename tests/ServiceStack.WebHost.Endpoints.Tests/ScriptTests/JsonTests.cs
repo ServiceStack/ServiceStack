@@ -13,5 +13,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             Assert.That(obj["app.settings"], Is.EqualTo("debug true\nname MyApp\n"));
         }
+
+        [Test]
+        public void Can_parse_escaped_json()
+        {
+            var json = "{\"content\": \"warn(\\n          false,\\n          \\\"props in \\\\\\\"\\\" + (route.path) + \\\"\\\\\\\" is a \\\" + (typeof config) + \\\", \\\" +\\n          \\\"expecting an object, function or boolean.\\\"\\n        );\"}";
+            var obj = (Dictionary<string,object>)JSON.parse(json);
+            Assert.That(obj.ContainsKey("content"));
+        }
     }
 }
