@@ -128,7 +128,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("BEFORE {{#raw}} Hi, {{ {{ name }} }} {{/raw}} AFTER"),
                 Is.EqualTo("BEFORE  Hi, {{ {{ name }} }}  AFTER"));
 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md | markdown }}")),
+            Assert.That(context.EvaluateScript("BEFORE {{#raw md}}# Heading{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
         }
 
@@ -142,7 +142,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("BEFORE {{#markdown}}# Heading{{/markdown}} AFTER").RemoveNewLines(),
                 Is.EqualTo("BEFORE <h1>Heading</h1> AFTER"));
 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript("BEFORE {{#markdown md}}# Heading{{/markdown}} AFTER {{ md }}")),
+            Assert.That(context.EvaluateScript("BEFORE {{#markdown md}}# Heading{{/markdown}} AFTER {{ md }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading</h1>"));
         }
 
@@ -153,7 +153,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Plugins = { new MarkdownScriptPlugin() }
             }.Init();
 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript("BEFORE {{#raw appendTo md}}# Heading{{/raw}}{{#raw appendTo md}} Appended{{/raw}} AFTER {{ md | markdown }}")),
+            Assert.That(context.EvaluateScript("BEFORE {{#raw appendTo md}}# Heading{{/raw}}{{#raw appendTo md}} Appended{{/raw}} AFTER {{ md | markdown }}").NormalizeNewLines(),
                 Is.EqualTo("BEFORE  AFTER <h1>Heading Appended</h1>"));
         }
         

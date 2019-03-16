@@ -91,12 +91,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Result;
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <h1>For each code</h1>
 <ul>
     <li>A</li><li>B</li><li>C</li>        
 </ul>
-")));
+".NormalizeNewLines()));
         }
 
         private static void WriteLayouts(ScriptContext context)
@@ -141,7 +141,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Result;
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
 
@@ -152,7 +152,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -172,7 +172,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetCodePage("dir/foreach-code");
             var html = new PageResult(page).Result;
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=dir>
 
@@ -183,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -211,7 +211,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Result;
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
 
@@ -222,7 +222,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
     }
 }

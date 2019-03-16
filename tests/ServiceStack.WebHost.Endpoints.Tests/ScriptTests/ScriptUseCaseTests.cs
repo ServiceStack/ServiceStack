@@ -52,7 +52,7 @@ Monthly Savings: <b>{{ totalSavings | currency }}</b>
 
             var output = context.EvaluateScript(template);
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 Current Balance: <b>$11,200.00</b>
 
 Monthly Revenues:
@@ -70,7 +70,7 @@ Misc             $200.00
 
 Total            <b>$1,700.00</b>
 
-Monthly Savings: <b>$2,500.00</b>")));
+Monthly Savings: <b>$2,500.00</b>".NormalizeNewLines()));
         }
 
         class FilterInfoFilters : ScriptMethods

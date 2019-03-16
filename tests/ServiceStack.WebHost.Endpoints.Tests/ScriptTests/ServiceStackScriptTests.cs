@@ -169,20 +169,20 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void Can_call_AutoQuery_Data_services()
         {
             var html = BaseUrl.CombineWith("autoquery-data-products").GetStringFromUrl(responseFilter:AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Does.StartWith(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
 
 Chai
 Chang
-Aniseed Syrup")));
+Aniseed Syrup".NormalizeNewLines()));
         }
 
         [Test]
         public void Can_call_AutoQuery_Data_services_with_limit()
         {
             var html = BaseUrl.CombineWith("autoquery-data-products?orderBy=ProductName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Does.StartWith(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
 
@@ -192,14 +192,14 @@ Boston Crab Meat
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
         public void Can_call_AutoQuery_Data_services_with_category()
         {
             var html = BaseUrl.CombineWith("autoquery-data-products?category=Beverages").GetStringFromUrl(responseFilter: AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
 
@@ -218,14 +218,14 @@ Lakkalik&#246;&#246;ri
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
         public void Can_call_AutoQuery_Db_services()
         {
             var html = BaseUrl.CombineWith("autoquery-rockstars").GetStringFromUrl(responseFilter: AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Does.StartWith(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
 
@@ -239,14 +239,14 @@ Michael Jackson
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
         public void Can_call_AutoQuery_Db_services_with_limit()
         {
             var html = BaseUrl.CombineWith("autoquery-rockstars?orderBy=FirstName&take=3").GetStringFromUrl(responseFilter: AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Does.StartWith(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Does.StartWith(@"
 <html>
 <body id=root>
 
@@ -256,14 +256,14 @@ Elvis Presley
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
         public void Can_call_AutoQuery_Db_services_by_age()
         {
             var html = BaseUrl.CombineWith("autoquery-rockstars?age=27&orderBy=LastName").GetStringFromUrl(responseFilter: AssertHtmlContentType);
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=root>
 
@@ -273,7 +273,7 @@ Jim Morrison
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
@@ -284,7 +284,7 @@ Jim Morrison
                 .AddQueryParam("orderBy","customerId")
                 .GetStringFromUrl(responseFilter: AssertHtmlContentType);
             html.Print();
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
 
 ALFKI: Alfreds Futterkiste, Germany
@@ -308,7 +308,7 @@ WANDK: Die Wandernde Kuh, Germany
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
@@ -316,7 +316,7 @@ WANDK: Die Wandernde Kuh, Germany
         {
             var html = BaseUrl.CombineWith("autoquery-top5-de-uk").GetStringFromUrl(responseFilter: AssertHtmlContentType);
             html.Print();
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body id=root>
 
 ALFKI: Alfreds Futterkiste, Germany
@@ -327,7 +327,7 @@ CONSH: Consolidated Holdings, UK
 
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
