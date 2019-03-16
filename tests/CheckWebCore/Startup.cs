@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Net;
 using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -97,6 +98,9 @@ namespace CheckWebCore
 
     [Route("/session")]
     public class Session : IReturn<AuthUserSession> {}
+    
+    [Route("/throw")]
+    public class Throw {}
 
     //    [Authenticate]
     public class MyServices : Service
@@ -115,5 +119,9 @@ namespace CheckWebCore
 
         [Authenticate]
         public object Any(Session request) => SessionAs<AuthUserSession>();
+
+        public object Any(Throw request) => HttpError.Conflict("Conflict message");
+//        public object Any(Throw request) => new HttpResult
+//            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
     }
 }

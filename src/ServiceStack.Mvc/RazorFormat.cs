@@ -705,6 +705,8 @@ namespace ServiceStack.Mvc
 
         public static string ErrorResponseSummary(this IHtmlHelper html) =>
             ViewUtils.ErrorResponseSummary(html.GetErrorStatus());
+        public static string ErrorResponseSummary(this IHtmlHelper html, string exceptFor) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFor);
 
         public static string ErrorResponse(this IHtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
@@ -717,10 +719,15 @@ namespace ServiceStack.Mvc
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFor).ToHtmlString();
         public static HtmlString ErrorSummary(this IHtmlHelper html) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), null).ToHtmlString();
+        public static HtmlString ErrorSummary(this IHtmlHelper html, ICollection<string> exceptFields) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, null).ToHtmlString();
+        public static HtmlString ErrorSummary(this IHtmlHelper html, ICollection<string> exceptFields, Dictionary<string, object> divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs).ToHtmlString();
+        public static HtmlString ErrorSummary(this IHtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
+            ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs.ToObjectDictionary()).ToHtmlString();
 
         public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, null).ToHtmlString();
-
         public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, Dictionary<string, object> divAttrs) =>
             ViewUtils.ValidationSummary(html.GetErrorStatus(), exceptFields, divAttrs).ToHtmlString();
         public static HtmlString ValidationSummary(this IHtmlHelper html, ICollection<string> exceptFields, object divAttrs) =>
