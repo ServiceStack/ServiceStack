@@ -375,7 +375,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Test]
+        [Ignore("Can cause CI to hang"), Test]
         public void Does_execute_ReplyTo_validation_filters()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
