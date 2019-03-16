@@ -335,13 +335,13 @@ title: We encode < & >
             Assert.That(pageResult.ResultOutput, Is.Null);
 
             var output = pageResult.Result;            
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=original>
 <h1>Original Contents</h1>
 </body>
 </html>
-")));
+".NormalizeNewLines()));
 
             context.VirtualFiles.WriteFile("_layout.html",
                 context.VirtualFiles.GetFile("_layout.html").ReadAllText().Replace("original", "updated"));
@@ -350,25 +350,25 @@ title: We encode < & >
             
             //Should return same contents when within CheckForModifiedPagesAfter
             output = new PageResult(context.GetPage("page")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=original>
 <h1>Original Contents</h1>
 </body>
 </html>
-")));
+".NormalizeNewLines()));
             
             Thread.Sleep(300);
             
             //Should render updated content
             output = new PageResult(context.GetPage("page")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=updated>
 <h1>Updated Contents</h1>
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -390,13 +390,13 @@ title: We encode < & >
             context.VirtualFiles.WriteFile("page.html", "<h1>Original Contents</h1>");
             
             var output = new PageResult(context.GetPage("page")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=original>
 <h1>Original Contents</h1>
 </body>
 </html>
-")));
+".NormalizeNewLines()));
 
             context.VirtualFiles.WriteFile("_layout.html",
                 context.VirtualFiles.GetFile("_layout.html").ReadAllText().Replace("original", "updated"));
@@ -406,13 +406,13 @@ title: We encode < & >
             Thread.Sleep(150);
 
             output = new PageResult(context.GetPage("page")).Result;            
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=original>
 <h1>Original Contents</h1>
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]

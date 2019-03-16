@@ -164,7 +164,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var html = BaseUrl.CombineWith("view-pages", "test")
                 .GetStringFromUrl(accept:MimeTypes.Html, responseFilter:AssertHtmlContentType);
             
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
 
@@ -174,7 +174,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -183,7 +183,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var html = BaseUrl.CombineWith("view-pages-request", "test")
                 .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
 
@@ -193,7 +193,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -202,7 +202,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var html = BaseUrl.CombineWith("view-pages-nested", "test")
                 .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
 
@@ -212,7 +212,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -221,7 +221,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var html = BaseUrl.CombineWith("view-pages-nested-sub", "test")
                 .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views-nested-sub>
 
@@ -231,7 +231,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -241,7 +241,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 .AddQueryParam("view", "TemplateViewPageRequest")
                 .GetStringFromUrl(accept: MimeTypes.Html, responseFilter: AssertHtmlContentType);
 
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=views>
 
@@ -251,13 +251,13 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
             
             html = BaseUrl.CombineWith("view-pages-custom", "test")
                 .AddQueryParam("view", "TemplateViewPageResponse")
                 .AddQueryParam("layout", "alt-layout")
                 .GetStringFromUrl(accept: MimeTypes.Html);
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"
 <html>
 <body id=alt-root>
 
@@ -267,7 +267,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 </body>
 </html>
-")));
+".NormalizeNewLines()));
             
         }
     }

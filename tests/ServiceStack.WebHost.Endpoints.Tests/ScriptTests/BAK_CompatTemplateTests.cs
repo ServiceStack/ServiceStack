@@ -281,8 +281,8 @@ page arg: <b>{{ arg }}</b>");
             var output = new PageResult(context.GetPage("page")).Result;
             output.Print();
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"layout args: <b>3, 2</b> 
-<p>page arg: <b>3</b></p>")));
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"layout args: <b>3, 2</b> 
+<p>page arg: <b>3</b></p>".NormalizeNewLines()));
             
             var result = new PageResult(context.GetPage("page")) { 
                 Args = {
@@ -290,8 +290,8 @@ page arg: <b>{{ arg }}</b>");
                 }
             };
             output = result.Result;
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"layout args: <b>4, 2</b> 
-<p>page arg: <b>4</b></p>")));
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"layout args: <b>4, 2</b> 
+<p>page arg: <b>4</b></p>".NormalizeNewLines()));
         }
 
         public class TemplateNoopBlock : TemplateBlock
@@ -518,7 +518,7 @@ The Content");
             };
 
             var html = await result.RenderToStringAsync();
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines("<p>The Header</p>\n<h2>The Title</h2>\n<p>The Content</p>\n")));
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo("<p>The Header</p>\n<h2>The Title</h2>\n<p>The Content</p>\n".NormalizeNewLines()));
             
             
             context = new TemplateContext {
@@ -546,14 +546,14 @@ The Content");
             };
 
             html = await result.RenderToStringAsync();
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<html>
   <title>The Title</title>
 </head>
 <body>
   <h2>Transformers</h2>
 <p>The Content</p>
 
-</body>")));
+</body>".NormalizeNewLines()));
             
             
             context = new TemplateContext
@@ -575,11 +575,11 @@ The Content");
 </div>");
             
             html = new PageResult(context.GetPage("page")).Result;
-            Assert.That(TestUtils.NormalizeNewLines(html), Is.EqualTo(TestUtils.NormalizeNewLines(@"<div id=content>
+            Assert.That(html.NormalizeNewLines(), Is.EqualTo(@"<div id=content>
     <h2>The Heading</h2>
 <p>The Content</p>
 
-</div>")));
+</div>".NormalizeNewLines()));
         }
         
         [Route("/BAK_customers/{Id}")]

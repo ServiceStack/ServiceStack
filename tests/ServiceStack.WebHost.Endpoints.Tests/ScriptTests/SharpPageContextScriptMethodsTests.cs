@@ -35,7 +35,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             {
                 Args = { ["title"] = "The title" }
             }.Result;
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -46,7 +46,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </header>
 <h1>The title</h1>
 </body>
-")));            
+".NormalizeNewLines()));            
         }
 
         [Test]
@@ -76,7 +76,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             {
                 Args = { ["title"] = "The title" }
             }.Result;
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -85,7 +85,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <h2>with-partial-binding</h2>
 <footer>The title</footer>
 </body>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                     ["partialTitle"] = "Partial Title",
                 }
             }.Result;
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>The title</title>
 </head>
@@ -127,7 +127,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <h2>The title</h2>
 <h2>Partial Title</h2>
 </body>
-")));
+".NormalizeNewLines()));
         }
 
         [Test]
@@ -175,7 +175,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Result;
 
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <html>
   <title>Page title</title>
 </head>
@@ -191,7 +191,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 </section>
 
 </body>
-")));
+".NormalizeNewLines()));
 
         }
 
@@ -226,12 +226,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             }.Init();
 
             var result = context.EvaluateScript("<ul>\n{{ '<li> {{it}} </li>\n' | forEach(letters) }}</ul>");
-            Assert.That(TestUtils.NormalizeNewLines(result),
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"<ul>
+            Assert.That(result.NormalizeNewLines(),
+                Is.EqualTo(@"<ul>
 <li> A </li>
 <li> B </li>
 <li> C </li>
-</ul>")));
+</ul>".NormalizeNewLines()));
         }
 
         [Test]
@@ -267,8 +267,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 }
             }.Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(result),
-                Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(),
+                Is.EqualTo(@"
 <html>
 <body>
 <header>
@@ -278,7 +278,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <ul> <li> A </li><li> B </li><li> C </li> </ul>
 </section>
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
@@ -354,10 +354,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             var output = new PageResult(context.GetPage("page")).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 a: foo
 b: bar
-")));
+".NormalizeNewLines()));
         }
 
     }

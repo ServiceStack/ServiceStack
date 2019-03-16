@@ -184,14 +184,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 AssignExceptionsTo = "error"
             }.Init();
 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentNullException('p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentNullException! Value cannot be null.\nParameter name: p</h1>"));
 
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p') }}{{ ifError | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
-            Assert.That(TestUtils.NormalizeNewLines(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _)),
+            Assert.That(context.EvaluateScript(@"{{ true | ifThrowArgumentException('bad arg', 'p', { assignError: 'ex' }) }}{{ ex | ifExists | select: <h1>{ it | typeName }! { it.Message }</h1> }}", out _).NormalizeNewLines(),
                 Is.EqualTo("<h1>ArgumentException! bad arg\nParameter name: p</h1>"));
         }
 
@@ -224,7 +224,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body>
 
 <h1>Before Error</h1>
@@ -235,7 +235,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <h1>After Error</h1>
 
 </body>
-</html>")));            
+</html>".NormalizeNewLines()));            
         }
 
         [Test]
@@ -266,7 +266,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body>
 
 <h1>Before Error</h1>
@@ -277,7 +277,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <h1>After Error</h1>
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
@@ -309,12 +309,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Does.StartWith(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(output.NormalizeNewLines(), Does.StartWith(@"<html>
 <body>
 
 <h1>Before Error</h1>
 <pre class=""alert alert-danger"">Exception: in filter
-")));
+".NormalizeNewLines()));
         }
  
         [Test]
@@ -346,7 +346,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"<html>
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"<html>
 <body>
 
 <h1>Before Error</h1>
@@ -357,7 +357,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 <h1>After Error</h1>
 
 </body>
-</html>")));
+</html>".NormalizeNewLines()));
         }
 
         [Test]
@@ -381,7 +381,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <h1>Before Error</h1>
 <pre class=""alert alert-danger"">Exception: in filter
 
@@ -393,7 +393,7 @@ StackTrace:
 
 <b></b>
 
-<h1>After Error</h1>")));
+<h1>After Error</h1>".NormalizeNewLines()));
         }
 
         [Test]
@@ -418,7 +418,7 @@ StackTrace:
             var page = context.GetPage("page");
             var output = new PageResult(page).Result;
             
-            Assert.That(TestUtils.NormalizeNewLines(output), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(output.NormalizeNewLines(), Is.EqualTo(@"
 <h1>Before Error</h1>
 <pre class=""alert alert-danger"">Exception: in filter
 
@@ -430,7 +430,7 @@ StackTrace:
 
 <b>is evaluated</b>
 
-<h1>After Error</h1>")));
+<h1>After Error</h1>".NormalizeNewLines()));
         }
 
         [Test]
@@ -454,9 +454,9 @@ StackTrace:
             
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@""));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-noarg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-msg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">noArg required</div>"));            
         }
 
@@ -480,11 +480,11 @@ StackTrace:
             context.VirtualFiles.WriteFile("page-msg.html", @"{{ { noArg }   | ensureAllArgsNotEmpty({ message: '{0} required' }) | select: { it.arg } }}{{ htmlError }}");
             
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-empty")).Result),
+            Assert.That(new PageResult(context.GetPage("page-empty")).Result.NormalizeNewLines(),
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: empty</div>"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-noarg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-msg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">noArg required</div>"));            
         }
  
@@ -509,9 +509,9 @@ StackTrace:
             
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@"value"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-noarg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-msg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo(""));            
         }
  
@@ -536,9 +536,9 @@ StackTrace:
             
             Assert.That(new PageResult(context.GetPage("page-arg")).Result, Is.EqualTo(@"value"));
             Assert.That(new PageResult(context.GetPage("page-empty")).Result, Is.EqualTo(@"value"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-noarg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-noarg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">Value cannot be null.\nParameter name: noArg</div>"));
-            Assert.That(TestUtils.NormalizeNewLines(new PageResult(context.GetPage("page-msg")).Result), 
+            Assert.That(new PageResult(context.GetPage("page-msg")).Result.NormalizeNewLines(), 
                 Is.EqualTo("<div class=\"alert alert-danger\">empty required</div>"));            
         }
     }

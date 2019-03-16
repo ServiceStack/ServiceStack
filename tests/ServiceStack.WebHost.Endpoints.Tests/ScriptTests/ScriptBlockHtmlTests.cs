@@ -73,7 +73,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
             var result = context.EvaluateScript(template);
             
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <ul class=""nav blur"" id=""ul-menu"">
     <li>
         foo
@@ -84,7 +84,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
     <li class=""active"">
         baz
     </li>
-</ul>")));
+</ul>".NormalizeNewLines()));
 
             var withoutHtmlBlock = @"
 {{#if !isEmpty(items)}}
@@ -119,7 +119,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {{/ul}}";
 
             var result = context.EvaluateScript(template);
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 <ul class=""nav blur"" id=""ul-menu"">
     <li>
         bar
@@ -127,9 +127,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
     <li class=""alt active"">
         baz
     </li>
-</ul>")));
+</ul>".NormalizeNewLines()));
 
-            var withoutHtmlBlock = TestUtils.NormalizeNewLines(@"
+            var withoutHtmlBlock = @"
 {{ items | where: it.Age >= 2  
    | assignTo: items }}
 {{#if !isEmpty(items)}}
@@ -144,14 +144,14 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {{/if}}
  {{else}}
      <div>no items</div>
- {{/if}}");
+ {{/if}}".NormalizeNewLines();
 
             var withoutBlockResult = context.EvaluateScript(withoutHtmlBlock);
             withoutBlockResult.Print();
             Assert.That(withoutBlockResult.RemoveNewLines(), Is.EqualTo(result.RemoveNewLines()));
 
             result = context.EvaluateScript(template.Replace("hasAccess","!hasAccess"));
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(@""));
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@""));
         }
 
         [Test]
@@ -165,12 +165,12 @@ The word {{d}} is shorter than its value.
 {{/each}}";
 
             var result = context.EvaluateScript(template);
-            Assert.That(TestUtils.NormalizeNewLines(result), Is.EqualTo(TestUtils.NormalizeNewLines(@"
+            Assert.That(result.NormalizeNewLines(), Is.EqualTo(@"
 The word five is shorter than its value.
 The word six is shorter than its value.
 The word seven is shorter than its value.
 The word eight is shorter than its value.
-The word nine is shorter than its value.")));
+The word nine is shorter than its value.".NormalizeNewLines()));
         }
         
     }
