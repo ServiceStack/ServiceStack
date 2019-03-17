@@ -181,10 +181,9 @@ namespace ServiceStack
         {
             if (authSession != null)
             {
-                long id;
                 var displayName = authSession.UserName != null 
                     && authSession.UserName.IndexOf('@') == -1      // don't use email
-                    && !long.TryParse(authSession.UserName, out id) // don't use id number
+                    && !long.TryParse(authSession.UserName, out _) // don't use id number
                         ? authSession.UserName
                         : authSession.DisplayName.SafeVarName();
 

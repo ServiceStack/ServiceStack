@@ -127,7 +127,7 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
-                OnlySendSessionCookiesSecurely = false,
+                UseSecureCookies = false,
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,
@@ -230,7 +230,7 @@ namespace ServiceStack
             this.MapExceptionToStatusCode = instance.MapExceptionToStatusCode;
             this.UseSaltedHash = instance.UseSaltedHash;
             this.FallbackPasswordHashers = instance.FallbackPasswordHashers;
-            this.OnlySendSessionCookiesSecurely = instance.OnlySendSessionCookiesSecurely;
+            this.UseSecureCookies = instance.UseSecureCookies;
             this.AllowSessionIdsInHttpParams = instance.AllowSessionIdsInHttpParams;
             this.AllowSessionCookies = instance.AllowSessionCookies;
             this.RestrictAllCookiesToDomain = instance.RestrictAllCookiesToDomain;
@@ -351,7 +351,9 @@ namespace ServiceStack
         /// </summary>
         public List<IPasswordHasher> FallbackPasswordHashers { get; private set; }
 
-        public bool OnlySendSessionCookiesSecurely { get; set; }
+        [Obsolete("Use UseSecureCookies")]
+        public bool OnlySendSessionCookiesSecurely { set => UseSecureCookies = value; }
+        public bool UseSecureCookies { get; set; }
         public bool AllowSessionIdsInHttpParams { get; set; }
         public bool AllowSessionCookies { get; set; }
         public string RestrictAllCookiesToDomain { get; set; }

@@ -349,7 +349,7 @@ namespace ServiceStack.Auth
 
             var authFeature = HostContext.GetPlugin<AuthFeature>();
             var generateNewCookies = (authFeature == null || authFeature.GenerateNewSessionCookiesOnAuthentication)
-                && request.oauth_token == null; //keep existing session during OAuth flow
+                && request.oauth_token == null && request.State == null; //keep existing session during OAuth flow
 
             if (generateNewCookies)
                 this.Request.GenerateNewSessionCookies(session);
