@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using ServiceStack.Configuration;
+using ServiceStack.Templates;
 using ServiceStack.Text;
 
 namespace ServiceStack.Auth
@@ -55,7 +56,7 @@ namespace ServiceStack.Auth
             var isPreAuthCallback = !code.IsNullOrEmpty();
             if (!isPreAuthCallback)
             {
-                var oauthstate = SessionExtensions.CreateRandomSessionId();                
+                var oauthstate = session.Id;                
                 var preAuthUrl = AuthorizeUrl
                     .AddQueryParam("response_type", "code")
                     .AddQueryParam("client_id", ConsumerKey)
@@ -89,8 +90,22 @@ namespace ServiceStack.Auth
 
                 var accessToken = authInfo["access_token"];
 
-                return AuthenticateWithAccessToken(authService, session, tokens, accessToken)
-                       ?? authService.Redirect(SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"))); //Haz Access!
+                var redirectUrl = SuccessRedirectUrlFilter(this, session.ReferrerUrl.SetParam("s", "1"));
+
+                var errorResult = AuthenticateWithAccessToken(authService, session, tokens, accessToken);
+                if (errorResult != null)
+                    return errorResult;
+                
+                //Haz Access!
+
+                if (HostContext.Config?.UseSameSiteCookies == true)
+                {
+                    // Workaround Set-Cookie HTTP Header not being honoured in 302 Redirects 
+                    var redirectHtml = HtmlTemplates.GetHtmlRedirectTemplate(redirectUrl);
+                    return new HttpResult(redirectHtml, MimeTypes.Html);
+                }
+                
+                return authService.Redirect(redirectUrl); 
             }
             catch (WebException we)
             {

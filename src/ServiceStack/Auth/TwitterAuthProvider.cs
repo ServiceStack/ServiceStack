@@ -98,7 +98,9 @@ namespace ServiceStack.Auth
                 //Redirect to OAuth provider to approve access
                 return authService.Redirect(AccessTokenUrlFilter(this, this.AuthorizeUrl
                     .AddQueryParam("oauth_token", tokens.RequestToken)
-                    .AddQueryParam("oauth_callback", session.ReferrerUrl)));
+                    .AddQueryParam("oauth_callback", session.ReferrerUrl)
+                    .AddQueryParam(Keywords.State, session.Id) // doesn't support state param atm, but it's here when it does
+                ));
             }
 
             return authService.Redirect(FailedRedirectUrlFilter(this, session.ReferrerUrl.SetParam("f", "RequestTokenFailed")));

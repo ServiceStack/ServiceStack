@@ -45,6 +45,12 @@ namespace ServiceStack.Templates
             return contents;
         }
 
+        public static string GetHtmlRedirectTemplate(string url)
+        {
+            var html = LoadTemplate("Redirect.html");
+            return html.Replace("{Url}", url);
+        }
+
         public static string Format(string template, params object[] args)
         {
             for (int i = 0; i < args.Length; i++)

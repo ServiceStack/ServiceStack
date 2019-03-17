@@ -163,7 +163,7 @@ namespace ServiceStack
                 if (request.ssid != null)
                 {
                     httpRes.Cookies.AddSessionCookie(SessionFeature.SessionId, request.ssid,
-                        (HostContext.Config.OnlySendSessionCookiesSecurely && Request.IsSecureConnection));
+                        (HostContext.Config.UseSecureCookies && Request.IsSecureConnection));
                 }
             }
 

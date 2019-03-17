@@ -25,6 +25,8 @@ namespace CheckWebCore
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
                     new FacebookAuthProvider(AppSettings),
                     new TwitterAuthProvider(AppSettings),
+                    new GithubAuthProvider(AppSettings), 
+                    new MicrosoftGraphAuthProvider(AppSettings), 
                 }));
 
             appHost.Plugins.Add(new RegistrationFeature());

@@ -1,5 +1,7 @@
 using System.Linq;
+using System.Net;
 using ServiceStack.Configuration;
+using ServiceStack.Web;
 
 namespace ServiceStack.Auth
 {
@@ -80,6 +82,17 @@ namespace ServiceStack.Auth
         {
             if (this.CallbackUrl.IsNullOrEmpty())
                 this.CallbackUrl = authService.Request.AbsoluteUri;
+
+            if (HostContext.Config?.UseSameSiteCookies == true)
+            {
+                var state = authService.Request.QueryString[Keywords.State];
+                if (!string.IsNullOrEmpty(state))
+                {
+                    (authService.Request.Response as IHttpResponse)?.ClearCookies();
+                    authService.Request.CreateTemporarySessionId(state);
+                    session = authService.Request.GetSession(reload:true);
+                }
+            }
 
             session.ReferrerUrl = GetReferrerUrl(authService, session, request);
 

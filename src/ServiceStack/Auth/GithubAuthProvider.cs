@@ -85,7 +85,7 @@ namespace ServiceStack.Auth
             if (!isPreAuthCallback)
             {
                 var scopes = Scopes.Join("%20");
-                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&state={Guid.NewGuid():N}";
+                string preAuthUrl = $"{PreAuthUrl}?client_id={ClientId}&redirect_uri={CallbackUrl.UrlEncode()}&scope={scopes}&{Keywords.State}={session.Id}";
 
                 this.SaveSession(authService, session, SessionExpiry);
                 return authService.Redirect(PreAuthUrlFilter(this, preAuthUrl));
