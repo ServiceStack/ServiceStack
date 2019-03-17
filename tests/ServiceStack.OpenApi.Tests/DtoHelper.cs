@@ -9,7 +9,7 @@ namespace ServiceStack.OpenApi.Tests
     {
         public static AllTypes GetAllTypes()
         {
-            return new AllTypes()
+            return new AllTypes
             {
                 ByteProperty = byte.MaxValue,
                 CharProperty = "n",
@@ -20,8 +20,8 @@ namespace ServiceStack.OpenApi.Tests
                 FloatProperty = 456.312f,
                 GuidProperty = Guid.NewGuid().ToString(),
                 Id = 1,
-                IntProperty = Int32.MaxValue,
-                IntStringMap = new Dictionary<string, string>() { { "1", "abc" }, { "2", "bcd" }, { "3", "cde" } },
+                IntProperty = int.MaxValue,
+                IntStringMap = new Dictionary<string, string> { { "1", "abc" }, { "2", "bcd" }, { "3", "cde" } },
                 KeyValuePairProperty = new KeyValuePairStringString("key1", "value1"),
                 LongProperty = long.MaxValue,
                 NullableDateTime = DateTime.UtcNow,
@@ -42,46 +42,46 @@ namespace ServiceStack.OpenApi.Tests
 
         public static AllCollectionTypes GetAllCollectionTypes()
         {
-            return new AllCollectionTypes()
+            return new AllCollectionTypes
             {
-                IntArray = new int[] { 1, 2, 3, 4 },
-                IntList = new List<int>() { 1, 2, 3, 4 },
-                PocoArray = new Poco[] { new Poco() { Name = "poco1" }, new Poco() { Name = "poco2" } },
-                PocoList = new List<Poco>() { new Poco() { Name = "poco1" }, new Poco() { Name = "poco2" } },
-                PocoLookup = new Dictionary<string, IList<Poco>>()
+                IntArray = new[] { 1, 2, 3, 4 },
+                IntList = new List<int>{ 1, 2, 3, 4 },
+                PocoArray = new[] { new Poco{ Name = "poco1" }, new Poco{ Name = "poco2" } },
+                PocoList = new List<Poco>{ new Poco{ Name = "poco1" }, new Poco{ Name = "poco2" } },
+                PocoLookup = new Dictionary<string, IList<Poco>>
                     {
-                        { "p1", new List<Poco>() { new Poco() { Name = "poco1" }, new Poco() { Name = "poco2" } }},
-                        { "p2", new List<Poco>() { new Poco() { Name = "poco3" }, new Poco() { Name = "poco4" } }}
+                        { "p1", new List<Poco>{ new Poco{ Name = "poco1" }, new Poco{ Name = "poco2" } }},
+                        { "p2", new List<Poco>{ new Poco{ Name = "poco3" }, new Poco{ Name = "poco4" } }}
                     },
                 PocoLookupMap = new Dictionary<string, IList<IDictionary<string, Poco>>>()
                     {
-                        { "pp1", new List<IDictionary<string, Poco>>()
+                        { "pp1", new List<IDictionary<string, Poco>>
                             {
-                                new Dictionary<string, Poco>() {
-                                    { "p11", new Poco() { Name = "poco1" } },
-                                    { "p12", new Poco() { Name = "poco2" } }
+                                new Dictionary<string, Poco>{
+                                    { "p11", new Poco{ Name = "poco1" } },
+                                    { "p12", new Poco{ Name = "poco2" } }
                                 },
-                                new Dictionary<string, Poco>() {
-                                    { "p13", new Poco() { Name = "poco3" } },
-                                    { "p14", new Poco() { Name = "poco4" } }
+                                new Dictionary<string, Poco>{
+                                    { "p13", new Poco{ Name = "poco3" } },
+                                    { "p14", new Poco{ Name = "poco4" } }
                                 }
                             }
                         },
                         { "pp2", new List<IDictionary<string, Poco>>()
                             {
-                                new Dictionary<string, Poco>() {
-                                    { "p21", new Poco() { Name = "poco1" } },
-                                    { "p22", new Poco() { Name = "poco2" } }
+                                new Dictionary<string, Poco>{
+                                    { "p21", new Poco{ Name = "poco1" } },
+                                    { "p22", new Poco{ Name = "poco2" } }
                                 },
-                                new Dictionary<string, Poco>() {
-                                    { "p23", new Poco() { Name = "poco3" } },
-                                    { "p24", new Poco() { Name = "poco4" } }
+                                new Dictionary<string, Poco>{
+                                    { "p23", new Poco{ Name = "poco3" } },
+                                    { "p24", new Poco{ Name = "poco4" } }
                                 }
                             }
                         }
                      },
                 StringArray = new string[] { "string1", "string2" },
-                StringList = new List<string>() { "string1", "string2" }
+                StringList = new List<string>{ "string1", "string2" }
             };
         }
 

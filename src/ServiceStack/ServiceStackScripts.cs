@@ -407,7 +407,7 @@ namespace ServiceStack
             }
             else
             {
-               var minified = GetMinifiedOutputCache(strFragment.Value);
+                var minified = GetMinifiedOutputCache(strFragment.Value);
                 await scope.OutputStream.WriteAsync(minified.Span, token);
             }
         }
