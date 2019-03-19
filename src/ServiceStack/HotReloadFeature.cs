@@ -55,7 +55,6 @@ namespace ServiceStack
         public async Task<HotReloadPageResponse> Any(HotReloadFiles request)
         {
             var vfs = UseVirtualFiles ?? VirtualFileSources;
-            var pattern = request.Pattern ?? DefaultPattern;
 
             var startedAt = DateTime.UtcNow;
             var maxLastModified = DateTime.MinValue;
@@ -64,15 +63,20 @@ namespace ServiceStack
             while (DateTime.UtcNow - startedAt < LongPollDuration)
             {
                 maxLastModified = DateTime.MinValue;
-                var files = vfs.GetAllMatchingFiles(pattern);
-                foreach (var file in files)
+
+                var patterns = (request.Pattern ?? DefaultPattern).Split(';');
+                foreach (var pattern in patterns)
                 {
-                    if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)) == true)
-                        continue;
+                    var files = vfs.GetAllMatchingFiles(pattern.Trim());
+                    foreach (var file in files)
+                    {
+                        if (ExcludePatterns.Any(exclude => file.Name.Glob(exclude)))
+                            continue;
                     
-                    file.Refresh();
-                    if (file.LastModified > maxLastModified)
-                        maxLastModified = file.LastModified;
+                        file.Refresh();
+                        if (file.LastModified > maxLastModified)
+                            maxLastModified = file.LastModified;
+                    }
                 }
 
                 if (string.IsNullOrEmpty(request.ETag))
