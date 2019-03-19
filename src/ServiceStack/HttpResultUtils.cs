@@ -66,11 +66,11 @@ namespace ServiceStack
         }
 
         /// <summary>
-        /// Whether the response is an IHttpError or Exception
+        /// Whether the response is an IHttpError or Exception or ErrorResponse
         /// </summary>
         public static bool IsErrorResponse(this object response)
         {
-            return response != null && (response is IHttpError || response is Exception);
+            return response != null && (response is IHttpError || response is Exception || response is ErrorResponse  );
         }
 
         /// <summary>
