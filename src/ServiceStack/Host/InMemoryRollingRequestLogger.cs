@@ -191,6 +191,8 @@ namespace ServiceStack.Host
         {
             if (response is IHttpResult errorResult)
                 return errorResult.Response;
+            else if (response is ErrorResponse errorResponse)
+                return errorResponse.GetResponseDto();
 
             var ex = response as Exception;
             return ex?.ToResponseStatus();
