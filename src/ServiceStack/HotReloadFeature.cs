@@ -64,7 +64,10 @@ namespace ServiceStack
             {
                 maxLastModified = DateTime.MinValue;
 
-                var patterns = (request.Pattern ?? DefaultPattern).Split(';');
+                var patterns = (!string.IsNullOrEmpty(request.Pattern) 
+                    ? request.Pattern 
+                    : DefaultPattern).Split(';');
+                
                 foreach (var pattern in patterns)
                 {
                     var files = vfs.GetAllMatchingFiles(pattern.Trim());
