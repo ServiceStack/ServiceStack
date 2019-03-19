@@ -49,7 +49,6 @@ namespace ServiceStack
                 AllowJsonpRequests = true,
                 AllowRouteContentTypeExtensions = true,
                 AllowNonHttpOnlyCookies = false,
-                UseSameSiteCookies = false,
                 DebugMode = false,
                 StrictMode = Env.StrictMode,
                 DefaultDocuments = new List<string> {
@@ -127,7 +126,8 @@ namespace ServiceStack
                 MapExceptionToStatusCode = new Dictionary<Type, int>(),
                 UseSaltedHash = false,
                 FallbackPasswordHashers = new List<IPasswordHasher>(),
-                UseSecureCookies = false,
+                UseSameSiteCookies = false,
+                UseSecureCookies = true,   // good default to have, but needed if UseSameSiteCookies=true 
                 AllowSessionIdsInHttpParams = false,
                 AllowSessionCookies = true,
                 RestrictAllCookiesToDomain = null,

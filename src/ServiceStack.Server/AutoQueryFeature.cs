@@ -461,8 +461,8 @@ namespace ServiceStack
 
         public ITypedQuery GetTypedQuery(Type dtoType, Type fromType)
         {
-            ITypedQuery defaultValue;
-            if (TypedQueries.TryGetValue(dtoType, out defaultValue)) return defaultValue;
+            if (TypedQueries.TryGetValue(dtoType, out var defaultValue)) 
+                return defaultValue;
 
             var genericType = typeof(TypedQuery<,>).MakeGenericType(dtoType, fromType);
             defaultValue = genericType.CreateInstance<ITypedQuery>();
