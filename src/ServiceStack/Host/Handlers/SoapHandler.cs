@@ -155,14 +155,31 @@ namespace ServiceStack.Host.Handlers
             }
             catch (Exception ex)
             {
-                if (httpReq.Dto != null)
-                    HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).Wait();
-                else
-                    HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
+                try
+                {
+                    if (httpReq.Dto != null)
+                        HostContext.RaiseServiceException(httpReq, httpReq.Dto, ex).Wait();
+                    else
+                        HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
 
-                throw new SerializationException("3) Error trying to deserialize requestType: "
-                    + requestType
-                    + ", xml body: " + requestXml, ex);
+                    throw new SerializationException($"3) Error trying to deserialize requestType: {requestType}, xml body: {requestXml}", ex);
+                }
+                catch (Exception useEx)
+                {
+                    var responseType = HostContext.Metadata.GetOperation(requestType).ResponseType 
+                       ?? typeof(ErrorResponse);
+
+                    var responseStatus = useEx.ToResponseStatus();
+                    var response = responseType.CreateInstance();
+                    var setter = TypeProperties.Get(responseType).GetPublicSetter(nameof(IHasResponseStatus.ResponseStatus));
+                    setter(response, responseStatus);
+
+                    var noMsgAction = requestMsg.Headers.Action == null;
+                    var responseMsg = CreateResponseMessage(response, requestMsg.Version, requestType, noMsgAction);
+
+                    SetErrorStatusIfAny(httpReq.Response, responseMsg, useEx.ToStatusCode());
+                    return responseMsg;
+                }
             }
         }
 
