@@ -17,6 +17,18 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
+	public class AddInts : IReturn<AddIntsResponse>
+	{
+		public int A { get; set; }
+		public int B { get; set; }
+	}
+
+	public class AddIntsResponse
+	{
+		public int Result { get; set; }
+		public ResponseStatus ResponseStatus { get; set; }
+	}
+
 	public class ReverseService 
 		: Service
 	{
@@ -31,6 +43,10 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 			Array.Reverse(valueBytes);
 			return new string(valueBytes);
 		}
+		
+		public object Any(AddInts request) => new AddIntsResponse {
+			Result = request.A + request.B
+		};
 	}
 
 }
