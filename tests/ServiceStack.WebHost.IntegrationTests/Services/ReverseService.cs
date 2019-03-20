@@ -17,15 +17,21 @@ namespace ServiceStack.WebHost.IntegrationTests.Services
 		public string Result { get; set; }
 	}
 
+	[DataContract]
 	public class AddInts : IReturn<AddIntsResponse>
 	{
+		[DataMember]
 		public int A { get; set; }
+		[DataMember]
 		public int B { get; set; }
 	}
 
+	[DataContract]
 	public class AddIntsResponse
 	{
+		[DataMember]
 		public int Result { get; set; }
+		[DataMember]
 		public ResponseStatus ResponseStatus { get; set; }
 	}
 

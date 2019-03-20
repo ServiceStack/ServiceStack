@@ -162,7 +162,7 @@ namespace ServiceStack.Host.Handlers
                     else
                         HostContext.RaiseUncaughtException(httpReq, httpRes, httpReq.OperationName, ex).Wait();
 
-                    throw new SerializationException($"3) Error trying to deserialize requestType: {requestType}, xml body: {requestXml}", ex);
+                    throw new SerializationException($"Error trying to deserialize requestType: {requestType}, xml body: {requestXml}", ex);
                 }
                 catch (Exception useEx)
                 {

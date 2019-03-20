@@ -18,7 +18,7 @@
     </FileUpgradeFlags>
     <OldToolsVersion>4.0</OldToolsVersion>
     <UpgradeBackupLocation />
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -202,6 +202,7 @@
     <EmbeddedResource Include="static-root-embedded.txt" />
     <Content Include="Default.aspx" />
     <Content Include="default.html" />
+    <Content Include="start.cmd" />
     <Content Include="Subpages\Test.aspx" />
     <EmbeddedResource Include="Templates\OperationControl.html" />
     <EmbeddedResource Include="Templates\HtmlFormat.html" />
@@ -351,7 +352,9 @@
   <ItemGroup>
     <Content Include="static-root.txt" />
     <Content Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\DataSources\ServiceStack.ServiceInterface.ServiceModel.ResponseStatus.datasource" />
     <None Include="README.md" />
     <Content Include="sample.pdf" />
