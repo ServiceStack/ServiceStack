@@ -258,11 +258,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
             using (var reader = responseMsg.GetReaderAtBodyContents())
             {
                 var bodyXml = reader.ReadOuterXml();
-                var requestType = typeof(AddIntsResponse);
-                var request = (AddIntsResponse)Serialization.DataContractSerializer.Instance.DeserializeFromString(bodyXml, requestType);
+                var responseType = typeof(AddIntsResponse);
+                var response = (AddIntsResponse)Serialization.DataContractSerializer.Instance.DeserializeFromString(bodyXml, responseType);
 
-                Assert.That(request.ResponseStatus.ErrorCode, Is.EqualTo(nameof(SerializationException)));
-                Assert.That(request.ResponseStatus.Message, Does.Contain("Error trying to deserialize requestType:"));
+                Assert.That(response.ResponseStatus.ErrorCode, Is.EqualTo(nameof(SerializationException)));
+                Assert.That(response.ResponseStatus.Message, Does.Contain("Error trying to deserialize requestType:"));
             }
         }
         
