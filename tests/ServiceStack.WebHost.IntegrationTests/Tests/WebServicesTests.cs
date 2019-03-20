@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Runtime.Serialization;
+using System.ServiceModel.Channels;
+using System.Xml;
 using NUnit.Framework;
 using ServiceStack.Common.Tests;
 using ServiceStack.Text;
@@ -215,11 +218,11 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
    </s:Body>
 </s:Envelope>";
 
-            var response = ServiceClientBaseUri.CombineWith("/soap12")
+            var responseXml = ServiceClientBaseUri.CombineWith("/soap12")
                 .PostToUrl(soap, requestFilter:req => req.ContentType = "application/soap+xml; charset=utf-8");
             
-            response.Print();
-            Assert.That(response, Does.Contain("<Result>3</Result>"));
+            responseXml.Print();
+            Assert.That(responseXml, Does.Contain("<Result>3</Result>"));
         }
 
         [Test]
@@ -243,18 +246,23 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
    </s:Body>
 </s:Envelope>";
 
-            try
+            var responseXml = ServiceClientBaseUri.CombineWith("/soap12")
+                .PostToUrl(soap, requestFilter: req => req.ContentType = "application/soap+xml; charset=utf-8");
+                
+            var doc = new XmlDocument();
+            doc.LoadXml(responseXml);
+
+            var responseMsg = Message.CreateMessage(new XmlNodeReader(doc), int.MaxValue,
+                MessageVersion.Soap12WSAddressingAugust2004);
+
+            using (var reader = responseMsg.GetReaderAtBodyContents())
             {
-                var response = ServiceClientBaseUri.CombineWith("/soap12")
-                    .PostToUrl(soap, requestFilter: req => req.ContentType = "application/soap+xml; charset=utf-8");
-            }
-            catch (WebException ex)
-            {
-                using (var stream = ex.Response.GetResponseStream())
-                {
-                    var response = stream.ReadToEnd();
-                    response.Print();
-                }
+                var bodyXml = reader.ReadOuterXml();
+                var requestType = typeof(AddIntsResponse);
+                var request = (AddIntsResponse)Serialization.DataContractSerializer.Instance.DeserializeFromString(bodyXml, requestType);
+
+                Assert.That(request.ResponseStatus.ErrorCode, Is.EqualTo(nameof(SerializationException)));
+                Assert.That(request.ResponseStatus.Message, Does.Contain("Error trying to deserialize requestType:"));
             }
         }
         
