@@ -40,7 +40,17 @@ namespace ServiceStack.Script
 
         public List<ScriptMethods> ScriptMethods { get; } = new List<ScriptMethods>();
 
+        /// <summary>
+        /// Insert additional Methods at the start so they have priority over default Script Methods   
+        /// </summary>
+        public List<ScriptMethods> InsertScriptMethods { get; } = new List<ScriptMethods>();
+
         public List<ScriptBlock> ScriptBlocks { get; } = new List<ScriptBlock>();
+
+        /// <summary>
+        /// Insert additional Blocks at the start so they have priority over default Script Blocks   
+        /// </summary>
+        public List<ScriptBlock> InsertScriptBlocks { get; } = new List<ScriptBlock>();
 
         public Dictionary<string, Type> CodePages { get; } = new Dictionary<string, Type>();
         
@@ -64,6 +74,11 @@ namespace ServiceStack.Script
         public ConcurrentDictionary<string, string> PathMappings { get; } = new ConcurrentDictionary<string, string>();
        
         public List<IScriptPlugin> Plugins { get; } = new List<IScriptPlugin>();
+
+        /// <summary>
+        /// Insert plugins at the start of Plugins so they're registered first
+        /// </summary>
+        public List<IScriptPlugin> InsertPlugins { get; } = new List<IScriptPlugin>();
         
         public HashSet<string> FileFilterNames { get; } = new HashSet<string> { "includeFile", "fileContents" };
         
@@ -302,6 +317,13 @@ namespace ServiceStack.Script
             if (HasInit)
                 return this;
             HasInit = true;
+
+            if (ScriptMethods.Count > 0)
+                ScriptMethods.InsertRange(0, InsertScriptMethods);
+            if (ScriptBlocks.Count > 0)
+                ScriptBlocks.InsertRange(0, InsertScriptBlocks);
+            if (Plugins.Count > 0)
+                Plugins.InsertRange(0, InsertPlugins);
 
             Args[ScriptConstants.Debug] = DebugMode;
             

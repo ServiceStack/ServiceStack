@@ -1681,6 +1681,22 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ foo | IsNullOrWhiteSpace }}"), Is.EqualTo("False"));
         }
 
+        public class ShadowScripts : ScriptMethods
+        {
+            public int add(int x, int y) => x * y;
+        }
+
+        [Test]
+        public void Can_shadow_default_ScriptMethods_with_InsertScriptMethods()
+        {
+            var context = new ScriptContext {
+                InsertScriptMethods = { new ShadowScripts() }
+            }.Init();
+
+            var result = context.Evaluate<int>("{{ add(4,4) | return }}");
+            Assert.That(result, Is.EqualTo(16));
+        }
+
         [Test]
         public void Arguments_can_shadow_existing_filters()
         {
