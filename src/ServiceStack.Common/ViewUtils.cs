@@ -790,11 +790,37 @@ namespace ServiceStack
 
                 if (!options.Sources.IsEmpty() && options.Bundle && options.Cache)
                 {
-                    if (webVfs.FileExists(outWebPath ?? outFilePath))
+                    if (hasHash)
                     {
-                        if (hasHash)
-                            return webVfs.GetMemoryVirtualFiles().GetFile(outFilePath).ReadAllText();
-                        
+                        var memFs = webVfs.GetMemoryVirtualFiles();
+
+                        var existingBundleTag = webVfs.GetFile(outFilePath); 
+                        if (existingBundleTag == null)
+                        {
+                            // use existing bundle if file with matching hash pattern is found
+                            var findOutPath = outFilePath.Replace("[hash]", ".*");
+                            var dirPath = findOutPath.LastLeftPart("/");
+                            var fileNameSearch = findOutPath.LastRightPart("/");
+                            var dir = webVfs.GetDirectory(dirPath);
+                            
+                            var fileMatch = dir != null 
+                                ? webVfs.GetAllMatchingFiles(fileNameSearch).FirstOrDefault()
+                                : null;
+
+                            if (fileMatch != null)
+                            {
+                                outHtmlTag = htmlTagFmt.Replace("{0}", fileMatch.VirtualPath);
+                                memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
+                                return outHtmlTag;
+                            }
+                        }
+                        else
+                        {
+                            return existingBundleTag.ReadAllText();
+                        }
+                    }
+                    else if (webVfs.FileExists(outWebPath ?? outFilePath))
+                    {
                         return outHtmlTag;
                     }
                 }
