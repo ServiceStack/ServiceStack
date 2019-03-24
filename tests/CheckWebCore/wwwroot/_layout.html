@@ -11,7 +11,7 @@
     
     {{#noop}}{{ false | assignTo: debug }}{{/noop}}
     
-    {{ ['/assets/css/'] | bundleCss({ minify: debug, bundle:!debug }) }}
+    {{ ['/assets/css/'] | bundleCss({ minify:debug, out:'/css/bundle[hash].css' }) }}
 </head>
 <body>
 
@@ -73,7 +73,7 @@
         '/js/ss-utils.js',
         '/lib/@servicestack/client/index.js',
         '/dtos.js',
-        ] | bundleJs({ minify: debug }) }}
+        ] | bundleJs({ minify:debug, out:'/js/bundle[hash].js' }) }}
     
 
     {{ scripts | raw }}

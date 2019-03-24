@@ -784,8 +784,20 @@ namespace ServiceStack
                 var writeVfs = ResolveWriteVfs(filterName, webVfs, contentVfs, origOutFile, options.SaveToDisk, out var outFilePath);
 
                 var outHtmlTag = htmlTagFmt.Replace("{0}", outFilePath);
-                if (!options.Sources.IsEmpty() && options.Bundle && options.Cache && webVfs.FileExists(outWebPath ?? outFilePath))
-                    return outHtmlTag;
+
+                var maxDate = DateTime.MinValue;
+                var hasHash = outFilePath.IndexOf("[hash]", StringComparison.Ordinal) >= 0;
+
+                if (!options.Sources.IsEmpty() && options.Bundle && options.Cache)
+                {
+                    if (webVfs.FileExists(outWebPath ?? outFilePath))
+                    {
+                        if (hasHash)
+                            return webVfs.GetMemoryVirtualFiles().GetFile(outFilePath).ReadAllText();
+                        
+                        return outHtmlTag;
+                    }
+                }
 
                 var sources = GetBundleFiles(filterName, webVfs, contentVfs, options.Sources, assetExt);
 
@@ -802,11 +814,19 @@ namespace ServiceStack
                         .Append(assetExt == "html" ? "-->" : "*/");
                 }
 
+                
                 var minExt = ".min." + assetExt;
                 if (options.Bundle)
                 {
                     foreach (var file in sources)
-                    {                        
+                    {
+                        if (hasHash)
+                        {
+                            file.Refresh();
+                            if (file.LastModified > maxDate)
+                                maxDate = file.LastModified;
+                        }
+                        
                         string src;
                         try
                         {
@@ -854,6 +874,15 @@ namespace ServiceStack
                     }
 
                     var bundled = StringBuilderCache.ReturnAndFree(sb);
+                    if (hasHash)
+                    {
+                        var hash = "." + maxDate.ToUnixTimeMs();
+                        outHtmlTag = outHtmlTag.Replace("[hash]", hash);
+                        webVfs.GetMemoryVirtualFiles().WriteFile(outFilePath, outHtmlTag); //have bundle[hash].ext return rendered html
+                        
+                        outFilePath = outFilePath.Replace("[hash]", hash);
+                    }
+                    
                     try
                     {
                         writeVfs.WriteFile(outFilePath, bundled);
