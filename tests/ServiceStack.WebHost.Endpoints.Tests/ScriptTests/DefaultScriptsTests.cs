@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using ServiceStack.IO;
 using ServiceStack.Script;
+using ServiceStack.Text;
 
 namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 {
@@ -1391,6 +1392,33 @@ dir-file: dir/dir-file.txt
             Assert.That(context.EvaluateScript("{{ noArg | onlyIfNull      | onlyIfNotNull(none)   | show: 1 }}"), Is.EqualTo("1"));
             Assert.That(context.EvaluateScript("{{ arg   | onlyIfNotEmpty  | onlyIfNotEmpty(items) | join }}"), Is.EqualTo("1,2,3"));
         }
+
+        [Test]
+        public void Can_flatten()
+        {
+            var context = new ScriptContext {
+                Args = {
+                    ["nestedInts"] = new [] { new[]{1,2,3},new[]{4,5,6} },
+                    ["nestedInts2"] = new [] { new[]{new[]{1,2},new[]{3}},new[]{new[]{4},new[]{5,6}} },
+                    ["nestedStrings"] = new [] { new[]{"A","B","C"},new[]{"D","E","F"} },
+                    ["nestedStrings2"] = new [] { new[]{new[]{"A","B"},new[]{"C"}},new[]{new[]{"D"},new[]{"E","F"}} },
+                }
+            }.Init();
+
+            Assert.That(context.Evaluate<List<object>>("{{ nestedInts | flatten | return }}"), 
+                Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
+            Assert.That(context.Evaluate<List<object>>("{{ nestedInts2 | flatten | return }}"), 
+                Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
+            
+            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings | flatten | return }}"), 
+                Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
+            Assert.That(context.Evaluate<List<object>>("{{ nestedStrings2 | flatten | return }}"), 
+                Is.EquivalentTo(new[]{ "A","B","C","D","E","F" }));
+
+            Assert.That(context.Evaluate<List<object>>("{{ [ [1,2,[3], [4,[5,6]] ] ] | flatten | return }}"), 
+                Is.EquivalentTo(new[]{ 1,2,3,4,5,6 }));
+        }
+
 
         [Test]
         public void Does_show()
