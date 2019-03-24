@@ -269,6 +269,28 @@ namespace ServiceStack.Script
             return to;
         }
 
+        public List<object> flatten(object target)
+        {
+            var to = new List<object>();
+
+            if (target != null)
+            {
+                if (!(target is string) && target is IEnumerable objs)
+                {
+                    foreach (var o in objs)
+                    {
+                        to.AddRange(flatten(o));
+                    }
+                }
+                else
+                {
+                    to.Add(target);
+                }
+            }
+
+            return to;
+        }
+
         public object let(ScriptScopeContext scope, object target, object scopeBindings) //from filter
         {
             if (target is IEnumerable objs)
