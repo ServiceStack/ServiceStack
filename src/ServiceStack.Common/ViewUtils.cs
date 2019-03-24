@@ -798,18 +798,11 @@ namespace ServiceStack
                         if (existingBundleTag == null)
                         {
                             // use existing bundle if file with matching hash pattern is found
-                            var findOutPath = outFilePath.Replace("[hash]", ".*");
-                            var dirPath = findOutPath.LastLeftPart("/");
-                            var fileNameSearch = findOutPath.LastRightPart("/");
-                            var dir = webVfs.GetDirectory(dirPath);
-                            
-                            var fileMatch = dir != null 
-                                ? webVfs.GetAllMatchingFiles(fileNameSearch).FirstOrDefault()
-                                : null;
-
+                            var fileSearchPath = outFilePath.Replace("[hash]", ".*");
+                            var fileMatch = webVfs.GetAllMatchingFiles(fileSearchPath).FirstOrDefault();
                             if (fileMatch != null)
                             {
-                                outHtmlTag = htmlTagFmt.Replace("{0}", fileMatch.VirtualPath);
+                                outHtmlTag = htmlTagFmt.Replace("{0}", "/" + fileMatch.VirtualPath);
                                 memFs.WriteFile(outFilePath, outHtmlTag); //cache lookup
                                 return outHtmlTag;
                             }
