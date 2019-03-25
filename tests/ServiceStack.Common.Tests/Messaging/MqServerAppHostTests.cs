@@ -295,7 +295,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Test]
+        [Ignore("Can cause CI to hang"), Test]
         public void SendOneWay_calls_AnyTestMq_Service_via_MQ()
         {
             var client = new JsonServiceClient(BaseUri);
@@ -312,7 +312,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Test]
+        [Ignore("Can cause CI to hang"), Test]
         public void SendOneWay_calls_PostTestMq_Service_via_MQ()
         {
             var client = new JsonServiceClient(BaseUri);
@@ -355,7 +355,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Test]
+        [Ignore("Can cause CI to hang"), Test]
         public void Does_handle_generic_errors()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -409,7 +409,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Test]
+        [Ignore("Can cause CI to hang"), Test]
         public void Does_handle_ReplyTo_generic_errors()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
