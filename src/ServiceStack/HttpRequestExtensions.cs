@@ -1112,7 +1112,7 @@ namespace ServiceStack
 
         public static bool HasRole(this IEnumerable<Claim> claims, string role) => claims.HasClaim("role", role);
 
-        public static bool HasScope(this IEnumerable<Claim> claims, string role) => claims.HasClaim("scope", role);
+        public static bool HasScope(this IEnumerable<Claim> claims, string scope) => claims.HasClaim("scope", scope);
 
         public static bool HasClaim(this IEnumerable<Claim> claims, string type, string value)
         {
