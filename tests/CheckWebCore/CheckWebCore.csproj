@@ -21,4 +21,8 @@
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\css" />
+    <Folder Include="wwwroot\js" />
+  </ItemGroup>
 </Project>

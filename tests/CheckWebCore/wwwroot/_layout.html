@@ -9,9 +9,12 @@
 
     {{#if debug}}<script>{{ '/js/hot-loader.js' | includeFile }}</script>{{/if}}
     
-    {{#noop}}{{ false | assignTo: debug }}{{/noop}}
+    {{#noop}}
+    {{ false | assignTo: debug }}
+    {{/noop}}
     
-    {{ ['/assets/css/'] | bundleCss({ minify:debug, out:'/css/bundle[hash].css' }) }}
+    {{ (debug ? '' : '[hash].min') | assignTo: min }}
+    {{ ['/assets/css/'] | bundleCss({ minify:!debug, cache:!debug, disk:!debug, out:`/css/bundle${min}.css` }) }}
 </head>
 <body>
 
@@ -73,7 +76,7 @@
         '/js/ss-utils.js',
         '/lib/@servicestack/client/index.js',
         '/dtos.js',
-        ] | bundleJs({ minify:debug, out:'/js/bundle[hash].js' }) }}
+    ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/bundle${min}.js` }) }}
     
 
     {{ scripts | raw }}
