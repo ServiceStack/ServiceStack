@@ -36,7 +36,6 @@
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj" Targets="Restore" />
-    <MSBuild Projects="$(SrcDir)/ServiceStack.NetFramework/ServiceStack.NetFramework.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack.Kestrel/ServiceStack.Kestrel.csproj" Targets="Restore" />
   </Target>
 
@@ -47,7 +46,6 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
-    <RemoveDir Directories="$(SrcDir)/ServiceStack.NetFramework/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Kestrel/obj" />
   </Target>
 
@@ -87,11 +85,6 @@
 
     <!-- ServiceStack -->
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
-             Targets="Build;Pack"
-             Properties="Configuration=$(Configuration)" />
-
-    <!-- ServiceStack.NetFramework --><!-- used in ServiceStack.OrmLite.Oracle.Tests.csproj -->
-    <MSBuild Projects="$(SrcDir)/ServiceStack.NetFramework/ServiceStack.NetFramework.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
