@@ -36,6 +36,7 @@
     <MSBuild Projects="$(SrcDir)/ServiceStack.HttpClient/ServiceStack.HttpClient.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack.Common/ServiceStack.Common.csproj" Targets="Restore" />
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj" Targets="Restore" />
+    <MSBuild Projects="$(SrcDir)/ServiceStack.NetFramework/ServiceStack.NetFramework.csproj" Targets="Restore" />
   </Target>
 
   <!-- need to remove old caches from nuget restore from .Core csproj's -->
@@ -45,6 +46,7 @@
     <RemoveDir Directories="$(SrcDir)/ServiceStack.HttpClient/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack.Common/obj" />
     <RemoveDir Directories="$(SrcDir)/ServiceStack/obj" />
+    <RemoveDir Directories="$(SrcDir)/ServiceStack.NetFramework/obj" />
   </Target>
 
   <Target Name="UpdateVersion">
@@ -83,6 +85,11 @@
 
     <!-- ServiceStack -->
     <MSBuild Projects="$(SrcDir)/ServiceStack/ServiceStack.csproj"
+             Targets="Build;Pack"
+             Properties="Configuration=$(Configuration)" />
+
+    <!-- ServiceStack.NetFramework --><!-- used in ServiceStack.OrmLite.Oracle.Tests.csproj -->
+    <MSBuild Projects="$(SrcDir)/ServiceStack.NetFramework/ServiceStack.NetFramework.csproj"
              Targets="Build;Pack"
              Properties="Configuration=$(Configuration)" />
 
