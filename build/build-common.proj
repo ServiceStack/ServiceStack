@@ -32,8 +32,6 @@
   <Target Name="BuildSolutions">
     <CallTarget Targets="ClearNuGetRestoreCaches" />
     <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Restore" />
-    <MSBuild Projects="$(BuildSolutionDir)/src/ServiceStack.sln" Targets="Build"
-             Properties="Configuration=$(Configuration)" />
   </Target>
 
   <!-- need to remove old caches from nuget restore from .Core csproj's -->
