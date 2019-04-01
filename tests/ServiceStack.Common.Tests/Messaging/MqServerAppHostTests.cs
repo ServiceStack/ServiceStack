@@ -16,7 +16,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
-    [TestFixture]
+    [TestFixture, Ignore("Can cause CI to hang")]
     public class RedisMqServerAppHostTests : MqServerAppHostTests
     {
         public RedisMqServerAppHostTests()
@@ -31,7 +31,7 @@ namespace ServiceStack.Common.Tests.Messaging
         }
     }
 
-    [TestFixture]
+    [TestFixture, Ignore("Can cause CI to hang")]
     public class RabbitMqServerAppHostTests : MqServerAppHostTests
     {
         public RabbitMqServerAppHostTests()
@@ -241,7 +241,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Can_Publish_to_AnyTestMq_Service()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -260,7 +260,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Can_Publish_to_AnyTestMqAsync_Service()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -279,7 +279,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Can_Publish_to_PostTestMq_Service()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -298,7 +298,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void SendOneWay_calls_AnyTestMq_Service_via_MQ()
         {
             var client = new JsonServiceClient(BaseUri);
@@ -315,7 +315,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void SendOneWay_calls_PostTestMq_Service_via_MQ()
         {
             var client = new JsonServiceClient(BaseUri);
@@ -332,7 +332,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Does_execute_validation_filters()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -358,7 +358,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Does_handle_generic_errors()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -378,7 +378,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Does_execute_ReplyTo_validation_filters()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
@@ -412,7 +412,7 @@ namespace ServiceStack.Common.Tests.Messaging
             }
         }
 
-        [Ignore("Can cause CI to hang"), Test]
+        [Test]
         public void Does_handle_ReplyTo_generic_errors()
         {
             using (var mqFactory = appHost.TryResolve<IMessageFactory>())
