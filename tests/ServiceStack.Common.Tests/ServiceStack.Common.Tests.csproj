@@ -32,7 +32,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Wire\ServiceStack.Wire.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.RabbitMq\ServiceStack.RabbitMq.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Text" Version="5.5.1" />
     <PackageReference Include="ServiceStack.OrmLite.Sqlite" Version="$(Version)" />
     <PackageReference Include="ServiceStack.OrmLite.SqlServer" Version="$(Version)" />
     <PackageReference Include="ServiceStack.Aws" Version="$(Version)" />

@@ -19,7 +19,7 @@
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Mvc\ServiceStack.Mvc.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack\ServiceStack.csproj" />
-    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <PackageReference Include="ServiceStack.Text" Version="5.5.1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="wwwroot\css" />

@@ -1,8 +1,10 @@
 ﻿#if !NETCORE_SUPPORT
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Funq;
 using NUnit.Framework;
+using ServiceStack.Auth;
 using ServiceStack.FluentValidation;
 using ServiceStack.Messaging;
 using ServiceStack.Messaging.Redis;
@@ -10,6 +12,7 @@ using ServiceStack.RabbitMq;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Validation;
+using ServiceStack.Web;
 
 namespace ServiceStack.Common.Tests.Messaging
 {
