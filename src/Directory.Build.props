@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <Version>5.4.1</Version>
+    <Version>5.5.1</Version>
     <Authors>ServiceStack</Authors>
     <Company>ServiceStack, Inc.</Company>
     <Copyright>&#169; 2008-2018 ServiceStack, Inc</Copyright>

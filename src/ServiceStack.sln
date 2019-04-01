@@ -30,6 +30,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{EB65E771
 		ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj = ServiceStack.ProtoBuf\ServiceStack.ProtoBuf.Core.csproj
 		ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj = ServiceStack.RabbitMq\ServiceStack.RabbitMq.Core.csproj
 		ServiceStack.Server\ServiceStack.Server.Core.csproj = ServiceStack.Server\ServiceStack.Server.Core.csproj
+		..\tests\Directory.Build.props = ..\tests\Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formats", "Formats", "{CBDE0575-D09B-4B4D-8C62-5E03E54F6BE8}"
