@@ -99,7 +99,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Aws, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
-      <HintPath>..\..\src\packages\ServiceStack.Aws.5.4.1\lib\net45\ServiceStack.Aws.dll</HintPath>
+      <HintPath>..\..\src\packages\ServiceStack.Aws.5.5.1\lib\net45\ServiceStack.Aws.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Client, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">

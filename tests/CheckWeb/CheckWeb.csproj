@@ -74,7 +74,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.PostgreSQL, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
-      <HintPath>..\..\src\packages\ServiceStack.OrmLite.PostgreSQL.5.4.1\lib\net45\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
+      <HintPath>..\..\src\packages\ServiceStack.OrmLite.PostgreSQL.5.5.1\lib\net45\ServiceStack.OrmLite.PostgreSQL.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.Sqlite, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
@@ -82,7 +82,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.OrmLite.SqlServer, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
-      <HintPath>..\..\src\packages\ServiceStack.OrmLite.SqlServer.5.4.1\lib\net45\ServiceStack.OrmLite.SqlServer.dll</HintPath>
+      <HintPath>..\..\src\packages\ServiceStack.OrmLite.SqlServer.5.5.1\lib\net45\ServiceStack.OrmLite.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Redis, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
