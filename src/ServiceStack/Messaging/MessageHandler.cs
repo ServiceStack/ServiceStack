@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using ServiceStack.Logging;
 
 namespace ServiceStack.Messaging
@@ -79,6 +80,7 @@ namespace ServiceStack.Messaging
                         return msgsProcessed;
                 }
             }
+            catch (TaskCanceledException) {}
             catch (Exception ex)
             {
                 Log.Error("Error serializing message from mq server: " + ex.Message, ex);
