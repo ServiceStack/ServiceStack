@@ -162,6 +162,7 @@ namespace CheckWeb
 
             dbFactory.RegisterConnection("pgsql",
                 new OrmLiteConnectionFactory(
+                    Environment.GetEnvironmentVariable("MSSQL_CONNECTION") ?? 
                     "Server=localhost;Port=5432;User Id=test;Password=test;Database=test;Pooling=true;MinPoolSize=0;MaxPoolSize=200",
                     PostgreSqlDialect.Provider));
 
