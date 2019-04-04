@@ -1,20 +1,20 @@
-﻿#if !NETCORE_SUPPORT
+using System;
 using Amazon.DynamoDBv2;
-using ServiceStack.Configuration;
 
 namespace ServiceStack.Common.Tests
 {
-    public static class DynamoConfig
+    public class TestsConfig
     {
+        public static readonly string RabbitMqHost = Environment.GetEnvironmentVariable("CI_RABBITMQ") ?? "localhost";
+        
         public static AmazonDynamoDBClient CreateDynamoDBClient()
         {
             var dynamoClient = new AmazonDynamoDBClient("keyId", "key", new AmazonDynamoDBConfig
             {
-                ServiceURL = ConfigUtils.GetAppSetting("DynamoDbUrl", "http://localhost:8000"),
+                ServiceURL = Environment.GetEnvironmentVariable("CI_DYNAMODB") ?? "http://localhost:8000",
             });
 
             return dynamoClient;
         }
     }
 }
-#endif
