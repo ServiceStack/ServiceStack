@@ -437,7 +437,7 @@ namespace ServiceStack.Script
 
                 //don't convert into ternary to avoid Type coercion
                 if (hasDecimal || hasExponent)
-                    token = new JsLiteral(numLiteral.TryParseDouble(out double d) ? d : default(double));
+                    token = new JsLiteral(numLiteral.ParseDouble());
                 else
                     token = new JsLiteral(numLiteral.ParseSignedInteger());
 

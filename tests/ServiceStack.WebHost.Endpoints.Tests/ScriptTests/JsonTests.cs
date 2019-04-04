@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 
@@ -21,5 +22,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var obj = (Dictionary<string,object>)JSON.parse(json);
             Assert.That(obj.ContainsKey("content"));
         }
+
+        [Test]
+        public void Does_throw_on_invalid_number()
+        {
+            try
+            {
+                JSON.parse(@"{""test"":23.34.3333}");
+                Assert.Fail("should throw");
+            }
+            catch (FormatException) {}
+        }
+
     }
 }
