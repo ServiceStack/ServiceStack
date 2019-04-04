@@ -53,7 +53,9 @@ namespace ServiceStack.Common.Tests.Messaging
 
         public override IMessageService CreateMqServer(int retryCount = 1)
         {
-            return new RabbitMqServer { RetryCount = 1 };
+            return new RabbitMqServer(TestsConfig.RabbitMqHost) {
+                RetryCount = 1
+            };
         }
     }
 

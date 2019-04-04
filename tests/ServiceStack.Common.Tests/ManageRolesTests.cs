@@ -173,7 +173,7 @@ namespace ServiceStack.Common.Tests
                 },
                 ConfigureContainer = container =>
                 {
-                    container.Register<IPocoDynamo>(c => new PocoDynamo(DynamoConfig.CreateDynamoDBClient()));
+                    container.Register<IPocoDynamo>(c => new PocoDynamo(TestsConfig.CreateDynamoDBClient()));
                     //DynamoMetadata.Reset();
                     container.Resolve<IPocoDynamo>().DeleteAllTables(TimeSpan.FromMinutes(1));
 
