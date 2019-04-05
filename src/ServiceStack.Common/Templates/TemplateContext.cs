@@ -44,7 +44,7 @@ namespace ServiceStack.Templates
     [Obsolete("Use ScriptMethods")]
     public class TemplateFilter : ServiceStack.Script.ScriptMethods {}
 
-    [Obsolete("Use TemplateContext")]
+    [Obsolete("Use ScriptContext")]
     public class TemplateContext : Script.ScriptContext
     {
         [Obsolete("Use ScriptMethods")]
