@@ -1325,8 +1325,14 @@ namespace ServiceStack.Script
                 : assetsBase.ToString().CombineWith(dirPath(scope.Page.VirtualPath), virtualPath).ResolvePaths();
         }
 
+        [Obsolete("Use evalScript")]
         public Task<object> evalTemplate(ScriptScopeContext scope, string source) => evalTemplate(scope, source, null);
-        public async Task<object> evalTemplate(ScriptScopeContext scope, string source, Dictionary<string, object> args)
+        [Obsolete("Use evalScript")]
+        public Task<object> evalTemplate(ScriptScopeContext scope, string source, Dictionary<string, object> args) =>
+            evalScript(scope, source, args);
+
+        public Task<object> evalScript(ScriptScopeContext scope, string source) => evalScript(scope, source, null);
+        public async Task<object> evalScript(ScriptScopeContext scope, string source, Dictionary<string, object> args)
         {
             if (string.IsNullOrEmpty(source))
                 return null;
@@ -1347,7 +1353,6 @@ namespace ServiceStack.Script
                 return result;
             }
         }
-
    }
 
     public partial class DefaultScripts //Methods named after common keywords breaks intelli-sense when trying to use them        
