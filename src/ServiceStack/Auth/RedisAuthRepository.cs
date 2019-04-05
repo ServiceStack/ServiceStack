@@ -85,7 +85,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser, string password)
         {
             newUser.ValidateNewUser(password);
 
@@ -123,7 +123,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
+        public virtual IUserAuth UpdateUserAuth(IUserAuth existingUser, IUserAuth newUser)
         {
             newUser.ValidateNewUser();
 
@@ -220,7 +220,7 @@ namespace ServiceStack.Auth
                 GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
 
-        public void DeleteUserAuth(string userAuthId)
+        public virtual void DeleteUserAuth(string userAuthId)
         {
             using (var redis = factory.GetClient())
             {
@@ -231,8 +231,8 @@ namespace ServiceStack.Auth
                 redis.As<IUserAuth>().DeleteById(userAuthId);
 
                 var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
-                var authProiverIds = redis.GetAllItemsFromSet(idx);
-                redis.As<TUserAuthDetails>().DeleteByIds(authProiverIds);
+                var authProviderIds = redis.GetAllItemsFromSet(idx);
+                redis.As<TUserAuthDetails>().DeleteByIds(authProviderIds);
 
                 if (existingUser.UserName != null)
                 {
@@ -247,16 +247,13 @@ namespace ServiceStack.Auth
 
         private IUserAuth GetUserAuth(IRedisClientFacade redis, string userAuthId)
         {
-            long longId;
-            if (userAuthId == null || !long.TryParse(userAuthId, out longId))
-            {
+            if (userAuthId == null || !long.TryParse(userAuthId, out var longId))
                 return null;
-            }
 
             return redis.As<IUserAuth>().GetById(longId);
         }
 
-        public IUserAuth GetUserAuth(string userAuthId)
+        public virtual IUserAuth GetUserAuth(string userAuthId)
         {
             using (var redis = factory.GetClient())
             {
@@ -264,7 +261,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void SaveUserAuth(IAuthSession authSession)
+        public virtual void SaveUserAuth(IAuthSession authSession)
         {
             using (var redis = factory.GetClient())
             {
@@ -307,7 +304,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
+        public virtual List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             if (userAuthId == null)
                 throw new ArgumentNullException(nameof(userAuthId));
@@ -315,8 +312,8 @@ namespace ServiceStack.Auth
             using (var redis = factory.GetClient())
             {
                 var idx = IndexUserAuthAndProviderIdsSet(long.Parse(userAuthId));
-                var authProiverIds = redis.GetAllItemsFromSet(idx);
-                return redis.As<TUserAuthDetails>().GetByIds(authProiverIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
+                var authProviderIds = redis.GetAllItemsFromSet(idx);
+                return redis.As<TUserAuthDetails>().GetByIds(authProviderIds).OrderBy(x => x.ModifiedDate).Cast<IUserAuthDetails>().ToList();
             }
         }
 
@@ -356,7 +353,7 @@ namespace ServiceStack.Auth
             return null;
         }
 
-        public IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
+        public virtual IUserAuthDetails CreateOrMergeAuthSession(IAuthSession authSession, IAuthTokens tokens)
         {
             using (var redis = factory.GetClient())
             {
@@ -408,11 +405,11 @@ namespace ServiceStack.Auth
             return oAuthProviderId;
         }
 
-        public void InitApiKeySchema()
+        public virtual void InitApiKeySchema()
         {
         }
 
-        public bool ApiKeyExists(string apiKey)
+        public virtual bool ApiKeyExists(string apiKey)
         {
             using (var redis = factory.GetClient())
             {
@@ -420,7 +417,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public ApiKey GetApiKey(string apiKey)
+        public virtual ApiKey GetApiKey(string apiKey)
         {
             using (var redis = factory.GetClient())
             {
@@ -428,7 +425,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public List<ApiKey> GetUserApiKeys(string userId)
+        public virtual List<ApiKey> GetUserApiKeys(string userId)
         {
             using (var redis = factory.GetClient())
             {
@@ -442,7 +439,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void StoreAll(IEnumerable<ApiKey> apiKeys)
+        public virtual void StoreAll(IEnumerable<ApiKey> apiKeys)
         {
             using (var redis = factory.GetClient())
             {
@@ -455,7 +452,7 @@ namespace ServiceStack.Auth
             }
         }
 
-        public void Clear() { factory.Clear(); }
+        public virtual void Clear() { factory.Clear(); }
 
         public IUserAuth CreateUserAuth()
         {
