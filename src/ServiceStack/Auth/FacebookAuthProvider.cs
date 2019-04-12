@@ -14,7 +14,7 @@ namespace ServiceStack.Auth
     public class FacebookAuthProvider : OAuthProvider
     {
         public const string Name = "facebook";
-        public static string Realm = "https://graph.facebook.com/v2.8/";
+        public static string Realm = "https://graph.facebook.com/v3.2/";
         public static string PreAuthUrl = "https://www.facebook.com/dialog/oauth";
         public static string[] DefaultFields = { "id", "name", "first_name", "last_name", "email" };
 
