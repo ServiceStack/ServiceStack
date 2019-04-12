@@ -5,21 +5,15 @@ using System.Collections.Generic;
 #if !MONO
 using System.DirectoryServices.AccountManagement;
 #endif
-using System.Net;
 using System.Threading;
-using System.Web;
 using Funq;
 using Raven.Client;
 using Raven.Client.Document;
-using ServiceStack.Admin;
 using ServiceStack.Auth;
-using ServiceStack.Authentication.OAuth2;
-using ServiceStack.Authentication.OpenId;
 using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.Data;
-using ServiceStack.DataAnnotations;
 using ServiceStack.FluentValidation;
 using ServiceStack.Html.AntiXsrf;
 using ServiceStack.Logging;
@@ -154,13 +148,6 @@ namespace ServiceStack.AuthWeb.Tests
                     new YandexAuthProvider(appSettings),        //Sign-in with Yandex OAuth Provider        
                     new VkAuthProvider(appSettings),            //Sign-in with VK.com OAuth Provider 
                     new OdnoklassnikiAuthProvider(appSettings), //Sign-in with Odnoklassniki OAuth Provider 
-
-                    new GoogleOAuth2Provider(appSettings),      //Sign-in with Google OAuth2 Provider (with DotNetOpenAuth)
-                    new LinkedInOAuth2Provider(appSettings),    //Sign-in with LinkedIn OAuth2 Provider
-                    new FourSquareOAuth2Provider(appSettings),  //Sign-in with FourSquare OAuth2 Provider
-                    new GoogleOpenIdOAuthProvider(appSettings), //Sign-in with Google OpenId
-                    new YahooOpenIdOAuthProvider(appSettings),  //Sign-in with Yahoo OpenId
-                    new OpenIdOAuthProvider(appSettings),       //Sign-in with Custom OpenId
                 }));
 
 #if HTTP_LISTENER
