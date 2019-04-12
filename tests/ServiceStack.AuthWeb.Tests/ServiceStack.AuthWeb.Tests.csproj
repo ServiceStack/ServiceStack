@@ -183,14 +183,6 @@
     <Compile Include="Services.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OpenId\ServiceStack.Authentication.OpenId.csproj">
-      <Project>{6E240294-9D93-4C09-9BB0-38D82A22DEEE}</Project>
-      <Name>ServiceStack.Authentication.OpenId</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\src\ServiceStack.Authentication.OAuth2\ServiceStack.Authentication.OAuth2.csproj">
-      <Project>{C53331DF-3690-4AEA-AB57-70672BCFA086}</Project>
-      <Name>ServiceStack.Authentication.OAuth2</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\src\ServiceStack.Authentication.RavenDb\ServiceStack.Authentication.RavenDb.csproj">
       <Project>{A30BD5B5-00C9-4B9D-9C9D-514B4A676FF3}</Project>
       <Name>ServiceStack.Authentication.RavenDb</Name>
