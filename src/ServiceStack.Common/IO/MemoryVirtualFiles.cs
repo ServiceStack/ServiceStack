@@ -374,11 +374,25 @@ namespace ServiceStack.IO
             set
             {
                 textContents = value;
-                ByteContents = value.ToUtf8Bytes();
+                ByteContents = value?.ToUtf8Bytes();
             }
         }
 
         public byte[] ByteContents { get; set; }
+
+        public void SetContents(string text, byte[] bytes)
+        {
+            if (bytes != null)
+            {
+                this.textContents = null;
+                this.ByteContents = bytes;
+            }
+            else
+            {
+                this.ByteContents = null;
+                this.TextContents = text;
+            }
+        }
 
         public override Stream OpenRead()
         {
@@ -389,12 +403,11 @@ namespace ServiceStack.IO
 
         public override void Refresh()
         {
-            if (base.VirtualPathProvider.GetFile(VirtualPath) is InMemoryVirtualFile file)
+            if (base.VirtualPathProvider.GetFile(VirtualPath) is InMemoryVirtualFile file && !ReferenceEquals(file, this))
             {
                 this.FilePath = file.FilePath;
                 this.FileLastModified = file.FileLastModified;
-                this.TextContents = file.TextContents;
-                this.ByteContents = file.ByteContents;
+                SetContents(file.TextContents, file.ByteContents);
             }
         }
     }
