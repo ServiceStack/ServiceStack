@@ -3,9 +3,9 @@
 {{ (debug ? '' : '[hash].min') | assignTo: min }}
 
 {{ [`/css/bundle${min}.css`,`/js/lib.bundle${min}.js`,`/js/bundle${min}.js`] 
-   | map => filesFind(replace(it,'[hash]','.*'))
+   | map => it.replace('[hash]','.*').filesFind()
    | flatten
-   | map => fileDelete(it.VirtualPath) | end }}
+   | map => it.VirtualPath.fileDelete() | end }}
 
 {{ end | return }}
 
