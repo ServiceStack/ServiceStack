@@ -412,15 +412,15 @@ namespace ServiceStack.Script
             {
                 i = 1;
                 var hasExponent = false;
-                var hasDecimal = false;
+                var firstDecimalPos = -1;
 
                 while (i < literal.Length && IsNumericChar(c = literal[i]) ||
                        (hasExponent = (c == 'e' || c == 'E')))
                 {
-                    if (c == '.')
-                        hasDecimal = true;
-
                     i++;
+
+                    if (c == '.' && firstDecimalPos < 0)
+                        firstDecimalPos = i;
 
                     if (hasExponent)
                     {
@@ -433,13 +433,20 @@ namespace ServiceStack.Script
                     }
                 }
 
-                var numLiteral = literal.Slice(0, i);
+                var hasMemberSuffix = literal.SafeCharEquals(i-1, '.'); // 1.square()
+                var numLiteral = literal.Slice(0, hasMemberSuffix ? i - 1 : i);
 
                 //don't convert into ternary to avoid Type coercion
-                if (hasDecimal || hasExponent)
+                if ((firstDecimalPos > 0 && firstDecimalPos < i) || hasExponent)
                     token = new JsLiteral(numLiteral.ParseDouble());
                 else
                     token = new JsLiteral(numLiteral.ParseSignedInteger());
+
+                if (hasMemberSuffix) 
+                {
+                    literal = literal.Advance(numLiteral.Length).ParseJsMemberExpression(ref token, filterExpression);
+                    return literal;
+                }
 
                 return literal.Advance(i);
             }
@@ -941,7 +948,7 @@ namespace ServiceStack.Script
                 {
                     literal = literal.Advance(3);
                     literal = literal.ParseJsExpression(out listValue);
-                    if (!(listValue is JsIdentifier) && !(listValue is JsArrayExpression)) 
+                    if (!(listValue is JsIdentifier) && !(listValue is JsArrayExpression) && !(listValue is JsCallExpression)) 
                         throw new SyntaxErrorException($"Spread operator expected array but instead found {listValue.DebugToken()}");
                     
                     listValue = new JsSpreadElement(listValue);

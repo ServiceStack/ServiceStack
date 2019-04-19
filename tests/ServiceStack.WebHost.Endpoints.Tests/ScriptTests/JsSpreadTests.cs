@@ -99,6 +99,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 )),
                 new JsLiteral(3)
             )));
+            
+            "fn(...range(3))".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsCallExpression(
+                new JsIdentifier("fn"),
+                new JsSpreadElement(
+                    new JsCallExpression(
+                        new JsIdentifier("range"),
+                        new JsLiteral(3)
+                    )
+                )
+            )));
         }
         
         [Test]
