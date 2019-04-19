@@ -21,37 +21,112 @@ namespace ServiceStack.Script
         
         public override object Evaluate(ScriptScopeContext scope)
         {
-            if (Arguments.Length == 0)
+            string ResolveMethodName(JsMemberExpression expr)
             {
-                var value = Callee.Evaluate(scope); 
-                return value;
+                if (!expr.Computed) 
+                    return JsObjectExpression.GetKey(expr.Property);
+                
+                var propValue = expr.Property.Evaluate(scope);
+                var s = propValue as string;
+                if (s == null)
+                    throw new NotSupportedException($"Expected string method name but was '{propValue?.GetType().Name ?? "null"}'");
+                return s;
             }
-            
+
+            MethodInvoker invoker;
+            ScriptMethods filter;
+            object value;
+            string name;
             var result = scope.PageResult;
 
-            var name = Name;
-
-            var fnArgValues = EvaluateArgumentValues(scope, Arguments);
-            var fnArgsLength = fnArgValues.Count;
-
-            var invoker = result.GetFilterInvoker(name, fnArgsLength, out var filter);
-            if (invoker != null)
+            if (Arguments.Length == 0)
             {
-                var args = fnArgValues.ToArray();
-                var value = result.InvokeFilter(invoker, filter, args, name);
+                if (Callee is JsMemberExpression expr)
+                {
+                    name = ResolveMethodName(expr);
+                    
+                    invoker = result.GetFilterInvoker(name, 1, out filter);
+                    if (invoker != null)
+                    {
+                        var targetValue = expr.Object.Evaluate(scope);                        
+                        value = result.InvokeFilter(invoker, filter, new[]{ targetValue }, name);
+                        return value;
+                    }
+
+                    invoker = result.GetContextFilterInvoker(name, 2, out filter);
+                    if (invoker != null)
+                    {
+                        var targetValue = expr.Object.Evaluate(scope);
+                        value = result.InvokeFilter(invoker, filter, new[]{ scope, targetValue }, name);
+                        return value;
+                    }
+                }
+                
+                value = Callee.Evaluate(scope); 
                 return value;
             }
-
-            invoker = result.GetContextFilterInvoker(name, fnArgsLength + 1, out filter);
-            if (invoker != null)
+            else
             {
-                fnArgValues.Insert(0, scope);
-                var args = fnArgValues.ToArray();
-                var value = result.InvokeFilter(invoker, filter, args, name);
-                return value;
-            }
+                var fnArgValuesCount = Arguments.Length;
+                foreach (var arg in Arguments)
+                {                    
+                    if (arg is JsSpreadElement) // ...[1,2] Arguments.Length = 1 / fnArgValues.Length = 2
+                    {
+                        var expandedArgs = EvaluateArgumentValues(scope, Arguments);
+                        fnArgValuesCount = expandedArgs.Count;
+                        break;
+                    }
+                }
 
-            throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
+                if (Callee is JsMemberExpression expr)
+                {
+                    name = ResolveMethodName(expr);
+                    
+                    invoker = result.GetFilterInvoker(name, fnArgValuesCount + 1, out filter);
+                    if (invoker != null)
+                    {
+                        var targetValue = expr.Object.Evaluate(scope);
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);   
+                        fnArgValues.Insert(0, targetValue);
+                        
+                        value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
+                        return value;
+                    }
+                    
+                    invoker = result.GetContextFilterInvoker(name, fnArgValuesCount + 2, out filter);
+                    if (invoker != null)
+                    {
+                        var targetValue = expr.Object.Evaluate(scope);
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
+                        fnArgValues.InsertRange(0, new[]{ scope, targetValue });
+                        value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
+                        return value;
+                    }
+                }
+                else
+                {
+                    name = Name;
+
+                    invoker = result.GetFilterInvoker(name, fnArgValuesCount, out filter);
+                    if (invoker != null)
+                    {
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
+                        value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
+                        return value;
+                    }
+
+                    invoker = result.GetContextFilterInvoker(name, fnArgValuesCount + 1, out filter);
+                    if (invoker != null)
+                    {
+                        var fnArgValues = EvaluateArgumentValues(scope, Arguments);
+                        fnArgValues.Insert(0, scope);
+                        value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
+                        return value;
+                    }
+                }
+
+                throw new NotSupportedException(result.CreateMissingFilterErrorMessage(name.LeftPart('(')));
+            }
         }
 
         public static List<object> EvaluateArgumentValues(ScriptScopeContext scope, JsToken[] args)
