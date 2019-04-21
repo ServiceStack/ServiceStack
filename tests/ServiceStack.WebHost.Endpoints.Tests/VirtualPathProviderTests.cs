@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -35,7 +36,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             return new MemoryVirtualFiles();
         }
     }
-
 
     [TestFixture]
     public abstract class VirtualPathProviderTests
@@ -160,6 +160,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "testdir/c.txt",
             };
 
+            var to = new Dictionary<string, string>();
+            testdirFileNames.Each(x => to[x] = "textfile");
+            pathProvider.WriteFiles(to);
+
             testdirFileNames.Each(x => pathProvider.WriteFile(x, "textfile"));
 
             var testdir = pathProvider.GetDirectory("testdir");
@@ -191,7 +195,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "e/testfile-e1.txt",
             };
 
-            allFilePaths.Each(x => pathProvider.WriteFile(x, x.SplitOnLast('.').First().SplitOnLast('/').Last()));
+            var to = new Dictionary<string, string>();
+            allFilePaths.Each(x => to[x] = x.SplitOnLast('.').First().SplitOnLast('/').Last());
+            pathProvider.WriteFiles(to);
 
             Assert.That(allFilePaths.All(x => pathProvider.IsFile(x)));
             Assert.That(new[] { "a", "a/b", "a/b/c", "a/d", "e" }.All(x => pathProvider.IsDirectory(x)));
@@ -286,7 +292,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 "a/b/c/d/e/f/g/testfile-abcdefg1.txt",
             };
 
-            allFilePaths.Each(x => pathProvider.WriteFile(x, x.SplitOnLast('.').First().SplitOnLast('/').Last()));
+            var to = new Dictionary<string, string>();
+            allFilePaths.Each(x => to[x] = x.SplitOnLast('.').First().SplitOnLast('/').Last());
+            pathProvider.WriteFiles(to);
 
             Assert.That(pathProvider.GetDirectory("a/b/c").GetAllMatchingFiles("testfile-abc1.txt").Count(), Is.EqualTo(1));
             Assert.That(pathProvider.GetDirectory("a/b").GetAllMatchingFiles("testfile-abc1.txt").Count(), Is.EqualTo(1));

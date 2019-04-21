@@ -95,5 +95,17 @@ namespace ServiceStack.VirtualPath
         protected abstract void Initialize();
 
         public override string ToString() => $"[{GetType().Name}: {RootDirectory.RealPath}]";
+
+        public virtual void WriteFiles(Dictionary<string, string> files)
+        {
+            var vfs = this as IVirtualFiles;
+            if (vfs == null)
+                throw new NotSupportedException($"{GetType().Name} does not implement IVirtualFiles");
+            
+            foreach (var entry in files)
+            {
+                vfs.WriteFile(entry.Key, entry.Value);
+            }
+        }
     }
 }

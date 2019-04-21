@@ -122,6 +122,14 @@ namespace ServiceStack.IO
             writableFs.DeleteFolder(dirPath);
         }
 
+        public static void WriteFiles(this IVirtualPathProvider pathProvider, Dictionary<string, string> textFiles)
+        {
+            if (!(pathProvider is IVirtualFiles writableFs))
+                throw new InvalidOperationException(ErrorNotWritable.Fmt(pathProvider.GetType().Name));
+
+            writableFs.WriteFiles(textFiles);
+        }
+
         public static void WriteFiles(this IVirtualPathProvider pathProvider, IEnumerable<IVirtualFile> srcFiles, Func<IVirtualFile, string> toPath = null)
         {
             if (!(pathProvider is IVirtualFiles writableFs))
