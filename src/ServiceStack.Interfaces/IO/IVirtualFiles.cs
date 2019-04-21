@@ -10,7 +10,10 @@ namespace ServiceStack.IO
 
         void WriteFile(string filePath, Stream stream);
 
+
         void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null);
+
+        void WriteFiles(Dictionary<string, string> files);
 
         void AppendFile(string filePath, string textContents);
 
