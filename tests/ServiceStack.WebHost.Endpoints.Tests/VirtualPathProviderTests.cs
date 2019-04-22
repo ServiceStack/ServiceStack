@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using NUnit.Framework;
 using ServiceStack.IO;
@@ -11,7 +12,7 @@ using ServiceStack.VirtualPath;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
-    public class FileSystemVirtualPathProviderTests : VirtualPathProviderTests
+    public class FileSystemVirtualPathProviderTests : AppendVirtualFilesTests
     {
         private static string RootDir = "~/App_Data/files".MapProjectPath();
 
@@ -29,11 +30,59 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
     }
 
-    public class MemoryVirtualFilesTests : VirtualPathProviderTests
+    public class MemoryVirtualFilesTests : AppendVirtualFilesTests
     {
         public override IVirtualPathProvider GetPathProvider()
         {
             return new MemoryVirtualFiles();
+        }
+    }
+
+    [Ignore("Integration Tests")]
+    public class GistVirtualFilesTests : VirtualPathProviderTests
+    {
+        public static readonly string GistId = "a9cfcdced0002e82be20ea6314fb41d6";
+        public static readonly string AccessToken = Environment.GetEnvironmentVariable("GITHUB_GIST_TOKEN");
+
+        public override IVirtualPathProvider GetPathProvider()
+        {
+            return new GistVirtualFiles(GistId, AccessToken);
+        }
+    }
+
+    public abstract class AppendVirtualFilesTests : VirtualPathProviderTests
+    {
+        [Test]
+        public void Does_append_to_file()
+        {
+            var pathProvider = GetPathProvider();
+            
+            pathProvider.DeleteFile("original.txt");
+            pathProvider.WriteFile("original.txt", "original\n");
+
+            pathProvider.AppendFile("original.txt", "New Line1\n");
+            pathProvider.AppendFile("original.txt", "New Line2\n");
+
+            var contents = pathProvider.GetFile("original.txt").ReadAllText();
+            Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
+            
+            pathProvider.DeleteFile("original.txt");
+        }
+
+        [Test]
+        public void Does_append_to_file_bytes()
+        {
+            var pathProvider = GetPathProvider();
+            pathProvider.DeleteFile("original.bin");
+            pathProvider.WriteFile("original.bin", "original\n".ToUtf8Bytes());
+
+            pathProvider.AppendFile("original.bin", "New Line1\n".ToUtf8Bytes());
+            pathProvider.AppendFile("original.bin", "New Line2\n".ToUtf8Bytes());
+
+            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
+            
+            pathProvider.DeleteFile("original.bin");
         }
     }
 
@@ -98,7 +147,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             pathProvider.WriteFile(filePath, "file2");
             file.Refresh();
 
-            //Can be too quick and share same modifieddate sometimes, try again with a delay
+            //Can be too quick and share same modified date sometimes, try again with a delay
             if (file.LastModified == prevLastModified)
             {
                 Thread.Sleep(1000);
@@ -163,8 +212,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var to = new Dictionary<string, string>();
             testdirFileNames.Each(x => to[x] = "textfile");
             pathProvider.WriteFiles(to);
-
-            testdirFileNames.Each(x => pathProvider.WriteFile(x, "textfile"));
 
             var testdir = pathProvider.GetDirectory("testdir");
             var filePaths = testdir.Files.Map(x => x.VirtualPath);
@@ -310,38 +357,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         }
 
         [Test]
-        public void Does_append_to_file()
-        {
-            var pathProvider = GetPathProvider();
-            pathProvider.DeleteFile("original.txt");
-            pathProvider.WriteFile("original.txt", "original\n");
-
-            pathProvider.AppendFile("original.txt", "New Line1\n");
-            pathProvider.AppendFile("original.txt", "New Line2\n");
-
-            var contents = pathProvider.GetFile("original.txt").ReadAllText();
-            Assert.That(contents, Is.EqualTo("original\nNew Line1\nNew Line2\n"));
-            
-            pathProvider.DeleteFile("original.txt");
-        }
-
-        [Test]
-        public void Does_append_to_file_bytes()
-        {
-            var pathProvider = GetPathProvider();
-            pathProvider.DeleteFile("original.bin");
-            pathProvider.WriteFile("original.bin", "original\n".ToUtf8Bytes());
-
-            pathProvider.AppendFile("original.bin", "New Line1\n".ToUtf8Bytes());
-            pathProvider.AppendFile("original.bin", "New Line2\n".ToUtf8Bytes());
-
-            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
-            Assert.That(contents, Is.EquivalentTo("original\nNew Line1\nNew Line2\n".ToUtf8Bytes()));
-            
-            pathProvider.DeleteFile("original.bin");
-        }
-
-        [Test]
         public void Does_create_file_in_nested_folders_with_correct_parent_directories()
         {
             var vfs = GetPathProvider();
@@ -362,6 +377,25 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             vfs.DeleteFile("a/b/c/file.txt");
         }
 
+        [Test]
+        public void Does_write_binary_file()
+        {
+            var pathProvider = GetPathProvider();
+
+            var bytes = new byte[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+            
+            pathProvider.WriteFile("original.bin", bytes);
+            pathProvider.WriteFile("a/b/c/original.bin", bytes);
+
+            var contents = pathProvider.GetFile("original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo(bytes));
+
+            contents = pathProvider.GetFile("a/b/c/original.bin").ReadAllBytes();
+            Assert.That(contents, Is.EquivalentTo(bytes));
+
+            pathProvider.DeleteFiles(new[]{ "original.bin", "a/b/c/original.bin" });
+        }
+       
         public void AssertContents(IVirtualDirectory dir,
             string[] expectedFilePaths, string[] expectedDirPaths)
         {
