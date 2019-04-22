@@ -12,8 +12,9 @@ namespace ServiceStack
 {
     public interface IGistGateway
     {
+        Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles);
         Gist GetGist(string gistId);
-        void WriteGistFiles(string gistId, Dictionary<string, string> gistFiles);
+        void WriteGistFiles(string gistId, Dictionary<string, string> files);
         void CreateGistFile(string gistId, string filePath, string contents);
         void WriteGistFile(string gistId, string filePath, string contents);
         void DeleteGistFiles(string gistId, params string[] filePaths);
@@ -244,16 +245,52 @@ namespace ServiceStack
             return result;
         }
 
+        public Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles) =>
+            CreateGithubGist(description, isPublic, gistFiles);
+
+        public GithubGist CreateGithubGist(string description, bool isPublic, Dictionary<string, string> files)
+        {
+            AssertAccessToken();
+            
+            var sb = StringBuilderCache.Allocate()
+                .Append("{\"description\":")
+                .Append(description.ToJson())
+                .Append(",\"public\":")
+                .Append(isPublic ? "true" : "false")
+                .Append(",\"files\":{");
+            
+            var i = 0;
+            foreach (var entry in files)
+            {
+                if (i++ > 0)
+                    sb.Append(",");
+                
+                var jsonFile = entry.Key.ToJson();
+                sb.Append(jsonFile)
+                    .Append(":{\"content\":")
+                    .Append(entry.Value.ToJson())
+                    .Append("}");
+            }
+            sb.Append("}}");
+
+            var json = StringBuilderCache.ReturnAndFree(sb);
+            var responseJson = BaseUrl.CombineWith($"/gists")
+                .PostJsonToUrl(json, requestFilter: ApplyRequestFilters);
+
+            var response = responseJson.FromJson<GithubGist>();
+            return response;
+        }
+        
         /// <summary>
         /// Create or Write Gist Text Files. Requires AccessToken
         /// </summary>
-        public void WriteGistFiles(string gistId, Dictionary<string,string> gistFiles)
+        public void WriteGistFiles(string gistId, Dictionary<string,string> files)
         {
             AssertAccessToken();
 
             var i = 0;
             var sb = StringBuilderCache.Allocate().Append("{\"files\":{");
-            foreach (var entry in gistFiles)
+            foreach (var entry in files)
             {
                 if (i++ > 0)
                     sb.Append(",");
@@ -374,6 +411,7 @@ namespace ServiceStack
 
     public class Gist
     {
+        public string Id { get; set; }
         public string Url { get; set; }
         public string Html_Url { get; set; }
         public Dictionary<string, GistFile> Files { get; set; }
@@ -397,6 +435,9 @@ namespace ServiceStack
 
     public class GithubGist : Gist
     {
+        public string Node_Id { get; set; }
+        public string Git_Pull_Url { get; set; }
+        public string Git_Push_Url { get; set; }
         public string Forks_Url { get; set; }
         public string Commits_Url { get; set; }
         public int Comments { get; set; }
