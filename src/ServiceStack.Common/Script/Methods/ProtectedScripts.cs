@@ -98,65 +98,87 @@ namespace ServiceStack.Script
 
         IVirtualPathProvider VirtualFiles => Context.VirtualFiles;
         
-        public IEnumerable<IVirtualFile> vfsAllFiles() => VirtualFiles.GetAllFiles();
-        public IEnumerable<IVirtualFile> vfsAllRootFiles() => VirtualFiles.GetRootFiles();
-        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => VirtualFiles.GetRootDirectories();
-        public string vfsCombinePath(string basePath, string relativePath) => VirtualFiles.CombineVirtualPath(basePath, relativePath);
+        public IEnumerable<IVirtualFile> vfsAllFiles() => vfsAllFiles(VirtualFiles);
+        public IEnumerable<IVirtualFile> vfsAllFiles(IVirtualPathProvider vfs) => vfs.GetAllFiles();
 
-        public IVirtualDirectory dir(string virtualPath) => VirtualFiles.GetDirectory(virtualPath);
+        public IEnumerable<IVirtualFile> vfsAllRootFiles() => vfsAllRootFiles(VirtualFiles);
+        public IEnumerable<IVirtualFile> vfsAllRootFiles(IVirtualPathProvider vfs) => vfs.GetRootFiles();
+        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => vfsAllRootDirectories(VirtualFiles);
+        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories(IVirtualPathProvider vfs) => vfs.GetRootDirectories();
+        public string vfsCombinePath(string basePath, string relativePath) => vfsCombinePath(VirtualFiles, basePath, relativePath);
+        public string vfsCombinePath(IVirtualPathProvider vfs, string basePath, string relativePath) => vfs.CombineVirtualPath(basePath, relativePath);
+
+        public IVirtualDirectory dir(string virtualPath) => dir(VirtualFiles,virtualPath);
+        public IVirtualDirectory dir(IVirtualPathProvider vfs, string virtualPath) => vfs.GetDirectory(virtualPath);
         public bool dirExists(string virtualPath) => VirtualFiles.DirectoryExists(virtualPath);
-        public IVirtualFile dirFile(string dirPath, string fileName) => VirtualFiles.GetDirectory(dirPath)?.GetFile(fileName);
-        public IEnumerable<IVirtualFile> dirFiles(string dirPath) => VirtualFiles.GetDirectory(dirPath)?.GetFiles() ?? new List<IVirtualFile>();
-        public IVirtualDirectory dirDirectory(string dirPath, string dirName) => VirtualFiles.GetDirectory(dirPath)?.GetDirectory(dirName);
-        public IEnumerable<IVirtualDirectory> dirDirectories(string dirPath) => VirtualFiles.GetDirectory(dirPath)?.GetDirectories() ?? new List<IVirtualDirectory>();
-        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPattern) => VirtualFiles.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
+        public bool dirExists(IVirtualPathProvider vfs, string virtualPath) => vfs.DirectoryExists(virtualPath);
+        public IVirtualFile dirFile(string dirPath, string fileName) => dirFile(VirtualFiles,dirPath,fileName);
+        public IVirtualFile dirFile(IVirtualPathProvider vfs, string dirPath, string fileName) => vfs.GetDirectory(dirPath)?.GetFile(fileName);
+        public IEnumerable<IVirtualFile> dirFiles(string dirPath) => dirFiles(VirtualFiles,dirPath);
+        public IEnumerable<IVirtualFile> dirFiles(IVirtualPathProvider vfs, string dirPath) => vfs.GetDirectory(dirPath)?.GetFiles() ?? new List<IVirtualFile>();
+        public IVirtualDirectory dirDirectory(string dirPath, string dirName) => dirDirectory(VirtualFiles,dirPath,dirName);
+        public IVirtualDirectory dirDirectory(IVirtualPathProvider vfs, string dirPath, string dirName) => vfs.GetDirectory(dirPath)?.GetDirectory(dirName);
+        public IEnumerable<IVirtualDirectory> dirDirectories(string dirPath) => dirDirectories(VirtualFiles,dirPath);
+        public IEnumerable<IVirtualDirectory> dirDirectories(IVirtualPathProvider vfs, string dirPath) => vfs.GetDirectory(dirPath)?.GetDirectories() ?? new List<IVirtualDirectory>();
+        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPattern) => dirFilesFind(VirtualFiles,dirPath,globPattern);
+        public IEnumerable<IVirtualFile> dirFilesFind(IVirtualPathProvider vfs, string dirPath, string globPattern) => vfs.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
 
-        public IEnumerable<IVirtualFile> filesFind(string globPattern) => VirtualFiles.GetAllMatchingFiles(globPattern);
-        public bool fileExists(string virtualPath) => VirtualFiles.FileExists(virtualPath);
-        public IVirtualFile file(string virtualPath) => VirtualFiles.GetFile(virtualPath);
-        public string fileWrite(string virtualPath, object contents)
+        public IEnumerable<IVirtualFile> filesFind(string globPattern) => filesFind(VirtualFiles,globPattern);
+        public IEnumerable<IVirtualFile> filesFind(IVirtualPathProvider vfs, string globPattern) => vfs.GetAllMatchingFiles(globPattern);
+        public bool fileExists(string virtualPath) => fileExists(VirtualFiles,virtualPath);
+        public bool fileExists(IVirtualPathProvider vfs, string virtualPath) => vfs.FileExists(virtualPath);
+        public IVirtualFile file(string virtualPath) => file(VirtualFiles,virtualPath);
+        public IVirtualFile file(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath);
+        public string fileWrite(string virtualPath, object contents) => fileWrite(VirtualFiles, virtualPath, contents);
+        public string fileWrite(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
             if (contents is string s)
-                VirtualFiles.WriteFile(virtualPath, s);
+                vfs.WriteFile(virtualPath, s);
             else if (contents is byte[] bytes)
-                VirtualFiles.WriteFile(virtualPath, bytes);
+                vfs.WriteFile(virtualPath, bytes);
             else if (contents is Stream stream)
-                VirtualFiles.WriteFile(virtualPath, stream);
+                vfs.WriteFile(virtualPath, stream);
             else
                 return null;
 
             return virtualPath;
         }
 
-        public string fileAppend(string virtualPath, object contents)
+        public string fileAppend(string virtualPath, object contents) => fileAppend(VirtualFiles, virtualPath, contents);
+        public string fileAppend(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
             if (contents is string s)
-                VirtualFiles.AppendFile(virtualPath, s);
+                vfs.AppendFile(virtualPath, s);
             else if (contents is byte[] bytes)
-                VirtualFiles.AppendFile(virtualPath, bytes);
+                vfs.AppendFile(virtualPath, bytes);
             else if (contents is Stream stream)
-                VirtualFiles.AppendFile(virtualPath, stream);
+                vfs.AppendFile(virtualPath, stream);
             else
                 return null;
 
             return virtualPath;
         }
 
-        public string fileDelete(string virtualPath)
+        public string fileDelete(string virtualPath) => fileDelete(VirtualFiles, virtualPath);
+        public string fileDelete(IVirtualPathProvider vfs, string virtualPath)
         {
-            VirtualFiles.DeleteFile(virtualPath);
+            vfs.DeleteFile(virtualPath);
             return virtualPath;
         }
 
-        public string dirDelete(string virtualPath)
+        public string dirDelete(string virtualPath) => fileDelete(VirtualFiles, virtualPath);
+        public string dirDelete(IVirtualPathProvider vfs, string virtualPath)
         {
-            VirtualFiles.DeleteFolder(virtualPath);
+            vfs.DeleteFolder(virtualPath);
             return virtualPath;
         }
 
-        public string fileReadAll(string virtualPath) => VirtualFiles.GetFile(virtualPath)?.ReadAllText();
-        public byte[] fileReadAllBytes(string virtualPath) => VirtualFiles.GetFile(virtualPath)?.ReadAllBytes();
-        public string fileHash(string virtualPath) => VirtualFiles.GetFileHash(virtualPath);
+        public string fileReadAll(string virtualPath) => fileReadAll(VirtualFiles,virtualPath);
+        public string fileReadAll(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
+        public byte[] fileReadAllBytes(string virtualPath) => fileReadAllBytes(VirtualFiles, virtualPath);
+        public byte[] fileReadAllBytes(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
+        public string fileHash(string virtualPath) => fileHash(VirtualFiles,virtualPath);
+        public string fileHash(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFileHash(virtualPath);
 
         //alias
         public Task urlContents(ScriptScopeContext scope, string url) => includeUrl(scope, url, null);
