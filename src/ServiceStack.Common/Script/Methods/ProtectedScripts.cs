@@ -15,6 +15,10 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
+        public MemoryVirtualFiles memoryVirtualFiles() => new MemoryVirtualFiles();
+
+        public FileSystemVirtualFiles fileSystemVirtualFiles(string dirPath) => new FileSystemVirtualFiles(dirPath);
+        
         public IVirtualFile ResolveFile(string filterName, ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
