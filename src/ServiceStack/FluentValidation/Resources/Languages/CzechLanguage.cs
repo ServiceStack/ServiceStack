@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("Hodnota pole '{PropertyName}' musí být větší nebo rovna '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("Hodnota pole '{PropertyName}' musí být větší než '{ComparisonValue}'.");
 			Translate<LengthValidator>("Délka pole '{PropertyName}' musí být v rozsahu {MinLength} až {MaxLength} znaků. Vámi zadaná délka je {TotalLength} znaků.");
-			Translate<MinimumLengthValidator>("Délka pole '{PropertyName}' musí být větší než {MinLength} znaků. Vámi zadaná délka je {TotalLength} znaků.");
-			Translate<MaximumLengthValidator>("Délka pole '{PropertyName}' musí být menší než {MaxLength} znaků. Vámi zadaná délka je {TotalLength} znaků.");
+			Translate<MinimumLengthValidator>("Délka pole '{PropertyName}' musí být větší nebo rovna {MinLength} znakům. Vámi zadaná délka je {TotalLength} znaků.");
+			Translate<MaximumLengthValidator>("Délka pole '{PropertyName}' musí být menší nebo rovna {MaxLength} znakům. Vámi zadaná délka je {TotalLength} znaků.");
 			Translate<LessThanOrEqualValidator>("Hodnota pole '{PropertyName}' musí být menší nebo rovna '{ComparisonValue}'.");
 			Translate<LessThanValidator>("Hodnota pole '{PropertyName}' musí být menší než '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("Pole '{PropertyName}' nesmí být prázdné.");
@@ -38,12 +38,14 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<AsyncPredicateValidator>("Nebyla splněna podmínka pro pole '{PropertyName}'.");
 			Translate<RegularExpressionValidator>("Pole '{PropertyName}' nemá správný formát.");
 			Translate<EqualValidator>("Hodnota pole '{PropertyName}' musí být rovna '{ComparisonValue}'.");
-			Translate<ExactLengthValidator>("Hodnota pole '{PropertyName}' musí být {MaxLength} znaků dlouhá. Vámi zadaná délka je {TotalLength} znaků.");
+			Translate<ExactLengthValidator>("Délka pole '{PropertyName}' musí být {MaxLength} znaků. Vámi zadaná délka je {TotalLength} znaků.");
 			Translate<InclusiveBetweenValidator>("Hodnota pole '{PropertyName}' musí být mezi {From} a {To} (včetně). Vámi zadaná hodnota je {Value}.");
 			Translate<ExclusiveBetweenValidator>("Hodnota pole '{PropertyName}' musí být větší než {From} a menší než {To}. Vámi zadaná hodnota je {Value}.");
 			Translate<CreditCardValidator>("Pole '{PropertyName}' musí obsahovat platné číslo platební karty.");
-			Translate<ScalePrecisionValidator>("Pole '{PropertyName}' nesmí mít víc jak {expectedPrecision} číslic, a {expectedScale} desetinných míst. Vámi bylo zadáno {digits} číslic a {actualScale} desetinných míst.");
-
+			Translate<ScalePrecisionValidator>("Pole '{PropertyName}' nesmí mít víc než {ExpectedPrecision} číslic a {ExpectedScale} desetinných míst. Vámi bylo zadáno {Digits} číslic a {ActualScale} desetinných míst.");
+			Translate<EmptyValidator>("Pole '{PropertyName}' musí být prázdné.");
+			Translate<NullValidator>("Pole '{PropertyName}' musí být prázdné.");
+			Translate<EnumValidator>("Pole '{PropertyName}' má rozsah hodnot, které neobsahují '{PropertyValue}'.");
 		}
 	}
 }

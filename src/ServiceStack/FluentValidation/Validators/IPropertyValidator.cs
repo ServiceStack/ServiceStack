@@ -30,15 +30,31 @@ namespace ServiceStack.FluentValidation.Validators {
 	/// Please inherit from <see cref="PropertyValidator">PropertyValidator</see> instead.
 	/// </summary>
 	public interface IPropertyValidator {
-		bool IsAsync { get; }
-
+		/// <summary>
+		/// Performs validation
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
 		IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context);
-
+		
+		/// <summary>
+		/// Performs validation asynchronously.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="cancellation"></param>
+		/// <returns></returns>
 		Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation);
 
-		Func<PropertyValidatorContext, object> CustomStateProvider { get; set; }
-		Severity Severity { get; set; }
-		IStringSource ErrorMessageSource { get; set; }
-		IStringSource ErrorCodeSource { get; set; }
+		/// <summary>
+		/// Determines whether this validator should be run asynchronously or not.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		bool ShouldValidateAsync(ValidationContext context);
+		
+		/// <summary>
+		/// Additional options for configuring the property validator.
+		/// </summary>
+		PropertyValidatorOptions Options { get; }
 	}
 }

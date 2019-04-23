@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' должно быть больше или равно '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' должно быть больше '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' должно быть длиной от {MinLength} до {MaxLength} символов. Вы ввели {TotalLength} символов.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' должно быть длиной от {MinLength} до 1000 символов. Вы ввели {TotalLength} символов.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' должно быть длиной от 0 до {MaxLength} символов. Вы ввели {TotalLength} символов.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' должно быть больше или равно символам {MinLength}. Вы ввели символы {TotalLength}.");
+			Translate<MaximumLengthValidator>("'{PropertyName}' должно быть меньше или равно символам {MaxLength}. Вы ввели символы {TotalLength}.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' должно быть меньше или равно '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' должно быть меньше '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' не должно быть пусто.");
@@ -42,7 +42,7 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' Обязано быть от {From} до {To}. Вы ввели {Value}.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' должно быть между {From} и {To} (не включая). Вы ввели {Value}.");
 			Translate<CreditCardValidator>("'{PropertyName}' неверный номер карты.");
-			Translate<ScalePrecisionValidator>("'{PropertyName}' не должно быть более {expectedPrecision} цифр всего, с {expectedScale} десятичными знаками. {digits} цифр и {actualScale} десятичных знаков обнаружено.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' не должно быть более {ExpectedPrecision} цифр всего, с {ExpectedScale} десятичными знаками. {Digits} цифр и {ActualScale} десятичных знаков обнаружено.");
 			Translate<EmptyValidator>("'{PropertyName}' должно быть пусто.");
 			Translate<NullValidator>("'{PropertyName}' обязано быть пустым.");
 			Translate<EnumValidator>("'{PropertyName}' имеет диапазон значений, который не содержит '{PropertyValue}'.");

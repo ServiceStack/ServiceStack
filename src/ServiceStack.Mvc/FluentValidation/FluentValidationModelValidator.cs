@@ -3,7 +3,7 @@ using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Results;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;

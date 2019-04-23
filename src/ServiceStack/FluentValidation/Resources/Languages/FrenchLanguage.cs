@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' doit être plus grand ou égal à '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' doit être plus grand que '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' doit contenir entre {MinLength} et {MaxLength} caractères. {TotalLength} caractères ont été saisis.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' doit contenir entre {MinLength} et 1000 caractères. {TotalLength} caractères ont été saisis.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' doit contenir entre 0 et {MaxLength} caractères. {TotalLength} caractères ont été saisis.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' doit être supérieur ou égal à {MinLength} caractères. Vous avez saisi {TotalLength} caractères.");
+			Translate<MaximumLengthValidator>("'{PropertyName}' doit être inférieur ou égal à {MaxLength} caractères. Vous avez saisi {TotalLength} caractères.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' doit être plus petit ou égal à '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' doit être plus petit que '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' ne doit pas être vide.");
@@ -41,7 +41,11 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<ExactLengthValidator>("'{PropertyName}' doit être d’une longueur de {MaxLength} caractères. {TotalLength} caractères ont été saisis.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' doit être entre {From} et {To} (exclusif). Vous avez saisi {Value}.");
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' doit être entre {From} et {To}. Vous avez saisi {Value}.");
-
+			Translate<CreditCardValidator>("'{PropertyName}' n'est pas un numéro de carte de crédit valide.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' ne doit pas dépasser {ExpectedPrecision} chiffres au total, avec une tolérance pour les décimales {ExpectedScale}. Les chiffres {Digits} et les décimales {ActualScale} ont été trouvés.");
+			Translate<EmptyValidator>("'{PropertyName}' devrait être vide.");
+			Translate<NullValidator>("'{PropertyName}' devrait être vide.");
+			Translate<EnumValidator>("'{PropertyName}' a une plage de valeurs qui n'inclut pas '{PropertyValue}'.");
 		}
 	}
 }

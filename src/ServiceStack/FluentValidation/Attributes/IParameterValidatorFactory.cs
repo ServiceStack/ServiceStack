@@ -1,12 +1,10 @@
-﻿namespace ServiceStack.FluentValidation
-{
+﻿namespace ServiceStack.FluentValidation {
 	using System.Reflection;
 
 	/// <summary>
 	/// Gets validators for method parameters.
 	/// </summary>
-	public interface IParameterValidatorFactory
-	{
+	public interface IParameterValidatorFactory {
 		/// <summary>
 		/// Gets a validator for <paramref name="parameterInfo"/>.
 		/// </summary>

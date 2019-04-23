@@ -115,18 +115,17 @@ namespace ServiceStack.Validation
 
             using (validator as IDisposable)
             {
-                if (validator.HasAsyncValidators(ruleSet))
+                var validationContext = new ValidationContext(requestDto, null, 
+                    new MultiRuleSetValidatorSelector(ruleSet)) {
+                    Request = req
+                };
+                
+                if (validator.HasAsyncValidators(validationContext,ruleSet))
                 {
-                    return await validator.ValidateAsync(
-                        new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet))
-                        {
-                            Request = req
-                        });
+                    return await validator.ValidateAsync(validationContext);
                 }
 
-                return validator.Validate(new ValidationContext(requestDto, null, new MultiRuleSetValidatorSelector(ruleSet)) {
-                        Request = req
-                    });
+                return validator.Validate(validationContext);
             }
         }
     }

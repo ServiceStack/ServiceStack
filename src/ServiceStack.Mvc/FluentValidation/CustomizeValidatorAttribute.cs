@@ -19,7 +19,7 @@
 
 using ServiceStack.FluentValidation.Internal;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;
 	using System.Reflection;

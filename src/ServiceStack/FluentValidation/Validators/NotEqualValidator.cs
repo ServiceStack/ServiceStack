@@ -20,22 +20,20 @@ namespace ServiceStack.FluentValidation.Validators {
 	using System;
 	using System.Collections;
 	using System.Reflection;
-	using Attributes;
-	using Internal;
 	using Resources;
 
 	public class NotEqualValidator : PropertyValidator, IComparisonValidator {
-		readonly IEqualityComparer comparer;
-		readonly Func<object, object> func;
+		private readonly IEqualityComparer _comparer;
+		private readonly Func<object, object> _func;
 
 		public NotEqualValidator(Func<object, object> func, MemberInfo memberToCompare) : base(new LanguageStringSource(nameof(NotEqualValidator))) {
-			this.func = func;
+			_func = func;
 			MemberToCompare = memberToCompare;
 		}
 
 		public NotEqualValidator(Func<object, object> func, MemberInfo memberToCompare, IEqualityComparer equalityComparer) : base(new LanguageStringSource(nameof(NotEqualValidator))) {
-			this.func = func;
-			this.comparer = equalityComparer;
+			_func = func;
+			_comparer = equalityComparer;
 			MemberToCompare = memberToCompare;
 		}
 
@@ -45,7 +43,7 @@ namespace ServiceStack.FluentValidation.Validators {
 
 		public NotEqualValidator(object comparisonValue, IEqualityComparer equalityComparer) :base(new LanguageStringSource(nameof(NotEqualValidator)) ){
 			ValueToCompare = comparisonValue;
-			comparer = equalityComparer;
+			_comparer = equalityComparer;
 		}
 
 		protected override bool IsValid(PropertyValidatorContext context) {
@@ -61,8 +59,8 @@ namespace ServiceStack.FluentValidation.Validators {
 		}
 
 		private object GetComparisonValue(PropertyValidatorContext context) {
-			if (func != null) {
-				return func(context.Instance);
+			if (_func != null) {
+				return _func(context.Instance);
 			}
 
 			return ValueToCompare;
@@ -76,8 +74,8 @@ namespace ServiceStack.FluentValidation.Validators {
 		public object ValueToCompare { get; private set; }
 
 		protected bool Compare(object comparisonValue, object propertyValue) {
-			if(comparer != null) {
-				return comparer.Equals(comparisonValue, propertyValue);
+			if(_comparer != null) {
+				return _comparer.Equals(comparisonValue, propertyValue);
 			}
 
 			if (comparisonValue is IComparable && propertyValue is IComparable) {

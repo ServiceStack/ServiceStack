@@ -34,7 +34,7 @@ namespace ServiceStack.FluentValidation {
 	/// </summary>
 	public partial class ValidationContext {
 
-        //Migration: Needs to be injected in Clone() and CloneForChildValidator()
+        //Migration: Needs to be injected in Clone(), CloneForChildValidator() + all new ValidationContext()
         public IRequest Request { get; internal set; }
     }
 }

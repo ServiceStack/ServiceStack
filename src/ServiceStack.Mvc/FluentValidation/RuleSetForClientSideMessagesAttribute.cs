@@ -1,5 +1,5 @@
 #if !NETSTANDARD2_0
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Web;
 	using System.Web.Mvc;
 

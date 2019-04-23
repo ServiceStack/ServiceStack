@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' debe ser mayor o igual que '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' debe ser mayor que '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' debe tener entre {MinLength} y {MaxLength} caracter(es). Actualmente tiene {TotalLength} caracter(es).");
-			Translate<MinimumLengthValidator>("'{PropertyName}' debe tener entre {MinLength} y 1000 caracter(es). Actualmente tiene {TotalLength} caracter(es).");
-			Translate<MaximumLengthValidator>("'{PropertyName}' debe tener entre 0 y {MaxLength} caracter(es). Actualmente tiene {TotalLength} caracter(es).");
+			Translate<MinimumLengthValidator>("'{PropertyName}' debe ser mayor o igual que {MinLength} caracteres. Ingresó {TotalLength} caracter(es).");
+			Translate<MaximumLengthValidator>("'{PropertyName}' debe ser menor o igual que {MaxLength} caracteres. Ingresó {TotalLength} caracter(es).");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' debe ser menor o igual que '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' debe ser menor que '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' no debería estar vacío.");
@@ -38,10 +38,14 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<AsyncPredicateValidator>("'{PropertyName}' no cumple con la condición especificada.");
 			Translate<RegularExpressionValidator>("'{PropertyName}' no tiene el formato correcto.");
 			Translate<EqualValidator>("'{PropertyName}' debería ser igual a '{ComparisonValue}'.");
-			Translate<ExactLengthValidator>("'{PropertyName}' debe tener una longitude de {MaxLength} caracteres. Actualmente tiene {TotalLength} caracter(es).");
+			Translate<ExactLengthValidator>("'{PropertyName}' debe tener un largo de {MaxLength} caracteres. Actualmente tiene {TotalLength} caracter(es).");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' debe estar entre {From} y {To} (exclusivo). Actualmente tiene {Value}.");
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' debe estar entre {From} y {To}. Actualmente tiene {Value}.");
-
+			Translate<CreditCardValidator>("'{PropertyName}' no es un número de tarjeta de crédito válido.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' no debe tener más de {ExpectedPrecision} dígitos en total, con margen para {ExpectedScale} decimales. Se encontraron {Digits} y {ActualScale} decimales.");
+			Translate<EmptyValidator>("'{PropertyName}' debe estar vacío.");
+			Translate<NullValidator>("'{PropertyName}' debe estar vacío.");
+			Translate<EnumValidator>("'{PropertyName}' tiene un rango de valores que no incluye '{PropertyValue}'.");
 		}
 	}
 }

@@ -281,10 +281,10 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var response = (ErrorResponse)webEx.ResponseDto;
                 var status = response.ResponseStatus;
                 Assert.That(status.ErrorCode, Is.EqualTo("NotEmpty"));
-                Assert.That(status.Message, Is.EqualTo("'Value' should not be empty."));
+                Assert.That(status.Message, Is.EqualTo("'Value' must not be empty."));
                 Assert.That(status.Errors[0].ErrorCode, Is.EqualTo("NotEmpty"));
                 Assert.That(status.Errors[0].FieldName, Is.EqualTo("Value"));
-                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' should not be empty."));
+                Assert.That(status.Errors[0].Message, Is.EqualTo("'Value' must not be empty."));
             }
         }
 

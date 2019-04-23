@@ -22,7 +22,7 @@ using ServiceStack.FluentValidation.Resources;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;
 	using System.ComponentModel;
@@ -169,7 +169,7 @@ namespace FluentValidation.Mvc {
     }
 }
 
-namespace FluentValidation.Mvc.MetadataExtensions
+namespace ServiceStack.FluentValidation.Mvc.MetadataExtensions
 {
     using System;
     using System.Collections.Generic;

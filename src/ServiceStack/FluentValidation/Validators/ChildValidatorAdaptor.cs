@@ -7,74 +7,97 @@ namespace ServiceStack.FluentValidation.Validators {
 	using Internal;
 	using Results;
 
-	public class ChildValidatorAdaptor : NoopPropertyValidator {
-		static readonly IEnumerable<ValidationFailure> EmptyResult = Enumerable.Empty<ValidationFailure>();
-		static readonly Task<IEnumerable<ValidationFailure>> AsyncEmptyResult = TaskHelpers.FromResult(Enumerable.Empty<ValidationFailure>());
+	/// <summary>
+	/// Indicates that this validator wraps another validator.
+	/// </summary>
+	public interface IChildValidatorAdaptor {
+		/// <summary>
+		/// The type of the underlying validator
+		/// </summary>
+		Type ValidatorType { get; }
+	}
 
-		readonly Func<object, IValidator> validatorProvider;
-		readonly Type validatorType;
+	public class ChildValidatorAdaptor : NoopPropertyValidator, IChildValidatorAdaptor {
+		private readonly Func<IValidationContext, IValidator> _validatorProvider;
+		private readonly IValidator _validator;
 
-		public Type ValidatorType {
-			get { return validatorType; }
+		public Type ValidatorType { get; }
+
+		public string[] RuleSets { get; set; }
+
+		internal bool PassThroughParentContext { get; set; }
+
+		public ChildValidatorAdaptor(IValidator validator, Type validatorType) {
+			_validator = validator;
+			ValidatorType = validatorType;
 		}
 
-		public override bool IsAsync {
-			get { return true; }
-		}
-
-		public ChildValidatorAdaptor(IValidator validator) : this(_ => validator, validator.GetType()) {
-		}
-
-		public ChildValidatorAdaptor(Func<object, IValidator> validatorProvider, Type validatorType) {
-			this.validatorProvider = validatorProvider;
-			this.validatorType = validatorType;
+		public ChildValidatorAdaptor(Func<IValidationContext, IValidator> validatorProvider, Type validatorType) {
+			_validatorProvider = validatorProvider;
+			ValidatorType = validatorType;
 		}
 
 		public override IEnumerable<ValidationFailure> Validate(PropertyValidatorContext context) {
-			return ValidateInternal(
-				context, 
-				(ctx, v) => v.Validate(ctx).Errors,
-				EmptyResult
-			);
-		}
+			if (Options.Condition != null && !Options.Condition(context)) {
+				return Enumerable.Empty<ValidationFailure>();
+			} 
 
-		public override Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
-			return ValidateInternal(
-				context, 
-				(ctx, v) => v.ValidateAsync(ctx).Then(r => r.Errors.AsEnumerable(), runSynchronously:true),
-				AsyncEmptyResult
-			);
-		}
-
-		private TResult ValidateInternal<TResult>(PropertyValidatorContext context, Func<ValidationContext, IValidator, TResult> validationApplicator, TResult emptyResult) {
-			var instanceToValidate = context.PropertyValue;
-
-			if (instanceToValidate == null) {
-				return emptyResult;
+			if (context.PropertyValue == null) {
+				return Enumerable.Empty<ValidationFailure>();
 			}
 
 			var validator = GetValidator(context);
 
 			if (validator == null) {
-				return emptyResult;
+				return Enumerable.Empty<ValidationFailure>();
 			}
 
-			var newContext = CreateNewValidationContextForChildValidator(instanceToValidate, context);
+			var newContext = CreateNewValidationContextForChildValidator(context.PropertyValue, context);
+			return validator.Validate(newContext).Errors;
+		}
 
-			return validationApplicator(newContext, validator);
+		public override async Task<IEnumerable<ValidationFailure>> ValidateAsync(PropertyValidatorContext context, CancellationToken cancellation) {
+			if (Options.Condition != null && !Options.Condition(context)) {
+				return Enumerable.Empty<ValidationFailure>();
+			} 
+			
+			if (Options.AsyncCondition != null && !await Options.AsyncCondition(context, cancellation)) {
+				return Enumerable.Empty<ValidationFailure>();
+			}
+			
+			if (context.PropertyValue == null) {
+				return Enumerable.Empty<ValidationFailure>();
+			}
+
+			var validator = GetValidator(context);
+
+			if (validator == null) {
+				return Enumerable.Empty<ValidationFailure>();
+			}
+
+			var newContext = CreateNewValidationContextForChildValidator(context.PropertyValue, context);
+			var result = await validator.ValidateAsync(newContext, cancellation);
+			return result.Errors;
 		}
 
 		public virtual IValidator GetValidator(PropertyValidatorContext context) {
-			context.Guard("Cannot pass a null context to GetValidator");
-			return validatorProvider(context.Instance);
+			context.Guard("Cannot pass a null context to GetValidator", nameof(context));
+
+			return _validatorProvider != null ? _validatorProvider(context) : _validator;
 		}
 
 		protected ValidationContext CreateNewValidationContextForChildValidator(object instanceToValidate, PropertyValidatorContext context) {
-			var newContext = context.ParentContext.CloneForChildValidator(instanceToValidate);
+			var selector = RuleSets?.Length > 0 ? new RulesetValidatorSelector(RuleSets) : null;
+			var newContext = context.ParentContext.CloneForChildValidator(instanceToValidate, PassThroughParentContext, selector);
+
 			if(!context.ParentContext.IsChildCollectionContext)
 				newContext.PropertyChain.Add(context.Rule.PropertyName);
 
 			return newContext;
+		}
+
+		public override bool ShouldValidateAsync(ValidationContext context) {
+			return context.IsAsync() || Options.AsyncCondition != null;
 		}
 	}
 }
