@@ -18,13 +18,11 @@
 
 namespace ServiceStack.FluentValidation {
 	using System;
-	using System.ComponentModel;
-	//using System.ComponentModel.DataAnnotations;
-	using System.Linq;
 	using System.Linq.Expressions;
 	using System.Reflection;
 	using Internal;
 	using Resources;
+	using Validators;
 
 	/// <summary>
 	/// Validator runtime options
@@ -39,12 +37,6 @@ namespace ServiceStack.FluentValidation {
 		/// Default property chain separator
 		/// </summary>
 		public static string PropertyChainSeparator = ".";
-
-		/// <summary>
-		/// Default resource provider
-		/// </summary>
-		[Obsolete("Resource provider type is no longer recommended for overriding translations. Instead use the LanguageManager property.")]
-		public static Type ResourceProviderType;
 
 		/// <summary>
 		/// Default language manager 
@@ -62,8 +54,8 @@ namespace ServiceStack.FluentValidation {
 		private static Func<Type, MemberInfo, LambdaExpression, string> _propertyNameResolver = DefaultPropertyNameResolver;
 		private static Func<Type, MemberInfo, LambdaExpression, string> _displayNameResolver = DefaultDisplayNameResolver;
 		private static ILanguageManager _languageManager = new LanguageManager();
-
 		private static Func<MessageFormatter> _messageFormatterFactory = () => new MessageFormatter();
+		private static Func<PropertyValidator, string> _errorCodeResolver = DefaultErrorCodeResolver;
 
 		/// <summary>
 		/// Specifies a factory for creating MessageFormatter instances.
@@ -84,7 +76,8 @@ namespace ServiceStack.FluentValidation {
 		/// <summary>
 		/// Pluggable logic for resolving display names
 		/// </summary>
-		public static Func<Type, MemberInfo, LambdaExpression, string> DisplayNameResolver {
+		public static Func<Type, MemberInfo, LambdaExpression, string> DisplayNameResolver
+		{
 			get => _displayNameResolver;
 			set => _displayNameResolver = value ?? DefaultDisplayNameResolver;
 		}
@@ -99,37 +92,28 @@ namespace ServiceStack.FluentValidation {
 		}	
 		
 		static string DefaultDisplayNameResolver(Type type, MemberInfo memberInfo, LambdaExpression expression) {
-			return memberInfo == null ? null : GetDisplayName(memberInfo);
+			return memberInfo == null ? null : DisplayNameCache.GetCachedDisplayName(memberInfo);
 		}
 
-		// Nasty hack to work around not referencing DataAnnotations directly. 
-		// At some point investigate the DataAnnotations reference issue in more detail and go back to using the code above. 
-		static string GetDisplayName(MemberInfo member) {
-			var attributes = (from attr in member.GetCustomAttributes(true)
-			                  select new {attr, type = attr.GetType()}).ToList();
 
-			string name = (from attr in attributes
-			        where attr.type.Name == "DisplayAttribute"
-			        let method = attr.type.GetRuntimeMethod("GetName", new Type[0]) 
-			        where method != null
-			        select method.Invoke(attr.attr, null) as string).FirstOrDefault();
 
-			if (string.IsNullOrEmpty(name)) {
-				name = (from attr in attributes
-				        where attr.type.Name == "DisplayNameAttribute"
-				        let property = attr.type.GetRuntimeProperty("DisplayName")
-				        where property != null
-				        select property.GetValue(attr.attr, null) as string).FirstOrDefault();
-			}
-
-			return name;
-		}
 
 		/// <summary>
 		/// Disables the expression accessor cache. Not recommended.
 		/// </summary>
 		public static bool DisableAccessorCache { get; set; }
 
+		/// <summary>
+		/// Pluggable resolver for default error codes
+		/// </summary>
+		public static Func<PropertyValidator, string> ErrorCodeResolver {
+			get => _errorCodeResolver;
+			set => _errorCodeResolver = value ?? DefaultErrorCodeResolver;
+		}
+
+		static string DefaultErrorCodeResolver(PropertyValidator validator) {
+			return validator.GetType().Name;
+		}
 	}
 
 	/// <summary>

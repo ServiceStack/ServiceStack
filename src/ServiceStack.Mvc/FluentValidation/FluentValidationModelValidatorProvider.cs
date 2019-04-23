@@ -22,7 +22,7 @@ using ServiceStack.FluentValidation.Attributes;
 using ServiceStack.FluentValidation.Internal;
 using ServiceStack.FluentValidation.Validators;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System;
 	using System.Collections.Generic;
 	using System.Linq;

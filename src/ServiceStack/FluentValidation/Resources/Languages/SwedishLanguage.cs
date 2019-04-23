@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("\"{PropertyName}\" måste vara större än eller lika med {ComparisonValue}.");
 			Translate<GreaterThanValidator>("\"{PropertyName}\" måste vara större än {ComparisonValue}.");
 			Translate<LengthValidator>("\"{PropertyName}\" måste vara mellan {MinLength} och {MaxLength} tecken långt. Du angav {TotalLength} tecken.");
-			Translate<MinimumLengthValidator>("\"{PropertyName}\" måste vara mellan {MinLength} och 1000 tecken långt. Du angav {TotalLength} tecken.");
-			Translate<MaximumLengthValidator>("\"{PropertyName}\" måste vara mellan 0 och {MaxLength} tecken långt. Du angav {TotalLength} tecken.");
+			Translate<MinimumLengthValidator>("\"{PropertyName}\" måste vara större än eller lika med {MinLength} tecken. Du har skrivit in {TotalLength} tecken.");
+			Translate<MaximumLengthValidator>("\"{PropertyName}\" måste vara mindre än eller lika med {MaxLength} tecken. Du har skrivit in {TotalLength} tecken.");
 			Translate<LessThanOrEqualValidator>("\"{PropertyName}\" måste vara mindre än eller lika med {ComparisonValue}.");
 			Translate<LessThanValidator>("\"{PropertyName}\" måste vara mindre än {ComparisonValue}.");
 			Translate<NotEmptyValidator>("\"{PropertyName}\" måste anges.");
@@ -41,7 +41,11 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<ExactLengthValidator>("\"{PropertyName}\" måste vara {MaxLength} tecken långt. Du angav {TotalLength} tecken.");
 			Translate<InclusiveBetweenValidator>("\"{PropertyName}\" måste vara mellan {From} och {To}. Du angav {Value}.");
 			Translate<ExclusiveBetweenValidator>("\"{PropertyName}\" måste vara mellan {From} och {To} (gränsvärdena exkluderade). Du angav {Value}.");
-
+			Translate<CreditCardValidator>("\"{PropertyName}\" no es un número de tarjeta de crédito válido.");
+			Translate<ScalePrecisionValidator>("\"{PropertyName}\" får inte vara mer än {ExpectedPrecision} siffror totalt, med förbehåll för {ExpectedScale} decimaler. {Digits} siffror och {ActualScale} decimaler hittades.");
+			Translate<EmptyValidator>("\"{PropertyName}\" ska vara tomt.");
+			Translate<NullValidator>("\"{PropertyName}\" ska vara tomt.");
+			Translate<EnumValidator>("\"{PropertyName}\" har ett antal värden som inte inkluderar \"{PropertyValue}\".");
 		}
 	}
 }

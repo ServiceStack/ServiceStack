@@ -1,18 +1,18 @@
 #region License
 // Copyright (c) Jeremy Skinner (http://www.jeremyskinner.co.uk)
-// 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// 
-// http://www.apache.org/licenses/LICENSE-2.0 
-// 
-// Unless required by applicable law or agreed to in writing, software 
-// distributed under the License is distributed on an "AS IS" BASIS, 
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-// See the License for the specific language governing permissions and 
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
 // limitations under the License.
-// 
+//
 // The latest version of this file can be found at https://github.com/jeremyskinner/FluentValidation
 #endregion
 
@@ -40,7 +40,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		public PropertyChain(PropertyChain parent) {
 			if(parent != null
 				&& parent._memberNames.Count > 0) {
-				_memberNames.AddRange(parent._memberNames);				
+				_memberNames.AddRange(parent._memberNames);
 			}
 		}
 
@@ -53,7 +53,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		}
 
 		/// <summary>
-		/// Creates a PropertyChain from a lambda expresion
+		/// Creates a PropertyChain from a lambda expression
 		/// </summary>
 		/// <param name="expression"></param>
 		/// <returns></returns>
@@ -83,7 +83,7 @@ namespace ServiceStack.FluentValidation.Internal {
 		/// </summary>
 		/// <param name="member">Member to add</param>
 		public void Add(MemberInfo member) {
-			if(member != null) 
+			if(member != null)
 				_memberNames.Add(member.Name);
 		}
 
@@ -97,19 +97,20 @@ namespace ServiceStack.FluentValidation.Internal {
 		}
 
 		/// <summary>
-		/// Adds an indexer to the property chain. For example, if the following chain has been constructed: 
+		/// Adds an indexer to the property chain. For example, if the following chain has been constructed:
 		/// Parent.Child
 		/// then calling AddIndexer(0) would convert this to:
 		/// Parent.Child[0]
 		/// </summary>
 		/// <param name="indexer"></param>
-		public void AddIndexer(object indexer) {
+		/// <param name="surroundWithBrackets">Whether square brackets should be applied before and after the indexer. Default true.</param>
+		public void AddIndexer(object indexer, bool surroundWithBrackets = true) {
 			if(_memberNames.Count == 0) {
 				throw new InvalidOperationException("Could not apply an Indexer because the property chain is empty.");
 			}
 
 			string last = _memberNames[_memberNames.Count - 1];
-			last += "[" + indexer + "]";
+			last += surroundWithBrackets ? "[" + indexer + "]" : indexer;
 
 			_memberNames[_memberNames.Count - 1] = last;
 		}
@@ -126,7 +127,7 @@ namespace ServiceStack.FluentValidation.Internal {
 					return _memberNames[0];
 				default:
 					return string.Join(ValidatorOptions.PropertyChainSeparator, _memberNames);
-			}			
+			}
 		}
 
 		/// <summary>

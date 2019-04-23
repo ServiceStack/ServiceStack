@@ -19,7 +19,7 @@
 
 using ServiceStack.FluentValidation.Results;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Globalization;
 	using System.Web.Mvc;
 

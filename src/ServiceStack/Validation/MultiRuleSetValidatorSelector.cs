@@ -23,9 +23,14 @@ namespace ServiceStack.Validation
         /// <param name="context">Contextual information</param>
         /// <returns>Whether or not the validator can execute.</returns>
         public bool CanExecute(IValidationRule rule, string propertyPath, ValidationContext context) {
-            if (string.IsNullOrEmpty(rule.RuleSet)) return true;
-            if (!string.IsNullOrEmpty(rule.RuleSet) && rulesetsToExecute.Length > 0 && rulesetsToExecute.Contains(rule.RuleSet)) return true;
+            if (rule.RuleSets == null || rule.RuleSets.Length == 0) return true;
             if (rulesetsToExecute.Contains("*")) return true;
+
+            foreach (var ruleset in rule.RuleSets)
+            {
+                if (!string.IsNullOrEmpty(ruleset) && rulesetsToExecute.Length > 0 && 
+                    rulesetsToExecute.Contains(ruleset)) return true;
+            }
 
             return false;
         }

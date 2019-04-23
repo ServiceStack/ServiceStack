@@ -19,9 +19,9 @@ namespace ServiceStack.FluentValidation.Resources {
 	using System.Collections.Generic;
 
 	/// <summary>
-	/// Base class for lanaguages
+	/// Base class for languages
 	/// </summary>
-	internal abstract class Language {
+	public abstract class Language {
 
 		/// <summary>
 		/// Name of language (culture code)

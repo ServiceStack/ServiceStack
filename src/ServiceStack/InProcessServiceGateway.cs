@@ -152,7 +152,7 @@ namespace ServiceStack
                     };
                     
                     ValidationResult result;
-                    if (!validator.HasAsyncValidators())
+                    if (!validator.HasAsyncValidators(validationContext))
                     {
                         result = validator.Validate(validationContext);
                     }

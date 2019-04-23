@@ -36,7 +36,7 @@ namespace ServiceStack.FluentValidation {
 		/// <summary>
 		/// Name of the rule-set to which this rule belongs.
 		/// </summary>
-		string RuleSet { get; set; }
+		string[] RuleSets { get; set; }
 
 		/// <summary>
 		/// Performs validation using a validation context and returns a collection of Validation Failures.
@@ -46,7 +46,7 @@ namespace ServiceStack.FluentValidation {
 		IEnumerable<ValidationFailure> Validate(ValidationContext context);
 
 		/// <summary>
-		/// Performs validation using a validation context and returns a collection of Validation Failures asynchronoulsy.
+		/// Performs validation using a validation context and returns a collection of Validation Failures asynchronously.
 		/// </summary>
 		/// <param name="context">Validation Context</param>
 		/// <param name="cancellation">Cancellation token</param>
@@ -58,13 +58,13 @@ namespace ServiceStack.FluentValidation {
 		/// </summary>
 		/// <param name="predicate"></param>
 		/// <param name="applyConditionTo"></param>
-		void ApplyCondition(Func<object, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators);
+		void ApplyCondition(Func<PropertyValidatorContext, bool> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators);
 
 		/// <summary>
 		/// Applies a condition to the rule asynchronously
 		/// </summary>
 		/// <param name="predicate"></param>
 		/// <param name="applyConditionTo"></param>
-		void ApplyAsyncCondition(Func<object, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators);
+		void ApplyAsyncCondition(Func<PropertyValidatorContext, CancellationToken, Task<bool>> predicate, ApplyConditionTo applyConditionTo = ApplyConditionTo.AllValidators);
 	}
 }

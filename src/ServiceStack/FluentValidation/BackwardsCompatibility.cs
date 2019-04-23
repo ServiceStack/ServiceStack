@@ -32,26 +32,15 @@ namespace ServiceStack.FluentValidation
 		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
 		/// <param name="resourceAccessorBuilder">Resource accessor builder to use</param>
 		[Obsolete("Use WithName(x => ResourceType.ResourceName) instead")]
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector, IResourceAccessorBuilder resourceAccessorBuilder = null) {
-			resourceSelector.Guard("A resource selector must be specified.");
+		public static IRuleBuilderOptions<T, TProperty> WithLocalizedName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector) {
+			resourceSelector.Guard("A resource selector must be specified.", nameof(WithLocalizedName));
 			// default to the static resource accessor builder - explicit resources configured with WithLocalizedName should take precedence over ResourceProviderType.
 
 			return rule.Configure(config => {
-				config.DisplayName = LocalizedStringSource.CreateFromExpression(resourceSelector, resourceAccessorBuilder);
+				config.DisplayName = LocalizedStringSource.CreateFromExpression(resourceSelector);
 			});
 		}
 
-		/// <summary>
-		/// Specifies a custom error message resource to use when validation fails.
-		/// </summary>
-		/// <param name="rule">The current rule</param>
-		/// <param name="resourceSelector">The resource to use as an expression, eg () => Messages.MyResource</param>
-		/// <returns></returns>
-		[Obsolete("Use WithMessage(x => ResourceType.ResourceName) instead.")]
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector) {
-			// We use the StaticResourceAccessorBuilder here because we don't want calls to WithLocalizedMessage to be overriden by the ResourceProviderType.
-			return rule.WithLocalizedMessage(resourceSelector, (IResourceAccessorBuilder)null);
-		}
 
 		/// <summary>
 		/// Specifies a custom error message resource to use when validation fails.
@@ -74,11 +63,11 @@ namespace ServiceStack.FluentValidation
 		/// <param name="resourceAccessorBuilder">The resource accessor builder to use. </param>
 		/// <returns></returns>
 		[Obsolete("Use WithMessage(x => ResourceType.ResourceName) instead.")]
-		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector, IResourceAccessorBuilder resourceAccessorBuilder) {
-			resourceSelector.Guard("An expression must be specified when calling WithLocalizedMessage, eg .WithLocalizedMessage(() => Messages.MyResource)");
+		public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Expression<Func<string>> resourceSelector) {
+			resourceSelector.Guard("An expression must be specified when calling WithLocalizedMessage, eg .WithLocalizedMessage(() => Messages.MyResource)", nameof(WithLocalizedMessage));
 
 			return rule.Configure(config => {
-				config.CurrentValidator.ErrorMessageSource = LocalizedStringSource.CreateFromExpression(resourceSelector, resourceAccessorBuilder);
+				config.CurrentValidator.Options.ErrorMessageSource = LocalizedStringSource.CreateFromExpression(resourceSelector);
 			});
 		}
 
@@ -96,7 +85,7 @@ namespace ServiceStack.FluentValidation
 				var funcs = formatArgs
 					.Select(func => new Func<object, object, object>((instance, value) => func((T) instance))).ToList();
 
-				config.CurrentValidator.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(LocalizedStringSource.CreateFromExpression(resourceSelector, null), funcs); ;
+				config.CurrentValidator.Options.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(LocalizedStringSource.CreateFromExpression(resourceSelector), funcs); ;
 			});
 		}
 
@@ -108,8 +97,8 @@ namespace ServiceStack.FluentValidation
 	    /// <param name="resourceName">The name of the resource to use</param>
 	    [Obsolete("Use WithName(x => ResourceType.ResourceName) instead")]
 	    public static IRuleBuilderOptions<T, TProperty> WithLocalizedName<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Type resourceType, string resourceName) {
-		    resourceType.Guard("A resource type must be specified.");
-		    resourceName.Guard("A resource name must be specified.");
+		    resourceType.Guard("A resource type must be specified.", nameof(WithLocalizedName));
+		    resourceName.Guard("A resource name must be specified.", nameof(WithLocalizedName));
 
 		    return rule.Configure(config => {
 			    config.DisplayName = new LocalizedStringSource(resourceType, resourceName);
@@ -139,11 +128,11 @@ namespace ServiceStack.FluentValidation
 	    /// <returns></returns>
 	    [Obsolete("Use WithMessage(x => string.Format(\"Custom message with placeholder\", x.Arg1, x.Arg2) instead")]
 	    public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage, params Func<T, object>[] funcs) {
-		    errorMessage.Guard("A message must be specified when calling WithMessage.");
+		    errorMessage.Guard("A message must be specified when calling WithMessage.", nameof(WithMessage));
 
 		    return rule.Configure(config => {
 			    var placeholders = funcs.Select(func => new Func<object, object, object>((instance, value) => func((T) instance))).ToList();
-			    config.CurrentValidator.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new StaticStringSource(errorMessage), placeholders);
+			    config.CurrentValidator.Options.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new StaticStringSource(errorMessage), placeholders);
 			});
 	    }
 
@@ -156,14 +145,14 @@ namespace ServiceStack.FluentValidation
 		/// <returns></returns>
 		[Obsolete("Use WithMessage(x => string.Format(\"Custom message with placeholder\", x.Arg1, x.Arg2) instead")]
 		public static IRuleBuilderOptions<T, TProperty> WithMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, string errorMessage, params Func<T, TProperty, object>[] funcs) {
-		    errorMessage.Guard("A message must be specified when calling WithMessage.");
+		    errorMessage.Guard("A message must be specified when calling WithMessage.", nameof(WithMessage));
 
 		    return rule.Configure(config => {
 
 			    var placeholders = funcs
 				    .Select(func => new Func<object, object, object>((instance, value) => func((T) instance, (TProperty) value))).ToList();
 
-				config.CurrentValidator.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new StaticStringSource(errorMessage), placeholders);
+				config.CurrentValidator.Options.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new StaticStringSource(errorMessage), placeholders);
 
 			});
 	    }
@@ -192,12 +181,12 @@ namespace ServiceStack.FluentValidation
 	    /// <returns></returns>
 	    [Obsolete("Use WithMessage(x => string.Format(ResourceType.ResourceName, x.Arg1, x.Arg2)")]
 	    public static IRuleBuilderOptions<T, TProperty> WithLocalizedMessage<T, TProperty>(this IRuleBuilderOptions<T, TProperty> rule, Type resourceType, string resourceName, params Func<T, object>[] formatArgs) {
-		    resourceType.Guard("A resource type must be provided.");
-		    resourceName.Guard("A resource name must be provided.");
+		    resourceType.Guard("A resource type must be provided.", nameof(WithLocalizedMessage));
+		    resourceName.Guard("A resource name must be provided.", nameof(WithLocalizedMessage));
 
 		    return rule.Configure(config => {
 			    var funcs = formatArgs.Select(func => new Func<object, object, object>((instance, value) => func((T) instance))).ToList();
-				config.CurrentValidator.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new LocalizedStringSource(resourceType, resourceName), funcs);
+				config.CurrentValidator.Options.ErrorMessageSource = new BackwardsCompatFormatArgStringSource(new LocalizedStringSource(resourceType, resourceName), funcs);
 		    });
 	    }
 
@@ -305,7 +294,7 @@ namespace ServiceStack.FluentValidation.Resources {
 			_customFormatArgs = funcs;
 		}
 
-		public string GetString(object context) {
+		public string GetString(IValidationContext context) {
 			if (context is PropertyValidatorContext pvc) {
 				// For backwards compatibility, only pass in the PropertyValidatorContext if the string source implements IContextAwareStringSource
 				// otherwise fall back to old behaviour of passing the instance. 
@@ -322,7 +311,7 @@ namespace ServiceStack.FluentValidation.Resources {
 					pvc.MessageFormatter.AppendAdditionalArguments(additionalArguments);
 				}
 
-				return _inner.GetString(contextForInner);
+				return _inner.GetString(contextForInner as IValidationContext);
 			}
 
 			return _inner.GetString(context);

@@ -2,7 +2,7 @@
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 
-namespace FluentValidation.Mvc {
+namespace ServiceStack.FluentValidation.Mvc {
 	using System.Web.Mvc;
 
 	/// <summary>

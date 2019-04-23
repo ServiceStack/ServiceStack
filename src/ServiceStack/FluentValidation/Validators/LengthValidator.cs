@@ -18,13 +18,11 @@
 
 namespace ServiceStack.FluentValidation.Validators {
 	using System;
-	using System.Linq.Expressions;
-	using Attributes;
 	using Resources;
 
 	public class LengthValidator : PropertyValidator, ILengthValidator {
-		public int Min { get; private set; }
-		public int Max { get; private set; }
+		public int Min { get; }
+		public int Max { get; }
 
 		public Func<object, int> MinFunc { get; set; }
 		public Func<object, int> MaxFunc { get; set; }
@@ -34,7 +32,7 @@ namespace ServiceStack.FluentValidation.Validators {
 			Min = min;
 
 			if (max != -1 && max < min) {
-				throw new ArgumentOutOfRangeException("max", "Max should be larger than min.");
+				throw new ArgumentOutOfRangeException(nameof(max), "Max should be larger than min.");
 			}
 		}
 
@@ -49,7 +47,7 @@ namespace ServiceStack.FluentValidation.Validators {
 			Min = min;
 
 			if (max != -1 && max < min) {
-				throw new ArgumentOutOfRangeException("max", "Max should be larger than min.");
+				throw new ArgumentOutOfRangeException(nameof(max), "Max should be larger than min.");
 			}
 		}
 
@@ -107,15 +105,6 @@ namespace ServiceStack.FluentValidation.Validators {
 			: base(obj => 0, max, new LanguageStringSource(nameof(MaximumLengthValidator))) {
 
 		}
-
-		protected override bool IsValid(PropertyValidatorContext context) {
-			var result = base.IsValid(context);
-			if (!result) {
-				var currentMax = (int)context.MessageFormatter.PlaceholderValues["MaxLength"];
-				context.MessageFormatter.PlaceholderValues["MaxLength"] = currentMax + 1;
-			}
-			return result;
-		}
 	}
 
 	public class MinimumLengthValidator : LengthValidator {
@@ -128,15 +117,6 @@ namespace ServiceStack.FluentValidation.Validators {
 		public MinimumLengthValidator(Func<object, int> min)
 			: base(min, obj => -1, new LanguageStringSource(nameof(MinimumLengthValidator))) {
 
-		}
-
-		protected override bool IsValid(PropertyValidatorContext context) {
-			var result = base.IsValid(context);
-			if (!result) {
-				var currentMin = (int)context.MessageFormatter.PlaceholderValues["MinLength"];
-				context.MessageFormatter.PlaceholderValues["MinLength"] = currentMin - 1;
-			}
-			return result;
 		}
 	}
 

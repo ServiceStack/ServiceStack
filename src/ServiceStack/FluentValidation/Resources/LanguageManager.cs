@@ -35,6 +35,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			var languages = new Language[] {
 				new EnglishLanguage(),
 				new ChineseSimplifiedLanguage(),
+				new ChineseTraditionalLanguage(),
+				new CroatianLanguage(),
 				new CzechLanguage(),
 				new DanishLanguage(),
 				new DutchLanguage(),
@@ -42,19 +44,27 @@ namespace ServiceStack.FluentValidation.Resources {
 				new FrenchLanguage(),
 				new GermanLanguage(),
 				new GeorgianLanguage(),
+				new HebrewLanguage(),
+				new HindiLanguage(),
 				new ItalianLanguage(),
 				new KoreanLanguage(),
 				new MacedonianLanguage(),
 				new PersianLanguage(),
 				new PolishLanguage(),
 				new PortugueseLanguage(),
+				new PortugueseBrazilLanguage(),
 				new RomanianLanguage(),
 				new RussianLanguage(),
+				new SlovakLanguage(),
 				new SpanishLanguage(),
 				new SwedishLanguage(),
 				new TurkishLanguage(),
-				new HindiLanguage(),
-				new CroatianLanguage()
+				new UkrainianLanguage(),
+				new ArabicLanguage(),
+				new AlbanianLanguage(),
+				new GreekLanguage(),
+				new NorwegianBokmalLanguage(),
+				new JapaneseLanguage(),
 			};
 
 			foreach (var language in languages) {
@@ -98,17 +108,6 @@ namespace ServiceStack.FluentValidation.Resources {
 		/// <param name="culture">The culture to translate into</param>
 		/// <returns></returns>
 		public virtual string GetString(string key, CultureInfo culture=null) {
-			// For backwards compatibility with < 7.0 ResourceProvider
-#pragma warning disable 618
-			if (ValidatorOptions.ResourceProviderType != null) {
-				try {
-					var localizedStringSource = new LocalizedStringSource(ValidatorOptions.ResourceProviderType, BackwardsCompatibilityCodeMapping(key));
-					return localizedStringSource.GetString(null);
-				}
-				catch(InvalidOperationException) {  } // If something went wrong with the backwards compat override, just allow it to carry on to the normal behaviour.
-			}
-#pragma warning restore 618
-
 			culture = culture ?? Culture ?? CultureInfo.CurrentUICulture;
 
 			string code = culture.Name;
@@ -128,39 +127,6 @@ namespace ServiceStack.FluentValidation.Resources {
 			}
 
 			return value ?? string.Empty;
-		}
-
-		// Prior to 7.0 the error message resource names were string values such as "notnull_error" rather than the type name (NotNullValidator).
-		// For internal usage, the change is fine but it's a breaking change who relied on the keys being set in the ErrorCode property on the validation failure
-		// This mapping ensures that the original resource names are used for generating error codes.
-		internal static string BackwardsCompatibilityCodeMapping(string name) {
-			switch (name) {
-				case nameof(EnumValidator): return "enum_error";
-				case nameof(NullValidator): return "null_error";
-				case nameof(EmptyValidator): return "empty_error";
-				case nameof(ScalePrecisionValidator): return "scale_precision_error";
-				case nameof(CreditCardValidator): return "CreditCardError";
-				case nameof(ExclusiveBetweenValidator): return "exclusivebetween_error";
-				case nameof(InclusiveBetweenValidator): return "inclusivebetween_error";
-				case nameof(ExactLengthValidator): return "exact_length_error";
-				case nameof(EqualValidator): return "equal_error";
-				case nameof(RegularExpressionValidator): return "regex_error";
-				case nameof(PredicateValidator): return "predicate_error";
-				case nameof(AsyncPredicateValidator): return "predicate_error";
-				case nameof(NotNullValidator): return "notnull_error";
-				case nameof(NotEqualValidator): return "notequal_error";
-				case nameof(NotEmptyValidator): return "notempty_error";
-				case nameof(LessThanValidator): return "lessthan_error";
-				case nameof(LessThanOrEqualValidator): return "lessthanorequal_error";
-				case nameof(LengthValidator): return "length_error";
-				case nameof(MinimumLengthValidator): return "length_error";
-				case nameof(MaximumLengthValidator): return "length_error";
-				case nameof(GreaterThanValidator): return "greaterthan_error";
-				case nameof(GreaterThanOrEqualValidator): return "greaterthanorequal_error";
-				case nameof(EmailValidator): return "email_error";
-			}
-
-			return name;
 		}
 
 		public IEnumerable<string> GetSupportedTranslationKeys() {

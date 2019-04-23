@@ -22,6 +22,7 @@ namespace ServiceStack.FluentValidation.Attributes
 {
 	using Internal;
 	using System;
+	using System.Collections.Concurrent;
 	using System.Reflection;
 
 	/// <summary>
@@ -29,19 +30,15 @@ namespace ServiceStack.FluentValidation.Attributes
 	/// the <see cref="ValidatorAttribute"/> instance on the specified <see cref="Type"/> or
 	/// <see cref="ParameterInfo"/> in order to provide the validator instance.
 	/// </summary>
-//	[Obsolete("The AttributedValidatorFactory is no longer recommended. If you're using ASP.NET Core, you should switch to using the Service Provider infrastructure for registering validators. For MVC5, WebApi2 or non-web scenarios, please consider using an IoC container instead.")]
-	public class AttributedValidatorFactory : IValidatorFactory, IParameterValidatorFactory
-	{
-		private readonly Func<Type, IValidator> instanceFactory;
-
-		private readonly InstanceCache cache = new InstanceCache();
+	public class AttributedValidatorFactory : IValidatorFactory, IParameterValidatorFactory {
+		private readonly Func<Type, IValidator> _instanceFactory;
+		private readonly ConcurrentDictionary<Type, object> _cache = new ConcurrentDictionary<Type, object>();
 
 		/// <summary>
 		/// Creates an instance of <see cref="AttributedValidatorFactory"/>.
 		/// </summary>
-		public AttributedValidatorFactory()
-		{
-			instanceFactory = null;
+		public AttributedValidatorFactory() {
+			_instanceFactory = type => Activator.CreateInstance(type) as IValidator;
 		}
 
 		/// <summary>
@@ -49,16 +46,14 @@ namespace ServiceStack.FluentValidation.Attributes
 		/// used for creation of <see cref="IValidator"/> instances.
 		/// </summary>
 		/// <param name="instanceFactory">The <see cref="IValidator"/> instance factory delegate.</param>
-		public AttributedValidatorFactory(Func<Type, IValidator> instanceFactory)
-		{
-			this.instanceFactory = instanceFactory;
+		public AttributedValidatorFactory(Func<Type, IValidator> instanceFactory) {
+			this._instanceFactory = instanceFactory;
 		}
 
 		/// <summary>
 		/// Gets a validator for the appropriate type.
 		/// </summary>
-		public IValidator<T> GetValidator<T>()
-		{
+		public IValidator<T> GetValidator<T>() {
 			return (IValidator<T>)GetValidator(typeof(T));
 		}
 
@@ -67,10 +62,8 @@ namespace ServiceStack.FluentValidation.Attributes
 		/// </summary>
 		/// <returns>Created <see cref="IValidator"/> instance; <see langword="null"/> if a validator cannot be
 		/// created.</returns>
-		public virtual IValidator GetValidator(Type type)
-		{
-			if (type == null)
-			{
+		public virtual IValidator GetValidator(Type type) {
+			if (type == null) {
 				return null;
 			}
 
@@ -85,10 +78,8 @@ namespace ServiceStack.FluentValidation.Attributes
 		/// <param name="parameterInfo">The <see cref="ParameterInfo"/> instance to get a validator for.</param>
 		/// <returns>Created <see cref="IValidator"/> instance; <see langword="null"/> if a validator cannot be
 		/// created.</returns>
-		public virtual IValidator GetValidator(ParameterInfo parameterInfo)
-		{
-			if (parameterInfo == null)
-			{
+		public virtual IValidator GetValidator(ParameterInfo parameterInfo) {
+			if (parameterInfo == null){
 				return null;
 			}
 
@@ -97,16 +88,12 @@ namespace ServiceStack.FluentValidation.Attributes
 			return GetValidator(attribute);
 		}
 
-		private IValidator GetValidator(ValidatorAttribute attribute)
-		{
-			if (attribute == null || attribute.ValidatorType == null)
-			{
+		private IValidator GetValidator(ValidatorAttribute attribute) {
+			if (attribute == null || attribute.ValidatorType == null) {
 				return null;
 			}
 
-			var validator = instanceFactory == null
-				? cache.GetOrCreateInstance(attribute.ValidatorType)
-				: cache.GetOrCreateInstance(attribute.ValidatorType, instanceFactory);
+			var validator = _cache.GetOrAdd(attribute.ValidatorType, _instanceFactory);
 
 			return validator as IValidator;
 		}

@@ -32,8 +32,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanValidator>("'{PropertyName}'은(는) '{ComparisonValue}'보다 커야 합니다.");
 			Translate<InclusiveBetweenValidator>("'{PropertyName}'은(는) {From} 이상 {To} 이하여야 합니다. 입력한 값은 {Value}입니다.");
 			Translate<LengthValidator>("'{PropertyName}'은(는) {MinLength} 글자 이상 {MaxLength} 글자 이하여야 합니다. 입력한 문자열은 {TotalLength} 글자입니다.");
-			Translate<MinimumLengthValidator>("'{PropertyName}'은(는) {MinLength} 글자 이상 1000 글자 이하여야 합니다. 입력한 문자열은 {TotalLength} 글자입니다.");
-			Translate<MaximumLengthValidator>("'{PropertyName}'은(는) 0 글자 이상 {MaxLength} 글자 이하여야 합니다. 입력한 문자열은 {TotalLength} 글자입니다.");
+			Translate<MinimumLengthValidator>("'{PropertyName}'은 {MinLength} 자 이상의 값이어야합니다. {TotalLength} 문자를 입력했습니다.");
+			Translate<MaximumLengthValidator>("'{PropertyName}'은 (는) {MaxLength} 자 이하 여야합니다. {TotalLength} 문자를 입력했습니다.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}'은(는) '{ComparisonValue}' 이하여야 합니다.");
 			Translate<LessThanValidator>("'{PropertyName}'은(는) '{ComparisonValue}' 보다 작아야 합니다.");
 			Translate<NotEmptyValidator>("'{PropertyName}'은(는) 최소한 한 글자 이상이어야 합니다.");
@@ -42,8 +42,10 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<PredicateValidator>("'{PropertyName}'이(가) 유효하지 않습니다.");
 			Translate<AsyncPredicateValidator>("'{PropertyName}'이(가) 유효하지 않습니다.");
 			Translate<RegularExpressionValidator>("'{PropertyName}'이(가) 잘못된 형식입니다.");
-			Translate<ScalePrecisionValidator>("'{PropertyName}'은(는) 소수점 이하 {expectedScale}자리 이하, 총 {expectedPrecision}자리 이하의 숫자여야 합니다. 입력한 값은 소수점 이하 {actualScale}자리이고 총 {digits}자리입니다.");
-
+			Translate<ScalePrecisionValidator>("'{PropertyName}'은(는) 소수점 이하 {ExpectedScale}자리 이하, 총 {ExpectedPrecision}자리 이하의 숫자여야 합니다. 입력한 값은 소수점 이하 {ActualScale}자리이고 총 {Digits}자리입니다.");
+			Translate<EmptyValidator>("'{PropertyName}'이 비어 있어야합니다.");
+			Translate<NullValidator>("'{PropertyName}'이 비어 있어야합니다.");
+			Translate<EnumValidator>("'{PropertyName}'에는 '{PropertyValue}'가 포함되지 않은 값 범위가 있습니다.");
 		}
 	}
 }

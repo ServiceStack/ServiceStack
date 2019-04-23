@@ -5,6 +5,7 @@ using System.Reflection;
 using Funq;
 using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
+using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Text;
 
 namespace ServiceStack.Validation
@@ -129,16 +130,16 @@ namespace ServiceStack.Validation
             container.RegisterAutoWiredType(validator, validatorType, scope);
         }
 
-        public static bool HasAsyncValidators(this IValidator validator, string ruleSet=null)
+        public static bool HasAsyncValidators(this IValidator validator, ValidationContext context, string ruleSet=null)
         {
             if (validator is IEnumerable<IValidationRule> rules)
             {
                 foreach (var rule in rules)
                 {
-                    if (ruleSet != null && rule.RuleSet != null && rule.RuleSet != ruleSet)
+                    if (ruleSet != null && rule.RuleSets != null && !rule.RuleSets.Contains(ruleSet))
                         continue;
 
-                    if (rule.Validators.Any(x => x.IsAsync))
+                    if (rule.Validators.Any(x => x is AsyncPredicateValidator || x is AsyncValidatorBase ||  x.ShouldValidateAsync(context)))
                         return true;
                 }
             }

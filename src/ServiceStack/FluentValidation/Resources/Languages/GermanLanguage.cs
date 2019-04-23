@@ -27,13 +27,13 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("Der Wert von '{PropertyName}' muss grösser oder gleich '{ComparisonValue}' sein.");
 			Translate<GreaterThanValidator>("Der Wert von '{PropertyName}' muss grösser sein als '{ComparisonValue}'.");
 			Translate<LengthValidator>("Die Länge von '{PropertyName}' muss zwischen {MinLength} und {MaxLength} Zeichen liegen. Es wurden {TotalLength} Zeichen eingetragen.");
-			Translate<MinimumLengthValidator>("Die Länge von '{PropertyName}' muss grösser als {MinLength} Zeichen liegen. Es wurden {TotalLength} Zeichen eingetragen.");
-			Translate<MaximumLengthValidator>("Die Länge von '{PropertyName}' muss kleiner als {MaxLength} Zeichen liegen. Es wurden {TotalLength} Zeichen eingetragen.");
+			Translate<MinimumLengthValidator>("Die Länge von '{PropertyName}' muss größer oder gleich {MinLength} sein. Sie haben {TotalLength} Zeichen eingegeben.");
+			Translate<MaximumLengthValidator>("Die Länge von '{PropertyName}' muss kleiner oder gleich {MaxLength} sein. Sie haben {TotalLength} Zeichen eingegeben.");
 			Translate<LessThanOrEqualValidator>("Der Wert von '{PropertyName}' muss kleiner oder gleich '{ComparisonValue}' sein.");
 			Translate<LessThanValidator>("Der Wert von '{PropertyName}' muss kleiner sein als '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' darf nicht leer sein.");
 			Translate<NotEqualValidator>("'{PropertyName}' darf nicht '{ComparisonValue}' sein.");
-			Translate<NotNullValidator>("'{PropertyName}' darf keinen Null-Wert aufweisen.");
+			Translate<NotNullValidator>("'{PropertyName}' darf kein Nullwert sein.");
 			Translate<PredicateValidator>("Der Wert von '{PropertyName}' entspricht nicht der festgelegten Bedingung.");
 			Translate<AsyncPredicateValidator>("Der Wert von '{PropertyName}' entspricht nicht der festgelegten Bedingung.");
 			Translate<RegularExpressionValidator>("'{PropertyName}' weist ein ungültiges Format auf.");
@@ -41,6 +41,12 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<ExactLengthValidator>("'{PropertyName}' muss genau {MaxLength} lang sein. Es wurden {TotalLength} eingegeben.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' muss zwischen {From} und {To} sein (exklusiv). Es wurde {Value} eingegeben.");
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' muss zwischen {From} and {To} sein. Es wurde {Value} eingegeben.");
+
+			Translate<CreditCardValidator>("'{PropertyName}' ist keine gültige Kreditkartennummer.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' darf insgesamt nicht mehr als {ExpectedPrecision} Ziffern enthalten, mit Berücksichtigung von {ExpectedScale} Dezimalstellen. Es wurden {Digits} Ziffern und {ActualScale} Dezimalstellen gefunden.");
+			Translate<EmptyValidator>("'{PropertyName}' sollte leer sein.");
+			Translate<NullValidator>("'{PropertyName}' sollte leer sein.");
+			Translate<EnumValidator>("'{PropertyName}' hat einen Wertebereich, der '{PropertyValue}' nicht enthält.");
 
 		}
 	}

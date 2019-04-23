@@ -27,8 +27,8 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<GreaterThanOrEqualValidator>("'{PropertyName}' trebuie să fie mai mare sau egală cu '{ComparisonValue}'.");
 			Translate<GreaterThanValidator>("'{PropertyName}' trebuie să fie mai mare ca '{ComparisonValue}'.");
 			Translate<LengthValidator>("'{PropertyName}' trebuie să fie între {MinLength} şi {MaxLength} caractere. Ați introdus {TotalLength} caractere.");
-			Translate<MinimumLengthValidator>("'{PropertyName}' trebuie să conţină mai mult de {MinLength} caractere. Ați introdus {TotalLength} caractere.");
-			Translate<MaximumLengthValidator>("'{PropertyName}' trebuie să conţină mai puţin de {MaxLength} caractere. Ați introdus {TotalLength} caractere.");
+			Translate<MinimumLengthValidator>("'{PropertyName}' trebuie să fie mai mare sau egală cu caracterele {MinLength}. Ați introdus {TotalLength} caractere.");
+			Translate<MaximumLengthValidator>("'{PropertyName}' trebuie să fie mai mică sau egală cu caracterele {MaxLength}. Ați introdus {TotalLength} caractere.");
 			Translate<LessThanOrEqualValidator>("'{PropertyName}' trebuie să fie mai mică sau egală cu '{ComparisonValue}'.");
 			Translate<LessThanValidator>("'{PropertyName}' trebuie să fie mai mică decât '{ComparisonValue}'.");
 			Translate<NotEmptyValidator>("'{PropertyName}' nu ar trebui să fie goală.");
@@ -42,7 +42,7 @@ namespace ServiceStack.FluentValidation.Resources {
 			Translate<InclusiveBetweenValidator>("'{PropertyName}' trebuie sa fie între {From} şi {To}. Ai introdus {Value}.");
 			Translate<ExclusiveBetweenValidator>("'{PropertyName}' trebuie sa fie între {From} şi {To} (exclusiv). Ai introdus {Value}.");
 			Translate<CreditCardValidator>("'{PropertyName}' nu este un număr de card de credit valid.");
-			Translate<ScalePrecisionValidator>("'{PropertyName}' nu poate fi mai mare decât {expectedPrecision} de cifre în total, cu alocație pentru {expectedScale} zecimale. {digits} cifre şi {actualScale} au fost găsite zecimale.");
+			Translate<ScalePrecisionValidator>("'{PropertyName}' nu poate fi mai mare decât {ExpectedPrecision} de cifre în total, cu alocație pentru {ExpectedScale} zecimale. {Digits} cifre şi {ActualScale} au fost găsite zecimale.");
 			Translate<EmptyValidator>("'{PropertyName}' ar trebui să fie goală.");
 			Translate<NullValidator>("'{PropertyName}' trebuie să fie goală.");
 			Translate<EnumValidator>("'{PropertyName}' are o serie de valori care nu sunt incluse în '{PropertyValue}'.");
