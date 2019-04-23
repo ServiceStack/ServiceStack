@@ -1,10 +1,10 @@
 ﻿#if !NETSTANDARD2_0
-using ServiceStack.FluentValidation.Internal;
-using ServiceStack.FluentValidation.Validators;
-
 namespace ServiceStack.FluentValidation.Mvc {
 	using System.Collections.Generic;
 	using System.Web.Mvc;
+	using Internal;
+	using Resources;
+	using Validators;
 
 	internal class RequiredFluentValidationPropertyValidator : FluentValidationPropertyValidator {
 		public RequiredFluentValidationPropertyValidator(ModelMetadata metadata, ControllerContext controllerContext, PropertyRule rule, IPropertyValidator validator) : base(metadata, controllerContext, rule, validator) {
@@ -17,8 +17,16 @@ namespace ServiceStack.FluentValidation.Mvc {
 		public override IEnumerable<ModelClientValidationRule> GetClientValidationRules() {
 			if (!ShouldGenerateClientSideRules()) yield break;
 
-			var formatter = new MessageFormatter().AppendPropertyName(Rule.GetDisplayName());
-			var message = formatter.BuildMessage(Validator.ErrorMessageSource.GetString(Metadata));
+			var formatter = ValidatorOptions.MessageFormatterFactory().AppendPropertyName(Rule.GetDisplayName());
+			string message;
+			try {
+				message = Validator.Options.ErrorMessageSource.GetString(null);
+			}
+			catch (FluentValidationMessageFormatException) {
+				// User provided a message that contains placeholders based on object properties. We can't use that here, so just fall back to the default. 
+				message = ValidatorOptions.LanguageManager.GetStringForValidator<NotEmptyValidator>();
+			}
+			message = formatter.BuildMessage(message);
 			yield return new ModelClientValidationRequiredRule(message);
 		}
 
