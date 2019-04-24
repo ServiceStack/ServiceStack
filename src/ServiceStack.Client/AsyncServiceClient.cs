@@ -121,6 +121,8 @@ namespace ServiceStack
 
         public bool ShareCookiesWithBrowser { get; set; }
 
+        public IWebProxy Proxy { get; set; }
+
         public int Version { get; set; }
 
         public string SessionId { get; set; }
@@ -160,6 +162,7 @@ namespace ServiceStack
             }
 
             var webReq = this.CreateHttpWebRequest(requestUri);
+            if (webReq != null) webReq.Proxy = Proxy;
 
             var timedOut = false;
             ITimer timer = null;
