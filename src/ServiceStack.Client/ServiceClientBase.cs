@@ -287,9 +287,12 @@ namespace ServiceStack
             set => asyncClient.ShareCookiesWithBrowser = this.shareCookiesWithBrowser = value;
         }
 
-#if !SL5
-        public IWebProxy Proxy { get; set; }
-#endif
+        private IWebProxy proxy;
+        public IWebProxy Proxy
+        {
+            get => this.proxy;
+            set => asyncClient.Proxy = this.proxy = value;
+        }
 
         private ICredentials credentials;
 
@@ -893,7 +896,9 @@ namespace ServiceStack
                 client.Method = httpMethod;
                 PclExportClient.Instance.AddHeader(client, Headers);
 
-                if (Proxy != null) client.Proxy = Proxy;
+                if (Proxy != null) 
+                    client.Proxy = Proxy;
+                
                 PclExport.Instance.Config(client,
                     allowAutoRedirect: AllowAutoRedirect,
                     timeout: this.Timeout,
