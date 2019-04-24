@@ -9,6 +9,7 @@ using ServiceStack;
 using ServiceStack.Api.OpenApi;
 using ServiceStack.Auth;
 using ServiceStack.Caching;
+using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Mvc;
 using ServiceStack.Validation;
@@ -35,9 +36,12 @@ namespace CheckWebCore
                 app.UseDeveloperExceptionPage();
             }
 
+            var AppSettings = new NetCoreAppSettings(Configuration);
+            AppSettings.GetNullableString("servicestack:license");
+            
             app.UseServiceStack(new AppHost
             {
-                AppSettings = new NetCoreAppSettings(Configuration)
+                AppSettings = AppSettings
             });
         }
     }
@@ -51,7 +55,7 @@ namespace CheckWebCore
         // Configure your AppHost with the necessary configuration and dependencies your App needs
         public override void Configure(Container container)
         {
-            // enable server-side rendering, see: http://templates.servicestack.net
+            // enable server-side rendering, see: https://sharpscript.net
             Plugins.Add(new SharpPagesFeature()); 
 
             if (Config.DebugMode)

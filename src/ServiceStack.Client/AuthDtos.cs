@@ -58,7 +58,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class Register : IPost, IReturn<RegisterResponse>
+    public class Register : IPost, IReturn<RegisterResponse>, IMeta
     {
         [DataMember(Order = 1)] public string UserName { get; set; }
         [DataMember(Order = 2)] public string FirstName { get; set; }
@@ -70,6 +70,7 @@ namespace ServiceStack
         [DataMember(Order = 8)] public bool? AutoLogin { get; set; }
         [DataMember(Order = 9)] public string Continue { get; set; }
         [DataMember(Order = 10)] public string ErrorView { get; set; }
+        [DataMember(Order = 11)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -92,7 +93,7 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class AssignRoles : IPost, IReturn<AssignRolesResponse>
+    public class AssignRoles : IPost, IReturn<AssignRolesResponse>, IMeta
     {
         public AssignRoles()
         {
@@ -108,10 +109,11 @@ namespace ServiceStack
 
         [DataMember(Order = 3)]
         public List<string> Roles { get; set; }
+        [DataMember(Order = 4)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class AssignRolesResponse : IHasResponseStatus
+    public class AssignRolesResponse : IHasResponseStatus, IMeta
     {
         public AssignRolesResponse()
         {
@@ -125,12 +127,14 @@ namespace ServiceStack
         [DataMember(Order = 2)]
         public List<string> AllPermissions { get; set; }
 
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
     [DataContract]
-    public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>
+    public class UnAssignRoles : IPost, IReturn<UnAssignRolesResponse>, IMeta
     {
         public UnAssignRoles()
         {
@@ -146,10 +150,12 @@ namespace ServiceStack
 
         [DataMember(Order = 3)]
         public List<string> Roles { get; set; }
+
+        [DataMember(Order = 4)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class UnAssignRolesResponse : IHasResponseStatus
+    public class UnAssignRolesResponse : IHasResponseStatus, IMeta
     {
         public UnAssignRolesResponse()
         {
@@ -162,19 +168,23 @@ namespace ServiceStack
         [DataMember(Order = 2)]
         public List<string> AllPermissions { get; set; }
 
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
+
+        [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
     [DataContract]
-    public class CancelRequest : IPost, IReturn<CancelRequestResponse>
+    public class CancelRequest : IPost, IReturn<CancelRequestResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public string Tag { get; set; }
+
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class CancelRequestResponse
+    public class CancelRequestResponse : IHasResponseStatus, IMeta
     {
         [DataMember(Order = 1)]
         public string Tag { get; set; }
@@ -182,7 +192,9 @@ namespace ServiceStack
         [DataMember(Order = 2)]
         public TimeSpan Elapsed { get; set; }
 
-        [DataMember(Order = 3)]
+        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
+        
+        [DataMember(Order = 4)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
@@ -213,46 +225,52 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class GetApiKeys : IGet, IReturn<GetApiKeysResponse>
+    public class GetApiKeys : IGet, IReturn<GetApiKeysResponse>, IMeta
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class GetApiKeysResponse
+    public class GetApiKeysResponse : IHasResponseStatus, IMeta
     {
         [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
 
-        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     [DataContract]
-    public class RegenerateApiKeys : IPost, IReturn<RegenerateApiKeysResponse>
+    public class RegenerateApiKeys : IPost, IReturn<RegenerateApiKeysResponse>, IMeta
     {
         [DataMember(Order = 1)] public string Environment { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class RegenerateApiKeysResponse
+    public class RegenerateApiKeysResponse : IHasResponseStatus, IMeta
     {
         [DataMember(Order = 1)] public List<UserApiKey> Results { get; set; }
 
-        [DataMember(Order = 2)] public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
 
     [DataContract]
-    public class UserApiKey
+    public class UserApiKey : IMeta
     {
         [DataMember(Order = 1)] public string Key { get; set; }
         [DataMember(Order = 2)] public string KeyType { get; set; }
         [DataMember(Order = 3)] public DateTime? ExpiryDate { get; set; }
+        [DataMember(Order = 4)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>
+    public class ConvertSessionToToken : IPost, IReturn<ConvertSessionToTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public bool PreserveSession { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -272,19 +290,21 @@ namespace ServiceStack
     }
 
     [DataContract]
-    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>
+    public class GetAccessToken : IPost, IReturn<GetAccessTokenResponse>, IMeta
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
-    public class GetAccessTokenResponse
+    public class GetAccessTokenResponse : IHasResponseStatus, IMeta
     {
         [DataMember(Order = 1)]
         public string AccessToken { get; set; }
 
-        [DataMember(Order = 2)]
+        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 }
