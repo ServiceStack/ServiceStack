@@ -7,12 +7,13 @@ using ServiceStack.FluentValidation;
 using ServiceStack.FluentValidation.Results;
 using ServiceStack.FluentValidation.Validators;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack.Validation
 {
     public class ValidationFeature : IPlugin
     {
-        public Func<ValidationResult, object, object> ErrorResponseFilter { get; set; }
+        public Func<IRequest, ValidationResult, object, object> ErrorResponseFilter { get; set; }
 
         public bool ScanAppHostAssemblies { get; set; } = true;
         public bool TreatInfoAndWarningsAsErrors { get; set; } = true;

@@ -300,7 +300,7 @@ namespace ServiceStack
             var errorResponse = DtoUtils.CreateErrorResponse(requestDto, validationError);
             if (feature?.ErrorResponseFilter != null)
             {
-                errorResponse = feature.ErrorResponseFilter(validationResult, errorResponse);
+                errorResponse = feature.ErrorResponseFilter(validationResult.Request, validationResult, errorResponse);
             }
 
             var status = errorResponse.GetResponseStatus();

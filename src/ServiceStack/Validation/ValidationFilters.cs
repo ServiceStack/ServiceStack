@@ -59,7 +59,7 @@ namespace ServiceStack.Validation
                     var validationFeature = HostContext.GetPlugin<ValidationFeature>();
                     if (validationFeature?.ErrorResponseFilter != null)
                     {
-                        errorResponse = validationFeature.ErrorResponseFilter(validationResult, errorResponse);
+                        errorResponse = validationFeature.ErrorResponseFilter(req, validationResult, errorResponse);
                     }
     
                     await res.WriteToResponse(req, errorResponse);
