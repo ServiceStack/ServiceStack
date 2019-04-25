@@ -3,7 +3,6 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.MongoDb</PackageId>
     <AssemblyName>ServiceStack.Authentication.MongoDb</AssemblyName>
-    <TargetFramework>net45</TargetFramework>
     <Title>A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB</Title>
     <PackageDescription>
       A MongoDB IUserAuthRepository to persist User registration and auth info in a NoSQL Mongo DB.
@@ -12,6 +11,7 @@
       inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
     </PackageDescription>
     <PackageTags>ServiceStack;Authentication;Authorization;MongoDB;NoSQL;POCO;Code-First</PackageTags>
+    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
