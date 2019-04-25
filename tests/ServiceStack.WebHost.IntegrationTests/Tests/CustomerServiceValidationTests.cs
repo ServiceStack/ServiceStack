@@ -103,7 +103,7 @@ namespace ServiceStack.WebHost.IntegrationTests.Tests
                 Assert.That(errorFields.Count, Is.EqualTo(1));
                 Assert.That(errorFields[0].ErrorCode, Is.EqualTo("NotEqual"));
                 Assert.That(errorFields[0].FieldName, Is.EqualTo("Id"));
-                Assert.That(errorFields[0].Message, Is.EqualTo("'Id' should not be equal to '0'."));
+                Assert.That(errorFields[0].Message, Is.EqualTo("'Id' must not be equal to '0'."));
             }
         }
 
