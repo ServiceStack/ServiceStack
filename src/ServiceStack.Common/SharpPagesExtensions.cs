@@ -5,7 +5,7 @@ using ServiceStack.Web;
 
 namespace ServiceStack
 {
-    public static class TemplatePageExtensions
+    public static class SharpPagesExtensions
     {
         public static async Task<string> RenderToStringAsync(this IStreamWriterAsync writer)
         {

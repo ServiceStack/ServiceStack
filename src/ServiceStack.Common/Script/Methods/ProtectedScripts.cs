@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -102,15 +103,41 @@ namespace ServiceStack.Script
 
         IVirtualPathProvider VirtualFiles => Context.VirtualFiles;
         
-        public IEnumerable<IVirtualFile> vfsAllFiles() => vfsAllFiles(VirtualFiles);
-        public IEnumerable<IVirtualFile> vfsAllFiles(IVirtualPathProvider vfs) => vfs.GetAllFiles();
+        // Old Aliases for Backwards compatibility
+        [Alias("allFiles")]
+        public IEnumerable<IVirtualFile> vfsAllFiles() => allFiles(VirtualFiles);
+        [Alias("allRootFiles")]
+        public IEnumerable<IVirtualFile> vfsAllRootFiles() => allRootFiles(VirtualFiles);
+        [Alias("allRootDirectories")]
+        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => allRootDirectories(VirtualFiles);
+        [Alias("combinePath")]
+        public string vfsCombinePath(string basePath, string relativePath) => combinePath(VirtualFiles, basePath, relativePath);
+        [Alias("findFilesInDirectory")]
+        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPattern) => findFilesInDirectory(VirtualFiles,dirPath,globPattern);
+        [Alias("findFiles")]
+        public IEnumerable<IVirtualFile> filesFind(string globPattern) => findFiles(VirtualFiles,globPattern);
+        [Alias("writeFile")]
+        public string fileWrite(string virtualPath, object contents) => writeFile(VirtualFiles, virtualPath, contents);
+        [Alias("appendToFile")]
+        public string fileAppend(string virtualPath, object contents) => appendToFile(VirtualFiles, virtualPath, contents);
+        [Alias("deleteFile")]
+        public string fileDelete(string virtualPath) => deleteFile(VirtualFiles, virtualPath);
+        [Alias("deleteFile")]
+        public string dirDelete(string virtualPath) => deleteFile(VirtualFiles, virtualPath);
+        [Alias("fileTextContents")]
+        public string fileReadAll(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
+        [Alias("fileBytesContent")]
+        public byte[] fileReadAllBytes(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
+        
+        public IEnumerable<IVirtualFile> allFiles() => allFiles(VirtualFiles);
+        public IEnumerable<IVirtualFile> allFiles(IVirtualPathProvider vfs) => vfs.GetAllFiles();
 
-        public IEnumerable<IVirtualFile> vfsAllRootFiles() => vfsAllRootFiles(VirtualFiles);
-        public IEnumerable<IVirtualFile> vfsAllRootFiles(IVirtualPathProvider vfs) => vfs.GetRootFiles();
-        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories() => vfsAllRootDirectories(VirtualFiles);
-        public IEnumerable<IVirtualDirectory> vfsAllRootDirectories(IVirtualPathProvider vfs) => vfs.GetRootDirectories();
-        public string vfsCombinePath(string basePath, string relativePath) => vfsCombinePath(VirtualFiles, basePath, relativePath);
-        public string vfsCombinePath(IVirtualPathProvider vfs, string basePath, string relativePath) => vfs.CombineVirtualPath(basePath, relativePath);
+        public IEnumerable<IVirtualFile> allRootFiles() => allRootFiles(VirtualFiles);
+        public IEnumerable<IVirtualFile> allRootFiles(IVirtualPathProvider vfs) => vfs.GetRootFiles();
+        public IEnumerable<IVirtualDirectory> allRootDirectories() => allRootDirectories(VirtualFiles);
+        public IEnumerable<IVirtualDirectory> allRootDirectories(IVirtualPathProvider vfs) => vfs.GetRootDirectories();
+        public string combinePath(string basePath, string relativePath) => combinePath(VirtualFiles, basePath, relativePath);
+        public string combinePath(IVirtualPathProvider vfs, string basePath, string relativePath) => vfs.CombineVirtualPath(basePath, relativePath);
 
         public IVirtualDirectory dir(string virtualPath) => dir(VirtualFiles,virtualPath);
         public IVirtualDirectory dir(IVirtualPathProvider vfs, string virtualPath) => vfs.GetDirectory(virtualPath);
@@ -124,17 +151,17 @@ namespace ServiceStack.Script
         public IVirtualDirectory dirDirectory(IVirtualPathProvider vfs, string dirPath, string dirName) => vfs.GetDirectory(dirPath)?.GetDirectory(dirName);
         public IEnumerable<IVirtualDirectory> dirDirectories(string dirPath) => dirDirectories(VirtualFiles,dirPath);
         public IEnumerable<IVirtualDirectory> dirDirectories(IVirtualPathProvider vfs, string dirPath) => vfs.GetDirectory(dirPath)?.GetDirectories() ?? new List<IVirtualDirectory>();
-        public IEnumerable<IVirtualFile> dirFilesFind(string dirPath, string globPattern) => dirFilesFind(VirtualFiles,dirPath,globPattern);
-        public IEnumerable<IVirtualFile> dirFilesFind(IVirtualPathProvider vfs, string dirPath, string globPattern) => vfs.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> findFilesInDirectory(string dirPath, string globPattern) => findFilesInDirectory(VirtualFiles,dirPath,globPattern);
+        public IEnumerable<IVirtualFile> findFilesInDirectory(IVirtualPathProvider vfs, string dirPath, string globPattern) => vfs.GetDirectory(dirPath)?.GetAllMatchingFiles(globPattern);
 
-        public IEnumerable<IVirtualFile> filesFind(string globPattern) => filesFind(VirtualFiles,globPattern);
-        public IEnumerable<IVirtualFile> filesFind(IVirtualPathProvider vfs, string globPattern) => vfs.GetAllMatchingFiles(globPattern);
+        public IEnumerable<IVirtualFile> findFiles(string globPattern) => findFiles(VirtualFiles,globPattern);
+        public IEnumerable<IVirtualFile> findFiles(IVirtualPathProvider vfs, string globPattern) => vfs.GetAllMatchingFiles(globPattern);
         public bool fileExists(string virtualPath) => fileExists(VirtualFiles,virtualPath);
         public bool fileExists(IVirtualPathProvider vfs, string virtualPath) => vfs.FileExists(virtualPath);
         public IVirtualFile file(string virtualPath) => file(VirtualFiles,virtualPath);
         public IVirtualFile file(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath);
-        public string fileWrite(string virtualPath, object contents) => fileWrite(VirtualFiles, virtualPath, contents);
-        public string fileWrite(IVirtualPathProvider vfs, string virtualPath, object contents)
+        public string writeFile(string virtualPath, object contents) => writeFile(VirtualFiles, virtualPath, contents);
+        public string writeFile(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
             if (contents is string s)
                 vfs.WriteFile(virtualPath, s);
@@ -148,8 +175,8 @@ namespace ServiceStack.Script
             return virtualPath;
         }
 
-        public string fileAppend(string virtualPath, object contents) => fileAppend(VirtualFiles, virtualPath, contents);
-        public string fileAppend(IVirtualPathProvider vfs, string virtualPath, object contents)
+        public string appendToFile(string virtualPath, object contents) => appendToFile(VirtualFiles, virtualPath, contents);
+        public string appendToFile(IVirtualPathProvider vfs, string virtualPath, object contents)
         {
             if (contents is string s)
                 vfs.AppendFile(virtualPath, s);
@@ -163,24 +190,24 @@ namespace ServiceStack.Script
             return virtualPath;
         }
 
-        public string fileDelete(string virtualPath) => fileDelete(VirtualFiles, virtualPath);
-        public string fileDelete(IVirtualPathProvider vfs, string virtualPath)
+        public string deleteFile(string virtualPath) => deleteFile(VirtualFiles, virtualPath);
+        public string deleteFile(IVirtualPathProvider vfs, string virtualPath)
         {
             vfs.DeleteFile(virtualPath);
             return virtualPath;
         }
 
-        public string dirDelete(string virtualPath) => fileDelete(VirtualFiles, virtualPath);
-        public string dirDelete(IVirtualPathProvider vfs, string virtualPath)
+        public string deleteDirectory(string virtualPath) => deleteFile(VirtualFiles, virtualPath);
+        public string deleteDirectory(IVirtualPathProvider vfs, string virtualPath)
         {
             vfs.DeleteFolder(virtualPath);
             return virtualPath;
         }
 
-        public string fileReadAll(string virtualPath) => fileReadAll(VirtualFiles,virtualPath);
-        public string fileReadAll(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
-        public byte[] fileReadAllBytes(string virtualPath) => fileReadAllBytes(VirtualFiles, virtualPath);
-        public byte[] fileReadAllBytes(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
+        public string fileTextContents(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
+        public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
+        public byte[] fileBytesContent(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
+        public byte[] fileBytesContent(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
         public string fileHash(string virtualPath) => fileHash(VirtualFiles,virtualPath);
         public string fileHash(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFileHash(virtualPath);
 

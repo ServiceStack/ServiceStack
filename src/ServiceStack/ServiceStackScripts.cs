@@ -22,6 +22,8 @@ namespace ServiceStack
     {
         private ServiceStackHost appHost => HostContext.AppHost;
 
+        public IVirtualFiles vfsContent() => HostContext.VirtualFiles;
+
         public IHttpRequest getHttpRequest(ScriptScopeContext scope) => req(scope);
         internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
