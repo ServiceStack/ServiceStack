@@ -794,11 +794,12 @@ namespace ServiceStack
 
         private void RunConfigureAppHosts(IEnumerable<Type> configureAppHosts)
         {
-            foreach (var configureAppHostType in configureAppHosts)
+            var instances = configureAppHosts.Select(x => x.CreateInstance()).OrderByPriority();
+            
+            foreach (var instance in instances)
             {
                 try
                 {
-                    var instance = configureAppHostType.CreateInstance();
                     if (instance is IPreConfigureAppHost preConfigureAppHost)
                         preConfigureAppHost.Configure(this);
                     else if (instance is IConfigureAppHost configureAppHost)
