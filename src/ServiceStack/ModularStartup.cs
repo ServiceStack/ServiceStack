@@ -1,10 +1,11 @@
+using System.Linq;
+using System.Collections.Generic;
+
 namespace ServiceStack
 {
 #if NETSTANDARD2_0
 
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Hosting;
@@ -237,7 +238,6 @@ namespace ServiceStack
             list.Sort((x,y) => priorityMap[x].CompareTo(priorityMap[y]));
             return list;
         }
-        
     }
 }
 
