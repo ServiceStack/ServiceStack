@@ -22,6 +22,11 @@ namespace CheckWebCore
     {
         public void Configure(IServiceCollection services) => "IPreConfigureServices".Print(); 
     }
+    [Priority(-1)]
+    public class TestPreConfigureServicesSub1 : IPreConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "IPreConfigureServices(-1)".Print(); 
+    }
 
     public class TestStartup : IStartup
     {
@@ -66,13 +71,24 @@ namespace CheckWebCore
         }
     }
     
+    [Priority(1)]
+    public class TestPostConfigureServicesAdd1 : IPostConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "IPostConfigureServices(+1)".Print(); // #4
+    }
     public class TestPostConfigureServices : IPostConfigureServices
     {
         public void Configure(IServiceCollection services) => "IPostConfigureServices".Print(); // #4
     }
-    public class TestPreConfigureApp : IPreConfigureApp
+    [Priority(1)]
+    public class TestPreConfigureAppAdd1 : IPreConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp".Print(); // #5
+        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+1)".Print(); // #5
+    }
+    [Priority(2)]
+    public class TestPreConfigureAppAdd2 : IPreConfigureApp
+    {
+        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+2)".Print(); // #5
     }
     public class TestPostConfigureApp : IPostConfigureApp
     {

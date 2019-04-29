@@ -130,15 +130,31 @@ namespace ServiceStack
             return instances;
         }
 
+        public List<object> OrderedList(IEnumerable<object> instances)
+        {
+            var list = instances.ToList();
+            if (!list.Any(x => x.GetType().HasAttribute<PriorityAttribute>()))
+                return list;
+                
+            var priorityMap = new Dictionary<object, int>();
+            foreach (var o in list)
+            {
+                priorityMap[o] = o.GetType().FirstAttribute<PriorityAttribute>()?.Value ?? 0;
+            }
+            
+            list.Sort((x,y) => priorityMap[x].CompareTo(priorityMap[y]));
+            return list;
+        }
+
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            var preServices = GetInstances().Where(x => x is IPreConfigureServices);
+            var preServices = OrderedList(GetInstances().Where(x => x is IPreConfigureServices));
             foreach (IPreConfigureServices startup in preServices)
             {
                 startup.Configure(services);
             }
             
-            var startupServices = GetInstances().Where(x => x is IStartup);
+            var startupServices = OrderedList(GetInstances().Where(x => x is IStartup));
             foreach (IStartup startup in startupServices)
             {
                 startup.ConfigureServices(services);
@@ -154,7 +170,7 @@ namespace ServiceStack
                 }
             }
 
-            var postServices = GetInstances().Where(x => x is IPostConfigureServices);
+            var postServices = OrderedList(GetInstances().Where(x => x is IPostConfigureServices));
             foreach (IPostConfigureServices startup in postServices)
             {
                 startup.Configure(services);
@@ -165,13 +181,13 @@ namespace ServiceStack
 
         public void Configure(IApplicationBuilder app)
         {
-            var preServices = GetInstances().Where(x => x is IPreConfigureApp);
+            var preServices = OrderedList(GetInstances().Where(x => x is IPreConfigureApp));
             foreach (IPreConfigureApp startup in preServices)
             {
                 startup.Configure(app);
             }
             
-            var startupServices = GetInstances().Where(x => x is IStartup);
+            var startupServices = OrderedList(GetInstances().Where(x => x is IStartup));
             foreach (IStartup startup in startupServices)
             {
                 startup.Configure(app);
@@ -210,7 +226,7 @@ namespace ServiceStack
                 }
             }
             
-            var postServices = GetInstances().Where(x => x is IPostConfigureApp);
+            var postServices = OrderedList(GetInstances().Where(x => x is IPostConfigureApp));
             foreach (IPostConfigureApp startup in postServices)
             {
                 startup.Configure(app);
