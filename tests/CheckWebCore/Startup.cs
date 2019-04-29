@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using Funq;
 using Microsoft.AspNetCore.Builder;
@@ -12,10 +13,27 @@ using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Mvc;
+using ServiceStack.Text;
 using ServiceStack.Validation;
 
 namespace CheckWebCore
 {
+    public class TestPreConfigureServices : IPreConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "IPreConfigureServices".Print(); 
+    }
+
+    public class TestStartup : IStartup
+    {
+        public IServiceProvider ConfigureServices(IServiceCollection services)
+        {
+            "IStartup.ConfigureServices()".Print(); // #2
+            return null;
+        }
+
+        public void Configure(IApplicationBuilder app) => "IStartup.Configure()".Print(); // #6
+    }
+
     public class Startup
     {
         public IConfiguration Configuration { get; }
@@ -23,14 +41,16 @@ namespace CheckWebCore
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services) // #3
         {
+            "Startup.ConfigureServices(IServiceCollection services)".Print();
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env) // #7
         {
+            "Startup.Configure(IApplicationBuilder app, IHostingEnvironment env)".Print();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -46,6 +66,20 @@ namespace CheckWebCore
         }
     }
     
+    public class TestPostConfigureServices : IPostConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "IPostConfigureServices".Print(); // #4
+    }
+    public class TestPreConfigureApp : IPreConfigureApp
+    {
+        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp".Print(); // #5
+    }
+    public class TestPostConfigureApp : IPostConfigureApp
+    {
+        public void Configure(IApplicationBuilder app)=> "IPostConfigureApp".Print(); // #8
+    }
+    
+
     public class AppHost : AppHostBase
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
