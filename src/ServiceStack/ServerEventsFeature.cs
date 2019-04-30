@@ -489,6 +489,7 @@ namespace ServiceStack
 
                         try
                         {
+                            OnPublish?.Invoke(this, response, frame);
                             WriteEvent(response, frame);
                         }
                         catch (Exception ex)
