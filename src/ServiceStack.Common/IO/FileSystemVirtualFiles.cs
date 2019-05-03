@@ -65,7 +65,10 @@ namespace ServiceStack.IO
         {
             var realFilePath = RootDir.RealPath.CombineWith(filePath);
             EnsureDirectory(Path.GetDirectoryName(realFilePath));
-            File.WriteAllBytes(realFilePath, stream.ReadFully());
+            using (var fs = File.OpenWrite(realFilePath))
+            {
+                stream.WriteTo(fs);
+            }
         }
 
         public void WriteFiles(IEnumerable<IVirtualFile> files, Func<IVirtualFile, string> toPath = null)

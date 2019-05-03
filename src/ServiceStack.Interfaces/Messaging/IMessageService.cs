@@ -15,14 +15,14 @@ namespace ServiceStack.Messaging
         IMessageFactory MessageFactory { get; }
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Server will process
+        /// Register DTOs and handlers the MQ Server will process
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
         void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn);
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Server will process using specified number of threads
+        /// Register DTOs and handlers the MQ Server will process using specified number of threads
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
@@ -30,7 +30,7 @@ namespace ServiceStack.Messaging
         void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, int noOfThreads);
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Server will process
+        /// Register DTOs and handlers the MQ Server will process
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
@@ -38,7 +38,7 @@ namespace ServiceStack.Messaging
         void RegisterHandler<T>(Func<IMessage<T>, object> processMessageFn, Action<IMessageHandler, IMessage<T>, Exception> processExceptionEx);
 
         /// <summary>
-        /// Register DTOs and hanlders the MQ Server will process using specified number of threads
+        /// Register DTOs and handlers the MQ Server will process using specified number of threads
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="processMessageFn"></param>
