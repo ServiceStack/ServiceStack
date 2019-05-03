@@ -69,13 +69,13 @@ namespace ServiceStack
         public List<Assembly> ServiceAssemblies { get; private set; }
 
         /// <summary>
-        /// Wether AppHost configuration is done.
+        /// Whether AppHost configuration is done.
         /// Note: It doesn't mean the start function was called.
         /// </summary>
         public bool HasStarted => ReadyAt != null;
 
         /// <summary>
-        /// Wether AppHost is ready configured and either ready to run or already running.
+        /// Whether AppHost is ready configured and either ready to run or already running.
         /// Equals <see cref="HasStarted"/>
         /// </summary>
         public static bool IsReady() => Instance?.ReadyAt != null;
