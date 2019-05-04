@@ -177,14 +177,7 @@ namespace ServiceStack.Auth
             newUser.ThrowIfNull("newUser");
             password.ThrowIfNullOrEmpty("password");
 
-            if (newUser.UserName.IsNullOrEmpty() && newUser.Email.IsNullOrEmpty())
-                throw new ArgumentNullException(ErrorMessages.UsernameOrEmailRequired);
-
-            if (!newUser.UserName.IsNullOrEmpty())
-            {
-                if (!HostContext.GetPlugin<AuthFeature>().IsValidUsername(newUser.UserName))
-                    throw new ArgumentException(ErrorMessages.IllegalUsername, "UserName");
-            }
+            ValidateNewUser(newUser);
         }
     }
 }
