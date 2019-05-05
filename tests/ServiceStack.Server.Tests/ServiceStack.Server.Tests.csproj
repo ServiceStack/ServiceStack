@@ -28,6 +28,7 @@
     <PackageReference Include="MongoDB.Driver.Core" Version="2.8.0" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.110" />
     <PackageReference Include="System.Reflection.TypeExtensions" Version="4.5.0" />
+    <ProjectReference Include="..\..\src\ServiceStack.Authentication.Neo4j\ServiceStack.Authentication.Neo4j.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\..\src\ServiceStack.Common\ServiceStack.Common.csproj" />

@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>ServiceStack.Authentication.Neo4j</PackageId>
+    <AssemblyName>ServiceStack.Authentication.Neo4j</AssemblyName>
+    <TargetFrameworks>net452;netstandard2.0</TargetFrameworks>
+    <Title>A Neo4j IUserAuthRepository to persist User registration and auth info in a Neo4j Graph DB</Title>
+    <PackageDescription>
+      A Neo4j IUserAuthRepository to persist User registration and auth info in a Neo4j Graph DB.
+      Implements ServiceStack's built-in AuthProvider Model:
+      https://docs.servicestack.net/authentication-and-authorization
+      inc. Twitter, Facebook, Basic, Digest, Credentials Auth modes out-of-the-box.
+    </PackageDescription>
+    <PackageTags>ServiceStack;Authentication;Authorization;Neo4j;POCO;Code-First</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ServiceStack.Interfaces\ServiceStack.Interfaces.csproj" />
+    <ProjectReference Include="..\ServiceStack.Common\ServiceStack.Common.csproj" />
+    <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
+    <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
+    <PackageReference Include="Neo4j.Driver.Signed" Version="1.7.2" />
+  </ItemGroup>
+
+</Project>

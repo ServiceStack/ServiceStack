@@ -8,8 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Funq;
+using MongoDB.Driver;
+using Neo4j.Driver.V1;
 using NUnit.Framework;
 using ServiceStack.Auth;
+using ServiceStack.Authentication.Neo4j;
 #if !NETCORE_SUPPORT
 using MongoDB.Driver;
 using ServiceStack.Authentication.MongoDb;
@@ -182,6 +185,21 @@ namespace ServiceStack.Server.Tests.Auth
         }
     }
 #endif
+
+    [Ignore("Requires Neo4j Dependency")]
+    public class Neo4jAuthRepoStatelessAuthTests : StatelessAuthTests
+    {
+        protected override ServiceStackHost CreateAppHost()
+        {
+            var driver = GraphDatabase.Driver("bolt://localhost:7687");
+            new Neo4jAuthRepository(driver).Clear();
+
+            return new AppHost
+            {
+                Use = container => container.Register<IAuthRepository>(c => new Neo4jAuthRepository(driver))
+            };
+        }
+    }
 
     public class OrmLiteStatelessAuthTests : StatelessAuthTests
     {
