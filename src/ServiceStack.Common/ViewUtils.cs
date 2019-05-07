@@ -81,6 +81,10 @@ namespace ServiceStack
         /// Whether to call AMD define for CommonJS modules
         /// </summary>
         public bool RegisterModuleInAmd { get; set; }
+        /// <summary>
+        /// Whether to wrap JS scripts in an Immediately-Invoked Function Expression
+        /// </summary>
+        public bool IIFE { get; set; }
     }
 
     public class TextDumpOptions
@@ -862,6 +866,8 @@ namespace ServiceStack
                             existing.Contains(file.VirtualPath))
                             continue;
 
+                        if (options.IIFE) sb.AppendLine("(function(){");
+                        
                         if (options.Minify && !file.Name.EndsWith(minExt))
                         {
                             string minified;
@@ -882,6 +888,8 @@ namespace ServiceStack
                             sb.AppendLine(src);
                         }
     
+                        if (options.IIFE) sb.AppendLine("})();");
+                        
                         // Also define ES6 module in AMD's define(), required by /js/ss-require.js
                         if (options.RegisterModuleInAmd && assetExt == "js")
                         {
