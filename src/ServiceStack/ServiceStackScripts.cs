@@ -332,6 +332,7 @@ namespace ServiceStack
                     Cache = !args.TryGetValue("cache", out var oCache) || oCache is bool bCache && bCache,
                     Bundle = !args.TryGetValue("bundle", out var oBundle) || oBundle is bool bBundle && bBundle,
                     RegisterModuleInAmd = args.TryGetValue("amd", out var oReg) && oReg is bool bReg && bReg,
+                    IIFE = args.TryGetValue("iife", out var oIife) && oIife is bool bIife && bIife,
                 }).ToRawString();
         }
 
