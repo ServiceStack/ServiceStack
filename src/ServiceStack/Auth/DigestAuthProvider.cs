@@ -114,6 +114,16 @@ namespace ServiceStack.Auth
                 HostContext.TryResolve<IAuthMetadataProvider>().SafeAddMetadata(tokens, authInfo);
             }
 
+            if (session is IAuthSessionExtended authSession)
+            {
+                var failed = authSession.Validate(authService, session, tokens, authInfo);
+                if (failed != null)
+                {
+                    authService.RemoveSession();
+                    return failed;
+                }
+            }
+
             var authRepo = HostContext.AppHost.GetAuthRepository(authService.Request);
             using (authRepo as IDisposable)
             {
