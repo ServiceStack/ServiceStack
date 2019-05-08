@@ -201,13 +201,26 @@ namespace ServiceStack
             var scanAssemblies = new List<Assembly>(ServiceAssemblies);
             scanAssemblies.AddIfNotExists(GetType().Assembly);
             var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) ||
-                            x.HasInterface(typeof(IConfigureAppHost)) ||
-                            x.HasInterface(typeof(IPostConfigureAppHost)))
+                .Where(x => x.HasInterface(typeof(IConfigureAppHost)))
                 .ToArray();
             
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPreConfigureAppHost))));
-
+            var startupConfigs = scanTypes.Select(x => x.CreateInstance()).WithPriority();
+            
+            void RunPreConfigure(object instance)
+            {
+                try
+                {
+                    if (instance is IPreConfigureAppHost preConfigureAppHost)
+                        preConfigureAppHost.Configure(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
+            }
+            var preStartupConfigs = startupConfigs.PriorityBelowZero();
+            preStartupConfigs.ForEach(RunPreConfigure);
+            
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
 
@@ -220,13 +233,27 @@ namespace ServiceStack
             OnBeforeInit();
             ServiceController.Init();
 
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IConfigureAppHost))));
+            void RunConfigure(object instance)
+            {
+                try
+                {
+                    if (instance is IConfigureAppHost configureAppHost)
+                        configureAppHost.Configure(this);
+                }
+                catch (Exception ex)
+                {
+                    OnStartupException(ex);
+                }
+            }
+            preStartupConfigs.ForEach(RunConfigure);
             BeforeConfigure.Each(fn => fn(this));
 
             Configure(Container);
 
             AfterConfigure.Each(fn => fn(this));
-            RunConfigureAppHosts(scanTypes.Where(x => x.HasInterface(typeof(IPostConfigureAppHost))));
+
+            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
+            postStartupConfigs.ForEach(RunConfigure);
 
             if (Config.StrictMode == null && Config.DebugMode)
                 Config.StrictMode = true;
@@ -790,28 +817,6 @@ namespace ServiceStack
                     return true;
                 }
             });
-        }
-
-        private void RunConfigureAppHosts(IEnumerable<Type> configureAppHosts)
-        {
-            var instances = configureAppHosts.Select(x => x.CreateInstance()).OrderByPriority();
-            
-            foreach (var instance in instances)
-            {
-                try
-                {
-                    if (instance is IPreConfigureAppHost preConfigureAppHost)
-                        preConfigureAppHost.Configure(this);
-                    else if (instance is IConfigureAppHost configureAppHost)
-                        configureAppHost.Configure(this);
-                    else if (instance is IPostConfigureAppHost postConfigureAppHost)
-                        postConfigureAppHost.Configure(this);
-                }
-                catch (Exception ex)
-                {
-                    OnStartupException(ex);
-                }
-            }
         }
 
         private void ConfigurePlugins()
