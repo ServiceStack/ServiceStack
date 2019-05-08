@@ -6,7 +6,8 @@ namespace CheckWebCore
     /// <summary>
     /// Run after AppHost.Configure()
     /// </summary>
-    public class ConfigureOpenApi : IPostConfigureAppHost
+    [Priority(1)]
+    public class ConfigureOpenApi : IConfigureAppHost
     {
         public void Configure(IAppHost appHost)
         {

@@ -16,7 +16,7 @@ namespace CheckWebCore
     {
         public static void Main(string[] args)
         {
-            ModularStartupConfig.Init(typeof(Startup));
+            ModularStartup.Init(typeof(Startup));
             BuildWebHost(args).Run();
         }
 

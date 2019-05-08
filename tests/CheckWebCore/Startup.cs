@@ -18,25 +18,27 @@ using ServiceStack.Validation;
 
 namespace CheckWebCore
 {
-    public class TestPreConfigureServices : IPreConfigureServices
+    [Priority(-3)]
+    public class TestConfigureServicesSub1 : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IPreConfigureServices".Print(); 
-    }
-    [Priority(-1)]
-    public class TestPreConfigureServicesSub1 : IPreConfigureServices
-    {
-        public void Configure(IServiceCollection services) => "IPreConfigureServices(-1)".Print(); 
+        public void Configure(IServiceCollection services) => "IConfigureServices(-2)".Print(); // #1
     }
 
+    public class TestConfigureServices : IConfigureServices
+    {
+        public void Configure(IServiceCollection services) => "IConfigureServices(0)".Print();  // #4
+    }
+
+    [Priority(-1)]
     public class TestStartup : IStartup
     {
         public IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            "IStartup.ConfigureServices()".Print(); // #2
+            "IStartup.ConfigureServices(-1)".Print();                                           // #2
             return null;
         }
 
-        public void Configure(IApplicationBuilder app) => "IStartup.Configure()".Print(); // #6
+        public void Configure(IApplicationBuilder app) => "IStartup.Configure(-1)".Print();     // #7
     }
 
     public class Startup
@@ -46,16 +48,16 @@ namespace CheckWebCore
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services) // #3
+        public void ConfigureServices(IServiceCollection services)                              
         {
-            "Startup.ConfigureServices(IServiceCollection services)".Print();
+            "Startup.ConfigureServices(IServiceCollection services)".Print();                   // #3
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env) // #7
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)                 
         {
-            "Startup.Configure(IApplicationBuilder app, IHostingEnvironment env)".Print();
+            "Startup.Configure(IApplicationBuilder app, IHostingEnvironment env)".Print();      // #8
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -72,27 +74,19 @@ namespace CheckWebCore
     }
     
     [Priority(1)]
-    public class TestPostConfigureServicesAdd1 : IPostConfigureServices
+    public class TestPostConfigureServicesAdd1 : IConfigureServices
     {
-        public void Configure(IServiceCollection services) => "IPostConfigureServices(+1)".Print(); // #4
-    }
-    public class TestPostConfigureServices : IPostConfigureServices
-    {
-        public void Configure(IServiceCollection services) => "IPostConfigureServices".Print(); // #4
+        public void Configure(IServiceCollection services) => "IConfigureServices(+1)".Print(); // #5
     }
     [Priority(1)]
-    public class TestPreConfigureAppAdd1 : IPreConfigureApp
+    public class TestConfigureAppAdd1 : IConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+1)".Print(); // #5
+        public void Configure(IApplicationBuilder app)=> "IConfigureApp(+1)".Print();           // #9
     }
-    [Priority(2)]
-    public class TestPreConfigureAppAdd2 : IPreConfigureApp
+    [Priority(-2)]
+    public class TestConfigureAppAdd2 : IConfigureApp
     {
-        public void Configure(IApplicationBuilder app)=> "IPreConfigureApp(+2)".Print(); // #5
-    }
-    public class TestPostConfigureApp : IPostConfigureApp
-    {
-        public void Configure(IApplicationBuilder app)=> "IPostConfigureApp".Print(); // #8
+        public void Configure(IApplicationBuilder app)=> "IConfigureApp(-2)".Print();           // #6
     }
     
 
