@@ -801,6 +801,12 @@ namespace ServiceStack.Mvc
         public static HtmlString HtmlDump(this IHtmlHelper html, object target) => ViewUtils.HtmlDump(target).ToHtmlString();
         public static HtmlString HtmlDump(this IHtmlHelper html, object target, HtmlDumpOptions options) => 
             ViewUtils.HtmlDump(target,options).ToHtmlString();
+
+        public static List<NavItem> GetNavItems(this IHtmlHelper html) => ViewUtils.NavItems;
+        public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => 
+            ViewUtils.NavItemsMap.TryGetValue(key, out var items)
+                ? items
+                : null;
     }
 
     public abstract class ViewPage : ViewPage<object>

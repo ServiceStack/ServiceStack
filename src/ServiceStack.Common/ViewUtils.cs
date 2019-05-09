@@ -179,6 +179,19 @@ namespace ServiceStack
         CamelCase,
     }
 
+    public class NavItem : IMeta
+    {
+        public string Label { get; set; }
+        public string Path { get; set; }
+        public bool Exact { get; set; }
+        public Type RequestType { get; set; }
+        
+        public List<NavItem> Children { get; set; } = new List<NavItem>();
+        
+        public List<string> Tags { get; set; } = new List<string>();
+        public Dictionary<string, string> Meta { get; set; } = new Dictionary<string, string>();
+    }
+
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
     /// </summary>
@@ -186,7 +199,10 @@ namespace ServiceStack
     {
         internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
         private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
-        
+
+        public static List<NavItem> NavItems { get; } = new List<NavItem>();
+        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new Dictionary<string, List<NavItem>>();  
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;
         
