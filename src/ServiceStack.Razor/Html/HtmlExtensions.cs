@@ -122,5 +122,11 @@ namespace ServiceStack.Html
             ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
         public static HtmlString FormControl(this HtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
+ 
+        public static List<NavItem> GetNavItems(this HtmlHelper html) => ViewUtils.NavItems;
+        public static List<NavItem> GetNavItems(this HtmlHelper html, string key) => 
+            ViewUtils.NavItemsMap.TryGetValue(key, out var items)
+                ? items
+                : null;
     }
 }
