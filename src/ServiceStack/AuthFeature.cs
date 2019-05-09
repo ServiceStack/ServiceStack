@@ -126,12 +126,25 @@ namespace ServiceStack
             }
         }
 
+        string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
+
+        /// <summary>
+        /// Remove /authenticate and /authenticate/{provider} routes
+        /// </summary>
+        /// <returns></returns>
+        public AuthFeature RemoveAuthenticateAliasRoutes()
+        {
+            ServiceRoutes[typeof(AuthenticateService)] = new[] {
+                "/" + Localize(LocalizedStrings.Auth),
+                "/" + Localize(LocalizedStrings.Auth) + "/{provider}",
+            };
+            return this;
+        }
+        
         public AuthFeature(Func<IAuthSession> sessionFactory, IAuthProvider[] authProviders, string htmlRedirect = null)
         {
             this.sessionFactory = sessionFactory;
             this.authProviders = authProviders;
-
-            string Localize(string s) => HostContext.AppHost?.ResolveLocalizedString(s, null) ?? s;
 
             ServiceRoutes = new Dictionary<Type, string[]> {
                 { typeof(AuthenticateService), new[]
