@@ -152,6 +152,8 @@ namespace ServiceStack.Razor
 
         private void BindToAppHost(IAppHost appHost)
         {
+            ViewUtils.Load(appHost.AppSettings);
+            
             appHost.CatchAllHandlers.Add(this.PageResolver.CatchAllHandler);
             appHost.ViewEngines.Add(this.PageResolver);
 

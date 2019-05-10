@@ -123,6 +123,8 @@ namespace ServiceStack
             DebugMode = appHost.Config.DebugMode;
             VirtualFiles = appHost.VirtualFileSources;
             AppSettings = appHost.AppSettings;
+            ViewUtils.Load(AppSettings);
+            
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);

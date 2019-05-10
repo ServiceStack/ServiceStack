@@ -29,7 +29,8 @@
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
-          {{ 'menu' | partial }}
+          {{* 'menu' | partial *}}
+          {{ navbar }}
         </div>
     </nav>
 
@@ -62,6 +63,7 @@
 
     {{#noop}}
         <script src="/assets/js/jquery.min.js"></script>
+        <script src="/assets/js/popper.min.js"></script>
         <script src="/assets/js/bootstrap.min.js"></script>
         <script src="/assets/js/default.js"></script>
         <script src="/js/ss-utils.js"></script>
@@ -72,6 +74,7 @@
     {{ ['content:/src/source.js',
         'content:/src/components/',
         '/assets/js/jquery.min.js',
+        '/assets/js/popper.min.js',
         '/assets/js/',
         '/js/ss-utils.js',
         '/lib/@servicestack/client/index.js',

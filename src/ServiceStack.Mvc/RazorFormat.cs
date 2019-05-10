@@ -803,10 +803,21 @@ namespace ServiceStack.Mvc
             ViewUtils.HtmlDump(target,options).ToHtmlString();
 
         public static List<NavItem> GetNavItems(this IHtmlHelper html) => ViewUtils.NavItems;
-        public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => 
-            ViewUtils.NavItemsMap.TryGetValue(key, out var items)
-                ? items
-                : null;
+        public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => ViewUtils.GetNavItems(key);
+
+        public static HtmlString Nav(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+
+        public static HtmlString NavBar(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
+        public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.NavBar().DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+
+        public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
+        public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem, NavOptions options) =>
+            ViewUtils.NavLink(navItem, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
     }
 
     public abstract class ViewPage : ViewPage<object>
