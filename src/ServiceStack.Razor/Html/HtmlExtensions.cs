@@ -122,11 +122,24 @@ namespace ServiceStack.Html
             ViewUtils.FormControl(html.GetRequest(), inputAttrs.ToObjectDictionary(), tagName, inputOptions).ToHtmlString();
         public static HtmlString FormControl(this HtmlHelper html, Dictionary<string, object> inputAttrs, string tagName, InputOptions inputOptions) =>
             ViewUtils.FormControl(html.GetRequest(), inputAttrs, tagName, inputOptions).ToHtmlString();
- 
+
+        
         public static List<NavItem> GetNavItems(this HtmlHelper html) => ViewUtils.NavItems;
-        public static List<NavItem> GetNavItems(this HtmlHelper html, string key) => 
-            ViewUtils.NavItemsMap.TryGetValue(key, out var items)
-                ? items
-                : null;
+        public static List<NavItem> GetNavItems(this HtmlHelper html, string key) => ViewUtils.GetNavItems(key);
+
+        public static HtmlString Nav(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+
+        public static HtmlString NavBar(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
+        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.Nav(navItems, options.NavBar().DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+
+        public static HtmlString NavLink(this HtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
+        public static HtmlString NavLink(this HtmlHelper html, NavItem navItem, NavOptions options) =>
+            ViewUtils.NavLink(navItem, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+        
     }
 }

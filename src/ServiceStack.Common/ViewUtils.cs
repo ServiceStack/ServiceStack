@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
+using ServiceStack.Configuration;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -179,18 +181,48 @@ namespace ServiceStack
         CamelCase,
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public class NavItem : IMeta
     {
         public string Label { get; set; }
         public string Path { get; set; }
+        
+        /// <summary>
+        /// Whether Active class should only be added when paths are exact match
+        /// otherwise checks if ActivePath starts with Path
+        /// </summary>
         public bool Exact { get; set; }
-        public Type RequestType { get; set; }
+
+        public string Id { get; set; }    // Emit id="{Id}"
+        public string Class { get; set; } // Override class="{Class}"
         
         public List<NavItem> Children { get; set; } = new List<NavItem>();
         
-        public List<string> Tags { get; set; } = new List<string>();
         public Dictionary<string, string> Meta { get; set; } = new Dictionary<string, string>();
     }
+
+    public class NavOptions
+    {
+        public static string DefaultNavClass { get; set; } = "nav";
+        public static string DefaultNavBarClass { get; set; } = "navbar-nav";
+        
+        /// <summary>
+        /// Path Info that should set as active 
+        /// </summary>
+        public string ActivePath { get; set; }
+
+        public string NavClass { get; set; } = DefaultNavClass;
+        public string NavItemClass { get; set; } = "nav-item";
+        public string NavLinkClass { get; set; } = "nav-link";
+        
+        public string ChildNavItemClass { get; set; } = "nav-item dropdown";
+        public string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
+        public string ChildNavMenuClass { get; set; } = "dropdown-menu";
+        public string ChildNavMenuItemClass { get; set; } = "dropdown-item";
+    }
+
 
     /// <summary>
     /// Shared Utils shared between different Template Filters and Razor Views/Helpers
@@ -200,8 +232,157 @@ namespace ServiceStack
         internal static readonly DefaultScripts DefaultScripts = new DefaultScripts();
         private static readonly HtmlScripts HtmlScripts = new HtmlScripts();
 
+        public static string NavItemsKey { get; set; } = "NavItems";
+        public static string NavItemsMapKey { get; set; } = "NavItemsMap";
+
+        public static void Load(IAppSettings settings)
+        {
+            var navItems = settings?.Get<List<NavItem>>(NavItemsKey);
+            if (navItems != null)
+            {
+                NavItems.AddRange(navItems);
+            }
+
+            var navItemsMap = settings?.Get<Dictionary<string, List<NavItem>>>(NavItemsMapKey);
+            if (navItemsMap != null)
+            {
+                foreach (var entry in navItemsMap)
+                {
+                    NavItemsMap[entry.Key] = entry.Value;
+                }
+            }
+        }
+
+        public static NavOptions NavBar(this NavOptions options)
+        {
+            if (options == null)
+                options = new NavOptions();
+            if (options.NavClass == NavOptions.DefaultNavClass)
+                options.NavClass = NavOptions.DefaultNavBarClass;
+            return options;
+        }
+
+        public static NavOptions DefaultActivePath(this NavOptions options, string defaultPath)
+        {
+            if (options == null)
+                options = new NavOptions();
+            if (options.ActivePath == null)
+                options.ActivePath = defaultPath;
+            return options;
+        }
+
         public static List<NavItem> NavItems { get; } = new List<NavItem>();
-        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new Dictionary<string, List<NavItem>>();  
+        public static Dictionary<string, List<NavItem>> NavItemsMap { get; } = new Dictionary<string, List<NavItem>>();
+
+        public static List<NavItem> GetNavItems(string key) => NavItemsMap.TryGetValue(key, out var navItems)
+            ? navItems
+            : TypeConstants<NavItem>.EmptyList;
+
+        public static string Nav(List<NavItem> navItems, NavOptions options)
+        {
+            if (navItems.IsEmpty())
+                return string.Empty;
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<div class=\"")
+                .Append(options.NavClass)
+                .AppendLine("\">");
+
+            foreach (var navItem in navItems)
+            {
+                NavLink(sb, navItem, options);
+            }
+
+            sb.AppendLine("</div>");
+            return sb.ToString();
+        }
+
+        public static string NavLink(NavItem navItem, NavOptions options)
+        {
+            var sb = StringBuilderCache.Allocate();
+            NavLink(sb, navItem, options);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
+        {
+            var activeCls = navItem.Path != null && (navItem.Exact || options.ActivePath.Length <= 1 
+                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Path?.TrimEnd('/')) == true
+                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Path?.TrimEnd('/'))) == true
+                ? " active"
+                : "";
+
+            var hasChildren = navItem.Children?.Count > 0;
+            var navItemCls = hasChildren
+                ? options.ChildNavItemClass
+                : options.NavItemClass;
+            var navLinkCls = hasChildren
+                ? options.ChildNavLinkClass
+                : options.NavLinkClass;
+            var id = navItem.Id;
+            if (hasChildren && id == null)
+                id = navItem.Label.SafeVarName() + "MenuLink";
+
+            sb.Append("<li class=\"")
+                .Append(navItemCls)
+                .AppendLine("\">");
+                
+            sb.Append("  <a href=\"")
+                .Append(navItem.Path)
+                .Append("\"");
+
+            sb.Append(" class=\"")
+                .Append(navLinkCls).Append(activeCls)
+                .Append("\"");
+
+            if (id != null)
+                sb.Append(" id=\"").Append(id).Append("\"");
+
+            if (hasChildren)
+            {
+                sb.Append(" role=\"button\" data-toggle=\"dropdown\" aria-haspopup=\"true\" aria-expanded=\"false\"");
+            }
+            
+            sb.Append(">")
+                .Append(navItem.Label)
+                .AppendLine("</a>");
+
+            if (hasChildren)
+            {
+                sb.Append("  <div class=\"")
+                    .Append(options.ChildNavMenuClass)
+                    .Append("\" aria-labelledby=\"").Append(id).AppendLine("\">");
+
+                foreach (var childNav in navItem.Children)
+                {
+                    var activeChildCls = childNav.Path != null && (childNav.Exact || options.ActivePath?.Length <= 1
+                            ? childNav.Path?.TrimEnd('/').EqualsIgnoreCase(options.ActivePath?.TrimEnd('/')) == true
+                            : childNav.Path?.TrimEnd('/').StartsWithIgnoreCase(options.ActivePath?.TrimEnd('/'))) == true
+                        ? " active"
+                        : "";
+
+                    if (childNav.Label == "-")
+                    {
+                        sb.AppendLine("    <div class=\"dropdown-divider\"></div>");
+                    }
+                    else
+                    {
+                        sb.Append("    <a class=\"")
+                            .Append(options.ChildNavMenuItemClass)
+                            .Append(activeChildCls)
+                            .Append("\"")
+                            .Append(" href=\"")
+                            .Append(childNav.Path)
+                            .Append("\">")
+                            .Append(childNav.Label)
+                            .AppendLine("</a>");
+                    }
+                }
+                sb.AppendLine("</div");
+            }
+
+            sb.Append("</lI>");
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;

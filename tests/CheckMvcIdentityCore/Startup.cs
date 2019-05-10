@@ -211,6 +211,8 @@ namespace IdentityDemo
             SetConfig(new HostConfig {
                 AdminAuthSecret = "secret"
             });
+            
+            ViewUtils.Load(AppSettings);
         }
     }
 
