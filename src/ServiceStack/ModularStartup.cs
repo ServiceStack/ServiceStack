@@ -23,6 +23,11 @@ namespace ServiceStack
         void Configure(IApplicationBuilder app);
     }
 
+    public interface IRequireConfiguration
+    {
+        IConfiguration Configuration { get; set; }
+    }
+
 
     /// <summary>
     /// Execute "no touch" Startup configuration classes.
@@ -78,8 +83,6 @@ namespace ServiceStack
         
         public static Func<Assembly[]> ScanAssemblies { get; set; }
 
-        
-        
         private readonly IConfiguration configuration;
         public ModularStartup(IConfiguration configuration) => this.configuration = configuration;
         public ModularStartup(){}
@@ -89,11 +92,16 @@ namespace ServiceStack
         public object CreateStartupInstance(Type type)
         {
             var ctorConfiguration = type.GetConstructor(new[] { typeof(IConfiguration) });
-            if (ctorConfiguration == null) 
-                return type.CreateInstance();
-            
-            var activator = ctorConfiguration.GetActivator();
-            return activator.Invoke(configuration);
+            if (ctorConfiguration != null)
+            {
+                var activator = ctorConfiguration.GetActivator();
+                return activator.Invoke(configuration);
+            }
+
+            var instance = type.CreateInstance();
+            if (instance is IRequireConfiguration requiresConfig)
+                requiresConfig.Configuration = configuration;
+            return instance;
         }
 
         private List<Tuple<object,int>> priorityInstances;
