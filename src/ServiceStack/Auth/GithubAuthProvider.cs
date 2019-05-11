@@ -33,6 +33,14 @@ namespace ServiceStack.Auth
             PreAuthUrl = DefaultPreAuthUrl;
             VerifyAccessTokenUrl = DefaultVerifyAccessTokenUrl;            
             ClientConfig.ConfigureTls12();
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with GitHub",
+                Id = "btn" + Name,
+                Class = "btn-social btn-github",
+                IconHtml = "<i class=\"fab fa-github\"></i>",
+            };
         }
 
         public string ClientId { get; set; }
