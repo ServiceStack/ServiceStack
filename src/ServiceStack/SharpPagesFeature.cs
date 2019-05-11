@@ -1143,6 +1143,7 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
             result.Args[ScriptConstants.PathInfo] = request.OriginalPathInfo;
             result.Args[nameof(request.AbsoluteUri)] = request.AbsoluteUri;
             result.Args[nameof(request.Verb)] = result.Args["Method"] = request.Verb;
+            result.Args[ScriptConstants.BaseUrl] = request.GetBaseUrl();
 
             return result;
         }
