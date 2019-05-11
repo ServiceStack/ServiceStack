@@ -1,0 +1,69 @@
+/*
+ * Social Buttons for Bootstrap
+ *
+ * Copyright 2013-2016 Panayiotis Lipiridis
+ * Licensed under the MIT License
+ *
+ * https://github.com/lipis/bootstrap-social
+ */
+
+.btn-social{position:relative;padding-left:44px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.btn-social>:first-child{position:absolute;left:0;top:0;bottom:0;width:32px;line-height:34px;font-size:1.6em;text-align:center;border-right:1px solid rgba(0,0,0,0.2)}
+.btn-social.btn-lg{padding-left:61px}.btn-social.btn-lg>:first-child{line-height:45px;width:45px;font-size:1.8em}
+.btn-social.btn-sm{padding-left:38px}.btn-social.btn-sm>:first-child{line-height:28px;width:28px;font-size:1.4em}
+.btn-social.btn-xs{padding-left:30px}.btn-social.btn-xs>:first-child{line-height:20px;width:20px;font-size:1.2em}
+.btn-social-icon{position:relative;padding-left:44px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:34px;width:34px;padding:0}.btn-social-icon>:first-child{position:absolute;left:0;top:0;bottom:0;width:32px;line-height:34px;font-size:1.6em;text-align:center;border-right:1px solid rgba(0,0,0,0.2)}
+.btn-social-icon.btn-lg{padding-left:61px}.btn-social-icon.btn-lg>:first-child{line-height:45px;width:45px;font-size:1.8em}
+.btn-social-icon.btn-sm{padding-left:38px}.btn-social-icon.btn-sm>:first-child{line-height:28px;width:28px;font-size:1.4em}
+.btn-social-icon.btn-xs{padding-left:30px}.btn-social-icon.btn-xs>:first-child{line-height:20px;width:20px;font-size:1.2em}
+.btn-social-icon>:first-child{border:none;text-align:center;width:100% !important}
+.btn-social-icon.btn-lg{height:45px;width:45px;padding-left:0;padding-right:0}
+.btn-social-icon.btn-sm{height:30px;width:30px;padding-left:0;padding-right:0}
+.btn-social-icon.btn-xs{height:22px;width:22px;padding-left:0;padding-right:0}
+.btn-facebook{color:#fff;background-color:#3b5998;border-color:rgba(0,0,0,0.2)}.btn-facebook:focus,.btn-facebook.focus{color:#fff;background-color:#2d4373;border-color:rgba(0,0,0,0.2)}
+.btn-facebook:hover{color:#fff;background-color:#2d4373;border-color:rgba(0,0,0,0.2)}
+.btn-facebook:active,.btn-facebook.active,.open>.dropdown-toggle.btn-facebook{color:#fff;background-color:#2d4373;border-color:rgba(0,0,0,0.2)}.btn-facebook:active:hover,.btn-facebook.active:hover,.open>.dropdown-toggle.btn-facebook:hover,.btn-facebook:active:focus,.btn-facebook.active:focus,.open>.dropdown-toggle.btn-facebook:focus,.btn-facebook:active.focus,.btn-facebook.active.focus,.open>.dropdown-toggle.btn-facebook.focus{color:#fff;background-color:#23345a;border-color:rgba(0,0,0,0.2)}
+.btn-facebook:active,.btn-facebook.active,.open>.dropdown-toggle.btn-facebook{background-image:none}
+.btn-facebook.disabled:hover,.btn-facebook[disabled]:hover,fieldset[disabled] .btn-facebook:hover,.btn-facebook.disabled:focus,.btn-facebook[disabled]:focus,fieldset[disabled] .btn-facebook:focus,.btn-facebook.disabled.focus,.btn-facebook[disabled].focus,fieldset[disabled] .btn-facebook.focus{background-color:#3b5998;border-color:rgba(0,0,0,0.2)}
+.btn-facebook .badge{color:#3b5998;background-color:#fff}
+.btn-github{color:#fff;background-color:#444;border-color:rgba(0,0,0,0.2)}.btn-github:focus,.btn-github.focus{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}
+.btn-github:hover{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}
+.btn-github:active,.btn-github.active,.open>.dropdown-toggle.btn-github{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}.btn-github:active:hover,.btn-github.active:hover,.open>.dropdown-toggle.btn-github:hover,.btn-github:active:focus,.btn-github.active:focus,.open>.dropdown-toggle.btn-github:focus,.btn-github:active.focus,.btn-github.active.focus,.open>.dropdown-toggle.btn-github.focus{color:#fff;background-color:#191919;border-color:rgba(0,0,0,0.2)}
+.btn-github:active,.btn-github.active,.open>.dropdown-toggle.btn-github{background-image:none}
+.btn-github.disabled:hover,.btn-github[disabled]:hover,fieldset[disabled] .btn-github:hover,.btn-github.disabled:focus,.btn-github[disabled]:focus,fieldset[disabled] .btn-github:focus,.btn-github.disabled.focus,.btn-github[disabled].focus,fieldset[disabled] .btn-github.focus{background-color:#444;border-color:rgba(0,0,0,0.2)}
+.btn-github .badge{color:#444;background-color:#fff}
+.btn-google{color:#fff;background-color:#dd4b39;border-color:rgba(0,0,0,0.2)}.btn-google:focus,.btn-google.focus{color:#fff;background-color:#c23321;border-color:rgba(0,0,0,0.2)}
+.btn-google:hover{color:#fff;background-color:#c23321;border-color:rgba(0,0,0,0.2)}
+.btn-google:active,.btn-google.active,.open>.dropdown-toggle.btn-google{color:#fff;background-color:#c23321;border-color:rgba(0,0,0,0.2)}.btn-google:active:hover,.btn-google.active:hover,.open>.dropdown-toggle.btn-google:hover,.btn-google:active:focus,.btn-google.active:focus,.open>.dropdown-toggle.btn-google:focus,.btn-google:active.focus,.btn-google.active.focus,.open>.dropdown-toggle.btn-google.focus{color:#fff;background-color:#a32b1c;border-color:rgba(0,0,0,0.2)}
+.btn-google:active,.btn-google.active,.open>.dropdown-toggle.btn-google{background-image:none}
+.btn-google.disabled:hover,.btn-google[disabled]:hover,fieldset[disabled] .btn-google:hover,.btn-google.disabled:focus,.btn-google[disabled]:focus,fieldset[disabled] .btn-google:focus,.btn-google.disabled.focus,.btn-google[disabled].focus,fieldset[disabled] .btn-google.focus{background-color:#dd4b39;border-color:rgba(0,0,0,0.2)}
+.btn-google .badge{color:#dd4b39;background-color:#fff}
+.btn-linkedin{color:#fff;background-color:#007bb6;border-color:rgba(0,0,0,0.2)}.btn-linkedin:focus,.btn-linkedin.focus{color:#fff;background-color:#005983;border-color:rgba(0,0,0,0.2)}
+.btn-linkedin:hover{color:#fff;background-color:#005983;border-color:rgba(0,0,0,0.2)}
+.btn-linkedin:active,.btn-linkedin.active,.open>.dropdown-toggle.btn-linkedin{color:#fff;background-color:#005983;border-color:rgba(0,0,0,0.2)}.btn-linkedin:active:hover,.btn-linkedin.active:hover,.open>.dropdown-toggle.btn-linkedin:hover,.btn-linkedin:active:focus,.btn-linkedin.active:focus,.open>.dropdown-toggle.btn-linkedin:focus,.btn-linkedin:active.focus,.btn-linkedin.active.focus,.open>.dropdown-toggle.btn-linkedin.focus{color:#fff;background-color:#00405f;border-color:rgba(0,0,0,0.2)}
+.btn-linkedin:active,.btn-linkedin.active,.open>.dropdown-toggle.btn-linkedin{background-image:none}
+.btn-linkedin.disabled:hover,.btn-linkedin[disabled]:hover,fieldset[disabled] .btn-linkedin:hover,.btn-linkedin.disabled:focus,.btn-linkedin[disabled]:focus,fieldset[disabled] .btn-linkedin:focus,.btn-linkedin.disabled.focus,.btn-linkedin[disabled].focus,fieldset[disabled] .btn-linkedin.focus{background-color:#007bb6;border-color:rgba(0,0,0,0.2)}
+.btn-linkedin .badge{color:#007bb6;background-color:#fff}
+.btn-microsoft{color:#fff;background-color:#2672ec;border-color:rgba(0,0,0,0.2)}.btn-microsoft:focus,.btn-microsoft.focus{color:#fff;background-color:#125acd;border-color:rgba(0,0,0,0.2)}
+.btn-microsoft:hover{color:#fff;background-color:#125acd;border-color:rgba(0,0,0,0.2)}
+.btn-microsoft:active,.btn-microsoft.active,.open>.dropdown-toggle.btn-microsoft{color:#fff;background-color:#125acd;border-color:rgba(0,0,0,0.2)}.btn-microsoft:active:hover,.btn-microsoft.active:hover,.open>.dropdown-toggle.btn-microsoft:hover,.btn-microsoft:active:focus,.btn-microsoft.active:focus,.open>.dropdown-toggle.btn-microsoft:focus,.btn-microsoft:active.focus,.btn-microsoft.active.focus,.open>.dropdown-toggle.btn-microsoft.focus{color:#fff;background-color:#0f4bac;border-color:rgba(0,0,0,0.2)}
+.btn-microsoft:active,.btn-microsoft.active,.open>.dropdown-toggle.btn-microsoft{background-image:none}
+.btn-microsoft.disabled:hover,.btn-microsoft[disabled]:hover,fieldset[disabled] .btn-microsoft:hover,.btn-microsoft.disabled:focus,.btn-microsoft[disabled]:focus,fieldset[disabled] .btn-microsoft:focus,.btn-microsoft.disabled.focus,.btn-microsoft[disabled].focus,fieldset[disabled] .btn-microsoft.focus{background-color:#2672ec;border-color:rgba(0,0,0,0.2)}
+.btn-microsoft .badge{color:#2672ec;background-color:#fff}
+.btn-odnoklassniki{color:#fff;background-color:#f4731c;border-color:rgba(0,0,0,0.2)}.btn-odnoklassniki:focus,.btn-odnoklassniki.focus{color:#fff;background-color:#d35b0a;border-color:rgba(0,0,0,0.2)}
+.btn-odnoklassniki:hover{color:#fff;background-color:#d35b0a;border-color:rgba(0,0,0,0.2)}
+.btn-odnoklassniki:active,.btn-odnoklassniki.active,.open>.dropdown-toggle.btn-odnoklassniki{color:#fff;background-color:#d35b0a;border-color:rgba(0,0,0,0.2)}.btn-odnoklassniki:active:hover,.btn-odnoklassniki.active:hover,.open>.dropdown-toggle.btn-odnoklassniki:hover,.btn-odnoklassniki:active:focus,.btn-odnoklassniki.active:focus,.open>.dropdown-toggle.btn-odnoklassniki:focus,.btn-odnoklassniki:active.focus,.btn-odnoklassniki.active.focus,.open>.dropdown-toggle.btn-odnoklassniki.focus{color:#fff;background-color:#b14c09;border-color:rgba(0,0,0,0.2)}
+.btn-odnoklassniki:active,.btn-odnoklassniki.active,.open>.dropdown-toggle.btn-odnoklassniki{background-image:none}
+.btn-odnoklassniki.disabled:hover,.btn-odnoklassniki[disabled]:hover,fieldset[disabled] .btn-odnoklassniki:hover,.btn-odnoklassniki.disabled:focus,.btn-odnoklassniki[disabled]:focus,fieldset[disabled] .btn-odnoklassniki:focus,.btn-odnoklassniki.disabled.focus,.btn-odnoklassniki[disabled].focus,fieldset[disabled] .btn-odnoklassniki.focus{background-color:#f4731c;border-color:rgba(0,0,0,0.2)}
+.btn-odnoklassniki .badge{color:#f4731c;background-color:#fff}
+.btn-twitter{color:#fff;background-color:#55acee;border-color:rgba(0,0,0,0.2)}.btn-twitter:focus,.btn-twitter.focus{color:#fff;background-color:#2795e9;border-color:rgba(0,0,0,0.2)}
+.btn-twitter:hover{color:#fff;background-color:#2795e9;border-color:rgba(0,0,0,0.2)}
+.btn-twitter:active,.btn-twitter.active,.open>.dropdown-toggle.btn-twitter{color:#fff;background-color:#2795e9;border-color:rgba(0,0,0,0.2)}.btn-twitter:active:hover,.btn-twitter.active:hover,.open>.dropdown-toggle.btn-twitter:hover,.btn-twitter:active:focus,.btn-twitter.active:focus,.open>.dropdown-toggle.btn-twitter:focus,.btn-twitter:active.focus,.btn-twitter.active.focus,.open>.dropdown-toggle.btn-twitter.focus{color:#fff;background-color:#1583d7;border-color:rgba(0,0,0,0.2)}
+.btn-twitter:active,.btn-twitter.active,.open>.dropdown-toggle.btn-twitter{background-image:none}
+.btn-twitter.disabled:hover,.btn-twitter[disabled]:hover,fieldset[disabled] .btn-twitter:hover,.btn-twitter.disabled:focus,.btn-twitter[disabled]:focus,fieldset[disabled] .btn-twitter:focus,.btn-twitter.disabled.focus,.btn-twitter[disabled].focus,fieldset[disabled] .btn-twitter.focus{background-color:#55acee;border-color:rgba(0,0,0,0.2)}
+.btn-twitter .badge{color:#55acee;background-color:#fff}
+.btn-vk{color:#fff;background-color:#587ea3;border-color:rgba(0,0,0,0.2)}.btn-vk:focus,.btn-vk.focus{color:#fff;background-color:#466482;border-color:rgba(0,0,0,0.2)}
+.btn-vk:hover{color:#fff;background-color:#466482;border-color:rgba(0,0,0,0.2)}
+.btn-vk:active,.btn-vk.active,.open>.dropdown-toggle.btn-vk{color:#fff;background-color:#466482;border-color:rgba(0,0,0,0.2)}.btn-vk:active:hover,.btn-vk.active:hover,.open>.dropdown-toggle.btn-vk:hover,.btn-vk:active:focus,.btn-vk.active:focus,.open>.dropdown-toggle.btn-vk:focus,.btn-vk:active.focus,.btn-vk.active.focus,.open>.dropdown-toggle.btn-vk.focus{color:#fff;background-color:#3a526b;border-color:rgba(0,0,0,0.2)}
+.btn-vk:active,.btn-vk.active,.open>.dropdown-toggle.btn-vk{background-image:none}
+.btn-vk.disabled:hover,.btn-vk[disabled]:hover,fieldset[disabled] .btn-vk:hover,.btn-vk.disabled:focus,.btn-vk[disabled]:focus,fieldset[disabled] .btn-vk:focus,.btn-vk.disabled.focus,.btn-vk[disabled].focus,fieldset[disabled] .btn-vk.focus{background-color:#587ea3;border-color:rgba(0,0,0,0.2)}
+.btn-vk .badge{color:#587ea3;background-color:#fff}
