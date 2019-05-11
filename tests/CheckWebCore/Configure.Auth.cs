@@ -23,9 +23,10 @@ namespace CheckWebCore
                         RequireSecureConnection = false,
                     }, 
                     new CredentialsAuthProvider(), //HTML Form post of UserName/Password credentials
-                    new FacebookAuthProvider(AppSettings),
                     new TwitterAuthProvider(AppSettings),
                     new GithubAuthProvider(AppSettings), 
+                    new GoogleAuthProvider(AppSettings),
+                    new FacebookAuthProvider(AppSettings),
                     new MicrosoftGraphAuthProvider(AppSettings), 
                 }));
 
