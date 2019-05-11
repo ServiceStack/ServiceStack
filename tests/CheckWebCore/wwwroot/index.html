@@ -49,8 +49,13 @@ title: Bootstrap Templates
       </ul>
     </div>
   </div>
-  
-  {{ navItems('auth').navLinkButtons({ navClass:'col-sm-3', prefix:BaseUrl }) }}
+
+  <style>
+    {{ '/css/navitems.css' | includeFile }}
+    /*.btn-social { padding-left: 1em; }*/
+    /*.btn-social i { display: none; }*/
+  </style>
+  {{ navItems('auth').navLinkButtons({ navClass:'col-sm-3' }) }}
   
   {{ navItems('footer').nav({ navClass: 'nav nav-pills' }) }}
   
