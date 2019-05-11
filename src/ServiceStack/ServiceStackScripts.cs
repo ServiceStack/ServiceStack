@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
+using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
 using ServiceStack.Script;
@@ -153,6 +154,8 @@ namespace ServiceStack
        
         public object getUserSession(ScriptScopeContext scope) => req(scope).GetSession();
         public IAuthSession userSession(ScriptScopeContext scope) => req(scope).GetSession();
+
+        public HashSet<string> userAttributes(ScriptScopeContext scope) => req(scope).GetUserAttributes();
 
         public bool isAuthenticated(ScriptScopeContext scope)
         {
@@ -467,6 +470,76 @@ namespace ServiceStack
                 new MinifyCssScriptBlock(), 
                 new MinifyHtmlScriptBlock(), 
             });
+        }
+    }
+
+    public static class ServiceStackScriptUtils
+    {
+        public static HashSet<string> GetUserAttributes(this IRequest request)
+        {
+            if (request == null)
+                return TypeConstants<string>.EmptyHashSet;
+            
+            if (request.Items.TryGetValue(Keywords.Attributes, out var oAttrs))
+                return (HashSet<string>)oAttrs;
+                
+            var authSession = request.GetSession();
+            var attrs = new HashSet<string>();
+            if (authSession?.IsAuthenticated == true)
+            {
+                attrs.Add("auth");
+                
+                if (HostContext.HasValidAuthSecret(request))
+                    attrs.Add(RoleNames.Admin);
+                
+                if (authSession.Roles != null)
+                {
+                    foreach (var role in authSession.Roles)
+                    {
+                        attrs.Add("role:" + role);
+                    }
+                }
+                if (authSession.Permissions != null)
+                {
+                    foreach (var perm in authSession.Permissions)
+                    {
+                        attrs.Add("perm:" + perm);
+                    }
+                }
+                if (authSession is IAuthSessionExtended extended)
+                {
+                    if (extended.Scopes != null)
+                    {
+                        foreach (var item in extended.Scopes)
+                        {
+                            attrs.Add("scope:" + item);
+                        }
+                    }
+                }
+                var claims = request.GetClaims();
+                if (claims != null)
+                {
+                    foreach (var claim in claims)
+                    {
+                        attrs.Add("claim:" + claim);
+                    }
+                }
+            }
+            request.Items[Keywords.Attributes] = attrs;
+            
+            return attrs;            
+        }
+        
+        public static NavOptions WithDefaults(this NavOptions options, IRequest request)
+        {
+            if (options == null)
+                options = new NavOptions();
+            if (options.ActivePath == null)
+                options.ActivePath = request.PathInfo;
+            if (options.Attributes == null)
+                options.Attributes = request.GetUserAttributes();
+                
+            return options;
         }
     }
 

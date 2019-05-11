@@ -187,31 +187,61 @@ namespace ServiceStack
     public class NavItem : IMeta
     {
         public string Label { get; set; }
-        public string Path { get; set; }
+        public string Href { get; set; }
         
         /// <summary>
         /// Whether Active class should only be added when paths are exact match
         /// otherwise checks if ActivePath starts with Path
         /// </summary>
-        public bool Exact { get; set; }
+        public bool? Exact { get; set; }
 
-        public string Id { get; set; }    // Emit id="{Id}"
-        public string Class { get; set; } // Override class="{Class}"
+        public string Id { get; set; }        // Emit id="{Id}"
+        public string Class { get; set; }     // Override class="{Class}"
+        public string IconHtml { get; set; }  // HTML for Icon (if any)
         
-        public List<NavItem> Children { get; set; } = new List<NavItem>();
+        /// <summary>
+        /// Only show if NavOptions.Attributes.Contains(Show) 
+        /// </summary>
+        public string Show { get; set; }
         
-        public Dictionary<string, string> Meta { get; set; } = new Dictionary<string, string>();
+        /// <summary>
+        /// Do not show if NavOptions.Attributes.Contains(Hide) 
+        /// </summary>
+        public string Hide { get; set; }
+        
+        public List<NavItem> Children { get; set; }
+        
+        public Dictionary<string, string> Meta { get; set; }
     }
 
     public class NavOptions
     {
         public static string DefaultNavClass { get; set; } = "nav";
+        public static string DefaultNavItemClass { get; set; } = "nav-item";
+
         public static string DefaultNavBarClass { get; set; } = "navbar-nav";
+        
+        public static string DefaultNavLinkButtonsClass { get; set; } = "social-buttons";
+        public static string DefaultNavLinkButtonsNavItemClass { get; set; } = "btn btn-block";
+        
+        /// <summary>
+        /// Attributes which define this view, e.g:
+        ///  - auth - User is Authenticated
+        ///  - role:name - User Role
+        ///  - perm:name - User Permission 
+        /// </summary>
+        public HashSet<string> Attributes { get; set; }
         
         /// <summary>
         /// Path Info that should set as active 
         /// </summary>
         public string ActivePath { get; set; }
+        
+        
+        /// <summary>
+        /// Prefix to include before NavItem.Path (if any)
+        /// </summary>
+        public string HrefPrefix { get; set; }
 
         public string NavClass { get; set; } = DefaultNavClass;
         public string NavItemClass { get; set; } = "nav-item";
@@ -234,7 +264,7 @@ namespace ServiceStack
 
         public static string NavItemsKey { get; set; } = "NavItems";
         public static string NavItemsMapKey { get; set; } = "NavItemsMap";
-
+        
         public static void Load(IAppSettings settings)
         {
             var navItems = settings?.Get<List<NavItem>>(NavItemsKey);
@@ -253,22 +283,15 @@ namespace ServiceStack
             }
         }
 
-        public static NavOptions NavBar(this NavOptions options)
+        public static bool ShowNav(this NavItem navItem, HashSet<string> attributes)
         {
-            if (options == null)
-                options = new NavOptions();
-            if (options.NavClass == NavOptions.DefaultNavClass)
-                options.NavClass = NavOptions.DefaultNavBarClass;
-            return options;
-        }
-
-        public static NavOptions DefaultActivePath(this NavOptions options, string defaultPath)
-        {
-            if (options == null)
-                options = new NavOptions();
-            if (options.ActivePath == null)
-                options.ActivePath = defaultPath;
-            return options;
+            if (attributes.IsEmpty())
+                return navItem.Show == null;
+            if (navItem.Show != null && !attributes.Contains(navItem.Show))
+                return false;
+            if (navItem.Hide != null && attributes.Contains(navItem.Hide))
+                return false;
+            return true;
         }
 
         public static List<NavItem> NavItems { get; } = new List<NavItem>();
@@ -306,9 +329,12 @@ namespace ServiceStack
         
         public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
         {
-            var activeCls = navItem.Path != null && (navItem.Exact || options.ActivePath.Length <= 1 
-                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Path?.TrimEnd('/')) == true
-                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Path?.TrimEnd('/'))) == true
+            if (!navItem.ShowNav(options.Attributes))
+                return;
+            
+            var activeCls = navItem.Href != null && (navItem.Exact == true || options.ActivePath.Length <= 1 
+                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
+                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/'))) == true
                 ? " active"
                 : "";
 
@@ -324,11 +350,13 @@ namespace ServiceStack
                 id = navItem.Label.SafeVarName() + "MenuLink";
 
             sb.Append("<li class=\"")
+                .Append(navItem.Class).Append(navItem.Class != null ? " " : "")
                 .Append(navItemCls)
                 .AppendLine("\">");
                 
             sb.Append("  <a href=\"")
-                .Append(navItem.Path)
+                .Append(options.HrefPrefix?.TrimEnd('/'))
+                .Append(navItem.Href)
                 .Append("\"");
 
             sb.Append(" class=\"")
@@ -355,24 +383,24 @@ namespace ServiceStack
 
                 foreach (var childNav in navItem.Children)
                 {
-                    var activeChildCls = childNav.Path != null && (childNav.Exact || options.ActivePath?.Length <= 1
-                            ? childNav.Path?.TrimEnd('/').EqualsIgnoreCase(options.ActivePath?.TrimEnd('/')) == true
-                            : childNav.Path?.TrimEnd('/').StartsWithIgnoreCase(options.ActivePath?.TrimEnd('/'))) == true
-                        ? " active"
-                        : "";
-
                     if (childNav.Label == "-")
                     {
                         sb.AppendLine("    <div class=\"dropdown-divider\"></div>");
                     }
                     else
                     {
+                        var activeChildCls = childNav.Href != null && (childNav.Exact == true || options.ActivePath?.Length <= 1
+                                 ? childNav.Href?.TrimEnd('/').EqualsIgnoreCase(options.ActivePath?.TrimEnd('/')) == true
+                                 : childNav.Href?.TrimEnd('/').StartsWithIgnoreCase(options.ActivePath?.TrimEnd('/'))) == true
+                            ? " active"
+                            : "";
+
                         sb.Append("    <a class=\"")
                             .Append(options.ChildNavMenuItemClass)
                             .Append(activeChildCls)
                             .Append("\"")
                             .Append(" href=\"")
-                            .Append(childNav.Path)
+                            .Append(childNav.Href)
                             .Append("\">")
                             .Append(childNav.Label)
                             .AppendLine("</a>");
