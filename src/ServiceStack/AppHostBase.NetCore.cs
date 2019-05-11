@@ -54,6 +54,12 @@ namespace ServiceStack
             }
 
             appHost.Container.Adapter = new NetCoreContainerAdapter(app.ApplicationServices);
+
+            if (appHost.AppSettings is NetCoreAppSettings config && 
+                appHost is IRequireConfiguration requiresConfig)
+            {
+                requiresConfig.Configuration = config.Configuration;
+            }
         }
 
         /// <summary>
