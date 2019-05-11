@@ -94,6 +94,10 @@ namespace CheckWebCore
     {
         public AppHost() : base("TestLogin", typeof(MyServices).Assembly) { }
 
+        public override void Configure(IServiceCollection services)
+        {
+            services.AddSingleton<ICacheClient>(new MemoryCacheClient());
+        }
 
         // http://localhost:5000/auth/credentials?username=testman@test.com&&password=!Abc1234
         // Configure your AppHost with the necessary configuration and dependencies your App needs
@@ -117,7 +121,7 @@ namespace CheckWebCore
                 UseSecureCookies = true,
             });
 
-            container.Register<ICacheClient>(new MemoryCacheClient());
+            var cache = container.Resolve<ICacheClient>();
             
             Plugins.Add(new ValidationFeature());
         }
