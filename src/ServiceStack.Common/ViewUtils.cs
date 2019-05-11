@@ -412,6 +412,83 @@ namespace ServiceStack
             sb.Append("</lI>");
         }
 
+        public static NavOptions NavBar(this NavOptions options)
+        {
+            if (options == null)
+                options = new NavOptions();
+            if (options.NavClass == NavOptions.DefaultNavClass)
+                options.NavClass = NavOptions.DefaultNavBarClass;
+            return options;
+        }
+
+        public static NavOptions NavLinkButtons(this NavOptions options)
+        {
+            if (options == null)
+                options = new NavOptions();
+            if (options.NavClass == NavOptions.DefaultNavClass)
+                options.NavClass = NavOptions.DefaultNavLinkButtonsClass;
+            if (options.NavItemClass == NavOptions.DefaultNavItemClass)
+                options.NavItemClass = NavOptions.DefaultNavLinkButtonsNavItemClass;
+            return options;
+        }
+
+        public static string NavLinkButtons(List<NavItem> navItems, NavOptions options)
+        {
+            if (navItems.IsEmpty())
+                return string.Empty;
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.Append("<div class=\"")
+                .Append(options.NavClass)
+                .AppendLine("\">");
+
+            foreach (var navItem in navItems)
+            {
+                NavLinkButton(sb, navItem, options);
+            }
+
+            sb.AppendLine("</div>");
+            return sb.ToString();
+        }
+
+        public static string NavLinkButton(NavItem navItem, NavOptions options)
+        {
+            var sb = StringBuilderCache.Allocate();
+            NavLinkButton(sb, navItem, options);
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static void NavLinkButton(StringBuilder sb, NavItem navItem, NavOptions options)
+        {
+            if (!navItem.ShowNav(options.Attributes))
+                return;
+            
+            var activeCls = navItem.Href != null && (navItem.Exact == true || options.ActivePath.Length <= 1 
+                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
+                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/'))) == true
+                ? " active"
+                : "";
+
+            sb.Append("<a href=\"")
+                .Append(options.HrefPrefix?.TrimEnd('/'))
+                .Append(navItem.Href)
+                .Append("\"");
+
+            sb.Append(" class=\"")
+                .Append(navItem.Class).Append(navItem.Class != null ? " " : "")
+                .Append(options.NavItemClass).Append(activeCls)
+                .Append("\"");
+
+            if (navItem.Id != null)
+                sb.Append(" id=\"").Append(navItem.Id).Append("\"");
+
+            sb.Append(">")
+                .Append(navItem.IconHtml)
+                .Append(navItem.Label)
+                .AppendLine("</a>");
+        }
+        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsNull(object test) => test == null || test == JsNull.Value;
         

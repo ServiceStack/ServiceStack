@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using ServiceStack.Script;
 
 namespace ServiceStack
@@ -56,8 +57,12 @@ namespace ServiceStack
             var navOptions = new NavOptions();            
             if (options != null)
             {
+                if (options.TryGetValue("attributes", out var oAttributes))
+                    navOptions.Attributes = ViewUtils.ToStrings(nameof(ToNavOptions), oAttributes).ToHashSet();
                 if (options.TryGetValue("active", out var oActive))
                     navOptions.ActivePath = (string)oActive;
+                if (options.TryGetValue("prefix", out var oPrefix))
+                    navOptions.HrefPrefix = (string)oPrefix;
                 if (options.TryGetValue("navClass", out var oNavClass))
                     navOptions.NavClass = (string) oNavClass;
                 if (options.TryGetValue("navLinkClass", out var oNavLinkClass))
@@ -74,6 +79,8 @@ namespace ServiceStack
 
             if (navOptions.ActivePath == null)
                 navOptions.ActivePath = scope.GetValue("PathInfo")?.ToString();
+            if (navOptions.Attributes == null)
+                navOptions.Attributes = Context.GetServiceStackFilters().req(scope).GetUserAttributes();
 
             return navOptions;
         }
@@ -91,5 +98,10 @@ namespace ServiceStack
         public IRawString navLink(ScriptScopeContext scope, NavItem navItem) => navLink(scope, navItem, null);
         public IRawString navLink(ScriptScopeContext scope, NavItem navItem, Dictionary<string, object> options) =>
             ViewUtils.NavLink(navItem, ToNavOptions(scope, options)).ToRawString();
+
+        public IRawString navLinkButtons(ScriptScopeContext scope) => navLinkButtons(scope, ViewUtils.NavItems);
+        public IRawString navLinkButtons(ScriptScopeContext scope, List<NavItem> navItems) => navLinkButtons(scope, navItems, null);
+        public IRawString navLinkButtons(ScriptScopeContext scope, List<NavItem> navItems, Dictionary<string, object> options) => 
+            ViewUtils.NavLinkButtons(navItems, ToNavOptions(scope, options).NavLinkButtons()).ToRawString();
     }
 }
