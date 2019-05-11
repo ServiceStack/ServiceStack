@@ -32,6 +32,7 @@ namespace ServiceStack.Script
         public const string PathArgs = "PathArgs";
         public const string AssetsBase = "assetsBase";
         public const string Format = "format";
+        public const string BaseUrl = "BaseUrl";
 
         public static IRawString EmptyRawString { get; } = new RawString("");
         public static IRawString TrueRawString { get; } = new RawString("true");
