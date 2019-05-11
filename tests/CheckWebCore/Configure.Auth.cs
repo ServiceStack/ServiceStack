@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Auth;
 using ServiceStack.Configuration;
@@ -9,8 +11,16 @@ namespace CheckWebCore
     /// <summary>
     /// Run before AppHost.Configure()
     /// </summary>
-    public class ConfigureAuth : IConfigureAppHost
+    public class ConfigureAuth : IConfigureAppHost, IConfigureServices
     {
+        private IConfiguration configuration;
+        public ConfigureAuth(IConfiguration configuration) => this.configuration = configuration;
+
+        public void Configure(IServiceCollection services)
+        {
+            services.AddSingleton<IAuthRepository>(new InMemoryAuthRepository());
+        }
+
         public void Configure(IAppHost appHost)
         {
             var AppSettings = appHost.AppSettings;
@@ -35,10 +45,7 @@ namespace CheckWebCore
             //override the default registration validation with your own custom implementation
             appHost.RegisterAs<CustomRegistrationValidator, IValidator<Register>>();
 
-            var userRep = new InMemoryAuthRepository();
-            appHost.Register<IAuthRepository>(userRep);
-
-            var authRepo = userRep;
+            var authRepo = appHost.TryResolve<IAuthRepository>();
 
             var newAdmin = new UserAuth {Email = "admin@email.com", DisplayName = "Admin User"};
             var user = authRepo.CreateUserAuth(newAdmin, "p@55wOrd");

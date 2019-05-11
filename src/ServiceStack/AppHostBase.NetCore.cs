@@ -16,13 +16,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack.Configuration;
 using ServiceStack.IO;
 
 namespace ServiceStack
 {
-    public abstract class AppHostBase : ServiceStackHost
+    public abstract class AppHostBase : ServiceStackHost, IConfigureServices, IRequireConfiguration
     {
         protected AppHostBase(string serviceName, params Assembly[] assembliesWithServices)
             : base(serviceName, assembliesWithServices) 
@@ -253,6 +254,14 @@ namespace ServiceStack
             base.Dispose(disposing);
             LogManager.LogFactory = null;
         }
+
+        /// <summary>
+        /// Requires using ModularStartup
+        /// </summary>
+        /// <param name="services"></param>
+        public virtual void Configure(IServiceCollection services) {}
+
+        public IConfiguration Configuration { get; set; }
     }
 
     public static class NetCoreAppHostExtensions
