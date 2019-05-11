@@ -34,6 +34,7 @@
         public const string HasLogged = "_logged";
         public const string DidAuthenticate = "__didauth";
         public const string IRequest = "__irequest";
+        public const string Attributes = "__attrs";
         public const string RequestDuration = "_requestDurationStopwatch";
         public const string Code = "code";
         public const string State = "state";
