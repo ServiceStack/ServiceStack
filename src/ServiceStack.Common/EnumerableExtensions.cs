@@ -7,20 +7,11 @@ namespace ServiceStack
 {
     public static class EnumerableExtensions
     {
-        public static bool IsEmpty<T>(this ICollection<T> collection)
-        {
-            return collection == null || collection.Count == 0;
-        }
+        public static bool IsEmpty<T>(this ICollection<T> collection) => collection == null || collection.Count == 0;
 
-        public static bool IsEmpty<T>(this T[] collection)
-        {
-            return collection == null || collection.Length == 0;
-        }
+        public static bool IsEmpty<T>(this T[] collection) => collection == null || collection.Length == 0;
 
-        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items)
-        {
-            return new HashSet<T>(items);
-        }
+        public static HashSet<T> ToHashSet<T>(this IEnumerable<T> items) => new HashSet<T>(items);
 
         public static void Each<T>(this IEnumerable<T> values, Action<T> action)
         {
@@ -239,14 +230,8 @@ namespace ServiceStack
         /// <summary>
         /// Return T[0] when enumerable is null, safe to use in enumerations like foreach
         /// </summary>
-        public static IEnumerable<T> Safe<T>(this IEnumerable<T> enumerable)
-        {
-            return enumerable ?? TypeConstants<T>.EmptyArray;
-        }
+        public static IEnumerable<T> Safe<T>(this IEnumerable<T> enumerable) => enumerable ?? TypeConstants<T>.EmptyArray;
 
-        public static IEnumerable Safe(this IEnumerable enumerable)
-        {
-            return enumerable ?? TypeConstants.EmptyObjectArray;
-        }
+        public static IEnumerable Safe(this IEnumerable enumerable) => enumerable ?? TypeConstants.EmptyObjectArray;
     }
 }
