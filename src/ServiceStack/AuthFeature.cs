@@ -226,6 +226,12 @@ namespace ServiceStack
             AuthenticateService.HtmlRedirectReturnParam = HtmlRedirectReturnParam;
             AuthenticateService.HtmlRedirectReturnPathOnly = HtmlRedirectReturnPathOnly;            
             AuthenticateService.AuthResponseDecorator = AuthResponseDecorator;
+
+            var authNavItems = AuthProviders.Select(x => (x as AuthProvider)?.NavItem).Where(x => x != null);
+            if (!ViewUtils.NavItemsMap.TryGetValue("auth", out var navItems))
+                ViewUtils.NavItemsMap["auth"] = navItems = new List<NavItem>();
+
+            navItems.AddRange(authNavItems);
         }
 
         public void AfterPluginsLoaded(IAppHost appHost)

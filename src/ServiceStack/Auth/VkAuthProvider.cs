@@ -25,8 +25,15 @@ namespace ServiceStack.Auth {
             SecureKey = appSettings.GetString("oauth.vkcom.SecureKey");
             Scope = appSettings.GetString("oauth.vkcom.Scope");
             ApiVersion = appSettings.GetString("oauth.vkcom.ApiVersion");
-
             AccessTokenUrl = TokenUrl;
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with VK",
+                Id = "btn" + Name,
+                Class = "btn-social btn-vk",
+                IconHtml = "<i class=\"fab fa-vk\"></i>",
+            };
         }
 
         public string ApplicationId { get; set; }

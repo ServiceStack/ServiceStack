@@ -22,6 +22,14 @@ namespace ServiceStack.Auth
             : base(appSettings, Realm, Name)
         {
             this.AuthorizeUrl = appSettings.Get("oauth.twitter.AuthorizeUrl", DefaultAuthorizeUrl);
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Twitter",
+                Id = "btn" + Name,
+                Class = "btn-social btn-twitter",
+                IconHtml = "<i class=\"fab fa-twitter\"></i>",
+            };
         }
 
         public override object Authenticate(IServiceBase authService, IAuthSession session, Authenticate request)

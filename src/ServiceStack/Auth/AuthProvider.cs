@@ -37,10 +37,9 @@ namespace ServiceStack.Auth
         
         public Func<IAuthRepository, IUserAuth, IAuthTokens, bool> AccountLockedValidator { get; set; }
 
-        public static string UrlFilter(AuthProvider provider, string url)
-        {
-            return url;
-        }
+        public static string UrlFilter(AuthProvider provider, string url) => url;
+
+        public NavItem NavItem { get; set; }
 
         protected AuthProvider()
         {
@@ -234,6 +233,8 @@ namespace ServiceStack.Auth
 
             return null;
         }
+
+        public virtual NavItem GetNavItem() => null;
 
         protected virtual IAuthRepository GetAuthRepository(IRequest req)
         {

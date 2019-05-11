@@ -53,6 +53,14 @@ namespace ServiceStack.Auth
             this.ClientId = appSettings.GetString("oauth.yammer.ClientId");
             this.ClientSecret = appSettings.GetString("oauth.yammer.ClientSecret");
             this.PreAuthUrl = appSettings.GetString("oauth.yammer.PreAuthUrl");
+
+            NavItem = new NavItem {
+                Href = "/auth/" + Name,
+                Label = "Sign in with Yammer",
+                Id = "btn" + Name,
+                Class = "btn-social btn-yammer",
+                IconHtml = "<i class=\"fab fa-yammer\"></i>",
+            };
         }
 
         /// <summary>
