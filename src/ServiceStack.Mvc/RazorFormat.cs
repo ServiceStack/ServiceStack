@@ -808,16 +808,21 @@ namespace ServiceStack.Mvc
         public static HtmlString Nav(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
         public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
         public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
-            ViewUtils.Nav(navItems, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+            ViewUtils.Nav(navItems, options.WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavBar(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
         public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
         public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
-            ViewUtils.Nav(navItems, options.NavBar().DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+            ViewUtils.Nav(navItems, options.NavBar().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
         public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem, NavOptions options) =>
-            ViewUtils.NavLink(navItem, options.DefaultActivePath(html.GetRequest().PathInfo)).ToHtmlString();
+            ViewUtils.NavLink(navItem, options.WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString NavLinkButtons(this IHtmlHelper html) => html.NavLinkButtons(ViewUtils.NavItems, null);
+        public static HtmlString NavLinkButtons(this IHtmlHelper html, List<NavItem> navItems) => html.NavLinkButtons(navItems, null);
+        public static HtmlString NavLinkButtons(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.NavLinkButtons(navItems, options.NavLinkButtons().WithDefaults(html.GetRequest())).ToHtmlString();
     }
 
     public abstract class ViewPage : ViewPage<object>
