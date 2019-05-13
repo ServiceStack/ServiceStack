@@ -51,11 +51,15 @@ title: Bootstrap Templates
   </div>
 
   <style>
-    {{ '/css/navitems.css' | includeFile }}
     /*.btn-social { padding-left: 1em; }*/
     /*.btn-social i { display: none; }*/
   </style>
+  {{ 'navitems,svg' | cssIncludes }}
   {{ navItems('auth').navLinkButtons({ navClass:'col-sm-3' }) }}
+
+  <div class="col-sm-3 mt-2">
+    <a href="/auth/servicestack" class="btn-social btn-servicestack btn btn-block" id="btnservicestack"><i class="fab fa-servicestack"></i>Sign in with ServiceStack</a>
+  </div>
   
   {{ navItems('footer').nav({ navClass: 'nav nav-pills' }) }}
   

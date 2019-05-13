@@ -798,17 +798,9 @@ namespace ServiceStack.Script
             return to;
         }
         
-        public List<string> toVarNames(object names) => names is null
-            ? TypeConstants.EmptyStringList
-            : names is List<string> strList
-                ? strList
-                : names is IEnumerable<string> strEnum
-                    ? strEnum.ToList()
-                    : names is IEnumerable<object> objEnum
-                        ? objEnum.Map(x => x.AsString())
-                        : names is string strFields
-                            ? strFields.Split(',').Map(x => x.Trim())
-                            : throw new NotSupportedException($"Cannot convert '{names.GetType().Name}' to List<string>");
+        public List<string> splitStringList(IEnumerable strings) => ViewUtils.SplitStringList(strings);
+
+        public List<string> toVarNames(IEnumerable names) => ViewUtils.SplitStringList(names);
 
         public int AssertWithinMaxQuota(int value)
         {

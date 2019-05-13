@@ -145,5 +145,10 @@ namespace ServiceStack.Html
         public static HtmlString NavLinkButtons(this HtmlHelper html, List<NavItem> navItems) => html.NavLinkButtons(navItems, null);
         public static HtmlString NavLinkButtons(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.NavLinkButtons(navItems, options.NavLinkButtons().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString CssIncludes(this HtmlHelper html, List<string> cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles).ToHtmlString();
+        public static HtmlString JsIncludes(this HtmlHelper html, List<string> jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles).ToHtmlString();
     }
 }

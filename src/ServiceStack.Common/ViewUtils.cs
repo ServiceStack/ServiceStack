@@ -301,6 +301,72 @@ namespace ServiceStack
             ? navItems
             : TypeConstants<NavItem>.EmptyList;
 
+        public static string CssIncludes(IVirtualPathProvider vfs, List<string> cssFiles)
+        {
+            if (vfs == null || cssFiles == null || cssFiles.Count == 0)
+                return null;
+            
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.AppendLine("<style>");
+
+            foreach (var cssFile in cssFiles)
+            {
+                var virtualPath = !cssFile.StartsWith("/")
+                    ? "/css/" + cssFile + ".css"
+                    : cssFile;
+                
+                var file = vfs.GetFile(virtualPath.TrimStart('/'));
+                if (file == null)
+                    continue;
+
+                using (var reader = file.OpenText())
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+            }
+            
+            sb.AppendLine("</style>");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
+        public static string JsIncludes(IVirtualPathProvider vfs, List<string> jsFiles)
+        {
+            if (vfs == null || jsFiles == null || jsFiles.Count == 0)
+                return null;
+            
+            
+            var sb = StringBuilderCache.Allocate();
+            sb.AppendLine("<script>");
+
+            foreach (var jsFile in jsFiles)
+            {
+                var virtualPath = !jsFile.StartsWith("/")
+                    ? "/js/" + jsFile + ".js"
+                    : jsFile;
+                
+                var file = vfs.GetFile(virtualPath.TrimStart('/'));
+                if (file == null)
+                    continue;
+
+                using (var reader = file.OpenText())
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        sb.AppendLine(line);
+                    }
+                }
+            }
+            
+            sb.AppendLine("</script>");
+            return StringBuilderCache.ReturnAndFree(sb);
+        }
+        
         public static string Nav(List<NavItem> navItems, NavOptions options)
         {
             if (navItems.IsEmpty())
@@ -713,12 +779,25 @@ namespace ServiceStack
             }
             return to;
         }
-        public static List<string> ToStringList(IEnumerable target) => target is List<string> l ? l
-            : target is string s 
+        
+        public static List<string> SplitStringList(IEnumerable strings) => strings is null
+            ? TypeConstants.EmptyStringList
+            : strings is List<string> strList
+                ? strList
+                : strings is IEnumerable<string> strEnum
+                    ? strEnum.ToList()
+                    : strings is IEnumerable<object> objEnum
+                        ? objEnum.Map(x => x.AsString())
+                        : strings is string strFields
+                            ? strFields.Split(',').Map(x => x.Trim())
+                            : throw new NotSupportedException($"Cannot convert '{strings.GetType().Name}' to List<string>");
+        
+        public static List<string> ToStringList(IEnumerable strings) => strings is List<string> l ? l
+            : strings is string s 
             ? new List<string> { s } 
-            : target is IEnumerable<string> e
+            : strings is IEnumerable<string> e
             ? new List<string>(e)
-            : target.Map(x => x.AsString());
+            : strings.Map(x => x.AsString());
 
         public static string FormControl(IRequest req, Dictionary<string,object> args, string tagName, InputOptions inputOptions)
         {
