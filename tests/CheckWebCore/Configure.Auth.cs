@@ -38,6 +38,7 @@ namespace CheckWebCore
                     new GoogleAuthProvider(AppSettings),
                     new FacebookAuthProvider(AppSettings),
                     new MicrosoftGraphAuthProvider(AppSettings), 
+                    new LinkedInAuthProvider(AppSettings), 
                 }));
 
             appHost.Plugins.Add(new RegistrationFeature());

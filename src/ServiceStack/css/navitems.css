@@ -67,3 +67,10 @@
 .btn-vk:active,.btn-vk.active,.open>.dropdown-toggle.btn-vk{background-image:none}
 .btn-vk.disabled:hover,.btn-vk[disabled]:hover,fieldset[disabled] .btn-vk:hover,.btn-vk.disabled:focus,.btn-vk[disabled]:focus,fieldset[disabled] .btn-vk:focus,.btn-vk.disabled.focus,.btn-vk[disabled].focus,fieldset[disabled] .btn-vk.focus{background-color:#587ea3;border-color:rgba(0,0,0,0.2)}
 .btn-vk .badge{color:#587ea3;background-color:#fff}
+.btn-servicestack{color:#fff;background-color:#444;border-color:rgba(0,0,0,0.2)}.btn-servicestack:focus,.btn-servicestack.focus{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}
+.btn-servicestack:hover{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}
+.btn-servicestack:active,.btn-servicestack.active,.open>.dropdown-toggle.btn-servicestack{color:#fff;background-color:#2b2b2b;border-color:rgba(0,0,0,0.2)}.btn-servicestack:active:hover,.btn-servicestack.active:hover,.open>.dropdown-toggle.btn-servicestack:hover,.btn-servicestack:active:focus,.btn-servicestack.active:focus,.open>.dropdown-toggle.btn-servicestack:focus,.btn-servicestack:active.focus,.btn-servicestack.active.focus,.open>.dropdown-toggle.btn-servicestack.focus{color:#fff;background-color:#191919;border-color:rgba(0,0,0,0.2)}
+.btn-servicestack:active,.btn-servicestack.active,.open>.dropdown-toggle.btn-servicestack{background-image:none}
+.btn-servicestack.disabled:hover,.servicestack[disabled]:hover,fieldset[disabled] .btn-servicestack:hover,.btn-servicestack.disabled:focus,.btn-servicestack[disabled]:focus,fieldset[disabled] .btn-servicestack:focus,.btn-servicestack.disabled.focus,.btn-servicestack[disabled].focus,fieldset[disabled] .btn-servicestack.focus{background-color:#333;border-color:rgba(0,0,0,0.2)}
+.btn-servicestack .badge{color:#333;background-color:#fff}
+
