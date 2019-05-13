@@ -30,7 +30,7 @@ namespace ServiceStack
         /// <summary>
         /// Override class="{Class}"
         /// </summary>
-        public string Class { get; set; }
+        public string ClassName { get; set; }
         /// <summary>
         /// HTML for Icon (if any)
         /// </summary>

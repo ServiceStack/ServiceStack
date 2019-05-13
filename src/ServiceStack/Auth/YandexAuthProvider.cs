@@ -33,7 +33,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Yandex",
                 Id = "btn" + Name,
-                Class = "btn-social btn-yandex",
+                ClassName = "btn-social btn-yandex",
                 IconHtml = "<i class=\"fab fa-yandex\"></i>",
             };
         }

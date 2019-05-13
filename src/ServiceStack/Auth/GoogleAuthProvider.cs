@@ -48,7 +48,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Google",
                 Id = "btn" + Name,
-                Class = "btn-social btn-google",
+                ClassName = "btn-social btn-google",
                 IconHtml = "<i class=\"fab fa-google\"></i>",
             };
         }

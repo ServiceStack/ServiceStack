@@ -300,6 +300,9 @@ namespace ServiceStack.NativeTypes
             typeof(ConvertSessionToTokenResponse),
             typeof(GetAccessToken),
             typeof(GetAccessTokenResponse),
+            typeof(NavItem),
+            typeof(GetNavItems),
+            typeof(GetNavItemsResponse),
         }.ToList();
 
         private MetadataTypes ConfigureScript(MetadataTypesConfig typesConfig)
@@ -314,7 +317,8 @@ namespace ServiceStack.NativeTypes
             typesConfig.ExportTypes.Add(typeof(Tuple<,,>));
             typesConfig.ExportTypes.Add(typeof(Tuple<,,,>));
             typesConfig.ExportTypes.Remove(typeof(IMeta));
-            
+
+
             var metadataTypes = NativeTypesMetadata.GetMetadataTypes(Request, typesConfig);
 
             metadataTypes.Types.RemoveAll(x => x.Name == "Service");

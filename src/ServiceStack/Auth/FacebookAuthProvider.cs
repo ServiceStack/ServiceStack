@@ -37,7 +37,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Facebook",
                 Id = "btn" + Name,
-                Class = "btn-social btn-facebook",
+                ClassName = "btn-social btn-facebook",
                 IconHtml = "<i class=\"fab fa-facebook\"></i>",
             };
         }

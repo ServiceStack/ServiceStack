@@ -36,7 +36,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Odnoklassniki",
                 Id = "btn" + Name,
-                Class = "btn-social btn-odnoklassniki",
+                ClassName = "btn-social btn-odnoklassniki",
                 IconHtml = "<i class=\"fab fa-odnoklassniki\"></i>",
             };
         }
