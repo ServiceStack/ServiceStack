@@ -162,6 +162,7 @@ namespace ServiceStack
                 typeof(MetadataDebugService),
                 typeof(ServerEventsSubscribersService),
                 typeof(ServerEventsUnRegisterService),
+                typeof(MetadataNavService),
             };
 
             JsConfig.InitStatics();
