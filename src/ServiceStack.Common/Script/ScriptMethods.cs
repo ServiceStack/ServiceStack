@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ServiceStack.Model;
 using ServiceStack.Text;
 using ServiceStack.Web;
 
@@ -30,7 +31,7 @@ namespace ServiceStack.Script
         private StopExecution() { }
     }
 
-    public class StopFilterExecutionException : StopExecutionException
+    public class StopFilterExecutionException : StopExecutionException, IResponseStatusConvertible
     {
         public ScriptScopeContext Scope { get; }
         public object Options { get; }
@@ -40,6 +41,19 @@ namespace ServiceStack.Script
         {
             Scope = scope;
             Options = options;
+        }
+
+        public ResponseStatus ToResponseStatus()
+        {
+            var ex = InnerException ?? this;
+            return new ResponseStatus {
+                ErrorCode = ex.GetType().Name,
+                Message = ex.Message,
+                StackTrace = ex.StackTrace.LeftPart('\n'),
+                Meta = new Dictionary<string, string> {
+                    [GetType().Name] = Message + "\n" + this.StackTrace.LeftPart('\n')
+                }
+            };
         }
     }
 
