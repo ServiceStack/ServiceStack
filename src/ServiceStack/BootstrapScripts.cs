@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using ServiceStack.Script;
@@ -11,11 +12,11 @@ namespace ServiceStack
         public IRawString validationSummary(ScriptScopeContext scope) =>
             validationSummary(scope, null, null);
 
-        public IRawString validationSummary(ScriptScopeContext scope, object exceptFields) =>
+        public IRawString validationSummary(ScriptScopeContext scope, IEnumerable exceptFields) =>
             validationSummary(scope, exceptFields, null);
         
         
-        public IRawString validationSummary(ScriptScopeContext scope, object exceptFields, object htmlAttrs)
+        public IRawString validationSummary(ScriptScopeContext scope, IEnumerable exceptFields, object htmlAttrs)
         {
             var ssFilters = Context.GetServiceStackFilters();
             if (ssFilters == null)

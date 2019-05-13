@@ -52,7 +52,7 @@ namespace ServiceStack.Script
             return StopExecution.Value;
         }
 
-        public object importRequestParams(ScriptScopeContext scope, object onlyImportArgNames)
+        public object importRequestParams(ScriptScopeContext scope, IEnumerable onlyImportArgNames)
         {
             var args = req(scope).GetRequestParams();
             var names = toVarNames(onlyImportArgNames);

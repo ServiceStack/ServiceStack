@@ -823,6 +823,11 @@ namespace ServiceStack.Mvc
         public static HtmlString NavLinkButtons(this IHtmlHelper html, List<NavItem> navItems) => html.NavLinkButtons(navItems, null);
         public static HtmlString NavLinkButtons(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.NavLinkButtons(navItems, options.NavLinkButtons().WithDefaults(html.GetRequest())).ToHtmlString();
+
+        public static HtmlString CssIncludes(this IHtmlHelper html, List<string> cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles).ToHtmlString();
+        public static HtmlString JsIncludes(this IHtmlHelper html, List<string> jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles).ToHtmlString();
     }
 
     public abstract class ViewPage : ViewPage<object>

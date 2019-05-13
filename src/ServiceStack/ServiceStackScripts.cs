@@ -283,9 +283,9 @@ namespace ServiceStack
         public string errorResponseSummary(ScriptScopeContext scope, ResponseStatus errorStatus) =>
             ViewUtils.ErrorResponseSummary(errorStatus);
 
-        public string errorResponseExcept(ScriptScopeContext scope, object fields) =>
+        public string errorResponseExcept(ScriptScopeContext scope, IEnumerable fields) =>
             errorResponseExcept(scope, getErrorStatus(scope), fields);
-        public string errorResponseExcept(ScriptScopeContext scope, ResponseStatus errorStatus, object fields)
+        public string errorResponseExcept(ScriptScopeContext scope, ResponseStatus errorStatus, IEnumerable fields)
         {
             if (errorStatus == null)
                 return null;
