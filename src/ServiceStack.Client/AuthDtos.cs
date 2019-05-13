@@ -307,4 +307,21 @@ namespace ServiceStack
         [DataMember(Order = 3)]
         public ResponseStatus ResponseStatus { get; set; }
     }
+    
+    [Route("/metadata/nav")]
+    [ExcludeMetadata]
+    [DataContract]
+    public class GetNavItems : IReturn<GetNavItemsResponse> {}
+
+    [DataContract]
+    public class GetNavItemsResponse
+    {
+        [DataMember(Order = 1)]
+        public List<NavItem> Results { get; set; }
+        [DataMember(Order = 2)]
+        public Dictionary<string, List<NavItem>> NavItemsMap { get; set; }
+        [DataMember(Order = 3)]
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
 }

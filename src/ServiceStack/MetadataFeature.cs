@@ -112,17 +112,6 @@ namespace ServiceStack
         }
     }
 
-    [Route("/metadata/nav")]
-    [ExcludeMetadata]
-    public class GetNavItems : IReturn<GetNavItemsResponse> {}
-
-    public class GetNavItemsResponse
-    {
-        public List<NavItem> Results { get; set; }
-        public Dictionary<string, List<NavItem>> NavItemsMap { get; set; }
-        public ResponseStatus ResponseStatus { get; set; }
-    }
-
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class MetadataNavService : Service
     {
