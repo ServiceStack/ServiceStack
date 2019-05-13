@@ -402,16 +402,6 @@ namespace ServiceStack.NativeTypes.TypeScript
 
                 sb = sb.Indent();
 
-                if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
-                {
-                    var callSuper = type.Inherits != null 
-                        ? !extend.StartsWith(" extends Array<") 
-                            ? "super(init); " 
-                            : "super(); "
-                        : "";
-                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}(<any>Object).assign(this, init); }}");
-                }
-
                 var addVersionInfo = Config.AddImplicitVersion != null && options.IsRequest;
                 if (addVersionInfo)
                 {
@@ -434,6 +424,17 @@ namespace ServiceStack.NativeTypes.TypeScript
                 AddProperties(sb, type,
                     includeResponseStatus: Config.AddResponseStatus && options.IsResponse
                         && type.Properties.Safe().All(x => x.Name != typeof(ResponseStatus).Name));
+
+                if (EmitPartialConstructors && Config.ExportAsTypes && isClass)
+                {
+                    sb.AppendLine();
+                    var callSuper = type.Inherits != null 
+                        ? !extend.StartsWith(" extends Array<") 
+                            ? "super(init); " 
+                            : "super(); "
+                        : "";
+                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
+                }
 
                 if (Config.ExportAsTypes && responseTypeExpression != null)
                 {
