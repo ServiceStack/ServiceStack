@@ -58,7 +58,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Yammer",
                 Id = "btn" + Name,
-                Class = "btn-social btn-yammer",
+                ClassName = "btn-social btn-yammer",
                 IconHtml = "<i class=\"fab fa-yammer\"></i>",
             };
         }

@@ -40,7 +40,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with LinkedIn",
                 Id = "btn" + Name,
-                Class = "btn-social btn-linkedin",
+                ClassName = "btn-social btn-linkedin",
                 IconHtml = "<i class=\"fab fa-linkedin\"></i>",
             };
         }

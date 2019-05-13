@@ -383,7 +383,7 @@ namespace ServiceStack
                 id = navItem.Label.SafeVarName() + "MenuLink";
 
             sb.Append("<li class=\"")
-                .Append(navItem.Class).Append(navItem.Class != null ? " " : "")
+                .Append(navItem.ClassName).Append(navItem.ClassName != null ? " " : "")
                 .Append(navItemCls)
                 .AppendLine("\">");
                 
@@ -508,7 +508,7 @@ namespace ServiceStack
                 .Append("\"");
 
             sb.Append(" class=\"")
-                .Append(navItem.Class).Append(navItem.Class != null ? " " : "")
+                .Append(navItem.ClassName).Append(navItem.ClassName != null ? " " : "")
                 .Append(options.NavItemClass).Append(activeCls)
                 .Append("\"");
 

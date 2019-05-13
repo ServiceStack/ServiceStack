@@ -27,7 +27,7 @@ namespace ServiceStack.Auth
                 Href = "/auth/" + Name,
                 Label = "Sign in with Twitter",
                 Id = "btn" + Name,
-                Class = "btn-social btn-twitter",
+                ClassName = "btn-social btn-twitter",
                 IconHtml = "<i class=\"fab fa-twitter\"></i>",
             };
         }
