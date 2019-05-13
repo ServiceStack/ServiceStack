@@ -20,7 +20,7 @@ namespace ServiceStack
 
         public bool ShowResponseStatusInMetadataPages { get; set; }
 
-        public string NavServiceRoute { get; set; } = "/metadata/nav";
+        public bool EnableNav { get; set; } = true;
 
         public MetadataFeature()
         {
@@ -38,9 +38,9 @@ namespace ServiceStack
         {
             appHost.CatchAllHandlers.Add(ProcessRequest);
 
-            if (NavServiceRoute != null)
+            if (EnableNav)
             {
-                appHost.RegisterService(typeof(MetadataNavService), NavServiceRoute);
+                appHost.RegisterService<MetadataNavService>();
             }
         }
 
@@ -112,6 +112,7 @@ namespace ServiceStack
         }
     }
 
+    [Route("/metadata/nav")]
     [ExcludeMetadata]
     public class GetNavItems : IReturn<GetNavItemsResponse> {}
 
@@ -122,7 +123,6 @@ namespace ServiceStack
         public ResponseStatus ResponseStatus { get; set; }
     }
 
-    [DefaultRequest(typeof(GetNavItems))]
     [Restrict(VisibilityTo = RequestAttributes.None)]
     public class MetadataNavService : Service
     {
