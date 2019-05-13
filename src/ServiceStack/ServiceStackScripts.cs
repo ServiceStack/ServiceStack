@@ -10,6 +10,7 @@ using ServiceStack.Auth;
 using ServiceStack.Configuration;
 using ServiceStack.Html;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -21,6 +22,8 @@ namespace ServiceStack
     
     public partial class ServiceStackScripts : ScriptMethods
     {
+        public static ILog Log = LogManager.GetLogger(typeof(ServiceStackScripts));
+        
         private ServiceStackHost appHost => HostContext.AppHost;
 
         public IVirtualFiles vfsContent() => HostContext.VirtualFiles;
@@ -58,6 +61,9 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                if (Log.IsDebugEnabled)
+                    Log.Error(ex.Message, ex);
+                
                 throw new StopFilterExecutionException(scope, options, ex);
             }
         }
@@ -90,6 +96,9 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                if (Log.IsDebugEnabled)
+                    Log.Error(ex.Message, ex);
+                
                 throw new StopFilterExecutionException(scope, options, ex);
             }
         }
@@ -142,6 +151,9 @@ namespace ServiceStack
             }
             catch (Exception ex)
             {
+                if (Log.IsDebugEnabled)
+                    Log.Error(ex.Message, ex);
+                
                 throw new StopFilterExecutionException(scope, options, ex);
             }
         }
