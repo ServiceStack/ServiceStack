@@ -224,6 +224,8 @@ namespace ServiceStack.Auth
                     ?? this.Request.GetHeader(HttpHeaders.Referer)
                     ?? authProvider.CallbackUrl;
 
+                var manageRoles = AuthRepository as IManageRoles;
+
                 var alreadyAuthenticated = response == null;
                 response = response ?? new AuthenticateResponse {
                     UserId = session.UserAuthId,
@@ -232,6 +234,12 @@ namespace ServiceStack.Auth
                         ?? session.UserName 
                         ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
+                    Roles = manageRoles != null 
+                        ? manageRoles.GetRoles(session.UserAuthId)?.ToList() 
+                        : session.Roles,
+                    Permissions = manageRoles != null
+                        ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                        : session.Permissions,
                     ReferrerUrl = referrerUrl,
                 };
 
