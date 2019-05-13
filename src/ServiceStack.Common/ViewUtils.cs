@@ -181,39 +181,6 @@ namespace ServiceStack
         CamelCase,
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public class NavItem : IMeta
-    {
-        public string Label { get; set; }
-        public string Href { get; set; }
-        
-        /// <summary>
-        /// Whether Active class should only be added when paths are exact match
-        /// otherwise checks if ActivePath starts with Path
-        /// </summary>
-        public bool? Exact { get; set; }
-
-        public string Id { get; set; }        // Emit id="{Id}"
-        public string Class { get; set; }     // Override class="{Class}"
-        public string IconHtml { get; set; }  // HTML for Icon (if any)
-        
-        /// <summary>
-        /// Only show if NavOptions.Attributes.Contains(Show) 
-        /// </summary>
-        public string Show { get; set; }
-        
-        /// <summary>
-        /// Do not show if NavOptions.Attributes.Contains(Hide) 
-        /// </summary>
-        public string Hide { get; set; }
-        
-        public List<NavItem> Children { get; set; }
-        
-        public Dictionary<string, string> Meta { get; set; }
-    }
-
     public class NavOptions
     {
         public static string DefaultNavClass { get; set; } = "nav";
