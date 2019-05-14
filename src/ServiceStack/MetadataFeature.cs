@@ -118,6 +118,7 @@ namespace ServiceStack
         public object Get(GetNavItems request)
         {
             return new GetNavItemsResponse {
+                BaseUrl = Request.GetBaseUrl(),
                 Results = ViewUtils.NavItems,
                 NavItemsMap = ViewUtils.NavItemsMap,
             };

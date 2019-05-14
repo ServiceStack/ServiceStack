@@ -319,12 +319,14 @@ namespace ServiceStack
     public class GetNavItemsResponse : IMeta
     {
         [DataMember(Order = 1)]
-        public List<NavItem> Results { get; set; }
+        public string BaseUrl { get; set; }
         [DataMember(Order = 2)]
-        public Dictionary<string, List<NavItem>> NavItemsMap { get; set; }
+        public List<NavItem> Results { get; set; }
         [DataMember(Order = 3)]
-        public Dictionary<string, string> Meta { get; set; }
+        public Dictionary<string, List<NavItem>> NavItemsMap { get; set; }
         [DataMember(Order = 4)]
+        public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 5)]
         public ResponseStatus ResponseStatus { get; set; }
     }
 
