@@ -1,0 +1,173 @@
+<!--
+title: Nav Items
+-->
+
+<h4>Embed JSON in Page</h4>
+
+<script>NAV_ITEMS = {{ 'GetNavItems' | sendToGateway | json }}</script>
+
+<pre>
+{{#raw}}script> NAV_ITEMS = {{ 'GetNavItems' | sendToGateway | json }} /script>{{/raw}}    
+</pre>
+
+<h4 class="mt-3">With external dependencies</h4>
+<pre>
+link src="fontawesome.css" />
+link src="bootstrap-social.css" />
+{{#raw}}{{ navItems('auth').navButtonGroup() }}{{/raw}}    
+</pre>
+
+<h4>No external dependencies</h4>
+
+{{ 'navitems,svg' | cssIncludes }}
+
+<pre>
+{{#raw}}
+{{ 'navitems,svg' | cssIncludes }}
+{{/raw}}
+</pre>
+
+
+<h3 class="py-4">Examples</h3>
+
+<pre>
+{{#raw}}{{ navItems('auth').navButtonGroup() }}{{/raw}}
+</pre>
+
+{{ navItems('auth').navButtonGroup() }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('auth').navButtonGroup({ navClass:'' }) }}{{/raw}}
+</pre>
+
+{{ navItems('auth').navButtonGroup({ navClass:'' }) }}
+
+
+<h4 class="pt-3">Without SVG Icons</h4>
+<style>
+/*.btn-social { padding-left: 1em; }*/
+/*.btn-social i { display: none; }*/
+</style>
+<pre>
+style>
+.btn-social { padding-left: 1em; }
+.btn-social i { display: none; }
+/style>
+</pre>
+
+<style>
+#no-icon .btn-social { padding-left: 1em; }
+#no-icon .btn-social i { display: none; }
+</style>
+<div id="no-icon">
+{{ navItems('auth').navButtonGroup() }}
+
+<div class="py-2"></div>
+
+{{ navItems('auth').navButtonGroup({ navClass:'' }) }}
+</div>
+
+<h3 class="pt-4">Vertical</h3>
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('auth').navButtonGroup({ navClass:'btn-group-vertical' }) }}{{/raw}}
+</pre>
+
+{{ navItems('auth').navButtonGroup({ navClass:'btn-group-vertical' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('auth').navButtonGroup({ navClass:'col-sm-3', navItemClass:'btn btn-block' }) }}{{/raw}}
+</pre>
+
+{{ navItems('auth').navButtonGroup({ navClass:'col-sm-3', navItemClass:'btn btn-block' }) }}
+
+<div class="col-sm-3 py-2">
+    <a href="/auth/linkedin" class="btn-social btn-linkedin btn btn-block" id="btnlinkedin"><i class="fab fa-linkedin"></i>Sign in with LinkedIn</a>
+</div>
+<div class="col-sm-3">
+    <a href="/auth/servicestack" class="btn-social btn-servicestack btn btn-block" id="btnservicestack"><i class="fab fa-servicestack"></i>Sign in with ServiceStack</a>
+</div>
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').nav({ navClass: 'nav nav-tabs' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').nav({ navClass: 'nav nav-tabs' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').nav({ navClass: 'nav nav-tabs' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').nav({ navClass: 'nav nav-pills' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').nav({ navClass: 'nav nav-pills' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').nav({ navClass: 'col-sm-3 nav flex-column nav-pills' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup() }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-primary' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup() }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-primary' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-secondary' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-secondary' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-secondary' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-secondary' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-success' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-success' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-success' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-success' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-info' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-info' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-info' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-info' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-warning' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-warning' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-warning' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-warning' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-danger' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-danger' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-danger' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-danger' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-light' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-light text-dark' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-light' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-light text-dark' }) }}
+
+<pre class="pt-3">
+{{#raw}}{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-dark' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-dark' }) }}{{/raw}}
+</pre>
+
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-dark' }) }}
+{{ navItems('footer').navButtonGroup({ navItemClass:'btn btn-outline-dark' }) }}
+
+<div class="py-3"></div>
