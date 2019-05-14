@@ -55,6 +55,18 @@ namespace ServiceStack.RabbitMq
         private RabbitMqMessageFactory messageFactory;
         public IMessageFactory MessageFactory => messageFactory;
 
+        public Action<RabbitMqQueueClient> MqQueueClientFilter
+        {
+            get => messageFactory.MqQueueClientFilter;
+            set => messageFactory.MqQueueClientFilter = value;
+        }
+
+        public Action<RabbitMqProducer> MqProducerFilter
+        {
+            get => messageFactory.MqProducerFilter;
+            set => messageFactory.MqProducerFilter = value;
+        }
+
         public Action<string, IBasicProperties, IMessage> PublishMessageFilter
         {
             get => messageFactory.PublishMessageFilter;
@@ -304,8 +316,7 @@ namespace ServiceStack.RabbitMq
                 {
                     var worker = workers[i];
 
-                    int[] workerIds;
-                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out workerIds))
+                    if (!queueWorkerIndexMap.TryGetValue(worker.QueueName, out var workerIds))
                     {
                         queueWorkerIndexMap[worker.QueueName] = new[] { i };
                     }
