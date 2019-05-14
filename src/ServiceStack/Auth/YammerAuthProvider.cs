@@ -57,7 +57,7 @@ namespace ServiceStack.Auth
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign in with Yammer",
-                Id = "btn" + Name,
+                Id = "btn-" + Name,
                 ClassName = "btn-social btn-yammer",
                 IconHtml = "<i class=\"fab fa-yammer\"></i>",
             };

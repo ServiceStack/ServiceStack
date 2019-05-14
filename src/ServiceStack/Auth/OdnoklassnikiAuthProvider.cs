@@ -35,7 +35,7 @@ namespace ServiceStack.Auth
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign in with Odnoklassniki",
-                Id = "btn" + Name,
+                Id = "btn-" + Name,
                 ClassName = "btn-social btn-odnoklassniki",
                 IconHtml = "<i class=\"fab fa-odnoklassniki\"></i>",
             };

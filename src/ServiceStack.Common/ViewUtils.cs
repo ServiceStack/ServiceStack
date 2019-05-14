@@ -180,17 +180,81 @@ namespace ServiceStack
         PascalCase,
         CamelCase,
     }
-
+    
+    /// <summary>
+    /// Generic collection of Nav Links
+    /// </summary>
+    public static class NavDefaults
+    {
+        public static string NavClass { get; set; } = "nav";
+        public static string NavItemClass { get; set; } = "nav-item";
+        public static string NavLinkClass { get; set; } = "nav-link";
+        
+        public static string ChildNavItemClass { get; set; } = "nav-item dropdown";
+        public static string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
+        public static string ChildNavMenuClass { get; set; } = "dropdown-menu";
+        public static string ChildNavMenuItemClass { get; set; } = "dropdown-item";
+        
+        public static NavOptions Create() => new NavOptions {
+            NavClass = NavClass,
+            NavItemClass = NavItemClass,
+            NavLinkClass = NavLinkClass,
+            ChildNavItemClass = ChildNavItemClass,
+            ChildNavLinkClass = ChildNavLinkClass,
+            ChildNavMenuClass = ChildNavMenuClass,
+            ChildNavMenuItemClass = ChildNavMenuItemClass,
+        };
+        public static NavOptions ForNav(this NavOptions options) => options; //Already uses NavDefaults
+        public static NavOptions OverrideDefaults(NavOptions targets, NavOptions source)
+        {
+            if (targets == null)
+                return source;
+            if (targets.NavClass == NavClass && source.NavClass != null)
+                targets.NavClass = source.NavClass;
+            if (targets.NavItemClass == NavItemClass && source.NavItemClass != null)
+                targets.NavItemClass = source.NavItemClass;
+            if (targets.NavLinkClass == NavLinkClass && source.NavLinkClass != null)
+                targets.NavLinkClass = source.NavLinkClass;
+            if (targets.ChildNavItemClass == ChildNavItemClass && source.ChildNavItemClass != null)
+                targets.ChildNavItemClass = source.ChildNavItemClass;
+            if (targets.ChildNavLinkClass == ChildNavLinkClass && source.ChildNavLinkClass != null)
+                targets.ChildNavLinkClass = source.ChildNavLinkClass;
+            if (targets.ChildNavMenuClass == ChildNavMenuClass && source.ChildNavMenuClass != null)
+                targets.ChildNavMenuClass = source.ChildNavMenuClass;
+            if (targets.ChildNavMenuItemClass == ChildNavMenuItemClass && source.ChildNavMenuItemClass != null)
+                targets.ChildNavMenuItemClass = source.ChildNavMenuItemClass;
+            return targets;
+        }
+    }
+    /// <summary>
+    /// Single NavLink List Item
+    /// </summary>
+    public static class NavLinkDefaults
+    {
+        public static NavOptions ForNavLink(this NavOptions options) => options; //Already uses NavDefaults
+    }
+    /// <summary>
+    /// Navigation Bar Menu Items
+    /// </summary>
+    public static class NavbarDefaults
+    {
+        public static string NavClass { get; set; } = "navbar-nav";
+        public static NavOptions Create() => new NavOptions { NavClass = NavClass };
+        public static NavOptions ForNavbar(this NavOptions options) => NavDefaults.OverrideDefaults(options, Create());
+    }
+    /// <summary>
+    /// Collection of Link Buttons (e.g. used to render /auth buttons)
+    /// </summary>
+    public static class NavButtonGroupDefaults
+    {
+        public static string NavClass { get; set; } = "btn-group";
+        public static string NavItemClass { get; set; } = "btn btn-primary";
+        public static NavOptions Create() => new NavOptions { NavClass = NavClass, NavItemClass = NavItemClass };
+        public static NavOptions ForNavButtonGroup(this NavOptions options) => NavDefaults.OverrideDefaults(options, Create());
+    }
+    
     public class NavOptions
     {
-        public static string DefaultNavClass { get; set; } = "nav";
-        public static string DefaultNavItemClass { get; set; } = "nav-item";
-
-        public static string DefaultNavBarClass { get; set; } = "navbar-nav";
-        
-        public static string DefaultNavLinkButtonsClass { get; set; } = "social-buttons";
-        public static string DefaultNavLinkButtonsNavItemClass { get; set; } = "btn btn-block";
-        
         /// <summary>
         /// Attributes which define this view, e.g:
         ///  - auth - User is Authenticated
@@ -210,14 +274,14 @@ namespace ServiceStack
         /// </summary>
         public string HrefPrefix { get; set; }
 
-        public string NavClass { get; set; } = DefaultNavClass;
-        public string NavItemClass { get; set; } = "nav-item";
-        public string NavLinkClass { get; set; } = "nav-link";
+        public string NavClass { get; set; } = NavDefaults.NavClass;
+        public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
+        public string NavLinkClass { get; set; } = NavDefaults.NavLinkClass;
         
-        public string ChildNavItemClass { get; set; } = "nav-item dropdown";
-        public string ChildNavLinkClass { get; set; } = "nav-link dropdown-toggle";
-        public string ChildNavMenuClass { get; set; } = "dropdown-menu";
-        public string ChildNavMenuItemClass { get; set; } = "dropdown-item";
+        public string ChildNavItemClass { get; set; } = NavDefaults.ChildNavItemClass;
+        public string ChildNavLinkClass { get; set; } = NavDefaults.ChildNavLinkClass;
+        public string ChildNavMenuClass { get; set; } = NavDefaults.ChildNavMenuClass;
+        public string ChildNavMenuItemClass { get; set; } = NavDefaults.ChildNavMenuItemClass;
     }
 
 
@@ -445,27 +509,7 @@ namespace ServiceStack
             sb.Append("</lI>");
         }
 
-        public static NavOptions NavBar(this NavOptions options)
-        {
-            if (options == null)
-                options = new NavOptions();
-            if (options.NavClass == NavOptions.DefaultNavClass)
-                options.NavClass = NavOptions.DefaultNavBarClass;
-            return options;
-        }
-
-        public static NavOptions NavLinkButtons(this NavOptions options)
-        {
-            if (options == null)
-                options = new NavOptions();
-            if (options.NavClass == NavOptions.DefaultNavClass)
-                options.NavClass = NavOptions.DefaultNavLinkButtonsClass;
-            if (options.NavItemClass == NavOptions.DefaultNavItemClass)
-                options.NavItemClass = NavOptions.DefaultNavLinkButtonsNavItemClass;
-            return options;
-        }
-
-        public static string NavLinkButtons(List<NavItem> navItems, NavOptions options)
+        public static string NavButtonGroup(List<NavItem> navItems, NavOptions options)
         {
             if (navItems.IsEmpty())
                 return string.Empty;
@@ -484,7 +528,7 @@ namespace ServiceStack
             return sb.ToString();
         }
 
-        public static string NavLinkButton(NavItem navItem, NavOptions options)
+        public static string NavButtonGroup(NavItem navItem, NavOptions options)
         {
             var sb = StringBuilderCache.Allocate();
             NavLinkButton(sb, navItem, options);

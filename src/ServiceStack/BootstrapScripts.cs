@@ -66,6 +66,8 @@ namespace ServiceStack
                     navOptions.HrefPrefix = (string)oPrefix;
                 if (options.TryGetValue("navClass", out var oNavClass))
                     navOptions.NavClass = (string) oNavClass;
+                if (options.TryGetValue("navItemClass", out var oNavItemClass))
+                    navOptions.NavItemClass = (string) oNavItemClass;
                 if (options.TryGetValue("navLinkClass", out var oNavLinkClass))
                     navOptions.NavLinkClass = (string) oNavLinkClass;
                 if (options.TryGetValue("childNavItemClass", out var oChildNavItemClass))
@@ -89,20 +91,20 @@ namespace ServiceStack
         public IRawString nav(ScriptScopeContext scope) => nav(scope, ViewUtils.NavItems);
         public IRawString nav(ScriptScopeContext scope, List<NavItem> navItems) => nav(scope, navItems, null);
         public IRawString nav(ScriptScopeContext scope, List<NavItem> navItems, Dictionary<string, object> options) => 
-            ViewUtils.Nav(navItems, ToNavOptions(scope, options)).ToRawString();
+            ViewUtils.Nav(navItems, ToNavOptions(scope, options).ForNav()).ToRawString();
 
         public IRawString navbar(ScriptScopeContext scope) => navbar(scope, ViewUtils.NavItems);
         public IRawString navbar(ScriptScopeContext scope, List<NavItem> navItems) => navbar(scope, navItems, null);
         public IRawString navbar(ScriptScopeContext scope, List<NavItem> navItems, Dictionary<string, object> options) => 
-            ViewUtils.Nav(navItems, ToNavOptions(scope, options).NavBar()).ToRawString();
+            ViewUtils.Nav(navItems, ToNavOptions(scope, options).ForNavbar()).ToRawString();
 
         public IRawString navLink(ScriptScopeContext scope, NavItem navItem) => navLink(scope, navItem, null);
         public IRawString navLink(ScriptScopeContext scope, NavItem navItem, Dictionary<string, object> options) =>
-            ViewUtils.NavLink(navItem, ToNavOptions(scope, options)).ToRawString();
+            ViewUtils.NavLink(navItem, ToNavOptions(scope, options).ForNavLink()).ToRawString();
 
-        public IRawString navLinkButtons(ScriptScopeContext scope) => navLinkButtons(scope, ViewUtils.NavItems);
-        public IRawString navLinkButtons(ScriptScopeContext scope, List<NavItem> navItems) => navLinkButtons(scope, navItems, null);
-        public IRawString navLinkButtons(ScriptScopeContext scope, List<NavItem> navItems, Dictionary<string, object> options) => 
-            ViewUtils.NavLinkButtons(navItems, ToNavOptions(scope, options).NavLinkButtons()).ToRawString();
+        public IRawString navButtonGroup(ScriptScopeContext scope) => navButtonGroup(scope, ViewUtils.NavItems);
+        public IRawString navButtonGroup(ScriptScopeContext scope, List<NavItem> navItems) => navButtonGroup(scope, navItems, null);
+        public IRawString navButtonGroup(ScriptScopeContext scope, List<NavItem> navItems, Dictionary<string, object> options) => 
+            ViewUtils.NavButtonGroup(navItems, ToNavOptions(scope, options).ForNavButtonGroup()).ToRawString();
     }
 }

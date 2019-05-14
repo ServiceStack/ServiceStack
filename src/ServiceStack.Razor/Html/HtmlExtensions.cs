@@ -130,21 +130,21 @@ namespace ServiceStack.Html
         public static HtmlString Nav(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
         public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
         public static HtmlString Nav(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
-            ViewUtils.Nav(navItems, options.WithDefaults(html.GetRequest())).ToHtmlString();
+            ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavBar(this HtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
         public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
         public static HtmlString NavBar(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
-            ViewUtils.Nav(navItems, options.NavBar().WithDefaults(html.GetRequest())).ToHtmlString();
+            ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavLink(this HtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
         public static HtmlString NavLink(this HtmlHelper html, NavItem navItem, NavOptions options) =>
-            ViewUtils.NavLink(navItem, options.WithDefaults(html.GetRequest())).ToHtmlString();
+            ViewUtils.NavLink(navItem, options.ForNavLink().WithDefaults(html.GetRequest())).ToHtmlString();
 
-        public static HtmlString NavLinkButtons(this HtmlHelper html) => html.NavLinkButtons(ViewUtils.NavItems, null);
-        public static HtmlString NavLinkButtons(this HtmlHelper html, List<NavItem> navItems) => html.NavLinkButtons(navItems, null);
-        public static HtmlString NavLinkButtons(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
-            ViewUtils.NavLinkButtons(navItems, options.NavLinkButtons().WithDefaults(html.GetRequest())).ToHtmlString();
+        public static HtmlString NavButtonGroup(this HtmlHelper html) => html.NavButtonGroup(ViewUtils.NavItems, null);
+        public static HtmlString NavButtonGroup(this HtmlHelper html, List<NavItem> navItems) => html.NavButtonGroup(navItems, null);
+        public static HtmlString NavButtonGroup(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+            ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString CssIncludes(this HtmlHelper html, List<string> cssFiles) =>
             ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles).ToHtmlString();

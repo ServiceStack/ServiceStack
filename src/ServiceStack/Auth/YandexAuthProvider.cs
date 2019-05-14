@@ -32,7 +32,7 @@ namespace ServiceStack.Auth
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign in with Yandex",
-                Id = "btn" + Name,
+                Id = "btn-" + Name,
                 ClassName = "btn-social btn-yandex",
                 IconHtml = "<i class=\"fab fa-yandex\"></i>",
             };
