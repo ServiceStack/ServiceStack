@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Net;
 using ServiceStack.Configuration;
@@ -60,6 +61,15 @@ namespace ServiceStack.Auth
 
             return session != null && session.IsAuthenticated && !string.IsNullOrEmpty(tokens?.AccessTokenSecret);
         }
+        
+        protected virtual void AssertValidState()
+        {
+            if (string.IsNullOrEmpty(ConsumerKey))
+                throw new Exception($"oauth.{Provider}.ConsumerKey is required");
+
+            if (string.IsNullOrEmpty(ConsumerSecret))
+                throw new Exception($"oauth.{Provider}.ConsumerSecret is required");
+        }
 
         /// <summary>
         /// The entry point for all AuthProvider providers. Runs inside the AuthService so exceptions are treated normally.
@@ -80,6 +90,8 @@ namespace ServiceStack.Auth
         /// <returns></returns>
         protected IAuthTokens Init(IServiceBase authService, ref IAuthSession session, Authenticate request)
         {
+            AssertValidState();
+
             if (this.CallbackUrl.IsNullOrEmpty())
                 this.CallbackUrl = authService.Request.AbsoluteUri;
 
