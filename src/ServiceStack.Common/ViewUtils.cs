@@ -423,19 +423,19 @@ namespace ServiceStack
             NavLink(sb, navItem, options);
             return StringBuilderCache.ReturnAndFree(sb);
         }
+
+        static string ActiveClass(NavItem navItem, string activePath) => 
+            navItem.Href != null && (navItem.Exact == true || activePath.Length <= 1 
+                ? activePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
+                : activePath.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/')))
+                    ? " active"
+                    : "";
         
         public static void NavLink(StringBuilder sb, NavItem navItem, NavOptions options)
         {
             if (!navItem.ShowNav(options.Attributes))
                 return;
             
-            string activeClass(NavItem item, NavOptions opts) => 
-                item.Href != null && (item.Exact == true || opts.ActivePath.Length <= 1 
-                    ? opts.ActivePath?.TrimEnd('/').EqualsIgnoreCase(item.Href?.TrimEnd('/')) == true
-                    : opts.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(item.Href?.TrimEnd('/'))) == true
-                ? " active"
-                : "";
-
             var hasChildren = navItem.Children?.Count > 0;
             var navItemCls = hasChildren
                 ? options.ChildNavItemClass
@@ -458,7 +458,7 @@ namespace ServiceStack
                 .Append("\"");
 
             sb.Append(" class=\"")
-                .Append(navLinkCls).Append(activeClass(navItem,options))
+                .Append(navLinkCls).Append(ActiveClass(navItem,options.ActivePath))
                 .Append("\"");
 
             if (id != null)
@@ -489,7 +489,7 @@ namespace ServiceStack
                     {
                         sb.Append("    <a class=\"")
                             .Append(options.ChildNavMenuItemClass)
-                            .Append(activeClass(childNav,options))
+                            .Append(ActiveClass(childNav,options.ActivePath))
                             .Append("\"")
                             .Append(" href=\"")
                             .Append(childNav.Href)
@@ -535,12 +535,6 @@ namespace ServiceStack
             if (!navItem.ShowNav(options.Attributes))
                 return;
             
-            var activeCls = navItem.Href != null && (navItem.Exact == true || options.ActivePath.Length <= 1 
-                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
-                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/'))) == true
-                ? " active"
-                : "";
-
             sb.Append("<a href=\"")
                 .Append(options.HrefPrefix?.TrimEnd('/'))
                 .Append(navItem.Href)
@@ -548,7 +542,7 @@ namespace ServiceStack
 
             sb.Append(" class=\"")
                 .Append(navItem.ClassName).Append(navItem.ClassName != null ? " " : "")
-                .Append(options.NavItemClass).Append(activeCls)
+                .Append(options.NavItemClass).Append(ActiveClass(navItem, options.ActivePath))
                 .Append("\"");
 
             if (navItem.Id != null)
