@@ -429,9 +429,10 @@ namespace ServiceStack
             if (!navItem.ShowNav(options.Attributes))
                 return;
             
-            var activeCls = navItem.Href != null && (navItem.Exact == true || options.ActivePath.Length <= 1 
-                    ? options.ActivePath?.TrimEnd('/').EqualsIgnoreCase(navItem.Href?.TrimEnd('/')) == true
-                    : options.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(navItem.Href?.TrimEnd('/'))) == true
+            string activeClass(NavItem item, NavOptions opts) => 
+                item.Href != null && (item.Exact == true || opts.ActivePath.Length <= 1 
+                    ? opts.ActivePath?.TrimEnd('/').EqualsIgnoreCase(item.Href?.TrimEnd('/')) == true
+                    : opts.ActivePath?.TrimEnd('/').StartsWithIgnoreCase(item.Href?.TrimEnd('/'))) == true
                 ? " active"
                 : "";
 
@@ -457,7 +458,7 @@ namespace ServiceStack
                 .Append("\"");
 
             sb.Append(" class=\"")
-                .Append(navLinkCls).Append(activeCls)
+                .Append(navLinkCls).Append(activeClass(navItem,options))
                 .Append("\"");
 
             if (id != null)
@@ -486,15 +487,9 @@ namespace ServiceStack
                     }
                     else
                     {
-                        var activeChildCls = childNav.Href != null && (childNav.Exact == true || options.ActivePath?.Length <= 1
-                                 ? childNav.Href?.TrimEnd('/').EqualsIgnoreCase(options.ActivePath?.TrimEnd('/')) == true
-                                 : childNav.Href?.TrimEnd('/').StartsWithIgnoreCase(options.ActivePath?.TrimEnd('/'))) == true
-                            ? " active"
-                            : "";
-
                         sb.Append("    <a class=\"")
                             .Append(options.ChildNavMenuItemClass)
-                            .Append(activeChildCls)
+                            .Append(activeClass(childNav,options))
                             .Append("\"")
                             .Append(" href=\"")
                             .Append(childNav.Href)
