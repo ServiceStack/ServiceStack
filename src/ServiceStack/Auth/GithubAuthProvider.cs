@@ -37,7 +37,7 @@ namespace ServiceStack.Auth
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign in with GitHub",
-                Id = "btn" + Name,
+                Id = "btn-" + Name,
                 ClassName = "btn-social btn-github",
                 IconHtml = "<i class=\"fab fa-github\"></i>",
             };

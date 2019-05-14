@@ -47,7 +47,7 @@ namespace ServiceStack.Auth
             NavItem = new NavItem {
                 Href = "/auth/" + Name,
                 Label = "Sign in with Google",
-                Id = "btn" + Name,
+                Id = "btn-" + Name,
                 ClassName = "btn-social btn-google",
                 IconHtml = "<i class=\"fab fa-google\"></i>",
             };
