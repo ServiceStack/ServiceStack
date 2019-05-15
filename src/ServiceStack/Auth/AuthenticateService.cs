@@ -234,17 +234,21 @@ namespace ServiceStack.Auth
                         ?? session.UserName 
                         ?? $"{session.FirstName} {session.LastName}".Trim(),
                     SessionId = session.Id,
-                    Roles = manageRoles != null 
-                        ? manageRoles.GetRoles(session.UserAuthId)?.ToList() 
-                        : session.Roles,
-                    Permissions = manageRoles != null
-                        ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
-                        : session.Permissions,
                     ReferrerUrl = referrerUrl,
                 };
 
                 if (response is AuthenticateResponse authResponse)
                 {
+                    if (HostContext.GetPlugin<AuthFeature>()?.IncludeRolesInAuthenticateResponse == true)
+                    {
+                        authResponse.Roles = manageRoles != null
+                            ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                            : session.Roles;
+                        authResponse.Permissions = manageRoles != null
+                            ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
+                            : session.Permissions;
+                    }
+
                     var authCtx = new AuthFilterContext {
                         AuthService = this,
                         AuthProvider = authProvider,
