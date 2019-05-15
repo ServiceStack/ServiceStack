@@ -9,12 +9,12 @@ title: SVG Preview
 #svg-auth {
     background: #CCCCCC;
 }
-#svg-auth, #svg-users {
+#svg-auth, #svg-auth-path, #svg-users {
     width: 100%;
     padding: 10px;
     height: 420px;
 }
-#svg-auth .svg, #svg-users .svg {
+#svg-auth .svg, #svg-auth-path .svg, #svg-users .svg {
     width: 200px;
     height: 200px;
     display: inline-block;
@@ -43,6 +43,21 @@ title: SVG Preview
     <div class="svg svg-linkedin"></div>
 </div>
 
+<div>
+    {{ 'navitems,svg-auth' | cssIncludes | replace('svg-','svgdark-') | replace('ffffff','343a40') | raw }}        
+    
+    <div id="svg-auth-path" class="my-3">
+        <div class="svg svgdark-servicestack"></div>
+        <div class="svg svgdark-twitter"></div>
+        <div class="svg svgdark-github"></div>
+        <div class="svg svgdark-google"></div>
+        <div class="svg svgdark-facebook"></div>
+        <div class="svg svgdark-microsoft"></div>
+        <div class="svg svgdark-linkedin"></div>
+    </div>
+</div>
+
+    
 {{ 'svg-users' | cssIncludes }}
 
 <h4 class="my-3">svg-users</h4>
