@@ -55,15 +55,15 @@ namespace ServiceStack
 
         NavOptions ToNavOptions(ScriptScopeContext scope, Dictionary<string, object> options)
         {
-            var navOptions = new NavOptions();            
+            var navOptions = new NavOptions();
             if (options != null)
             {
                 if (options.TryGetValue("attributes", out var oAttributes))
                     navOptions.Attributes = ViewUtils.ToStrings(nameof(ToNavOptions), oAttributes).ToHashSet();
                 if (options.TryGetValue("active", out var oActive))
                     navOptions.ActivePath = (string)oActive;
-                if (options.TryGetValue("prefix", out var oPrefix))
-                    navOptions.HrefPrefix = (string)oPrefix;
+                if (options.TryGetValue("baseHref", out var oBaseHref))
+                    navOptions.BaseHref = (string)oBaseHref;
                 if (options.TryGetValue("navClass", out var oNavClass))
                     navOptions.NavClass = (string) oNavClass;
                 if (options.TryGetValue("navItemClass", out var oNavItemClass))

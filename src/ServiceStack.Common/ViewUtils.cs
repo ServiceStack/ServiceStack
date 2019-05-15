@@ -272,7 +272,7 @@ namespace ServiceStack
         /// <summary>
         /// Prefix to include before NavItem.Path (if any)
         /// </summary>
-        public string HrefPrefix { get; set; }
+        public string BaseHref { get; set; }
 
         public string NavClass { get; set; } = NavDefaults.NavClass;
         public string NavItemClass { get; set; } = NavDefaults.NavItemClass;
@@ -453,7 +453,7 @@ namespace ServiceStack
                 .AppendLine("\">");
                 
             sb.Append("  <a href=\"")
-                .Append(options.HrefPrefix?.TrimEnd('/'))
+                .Append(options.BaseHref?.TrimEnd('/'))
                 .Append(navItem.Href)
                 .Append("\"");
 
@@ -536,7 +536,7 @@ namespace ServiceStack
                 return;
             
             sb.Append("<a href=\"")
-                .Append(options.HrefPrefix?.TrimEnd('/'))
+                .Append(options.BaseHref?.TrimEnd('/'))
                 .Append(navItem.Href)
                 .Append("\"");
 
