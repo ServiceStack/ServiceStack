@@ -24,9 +24,11 @@ namespace ServiceStack
 
         public Dictionary<Type, string[]> ServiceRoutes { get; set; }
 
-        public List<IPlugin> RegisterPlugins { get; set; }
+        public List<IPlugin> RegisterPlugins { get; set; } = new List<IPlugin> {
+            new SessionFeature()
+        };
 
-        public List<IAuthEvents> AuthEvents { get; set; }
+        public List<IAuthEvents> AuthEvents { get; set; } = new List<IAuthEvents>();
 
         /// <summary>
         /// Login path to redirect to
@@ -41,7 +43,7 @@ namespace ServiceStack
         /// <summary>
         /// What queryString param to capture redirect param on
         /// </summary>
-        public string HtmlRedirectReturnParam { get; set; }
+        public string HtmlRedirectReturnParam { get; set; } = LocalizedStrings.Redirect;
 
         /// <summary>
         /// Whether to only capture return path or absolute URL (default)
@@ -50,15 +52,15 @@ namespace ServiceStack
 
         public string HtmlLogoutRedirect { get; set; }
 
-        public bool IncludeAuthMetadataProvider { get; set; }
+        public bool IncludeAuthMetadataProvider { get; set; } = true;
 
-        public bool ValidateUniqueEmails { get; set; }
+        public bool ValidateUniqueEmails { get; set; } = true;
 
         public bool ValidateUniqueUserNames { get; set; }
 
-        public bool DeleteSessionCookiesOnLogout { get; set; }
+        public bool DeleteSessionCookiesOnLogout { get; set; } = true;
 
-        public bool GenerateNewSessionCookiesOnAuthentication { get; set; }
+        public bool GenerateNewSessionCookiesOnAuthentication { get; set; } = true;
         
         /// <summary>
         /// Whether to Create Digest Auth MD5 Hash when Creating/Updating Users.
@@ -76,6 +78,8 @@ namespace ServiceStack
         public TimeSpan? PermanentSessionExpiry { get; set; }
 
         public int? MaxLoginAttempts { get; set; }
+
+        public bool IncludeRolesInAuthenticateResponse { get; set; } = true;
 
         /// <summary>
         /// Allow or deny all GET Authenticate Requests
@@ -158,18 +162,7 @@ namespace ServiceStack
                 { typeof(UnAssignRolesService), new[]{ "/" + Localize(LocalizedStrings.UnassignRoles) } },
             };
 
-            RegisterPlugins = new List<IPlugin> {
-                new SessionFeature()
-            };
-
-            AuthEvents = new List<IAuthEvents>();
-
             this.HtmlRedirect = htmlRedirect ?? "~/" + Localize(LocalizedStrings.Login);
-            this.HtmlRedirectReturnParam = LocalizedStrings.Redirect;
-            this.IncludeAuthMetadataProvider = true;
-            this.ValidateUniqueEmails = true;
-            this.DeleteSessionCookiesOnLogout = true;
-            this.GenerateNewSessionCookiesOnAuthentication = true;
             this.CreateDigestAuthHashes = authProviders.Any(x => x is DigestAuthProvider);
         }
 
