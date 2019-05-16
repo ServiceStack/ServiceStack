@@ -239,14 +239,17 @@ namespace ServiceStack.Auth
 
                 if (response is AuthenticateResponse authResponse)
                 {
-                    if (HostContext.GetPlugin<AuthFeature>()?.IncludeRolesInAuthenticateResponse == true)
+                    authResponse.ProfileUrl = authResponse.ProfileUrl ?? session.GetProfileUrl();
+                    
+                    var authFeature = HostContext.GetPlugin<AuthFeature>();
+                    if (authFeature?.IncludeRolesInAuthenticateResponse == true)
                     {
-                        authResponse.Roles = manageRoles != null
-                            ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
-                            : session.Roles;
-                        authResponse.Permissions = manageRoles != null
+                        authResponse.Roles = authResponse.Roles ?? (manageRoles != null
+                             ? manageRoles.GetRoles(session.UserAuthId)?.ToList()
+                             : session.Roles);
+                        authResponse.Permissions = authResponse.Permissions ?? (manageRoles != null
                             ? manageRoles.GetPermissions(session.UserAuthId)?.ToList()
-                            : session.Permissions;
+                            : session.Permissions);
                     }
 
                     var authCtx = new AuthFilterContext {
