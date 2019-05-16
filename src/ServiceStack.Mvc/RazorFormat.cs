@@ -824,10 +824,17 @@ namespace ServiceStack.Mvc
         public static HtmlString NavButtonGroup(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
 
-        public static HtmlString CssIncludes(this IHtmlHelper html, List<string> cssFiles) =>
-            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles).ToHtmlString();
-        public static HtmlString JsIncludes(this IHtmlHelper html, List<string> jsFiles) =>
-            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles).ToHtmlString();
+        public static HtmlString CssIncludes(this IHtmlHelper html, params string[] cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles.ToList()).ToHtmlString();
+        public static HtmlString JsIncludes(this IHtmlHelper html, params string[] jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles.ToList()).ToHtmlString();
+
+        public static HtmlString SvgImage(this IHtmlHelper html, string name) => Svg.GetImage(name).ToHtmlString();
+        public static HtmlString SvgImage(this IHtmlHelper html, string name, string fillColor) => Svg.GetImage(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgDataUri(this IHtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
+        public static HtmlString SvgDataUri(this IHtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
+        
     }
 
     public abstract class ViewPage : ViewPage<object>

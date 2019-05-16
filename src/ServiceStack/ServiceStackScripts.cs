@@ -388,6 +388,24 @@ namespace ServiceStack
                     Bundle = !args.TryGetValue("bundle", out var oBundle) || oBundle is bool bBundle && bBundle,
                 }).ToRawString();
         }
+
+        public IRawString serviceStackLogoSvg(string color) => Svg.Fill(Svg.GetImage(Svg.Logos.ServiceStack),color).ToRawString();
+        public IRawString serviceStackLogoSvg() => Svg.GetImage(Svg.Logos.ServiceStack).ToRawString();
+        public IRawString serviceStackLogoDataUri(string color) => Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack),color).ToRawString();
+        public IRawString serviceStackLogoDataUri() => Svg.GetDataUri(Svg.Logos.ServiceStack).ToRawString();
+        public IRawString serviceStackLogoDataUriLight() => serviceStackLogoDataUri(Svg.LightColor);
+
+        public IRawString svgImage(string name) => Svg.GetImage(name).ToRawString();
+        public IRawString svgImage(string name, string fillColor) => Svg.GetImage(name, fillColor).ToRawString();
+        public IRawString svgDataUri(string name) => Svg.GetDataUri(name).ToRawString();
+        public IRawString svgDataUri(string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToRawString();
+
+        public IRawString svgFill(string svg, string color) => Svg.Fill(svg, color).ToRawString();
+
+        public Dictionary<string, string> svgImages() => Svg.Images;
+        public Dictionary<string, string> svgDataUris() => Svg.DataUris;
+
+        public Dictionary<string, List<string>> svgCssFiles() => Svg.CssFiles;
     }
     
     public abstract class MinifyScriptBlockBase : ScriptBlock
