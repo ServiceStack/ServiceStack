@@ -9,15 +9,13 @@ namespace ServiceStack.Auth
     {
         static readonly ILog Log = LogManager.GetLogger(typeof(AuthMetadataProvider));
 
-        public static string DefaultNoProfileImgUrl = "https://raw.githubusercontent.com/ServiceStack/Assets/master/img/apps/no-profile64.png";
-
         public const string ProfileUrlKey = "profileUrl";
 
         public string NoProfileImgUrl { get; set; }
 
         public AuthMetadataProvider()
         {
-            NoProfileImgUrl = DefaultNoProfileImgUrl;
+            NoProfileImgUrl = Svg.GetDataUri(Svg.Icons.DefaultProfile);
         }
 
         public virtual void AddMetadata(IAuthTokens tokens, Dictionary<string, string> authInfo)

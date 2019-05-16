@@ -14,29 +14,28 @@ namespace ServiceStack.Templates
         public static string GetIndexOperationsTemplate()
         {
             return LoadTemplate("IndexOperations.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack), Svg.LightColor));
         }
 
         public static string GetOperationControlTemplate()
         {
             return LoadTemplate("OperationControl.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack), Svg.LightColor));
         }
 
         public static string GetMetadataDebugTemplate()
         {
             return LoadTemplate("MetadataDebug.html")
-                .Replace("{{serviceStackLogoDataUriLight}}", InfoScripts.ServiceStackLogoDataUri.Replace("currentColor","%23dddddd"));
+                .Replace("{{serviceStackLogoDataUriLight}}", Svg.Fill(Svg.GetDataUri(Svg.Logos.ServiceStack), Svg.LightColor));
         }
 
-        public static string GetHtmlFormatTemplate()
-        {
-            return LoadTemplate("HtmlFormat.html");
-        }
+        public static string GetHtmlFormatTemplate() => LoadTemplate("HtmlFormat.html");
+
+        public static string GetSvgTemplatePath() => GetTemplatePath("svg.html");
 
         private static string LoadTemplate(string templateName)
         {
-            var templatePath = "/Templates/" + templateName;
+            var templatePath = GetTemplatePath(templateName);
             var file = HostContext.VirtualFileSources.GetFile(templatePath);
             if (file == null)
                 throw new FileNotFoundException("Could not load HTML template embedded resource: " + templatePath, templateName);
@@ -44,6 +43,8 @@ namespace ServiceStack.Templates
             var contents = file.ReadAllText();
             return contents;
         }
+
+        public static string GetTemplatePath(string templateName) => "/Templates/" + templateName;
 
         public static string GetHtmlRedirectTemplate(string url)
         {

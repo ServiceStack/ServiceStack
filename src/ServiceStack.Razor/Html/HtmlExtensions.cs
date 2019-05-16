@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Web;
 using ServiceStack.Web;
 
@@ -146,9 +147,15 @@ namespace ServiceStack.Html
         public static HtmlString NavButtonGroup(this HtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
 
-        public static HtmlString CssIncludes(this HtmlHelper html, List<string> cssFiles) =>
-            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles).ToHtmlString();
-        public static HtmlString JsIncludes(this HtmlHelper html, List<string> jsFiles) =>
-            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles).ToHtmlString();
+        public static HtmlString CssIncludes(this HtmlHelper html, params string[] cssFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, cssFiles.ToList()).ToHtmlString();
+        public static HtmlString JsIncludes(this HtmlHelper html, params string[] jsFiles) =>
+            ViewUtils.CssIncludes(HostContext.VirtualFileSources, jsFiles.ToList()).ToHtmlString();
+
+        public static HtmlString SvgImage(this HtmlHelper html, string name) => Svg.GetImage(name).ToHtmlString();
+        public static HtmlString SvgImage(this HtmlHelper html, string name, string fillColor) => Svg.GetImage(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgDataUri(this HtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
+        public static HtmlString SvgDataUri(this HtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
     }
 }

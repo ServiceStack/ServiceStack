@@ -148,6 +148,7 @@ namespace ServiceStack
                 new HttpCacheFeature(),
                 new RequestInfoFeature(),
                 new SpanFormats(),
+                new SvgFeature(),
             };
             ExcludeAutoRegisteringServiceTypes = new HashSet<Type> {
                 typeof(AuthenticateService),

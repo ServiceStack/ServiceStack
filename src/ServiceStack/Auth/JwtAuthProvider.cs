@@ -300,7 +300,7 @@ namespace ServiceStack.Auth
                 jwtPayload["preferred_username"] = session.UserAuthName;
 
             var profileUrl = session.GetProfileUrl();
-            if (profileUrl != null && profileUrl != AuthMetadataProvider.DefaultNoProfileImgUrl)
+            if (profileUrl != null && profileUrl != Svg.GetDataUri(Svg.Icons.DefaultProfile))
                 jwtPayload["picture"] = profileUrl;
 
             var combinedRoles = new List<string>(session.Roles.Safe());
