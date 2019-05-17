@@ -3,6 +3,8 @@ title: SVG Images
 layout: _script-layout
 -->
 
+{{ 'id' | importRequestParams }}
+
 <style>
 body {
     background: #eceff1;
@@ -24,14 +26,27 @@ code {
     border-radius: 6px;
     background: #cfd8dc;
 }
-.cssfile .svg div {
+.svg-icon {
+    text-align: center;
     width: 150px;
     height: 150px;
-    background-size: 142px 142px;
-    background-position: 5px 4px;
-    display: inline-block;
-    background-repeat: no-repeat;
 }
+.svg-icon img {
+    height: 150px;
+    max-width: 150px;
+    max-height: 150px;
+}
+.svg-preview {
+    text-align: center;
+    vertical-align: middle;
+    width: 250px;
+    height: 200px;
+}
+.svg-preview img {
+    max-width: 250px;
+    height: 200px;
+}
+
 td, th {
     vertical-align: top;
 }
@@ -62,78 +77,140 @@ button {
 .sel {
     cursor: pointer;
 }
-.sel.btn {
-    background-color: #cfd8dc;
-    border-color: #cfd8dc;
+.svg a {
+    display: block;
+    border-radius: 6px;
+}
+.svg .active {
+    background: #ffc907;
+}
+.usage td {
+    width: 32%;
+}
+.usage td.buttons {
+    width: 36%;
+}
+.btn-social, .btn-social-icon {
+    border-color: #ffc907;
+}
+.btn i span {
+    opacity: 0;
+}
+.usage code {
+    display: block;
+    font-size: 75%;
+    white-space: pre-wrap;
+}
+.btn-buttons, .btn-icons {
+    display: inline-block;
 }
 </style>
 
 {{ 'buttons' | cssIncludes }}
 
+<a id="lnk-back" href="./">&lt;back</a>
+
+<div class="container">
+    <div class="row">
 
 {{#each svgCssFiles}}
-<div class="mb-5 cssfile">
+<div class="cssfile">
     
-    <h3 class="my-4">/css/{{it.Key}}.css</h3>
+    <h3 class="my-4"><a href="{{ `/css/${it.Key}.css`.resolveUrl() }}" target="_blank">/css/{{it.Key}}.css</a></h3>
     
     {{ it.Key | cssIncludes }}
     
     {{#each name in it.Value}}
     <div class="my-1 svg">
         <b>{{name}}</b>
-        <div class="svg-{{name}}"></div>
-        <code class="sel">.svg-{{name}}</code>
+        <a {{ {active:name == id} | htmlClass }} href="?id={{name}}">
+            <div class="svg-icon">
+                <img src="{{ `${name}`.svgDataUri() }}">
+            </div>
+        </a>
+        <code class="sel mt-1">.svg-{{name}}</code>
     </div>
     {{/each}}
     
-    <table class="usage mt-4">
+{{#if it.Value.Count > 0}}
+    
+    {{ (id && it.Value.contains(id) ? id : it.Value[0]) | assignTo: name }}
+    
+    {{ ['lg','md','sm','xs'] | assignTo: sizes }}
+    
+    <table class="usage my-4">
         <tr>
-            <td>
-                <h6>&lt;button class="btn btn-social btn-light btn-block"&gt;</h6>
-                <div class="my-1 svg">
-                    {{#each name in it.Value}}
-                    <button class="sel btn btn-social btn-light btn-block">
-                        <i class="fab fa-{{name}}"></i>
-                        &lt;i class="fab fa-{{name}}"&gt;&lt;/i&gt;
-                    </button>
-                    {{/each}}
-                </div>
-            </td>
-            <td>
-                <h5>#Script</h5>
+            <td class="buttons">
                 <div>
-                    <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${it.Value[0]}'` }} | svgImage {{#raw}} }} {{/raw}} </code></div>
-                    <div>
-                        {{ `${it.Value[0]}` | svgImage }}
+                    <h4>Buttons</h4>
+<code class="sel">&lt;button class="btn btn-block btn-social btn-{{name}}"&gt;
+  &lt;i class="fab fa-{{name}}"&gt;&lt;/i&gt;
+&lt;/button&gt;</code>
+                    <div class="btn-buttons mt-2">
+                        {{#each size in sizes}}
+                        <button class="sel btn btn-block btn-social btn-{{name}} btn-{{size}}">
+                            <i class="fab fa-{{name}}"></i> btn-{{size}}
+                        </button>
+                        {{/each}}
                     </div>
                 </div>
-                <div class="my-1">
-                    <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${it.Value[0]}'` }} | svgImage('#e53935') {{#raw}} }} {{/raw}} </code></div>
-                    <div>
-                        {{ `${it.Value[0]}` | svgImage('#e53935') }}
+                <div class="mt-4">
+                    <h4>Icons</h4>
+<code class="sel">&lt;button class="btn btn-social-icon btn-{{name}}"&gt;
+  &lt;i class="fab fa-{{name}}"&gt;&lt;/i&gt;
+&lt;/button&gt;</code>
+                    <div class="btn-icons mt-2">
+                        {{#each size in sizes}}
+                        <button class="btn btn-social-icon btn-{{name}} btn-{{size}}">
+                            <i class="sel fab fa-{{name}}"><span>btn-{{size}}</span></i>
+                        </button>
+                        {{/each}}
                     </div>
                 </div>
-                <h5>Data URI</h5>
-                <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${it.Value[0]}'` }} | svgDataUri {{#raw}} }} {{/raw}} </code></div>
-                <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${it.Value[0]}'` }} | svgDataUri('#e53935') {{#raw}} }} {{/raw}} </code></div>
             </td>
-            <td>
-                <h5>Razor</h5>
-                <div class="sel"><code>@Html.SvgImage("{{ `${it.Value[0]}` }}")</code></div>
-                <div class="sel"><code>@Html.SvgImage("{{ `${it.Value[0]}` }}", "#e53935")</code></div>
-
-                <h5 class="mt-2">Data URI</h5>
-                <div class="sel"><code>@Html.SvgDataUri("{{ `${it.Value[0]}` }}")</code></div>
-                <div class="sel"><code>@Html.SvgDataUri("{{ `${it.Value[0]}` }}", "#e53935")</code></div>
+            <td class="script">
+                <h4>#Script</h4>
+                <div>
+                    <div class="sel"><code>&lt;img src="{{#raw}}{{{{/raw}}{{`'${name}'`}}.svgDataUri(){{#raw}}}}{{/raw}}"&gt;</code></div>
+                    <div class="mt-1">
+                        <div class="svg-preview">
+                            <img src="{{ `${name}`.svgDataUri() }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="my-2">
+                    <div class="sel"><code>&lt;img src="{{#raw}}{{{{/raw}}{{`'${name}'`}}.svgDataUri('#e33'){{#raw}}}}{{/raw}}"&gt;</code></div>
+                    <div class="mt-1">
+                        <div class="svg-preview">
+                            <img src="{{ `${name}`.svgDataUri('#e33') }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${name}'` }}.svgImage('#e33') {{#raw}} }} {{/raw}} </code></div>
+                <div class="sel"><code>{{#raw}} {{ {{/raw}} {{ `'${name}'` }}.svgImage() {{#raw}} }} {{/raw}} </code></div>
+<div class="sel mt-2">
+<code style="white-space: pre-wrap">.svg-bg {
+  {{#raw}}{{{{/raw}}{{`'${name}'`}}.svgBackgroundImageCss(){{#raw}}}}{{/raw}} 
+}
+</code></div>
+            </td>
+            <td class="razor">
+                <h4>Razor</h4>
                 
-                <h5 class="mt-3">CSS</h5>
-                <div class="sel">
-<code style="white-space: pre-wrap">.svg-resize-example {
+                <div class="sel"><code>&lt;img src="@Html.SvgDataUri("{{ `${name}` }}")"&gt;</code></div>
+                <div class="sel"><code>&lt;img src="@Html.SvgDataUri("{{ `${name}` }}","#e33")"&gt;</code></div>
+
+                <div class="sel mt-2"><code>@Html.SvgImage("{{ `${name}` }}")</code></div>
+                <div class="sel"><code>@Html.SvgImage("{{ `${name}` }}", "#e33")</code></div>
+
+                <div class="sel mt-2">
+<code>.svg-bg-example {
   width: 150px;
   height: 150px;
-  background-size: 142px 142px;
-  background-position: 5px 4px;
+  background-size: 142px;
+  background-position: 4px;
   background-repeat: no-repeat;
+  @Html.SvgBackgroundImageCss("female")
 }
 </code>
                 </div>
@@ -143,7 +220,7 @@ button {
 
     <span class="tiptext">Click to copy to clipboard</span>
     
-    <h4 class="mt-2">Reference all svg icons via css</h4>
+    <h4 class="mt-2">Reference all svg images using .css</h4>
     
     <table class="ref-css">
         <tr>
@@ -166,11 +243,18 @@ button {
             </td>
         </tr>
     </table>
+{{/if}}
 
 </div>
+        
 {{/each}}
 
 <script>
+var active = document.querySelector('.active');
+if (active) {
+    active.scrollIntoView();
+}
+    
 var timeout;
 document.querySelectorAll('.sel').forEach(function(sel) {
     sel.onclick = function(e) {
@@ -207,3 +291,17 @@ document.querySelectorAll('.sel').forEach(function(sel) {
     
 });
 </script>
+
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-12">
+
+            <h3>Find out more</h3>
+
+            See the <a href="https://docs.servicestack.net/svg-utils">SVG documentation</a> to find out how to register
+            your own SVG images and see more usage examples.
+        </div>
+    </div>
+    
+</div>
