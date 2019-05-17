@@ -146,7 +146,7 @@ namespace ServiceStack.Mvc
 
         public ViewEngineResult GetRoutingPage(string pathInfo, out Dictionary<string, object> routingArgs)
         {
-            // Sync with TemplatePagesFeature GetRoutingPage()
+            // Sync with SharpPagesFeature GetRoutingPage()
 
             var path = pathInfo.Trim('/');
 
@@ -805,14 +805,14 @@ namespace ServiceStack.Mvc
         public static List<NavItem> GetNavItems(this IHtmlHelper html) => ViewUtils.NavItems;
         public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => ViewUtils.GetNavItems(key);
 
-        public static HtmlString Nav(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
-        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
+        public static HtmlString Nav(this IHtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
         public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
 
-        public static HtmlString NavBar(this IHtmlHelper html) => html.NavBar(ViewUtils.NavItems, null);
-        public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems) => html.NavBar(navItems, null);
-        public static HtmlString NavBar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
+        public static HtmlString Navbar(this IHtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
+        public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
+        public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavLink(this IHtmlHelper html, NavItem navItem) => html.NavLink(navItem, null);
@@ -834,6 +834,9 @@ namespace ServiceStack.Mvc
 
         public static HtmlString SvgDataUri(this IHtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
         public static HtmlString SvgDataUri(this IHtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name) => Svg.GetBackgroundImageCss(Svg.GetImage(name)).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(Svg.GetImage(name), fillColor).ToHtmlString();
         
     }
 
