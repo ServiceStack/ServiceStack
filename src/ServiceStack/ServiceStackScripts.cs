@@ -412,6 +412,8 @@ namespace ServiceStack
         public Dictionary<string, string> svgDataUris() => Svg.DataUris;
 
         public Dictionary<string, List<string>> svgCssFiles() => Svg.CssFiles;
+
+        public string svgBaseUrl(ScriptScopeContext scope) => req(scope).ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
     }
 
     public class SvgBlock : ScriptBlock
