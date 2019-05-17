@@ -40,6 +40,7 @@ namespace ServiceStack
 
             if (EnableNav)
             {
+                ViewUtils.Load(appHost.AppSettings);
                 appHost.RegisterService<MetadataNavService>();
             }
         }
