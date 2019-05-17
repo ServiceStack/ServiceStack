@@ -416,7 +416,7 @@ namespace ServiceStack
         public string svgBaseUrl(ScriptScopeContext scope) => req(scope).ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
     }
 
-    public class SvgBlock : ScriptBlock
+    public class SvgScriptBlock : ScriptBlock
     {
         public override string Name => "svg";
         public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
@@ -433,27 +433,8 @@ namespace ServiceStack
                 var useScope = scope.ScopeWithStream(ms);
                 await WriteBodyAsync(useScope, block, token);
 
-                var capturedSvg = ms.ReadToEnd().Trim();
-                if (capturedSvg.IndexOf("http://www.w3.org/2000/svg", StringComparison.OrdinalIgnoreCase) < 0)
-                {
-                    capturedSvg = capturedSvg.LeftPart(' ') + " xmlns='http://www.w3.org/2000/svg' " +
-                                  capturedSvg.RightPart(' ');
-                }
-                
-                Svg.Images[name] = capturedSvg;
-
-                if (args.Length == 2)
-                {
-                    var cssFile = args[1].Trim();
-                    if (Svg.CssFiles.TryGetValue(cssFile, out var cssFileSvgs))
-                    {
-                        cssFileSvgs.Add(name);
-                    }
-                    else
-                    {
-                        Svg.CssFiles[cssFile] = new List<string> { name };
-                    }
-                }
+                var capturedSvg = ms.ReadToEnd();                
+                Svg.AddImage(capturedSvg, name, args.Length == 2 ? args[1].Trim() : null);
             }
         }
     }
@@ -549,7 +530,7 @@ namespace ServiceStack
                 new MinifyJsScriptBlock(), 
                 new MinifyCssScriptBlock(), 
                 new MinifyHtmlScriptBlock(), 
-                new SvgBlock(), 
+                new SvgScriptBlock(), 
             });
         }
     }

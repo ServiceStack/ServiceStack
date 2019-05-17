@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -296,6 +297,62 @@ namespace ServiceStack
         public static string ToDataUri(string svg) => "data:image/svg+xml," + Encode(svg);
         public static string GetBackgroundImageCss(string svg) => "background-image: url(\"" + ToDataUri(svg) + "\");";
         public static string GetBackgroundImageCss(string svg, string fillColor) => "background-image: url(\"" + ToDataUri(Fill(svg, fillColor)) + "\");";
+
+        public static void AddImage(string svg, string name, string cssFile=null)
+        {
+            svg = svg.Trim();
+            if (svg.IndexOf("http://www.w3.org/2000/svg", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                svg = svg.LeftPart(' ') + " xmlns='http://www.w3.org/2000/svg' " + svg.RightPart(' ');
+            }
+            
+            Images[name] = svg;
+
+            if (cssFile != null)
+            {
+                if (CssFiles.TryGetValue(cssFile, out var cssFileSvgs))
+                {
+                    cssFileSvgs.Add(name);
+                }
+                else
+                {
+                    CssFiles[cssFile] = new List<string> { name };
+                }
+            }
+        }
+
+        public static void Load(IVirtualDirectory svgDir)
+        {
+            var context = new ScriptContext().Init();
+
+            try { 
+                foreach (var svgGroupDir in svgDir.GetDirectories())
+                {
+                    foreach (var file in svgGroupDir.GetFiles())
+                    {
+                        if (file.Extension == "svg")
+                        {
+                            var svg = file.ReadAllText();
+                            AddImage(svg, file.Name.WithoutExtension(), svgGroupDir.Name);
+                        }
+                        else if (file.Extension == "html")
+                        {
+                            var script = file.ReadAllText();
+                            var svg = context.EvaluateScript(script);
+                            if (svg.StartsWith("<svg"))
+                            {
+                                AddImage(svg, file.Name.WithoutExtension(), svgGroupDir.Name);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
     }
 
 }
