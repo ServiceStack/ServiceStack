@@ -1,9 +1,16 @@
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web;
+using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
 using ServiceStack.Script;
 using ServiceStack.Templates;
 using ServiceStack.Text;
+using ServiceStack.Web;
 
 namespace ServiceStack
 {
@@ -17,11 +24,15 @@ namespace ServiceStack
 
         public void Register(IAppHost appHost)
         {
-            appHost.RawHttpHandlers.Add((req) => req.PathInfo == RoutePath
-                ? new SharpPageHandler(HtmlTemplates.GetSvgTemplatePath()) {
-                    Context = SharpPageHandler.NewContext(appHost)
-                }
-                : null);
+            appHost.RawHttpHandlers.Add(req => req.PathInfo == RoutePath
+                ? (string.IsNullOrEmpty(req.QueryString["id"]) || string.IsNullOrEmpty(req.QueryString["format"]) 
+                    ? new SharpPageHandler(HtmlTemplates.GetSvgTemplatePath()) {
+                        Context = SharpPageHandler.NewContext(appHost)
+                    }
+                    : (IHttpHandler) new SvgFormatHandler(req.QueryString["id"], req.QueryString["format"]))
+                : req.PathInfo.StartsWith(RoutePath)
+                  ? new SvgFormatHandler(req.PathInfo.Substring(RoutePath.Length+1))
+                  : null);
 
             var btnSvgCssFile = appHost.VirtualFileSources.GetFile("/css/buttons-svg.css");
             if (btnSvgCssFile != null)
@@ -108,6 +119,57 @@ namespace ServiceStack
                     WriteSvgCssFile(memFs, cssFile.Key, cssFile.Value, Svg.AdjacentCssRules, Svg.AppendToCssFiles);
                 }
             });
+        }
+    }
+
+    public class SvgFormatHandler : HttpAsyncTaskHandler
+    {
+        public string id;
+        public string format;
+
+        public SvgFormatHandler(string fileName) //name.svg, name.datauri, name.css
+        {
+            id = fileName.LeftPart('.');
+            format = fileName.RightPart('.');
+        }
+        
+        public SvgFormatHandler(string id, string format)
+        {
+            this.id = id;
+            this.format = format;
+        }
+
+        public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
+        {
+            var svg = Svg.GetImage(id);
+            if (svg == null)
+            {
+                httpRes.StatusCode = 404;
+                httpRes.StatusDescription = "SVG Image was not found";
+            }
+            else if (format == "svg")
+            {
+                httpRes.ContentType = MimeTypes.ImageSvg;
+                await httpRes.WriteAsync(svg);
+            }
+            else if (format == "css")
+            {
+                httpRes.ContentType = "text/css";
+                var css = $".svg-{id} {{\n  {Svg.GetBackgroundImageCss(Svg.GetImage(id))}\n}}\n";
+                await httpRes.WriteAsync(css);
+            }
+            else if (format == "datauri")
+            {
+                var dataUri = Svg.GetDataUri(id);
+                httpRes.ContentType = MimeTypes.PlainText;
+                await httpRes.WriteAsync(dataUri);
+            }
+            else
+            {
+                httpRes.StatusCode = 400;
+                httpRes.StatusDescription = "Unknown format, valid formats: svg, css, datauri";
+            }
+            httpRes.EndRequest();
         }
     }
 

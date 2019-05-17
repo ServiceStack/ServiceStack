@@ -104,6 +104,30 @@ button {
 .btn-buttons, .btn-icons {
     display: inline-block;
 }
+.btn-datauri {
+    padding-left: 10px;
+    max-height: 24px;
+}
+.btn-datauri small {
+    padding-left: 10px;
+    max-width: 100px;
+    max-height: 24px;
+}
+.copy-datauri {
+    position: absolute;
+    margin-top: 3px;
+    width: 85px;
+    height: 24px;
+    max-width: 85px;
+    max-height: 24px;
+    overflow: hidden;
+    border-color: #ffc907;
+}
+.copy-datauri:hover {
+}
+.copy-datauri span {
+    opacity: 0;
+}
 </style>
 
 {{ 'buttons' | cssIncludes }}
@@ -112,7 +136,6 @@ button {
 
 <div class="container">
     <div class="row">
-
 {{#each svgCssFiles}}
 <div class="cssfile">
     
@@ -220,34 +243,69 @@ button {
 
     <span class="tiptext">Click to copy to clipboard</span>
     
-    <h4 class="mt-2">Reference all svg images using .css</h4>
+
+    <div class="row">
+        <div class="col-6">
+            <h4 class="mt-2">Reference all svg images using .css</h4>
+            <table class="ref-css">
+                <tr>
+                    <th>Link stylesheet</th>
+                    <td class="sel">
+                        &lt;link rel="stylesheet" href="/css/buttons.css"&gt;<br>
+                        &lt;link rel="stylesheet" href="/css/{{it.Key}}.css"&gt;
+                    </td>
+                </tr>
+                <tr>
+                    <th>#Script inline style</th>
+                    <td class="sel">
+                        {{#raw}} {{ {{/raw}} 'buttons,{{it.Key}}' | cssIncludes{{#raw}} }} {{/raw}}
+                    </td>
+                </tr>
+                <tr>
+                    <th>Razor inline style</th>
+                    <td class="sel">
+                        @Html.CssIncludes("buttons","{{it.Key}}")
+                    </td>
+                </tr>
+            </table>
+        </div>
     
-    <table class="ref-css">
-        <tr>
-            <th>Link stylesheet</th>
-            <td class="sel">
-                &lt;link rel="stylesheet" href="/css/buttons.css"&gt;<br>
-                &lt;link rel="stylesheet" href="/css/{{it.Key}}.css"&gt;
-            </td>
-        </tr>
-        <tr>
-            <th>#Script inline style</th>
-            <td class="sel">
-                {{#raw}} {{ {{/raw}} 'buttons,{{it.Key}}' | cssIncludes{{#raw}} }} {{/raw}}
-            </td>
-        </tr>
-        <tr>
-            <th>Razor inline style</th>
-            <td class="sel">
-                @Html.CssIncludes("buttons","{{it.Key}}")
-            </td>
-        </tr>
-    </table>
+        <div class="col-6">
+            <h4 class="mt-2">Individual SVG Links</h4>
+            <table class="ref-css">
+                <tr>
+                    <th>Image</th>
+                    <td>
+                        <a href="{{svgBaseUrl}}/{{name}}.svg">{{name}}.svg</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>CSS</th>
+                    <td>
+                        <a href="{{svgBaseUrl}}/{{name}}.css">{{name}}.css</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Data URI</th>
+                    <td>
+                        <a href="{{svgBaseUrl}}/{{name}}.datauri">{{name}}.datauri</a>
+                        <span class="btn-datauri">
+                            <button class="sel btn copy-datauri">
+                                <span>{{name.svgDataUri()}}</span>
+                            </button>
+                            <small>copy for url</small>
+                        </span>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
 {{/if}}
 
 </div>
         
 {{/each}}
+
 
 <script>
 var active = document.querySelector('.active');
@@ -293,10 +351,9 @@ document.querySelectorAll('.sel').forEach(function(sel) {
 </script>
 
     </div>
-
-    <div class="row mb-5">
-        <div class="col-12">
-
+    
+    <div class="row">
+        <div class="col my-5">
             <h3>Find out more</h3>
 
             See the <a href="https://docs.servicestack.net/svg-utils">SVG documentation</a> to find out how to register
@@ -305,3 +362,4 @@ document.querySelectorAll('.sel').forEach(function(sel) {
     </div>
     
 </div>
+
