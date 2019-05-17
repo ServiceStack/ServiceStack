@@ -73,4 +73,3 @@
 .btn-servicestack:active,.btn-servicestack.active,.open>.dropdown-toggle.btn-servicestack{background-image:none}
 .btn-servicestack.disabled:hover,.servicestack[disabled]:hover,fieldset[disabled] .btn-servicestack:hover,.btn-servicestack.disabled:focus,.btn-servicestack[disabled]:focus,fieldset[disabled] .btn-servicestack:focus,.btn-servicestack.disabled.focus,.btn-servicestack[disabled].focus,fieldset[disabled] .btn-servicestack.focus{background-color:#333;border-color:rgba(0,0,0,0.2)}
 .btn-servicestack .badge{color:#333;background-color:#fff}
-

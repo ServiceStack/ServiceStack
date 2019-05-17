@@ -108,23 +108,15 @@ namespace ServiceStack
         {
             var appHost = HostContext.AssertAppHost();
             ScanAssemblies.AddRange(appHost.ServiceAssemblies);
-            Container = appHost.Container;
-            ScriptMethods.Add(new ProtectedScripts());
-            ScriptMethods.Add(new InfoScripts());
-            ScriptMethods.Add(new ServiceStackScripts());
-            ScriptMethods.Add(new BootstrapScripts());
-            Plugins.Add(new ServiceStackScriptBlocks());
-            Plugins.Add(new MarkdownScriptPlugin { RegisterPageFormat = false });
+
+            this.InitForSharpPages(appHost);
             SkipExecutingFiltersIfError = true;
         }
 
         public virtual void Register(IAppHost appHost)
         {
-            DebugMode = appHost.Config.DebugMode;
-            VirtualFiles = appHost.VirtualFileSources;
-            AppSettings = appHost.AppSettings;
-            ViewUtils.Load(AppSettings);
-            
+            this.UseAppHost(appHost);
+
             appHost.Register(Pages);
             appHost.Register(this);
             appHost.CatchAllHandlers.Add(RequestHandler);
@@ -171,7 +163,7 @@ namespace ServiceStack
 
             Init();
         }
-        
+
         internal SharpPage InitPage { get; set; }
 
         public string RunInitPage()
@@ -861,6 +853,11 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         public Stream OutputStream { get; set; }
         private readonly string pagePath; 
         private readonly string layoutPath;
+        
+        public ScriptContext Context { get; set; }
+
+        public static ScriptContext NewContext(IAppHost appHost) =>
+            new ScriptContext().InitForSharpPages(appHost).UseAppHost(appHost).Init();
 
         public SharpPageHandler(string pagePath, string layoutPath=null)
         {
@@ -879,20 +876,26 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
         {
             if (Page == null && pagePath != null)
             {
-                var pages = httpReq.TryResolve<ISharpPages>();
+                var pages = Context != null
+                    ? Context.Pages 
+                    : httpReq.TryResolve<ISharpPages>();
+                
                 Page = pages.GetPage(pagePath)
-                   ?? throw new FileNotFoundException($"Template Page not found '{pagePath}'");
+                   ?? throw new FileNotFoundException($"Sharp Page not found '{pagePath}'");
 
                 if (!string.IsNullOrEmpty(layoutPath))
                 {
                     LayoutPage = pages.GetPage(layoutPath) 
-                        ?? throw new FileNotFoundException($"Template Page not found '{layoutPath}'");
+                        ?? throw new FileNotFoundException($"Sharp Page not found '{layoutPath}'");
                 }
             }
 
-            var feature = HostContext.GetPlugin<SharpPagesFeature>();
+            if (Page == null)
+                throw new NotSupportedException($"SharpPageHandler needs to be initialized with a Page or a PagePath");
             
-            var args = httpReq.GetScriptRequestParams(importRequestParams:feature.ImportRequestParams);
+            var context = Context ?? HostContext.GetPlugin<SharpPagesFeature>();
+            
+            var args = httpReq.GetScriptRequestParams(importRequestParams:(context as SharpPagesFeature)?.ImportRequestParams ?? false);
             if (Args != null)
             {
                 foreach (var entry in Args)
@@ -1102,6 +1105,27 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     public static class SharpPagesFeatureExtensions
     {
+        public static ScriptContext InitForSharpPages(this ScriptContext context, IAppHost appHost)
+        {
+            context.Container = appHost.GetContainer();
+            context.ScriptMethods.Add(new ProtectedScripts());
+            context.ScriptMethods.Add(new InfoScripts());
+            context.ScriptMethods.Add(new ServiceStackScripts());
+            context.ScriptMethods.Add(new BootstrapScripts());
+            context.Plugins.Add(new ServiceStackScriptBlocks());
+            context.Plugins.Add(new MarkdownScriptPlugin { RegisterPageFormat = false });
+            context.SkipExecutingFiltersIfError = true;
+            return context;
+        }
+
+        public static ScriptContext UseAppHost(this ScriptContext context, IAppHost appHost)
+        {
+            context.DebugMode = appHost.Config.DebugMode;
+            context.VirtualFiles = appHost.VirtualFileSources;
+            context.AppSettings = appHost.AppSettings;
+            return context;
+        }
+
         public static Dictionary<string, object> GetScriptRequestParams(this IRequest request, bool importRequestParams=false)
         {
             var to = importRequestParams

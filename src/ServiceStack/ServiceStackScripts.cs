@@ -31,6 +31,9 @@ namespace ServiceStack
         public IHttpRequest getHttpRequest(ScriptScopeContext scope) => req(scope);
         internal IHttpRequest req(ScriptScopeContext scope) => scope.GetValue("Request") as IHttpRequest;
 
+        public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
+            req(scope).ResolveAbsoluteUrl(virtualPath);
+
         public object sendToGateway(ScriptScopeContext scope, string requestName) => 
             sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
         public object sendToGateway(ScriptScopeContext scope, object dto, string requestName) => sendToGateway(scope, dto, requestName, null);
@@ -400,12 +403,57 @@ namespace ServiceStack
         public IRawString svgDataUri(string name) => Svg.GetDataUri(name).ToRawString();
         public IRawString svgDataUri(string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToRawString();
 
+        public IRawString svgBackgroundImageCss(string name) => Svg.GetBackgroundImageCss(Svg.GetImage(name)).ToRawString();
+        public IRawString svgBackgroundImageCss(string name, string fillColor) => Svg.GetBackgroundImageCss(Svg.GetImage(name), fillColor).ToRawString();
+
         public IRawString svgFill(string svg, string color) => Svg.Fill(svg, color).ToRawString();
 
         public Dictionary<string, string> svgImages() => Svg.Images;
         public Dictionary<string, string> svgDataUris() => Svg.DataUris;
 
         public Dictionary<string, List<string>> svgCssFiles() => Svg.CssFiles;
+    }
+
+    public class SvgBlock : ScriptBlock
+    {
+        public override string Name => "svg";
+        public override async Task WriteAsync(ScriptScopeContext scope, PageBlockFragment block, CancellationToken token)
+        {
+            if (block.Argument.IsEmpty)
+                throw new NotSupportedException($"Name required in {Name} script block");
+            
+            var argumentStr = block.Argument.ToString();
+            var args = argumentStr.SplitOnFirst(' ');
+            var name = args[0].Trim();
+
+            using (var ms = MemoryStreamFactory.GetStream())
+            {
+                var useScope = scope.ScopeWithStream(ms);
+                await WriteBodyAsync(useScope, block, token);
+
+                var capturedSvg = ms.ReadToEnd().Trim();
+                if (capturedSvg.IndexOf("http://www.w3.org/2000/svg", StringComparison.OrdinalIgnoreCase) < 0)
+                {
+                    capturedSvg = capturedSvg.LeftPart(' ') + " xmlns='http://www.w3.org/2000/svg' " +
+                                  capturedSvg.RightPart(' ');
+                }
+                
+                Svg.Images[name] = capturedSvg;
+
+                if (args.Length == 2)
+                {
+                    var cssFile = args[1].Trim();
+                    if (Svg.CssFiles.TryGetValue(cssFile, out var cssFileSvgs))
+                    {
+                        cssFileSvgs.Add(name);
+                    }
+                    else
+                    {
+                        Svg.CssFiles[cssFile] = new List<string> { name };
+                    }
+                }
+            }
+        }
     }
     
     public abstract class MinifyScriptBlockBase : ScriptBlock
@@ -499,6 +547,7 @@ namespace ServiceStack
                 new MinifyJsScriptBlock(), 
                 new MinifyCssScriptBlock(), 
                 new MinifyHtmlScriptBlock(), 
+                new SvgBlock(), 
             });
         }
     }
