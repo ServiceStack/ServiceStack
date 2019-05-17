@@ -40,17 +40,21 @@ h1 {
     background: linear-gradient(to bottom,  #2c3742 0%,#28303a 100%); /* W3C */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2c3742', endColorstr='#28303a',GradientType=0 ); /* IE6-9 */
 }
+#lnk-back {
+    position: absolute;
+    top: 50px;
+    left: 10px;
+}
+#lnk-back:hover {
+    text-decoration: none;
+}
 </style>
 </head>
 <body>
     <a id="logo" href="https://servicestack.net" title="ServiceStack {{envServiceStackVersion}}"></a>
     <h1>{{title}}</h1>
 
-    <div class="container">
-        <div class="row">
-            {{page}}
-        </div>
-    </div>
+    {{page}}
 
 </body>
 </html>
