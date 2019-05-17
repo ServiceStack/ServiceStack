@@ -1,0 +1,31 @@
+@using ServiceStack.Mvc
+@{
+    ViewBag.Title = "Home Page";
+}
+
+<h3>Links</h3>
+
+<ul>
+    <li><a href="/metadata">/metadata</a></li>
+    <li><a href="/metadata/nav">/metadata/nav</a></li>
+    <li><a href="/metadata/svg">/metadata/svg</a></li>
+</ul>
+
+@Html.SvgImage("male-color")
+
+<img src="@Html.SvgDataUri("male")"/>
+
+<style>
+.svg-bg {
+    width: 150px;
+    height: 150px;
+    background-size: 142px 142px;
+    background-position: 5px 4px;
+    background-repeat: no-repeat;
+    @Html.SvgBackgroundImageCss("female")    
+}
+</style>
+
+
+
+<div class="svg-bg"></div>

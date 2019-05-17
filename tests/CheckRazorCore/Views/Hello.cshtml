@@ -1,0 +1,12 @@
+@model HelloResponse
+
+<p>View Page for <a href="/hello?Name=World">/hello</a> API</p>
+
+<h1>@Model.Result</h1>
+
+<style>
+.rule {
+    background-image: url("@Html.SvgDataUri("mysvg")");
+    background-image: url("@Html.SvgDataUri("mysvg", "#333")");
+}
+</style>
