@@ -157,5 +157,8 @@ namespace ServiceStack.Html
 
         public static HtmlString SvgDataUri(this HtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
         public static HtmlString SvgDataUri(this HtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
+
+        public static HtmlString SvgBackgroundImageCss(this HtmlHelper html, string name) => Svg.GetBackgroundImageCss(Svg.GetImage(name)).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this HtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(Svg.GetImage(name), fillColor).ToHtmlString();
     }
 }
