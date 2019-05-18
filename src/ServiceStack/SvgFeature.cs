@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Web;
 using ServiceStack.Host.Handlers;
 using ServiceStack.IO;
+using ServiceStack.Logging;
 using ServiceStack.Script;
 using ServiceStack.Templates;
 using ServiceStack.Text;
@@ -176,6 +177,8 @@ namespace ServiceStack
 
     public static class Svg
     {
+        private static ILog log = LogManager.GetLogger(typeof(Svg));
+        
         public static string LightColor { get; set; } = "#dddddd";
         public static string[] FillColors { get; set; } = { "#ffffff", "#556080" };
 
@@ -325,32 +328,29 @@ namespace ServiceStack
         {
             var context = new ScriptContext().Init();
 
-            try { 
-                foreach (var svgGroupDir in svgDir.GetDirectories())
+            foreach (var svgGroupDir in svgDir.GetDirectories())
+            {
+                foreach (var file in svgGroupDir.GetFiles())
                 {
-                    foreach (var file in svgGroupDir.GetFiles())
+                    if (file.Extension == "svg")
                     {
-                        if (file.Extension == "svg")
+                        var svg = file.ReadAllText();
+                        AddImage(svg, file.Name.WithoutExtension(), svgGroupDir.Name);
+                    }
+                    else if (file.Extension == "html")
+                    {
+                        var script = file.ReadAllText();
+                        var svg = context.EvaluateScript(script);
+                        if (svg.StartsWith("<svg"))
                         {
-                            var svg = file.ReadAllText();
                             AddImage(svg, file.Name.WithoutExtension(), svgGroupDir.Name);
                         }
-                        else if (file.Extension == "html")
+                        else
                         {
-                            var script = file.ReadAllText();
-                            var svg = context.EvaluateScript(script);
-                            if (svg.StartsWith("<svg"))
-                            {
-                                AddImage(svg, file.Name.WithoutExtension(), svgGroupDir.Name);
-                            }
+                            log.Warn($"Unable to load #Script SVG '{file.Name}'");
                         }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
             }
         }
     }
