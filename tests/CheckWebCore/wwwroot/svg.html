@@ -53,7 +53,7 @@ td, th {
 table.usage {
     width: 100%;
 }
-table.ref-css th {
+table.ref-css th, table.single-css th {
     padding-right: 20px;
 }
 
@@ -127,6 +127,10 @@ button {
 }
 .copy-datauri span {
     opacity: 0;
+}
+.single-css i {
+    color: #666;
+    padding: 0 .25em;
 }
 </style>
 
@@ -272,23 +276,25 @@ button {
     
         <div class="col-6">
             <h4 class="mt-2">Individual SVG Links</h4>
-            <table class="ref-css">
+            <table class="single-css">
                 <tr>
                     <th>Image</th>
                     <td>
-                        <a href="{{svgBaseUrl}}/{{name}}.svg">{{name}}.svg</a>
+                        <a href="{{svgBaseUrl}}/{{name}}.svg" target="_blank">{{name}}.svg</a> 
+                        <i></i> <a href="{{svgBaseUrl}}/{{name}}.svg?fill=%23e33" target="_blank">{{name}}.svg?fill=#e33</a>
                     </td>
                 </tr>
                 <tr>
                     <th>CSS</th>
                     <td>
-                        <a href="{{svgBaseUrl}}/{{name}}.css">{{name}}.css</a>
+                        <a href="{{svgBaseUrl}}/{{name}}.css" target="_blank">{{name}}.css</a>
+                        <i></i> <a href="{{svgBaseUrl}}/{{name}}.css?fill=%23e33" target="_blank">{{name}}.css?fill=#e33</a>
                     </td>
                 </tr>
                 <tr>
                     <th>Data URI</th>
                     <td>
-                        <a href="{{svgBaseUrl}}/{{name}}.datauri">{{name}}.datauri</a>
+                        <a href="{{svgBaseUrl}}/{{name}}.datauri" target="_blank">{{name}}.datauri</a>
                         <span class="btn-datauri">
                             <button class="sel btn copy-datauri">
                                 <span>{{name.svgDataUri()}}</span>

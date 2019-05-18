@@ -403,17 +403,18 @@ namespace ServiceStack
         public IRawString svgDataUri(string name) => Svg.GetDataUri(name).ToRawString();
         public IRawString svgDataUri(string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToRawString();
 
-        public IRawString svgBackgroundImageCss(string name) => Svg.GetBackgroundImageCss(Svg.GetImage(name)).ToRawString();
-        public IRawString svgBackgroundImageCss(string name, string fillColor) => Svg.GetBackgroundImageCss(Svg.GetImage(name), fillColor).ToRawString();
+        public IRawString svgBackgroundImageCss(string name) => Svg.GetBackgroundImageCss(name).ToRawString();
+        public IRawString svgBackgroundImageCss(string name, string fillColor) => Svg.GetBackgroundImageCss(name, fillColor).ToRawString();
+        public IRawString svgInBackgroundImageCss(string svg) => Svg.InBackgroundImageCss(svg).ToRawString();
 
         public IRawString svgFill(string svg, string color) => Svg.Fill(svg, color).ToRawString();
+
+        public string svgBaseUrl(ScriptScopeContext scope) => req(scope).ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
 
         public Dictionary<string, string> svgImages() => Svg.Images;
         public Dictionary<string, string> svgDataUris() => Svg.DataUris;
 
         public Dictionary<string, List<string>> svgCssFiles() => Svg.CssFiles;
-
-        public string svgBaseUrl(ScriptScopeContext scope) => req(scope).ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
     }
 
     public class SvgScriptBlock : ScriptBlock
