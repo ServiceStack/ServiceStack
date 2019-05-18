@@ -835,9 +835,13 @@ namespace ServiceStack.Mvc
         public static HtmlString SvgDataUri(this IHtmlHelper html, string name) => Svg.GetDataUri(name).ToHtmlString();
         public static HtmlString SvgDataUri(this IHtmlHelper html, string name, string fillColor) => Svg.GetDataUri(name, fillColor).ToHtmlString();
 
-        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name) => Svg.GetBackgroundImageCss(Svg.GetImage(name)).ToHtmlString();
-        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(Svg.GetImage(name), fillColor).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name) => Svg.GetBackgroundImageCss(name).ToHtmlString();
+        public static HtmlString SvgBackgroundImageCss(this IHtmlHelper html, string name, string fillColor) => Svg.GetBackgroundImageCss(name, fillColor).ToHtmlString();
+        public static HtmlString SvgInBackgroundImageCss(this IHtmlHelper html, string svg) => Svg.InBackgroundImageCss(svg).ToHtmlString();
         
+        public static HtmlString SvgFill(this IHtmlHelper html, string svg, string color) => Svg.Fill(svg, color).ToHtmlString();
+
+        public static string SvgBaseUrl(this IHtmlHelper html) => html.GetRequest().ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
     }
 
     public abstract class ViewPage : ViewPage<object>

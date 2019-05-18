@@ -31,9 +31,15 @@ namespace ServiceStack
                     ? new SharpPageHandler(HtmlTemplates.GetSvgTemplatePath()) {
                         Context = SharpPageHandler.NewContext(appHost)
                     }
-                    : (IHttpHandler) new SvgFormatHandler(req.QueryString["id"], req.QueryString["format"]))
+                    : (IHttpHandler) new SvgFormatHandler {
+                        Id = req.QueryString["id"], 
+                        Format = req.QueryString["format"], 
+                        Fill = req.QueryString["fill"],
+                    })
                 : req.PathInfo.StartsWith(RoutePath)
-                  ? new SvgFormatHandler(req.PathInfo.Substring(RoutePath.Length+1))
+                  ? new SvgFormatHandler(req.PathInfo.Substring(RoutePath.Length+1)) {
+                      Fill = req.QueryString["fill"]
+                  }
                   : null);
 
             var btnSvgCssFile = appHost.VirtualFileSources.GetFile("/css/buttons-svg.css");
@@ -126,43 +132,41 @@ namespace ServiceStack
 
     public class SvgFormatHandler : HttpAsyncTaskHandler
     {
-        public string id;
-        public string format;
+        public string Id { get; set; }
+        public string Format { get; set; }
+        
+        public string Fill { get; set; }
+
+        public SvgFormatHandler() {}
 
         public SvgFormatHandler(string fileName) //name.svg, name.datauri, name.css
         {
-            id = fileName.LeftPart('.');
-            format = fileName.RightPart('.');
-        }
-        
-        public SvgFormatHandler(string id, string format)
-        {
-            this.id = id;
-            this.format = format;
+            Id = fileName.LeftPart('.');
+            Format = fileName.RightPart('.');
         }
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
-            var svg = Svg.GetImage(id);
+            var svg = Svg.GetImage(Id, Fill);
             if (svg == null)
             {
                 httpRes.StatusCode = 404;
                 httpRes.StatusDescription = "SVG Image was not found";
             }
-            else if (format == "svg")
+            else if (Format == "svg")
             {
                 httpRes.ContentType = MimeTypes.ImageSvg;
                 await httpRes.WriteAsync(svg);
             }
-            else if (format == "css")
+            else if (Format == "css")
             {
                 httpRes.ContentType = "text/css";
-                var css = $".svg-{id} {{\n  {Svg.GetBackgroundImageCss(Svg.GetImage(id))}\n}}\n";
+                var css = $".svg-{Id} {{\n  {Svg.InBackgroundImageCss(Svg.GetImage(Id, Fill))}\n}}\n";
                 await httpRes.WriteAsync(css);
             }
-            else if (format == "datauri")
+            else if (Format == "datauri")
             {
-                var dataUri = Svg.GetDataUri(id);
+                var dataUri = Svg.GetDataUri(Id, Fill);
                 httpRes.ContentType = MimeTypes.PlainText;
                 await httpRes.WriteAsync(dataUri);
             }
@@ -257,8 +261,8 @@ namespace ServiceStack
 
         public static string Fill(string svg, string fillColor)
         {
-            if (string.IsNullOrEmpty(svg ) || string.IsNullOrEmpty(fillColor)) 
-                return null;
+            if (string.IsNullOrEmpty(svg) || string.IsNullOrEmpty(fillColor)) 
+                return svg;
 
             foreach (var color in FillColors)
             {
@@ -298,8 +302,10 @@ namespace ServiceStack
         }
 
         public static string ToDataUri(string svg) => "data:image/svg+xml," + Encode(svg);
-        public static string GetBackgroundImageCss(string svg) => "background-image: url(\"" + ToDataUri(svg) + "\");";
-        public static string GetBackgroundImageCss(string svg, string fillColor) => "background-image: url(\"" + ToDataUri(Fill(svg, fillColor)) + "\");";
+        public static string GetBackgroundImageCss(string name) => InBackgroundImageCss(GetImage(name));
+        public static string GetBackgroundImageCss(string name, string fillColor) => InBackgroundImageCss(GetImage(name, fillColor));
+
+        public static string InBackgroundImageCss(string svg) => "background-image: url(\"" + ToDataUri(svg) + "\");";
 
         public static void AddImage(string svg, string name, string cssFile=null)
         {
