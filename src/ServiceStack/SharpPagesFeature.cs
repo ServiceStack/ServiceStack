@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Web;
 using System.Threading.Tasks;
 using ServiceStack.Auth;
@@ -846,6 +847,8 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
     public class SharpPageHandler : HttpAsyncTaskHandler
     {
+        public Func<IRequest,bool> ValidateFn { get; set; }
+        
         public SharpPage Page { get; private set; }
         public SharpPage LayoutPage { get; private set; }
         public Dictionary<string, object> Args { get; set; }
@@ -874,6 +877,14 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (ValidateFn != null && !ValidateFn(httpReq))
+            {
+                httpRes.StatusCode = (int) HttpStatusCode.Forbidden;
+                httpRes.StatusDescription = "Request Validation Failed";
+                httpRes.EndRequest();
+                return;
+            }
+            
             if (Page == null && pagePath != null)
             {
                 var pages = Context != null

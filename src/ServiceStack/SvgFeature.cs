@@ -24,12 +24,19 @@ namespace ServiceStack
         /// </summary>
         public string RoutePath { get; set; } = "/metadata/svg";
 
+        /// <summary>
+        /// Custom Validation for SVG Metadata Page, return false to deny access, e.g. only allow in DebugMode with:
+        /// ValidateFn = req => HostContext.DebugMode
+        /// </summary>
+        public Func<IRequest, bool> ValidateFn { get; set; }
+
         public void Register(IAppHost appHost)
         {
             appHost.RawHttpHandlers.Add(req => req.PathInfo == RoutePath
                 ? (string.IsNullOrEmpty(req.QueryString["id"]) || string.IsNullOrEmpty(req.QueryString["format"]) 
                     ? new SharpPageHandler(HtmlTemplates.GetSvgTemplatePath()) {
-                        Context = SharpPageHandler.NewContext(appHost)
+                        ValidateFn = ValidateFn,
+                        Context = SharpPageHandler.NewContext(appHost),
                     }
                     : (IHttpHandler) new SvgFormatHandler {
                         Id = req.QueryString["id"], 

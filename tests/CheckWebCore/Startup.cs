@@ -124,6 +124,8 @@ namespace CheckWebCore
             var cache = container.Resolve<ICacheClient>();
             
             Plugins.Add(new ValidationFeature());
+
+            //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
     }
     
