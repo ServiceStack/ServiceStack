@@ -40,11 +40,11 @@ code {
     text-align: center;
     vertical-align: middle;
     width: 250px;
-    height: 200px;
+    height: 220px;
 }
 .svg-preview img {
     max-width: 250px;
-    height: 200px;
+    height: 220px;
 }
 
 td, th {
@@ -93,8 +93,11 @@ button {
 .btn-social, .btn-social-icon {
     border-color: #ffc907;
 }
-.btn i span {
+.btn i span, .svg-icons i span {
     opacity: 0;
+}
+.svg-icons i {
+    vertical-align: bottom;
 }
 .usage code {
     display: block;
@@ -182,16 +185,28 @@ button {
                     </div>
                 </div>
                 <div class="mt-4">
-                    <h4>Icons</h4>
+                    <h4>Button Icons</h4>
 <code class="sel">&lt;button class="btn btn-social-icon btn-{{name}}"&gt;
   &lt;i class="fab fa-{{name}}"&gt;&lt;/i&gt;
 &lt;/button&gt;</code>
                     <div class="btn-icons mt-2">
                         {{#each size in sizes}}
                         <button class="btn btn-social-icon btn-{{name}} btn-{{size}}">
-                            <i class="sel fab fa-{{name}}"><span>btn-{{size}}</span></i>
+                            <i class="sel fab fa-{{name}}" title="btn-{{size}}"><span>btn-{{size}}</span></i>
                         </button>
                         {{/each}}
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4>Image Sizes</h4>
+<code class="sel">&lt;i class="svg-{{name}} svg-{size}"&gt;&lt;/i&gt;</code>
+                    <div class="svg-icons mt-2">
+                        {{#each size in ['5x','4x','3x','2x','lg','md','sm','xs'].reverse()}}
+                        <i class="sel svg-{{size}} svg-{{name}}" title="svg-{{size}}"><span>svg-{{size}}</span></i>
+                        {{/each}}
+                    </div>
+                    <div class="mt-2">
+                        <b>Sizes:</b> xs sm md lg 2x 3x 4x 5x ... 14x
                     </div>
                 </div>
             </td>
