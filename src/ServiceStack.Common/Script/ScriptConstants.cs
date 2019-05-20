@@ -18,7 +18,8 @@ namespace ServiceStack.Script
 
         public const string Debug = "debug";
         public const string AssignError = "assignError";
-        public const string CatchError = "catchError"; //assigns error and continues
+        public const string CatchError = "catchError";     //assigns error and continues
+        public const string IfErrorReturn = "ifErrorReturn"; //returns error and continues
         public const string HtmlEncode = "htmlencode";
         public const string Model = "model";
         public const string Page = "page";
