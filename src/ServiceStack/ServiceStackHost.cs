@@ -31,6 +31,7 @@ using ServiceStack.Text;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 using static System.String;
 
 namespace ServiceStack
@@ -1160,7 +1161,8 @@ namespace ServiceStack
                 ? pathInfo.Substring(1)
                 : pathInfo;
 
-            var normalizedPathInfo = pathNoPrefix.StartsWith(mode)
+            var normalizedPathInfo = pathNoPrefix == mode || 
+                 (pathNoPrefix.StartsWith(mode) && pathNoPrefix.Length > mode.Length && pathNoPrefix[mode.Length] == '/')
                 ? pathNoPrefix.Substring(mode.Length)
                 : pathInfo;
 
