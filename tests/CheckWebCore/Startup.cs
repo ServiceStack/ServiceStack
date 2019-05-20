@@ -125,6 +125,9 @@ namespace CheckWebCore
             
             Plugins.Add(new ValidationFeature());
 
+            this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = 
+                new SharpPageHandler("/forbidden");
+            
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
     }
