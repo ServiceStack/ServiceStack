@@ -247,9 +247,20 @@ namespace ServiceStack.Script
             }
         }
 
+        static string jsonOrNull(object x)
+        {
+            if (x != null)
+            {
+                var json = x.ToJson();
+                if (!string.IsNullOrEmpty(json))
+                    return json;
+            }
+            return "null";
+        }
+        
         //Filters
-        public IRawString json(object value) => serialize(value, null, x => x.ToJson() ?? "null");
-        public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJson() ?? "null");
+        public IRawString json(object value) => serialize(value, null, jsonOrNull);
+        public IRawString json(object value, string jsconfig) => serialize(value, jsconfig, jsonOrNull);
         public IRawString jsv(object value) => serialize(value, null, x => x.ToJsv() ?? "");
         public IRawString jsv(object value, string jsconfig) => serialize(value, jsconfig, x => x.ToJsv() ?? "");
         public IRawString csv(object value) => (value.AssertNoCircularDeps().ToCsv() ?? "").ToRawString();

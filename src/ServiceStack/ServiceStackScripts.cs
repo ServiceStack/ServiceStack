@@ -33,10 +33,17 @@ namespace ServiceStack
 
         public object resolveUrl(ScriptScopeContext scope, string virtualPath) =>
             req(scope).ResolveAbsoluteUrl(virtualPath);
+        
+        public object execService(ScriptScopeContext scope, string requestName) => 
+            sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
+
+        public object execService(ScriptScopeContext scope, string requestName, object options) => 
+            sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, options);
 
         public object sendToGateway(ScriptScopeContext scope, string requestName) => 
             sendToGateway(scope, TypeConstants.EmptyObjectDictionary, requestName, null);
-        public object sendToGateway(ScriptScopeContext scope, object dto, string requestName) => sendToGateway(scope, dto, requestName, null);
+        public object sendToGateway(ScriptScopeContext scope, object dto, string requestName) => 
+            sendToGateway(scope, dto, requestName, null);
         public object sendToGateway(ScriptScopeContext scope, object dto, string requestName, object options)
         {
             try

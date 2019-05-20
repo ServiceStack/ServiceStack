@@ -813,6 +813,13 @@ namespace ServiceStack.Script
                                 LastFilterError = null;
                                 LastFilterStackTrace = null;
                             }
+                            if (filterParams.TryGetValue(ScriptConstants.IfErrorReturn, out object ifErrorReturn))
+                            {
+                                SkipFilterExecution = false;
+                                LastFilterError = null;
+                                LastFilterStackTrace = null;
+                                return ifErrorReturn;
+                            }
                         }
 
                         if (errorBinding == null)
