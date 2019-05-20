@@ -646,7 +646,7 @@
         if ($.ss.eventSourceStop) return;
         opt = opt || {};
         var hold = $.ss.eventSource;
-        var es = new EventSource(opt.url || $.ss.eventSourceUrl || hold.url);
+        var es = new EventSource(opt.url || $.ss.eventSourceUrl || hold.url, { withCredentials:hold.withCredentials });
         es.onerror = opt.onerror || hold.onerror;
         es.onmessage = opt.onmessage || hold.onmessage;
         var fn = $.ss.handlers["onReconnect"];
