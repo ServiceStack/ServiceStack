@@ -1078,17 +1078,10 @@ namespace ServiceStack
             {
                 ResolveVfsAndSource(filterName, webVfs, contentVfs, source, out var vfs, out var virtualPath);
                 
-                var file = vfs.GetFile(virtualPath);
-                if (file != null)
-                {
-                    yield return file;
-                    continue;
-                }
-
                 var dir = vfs.GetDirectory(virtualPath);
                 if (dir != null)
                 {
-                    var files = dir.GetFiles();
+                    var files = dir.GetAllFiles();
                     foreach (var dirFile in files)
                     {
                         if (!assetExt.EqualsIgnoreCase(dirFile.Extension))
@@ -1096,6 +1089,13 @@ namespace ServiceStack
                         
                         yield return dirFile;
                     }
+                    continue;
+                }
+
+                var file = vfs.GetFile(virtualPath);
+                if (file != null)
+                {
+                    yield return file;
                 }
                 else throw new NotSupportedException($"Could not find resource at virtual path '{source}' in '{filterName}'");
             }

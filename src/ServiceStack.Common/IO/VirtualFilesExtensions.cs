@@ -156,14 +156,46 @@ namespace ServiceStack.IO
 
     public static class VirtualDirectoryExtensions
     {
+        /// <summary>
+        /// Get only files in this directory
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
         public static IEnumerable<IVirtualFile> GetFiles(this IVirtualDirectory dir)
         {
             return dir.Files;
         }
 
+        /// <summary>
+        /// Get only sub directories in this directory
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
         public static IEnumerable<IVirtualDirectory> GetDirectories(this IVirtualDirectory dir)
         {
             return dir.Directories;
         }
+        
+        /// <summary>
+        /// Get All Files in current and all sub directories
+        /// </summary>
+        /// <param name="dir"></param>
+        /// <returns></returns>
+        public static IEnumerable<IVirtualFile> GetAllFiles(this IVirtualDirectory dir)
+        {
+            foreach (var subDir in dir.GetDirectories())
+            {
+                foreach (var file in subDir.GetAllFiles())
+                {
+                    yield return file;
+                }
+            }
+
+            foreach (var file in dir.Files)
+            {
+                yield return file;
+            }
+        }
+
     }
 }
