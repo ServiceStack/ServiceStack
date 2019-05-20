@@ -106,7 +106,7 @@ namespace ServiceStack.Auth
             }
 
             if (service.Request.ResponseContentType == MimeTypes.Html && !string.IsNullOrEmpty(referrerUrl))
-                return service.Redirect(LogoutUrlFilter(this, referrerUrl.SetParam("s", "-1")));
+                return service.Redirect(LogoutUrlFilter(this, referrerUrl));
 
             return new AuthenticateResponse();
         }

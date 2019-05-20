@@ -1,0 +1,7 @@
+{{ 'role' | importRequestParams }}
+
+<h3>You are not authorized to access <span>this page</span></h3>
+
+{{#if role}}
+    <p>Missing role <code>{role}</code></p>
+{{/if}}

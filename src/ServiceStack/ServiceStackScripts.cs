@@ -178,16 +178,23 @@ namespace ServiceStack
             return authSession?.IsAuthenticated == true;
         }
 
+        public object redirectTo(ScriptScopeContext scope, string path)
+        {
+            return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
+                Headers = {
+                    [HttpHeaders.Location] = path.FirstCharEquals('~')
+                        ? req(scope).ResolveAbsoluteUrl(path)
+                        : path
+                }
+            });
+        }
+
         public object redirectIfNotAuthenticated(ScriptScopeContext scope)
         {
             if (!isAuthenticated(scope))
             {
                 var url = AuthenticateAttribute.GetHtmlRedirectUrl(req(scope));
-                return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
-                    Headers = {
-                        [HttpHeaders.Location] = url
-                    }
-                });                
+                return redirectTo(scope, url);
             }
             return IgnoreResult.Value;
         }
@@ -196,15 +203,67 @@ namespace ServiceStack
         {
             if (!isAuthenticated(scope))
             {
-                return Context.DefaultMethods.@return(scope, new HttpResult(null, null, HttpStatusCode.Redirect) {
-                    Headers = {
-                        [HttpHeaders.Location] = path.FirstCharEquals('~')
-                            ? req(scope).ResolveAbsoluteUrl(path)
-                            : path
-                    }
-                });                
+                var url = AuthenticateAttribute.GetHtmlRedirectUrl(req(scope), path, includeRedirectParam:true);
+                return redirectTo(scope, url);
             }
             
+            return IgnoreResult.Value;
+        }
+
+        public object hasRole(ScriptScopeContext scope, string role) =>
+            userSession(scope)?.HasRole(role, req(scope).TryResolve<IAuthRepository>()) == true;
+
+        public object hasPermission(ScriptScopeContext scope, string permission) =>
+            userSession(scope)?.HasPermission(permission, req(scope).TryResolve<IAuthRepository>()) == true;
+
+        public object assertRole(ScriptScopeContext scope, string role) => assertRole(scope, role, null);
+        public object assertRole(ScriptScopeContext scope, string role, Dictionary<string,object> options)
+        {
+            var args = scope.AssertOptions(nameof(assertRole), options);
+            if (redirectIfNotAuthenticated(scope) is StopExecution ret)
+                return ret;
+            
+            var authSession = userSession(scope);
+            if (!authSession.HasRole(role, req(scope).TryResolve<IAuthRepository>()))
+            {
+                if (args.TryGetValue("redirect", out var oRedirect))
+                {
+                    var path = (string)oRedirect;
+                    return redirectTo(scope, path);
+                }
+
+                var message = args.TryGetValue("message", out var oMessage)
+                    ? (string) oMessage
+                    : ErrorMessages.InvalidRole.Localize(req(scope));
+                    
+                return Context.DefaultMethods.@return(scope, new HttpError(HttpStatusCode.Forbidden, message));
+            }
+
+            return IgnoreResult.Value;
+        }
+
+        public object assertPermission(ScriptScopeContext scope, string permission) => assertRole(scope, permission, null);
+        public object assertPermission(ScriptScopeContext scope, string permission, Dictionary<string,object> options)
+        {
+            var args = scope.AssertOptions(nameof(permission), options);
+            if (redirectIfNotAuthenticated(scope) is StopExecution ret)
+                return ret;
+            
+            var authSession = userSession(scope);
+            if (!authSession.HasPermission(permission, req(scope).TryResolve<IAuthRepository>()))
+            {
+                if (args.TryGetValue("redirect", out var oRedirect))
+                {
+                    var path = (string)oRedirect;
+                    return redirectTo(scope, path);
+                }
+
+                var message = args.TryGetValue("message", out var oMessage)
+                    ? (string) oMessage
+                    : ErrorMessages.InvalidRole.Localize(req(scope));
+                    
+                return Context.DefaultMethods.@return(scope, new HttpError(HttpStatusCode.Forbidden, message));
+            }
             return IgnoreResult.Value;
         }
 
