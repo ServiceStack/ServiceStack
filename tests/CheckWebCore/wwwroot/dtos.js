@@ -1,9 +1,9 @@
 "use strict";
 /* Options:
-Date: 2019-02-14 23:07:52
-Version: 5.41
+Date: 2019-05-21 19:18:52
+Version: 5.51
 Tip: To override a DTO option, remove "//" prefix before updating
-BaseUrl: http://localhost:5000
+BaseUrl: https://localhost:5001
 
 //GlobalNamespace:
 //AddServiceStackTypes: True
@@ -15,20 +15,6 @@ BaseUrl: http://localhost:5000
 //DefaultImports:
 */
 Object.defineProperty(exports, "__esModule", { value: true });
-var Title;
-(function (Title) {
-    Title["Unspecified"] = "Unspecified";
-    Title["Mr"] = "Mr";
-    Title["Mrs"] = "Mrs";
-    Title["Miss"] = "Miss";
-})(Title = exports.Title || (exports.Title = {}));
-var Contact = /** @class */ (function () {
-    function Contact(init) {
-        Object.assign(this, init);
-    }
-    return Contact;
-}());
-exports.Contact = Contact;
 // @DataContract
 var ResponseError = /** @class */ (function () {
     function ResponseError(init) {
@@ -45,6 +31,20 @@ var ResponseStatus = /** @class */ (function () {
     return ResponseStatus;
 }());
 exports.ResponseStatus = ResponseStatus;
+var Title;
+(function (Title) {
+    Title["Unspecified"] = "Unspecified";
+    Title["Mr"] = "Mr";
+    Title["Mrs"] = "Mrs";
+    Title["Miss"] = "Miss";
+})(Title = exports.Title || (exports.Title = {}));
+var Contact = /** @class */ (function () {
+    function Contact(init) {
+        Object.assign(this, init);
+    }
+    return Contact;
+}());
+exports.Contact = Contact;
 var FilmGenres;
 (function (FilmGenres) {
     FilmGenres["Action"] = "Action";
@@ -77,6 +77,13 @@ var AuthUserSession = /** @class */ (function () {
     return AuthUserSession;
 }());
 exports.AuthUserSession = AuthUserSession;
+var ImportDataResponse = /** @class */ (function () {
+    function ImportDataResponse(init) {
+        Object.assign(this, init);
+    }
+    return ImportDataResponse;
+}());
+exports.ImportDataResponse = ImportDataResponse;
 var GetContactsResponse = /** @class */ (function () {
     function GetContactsResponse(init) {
         Object.assign(this, init);
@@ -174,6 +181,24 @@ var Session = /** @class */ (function () {
     return Session;
 }());
 exports.Session = Session;
+// @Route("/throw")
+var Throw = /** @class */ (function () {
+    function Throw(init) {
+        Object.assign(this, init);
+    }
+    return Throw;
+}());
+exports.Throw = Throw;
+// @Route("/api/data/import/{Month}", "POST")
+var ImportData = /** @class */ (function () {
+    function ImportData(init) {
+        Object.assign(this, init);
+    }
+    ImportData.prototype.createResponse = function () { return new ImportDataResponse(); };
+    ImportData.prototype.getTypeName = function () { return 'ImportData'; };
+    return ImportData;
+}());
+exports.ImportData = ImportData;
 // @Route("/contacts", "GET")
 var GetContacts = /** @class */ (function () {
     function GetContacts(init) {
