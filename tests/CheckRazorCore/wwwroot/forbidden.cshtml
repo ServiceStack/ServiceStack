@@ -1,0 +1,6 @@
+<h3>You are not authorized to access <span>this page</span></h3>
+
+@if (!string.IsNullOrEmpty(Request.QueryString["role"]))
+{
+    <p>Missing role <code>Request.QueryString["role"]</code></p>
+}
