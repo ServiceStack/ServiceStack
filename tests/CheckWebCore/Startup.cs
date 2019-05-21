@@ -12,6 +12,7 @@ using ServiceStack.Auth;
 using ServiceStack.Caching;
 using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
+using ServiceStack.Host;
 using ServiceStack.Mvc;
 using ServiceStack.Text;
 using ServiceStack.Validation;
@@ -41,14 +42,13 @@ namespace CheckWebCore
         public void Configure(IApplicationBuilder app) => "IStartup.Configure(-1)".Print();     // #7
     }
 
-    public class Startup
+    public class Startup : ModularStartup
     {
-        public IConfiguration Configuration { get; }
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public Startup(IConfiguration configuration) : base(configuration){}
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services)                              
+        public new void ConfigureServices(IServiceCollection services)                              
         {
             "Startup.ConfigureServices(IServiceCollection services)".Print();                   // #3
             services.AddMvc();
@@ -160,7 +160,19 @@ namespace CheckWebCore
     
     [Route("/throw")]
     public class Throw {}
+    
+    [Route("/api/data/import/{Month}", "POST")]
+    public class ImportData : IReturn<ImportDataResponse>
+    {
+        public string Month { get; set; }
+    }
 
+    public class ImportDataResponse : IHasResponseStatus
+    {
+        public ResponseStatus ResponseStatus { get; set; }
+    }
+
+        
     //    [Authenticate]
     public class MyServices : Service
     {
@@ -182,5 +194,27 @@ namespace CheckWebCore
         public object Any(Throw request) => HttpError.Conflict("Conflict message");
 //        public object Any(Throw request) => new HttpResult
 //            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
+
+        //[Authenticate]
+        public object Post(ImportData request)
+        {
+            if (Request.Files == null || Request.Files.Length <= 0)
+            {
+                throw new Exception("No import file was received by the server");
+            }
+
+            // This is always coming through as null
+            if (request.Month == null)
+            {
+                throw new Exception("No month was received by the server");
+            }
+
+            var file = (HttpFile)Request.Files[0];
+            var month = request.Month.Replace('-', '/');
+
+            //ImportData(month, file);
+
+            return new ImportDataResponse();
+        }
     }
 }

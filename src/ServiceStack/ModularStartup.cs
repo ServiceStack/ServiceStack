@@ -52,49 +52,17 @@ namespace ServiceStack
     ///  Priority &gt;= 0: (no [Priority] == 0)
     ///  - IConfigureApp.Configure(app), IStartup.Configure(app)
     /// </summary>
-    public class ModularStartup : IStartup
+    public abstract class ModularStartup : IStartup
     {
-        /// <summary>
-        /// No Startup Class and scan for Modular Startup classes in current Executing Assembly. 
-        /// </summary>
-        public static void Init() => Init(null, Assembly.GetExecutingAssembly());
-        
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in StartupType Assembly.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType) => Init(startupType, new[] { startupType.Assembly });
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in specified Assembly.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType, Assembly assembly) => Init(startupType, new[] { assembly });
-        /// <summary>
-        /// Use StartupType and scan for Modular Startup classes in specified Assemblies.
-        /// </summary>
-        /// <param name="startupType"></param>
-        public static void Init(Type startupType, Assembly[] assemblies)
-        {
-            StartupType = startupType;
-            ScanAssemblies = () => assemblies;
-        }
-        
-        internal static Type StartupType { get; set; }
-        
-        public static Func<Assembly[]> ScanAssemblies { get; set; }
+        public List<Assembly> ScanAssemblies { get; }
 
         public IConfiguration Configuration { get; }
-        public ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
+
+        protected ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
         {
-            this.Configuration = configuration;
-            var dlls = new List<Assembly>(assemblies) { GetType().Assembly }.Distinct().ToArray();
-            StartupType = GetType();
-            ScanAssemblies = () => dlls;
+            Configuration = configuration;
+            ScanAssemblies = new List<Assembly>(assemblies) { GetType().Assembly };
         }
-
-        public ModularStartup(){}
-
-        private object startupInstance;
 
         public object CreateStartupInstance(Type type)
         {
@@ -116,7 +84,7 @@ namespace ServiceStack
         {
             if (priorityInstances == null)
             {
-                var types = ScanAssemblies().SelectMany(x => x.GetTypes()).Where(x =>
+                var types = ScanAssemblies.Distinct().SelectMany(x => x.GetTypes()).Where(x =>
                     !typeof(ModularStartup).IsAssignableFrom(x) // exclude self 
                     && (
                         x.HasInterface(typeof(IStartup)) ||
@@ -124,14 +92,6 @@ namespace ServiceStack
                         x.HasInterface(typeof(IConfigureApp)))
                     );
 
-                if (StartupType != null)
-                {
-                    var isInherited = StartupType == GetType();
-                    startupInstance = isInherited 
-                        ? this 
-                        : CreateStartupInstance(StartupType);
-                }
-                
                 priorityInstances = new List<Tuple<object,int>>();
                 foreach (var type in types)
                 {
@@ -159,14 +119,11 @@ namespace ServiceStack
             var preStartupConfigs = startupConfigs.PriorityBelowZero();
             preStartupConfigs.ForEach(RunConfigure);
 
-            if (startupInstance != null)
+            // Execute TStartup Instance ConfigureServices(services)
+            var mi = GetType().GetMethod(nameof(ConfigureServices));
+            if (mi != null)
             {
-                // Execute TStartup Instance ConfigureServices(services)
-                var mi = startupInstance.GetType().GetMethod(nameof(ConfigureServices));
-                if (mi != null)
-                {
-                    mi.Invoke(startupInstance, new object[] { services });
-                }
+                mi.Invoke(this, new object[] { services });
             }
 
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
@@ -190,38 +147,35 @@ namespace ServiceStack
             var preStartupConfigs = startupConfigs.PriorityBelowZero();
             preStartupConfigs.ForEach(RunConfigure);
 
-            if (startupInstance != null)
+            // Execute TStartup Instance Configure(app) - can have var args
+            var mi = GetType().GetMethods().Where(x => 
+                    x.DeclaringType != typeof(ModularStartup) && // exclude self
+                    x.Name == nameof(Configure) &&
+                    x.GetParameters().Length > 0 &&
+                    x.GetParameters()[0].ParameterType ==
+                    typeof(IApplicationBuilder))
+                .OrderBy(x => x.GetParameters().Length)
+                .FirstOrDefault();            
+            if (mi != null)
             {
-                // Execute TStartup Instance Configure(app) - can have var args
-                var mi = startupInstance.GetType().GetMethods().Where(x => 
-                        x.DeclaringType != typeof(ModularStartup) && // exclude self
-                        x.Name == nameof(Configure) &&
-                        x.GetParameters().Length > 0 &&
-                        x.GetParameters()[0].ParameterType ==
-                        typeof(IApplicationBuilder))
-                    .OrderBy(x => x.GetParameters().Length)
-                    .FirstOrDefault();            
-                if (mi != null)
+                var args = new List<object>();
+                foreach (var pi in mi.GetParameters())
                 {
-                    var args = new List<object>();
-                    foreach (var pi in mi.GetParameters())
+                    if (pi.ParameterType == typeof(IApplicationBuilder))
                     {
-                        if (pi.ParameterType == typeof(IApplicationBuilder))
-                        {
-                            args.Add(app);
-                        }
-                        else if (pi.ParameterType == typeof(IConfiguration))
-                        {
-                            args.Add(Configuration);
-                        }
-                        else
-                        {
-                            args.Add(app.ApplicationServices.GetRequiredService(pi.ParameterType));
-                        }
+                        args.Add(app);
                     }
-                
-                    mi.Invoke(startupInstance, args.ToArray());
+                    else if (pi.ParameterType == typeof(IConfiguration))
+                    {
+                        args.Add(Configuration);
+                    }
+                    else
+                    {
+                        args.Add(app.ApplicationServices.GetRequiredService(pi.ParameterType));
+                    }
                 }
+                
+                mi.Invoke(this, args.ToArray());
             }
             
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
