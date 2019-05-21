@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -29,6 +30,7 @@ using ServiceStack.Logging;
 using ServiceStack.Messaging;
 using ServiceStack.Platforms;
 using ServiceStack.Redis;
+using ServiceStack.Script;
 using ServiceStack.VirtualPath;
 using ServiceStack.Web;
 using ServiceStack.Text;
@@ -434,6 +436,10 @@ namespace ServiceStack.Mvc
             catch (StopExecutionException) { }
             catch (Exception ex)
             {
+                ex = ex.UnwrapIfSingleException();
+                if (ex is StopExecutionException)
+                    return;
+                
                 req.Items[RenderException] = ex;
                 //Can't set HTTP Headers which are already written at this point
                 await req.Response.WriteErrorBody(ex);
@@ -987,18 +993,87 @@ namespace ServiceStack.Mvc
 
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(Request);
 
-        public void RedirectIfNotAuthenticated(string redirectUrl = null)
+        public void RedirectIfNotAuthenticated(string redirect = null)
         {
             if (IsAuthenticated)
                 return;
 
-            redirectUrl = redirectUrl
+            redirect = redirect
                 ?? AuthenticateService.HtmlRedirect
                 ?? HostContext.Config.DefaultRedirectPath
                 ?? HostContext.Config.WebHostUrl
                 ?? "/";
-            AuthenticateAttribute.DoHtmlRedirect(redirectUrl, Request, Response, includeRedirectParam: true);
+            AuthenticateAttribute.DoHtmlRedirect(redirect, Request, Response, includeRedirectParam: true);
             throw new StopExecutionException();
+        }
+
+        private HtmlString WaitStopAsync(Func<Task> fn)
+        {
+            fn().Wait();
+            return HtmlString.Empty;
+        }
+        
+        public async Task RedirectToAsync(string path)
+        {
+            var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
+                Headers = {
+                    [HttpHeaders.Location] = path.FirstCharEquals('~')
+                        ? ServiceStackRequest.ResolveAbsoluteUrl(path)
+                        : path
+                }
+            };
+            await ServiceStackRequest.Response.WriteToResponse(ServiceStackRequest, result);
+            throw new StopExecutionException();
+        }
+
+        public HtmlString RedirectTo(string path) => WaitStopAsync(() => RedirectToAsync(path));
+
+        public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => AssertRoleAsync(role, message, redirect));
+
+        public async Task AssertRoleAsync(string role, string message = null, string redirect = null)
+        {
+            var session = GetSession();
+            if (!session.IsAuthenticated)
+            {
+                RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasRole(role, TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await RedirectToAsync(redirect);
+                        
+                var req = ServiceStackRequest;
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
+
+        public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => AssertPermissionAsync(permission, message, redirect));
+
+        public async Task AssertPermissionAsync(string permission, string message = null, string redirect = null)
+        {
+            var session = GetSession();
+            if (!session.IsAuthenticated)
+            {
+                RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasPermission(permission, TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await RedirectToAsync(redirect);
+                        
+                var req = ServiceStackRequest;
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
         }
 
         public bool RenderErrorIfAny()
