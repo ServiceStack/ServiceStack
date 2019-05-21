@@ -108,8 +108,6 @@ namespace ServiceStack
         public SharpPagesFeature()
         {
             var appHost = HostContext.AssertAppHost();
-            ScanAssemblies.AddRange(appHost.ServiceAssemblies);
-
             this.InitForSharpPages(appHost);
             SkipExecutingFiltersIfError = true;
         }
@@ -117,6 +115,9 @@ namespace ServiceStack
         public virtual void Register(IAppHost appHost)
         {
             this.UseAppHost(appHost);
+
+            ScanAssemblies.AddRange(appHost.ServiceAssemblies);
+            ScanAssemblies = ScanAssemblies.Distinct().ToList();
 
             appHost.Register(Pages);
             appHost.Register(this);
