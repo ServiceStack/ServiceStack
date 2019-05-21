@@ -87,7 +87,7 @@ namespace ServiceStack
         public ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
         {
             this.Configuration = configuration;
-            var dlls = new List<Assembly>(assemblies) { GetType().Assembly }.ToArray();
+            var dlls = new List<Assembly>(assemblies) { GetType().Assembly }.Distinct().ToArray();
             StartupType = GetType();
             ScanAssemblies = () => dlls;
         }
