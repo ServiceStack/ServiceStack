@@ -195,7 +195,7 @@ namespace CheckWebCore
 //        public object Any(Throw request) => new HttpResult
 //            {StatusCode = HttpStatusCode.Conflict, Response = "Error message"};
 
-        //[Authenticate]
+        [Authenticate]
         public object Post(ImportData request)
         {
             if (Request.Files == null || Request.Files.Length <= 0)
