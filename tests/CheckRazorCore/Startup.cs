@@ -1,20 +1,20 @@
-﻿using Funq;
+﻿using System.Net;
+using Funq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ServiceStack;
 using ServiceStack.Mvc;
+using ServiceStack.Validation;
 
 namespace CheckRazorCore
 {
-    public class Startup
+    public class Startup : ModularStartup
     {
-        public IConfiguration Configuration { get; }
-        public Startup(IConfiguration configuration) => Configuration = configuration;
+        public Startup(IConfiguration configuration) : base(configuration) {}
 
-        public void ConfigureServices(IServiceCollection services)
+        public new void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
         }
@@ -79,6 +79,10 @@ namespace CheckRazorCore
             }
 
             Plugins.Add(new RazorFormat());
+
+            Plugins.Add(new ValidationFeature());
+
+            this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new RazorHandler("/forbidden");
         }
     }
 }

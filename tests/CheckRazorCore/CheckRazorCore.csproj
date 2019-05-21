@@ -17,4 +17,15 @@
       <PackageReference Include="ServiceStack.Text" Version="5.5.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="wwwroot\js\default.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\dist\vue.min.js" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\index.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\options.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\plugin.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vnode.d.ts" />
+      <_ContentIncludedByDefault Remove="wwwroot\lib\vue\types\vue.d.ts" />
+    </ItemGroup>
+
 </Project>
