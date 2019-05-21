@@ -83,8 +83,15 @@ namespace ServiceStack
         
         public static Func<Assembly[]> ScanAssemblies { get; set; }
 
-        private readonly IConfiguration configuration;
-        public ModularStartup(IConfiguration configuration) => this.configuration = configuration;
+        public IConfiguration Configuration { get; }
+        public ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
+        {
+            this.Configuration = configuration;
+            var dlls = new List<Assembly>(assemblies) { GetType().Assembly }.ToArray();
+            StartupType = GetType();
+            ScanAssemblies = () => dlls;
+        }
+
         public ModularStartup(){}
 
         private object startupInstance;
@@ -95,12 +102,12 @@ namespace ServiceStack
             if (ctorConfiguration != null)
             {
                 var activator = ctorConfiguration.GetActivator();
-                return activator.Invoke(configuration);
+                return activator.Invoke(Configuration);
             }
 
             var instance = type.CreateInstance();
             if (instance is IRequireConfiguration requiresConfig)
-                requiresConfig.Configuration = configuration;
+                requiresConfig.Configuration = Configuration;
             return instance;
         }
 
@@ -110,7 +117,8 @@ namespace ServiceStack
             if (priorityInstances == null)
             {
                 var types = ScanAssemblies().SelectMany(x => x.GetTypes()).Where(x =>
-                    x != typeof(ModularStartup) && (
+                    !typeof(ModularStartup).IsAssignableFrom(x) // exclude self 
+                    && (
                         x.HasInterface(typeof(IStartup)) ||
                         x.HasInterface(typeof(IConfigureServices)) ||
                         x.HasInterface(typeof(IConfigureApp)))
@@ -118,7 +126,10 @@ namespace ServiceStack
 
                 if (StartupType != null)
                 {
-                    startupInstance = CreateStartupInstance(StartupType);                    
+                    var isInherited = StartupType == GetType();
+                    startupInstance = isInherited 
+                        ? this 
+                        : CreateStartupInstance(StartupType);
                 }
                 
                 priorityInstances = new List<Tuple<object,int>>();
@@ -133,7 +144,7 @@ namespace ServiceStack
             return priorityInstances;
         }
 
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {
             void RunConfigure(object instance)
             {
@@ -164,7 +175,7 @@ namespace ServiceStack
             return services.BuildServiceProvider();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public virtual void Configure(IApplicationBuilder app)
         {
             void RunConfigure(object instance)
             {
@@ -183,6 +194,7 @@ namespace ServiceStack
             {
                 // Execute TStartup Instance Configure(app) - can have var args
                 var mi = startupInstance.GetType().GetMethods().Where(x => 
+                        x.DeclaringType != typeof(ModularStartup) && // exclude self
                         x.Name == nameof(Configure) &&
                         x.GetParameters().Length > 0 &&
                         x.GetParameters()[0].ParameterType ==
@@ -200,7 +212,7 @@ namespace ServiceStack
                         }
                         else if (pi.ParameterType == typeof(IConfiguration))
                         {
-                            args.Add(configuration);
+                            args.Add(Configuration);
                         }
                         else
                         {
@@ -215,7 +227,6 @@ namespace ServiceStack
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
             postStartupConfigs.ForEach(RunConfigure);
         }
-
     }
 #endif
 
