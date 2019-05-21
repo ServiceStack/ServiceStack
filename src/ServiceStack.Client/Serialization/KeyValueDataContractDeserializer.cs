@@ -23,6 +23,12 @@ namespace ServiceStack.Serialization
                 .CreateFromMap(nameValues);
         }
 
+        public object Populate(object instance, NameValueCollection nameValues, Type returnType)
+        {
+            return GetOrAddStringMapTypeDeserializer(returnType)
+                .PopulateFromMap(instance, nameValues);
+        }
+
         private StringMapTypeDeserializer GetOrAddStringMapTypeDeserializer(Type returnType)
         {
             StringMapTypeDeserializer stringMapTypeDeserializer;

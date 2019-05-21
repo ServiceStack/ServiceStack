@@ -172,6 +172,11 @@ namespace ServiceStack.Host.Handlers
             var isFormData = httpReq.HasAnyOfContentTypes(MimeTypes.FormUrlEncoded, MimeTypes.MultiPartFormData);
             if (isFormData)
             {
+                if (queryString.Count > 0)
+                {
+                    var instance = KeyValueDataContractDeserializer.Instance.Parse(queryString, operationType);
+                    return KeyValueDataContractDeserializer.Instance.Populate(instance, httpReq.FormData, operationType).InTask();
+                }
                 return KeyValueDataContractDeserializer.Instance.Parse(httpReq.FormData, operationType).InTask();
             }
 
