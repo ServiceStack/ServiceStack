@@ -367,7 +367,7 @@ namespace ServiceStack.Auth
             };
         }
     }
-
+    
     [DefaultRequest(typeof(GetAccessToken))]
     public class GetAccessTokenService : Service
     {
@@ -438,9 +438,23 @@ namespace ServiceStack.Auth
 
             var accessToken = jwtAuthProvider.CreateJwtBearerToken(Request, session, roles, perms);
 
-            return new GetAccessTokenResponse
+            var response = new GetAccessTokenResponse
             {
                 AccessToken = accessToken
+            };
+
+            if (request.UseTokenCookie != true)
+                return response;
+            
+            return new HttpResult(new GetAccessTokenResponse())
+            {
+                Cookies = {
+                    new Cookie(Keywords.TokenCookie, accessToken, Cookies.RootPath) {
+                        HttpOnly = true,
+                        Secure = Request.IsSecureConnection,
+                        Expires = DateTime.UtcNow.Add(jwtAuthProvider.ExpireTokensIn),
+                    }
+                }
             };
         }
     }
