@@ -390,6 +390,20 @@ namespace ServiceStack
         private string refreshTokenUri;
 
         /// <summary>
+        /// Whether new AccessToken from GetAccessToken should return BearerToken in Response DTO or Cookie
+        /// </summary>
+        public bool UseTokenCookie
+        {
+            get => useTokenCookie;
+            set
+            {
+                useTokenCookie = value;
+                asyncClient.UseTokenCookie = value;
+            }
+        }
+        private bool useTokenCookie;
+
+        /// <summary>
         /// The request filter is called before any request.
         /// This request filter only works with the instance where it was set (not global).
         /// </summary>
@@ -622,13 +636,20 @@ namespace ServiceStack
                 {
                     if (RefreshToken != null)
                     {
-                        var refreshRequest = new GetAccessToken { RefreshToken = RefreshToken };
+                        var refreshRequest = new GetAccessToken {
+                            RefreshToken = RefreshToken,
+                            UseTokenCookie = UseTokenCookie,
+                        };                        
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
 
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
-                            tokenResponse = uri.PostJsonToUrl(refreshRequest).FromJson<GetAccessTokenResponse>();
+                            tokenResponse = uri.PostJsonToUrl(refreshRequest, requestFilter: req => {
+                                if (UseTokenCookie) {
+                                    req.CookieContainer = CookieContainer;
+                                }
+                            }).FromJson<GetAccessTokenResponse>();
                         }
                         catch (WebException refreshEx)
                         {
@@ -643,18 +664,30 @@ namespace ServiceStack
                         }
 
                         var accessToken = tokenResponse?.AccessToken;
-                        if (string.IsNullOrEmpty(accessToken))
-                            throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
                         var refreshClient = (HttpWebRequest) createWebRequest();
-                        if (this.GetTokenCookie() != null)
+                        var tokenCookie = this.GetTokenCookie();
+                        
+                        if (UseTokenCookie)
                         {
-                            this.SetTokenCookie(accessToken);
-                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            if (tokenCookie == null)
+                                throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
+                            
+                            refreshClient.CookieContainer.SetTokenCookie(BaseUri, tokenCookie);
                         }
                         else
                         {
-                            refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            if (string.IsNullOrEmpty(accessToken))
+                                throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                            if (tokenCookie != null)
+                            {
+                                this.SetTokenCookie(accessToken);
+                                refreshClient.CookieContainer.SetTokenCookie(BaseUri, accessToken);
+                            }
+                            else
+                            {
+                                refreshClient.AddBearerToken(this.BearerToken = accessToken);
+                            }
                         }
 
                         var refreshResponse = getResponse(refreshClient);
@@ -674,7 +707,7 @@ namespace ServiceStack
                     return true;
                 }
             }
-            catch (WebServiceException /*retrhow*/)
+            catch (WebServiceException /*rethrow*/)
             {
                 throw;
             }
