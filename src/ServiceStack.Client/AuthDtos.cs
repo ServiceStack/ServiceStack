@@ -297,7 +297,8 @@ namespace ServiceStack
     {
         [DataMember(Order = 1)]
         public string RefreshToken { get; set; }
-        [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
+        [DataMember(Order = 2)] public bool? UseTokenCookie { get; set; }
+        [DataMember(Order = 3)] public Dictionary<string, string> Meta { get; set; }
     }
 
     [DataContract]
@@ -307,8 +308,7 @@ namespace ServiceStack
         public string AccessToken { get; set; }
 
         [DataMember(Order = 2)] public Dictionary<string, string> Meta { get; set; }
-        [DataMember(Order = 3)]
-        public ResponseStatus ResponseStatus { get; set; }
+        [DataMember(Order = 3)] public ResponseStatus ResponseStatus { get; set; }
     }
     
     [ExcludeMetadata]
