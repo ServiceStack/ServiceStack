@@ -13,16 +13,26 @@ namespace ServiceStack
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
+    /// <summary>
+    /// Implement to register your App's dependencies in a "no-touch" Startup configuration class 
+    /// </summary>
     public interface IConfigureServices 
     {
         void Configure(IServiceCollection services);
     }
     
+    /// <summary>
+    /// Implement to register your App's features in a "no-touch" Startup configuration class 
+    /// </summary>
     public interface IConfigureApp
     {
         void Configure(IApplicationBuilder app);
     }
 
+    /// <summary>
+    /// Implement to have configuration injected in your "no-touch" Startup configuration class as an
+    /// alternative for constructor injection.
+    /// </summary>
     public interface IRequireConfiguration
     {
         IConfiguration Configuration { get; set; }
@@ -30,15 +40,15 @@ namespace ServiceStack
 
 
     /// <summary>
-    /// Execute "no touch" Startup configuration classes.
+    /// Execute "no touch" IStartup, IConfigureServices and IConfigureApp Startup configuration classes.
     /// 
-    /// Use Init() to configure Startup Type and which Assemblies to Scan to find "no touch" Startup configuration classes executed in the following order:
+    /// The "no touch" Startup configuration classes are executed in the following order:
     /// 
     ///  Configure Services:
     ///  Priority &lt; 0:
     ///  - IConfigureServices.Configure(services), IStartup.ConfigureServices(services)
     /// 
-    ///  - StartupType.ConfigureServices(services)
+    ///  - this.ConfigureServices(services)
     /// 
     ///  Priority &gt;= 0: (no [Priority] == 0)
     ///  - IConfigureServices.Configure(services), IStartup.ConfigureServices(services)
@@ -47,7 +57,7 @@ namespace ServiceStack
     ///  Priority &lt; 0:
     ///  - IConfigureApp.Configure(app), IStartup.Configure(app)
     /// 
-    ///  - StartupType.Configure(app)
+    ///  - this.Configure(app)
     /// 
     ///  Priority &gt;= 0: (no [Priority] == 0)
     ///  - IConfigureApp.Configure(app), IStartup.Configure(app)
@@ -57,11 +67,35 @@ namespace ServiceStack
         public List<Assembly> ScanAssemblies { get; }
 
         public IConfiguration Configuration { get; }
+        
+        public Func<IEnumerable<Type>> TypeResolver { get; }
 
+        /// <summary>
+        /// Scan Types in Assemblies for Startup configuration classes
+        /// </summary>
         protected ModularStartup(IConfiguration configuration, params Assembly[] assemblies)
         {
-            Configuration = configuration;
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
             ScanAssemblies = new List<Assembly>(assemblies) { GetType().Assembly };
+            TypeResolver = () => ScanAssemblies.Distinct().SelectMany(x => x.GetTypes());
+        }
+
+        /// <summary>
+        /// Manually specify Types of Startup configuration classes 
+        /// </summary>
+        protected ModularStartup(IConfiguration configuration, Type[] types)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            TypeResolver = types.Distinct;
+        }
+
+        /// <summary>
+        /// Use a custom Type Resolver function to return Types of Startup configuration classes
+        /// </summary>
+        protected ModularStartup(IConfiguration configuration, Func<IEnumerable<Type>> typesResolver)
+        {
+            Configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            TypeResolver = typesResolver ?? throw new ArgumentNullException(nameof(typesResolver));
         }
 
         public object CreateStartupInstance(Type type)
@@ -84,7 +118,7 @@ namespace ServiceStack
         {
             if (priorityInstances == null)
             {
-                var types = ScanAssemblies.Distinct().SelectMany(x => x.GetTypes()).Where(x =>
+                var types = TypeResolver().Where(x =>
                     !typeof(ModularStartup).IsAssignableFrom(x) // exclude self 
                     && (
                         x.HasInterface(typeof(IStartup)) ||
