@@ -63,19 +63,12 @@ namespace ServiceStack
         /// If null Templates Admin Service will not be registered.
         /// </summary>
         public string ScriptAdminRole { get; set; } = RoleNames.Admin;
-        [Obsolete("Use ScriptAdminRole")]
-        public string TemplatesAdminRole { set => ScriptAdminRole = value; }
 
         /// <summary>
         /// Role Required to call Metadata Debug Service (/metadata/debug).
         /// If null Metadata Debug Service will only be registered in DebugMode.
         /// </summary>
         public string MetadataDebugAdminRole { get; set; }
-
-        [Obsolete("Use MetadataDebugAdminRole=RoleNames.Admin")]
-        public bool EnableDebugTemplate { set => MetadataDebugAdminRole = value ? RoleNames.Admin : null; }
-        [Obsolete("Use MetadataDebugAdminRole=RoleNames.AllowAnon")]
-        public bool EnableDebugTemplateToAll { set => MetadataDebugAdminRole = value ? RoleNames.AllowAnon : null; }
 
         public List<string> IgnorePaths { get; set; } = new List<string>
         {
