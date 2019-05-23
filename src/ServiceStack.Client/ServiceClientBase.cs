@@ -642,6 +642,11 @@ namespace ServiceStack
                         };                        
                         var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshRequest.ToPostUrl());
 
+                        if (this.UseTokenCookie)
+                        {
+                            this.BearerToken = null;
+                        }
+
                         GetAccessTokenResponse tokenResponse;
                         try
                         {
