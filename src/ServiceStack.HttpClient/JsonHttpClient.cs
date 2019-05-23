@@ -58,6 +58,8 @@ namespace ServiceStack
         public string BearerToken { get; set; }
         public string RefreshToken { get; set; }
         public string RefreshTokenUri { get; set; }
+        
+        public bool UseTokenCookie { get; set; }
 
         /// <summary>
         /// Gets the collection of headers to be added to outgoing requests.
@@ -254,8 +256,14 @@ namespace ServiceStack
                     {
                         if (RefreshToken != null)
                         {
-                            var refreshDto = new GetAccessToken { RefreshToken = RefreshToken };
+                            var refreshDto = new GetAccessToken { RefreshToken = RefreshToken, UseTokenCookie = UseTokenCookie };
                             var uri = this.RefreshTokenUri ?? this.BaseUri.CombineWith(refreshDto.ToPostUrl());
+
+                            if (this.UseTokenCookie)
+                            {
+                                this.BearerToken = null;
+                            }
+                            
                             return this.PostAsync<GetAccessTokenResponse>(uri, refreshDto, token)
                                 .ContinueWith(t =>
                                 {
@@ -269,17 +277,29 @@ namespace ServiceStack
                                     }
 
                                     var accessToken = t.Result?.AccessToken;
-                                    if (string.IsNullOrEmpty(accessToken))
-                                        throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
-
+                                    var tokenCookie = this.GetTokenCookie();
                                     var refreshRequest = CreateRequest(httpMethod, absoluteUrl, request);
-                                    if (this.GetTokenCookie() != null)
+                                    
+                                    if (UseTokenCookie)
                                     {
-                                        this.SetTokenCookie(accessToken);
+                                        if (tokenCookie == null)
+                                            throw new RefreshTokenException("Could not retrieve new AccessToken Cooke from: " + uri);
+                            
+                                        this.SetTokenCookie(tokenCookie);
                                     }
                                     else
                                     {
-                                        refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                                        if (string.IsNullOrEmpty(accessToken))
+                                            throw new RefreshTokenException("Could not retrieve new AccessToken from: " + uri);
+
+                                        if (tokenCookie != null)
+                                        {
+                                            this.SetTokenCookie(accessToken);
+                                        }
+                                        else
+                                        {
+                                            refreshRequest.AddBearerToken(this.BearerToken = accessToken);
+                                        }
                                     }
 
                                     return client.SendAsync(refreshRequest, token).ContinueWith(refreshTask => 
