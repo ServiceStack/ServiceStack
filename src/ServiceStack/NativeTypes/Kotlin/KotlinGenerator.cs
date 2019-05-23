@@ -81,6 +81,8 @@ namespace ServiceStack.NativeTypes.Kotlin
             {"Dictionary", "HashMap"},
         }.ToConcurrentDictionary();
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
@@ -545,6 +547,10 @@ namespace ServiceStack.NativeTypes.Kotlin
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
