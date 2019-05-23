@@ -433,7 +433,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                             ? "super(init); " 
                             : "super(); "
                         : "";
-                    sb.AppendLine($"public constructor(init?:Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
+                    sb.AppendLine($"public constructor(init?: Partial<{typeName}>) {{ {callSuper}(Object as any).assign(this, init); }}");
                 }
 
                 if (Config.ExportAsTypes && responseTypeExpression != null)
@@ -591,7 +591,7 @@ namespace ServiceStack.NativeTypes.TypeScript
                 if (ArrayTypes.Contains(type))
                     return "{0}[]".Fmt(GenericArg(genericArgs[0])).StripNullable();
                 if (DictionaryTypes.Contains(type))
-                    return "{{ [index:{0}]: {1}; }}".Fmt(
+                    return "{{ [index: {0}]: {1}; }}".Fmt(
                         GenericArg(genericArgs[0]),
                         GenericArg(genericArgs[1]));
 
