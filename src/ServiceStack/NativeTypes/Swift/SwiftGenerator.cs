@@ -57,6 +57,8 @@ namespace ServiceStack.NativeTypes.Swift
             {"Stream", "Data"},
         }.ToConcurrentDictionary();
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static HashSet<string> OverrideInitForBaseClasses = new HashSet<string> {
             "NSObject"
         };
@@ -816,6 +818,10 @@ namespace ServiceStack.NativeTypes.Swift
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (!genericArgs.IsEmpty())
             {
                 if (type == "Nullable`1")

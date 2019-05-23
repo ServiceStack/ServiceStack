@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using ServiceStack.Text;
@@ -88,6 +87,10 @@ namespace ServiceStack.NativeTypes.TypeScript
             {"List", "[]"},
             {"Uint8Array", "new Uint8Array(0)"},
         };
+        
+        public static TypeFilterDelegate TypeFilter { get; set; }
+        public static Func<string, string> DeclarationTypeFilter { get; set; }
+        public static Func<string, string> ReturnMarkerFilter { get; set; }
 
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
@@ -584,6 +587,10 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public string Type(string type, string[] genericArgs)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+            
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")
@@ -751,6 +758,11 @@ namespace ServiceStack.NativeTypes.TypeScript
                 sb.Append(ConvertFromCSharp(node.Children[0]));
                 sb.Append("[]");
             }
+            else if (node.Text == "List`1")
+            {
+                var type = node.Children.Count > 0 ? node.Children[0].Text : "any";
+                sb.Append(type).Append("[]");
+            }
             else if (node.Text == "Dictionary")
             {
                 sb.Append("{ [index:");
@@ -789,6 +801,10 @@ namespace ServiceStack.NativeTypes.TypeScript
     {
         public static string InDeclarationType(this string type)
         {
+            var useType = TypeScriptGenerator.DeclarationTypeFilter?.Invoke(type);
+            if (useType != null)
+                return useType;
+            
             //TypeScript doesn't support short-hand Dictionary notation or has a Generic Dictionary Type
             if (type.StartsWith("{"))
                 return "any";
@@ -803,8 +819,19 @@ namespace ServiceStack.NativeTypes.TypeScript
 
         public static string InReturnMarker(this string type)
         {
+            var useType = TypeScriptGenerator.ReturnMarkerFilter?.Invoke(type);
+            if (useType != null)
+                return useType;
+            
             if (type.StartsWith("{"))
                 return "any";
+
+            var pos = type.IndexOf("<{", StringComparison.Ordinal);
+            if (pos >= 0)
+            {
+                var ret = type.LeftPart("<{") + "<any>" + type.LastRightPart("}>");
+                return ret;
+            }
             
             //Note: can only implement using Array short-hand notation: IReturn<Type[]>
 

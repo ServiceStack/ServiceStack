@@ -79,6 +79,8 @@ namespace ServiceStack.NativeTypes.VbNet
             "Mod",
         };
 
+        public static TypeFilterDelegate TypeFilter { get; set; }
+
         public static Func<List<MetadataType>, List<MetadataType>> FilterTypes = DefaultFilterTypes;
 
         public static List<MetadataType> DefaultFilterTypes(List<MetadataType> types) => types;
@@ -519,6 +521,10 @@ namespace ServiceStack.NativeTypes.VbNet
 
         public string Type(string type, string[] genericArgs, bool includeNested = false)
         {
+            var useType = TypeFilter?.Invoke(type, genericArgs);
+            if (useType != null)
+                return useType;
+
             if (genericArgs != null)
             {
                 if (type == "Nullable`1")

@@ -13,6 +13,8 @@ using ServiceStack.Web;
 
 namespace ServiceStack.NativeTypes
 {
+    public delegate string TypeFilterDelegate(string typeName, string[] genericArgs);
+    
     public class NativeTypesMetadata : INativeTypesMetadata
     {
         private readonly ServiceMetadata meta;
