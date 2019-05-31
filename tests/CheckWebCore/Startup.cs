@@ -14,6 +14,7 @@ using ServiceStack.Configuration;
 using ServiceStack.DataAnnotations;
 using ServiceStack.Host;
 using ServiceStack.Mvc;
+using ServiceStack.NativeTypes.TypeScript;
 using ServiceStack.Text;
 using ServiceStack.Validation;
 
@@ -127,7 +128,14 @@ namespace CheckWebCore
 
             this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = 
                 new SharpPageHandler("/forbidden");
-            
+
+//            TypeScriptGenerator.TypeFilter = (type, args) => {
+//                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
+//                    return "ResponseBase<Map<string,Array<any>>>";
+//                return null;
+//            };
+
+
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
     }
@@ -172,10 +180,32 @@ namespace CheckWebCore
         public ResponseStatus ResponseStatus { get; set; }
     }
 
+    public class ResponseBase<T>
+    {
+        public T Result { get; set; }
+    }
+    public class Campaign : IReturn<ResponseBase<Dictionary<string, List<object>>>>
+    {
+        public int Id { get; set; }
+    }
+    public class DataEvent
+    {
+        public int Id { get; set; }
+    }
+
+    public class Dummy
+    {
+        public Campaign Campaign { get; set; }
+        public DataEvent DataEvent { get; set; }
+    }
+
         
     //    [Authenticate]
     public class MyServices : Service
     {
+        public object Any(Dummy request) => request;
+        public object Any(Campaign request) => request;
+        
         //Return index.html for unmatched requests so routing is handled on client
         public object Any(FallbackForClientRoutes request) => 
             Request.GetPageResult("/");

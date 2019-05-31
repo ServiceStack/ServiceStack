@@ -42,7 +42,7 @@ namespace CheckHttpListener
                 db.InsertAll(SeedRockstars);
             }
             
-            Plugins.Add(new TemplatePagesFeature());
+            Plugins.Add(new SharpPagesFeature());
             
             Plugins.Add(new OpenApiFeature());
 
