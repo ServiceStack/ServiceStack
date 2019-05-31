@@ -79,7 +79,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         }
 
         [Test]
-        public void Does_scan_AppHost_Service_Assemblies_in_TemplatePagesFeature()
+        public void Does_scan_AppHost_Service_Assemblies_in_SharpPagesFeature()
         {
             using (new AppHost().Init())
             {

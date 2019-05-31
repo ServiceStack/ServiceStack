@@ -76,10 +76,10 @@ namespace CheckWeb
             container.Register<IServiceClient>(c =>
                 new JsonServiceClient("http://localhost:55799/"));
 
-            Plugins.Add(new TemplatePagesFeature
+            Plugins.Add(new SharpPagesFeature
             {
                 MetadataDebugAdminRole = RoleNames.AllowAnyUser, 
-                TemplatesAdminRole = RoleNames.AllowAnon,
+                ScriptAdminRole = RoleNames.AllowAnon,
             });
 
             //ProxyFetureTests
