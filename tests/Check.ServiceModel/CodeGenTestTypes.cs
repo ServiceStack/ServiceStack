@@ -118,17 +118,22 @@ namespace Check.ServiceModel.Operations
 
     public enum EnumWithValues
     {
+        None = 0,
+        [EnumMember(Value = "Value 1")]
         Value1 = 1,
-        Value2 = 2
+        [Description("Value 2")]
+        Value2 = 2,
     }
 
     [Flags]
     public enum EnumFlags
     {
         Value0 = 0,
+        [EnumMember(Value = "Value 1")]
         Value1 = 1,
+        [Description("Value 2")]
         Value2 = 2,
-        Value3 = 3,
+        Value3 = 4,
         Value123 = Value1 | Value2 | Value3,
     }
 

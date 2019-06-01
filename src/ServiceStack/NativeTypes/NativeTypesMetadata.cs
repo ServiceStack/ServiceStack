@@ -401,27 +401,38 @@ namespace ServiceStack.NativeTypes
                 metaType.EnumValues = new List<string>();
 
                 var isDefaultLayout = true;
+                var isIntEnum = JsConfig.TreatEnumAsInteger || type.IsEnumFlags();
                 var names = Enum.GetNames(type);
                 for (var i = 0; i < names.Length; i++)
                 {
                     var name = names[i];
+                    metaType.EnumNames.Add(name);
+
                     var enumMember = GetEnumMember(type, name);
 
                     var value = enumMember.GetRawConstantValue();
                     var enumValue = Convert.ToInt64(value).ToString();
 
-                    var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
-                    if (enumMemberValue != null)
+                    if (isIntEnum)
                     {
-                        enumValue = enumMemberValue;
-                        isDefaultLayout = false;
-                    }                  
+                        metaType.EnumValues.Add(enumValue);
+                    }
+                    else
+                    {
+                        var enumMemberValue = enumMember.FirstAttribute<EnumMemberAttribute>()?.Value;
+                        if (enumMemberValue != null)
+                        {
+                            isDefaultLayout = false;
+                            metaType.EnumValues.Add(enumMemberValue);
+                        }
+                        else
+                        {
+                            metaType.EnumValues.Add(name);
+                        }
+                    }
 
                     if (enumValue != i.ToString())
                         isDefaultLayout = false;
-
-                    metaType.EnumNames.Add(name);
-                    metaType.EnumValues.Add(enumValue);
                 }
 
                 if (isDefaultLayout)
