@@ -12,7 +12,7 @@ using ServiceStack.Api.OpenApi;
 using ServiceStack.Data;
 using ServiceStack.MiniProfiler;
 using ServiceStack.Mvc;
-using ServiceStack.OrmLite;
+//using ServiceStack.OrmLite; // ref source packages 
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
@@ -31,10 +31,10 @@ namespace CheckMvc
             
             Plugins.Add(new MiniProfilerFeature());
 
-            container.Register<IRedisClientsManager>(c =>
-                new RedisManagerPool());
+//            container.Register<IRedisClientsManager>(c =>
+//                new RedisManagerPool());
 
-            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
+//            container.Register(c => c.Resolve<IRedisClientsManager>().GetCacheClient());
 
             SetConfig(new HostConfig { DebugMode = true });
             
@@ -113,9 +113,9 @@ namespace CheckMvc
 
         protected void Application_Start()
         {
-            DbFactory = new OrmLiteConnectionFactory(
-                ConfigurationManager.AppSettings["connectionString"],
-                SqlServerDialect.Provider);
+//            DbFactory = new OrmLiteConnectionFactory(
+//                ConfigurationManager.AppSettings["connectionString"],
+//                SqlServerDialect.Provider);
 
             JsConfig.Init(new ServiceStack.Text.Config {
                 TextCase = TextCase.CamelCase,
