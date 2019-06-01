@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Mvc;
+using dtos;
 using ServiceStack;
 using ServiceStack.Mvc;
 
@@ -62,6 +63,13 @@ namespace CheckMvc.Controllers
             }
             
             return View(GetViewModel("Contact"));
+        }
+
+        public ActionResult Hello()
+        {
+            var uri = new GetExample().ToAbsoluteUri();
+            ViewBag.Message = uri;
+            return View();
         }
     }
 }
