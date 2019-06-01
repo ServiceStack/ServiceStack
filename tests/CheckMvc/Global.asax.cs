@@ -104,6 +104,28 @@ namespace CheckMvc
 
         public Stream RequestStream { get; set; }
     }
+
+    [ServiceStack.Route("/urlcheck")]
+    [ServiceStack.Route("/urlcheck/{Name}")]
+    public class UrlCheck : IReturn<UrlCheckResponse>
+    {
+        public string Name { get; set; }
+    }
+
+    public class UrlCheckResponse
+    {
+        public string Result { get; set; }
+    }
+
+    public class MyServices : Service
+    {
+        public object Any(UrlCheck request)
+        {
+            return new UrlCheckResponse {
+                Result = request.ToAbsoluteUri()
+            };
+        }
+    }
     
     // Note: For instructions on enabling IIS6 or IIS7 classic mode, 
     // visit http://go.microsoft.com/?LinkId=9394801
