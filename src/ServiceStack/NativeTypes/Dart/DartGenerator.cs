@@ -1123,8 +1123,9 @@ namespace ServiceStack.NativeTypes.Dart
             var sb = new StringBuilder();
 
             if (node.Text == "Nullable")
-                return node.Children[0].Text;
-            else if (node.Text == "Dictionary")
+                return TypeAlias(node.Children[0].Text);
+            
+            if (node.Text == "Dictionary")
                 node.Text = "Map";
             else if (node.Text == "HashSet")
                 node.Text = "Set";
