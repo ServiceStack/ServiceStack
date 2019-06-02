@@ -1122,9 +1122,11 @@ namespace ServiceStack.NativeTypes.Dart
         {
             var sb = new StringBuilder();
 
-            if (node.Text == "Dictionary")
+            if (node.Text == "Nullable")
+                return node.Children[0].Text;
+            else if (node.Text == "Dictionary")
                 node.Text = "Map";
-            if (node.Text == "HashSet")
+            else if (node.Text == "HashSet")
                 node.Text = "Set";
             if (conflictTypeNames.Contains(node.Text + "`" + node.Children.Count))
                 node.Text += node.Children.Count;
