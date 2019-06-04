@@ -405,6 +405,8 @@ namespace ServiceStack.Auth
 
             return referrerUrl;
         }
+        
+        public Action<IAuthSession, IUserAuth> PopulateSessionFilter { get; set; }
 
         public virtual void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
         {
@@ -418,6 +420,8 @@ namespace ServiceStack.Auth
             session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
                 .ConvertAll(x => (IAuthTokens)x);
+            
+            PopulateSessionFilter?.Invoke(session, userAuth);
         }
 
         protected virtual object ConvertToClientError(object failedResult, bool isHtml)
