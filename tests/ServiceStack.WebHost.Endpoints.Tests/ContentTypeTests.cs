@@ -1,4 +1,6 @@
-﻿using NUnit.Framework;
+﻿using System.Collections.Generic;
+using NUnit.Framework;
+using ServiceStack.Text;
 using ServiceStack.WebHost.Endpoints.Tests.Support.Host;
 
 namespace ServiceStack.WebHost.Endpoints.Tests
@@ -91,6 +93,27 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var dto = json.FromJson<TestContentType>();
             Assert.That(dto.Id, Is.EqualTo(1));
         }
-         
+
+        [Test]
+        public void Can_call_JSON_Service_with_UTF8_BOM()
+        {
+            var dto = new TestContentType { Id = 1, Name = "Foo" };
+            var json = dto.ToJson();
+            var jsonBytes = json.ToUtf8Bytes();
+
+            var bytes = new List<byte>(new byte[] { 0xEF, 0xBB, 0xBF });
+            bytes.AddRange(jsonBytes);
+
+            var mergedBytes = bytes.ToArray();
+
+            var responseBytes = ListeningOn.AppendPath("testcontenttype")
+                .PostBytesToUrl(mergedBytes, contentType: MimeTypes.Json);
+
+            var responseJson = responseBytes.FromUtf8Bytes();
+            var fromJson = responseJson.FromJson<TestContentType>();
+            
+            Assert.That(fromJson.Id, Is.EqualTo(dto.Id));
+            Assert.That(fromJson.Name, Is.EqualTo(dto.Name));
+        }
     }
 }
