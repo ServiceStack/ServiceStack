@@ -67,6 +67,9 @@ namespace ServiceStack.Html
 
         public static string ErrorResponse(this HtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
+        
+        public static string UserProfileUrl(this HtmlHelper html) =>
+            html.GetRequest().GetSession().GetProfileUrl();
 
 
         /// <summary>

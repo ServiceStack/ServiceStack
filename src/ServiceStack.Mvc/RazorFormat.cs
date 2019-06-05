@@ -717,6 +717,9 @@ namespace ServiceStack.Mvc
         public static string ErrorResponse(this IHtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
 
+        public static string UserProfileUrl(this IHtmlHelper html) =>
+            html.GetRequest().GetSession().GetProfileUrl();
+
 
         /// <summary>
         /// Alias for ServiceStack Html.ValidationSummary() with comma-delimited field names 
