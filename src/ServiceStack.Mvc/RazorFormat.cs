@@ -669,6 +669,8 @@ namespace ServiceStack.Mvc
 
         public static HtmlString ToHtmlString(this string str) => str == null ? HtmlString.Empty : new HtmlString(str);
 
+        public static bool IsDebug(this IHtmlHelper html) => HostContext.DebugMode;
+
         public static object GetItem(this IHtmlHelper html, string key) =>
             html.GetRequest().GetItem(key);
 
