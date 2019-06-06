@@ -1074,9 +1074,17 @@ namespace ServiceStack
 
         public static IEnumerable<IVirtualFile> GetBundleFiles(string filterName, IVirtualPathProvider webVfs, IVirtualPathProvider contentVfs, IEnumerable<string> virtualPaths, string assetExt)
         {
+            var excludeFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
             foreach (var source in virtualPaths)
             {
                 ResolveVfsAndSource(filterName, webVfs, contentVfs, source, out var vfs, out var virtualPath);
+
+                if (virtualPath.StartsWith("!"))
+                {
+                    excludeFiles.Add(virtualPath.Substring(1).TrimStart('/'));
+                    continue;
+                }
                 
                 var dir = vfs.GetDirectory(virtualPath);
                 if (dir != null)
@@ -1085,6 +1093,8 @@ namespace ServiceStack
                     foreach (var dirFile in files)
                     {
                         if (!assetExt.EqualsIgnoreCase(dirFile.Extension))
+                            continue;
+                        if (excludeFiles.Contains(dirFile.VirtualPath))
                             continue;
                         
                         yield return dirFile;
@@ -1095,6 +1105,9 @@ namespace ServiceStack
                 var file = vfs.GetFile(virtualPath);
                 if (file != null)
                 {
+                    if (excludeFiles.Contains(file.VirtualPath))
+                        continue;
+                    
                     yield return file;
                 }
                 else throw new NotSupportedException($"Could not find resource at virtual path '{source}' in '{filterName}'");
