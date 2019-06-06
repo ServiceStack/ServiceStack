@@ -291,6 +291,9 @@ namespace ServiceStack
             return req;
         }
 
+        public static T TryResolve<T>(this IServiceProvider provider) => provider.GetService<T>();
+        public static T Resolve<T>(this IServiceProvider provider) => provider.GetRequiredService<T>();
+
         public static IHttpRequest ToRequest(this HttpRequest request, string operationName = null) => request.HttpContext.ToRequest();
 
         public static T TryResolveScoped<T>(this IRequest req) => (T)((IServiceProvider)req).GetService(typeof(T));
