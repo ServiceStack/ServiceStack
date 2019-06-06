@@ -231,6 +231,8 @@ namespace ServiceStack.Mvc
                             {
                                 if (file.Name.IndexOf("layout", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                     file.Name.IndexOf("partial", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("viewimports", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                                    file.Name.IndexOf("viewstart", StringComparison.OrdinalIgnoreCase) >= 0 ||
                                     file.Name.StartsWith("_init"))                                
                                     continue;
                             }
@@ -611,7 +613,7 @@ namespace ServiceStack.Mvc
                 var partialPath = dir.CombineWith(partial) + ".md";
                 partialPath = partialPath.TrimPrefixes("/");
 
-                var markdownPaths = new[]
+                var viewPaths = new[]
                 {
                     partialPath,
                     $"wwwroot/{partialPath}",
@@ -619,7 +621,7 @@ namespace ServiceStack.Mvc
                     $"Views/{partial}.md",
                 };
 
-                foreach (var path in markdownPaths)
+                foreach (var path in viewPaths)
                 {
                     var file = HostContext.AppHost.VirtualFiles.GetFile(path);
                     if (file != null)

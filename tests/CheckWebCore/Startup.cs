@@ -129,8 +129,8 @@ namespace CheckWebCore
 //            Svg.CssFillColor["svg-auth"] = "#ccc";
             Svg.CssFillColor["svg-icons"] = "#e33";
 
-            this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = 
-                new SharpPageHandler("/forbidden");
+            this.CustomErrorHttpHandlers[HttpStatusCode.NotFound] = new RazorHandler("/notfound");
+            this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = new SharpPageHandler("/forbidden");
 
 //            TypeScriptGenerator.TypeFilter = (type, args) => {
 //                if (type == "ResponseBase`1" && args[0] == "Dictionary<String,List`1>")
