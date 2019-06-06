@@ -816,12 +816,14 @@ namespace ServiceStack.Mvc
         public static List<NavItem> GetNavItems(this IHtmlHelper html) => ViewUtils.NavItems;
         public static List<NavItem> GetNavItems(this IHtmlHelper html, string key) => ViewUtils.GetNavItems(key);
 
-        public static HtmlString Nav(this IHtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
-        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
+        public static HtmlString Nav(this IHtmlHelper html) => html.Nav(ViewUtils.NavItems, null);
+        public static HtmlString Nav(this IHtmlHelper html, NavOptions options) => html.Nav(ViewUtils.NavItems, options);
+        public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems) => html.Nav(navItems, null);
         public static HtmlString Nav(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNav().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString Navbar(this IHtmlHelper html) => html.Navbar(ViewUtils.NavItems, null);
+        public static HtmlString Navbar(this IHtmlHelper html, NavOptions options) => html.Navbar(ViewUtils.NavItems, options);
         public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems) => html.Navbar(navItems, null);
         public static HtmlString Navbar(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.Nav(navItems, options.ForNavbar().WithDefaults(html.GetRequest())).ToHtmlString();
@@ -831,6 +833,7 @@ namespace ServiceStack.Mvc
             ViewUtils.NavLink(navItem, options.ForNavLink().WithDefaults(html.GetRequest())).ToHtmlString();
 
         public static HtmlString NavButtonGroup(this IHtmlHelper html) => html.NavButtonGroup(ViewUtils.NavItems, null);
+        public static HtmlString NavButtonGroup(this IHtmlHelper html, NavOptions options) => html.NavButtonGroup(ViewUtils.NavItems, options);
         public static HtmlString NavButtonGroup(this IHtmlHelper html, List<NavItem> navItems) => html.NavButtonGroup(navItems, null);
         public static HtmlString NavButtonGroup(this IHtmlHelper html, List<NavItem> navItems, NavOptions options) =>
             ViewUtils.NavButtonGroup(navItems, options.ForNavButtonGroup().WithDefaults(html.GetRequest())).ToHtmlString();
