@@ -118,6 +118,12 @@ namespace ServiceStack
             }
 
             var css = StringBuilderCache.ReturnAndFree(sb);
+            
+            if (Svg.CssFillColor.TryGetValue(name, out var fillColor))
+            {
+                css = Svg.Fill(css, fillColor);
+            }
+            
             vfs.WriteFile($"/css/{name}.css", css);
         }
 
@@ -198,6 +204,9 @@ namespace ServiceStack
             ["svg-icons"] = new List<string> { "male", "female", "male-business", "female-business", "male-color", "female-color", "users", },
         };
 
+        public static Dictionary<string, string> CssFillColor { get; set; } = new Dictionary<string, string> {
+        };
+        
         public static Dictionary<string, string> AppendToCssFiles { get; set; } = new Dictionary<string, string> {};
 
         public static Dictionary<string,string> AdjacentCssRules { get; set; } = new Dictionary<string, string> {

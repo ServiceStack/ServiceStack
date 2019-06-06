@@ -126,6 +126,9 @@ namespace CheckWebCore
             
             Plugins.Add(new ValidationFeature());
 
+//            Svg.CssFillColor["svg-auth"] = "#ccc";
+            Svg.CssFillColor["svg-icons"] = "#e33";
+
             this.CustomErrorHttpHandlers[HttpStatusCode.Forbidden] = 
                 new SharpPageHandler("/forbidden");
 
