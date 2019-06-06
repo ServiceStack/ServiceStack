@@ -671,6 +671,8 @@ namespace ServiceStack.Mvc
 
         public static bool IsDebug(this IHtmlHelper html) => HostContext.DebugMode;
 
+        public static IAuthSession GetSession(this IHtmlHelper html) => html.GetRequest().GetSession();
+
         public static object GetItem(this IHtmlHelper html, string key) =>
             html.GetRequest().GetItem(key);
 
