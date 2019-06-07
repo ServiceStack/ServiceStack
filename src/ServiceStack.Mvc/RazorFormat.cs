@@ -669,10 +669,6 @@ namespace ServiceStack.Mvc
 
         public static HtmlString ToHtmlString(this string str) => str == null ? HtmlString.Empty : new HtmlString(str);
 
-        public static bool IsDebug(this IHtmlHelper html) => HostContext.DebugMode;
-
-        public static IAuthSession GetSession(this IHtmlHelper html) => html.GetRequest().GetSession();
-
         public static object GetItem(this IHtmlHelper html, string key) =>
             html.GetRequest().GetItem(key);
 
@@ -723,8 +719,14 @@ namespace ServiceStack.Mvc
         public static string ErrorResponse(this IHtmlHelper html, string fieldName) =>
             ViewUtils.ErrorResponse(html.GetErrorStatus(), fieldName);
 
+        public static bool IsDebug(this IHtmlHelper html) => HostContext.DebugMode;
+
+        public static IAuthSession GetSession(this IHtmlHelper html) => html.GetRequest().GetSession();
+
+        public static bool IsAuthenticated(this IHtmlHelper html) =>
+            html.GetSession().IsAuthenticated;
         public static string UserProfileUrl(this IHtmlHelper html) =>
-            html.GetRequest().GetSession().GetProfileUrl();
+            html.GetSession().GetProfileUrl();
 
 
         /// <summary>
@@ -860,6 +862,113 @@ namespace ServiceStack.Mvc
         public static HtmlString SvgFill(this IHtmlHelper html, string svg, string color) => Svg.Fill(svg, color).ToHtmlString();
 
         public static string SvgBaseUrl(this IHtmlHelper html) => html.GetRequest().ResolveAbsoluteUrl(HostContext.AssertPlugin<SvgFeature>().RoutePath);
+        
+
+        /* HTML Helpers for MVC Pages which don't inherit ServiceStack.Razor View Pages */
+        
+        public static HtmlString GetAbsoluteUrl(this IHtmlHelper html, string virtualPath) => 
+            new HtmlString(HostContext.AppHost.ResolveAbsoluteUrl(virtualPath, html.GetRequest()));
+        public static IServiceGateway Gateway(this IHtmlHelper html) =>
+            HostContext.AppHost.GetServiceGateway(html.GetRequest());
+
+        public static void RedirectIfNotAuthenticated(this IHtmlHelper html, string redirect = null) =>
+            html.GetRequest().RedirectIfNotAuthenticated(redirect);
+
+        internal static void RedirectIfNotAuthenticated(this IRequest req, string redirect = null)
+        {
+            if (req.GetSession().IsAuthenticated)
+                return;
+
+            redirect = redirect
+               ?? AuthenticateService.HtmlRedirect
+               ?? HostContext.Config.DefaultRedirectPath
+               ?? HostContext.Config.WebHostUrl
+               ?? "/";
+            AuthenticateAttribute.DoHtmlRedirect(redirect, req, req.Response, includeRedirectParam: true);
+            throw new StopExecutionException();
+        }
+        
+        private static HtmlString WaitStopAsync(Func<Task> fn)
+        {
+            fn().Wait();
+            return HtmlString.Empty;
+        }
+
+        public static Task RedirectToAsync(this IHtmlHelper html, string path) => html.GetRequest().RedirectToAsync(path);
+        
+        internal static async Task RedirectToAsync(this IRequest req, string path)
+        {
+            var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
+                Headers = {
+                    [HttpHeaders.Location] = path.FirstCharEquals('~')
+                        ? req.ResolveAbsoluteUrl(path)
+                        : path
+                }
+            };
+            await req.Response.WriteToResponse(req, result);
+            throw new StopExecutionException();
+        }
+
+        public static HtmlString RedirectTo(this IHtmlHelper html, string path) => WaitStopAsync(() => 
+            html.GetRequest().RedirectToAsync(path));
+
+        internal static HtmlString RedirectTo(this IRequest req, string path) => WaitStopAsync(() => 
+            req.RedirectToAsync(path));
+
+        public static HtmlString AssertRole(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect));
+        internal static HtmlString AssertRole(this IRequest req, string role, string message = null, string redirect = null) =>
+            WaitStopAsync(() => req.AssertRoleAsync(role:role, message:message, redirect:redirect));
+
+        public static Task AssertRoleAsync(this IHtmlHelper html, string role, string message = null, string redirect = null) =>
+            html.GetRequest().AssertRoleAsync(role:role, message:message, redirect:redirect);
+        internal static async Task AssertRoleAsync(this IRequest req, string role, string message = null, string redirect = null)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                req.RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasRole(role, req.TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await req.RedirectToAsync(redirect);
+                        
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
+
+        public static HtmlString AssertPermission(this IHtmlHelper html, string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => html.GetRequest().AssertPermissionAsync(permission:permission, message:message, redirect:redirect));
+        internal static HtmlString AssertPermission(this IRequest req, string permission, string message = null, string redirect = null) =>
+            WaitStopAsync(() => req.AssertPermissionAsync(permission:permission, message:message, redirect:redirect));
+
+        public static Task AssertPermissionAsync(this IHtmlHelper html, string permission, string message = null, string redirect = null) =>
+            html.GetRequest().AssertPermissionAsync(permission:permission, message:message, redirect:redirect);
+        
+        internal static async Task AssertPermissionAsync(this IRequest req, string permission, string message = null, string redirect = null)
+        {
+            var session = req.GetSession();
+            if (!session.IsAuthenticated)
+            {
+                req.RedirectIfNotAuthenticated(redirect);
+                return;
+            }
+
+            if (!session.HasPermission(permission, req.TryResolve<IAuthRepository>()))
+            {
+                if (redirect != null)
+                    await req.RedirectToAsync(redirect);
+                        
+                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
+                await req.Response.WriteToResponse(req, error);
+                throw new StopExecutionException();
+            }
+        }
     }
 
     public abstract class ViewPage : ViewPage<object>
@@ -1005,89 +1114,6 @@ namespace ServiceStack.Mvc
 
         public virtual void EndServiceStackRequest() => HostContext.AppHost.OnEndRequest(Request);
 
-        public void RedirectIfNotAuthenticated(string redirect = null)
-        {
-            if (IsAuthenticated)
-                return;
-
-            redirect = redirect
-                ?? AuthenticateService.HtmlRedirect
-                ?? HostContext.Config.DefaultRedirectPath
-                ?? HostContext.Config.WebHostUrl
-                ?? "/";
-            AuthenticateAttribute.DoHtmlRedirect(redirect, Request, Response, includeRedirectParam: true);
-            throw new StopExecutionException();
-        }
-
-        private HtmlString WaitStopAsync(Func<Task> fn)
-        {
-            fn().Wait();
-            return HtmlString.Empty;
-        }
-        
-        public async Task RedirectToAsync(string path)
-        {
-            var result = new HttpResult(null, null, HttpStatusCode.Redirect) {
-                Headers = {
-                    [HttpHeaders.Location] = path.FirstCharEquals('~')
-                        ? ServiceStackRequest.ResolveAbsoluteUrl(path)
-                        : path
-                }
-            };
-            await ServiceStackRequest.Response.WriteToResponse(ServiceStackRequest, result);
-            throw new StopExecutionException();
-        }
-
-        public HtmlString RedirectTo(string path) => WaitStopAsync(() => RedirectToAsync(path));
-
-        public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
-            WaitStopAsync(() => AssertRoleAsync(role, message, redirect));
-
-        public async Task AssertRoleAsync(string role, string message = null, string redirect = null)
-        {
-            var session = GetSession();
-            if (!session.IsAuthenticated)
-            {
-                RedirectIfNotAuthenticated(redirect);
-                return;
-            }
-
-            if (!session.HasRole(role, TryResolve<IAuthRepository>()))
-            {
-                if (redirect != null)
-                    await RedirectToAsync(redirect);
-                        
-                var req = ServiceStackRequest;
-                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidRole.Localize(req));
-                await req.Response.WriteToResponse(req, error);
-                throw new StopExecutionException();
-            }
-        }
-
-        public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
-            WaitStopAsync(() => AssertPermissionAsync(permission, message, redirect));
-
-        public async Task AssertPermissionAsync(string permission, string message = null, string redirect = null)
-        {
-            var session = GetSession();
-            if (!session.IsAuthenticated)
-            {
-                RedirectIfNotAuthenticated(redirect);
-                return;
-            }
-
-            if (!session.HasPermission(permission, TryResolve<IAuthRepository>()))
-            {
-                if (redirect != null)
-                    await RedirectToAsync(redirect);
-                        
-                var req = ServiceStackRequest;
-                var error = new HttpError(HttpStatusCode.Forbidden, message ?? ErrorMessages.InvalidPermission.Localize(req));
-                await req.Response.WriteToResponse(req, error);
-                throw new StopExecutionException();
-            }
-        }
-
         public bool RenderErrorIfAny()
         {
             var html = GetErrorHtml(GetErrorStatus());
@@ -1113,10 +1139,29 @@ namespace ServiceStack.Mvc
                        responseStatus.ErrorCode + ": " +
                        responseStatus.Message + @"
                     </h4>" +
-                   stackTrace +
-               "</div>";
+                       stackTrace +
+                       "</div>";
             return html;
         }
+
+
+        public void RedirectIfNotAuthenticated(string redirect = null) => Request.RedirectIfNotAuthenticated(redirect);
+
+        public Task RedirectToAsync(string path) => Request.RedirectToAsync(path);
+
+        public HtmlString RedirectTo(string path) => Request.RedirectTo(path);
+
+        public HtmlString AssertRole(string role, string message = null, string redirect = null) =>
+            Request.AssertRole(role: role, message: message, redirect: redirect);
+
+        public Task AssertRoleAsync(string role, string message = null, string redirect = null) =>
+            Request.AssertRoleAsync(role: role, message: message, redirect: redirect);
+
+        public HtmlString AssertPermission(string permission, string message = null, string redirect = null) =>
+            Request.AssertPermission(permission: permission, message: message, redirect: redirect);
+
+        public Task AssertPermissionAsync(string permission, string message = null, string redirect = null) =>
+            Request.AssertPermissionAsync(permission: permission, message: message, redirect: redirect);
     }
 }
 
