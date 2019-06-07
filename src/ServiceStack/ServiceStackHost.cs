@@ -544,8 +544,13 @@ namespace ServiceStack
         /// </summary>
         public IVirtualPathProvider VirtualFileSources { get; set; }
 
+        /// <summary>
+        /// FileSystem VFS for WebRoot
+        /// </summary>
         public IVirtualDirectory RootDirectory =>
-            (VirtualFileSources.GetFileSystemVirtualFiles() ?? VirtualFileSources).RootDirectory;
+            (VirtualFileSources.GetFileSystemVirtualFiles() 
+             ?? VirtualFileSources
+             ?? new FileSystemVirtualFiles(GetWebRootPath())).RootDirectory;
 
         public IVirtualDirectory ContentRootDirectory => VirtualFiles.RootDirectory;
         
