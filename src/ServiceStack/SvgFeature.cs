@@ -348,6 +348,9 @@ namespace ServiceStack
 
         public static void Load(IVirtualDirectory svgDir)
         {
+            if (svgDir == null)
+                throw new ArgumentNullException(nameof(svgDir));
+            
             var context = new ScriptContext().Init();
 
             foreach (var svgGroupDir in svgDir.GetDirectories())
