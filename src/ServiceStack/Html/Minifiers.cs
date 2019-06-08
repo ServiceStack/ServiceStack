@@ -4,7 +4,7 @@ namespace ServiceStack.Html
 {
     public static class Minifiers
     {
-        public static ICompressor JavaScript = new JSMinifier();
+        public static ICompressor JavaScript = new JSMinifierFactory();
         public static ICompressor Css = new CssMinifier();
 
         public static ICompressor Html = new HtmlCompressor();
@@ -16,6 +16,11 @@ namespace ServiceStack.Html
             CssCompressor = Css,
             CompressCss = true,
         };
+    }
+
+    class JSMinifierFactory : ICompressor
+    {
+        public string Compress(string source) => new JSMinifier().Compress(source);
     }
 
     public class BasicHtmlMinifier : ICompressor
