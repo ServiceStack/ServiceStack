@@ -28,7 +28,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with Twitter",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-twitter",
-                IconHtml = "<i class=\"fab fa-twitter\"></i>",
+                IconHtml = "<i class=\"fab svg-twitter\"></i>",
             };
         }
 
