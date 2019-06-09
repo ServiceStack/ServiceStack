@@ -39,7 +39,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with GitHub",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-github",
-                IconHtml = "<i class=\"fab fa-github\"></i>",
+                IconHtml = "<i class=\"fab svg-github\"></i>",
             };
         }
 

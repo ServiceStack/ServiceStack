@@ -41,7 +41,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with LinkedIn",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-linkedin",
-                IconHtml = "<i class=\"fab fa-linkedin\"></i>",
+                IconHtml = "<i class=\"fab svg-linkedin\"></i>",
             };
         }
 

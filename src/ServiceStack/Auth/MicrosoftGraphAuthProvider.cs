@@ -76,7 +76,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with Microsoft",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-microsoft",
-                IconHtml = "<i class=\"fab fa-microsoft\"></i>",
+                IconHtml = "<i class=\"fab svg-microsoft\"></i>",
             };
         }
 

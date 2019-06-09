@@ -49,7 +49,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with Google",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-google",
-                IconHtml = "<i class=\"fab fa-google\"></i>",
+                IconHtml = "<i class=\"fab svg-google\"></i>",
             };
         }
 

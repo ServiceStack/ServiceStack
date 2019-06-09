@@ -34,7 +34,7 @@ namespace ServiceStack.Auth
                 Label = "Sign in with Yandex",
                 Id = "btn-" + Name,
                 ClassName = "btn-social btn-yandex",
-                IconHtml = "<i class=\"fab fa-yandex\"></i>",
+                IconHtml = "<i class=\"fab svg-yandex\"></i>",
             };
         }
 
