@@ -160,6 +160,9 @@ namespace ServiceStack
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             var svg = Svg.GetImage(Id, Fill);
             if (svg == null)
             {

@@ -471,6 +471,9 @@ namespace ServiceStack.Mvc
 
         public override async Task ProcessRequestAsync(IRequest req, IResponse res, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(req, res))
+                return;
+
             var format = HostContext.GetPlugin<RazorFormat>();
             try
             {
