@@ -165,6 +165,7 @@ namespace ServiceStack
                 typeof(ServerEventsSubscribersService),
                 typeof(ServerEventsUnRegisterService),
                 typeof(MetadataNavService),
+                typeof(ScriptAdminService),
             };
 
             JsConfig.InitStatics();

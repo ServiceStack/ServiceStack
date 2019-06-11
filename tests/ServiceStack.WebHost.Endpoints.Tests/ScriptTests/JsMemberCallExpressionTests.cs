@@ -366,5 +366,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             
             Assert.That(context.EvaluateScript("{{ 3.times().map(x => x[x.isEven() ? 'decr' : 'incr']()) | join }}"), Is.EqualTo("-1,2,1"));
         }
+
+        [Test]
+        public void Does_stop_execution()
+        {
+            var context = CreateScriptContext().Init();
+
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).use('A') }}"), Is.EqualTo("A"));
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).end().use('A') }}"), Is.EqualTo(""));
+
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).end().use('A') }}{{ 1 + 1 }}"), Is.EqualTo("2"));
+            Assert.That(context.EvaluateScript("{{ a.Nums.map(x => x * 2).return().use('A') }}{{ 1 + 1 }}"), Is.EqualTo(""));
+        }
+
     }
 }

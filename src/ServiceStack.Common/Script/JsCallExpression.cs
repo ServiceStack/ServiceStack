@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using ServiceStack.Text;
 
 namespace ServiceStack.Script
@@ -18,7 +19,8 @@ namespace ServiceStack.Script
 
         private string nameString;
         public string Name => nameString ?? (nameString = Callee is JsIdentifier identifier ? identifier.Name : null);
-        
+
+       
         public override object Evaluate(ScriptScopeContext scope)
         {
             string ResolveMethodName(JsMemberExpression expr)
@@ -49,6 +51,9 @@ namespace ServiceStack.Script
                     if (invoker != null)
                     {
                         var targetValue = expr.Object.Evaluate(scope);                        
+                        if (targetValue == StopExecution.Value)
+                            return targetValue;
+
                         value = result.InvokeFilter(invoker, filter, new[]{ targetValue }, name);
                         return value;
                     }
@@ -57,6 +62,9 @@ namespace ServiceStack.Script
                     if (invoker != null)
                     {
                         var targetValue = expr.Object.Evaluate(scope);
+                        if (targetValue == StopExecution.Value)
+                            return targetValue;
+
                         value = result.InvokeFilter(invoker, filter, new[]{ scope, targetValue }, name);
                         return value;
                     }
@@ -86,6 +94,9 @@ namespace ServiceStack.Script
                     if (invoker != null)
                     {
                         var targetValue = expr.Object.Evaluate(scope);
+                        if (targetValue == StopExecution.Value)
+                            return targetValue;
+                        
                         var fnArgValues = EvaluateArgumentValues(scope, Arguments);   
                         fnArgValues.Insert(0, targetValue);
                         
@@ -97,6 +108,9 @@ namespace ServiceStack.Script
                     if (invoker != null)
                     {
                         var targetValue = expr.Object.Evaluate(scope);
+                        if (targetValue == StopExecution.Value)
+                            return targetValue;
+
                         var fnArgValues = EvaluateArgumentValues(scope, Arguments); 
                         fnArgValues.InsertRange(0, new[]{ scope, targetValue });
                         value = result.InvokeFilter(invoker, filter, fnArgValues.ToArray(), name);
