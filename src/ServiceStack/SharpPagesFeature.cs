@@ -871,6 +871,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             if (ValidateFn != null && !ValidateFn(httpReq))
             {
                 httpRes.StatusCode = (int) HttpStatusCode.Forbidden;
@@ -975,6 +978,9 @@ Plugins: {{ plugins | select: \n  - { it | typeName } }}
 
         public override async Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return;
+
             if (page is IRequiresRequest requiresRequest)
                 requiresRequest.Request = httpReq;
             

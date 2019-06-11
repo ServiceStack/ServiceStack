@@ -205,6 +205,9 @@ namespace ServiceStack.Host.Handlers
 
         public override Task ProcessRequestAsync(IRequest httpReq, IResponse httpRes, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(httpReq, httpRes))
+                return TypeConstants.EmptyTask;
+
             var response = this.RequestInfo ?? GetRequestInfo(httpReq);
             response.HandlerFactoryArgs = HttpHandlerFactory.DebugLastHandlerArgs;
             response.DebugString = "";

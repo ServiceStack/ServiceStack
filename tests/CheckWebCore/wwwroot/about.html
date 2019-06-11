@@ -8,3 +8,18 @@ title: About Us
 <p>
     About Us page.
 </p>
+
+<button onclick="go()">Go</button>
+<div id="result"></div>
+
+<script>
+    function go() {
+        $.ajax({
+            url: '/contact',
+            crossDomain: true,
+            success: function (r) {
+                $("#result").html(r);
+            }
+        })
+    }
+</script>

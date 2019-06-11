@@ -84,6 +84,9 @@ namespace ServiceStack
 
         public override Task ProcessRequestAsync(IRequest req, IResponse response, string operationName)
         {
+            if (HostContext.ApplyCustomHandlerRequestFilters(req, response))
+                return TypeConstants.EmptyTask;
+
             var httpReq = (IHttpRequest)req;
             var proxyUrl = ResolveUrl(httpReq);
             try
