@@ -194,6 +194,9 @@ namespace ServiceStack.Script
         public object onlyIfAll(ScriptScopeContext scope, object target, object expression) => !all(scope, target, expression) ? StopExecution.Value : target;
         public object onlyWhere(ScriptScopeContext scope, object target, object expression) => onlyWhere(scope, target, expression, null);
 
+        public object onlyIfDebug(object returnTarget) => !Context.DebugMode ? StopExecution.Value : returnTarget;
+        public object endIfDebug(object returnTarget) => Context.DebugMode ? StopExecution.Value : returnTarget;
+
         public object onlyWhere(ScriptScopeContext scope, object target, object expression, object scopeOptions)
         {
             var literal = scope.AssertExpression(nameof(count), expression);
