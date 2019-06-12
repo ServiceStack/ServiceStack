@@ -115,6 +115,17 @@ namespace ServiceStack.Configuration
 
             return this;
         }
+        
+#if NETSTANDARD2_0
+        public MultiAppSettingsBuilder AddNetCore(Microsoft.Extensions.Configuration.IConfiguration configuration)
+        {
+            appSettingsQueue.Enqueue(
+                new NetCoreAppSettings(configuration)
+            );
+
+            return this;
+        }
+#endif
 
         /// <summary>
         /// Builds an <see cref="IAppSettings"/>.
