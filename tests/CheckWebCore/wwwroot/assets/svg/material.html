@@ -1,8 +1,18 @@
-<!--
-layout: none
--->
+{{#svg format app}}
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="none" d="M0 0h24v24H0V0z"/>
+    <path fill="#556080" d="M18 4V3c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1v4c0 .55.45 1 1 1h12c.55 0 1-.45 1-1V6h1v4H9v11c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-9h8V4h-3zm-2 2H6V4h10v2z"/>
+</svg>
+{{/svg}}
 
-{{#svg vue svg-icons}}
+{{#svg quotes app}}
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="none" d="M0 0h24v24H0V0z"/>
+    <path fill="#556080" d="M18.62 18h-5.24l2-4H13V6h8v7.24L18.62 18zm-2-2h.76L19 12.76V8h-4v4h3.62l-2 4zm-8 2H3.38l2-4H3V6h8v7.24L8.62 18zm-2-2h.76L9 12.76V8H5v4h3.62l-2 4z"/>
+</svg>
+{{/svg}}
+
+{{#svg vue app}}
 <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
     <g>
         <path fill="#556080" stroke="null" d="m79.43253,10.80794l0.01231,-0.02461l-18.15085,0l-11.38274,19.68085l0,0.0082l-11.37043,-19.68906l-18.15085,0l0,0.02051l-19.70136,0l49.22265,85.26183l49.22265,-85.25773"/>
@@ -10,20 +20,10 @@ layout: none
 </svg>
 {{/svg}}
 
-{{#svg vscode svg-icons}}
+{{#svg vscode app}}
 <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
     <g>
         <path fill="#556080" stroke="null" d="m99.51625,10.84409l0,78.49178l-24.78688,10.32787l-74.36064,-22.72131l0,-2.31757l74.36064,6.38262l0,-80.49126l24.78688,10.32787zm-95.01637,43.83559l13.98393,-12.852l-13.98393,-12.852l5.85797,-3.41646l14.19049,10.69141l25.39416,-23.34098l12.39344,6.01495l0,45.80615l-12.39344,6.01495l-25.39416,-23.34098l-14.18636,10.69554l-5.8621,-3.42059zm27.44734,-12.852l17.99527,13.56255l0,-27.12511l-17.99527,13.56255z"/>
     </g>
 </svg>
 {{/svg}}
-
-{{*#svg spirals svg-icons}}
-<svg height="640" width="240">
-    {{#each range(180) }}
-    {{ 120 + 100 * cos((5)  * it * 0.02827) | assignTo: x }}
-    {{ 320 + 300 * sin((1)  * it * 0.02827) | assignTo: y }}
-    <circle cx="{{x}}" cy="{{y}}" r="{{it*0.1}}" fill="#556080" stroke="black" stroke-width="1"></circle>
-    {{/each}}
-</svg>
-{{/svg*}}

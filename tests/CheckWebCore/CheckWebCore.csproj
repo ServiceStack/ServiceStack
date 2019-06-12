@@ -22,6 +22,7 @@
     <PackageReference Include="ServiceStack.Text" Version="5.5.1" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="wwwroot\assets\svg\app" />
     <Folder Include="wwwroot\css" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,7 @@
+<svg height="640" width="240">
+{{#each range(180) }}
+    {{ 120 + 100 * cos((5)  * it * 0.02827) | assignTo: x }}
+    {{ 320 + 300 * sin((1)  * it * 0.02827) | assignTo: y }}
+    <circle cx="{{x}}" cy="{{y}}" r="{{it*0.1}}" fill="#556080" stroke="black" stroke-width="1"></circle>
+{{/each}}
+</svg>
