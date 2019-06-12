@@ -354,7 +354,11 @@ namespace ServiceStack
             if (svgDir == null)
                 throw new ArgumentNullException(nameof(svgDir));
             
-            var context = new ScriptContext().Init();
+            var context = new ScriptContext {
+                ScriptBlocks = {
+                    new SvgScriptBlock()
+                }
+            }.Init();
 
             foreach (var svgGroupDir in svgDir.GetDirectories())
             {
@@ -379,6 +383,13 @@ namespace ServiceStack
                         }
                     }
                 }
+            }
+
+            // Also load any .html #Script files which can register svg using {{#svg name group}} #Script block
+            foreach (var svgScript in svgDir.GetAllMatchingFiles("*.html"))
+            {
+                var script = svgScript.ReadAllText();
+                var output = context.EvaluateScript(script);
             }
         }
     }
