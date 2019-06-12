@@ -395,6 +395,8 @@ namespace ServiceStack.Script
             return null;
         }
 
+        public object last(ScriptScopeContext scope, object target) => target.AssertEnumerable(nameof(last)).LastOrDefault();
+
         public bool any(ScriptScopeContext scope, object target) => target.AssertEnumerable(nameof(any)).Any();
         public bool any(ScriptScopeContext scope, object target, object expression) => any(scope, target, expression, null);
         public bool any(ScriptScopeContext scope, object target, object expression, object scopeOptions)
