@@ -21,52 +21,52 @@ namespace ServiceStack.Script
         public GistVirtualFiles gistVirtualFiles(string gistId, string accessToken) =>
             new GistVirtualFiles(gistId, accessToken);
 
-        public GithubGateway githubGateway() => new GithubGateway();
-        public GithubGateway githubGateway(string accessToken) => new GithubGateway(accessToken);
+        public GitHubGateway githubGateway() => new GitHubGateway();
+        public GitHubGateway githubGateway(string accessToken) => new GitHubGateway(accessToken);
 
-        public string githubSourceZipUrl(GithubGateway gateway, string orgNames, string name) =>
+        public string githubSourceZipUrl(GitHubGateway gateway, string orgNames, string name) =>
             gateway.GetSourceZipUrl(orgNames, name);
 
-        public Task<object> githubSourceRepos(GithubGateway gateway, string orgName) =>
+        public Task<object> githubSourceRepos(GitHubGateway gateway, string orgName) =>
             Task.FromResult<object>(gateway.GetSourceReposAsync(orgName));
         
-        public Task<object> githubUserAndOrgRepos(GithubGateway gateway, string githubOrgOrUser) =>
+        public Task<object> githubUserAndOrgRepos(GitHubGateway gateway, string githubOrgOrUser) =>
             Task.FromResult<object>(gateway.GetUserAndOrgReposAsync(githubOrgOrUser));
 
-        public List<GithubRepo> githubUserRepos(GithubGateway gateway, string githubUser) =>
+        public List<GithubRepo> githubUserRepos(GitHubGateway gateway, string githubUser) =>
             gateway.GetUserRepos(githubUser);
         
-        public List<GithubRepo> githubOrgRepos(GithubGateway gateway, string githubOrg) =>
+        public List<GithubRepo> githubOrgRepos(GitHubGateway gateway, string githubOrg) =>
             gateway.GetOrgRepos(githubOrg);
 
-        public GithubGist githubCreateGist(GithubGateway gateway, string description, Dictionary<string, string> files) => 
+        public GithubGist githubCreateGist(GitHubGateway gateway, string description, Dictionary<string, string> files) => 
             gateway.CreateGithubGist(description:description, isPublic:true, files:files);
 
-        public GithubGist githubCreatePrivateGist(GithubGateway gateway, string description, Dictionary<string, string> files) => 
+        public GithubGist githubCreatePrivateGist(GitHubGateway gateway, string description, Dictionary<string, string> files) => 
             gateway.CreateGithubGist(description:description, isPublic:false, files:files);
 
-        public GithubGist githubGist(GithubGateway gateway, string gistId) =>
+        public GithubGist githubGist(GitHubGateway gateway, string gistId) =>
             gateway.GetGithubGist(gistId);
 
-        public IgnoreResult githubWriteGistFiles(GithubGateway gateway, string gistId, Dictionary<string, string> gistFiles)
+        public IgnoreResult githubWriteGistFiles(GitHubGateway gateway, string gistId, Dictionary<string, string> gistFiles)
         {
             gateway.WriteGistFiles(gistId, gistFiles);
             return IgnoreResult.Value;
         }
 
-        public IgnoreResult githubWriteGistFile(GithubGateway gateway, string gistId, string filePath, string contents)
+        public IgnoreResult githubWriteGistFile(GitHubGateway gateway, string gistId, string filePath, string contents)
         {
             gateway.WriteGistFile(gistId, filePath, contents);
             return IgnoreResult.Value;
         }
         
-        public IgnoreResult githuDeleteGistFiles(GithubGateway gateway, string gistId, string filePath)
+        public IgnoreResult githuDeleteGistFiles(GitHubGateway gateway, string gistId, string filePath)
         {
             gateway.DeleteGistFiles(gistId, filePath);
             return IgnoreResult.Value;
         }
         
-        public IgnoreResult githuDeleteGistFiles(GithubGateway gateway, string gistId, IEnumerable<string> filePaths)
+        public IgnoreResult githuDeleteGistFiles(GitHubGateway gateway, string gistId, IEnumerable<string> filePaths)
         {
             gateway.DeleteGistFiles(gistId, filePaths.ToArray());
             return IgnoreResult.Value;

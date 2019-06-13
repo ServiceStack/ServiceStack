@@ -20,9 +20,9 @@ namespace ServiceStack
         void DeleteGistFiles(string gistId, params string[] filePaths);
     }
     
-    public class GithubGateway : IGistGateway
+    public class GitHubGateway : IGistGateway
     {
-        public string UserAgent { get; set; } = nameof(GithubGateway);
+        public string UserAgent { get; set; } = nameof(GitHubGateway);
         public string BaseUrl { get; set; } = "https://api.github.com/";
         public bool UseForkParent { get; set; } = true;
 
@@ -31,10 +31,15 @@ namespace ServiceStack
         /// </summary>
         public string AccessToken { get; set; }
 
-        public GithubGateway() {}
-        public GithubGateway(string accessToken) => AccessToken = accessToken;
+        /// <summary>
+        /// Intercept and override GitHub JSON API requests
+        /// </summary>
+        public Func<string, string> GetJsonFilter { get; set; }
 
-        public string UnwrapRepoFullName(string orgName, string name)
+        public GitHubGateway() {}
+        public GitHubGateway(string accessToken) => AccessToken = accessToken;
+
+        public virtual string UnwrapRepoFullName(string orgName, string name)
         {
             try
             {
@@ -58,7 +63,7 @@ namespace ServiceStack
             }
         }
 
-        public string GetSourceZipUrl(string orgNames, string name)
+        public virtual string GetSourceZipUrl(string orgNames, string name)
         {
             var orgs = orgNames.Split(';')
                 .Map(x => x.LeftPart(' '));
@@ -84,7 +89,7 @@ namespace ServiceStack
             throw new Exception($"'{name}' was not found in sources: {orgs.Join(", ")}");
         }
 
-        public async Task<List<GithubRepo>> GetSourceReposAsync(string orgName)
+        public virtual async Task<List<GithubRepo>> GetSourceReposAsync(string orgName)
         {
             var repos = (await GetUserAndOrgReposAsync(orgName))
                 .OrderBy(x => x.Name)
@@ -92,7 +97,7 @@ namespace ServiceStack
             return repos;
         }
 
-        public async Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser)
+        public virtual async Task<List<GithubRepo>> GetUserAndOrgReposAsync(string githubOrgOrUser)
         {
             var map = new Dictionary<string, GithubRepo>();
 
@@ -124,24 +129,27 @@ namespace ServiceStack
             return map.Values.ToList();
         }
 
-        public List<GithubRepo> GetUserRepos(string githubUser) =>
+        public virtual List<GithubRepo> GetUserRepos(string githubUser) =>
             StreamJsonCollection<List<GithubRepo>>($"users/{githubUser}/repos").SelectMany(x => x).ToList();
 
-        public List<GithubRepo> GetOrgRepos(string githubOrg) =>
+        public virtual List<GithubRepo> GetOrgRepos(string githubOrg) =>
             StreamJsonCollection<List<GithubRepo>>($"orgs/{githubOrg}/repos").SelectMany(x => x).ToList();
-
-        public string GetJson(string route)
+        
+        public virtual string GetJson(string route)
         {
             var apiUrl = !route.IsUrl()
                 ? BaseUrl.CombineWith(route)
                 : route;
 
+            if (GetJsonFilter != null)
+                return GetJsonFilter(apiUrl);
+
             return apiUrl.GetJsonFromUrl(ApplyRequestFilters);
         }
 
-        public T GetJson<T>(string route) => GetJson(route).FromJson<T>();
+        public virtual T GetJson<T>(string route) => GetJson(route).FromJson<T>();
 
-        public IEnumerable<T> StreamJsonCollection<T>(string route)
+        public virtual IEnumerable<T> StreamJsonCollection<T>(string route)
         {
             List<T> results;
             var nextUrl = BaseUrl.CombineWith(route);
@@ -162,7 +170,7 @@ namespace ServiceStack
             } while (results.Count > 0 && nextUrl != null);
         }
 
-        public async Task<List<T>> GetJsonCollectionAsync<T>(string route)
+        public virtual async Task<List<T>> GetJsonCollectionAsync<T>(string route)
         {
             var to = new List<T>();
             List<T> results;
@@ -183,7 +191,7 @@ namespace ServiceStack
             return to;
         }
 
-        public static Dictionary<string, string> ParseLinkUrls(string linkHeader)
+        public virtual Dictionary<string, string> ParseLinkUrls(string linkHeader)
         {
             var map = new Dictionary<string, string>();
             var links = linkHeader;
@@ -221,21 +229,21 @@ namespace ServiceStack
             return map;
         }
 
-        public void DownloadFile(string downloadUrl, string fileName)
+        public virtual void DownloadFile(string downloadUrl, string fileName)
         {
             var webClient = new WebClient();
             webClient.Headers.Add(HttpHeaders.UserAgent, UserAgent);
             webClient.DownloadFile(downloadUrl, fileName);
         }
 
-        public GithubGist GetGithubGist(string gistId)
+        public virtual GithubGist GetGithubGist(string gistId)
         {
             var json = GetJson($"/gists/{gistId}");
             var response = json.FromJson<GithubGist>();
             return response;
         }
 
-        public Gist GetGist(string gistId)
+        public virtual Gist GetGist(string gistId)
         {
             var result = GetGithubGist(gistId);
             if (result != null)
@@ -245,10 +253,10 @@ namespace ServiceStack
             return result;
         }
 
-        public Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles) =>
+        public virtual Gist CreateGist(string description, bool isPublic, Dictionary<string, string> gistFiles) =>
             CreateGithubGist(description, isPublic, gistFiles);
 
-        public GithubGist CreateGithubGist(string description, bool isPublic, Dictionary<string, string> files)
+        public virtual GithubGist CreateGithubGist(string description, bool isPublic, Dictionary<string, string> files)
         {
             AssertAccessToken();
             
@@ -284,7 +292,7 @@ namespace ServiceStack
         /// <summary>
         /// Create or Write Gist Text Files. Requires AccessToken
         /// </summary>
-        public void WriteGistFiles(string gistId, Dictionary<string,string> files)
+        public virtual void WriteGistFiles(string gistId, Dictionary<string,string> files)
         {
             AssertAccessToken();
 
@@ -313,7 +321,7 @@ namespace ServiceStack
         /// <summary>
         /// Create new Gist File. Requires AccessToken
         /// </summary>
-        public void CreateGistFile(string gistId, string filePath, string contents)
+        public virtual void CreateGistFile(string gistId, string filePath, string contents)
         {            
             AssertAccessToken();
             var jsonFile = filePath.ToJson();
@@ -332,7 +340,7 @@ namespace ServiceStack
         /// <summary>
         /// Create or Write Gist File. Requires AccessToken
         /// </summary>
-        public void WriteGistFile(string gistId, string filePath, string contents)
+        public virtual void WriteGistFile(string gistId, string filePath, string contents)
         {
             AssertAccessToken();
             var jsonFile = filePath.ToJson();
@@ -349,13 +357,13 @@ namespace ServiceStack
                 .PatchJsonToUrl(json, requestFilter: ApplyRequestFilters);
         }
 
-        private void AssertAccessToken()
+        protected virtual void AssertAccessToken()
         {
             if (string.IsNullOrEmpty(AccessToken))
                 throw new NotSupportedException("An AccessToken is required to modify gist");
         }
 
-        public void DeleteGistFiles(string gistId, params string[] filePaths)
+        public virtual void DeleteGistFiles(string gistId, params string[] filePaths)
         {
             AssertAccessToken();
 
@@ -376,7 +384,7 @@ namespace ServiceStack
                 .PatchJsonToUrl(json, requestFilter: ApplyRequestFilters);
         }
 
-        public void ApplyRequestFilters(HttpWebRequest req)
+        public virtual void ApplyRequestFilters(HttpWebRequest req)
         {
             if (!string.IsNullOrEmpty(AccessToken))
             {
