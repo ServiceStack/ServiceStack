@@ -14,7 +14,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_create_gist()
         {
-            var gateway = new GithubGateway(AccessToken);
+            var gateway = new GitHubGateway(AccessToken);
 
             var gist = gateway.CreateGithubGist(
                 description: "Hello World Examples",
@@ -50,7 +50,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_download_public_gist()
         {
-            var gateway = new GithubGateway();
+            var gateway = new GitHubGateway();
             var result = gateway.GetGist(GistId);
             var gist = (GithubGist)result;
             Assert.That(gist.Owner.Login, Is.EqualTo("gistlyn"));
@@ -69,7 +69,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [Test]
         public void Can_add_and_delete_gist_file()
         {
-            var gateway = new GithubGateway(AccessToken);
+            var gateway = new GitHubGateway(AccessToken);
 
             var newFile = "new.txt";
             gateway.WriteGistFile(GistId, newFile, "this is a new file");
