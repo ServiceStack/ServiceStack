@@ -215,10 +215,13 @@ namespace ServiceStack.Script
 
         public string fileTextContents(string virtualPath) => fileTextContents(VirtualFiles,virtualPath);
         public string fileTextContents(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllText();
+        public string textContents(IVirtualFile file) => file?.ReadAllText();
         public byte[] fileBytesContent(string virtualPath) => fileBytesContent(VirtualFiles, virtualPath);
         public byte[] fileBytesContent(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFile(virtualPath)?.ReadAllBytes();
+        public byte[] bytesContent(IVirtualFile file) => file?.ReadAllBytes();
         public string fileHash(string virtualPath) => fileHash(VirtualFiles,virtualPath);
         public string fileHash(IVirtualPathProvider vfs, string virtualPath) => vfs.GetFileHash(virtualPath);
+        public string fileHash(IVirtualFile file) => file?.GetFileHash();
 
         //alias
         public Task urlContents(ScriptScopeContext scope, string url) => includeUrl(scope, url, null);
