@@ -90,7 +90,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     [TestFixture]
     public class FreeUsageRabbitMqClientTests : LicenseUsageTests
     {
-        [Test]
+        [Ignore("Integration Test"), Test]
         public void Allows_MegaDto_through_RabbitMqClients()
         {
             var mqFactory = new RabbitMqMessageFactory(connectionString: Config.RabbitMQConnString);
