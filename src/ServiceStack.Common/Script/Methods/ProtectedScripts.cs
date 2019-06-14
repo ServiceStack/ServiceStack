@@ -16,10 +16,13 @@ namespace ServiceStack.Script
     
     public class ProtectedScripts : ScriptMethods
     {
-        public MemoryVirtualFiles memoryVirtualFiles() => new MemoryVirtualFiles();
+        public MemoryVirtualFiles vfsMemory() => new MemoryVirtualFiles();
 
-        public FileSystemVirtualFiles fileSystemVirtualFiles(string dirPath) => new FileSystemVirtualFiles(dirPath);
+        public FileSystemVirtualFiles vfsFileSystem(string dirPath) => new FileSystemVirtualFiles(dirPath);
         
+        public GistVirtualFiles vfsGist(string gistId) => new GistVirtualFiles(gistId);
+        public GistVirtualFiles vfsGist(string gistId, string accessToken) => new GistVirtualFiles(gistId, accessToken);
+
         public IVirtualFile ResolveFile(string filterName, ScriptScopeContext scope, string virtualPath)
         {
             var file = ResolveFile(scope.Context.VirtualFiles, scope.PageResult.VirtualPath, virtualPath);
@@ -173,6 +176,12 @@ namespace ServiceStack.Script
                 return null;
 
             return virtualPath;
+        }
+
+        public object writeTextFiles(IVirtualPathProvider vfs, Dictionary<string,string> textFiles)
+        {
+            vfs.WriteFiles(textFiles);
+            return IgnoreResult.Value;
         }
 
         public string appendToFile(string virtualPath, object contents) => appendToFile(VirtualFiles, virtualPath, contents);
