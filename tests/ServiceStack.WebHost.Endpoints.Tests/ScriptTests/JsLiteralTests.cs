@@ -105,7 +105,32 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
         public void Can_parse_TemplateLiterals_with_escape_chars()
         {
             JsToken token;
+
+            @"`${a}\${b}`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("",""),
+                    new JsTemplateElement(@"\${b}","${b}", tail:true),
+                },
+                new[] { new JsIdentifier("a") })));
             
+            @"`${a}\\${b}`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("",""),
+                    new JsTemplateElement(@"\\",@"\"),
+                    new JsTemplateElement("","", tail:true),
+                },
+                new[] { new JsIdentifier("a"), new JsIdentifier("b") })));
+
+            @"`${a}\\\${b}`".ParseJsExpression(out token);
+            Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
+                new[] {
+                    new JsTemplateElement("",""),
+                    new JsTemplateElement(@"\\\${b}",@"\${b}", tail:true),
+                },
+                new[] { new JsIdentifier("a") })));
+
             @"`\\`".ParseJsExpression(out token);
             Assert.That(token, Is.EqualTo(new JsTemplateLiteral(
                 new[] { new JsTemplateElement("\\\\","\\", tail:true) })));
@@ -155,6 +180,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             Assert.That(context.EvaluateScript("{{`a'b'c` | raw}}"), Is.EqualTo("a'b'c"));
 
             Assert.That(context.EvaluateScript("{{`a\"b\"c` | appendTo: a}}{{ a | raw }}"), Is.EqualTo("a\"b\"c"));
+            Assert.That(context.EvaluateScript("{{`${a}\\\\${b}`}}"), Is.EqualTo("1\\2"));
         }
     }
 }
