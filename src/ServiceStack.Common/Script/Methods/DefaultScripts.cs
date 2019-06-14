@@ -492,6 +492,16 @@ namespace ServiceStack.Script
             return collection;
         }
 
+        public object putItem(IDictionary dictionary, object key, object value)
+        {
+            if (dictionary == null)
+                return null;
+
+            dictionary[key] = value;
+
+            return dictionary;
+        }
+
         private static bool TryAddToCollection(object collection, object value)
         {
             if (collection is IList l)
