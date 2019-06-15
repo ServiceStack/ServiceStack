@@ -2,8 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using ServiceStack.DataAnnotations;
 using ServiceStack.IO;
@@ -485,5 +487,107 @@ namespace ServiceStack.Script
             cacheClear(scope, "all");
             return scope.Context.InvalidateCachesBefore = DateTime.UtcNow;
         }
+
+        public string sh(ScriptScopeContext scope, string arguments) => sh(scope, arguments, null);
+        public string sh(ScriptScopeContext scope, string arguments, Dictionary<string, object> options)
+        {
+            if (string.IsNullOrEmpty(arguments))
+                return null;
+            
+            if (options == null)
+                options = new Dictionary<string, object>();
+
+            if (Env.IsWindows)
+            {
+                options["arguments"] = "/C " + arguments;
+                return proc(scope, "cmd.exe", options);
+            }
+            else
+            {
+                var escapedArgs = arguments.Replace("\"", "\\\"");
+                options["arguments"] = $"-c \"{escapedArgs}\"";
+                return proc(scope, "/bin/bash", options);
+            }
+        }
+        
+        public string proc(ScriptScopeContext scope, string fileName) => proc(scope, fileName, null);
+        public string proc(ScriptScopeContext scope, string fileName, Dictionary<string, object> options)
+        {
+            var process = new Process
+            {
+                StartInfo =
+                {
+                    FileName = fileName,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                }
+            };
+
+            if (options.TryGetValue("arguments", out var oArguments))
+                process.StartInfo.Arguments = oArguments.AsString();
+            
+            if (options.TryGetValue("dir", out var oWorkDir))
+                process.StartInfo.WorkingDirectory = oWorkDir.AsString();
+
+            try 
+            { 
+                using (process)
+                {
+                    process.StartInfo.RedirectStandardError = true;
+                    process.Start();
+
+                    var output = process.StandardOutput.ReadToEnd();
+                    var error = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+                    process.Close();
+
+                    if (!string.IsNullOrEmpty(error))
+                        throw new Exception($"`{fileName} {process.StartInfo.Arguments}` command failed: " + error);
+
+                    return output;
+                }            
+            }
+            catch (Exception ex)
+            {
+                throw new StopFilterExecutionException(scope, options, ex);
+            }
+        }
+
+        public string exePath(string exeName)
+        {
+            try
+            {
+                var p = new Process
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = false,
+                        FileName = Env.IsWindows 
+                            ? "where"  //Win 7/Server 2003+
+                            : "which", //macOS / Linux
+                        Arguments = exeName,
+                        RedirectStandardOutput = true
+                    }
+                };
+                p.Start();
+                var output = p.StandardOutput.ReadToEnd();
+                p.WaitForExit();
+
+                if (p.ExitCode == 0)
+                {
+                    // just return first match
+                    var fullPath = output.Substring(0, output.IndexOf(Environment.NewLine, StringComparison.Ordinal));
+                    if (!string.IsNullOrEmpty(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+            }
+            catch {}               
+            return null;
+        }
+        
     }
 }
