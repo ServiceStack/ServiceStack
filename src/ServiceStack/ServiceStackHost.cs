@@ -265,7 +265,11 @@ namespace ServiceStack
             if (!Config.DebugMode)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
 
-            ConfigurePlugins();
+            var configInstances = startupConfigs.Map(x => x.Item1);
+
+            //Some plugins need to initialize before other plugins are registered.
+            Plugins.ForEach(RunPreInitPlugin);
+            configInstances.ForEach(RunPreInitPlugin);
 
             List<IVirtualPathProvider> pathProviders = null;
             if (VirtualFileSources == null)
@@ -282,6 +286,8 @@ namespace ServiceStack
                     ?? GetVirtualFileSources().FirstOrDefault(x => x is FileSystemVirtualFiles) as IVirtualFiles;
 
             OnAfterInit();
+            
+            configInstances.ForEach(RunPostInitPlugin);
 
             PopulateArrayFilters();
 
@@ -828,22 +834,29 @@ namespace ServiceStack
             });
         }
 
-        private void ConfigurePlugins()
+        private void RunPreInitPlugin(object instance)
         {
-            //Some plugins need to initialize before other plugins are registered.
-            foreach (var plugin in Plugins)
+            try
             {
-                if (plugin is IPreInitPlugin preInitPlugin)
-                {
-                    try
-                    {
-                        preInitPlugin.Configure(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnStartupException(ex);
-                    }
-                }
+                if (instance is IPreInitPlugin prePlugin)
+                    prePlugin.BeforePluginsLoaded(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
+            }
+        }
+
+        private void RunPostInitPlugin(object instance)
+        {
+            try
+            {
+                if (instance is IPostInitPlugin postPlugin)
+                    postPlugin.AfterPluginsLoaded(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
             }
         }
 
@@ -859,20 +872,7 @@ namespace ServiceStack
 
             Config.PreferredContentTypesArray = Config.PreferredContentTypes.ToArray();
 
-            foreach (var plugin in Plugins)
-            {
-                if (plugin is IPostInitPlugin preInitPlugin)
-                {
-                    try
-                    {
-                        preInitPlugin.AfterPluginsLoaded(this);
-                    }
-                    catch (Exception ex)
-                    {
-                        OnStartupException(ex);
-                    }
-                }
-            }
+            Plugins.ForEach(RunPostInitPlugin);
 
             ServiceController.AfterInit();
         }

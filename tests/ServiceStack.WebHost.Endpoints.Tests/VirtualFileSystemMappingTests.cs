@@ -65,7 +65,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         public class VfsPlugin1 : IPlugin, IPreInitPlugin
         {
-            public void Configure(IAppHost appHost)
+            public void BeforePluginsLoaded(IAppHost appHost)
             {
                 appHost.AddVirtualFileSources.Add(new FileSystemMapping("vfs1", appHost.MapProjectPath("~/App_Data/mount1")));
             }
@@ -75,7 +75,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         
         public class VfsPlugin2 : IPlugin, IPreInitPlugin
         {
-            public void Configure(IAppHost appHost)
+            public void BeforePluginsLoaded(IAppHost appHost)
             {
                 appHost.AddVirtualFileSources.Add(new FileSystemMapping("vfs2", appHost.MapProjectPath("~/App_Data/mount2")));
             }
