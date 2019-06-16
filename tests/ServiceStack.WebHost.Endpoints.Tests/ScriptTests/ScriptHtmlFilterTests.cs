@@ -191,5 +191,22 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                 Is.EqualTo("<option  test=\"val\">"));
         }
 
+        [Test]
+        public void Does_htmlDump_singleRow()
+        {
+            var context = new ScriptContext {
+                Args = {
+                    ["rows"] = new List<Dictionary<string, object>> {
+                        new Dictionary<string, object> {
+                            ["Id"] = 1,
+                            ["Name"] = "foo",
+                        }
+                    }
+                }
+            }.Init();
+
+            var output = context.EvaluateScript("{{ rows | htmlDump }}");
+            Assert.That(output, Does.Contain("<tr><th>Id</th><td>1</td></tr><tr><th>Name</th><td>foo</td></tr>"));
+        }
     }
 }
