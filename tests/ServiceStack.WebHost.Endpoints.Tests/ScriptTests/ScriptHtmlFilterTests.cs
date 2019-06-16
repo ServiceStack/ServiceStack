@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using NUnit.Framework;
 using ServiceStack.Script;
 using ServiceStack.Text;
@@ -200,13 +201,16 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
                         new Dictionary<string, object> {
                             ["Id"] = 1,
                             ["Name"] = "foo",
+                            ["None"] = DBNull.Value,
                         }
                     }
                 }
             }.Init();
 
             var output = context.EvaluateScript("{{ rows | htmlDump }}");
-            Assert.That(output, Does.Contain("<tr><th>Id</th><td>1</td></tr><tr><th>Name</th><td>foo</td></tr>"));
+//            output.Print();
+            Assert.That(output, Does.Contain(
+                "<tr><th>Id</th><td>1</td></tr><tr><th>Name</th><td>foo</td></tr><tr><th>None</th><td></td></tr>"));
         }
     }
 }
