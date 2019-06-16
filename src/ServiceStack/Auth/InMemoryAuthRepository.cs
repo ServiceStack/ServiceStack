@@ -6,18 +6,33 @@ using System.Threading;
 
 namespace ServiceStack.Auth
 {
+    public class InMemoryAuthRepository : InMemoryAuthRepository<UserAuth, UserAuthDetails>
+    {
+    }
+
+    public interface IMemoryAuthRepository
+        : IUserAuthRepository, IClearable, IManageApiKeys, ICustomUserAuth
+    {
+        Dictionary<string, HashSet<string>> Sets { get; }
+        Dictionary<string, Dictionary<string, string>> Hashes { get; }
+    }
+
     /// <summary>
     /// Thread-safe In memory UserAuth data store so it can be used without a dependency on Redis.
     /// </summary>
-    public class InMemoryAuthRepository : RedisAuthRepository
+    public class InMemoryAuthRepository<TUserAuth, TUserAuthDetails> 
+        : RedisAuthRepository<TUserAuth, TUserAuthDetails>, IMemoryAuthRepository
+        where TUserAuth : class, IUserAuth
+        where TUserAuthDetails : class, IUserAuthDetails
     {
-        public static readonly InMemoryAuthRepository Instance = new InMemoryAuthRepository();
+        public static readonly InMemoryAuthRepository<TUserAuth, TUserAuthDetails> Instance = 
+            new InMemoryAuthRepository<TUserAuth, TUserAuthDetails>();
 
-        protected Dictionary<string, HashSet<string>> Sets { get; set; }
-        protected Dictionary<string, Dictionary<string, string>> Hashes { get; set; }
+        public Dictionary<string, HashSet<string>> Sets { get; set; }
+        public Dictionary<string, Dictionary<string, string>> Hashes { get; set; }
         internal List<IClearable> TrackedTypes = new List<IClearable>();
 
-        class TypedData<T> : IClearable
+        internal class TypedData<T> : IClearable
         {
             internal static TypedData<T> Instance = new TypedData<T>();
 
@@ -37,6 +52,7 @@ namespace ServiceStack.Auth
             }
         }
 
+
         public InMemoryAuthRepository()
             : base(new InMemoryManagerFacade(Instance))
         {
@@ -44,11 +60,11 @@ namespace ServiceStack.Auth
             this.Hashes = new Dictionary<string, Dictionary<string, string>>();
         }
 
-        class InMemoryManagerFacade : IRedisClientManagerFacade
+        internal class InMemoryManagerFacade : IRedisClientManagerFacade
         {
-            private readonly InMemoryAuthRepository root;
+            private readonly IMemoryAuthRepository root;
 
-            public InMemoryManagerFacade(InMemoryAuthRepository root)
+            public InMemoryManagerFacade(IMemoryAuthRepository root)
             {
                 this.root = root;
             }
@@ -66,20 +82,20 @@ namespace ServiceStack.Auth
             }
         }
 
-        class InMemoryClientFacade : IRedisClientFacade
+        internal class InMemoryClientFacade : IRedisClientFacade
         {
-            private readonly InMemoryAuthRepository root;
+            private readonly IMemoryAuthRepository root;
 
-            public InMemoryClientFacade(InMemoryAuthRepository root)
+            public InMemoryClientFacade(IMemoryAuthRepository root)
             {
                 this.root = root;
             }
 
             class InMemoryTypedClientFacade<T> : ITypedRedisClientFacade<T>
             {
-                private readonly InMemoryAuthRepository root;
+                private readonly IMemoryAuthRepository root;
 
-                public InMemoryTypedClientFacade(InMemoryAuthRepository root)
+                public InMemoryTypedClientFacade(IMemoryAuthRepository root)
                 {
                     this.root = root;
                 }
