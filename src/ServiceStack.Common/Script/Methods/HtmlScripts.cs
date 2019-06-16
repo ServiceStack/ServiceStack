@@ -256,7 +256,7 @@ namespace ServiceStack.Script
                                     {
                                         sb.Append("<td>");
                                         var body = HtmlDump(o, options);
-                                        sb.Append(body.ToRawString());
+                                        sb.Append(body.AsString());
                                         sb.Append("</td>");
                                     }
 
