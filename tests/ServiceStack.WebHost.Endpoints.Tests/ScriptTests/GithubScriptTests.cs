@@ -30,12 +30,33 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
 
 {{ { ...newGist, Files: null, Owner: null } | textDump({ caption: 'new gist' }) }}
 {{ newGist.Owner | textDump({ caption: 'new gist owner' }) }}
-{{ newGist.Files | textDump({ caption: 'new gist files' }) }}
+{{ newGist.Files | toList | map(x => x.Value.textDump({ caption: x.Key })) | join('\n') }}
 
 {{ gateway.githubGist(newGist.Id) | assignTo: gist }}
+{{ { ...gist, Files: null, Owner: null } | textDump({ caption: 'gist' }) }}
+{{ gist.Files | toList | map(x => x.Value.textDump({ caption: x.Key })) | join('\n') }}
+");
+ 
+            output.Print();
+        }
+
+        [Test]
+        public void Display_Gist()
+        {
+            var context = CreateScriptContext().Init();
+            context.Args["gistId"] = "4c5d95ec4b2594b4cdd238987fe7a15a";
+            
+            var output = context.EvaluateScript(@"
+{{ githubGateway('GITHUB_GIST_TOKEN'.envVariable()) | assignTo: gateway }}
+
+{{ gateway.githubGist(gistId) | assignTo: gist }}
 
 {{ { ...gist, Files: null, Owner: null } | textDump({ caption: 'gist' }) }}
-{{ gist.Files | textDump({ caption: 'gist files' }) }}
+
+### Gist Files
+{{#each file in gist.Files.Keys}}
+{{ gist.Files[file] | textDump({ caption: file }) }}
+{{/each}
 ");
  
             output.Print();
