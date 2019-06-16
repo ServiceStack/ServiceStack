@@ -86,7 +86,7 @@ namespace ServiceStack.Api.OpenApi
             InlineSchemaTypesInNamespaces = new List<string>();
         }
 
-        public void Configure(IAppHost appHost)
+        public void BeforePluginsLoaded(IAppHost appHost)
         {
             appHost.Config.EmbeddedResourceSources.Add(typeof(OpenApiFeature).Assembly);
         }
