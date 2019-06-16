@@ -701,6 +701,7 @@ namespace ServiceStack.Script
         }
 
         public string toString(object target) => target?.ToString();
+        public string asString(object target) => target.AsString();
         public List<object> toList(IEnumerable target) => target.Map(x => x);
         public List<string> toStringList(IEnumerable target) => ViewUtils.ToStringList(target);
         public object[] toArray(IEnumerable target) => target.Map(x => x).ToArray();
