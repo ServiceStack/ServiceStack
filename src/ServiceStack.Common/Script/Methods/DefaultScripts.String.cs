@@ -82,7 +82,7 @@ namespace ServiceStack.Script
         public string timeFormat(TimeSpan timeValue) => timeValue.ToString((string)Context.Args[ScriptConstants.DefaultTimeFormat]);
         public string timeFormat(TimeSpan timeValue, string format) => timeValue.ToString(format);
 
-        public string splitCase(string text) => text.SplitCamelCase().Replace('_', ' ');
+        public string splitCase(string text) => text.SplitCamelCase().Replace('_', ' ').Replace("  ", " ");
         public string humanize(string text) => splitCase(text).ToTitleCase();
         public string titleCase(string text) => text.ToTitleCase();
         public string pascalCase(string text) => text.ToPascalCase();

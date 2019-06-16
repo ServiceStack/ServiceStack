@@ -21,9 +21,9 @@ namespace ServiceStack.WebHost.Endpoints.Tests.ScriptTests
             var context = CreateScriptContext().Init();
 
             var output = context.EvaluateScript(@"
-{{ 'GITHUB_GIST_TOKEN' | envVariable | githubGateway | assignTo: gateway }}
+{{ githubGateway('GITHUB_GIST_TOKEN'.envVariable()) | assignTo: gateway }}
 {{ gateway.githubCreateGist('Hello World Examples', {
-     'hello_world_ruby.txt': 'Run `ruby hello_world.rb` to print Hello World',
+     'hello_world_ruby.txt':   'Run `ruby hello_world.rb` to print Hello World',
      'hello_world_python.txt': 'Run `python hello_world.py` to print Hello World',
    })
    | assignTo: newGist }}
