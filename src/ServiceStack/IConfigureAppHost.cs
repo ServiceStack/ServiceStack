@@ -6,7 +6,7 @@ namespace ServiceStack
     /// </summary>
     public interface IPreConfigureAppHost
     {
-        void Configure(IAppHost appHost);
+        void PreConfigure(IAppHost appHost);
     }
 
     /// <summary>
