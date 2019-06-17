@@ -205,25 +205,28 @@ namespace ServiceStack
             var scanAssemblies = new List<Assembly>(ServiceAssemblies);
             scanAssemblies.AddIfNotExists(GetType().Assembly);
             var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IConfigureAppHost)))
+                .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) 
+                            || x.HasInterface(typeof(IConfigureAppHost)))
                 .ToArray();
             
             var startupConfigs = scanTypes.Select(x => x.CreateInstance()).WithPriority();
-            
+            var configInstances = startupConfigs.PriorityOrdered();
+            var preStartupConfigs = startupConfigs.PriorityBelowZero();
+            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
+
             void RunPreConfigure(object instance)
             {
                 try
                 {
                     if (instance is IPreConfigureAppHost preConfigureAppHost)
-                        preConfigureAppHost.Configure(this);
+                        preConfigureAppHost.PreConfigure(this);
                 }
                 catch (Exception ex)
                 {
                     OnStartupException(ex);
                 }
             }
-            var preStartupConfigs = startupConfigs.PriorityBelowZero();
-            preStartupConfigs.ForEach(RunPreConfigure);
+            configInstances.ForEach(RunPreConfigure);
             
             if (ServiceController == null)
                 ServiceController = CreateServiceController(ServiceAssemblies.ToArray());
@@ -256,7 +259,6 @@ namespace ServiceStack
 
             AfterConfigure.Each(fn => fn(this));
 
-            var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
             postStartupConfigs.ForEach(RunConfigure);
 
             if (Config.StrictMode == null && Config.DebugMode)
@@ -264,8 +266,6 @@ namespace ServiceStack
 
             if (!Config.DebugMode)
                 Plugins.RemoveAll(x => x is RequestInfoFeature);
-
-            var configInstances = startupConfigs.Map(x => x.Item1);
 
             //Some plugins need to initialize before other plugins are registered.
             Plugins.ForEach(RunPreInitPlugin);

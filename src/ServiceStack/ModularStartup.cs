@@ -223,6 +223,9 @@ namespace ServiceStack
         public static List<Tuple<object, int>> WithPriority(this IEnumerable<object> instances) => 
             instances.Select(o => new Tuple<object, int>(o, o.GetType().FirstAttribute<PriorityAttribute>()?.Value ?? 0)).ToList();
 
+        public static List<object> PriorityOrdered(this List<Tuple<object, int>> instances) =>
+            instances.OrderBy(x => x.Item2).Map(x => x.Item1);
+
         public static List<object> PriorityBelowZero(this List<Tuple<object, int>> instances) =>
             instances.Where(x => x.Item2 < 0).OrderBy(x => x.Item2).Map(x => x.Item1);
 
