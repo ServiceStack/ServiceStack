@@ -25,6 +25,12 @@ namespace ServiceStack.Auth
         void DeleteUserAuth(string userAuthId);
     }
 
+    public interface IQueryUserAuth
+    {
+        List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null);
+        List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null);
+    }
+
     public interface ICustomUserAuth
     {
         IUserAuth CreateUserAuth();

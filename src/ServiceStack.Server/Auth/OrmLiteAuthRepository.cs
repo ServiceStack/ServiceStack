@@ -157,7 +157,7 @@ namespace ServiceStack.Auth
         }
     }
 
-    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth
+    public abstract class OrmLiteAuthRepositoryBase<TUserAuth, TUserAuthDetails> : IUserAuthRepository, IRequiresSchema, IClearable, IManageRoles, IManageApiKeys, ICustomUserAuth, IQueryUserAuth
         where TUserAuth : class, IUserAuth
         where TUserAuthDetails : class, IUserAuthDetails
     {
@@ -320,6 +320,38 @@ namespace ServiceStack.Auth
             }
             
             return userAuth;
+        }
+
+        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
+        {
+            return Exec(db => {
+                var q = db.From<TUserAuth>();
+                if (orderBy != null)
+                    q.OrderBy(orderBy);
+                if (skip != null || take != null)
+                    q.Limit(skip, take);
+                return db.Select(q).ConvertAll(x => (IUserAuth)x);
+            });
+        }
+
+        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
+        {
+            return Exec(db => {
+                var q = db.From<TUserAuth>();
+                if (!string.IsNullOrEmpty(query))
+                {
+                    q.Where(x => x.UserName.Contains(query) ||
+                                 x.PrimaryEmail.Contains(query) ||
+                                 x.Email.Contains(query) ||
+                                 x.DisplayName.Contains(query) ||
+                                 x.Company.Contains(query));
+                }
+                if (orderBy != null)
+                    q.OrderBy(orderBy);
+                if (skip != null || take != null)
+                    q.Limit(skip, take);
+                return db.Select(q).ConvertAll(x => (IUserAuth)x);
+            });
         }
         
         public virtual bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)

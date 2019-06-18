@@ -144,6 +144,24 @@ namespace ServiceStack.Auth
                         TypedData<T>.Instance.Items.RemoveAll(x => idsSet.Contains(x.ToId().ToString()));
                     }
                 }
+
+                public List<T> GetAll(int? skip=null, int? take=null)
+                {
+                    lock (TypedData<T>.Instance.Items)
+                    {
+                        if (skip != null || take != null)
+                        {
+                            var to = TypedData<T>.Instance.Items.AsEnumerable();
+                            if (skip != null)
+                                to = to.Skip(skip.Value);
+                            if (take != null)
+                                to = to.Take(take.Value);
+                            return to.ToList();
+                        }
+
+                        return TypedData<T>.Instance.Items.ToList();
+                    }
+                }
             }
 
             public HashSet<string> GetAllItemsFromSet(string setId)

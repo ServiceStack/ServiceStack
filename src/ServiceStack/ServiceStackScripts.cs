@@ -288,6 +288,71 @@ namespace ServiceStack
         public object endIfAuthenticated(ScriptScopeContext scope, object value) => !isAuthenticated(scope) 
             ? value : StopExecution.Value;
 
+        public IAuthRepository authRepo(ScriptScopeContext scope) => HostContext.AppHost.GetAuthRepository(req(scope));
+
+        public IUserAuth newUserAuth(IAuthRepository authRepo) =>
+            authRepo is ICustomUserAuth c ? c.CreateUserAuth() : new UserAuth();
+
+        public IUserAuthDetails newUserAuthDetails(IAuthRepository authRepo) =>
+            authRepo is ICustomUserAuth c ? c.CreateUserAuthDetails() : new UserAuthDetails();
+
+        public IUserAuth getUserAuth(IAuthRepository authRepo, string userAuthId) =>
+            authRepo.GetUserAuth(userAuthId);
+
+        public IUserAuth getUserAuthByUserName(IAuthRepository authRepo, string userNameOrEmail) =>
+            authRepo.GetUserAuthByUserName(userNameOrEmail);
+
+        public IUserAuth tryAuthenticate(ScriptScopeContext scope, IAuthRepository authRepo, string userName, string password) =>
+            authRepo.TryAuthenticate(userName, password, out var ret) ? ret : null;
+
+        public IUserAuth createUserAuth(IAuthRepository authRepo, IUserAuth newUser, string password) =>
+            authRepo.CreateUserAuth(newUser, password);
+
+        public IgnoreResult saveUserAuth(IAuthRepository authRepo, IUserAuth userAuth)
+        {
+            authRepo.SaveUserAuth(userAuth);
+            return IgnoreResult.Value;
+        }
+
+        public IUserAuth updateUserAuth(IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser) =>
+            authRepo.UpdateUserAuth(existingUser, newUser);
+
+        public IgnoreResult updateUserAuth(IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password)
+        {
+            authRepo.UpdateUserAuth(existingUser, newUser, password);
+            return IgnoreResult.Value;
+        }
+
+        public IgnoreResult deleteUserAuth(IAuthRepository authRepo, string userAuthId)
+        {
+            authRepo.DeleteUserAuth(userAuthId);
+            return IgnoreResult.Value;
+        }
+
+        public List<IUserAuth> getUserAuths(IAuthRepository authRepo) => getUserAuths(authRepo, null);
+        public List<IUserAuth> getUserAuths(IAuthRepository authRepo, Dictionary<string, object> options)
+        {
+            var opt = options ?? TypeConstants.EmptyObjectDictionary;
+
+            return authRepo.GetUserAuths(
+                orderBy: opt.TryGetValue("orderBy", out var oOrderBy) ? (string) oOrderBy : null,
+                skip: opt.TryGetValue("skip", out var oSkip) ? (int) oSkip : (int?)null,
+                take: opt.TryGetValue("take", out var oTake) ? (int) oTake : (int?)null
+            );
+        }
+
+        public List<IUserAuth> searchUserAuths(IAuthRepository authRepo, Dictionary<string, object> options)
+        {
+            var opt = options ?? TypeConstants.EmptyObjectDictionary;
+
+            return authRepo.SearchUserAuths(
+                query: opt.TryGetValue("query", out var oQuery) ? (string) oQuery: null,
+                orderBy: opt.TryGetValue("orderBy", out var oOrderBy) ? (string) oOrderBy : null,
+                skip: opt.TryGetValue("skip", out var oSkip) ? (int) oSkip : (int?)null,
+                take: opt.TryGetValue("take", out var oTake) ? (int) oTake : (int?)null
+            );
+        }
+
         public IHttpResult getHttpResult(ScriptScopeContext scope, object options) => httpResult(scope, options);
         public HttpResult httpResult(ScriptScopeContext scope, object options)
         {
