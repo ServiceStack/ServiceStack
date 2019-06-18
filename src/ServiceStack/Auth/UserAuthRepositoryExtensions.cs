@@ -143,25 +143,34 @@ namespace ServiceStack.Auth
             return userRepo;
         }
 
-        public static IUserAuth CreateUserAuth(this IAuthRepository authRepo, IUserAuth newUser, string password)
-        {
-            return authRepo.AssertUserAuthRepository().CreateUserAuth(newUser, password);
-        }
+        public static IUserAuth CreateUserAuth(this IAuthRepository authRepo, IUserAuth newUser, string password) => 
+            authRepo.AssertUserAuthRepository().CreateUserAuth(newUser, password);
 
-        public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password)
-        {
-            return authRepo.AssertUserAuthRepository().UpdateUserAuth(existingUser, newUser, password);
-        }
+        public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser) => 
+            authRepo.AssertUserAuthRepository().UpdateUserAuth(existingUser, newUser);
 
-        public static IUserAuth GetUserAuth(this IAuthRepository authRepo, string userAuthId)
-        {
-            return authRepo.AssertUserAuthRepository().GetUserAuth(userAuthId);
-        }
+        public static IUserAuth UpdateUserAuth(this IAuthRepository authRepo, IUserAuth existingUser, IUserAuth newUser, string password) => 
+            authRepo.AssertUserAuthRepository().UpdateUserAuth(existingUser, newUser, password);
 
-        public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId)
-        {
+        public static IUserAuth GetUserAuth(this IAuthRepository authRepo, string userAuthId) => 
+            authRepo.AssertUserAuthRepository().GetUserAuth(userAuthId);
+
+        public static void DeleteUserAuth(this IAuthRepository authRepo, string userAuthId) => 
             authRepo.AssertUserAuthRepository().DeleteUserAuth(userAuthId);
+
+        static IQueryUserAuth AssertQueryUserAuth(this IAuthRepository repo)
+        {
+            if (!(repo is IQueryUserAuth queryUserAuth))
+                throw new NotSupportedException("This operation requires an Auth Repository that implements IQueryUserAuth");
+
+            return queryUserAuth;
         }
+
+        public static List<IUserAuth> GetUserAuths(this IAuthRepository authRepo, string orderBy = null, int? skip = null, int? take = null) => 
+            authRepo.AssertQueryUserAuth().GetUserAuths(orderBy: orderBy, skip: skip, take: take);
+
+        public static List<IUserAuth> SearchUserAuths(this IAuthRepository authRepo, string query, string orderBy = null, int? skip = null, int? take = null) => 
+            authRepo.AssertQueryUserAuth().SearchUserAuths(query:query, orderBy: orderBy, skip: skip, take: take);
 
         public static void ValidateNewUser(this IUserAuth newUser)
         {
