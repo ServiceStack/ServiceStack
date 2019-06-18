@@ -1,10 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Raven.Abstractions.Indexing;
 using Raven.Client;
-using Raven.Client.Indexes;
 using ServiceStack.Auth;
+
+#if NETSTANDARD2_0
+using Raven.Client.Documents;
+using Raven.Client.Documents.Indexes;
+using Raven.Client.Documents.Session;
+#else
+using Raven.Client.Indexes;
+using Raven.Abstractions.Indexing;
+#endif
 
 namespace ServiceStack.Authentication.RavenDb
 {
@@ -47,7 +54,11 @@ namespace ServiceStack.Authentication.RavenDb
                         Search = new[] { user.UserName, user.Email }
                     };
 
+#if NETSTANDARD2_0
+                Index(x => x.Search, FieldIndexing.Exact);
+#else
                 Index(x => x.Search, FieldIndexing.NotAnalyzed);
+#endif
             }
         }
 
@@ -172,7 +183,7 @@ namespace ServiceStack.Authentication.RavenDb
             using (var session = documentStore.OpenSession())
             {
                 var userAuth = session.Query<UserAuth_By_UserNameOrEmail.Result, UserAuth_By_UserNameOrEmail>()
-                       .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                       .Customize(x => x.WaitForNonStaleResults())
                        .Where(x => x.Search.Contains(userNameOrEmail))
                        .OfType<TUserAuth>()
                        .FirstOrDefault();
@@ -244,7 +255,7 @@ namespace ServiceStack.Authentication.RavenDb
                     session.Delete(userAuth);
 
                     var userAuthDetails = session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                        .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                        .Customize(x => x.WaitForNonStaleResults())
                         .Where(q => q.UserAuthId == userId);
 
                     userAuthDetails.Each(session.Delete);
@@ -261,8 +272,7 @@ namespace ServiceStack.Authentication.RavenDb
         {
             using (var session = documentStore.OpenSession())
             {
-                int intAuthId;
-                return int.TryParse(userAuthId, out intAuthId)
+                return int.TryParse(userAuthId, out var intAuthId)
                     ? session.Load<TUserAuth>(intAuthId)
                     : session.Load<TUserAuth>(userAuthId);
             }
@@ -278,7 +288,7 @@ namespace ServiceStack.Authentication.RavenDb
                     ? session.Load<TUserAuth>(idInt)
                     : authSession.ConvertTo<TUserAuth>();
 
-                if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+                if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
                     userAuth.Id = idInt;
 
                 userAuth.ModifiedDate = DateTime.UtcNow;
@@ -308,8 +318,8 @@ namespace ServiceStack.Authentication.RavenDb
             using (var session = documentStore.OpenSession())
             {
                 var id = int.Parse(userAuthId);
-                return session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                return  session.Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
+                    .Customize(x => x.WaitForNonStaleResults())
                     .Where(q => q.UserAuthId == id)
                     .OrderBy(x => x.ModifiedDate)
                     .OfType<TUserAuthDetails>()
@@ -338,7 +348,7 @@ namespace ServiceStack.Authentication.RavenDb
             {
                 var oAuthProvider = session
                     .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                    .Customize(x => x.WaitForNonStaleResults())
                     .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
                     .OfType<TUserAuthDetails>()
                     .FirstOrDefault();
@@ -361,7 +371,7 @@ namespace ServiceStack.Authentication.RavenDb
             {
                 var authDetails = session
                     .Query<UserAuth_By_UserAuthDetails.Result, UserAuth_By_UserAuthDetails>()
-                    .Customize(x => x.WaitForNonStaleResultsAsOfNow())
+                    .Customize(x => x.WaitForNonStaleResults())
                     .Where(q => q.Provider == tokens.Provider && q.UserId == tokens.UserId)
                     .OfType<TUserAuthDetails>()
                     .FirstOrDefault();
@@ -395,5 +405,22 @@ namespace ServiceStack.Authentication.RavenDb
                 return authDetails;
             }
         }
+    }
+    
+    internal static class RavenDbExtensions
+    {
+        
+#if NETSTANDARD2_0
+        public static T Load<T>(this IDocumentSession session, int id)
+        {
+            return session.Load<T>(id.ToString());
+        }
+#else
+        public static IDocumentQueryCustomization WaitForNonStaleResults(this IDocumentQueryCustomization customize)
+        {
+            return customize.WaitForNonStaleResults();
+        }
+#endif
+        
     }
 }
