@@ -77,9 +77,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     host.Plugins.Add(new SharpPagesFeature());
                 },
                 ConfigureContainer = container => {
+                    
                     ConfigureAuthRepo(container);
+                    
                     var authRepo = container.Resolve<IAuthRepository>();
+                    if (authRepo is IClearable clearable)
+                    {
+                        clearable.Clear();
+                    }
+
                     authRepo.InitSchema();
+                    
                     SeedData(authRepo);
                 }
             }.Init();
