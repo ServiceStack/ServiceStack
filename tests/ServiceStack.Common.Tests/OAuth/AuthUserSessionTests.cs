@@ -62,7 +62,7 @@ namespace ServiceStack.Common.Tests.OAuth
                 TestsConfig.SqlServerConnString, 
                 SqlServerDialect.Provider);
             var sqlServerRepo = new OrmLiteAuthRepository(sqlServerFactory);
-            sqlServerRepo.Clear();
+            try { sqlServerRepo.Clear(); } catch {}
             sqlServerRepo.InitSchema();
             InitTest(sqlServerRepo);
             return sqlServerRepo;
@@ -75,7 +75,6 @@ namespace ServiceStack.Common.Tests.OAuth
         {
             var dbFactory = new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider);
             var sqliteRepo = new OrmLiteAuthRepository(dbFactory);
-            sqliteRepo.Clear();
             sqliteRepo.InitSchema();
             InitTest(sqliteRepo);
             return sqliteRepo;
