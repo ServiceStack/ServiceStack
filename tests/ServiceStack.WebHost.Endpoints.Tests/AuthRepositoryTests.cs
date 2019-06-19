@@ -55,11 +55,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             container.Register<IRedisClientsManager>(c => new RedisManagerPool());
             container.Register<IAuthRepository>(c => 
                 new RedisAuthRepository(c.Resolve<IRedisClientsManager>()));
-
-            using (var client = container.Resolve<IRedisClientsManager>().GetClient())
-            {
-                client.FlushAll();
-            }
         }
     }
     
