@@ -155,15 +155,5 @@ namespace ServiceStack
             return to;
         }
     }
-
-    public static class NetCoreAppSettingsExtensions
-    {
-        public static string GetConnectionString(this IAppSettings appSettings, string name)
-        {
-            return appSettings is NetCoreAppSettings config
-                ? config.GetConnectionString(name)
-                : appSettings.GetString("ConnectionStrings:" + name);
-        }
-    }
 }
 #endif
