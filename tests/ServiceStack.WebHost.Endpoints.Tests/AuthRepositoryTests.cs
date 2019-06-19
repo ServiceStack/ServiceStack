@@ -148,6 +148,12 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 ConfigureContainer = container => {
                     ConfigureAuthRepo(container);
                     var authRepo = container.Resolve<IAuthRepository>();
+                    
+                    if (authRepo is IClearable clearable)
+                    {
+                        try { clearable.Clear(); } catch {}
+                    }
+
                     authRepo.InitSchema();
                 }
             }.Init();
