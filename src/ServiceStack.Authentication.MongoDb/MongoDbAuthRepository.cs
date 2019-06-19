@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace ServiceStack.Authentication.MongoDb
 {
-    public class MongoDbAuthRepository : IUserAuthRepository, IClearable, IManageApiKeys
+    public class MongoDbAuthRepository : IUserAuthRepository, IClearable, IManageApiKeys, IQueryUserAuth
     {
         // http://www.mongodb.org/display/DOCS/How+to+Make+an+Auto+Incrementing+Field
         class Counters
@@ -100,7 +100,7 @@ namespace ServiceStack.Authentication.MongoDb
 
         private void SaveUser(IUserAuth userAuth)
         {
-            if (userAuth.Id == default(int))
+            if (userAuth.Id == default)
                 userAuth.Id = IncUserAuthCounter();
             var usersCollection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
             usersCollection.ReplaceOne(u => u.Id == userAuth.Id, (UserAuth)userAuth, 
@@ -198,6 +198,46 @@ namespace ServiceStack.Authentication.MongoDb
             return userAuth;
         }
 
+        private static List<IUserAuth> SortAndPage(IFindFluent<UserAuth, UserAuth> q, string orderBy, int? skip, int? take)
+        {
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var desc = false;
+                if (orderBy.IndexOf(' ') >= 0)
+                {
+                    desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
+                    orderBy = orderBy.LeftPart(' ');
+                }
+
+                q = q.Sort(desc ? Builders<UserAuth>.Sort.Descending(orderBy) : Builders<UserAuth>.Sort.Ascending(orderBy));
+            }
+
+            if (skip != null)
+                q = q.Skip(skip.Value);
+            if (take != null)
+                q = q.Limit(take.Value);
+
+            return q.ToList().ConvertAll(x => x as IUserAuth);
+        }
+
+        public List<IUserAuth> GetUserAuths(string orderBy = null, int? skip = null, int? take = null)
+        {
+            var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
+            return SortAndPage(collection.Find(Builders<UserAuth>.Filter.Empty), orderBy, skip, take);
+        }
+
+        public List<IUserAuth> SearchUserAuths(string query, string orderBy = null, int? skip = null, int? take = null)
+        {
+            var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
+            var filter = Builders<UserAuth>.Filter;
+            var q = filter.Where(x => x.UserName.Contains(query) ||
+                  x.Email.Contains(query) ||
+                  x.DisplayName.Contains(query) ||
+                  x.Company.Contains(query));
+            
+            return SortAndPage(collection.Find(q), orderBy, skip, take);
+        }
+
         public bool TryAuthenticate(string userName, string password, out IUserAuth userAuth)
         {
             userAuth = GetUserAuthByUserName(userName);
@@ -265,11 +305,11 @@ namespace ServiceStack.Authentication.MongoDb
                 ? (UserAuth)GetUserAuth(authSession.UserAuthId)
                 : authSession.ConvertTo<UserAuth>();
 
-            if (userAuth.Id == default(int) && !authSession.UserAuthId.IsNullOrEmpty())
+            if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
                 userAuth.Id = int.Parse(authSession.UserAuthId);
 
             userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.CreatedDate == default(DateTime))
+            if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
@@ -279,7 +319,7 @@ namespace ServiceStack.Authentication.MongoDb
         public void SaveUserAuth(IUserAuth userAuth)
         {
             userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.CreatedDate == default(DateTime))
+            if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             SaveUser(userAuth);
@@ -345,17 +385,17 @@ namespace ServiceStack.Authentication.MongoDb
             userAuth.PopulateMissingExtended(authDetails);
 
             userAuth.ModifiedDate = DateTime.UtcNow;
-            if (userAuth.CreatedDate == default(DateTime))
+            if (userAuth.CreatedDate == default)
                 userAuth.CreatedDate = userAuth.ModifiedDate;
 
             SaveUser((UserAuth)userAuth);
 
-            if (authDetails.Id == default(int))
+            if (authDetails.Id == default)
                 authDetails.Id = IncUserOAuthProviderCounter();
 
             authDetails.UserAuthId = userAuth.Id;
 
-            if (authDetails.CreatedDate == default(DateTime))
+            if (authDetails.CreatedDate == default)
                 authDetails.CreatedDate = userAuth.ModifiedDate;
             authDetails.ModifiedDate = userAuth.ModifiedDate;
 
