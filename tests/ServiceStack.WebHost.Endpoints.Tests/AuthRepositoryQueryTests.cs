@@ -83,7 +83,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     var authRepo = container.Resolve<IAuthRepository>();
                     if (authRepo is IClearable clearable)
                     {
-                        clearable.Clear();
+                        try { clearable.Clear(); } catch {}
                     }
 
                     authRepo.InitSchema();
