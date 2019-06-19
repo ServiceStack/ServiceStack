@@ -266,4 +266,95 @@ namespace ServiceStack.Auth
             }
         }
     }
+    
+    public static class AuthRepositoryUtils
+    {
+        public static IEnumerable<TUserAuth> SortAndPage<TUserAuth>(this IEnumerable<TUserAuth> q, string orderBy, int? skip, int? take)
+            where TUserAuth : IUserAuth
+        {
+            if (!string.IsNullOrEmpty(orderBy))
+            {
+                var desc = false;
+                if (orderBy.IndexOf(' ') >= 0)
+                {
+                    desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
+                    orderBy = orderBy.LeftPart(' ');
+                }
+
+                if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.Id)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.Id)
+                        : q.OrderBy(x => x.Id);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.PrimaryEmail)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.PrimaryEmail)
+                        : q.OrderBy(x => x.PrimaryEmail);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.CreatedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.CreatedDate)
+                        : q.OrderBy(x => x.CreatedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.ModifiedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.ModifiedDate)
+                        : q.OrderBy(x => x.ModifiedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.LockedDate)))
+                {
+                    q = desc 
+                        ? q.OrderByDescending(x => x.LockedDate)
+                        : q.OrderBy(x => x.LockedDate);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.UserName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.UserName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.UserName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.DisplayName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.DisplayName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.DisplayName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.FirstName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.FirstName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.FirstName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.LastName)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.LastName : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.LastName : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.Email)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.Email : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.Email : null);
+                }
+                else if (orderBy.EqualsIgnoreCase(nameof(IUserAuthDetailsExtended.Company)))
+                {
+                    q = desc
+                        ? q.OrderByDescending(x => x is IUserAuthDetailsExtended u ? u.Company : null)
+                        : q.OrderBy(x => x is IUserAuthDetailsExtended u ? u.Company : null);
+                }
+            }
+            
+            if (skip != null)
+                q = q.Skip(skip.Value);
+            if (take != null)
+                q = q.Take(take.Value);
+
+            return q;
+        }
+    }    
 }

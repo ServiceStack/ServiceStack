@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Funq;
 using NUnit.Framework;
@@ -9,42 +10,47 @@ using ServiceStack.Redis;
 using ServiceStack.Script;
 using ServiceStack.Testing;
 
+using Raven.Client;
+using ServiceStack.Authentication.RavenDb;
+using ServiceStack.DataAnnotations;
+#if NETCORE_SUPPORT
+using Raven.Client.Documents;
+#else
+using Raven.Client.Document;
+#endif
+
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
     public class MemoryAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
     {
-        protected override void ConfigureAuthRepo(Container container)
-        {
-            container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
-        }
+        public override void ConfigureAuthRepo(Container container) =>
+            new MemoryAuthRepositoryTests().ConfigureAuthRepo(container);
     }
     
     public class RedisAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
     {
-        protected override void ConfigureAuthRepo(Container container)
-        {
-            container.Register<IRedisClientsManager>(c => new RedisManagerPool());
-            container.Register<IAuthRepository>(c => 
-                new RedisAuthRepository(c.Resolve<IRedisClientsManager>()));
-
-            using (var client = container.Resolve<IRedisClientsManager>().GetClient())
-            {
-                client.FlushAll();
-            }
-        }
+        public override void ConfigureAuthRepo(Container container) =>
+            new RedisAuthRepositoryTests().ConfigureAuthRepo(container);
     }
     
     public class OrmLiteAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
     {
-        protected override void ConfigureAuthRepo(Container container)
-        {
-            container.Register<IDbConnectionFactory>(c =>
-                new OrmLiteConnectionFactory(":memory:", SqliteDialect.Provider) {
-                    AutoDisposeConnection = false,
-                });
-
-            container.Register<IAuthRepository>(c => new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
-        }
+        public override void ConfigureAuthRepo(Container container) =>
+            new OrmLiteAuthRepositoryTests().ConfigureAuthRepo(container);
+    }
+    
+    [NUnit.Framework.Ignore("Requires RavenDB")]
+    public class RavenDbAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container) => 
+            new RavenDbAuthRepositoryTests().ConfigureAuthRepo(container);
+    }
+    
+    [NUnit.Framework.Ignore("Requires MongoDB")]
+    public class MongoDbAuthRepositoryQueryTests : AuthRepositoryQueryTestsBase
+    {
+        public override void ConfigureAuthRepo(Container container) => 
+            new MongoDbAuthRepositoryTests().ConfigureAuthRepo(container);
     }
     
     [TestFixture]
@@ -52,7 +58,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
     {
         private ServiceStackHost appHost;
 
-        protected abstract void ConfigureAuthRepo(Container container); 
+        public abstract void ConfigureAuthRepo(Container container); 
         
         [OneTimeSetUp]
         public void TestFixtureSetUp()
@@ -84,16 +90,18 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
         void SeedData(IAuthRepository authRepo)
         {
-            var newUser = authRepo.CreateUserAuth(new UserAuth
+            var newUser = authRepo.CreateUserAuth(new AppUser
             {
+                Id = 1,
                 DisplayName = "Test User",
                 Email = "user@gmail.com",
                 FirstName = "Test",
                 LastName = "User",
             }, "p@55wOrd");
 
-            newUser = authRepo.CreateUserAuth(new UserAuth
+            newUser = authRepo.CreateUserAuth(new AppUser
             {
+                Id = 2,
                 DisplayName = "Test Manager",
                 Email = "manager@gmail.com",
                 FirstName = "Test",
@@ -101,14 +109,24 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             }, "p@55wOrd");
             authRepo.AssignRoles(newUser, roles:new[]{ "Manager" });
 
-            newUser = authRepo.CreateUserAuth(new UserAuth
+            newUser = authRepo.CreateUserAuth(new AppUser
             {
+                Id = 3,
                 DisplayName = "Admin User",
                 Email = "admin@gmail.com",
                 FirstName = "Admin",
                 LastName = "Super User",
             }, "p@55wOrd");
             authRepo.AssignRoles(newUser, roles:new[]{ "Admin" });
+        }
+
+        private static bool IsRavenDb(IAuthRepository authRepo) => authRepo.GetType().Name.StartsWith("Raven");
+
+        private static void AssertHasIdentity(IAuthRepository authRepo, List<IUserAuth> allUsers)
+        {
+            Assert.That(IsRavenDb(authRepo)
+                ? allUsers.Cast<AppUser>().All(x => x.Key != null)
+                : allUsers.All(x => x.Id > 0));
         }
 
         [Test]
@@ -119,7 +137,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             {
                 var allUsers = authRepo.GetUserAuths();
                 Assert.That(allUsers.Count, Is.EqualTo(3));
-                Assert.That(allUsers.All(x => x.Id > 0));
+                AssertHasIdentity(authRepo, allUsers);
+                
                 Assert.That(allUsers.All(x => x.Email != null));
                 
                 allUsers = authRepo.GetUserAuths(skip:1);
@@ -140,8 +159,11 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                 var allUsers = authRepo.GetUserAuths(orderBy:nameof(UserAuth.Id));
                 Assert.That(allUsers.Count, Is.EqualTo(3));
                 Assert.That(allUsers[0].Email, Is.EqualTo("user@gmail.com"));
-                
-                allUsers = authRepo.GetUserAuths(orderBy:nameof(UserAuth.Id) + " DESC");
+
+                var idField = IsRavenDb(authRepo)
+                    ? nameof(AppUser.Key)
+                    : nameof(UserAuth.Id);
+                allUsers = authRepo.GetUserAuths(orderBy: idField + " DESC");
                 Assert.That(allUsers.Count, Is.EqualTo(3));
                 Assert.That(allUsers[0].Email, Is.EqualTo("admin@gmail.com"));
                 
@@ -165,27 +187,30 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             var authRepo = appHost.GetAuthRepository();
             using (authRepo as IDisposable)
             {
-                var allUsers = authRepo.SearchUserAuths("gmail");
+                var allUsers = authRepo.SearchUserAuths("gmail.com");
                 Assert.That(allUsers.Count, Is.EqualTo(3));
-                Assert.That(allUsers.All(x => x.Id > 0));
+                AssertHasIdentity(authRepo, allUsers);
                 Assert.That(allUsers.All(x => x.Email != null));
                 
-                allUsers = authRepo.SearchUserAuths(query:"gmail",skip:1);
+                allUsers = authRepo.SearchUserAuths(query:"gmail.com",skip:1);
                 Assert.That(allUsers.Count, Is.EqualTo(2));
-                allUsers = authRepo.SearchUserAuths(query:"gmail",take:2);
+                allUsers = authRepo.SearchUserAuths(query:"gmail.com",take:2);
                 Assert.That(allUsers.Count, Is.EqualTo(2));
-                allUsers = authRepo.SearchUserAuths(query:"gmail",skip:1,take:2);
-                Assert.That(allUsers.Count, Is.EqualTo(2));
-
-                allUsers = authRepo.SearchUserAuths(query:"Test");
+                allUsers = authRepo.SearchUserAuths(query:"gmail.com",skip:1,take:2);
                 Assert.That(allUsers.Count, Is.EqualTo(2));
 
-                allUsers = authRepo.SearchUserAuths(query:"Admin");
-                Assert.That(allUsers.Count, Is.EqualTo(1));
+                if (!IsRavenDb(authRepo)) // RavenDB only searches UserName/Email and only StartsWith/EndsWith
+                {
+                    allUsers = authRepo.SearchUserAuths(query:"Test");
+                    Assert.That(allUsers.Count, Is.EqualTo(2));
 
-                allUsers = authRepo.SearchUserAuths(query:"Test",skip:1,take:1,orderBy:nameof(UserAuth.Email));
-                Assert.That(allUsers.Count, Is.EqualTo(1));
-                Assert.That(allUsers[0].Email, Is.EqualTo("user@gmail.com"));
+                    allUsers = authRepo.SearchUserAuths(query:"Admin");
+                    Assert.That(allUsers.Count, Is.EqualTo(1));
+
+                    allUsers = authRepo.SearchUserAuths(query:"Test",skip:1,take:1,orderBy:nameof(UserAuth.Email));
+                    Assert.That(allUsers.Count, Is.EqualTo(1));
+                    Assert.That(allUsers[0].Email, Is.EqualTo("user@gmail.com"));
+                }
             }
         }
 
@@ -199,11 +224,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ take:2, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2"));
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ skip:1, take:2, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("2,3"));
 
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail'}) | map => it.Id | join }}"), Is.EqualTo("1,2,3"));
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail', orderBy:'LastName DESC' }) | map => it.Id | join }}"), Is.EqualTo("1,3,2"));
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail',skip:1,take:1}) | map => it.Id | join }}"), Is.EqualTo("2"));
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2"));
-            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Email' }) | map => it.Id | join }}"), Is.EqualTo("2,1"));
+            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com',orderBy:'Id'}) | map => it.Id | join }}"), Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com',skip:1,take:1}) | map => it.Id | join }}"), Is.EqualTo("2"));
+
+            if (!IsRavenDb(appHost.TryResolve<IAuthRepository>()))
+            {
+                Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'gmail.com', orderBy:'LastName DESC' }) | map => it.Id | join }}"), Is.EqualTo("1,3,2"));
+                Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Email' }) | map => it.Id | join }}"), Is.EqualTo("2,1"));
+                Assert.That(context.EvaluateScript("{{ authRepo.searchUserAuths({ query:'Test', orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2"));
+            }
         }
     }
 }
