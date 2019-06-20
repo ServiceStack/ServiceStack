@@ -3,7 +3,7 @@
   <PropertyGroup>
     <PackageId>ServiceStack.Authentication.RavenDb</PackageId>
     <AssemblyName>ServiceStack.Authentication.RavenDb</AssemblyName>
-    <TargetFrameworks>net45;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <Title>A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB</Title>
     <PackageDescription>
       A RavenDB IUserAuthRepository to persist User registration and auth info in a NoSQL Raven DB.
@@ -20,12 +20,6 @@
     <ProjectReference Include="..\ServiceStack.Client\ServiceStack.Client.csproj" />
     <ProjectReference Include="..\ServiceStack\ServiceStack.csproj" />
     <PackageReference Include="ServiceStack.Text" Version="$(Version)" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
-    <PackageReference Include="RavenDB.Client" Version="3.5.4" />
-  </ItemGroup>
-  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
     <PackageReference Include="RavenDB.Client" Version="4.2" />
   </ItemGroup>
 

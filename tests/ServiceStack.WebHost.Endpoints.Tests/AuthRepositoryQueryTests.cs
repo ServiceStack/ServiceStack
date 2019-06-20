@@ -13,11 +13,7 @@ using ServiceStack.Testing;
 using Raven.Client;
 using ServiceStack.Authentication.RavenDb;
 using ServiceStack.DataAnnotations;
-#if NETCORE_SUPPORT
 using Raven.Client.Documents;
-#else
-using Raven.Client.Document;
-#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
