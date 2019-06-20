@@ -269,17 +269,32 @@ namespace ServiceStack.Auth
     
     public static class AuthRepositoryUtils
     {
+        public static string ParseOrderBy(string orderBy, out bool desc)
+        {
+            desc = false;
+            if (string.IsNullOrEmpty(orderBy))
+                return null;
+            
+            if (orderBy.IndexOf(' ') >= 0)
+            {
+                desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
+                orderBy = orderBy.LeftPart(' ');
+            }
+            else if (orderBy[0] == '-')
+            {
+                orderBy = orderBy.Substring(1);
+                desc = true;
+            }
+
+            return orderBy;
+        }
+        
         public static IEnumerable<TUserAuth> SortAndPage<TUserAuth>(this IEnumerable<TUserAuth> q, string orderBy, int? skip, int? take)
             where TUserAuth : IUserAuth
         {
             if (!string.IsNullOrEmpty(orderBy))
             {
-                var desc = false;
-                if (orderBy.IndexOf(' ') >= 0)
-                {
-                    desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
-                    orderBy = orderBy.LeftPart(' ');
-                }
+                orderBy = ParseOrderBy(orderBy, out var desc);
 
                 if (orderBy.EqualsIgnoreCase(nameof(IUserAuth.Id)))
                 {
