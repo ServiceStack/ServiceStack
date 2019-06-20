@@ -202,13 +202,7 @@ namespace ServiceStack.Authentication.MongoDb
         {
             if (!string.IsNullOrEmpty(orderBy))
             {
-                var desc = false;
-                if (orderBy.IndexOf(' ') >= 0)
-                {
-                    desc = orderBy.LastRightPart(' ').EqualsIgnoreCase("DESC");
-                    orderBy = orderBy.LeftPart(' ');
-                }
-
+                orderBy = AuthRepositoryUtils.ParseOrderBy(orderBy, out var desc);
                 q = q.Sort(desc ? Builders<UserAuth>.Sort.Descending(orderBy) : Builders<UserAuth>.Sort.Ascending(orderBy));
             }
 
