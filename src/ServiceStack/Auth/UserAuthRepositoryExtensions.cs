@@ -78,7 +78,7 @@ namespace ServiceStack.Auth
                 : userAuth.Permissions;
         }
 
-        public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, List<IAuthTokens> authTokens)
+        public static void PopulateSession(this IAuthSession session, IUserAuth userAuth, List<IAuthTokens> authTokens = null)
         {
             if (userAuth == null)
                 return;
@@ -87,8 +87,9 @@ namespace ServiceStack.Auth
             session.PopulateWith(userAuth);  
             session.Id = holdSessionId;
             session.UserAuthId = session.UserAuthId ?? userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = authTokens;
             session.IsAuthenticated = true;
+            if (authTokens != null)
+                session.ProviderOAuthAccess = authTokens;
             
             var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
             existingPopulator?.Invoke(session, userAuth);

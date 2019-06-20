@@ -289,14 +289,15 @@ namespace ServiceStack.Authentication.MongoDb
         public IUserAuth GetUserAuth(string userAuthId)
         {
             var collection = mongoDatabase.GetCollection<UserAuth>(UserAuthCol);
-            UserAuth userAuth = collection.Find(u => u.Id == int.Parse(userAuthId)).FirstOrDefault();
+            var intUserId = int.Parse(userAuthId);
+            UserAuth userAuth = collection.Find(u => u.Id == intUserId).FirstOrDefault();
             return userAuth;
         }
 
         public void SaveUserAuth(IAuthSession authSession)
         {
             var userAuth = !authSession.UserAuthId.IsNullOrEmpty()
-                ? (UserAuth)GetUserAuth(authSession.UserAuthId)
+                ? (UserAuth) GetUserAuth(authSession.UserAuthId)
                 : authSession.ConvertTo<UserAuth>();
 
             if (userAuth.Id == default && !authSession.UserAuthId.IsNullOrEmpty())
@@ -331,7 +332,8 @@ namespace ServiceStack.Authentication.MongoDb
         public List<IUserAuthDetails> GetUserAuthDetails(string userAuthId)
         {
             var collection = mongoDatabase.GetCollection<UserAuthDetails>(UserOAuthProviderCol);
-            var queryResult = collection.Find(ud => ud.UserAuthId == int.Parse(userAuthId));
+            var intUserId = int.Parse(userAuthId);
+            var queryResult = collection.Find(ud => ud.UserAuthId == intUserId);
             return queryResult.ToList().Cast<IUserAuthDetails>().ToList();
         }
 

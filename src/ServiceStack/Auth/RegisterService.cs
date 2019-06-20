@@ -195,7 +195,7 @@ namespace ServiceStack.Auth
                 ? customUserAuth.CreateUserAuth()
                 : new UserAuth();
 
-            to.PopulateInstance(request);
+            to.PopulateWithNonDefaultValues(request);
             to.PrimaryEmail = request.Email;
             return to;
         }

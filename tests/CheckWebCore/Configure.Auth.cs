@@ -11,15 +11,10 @@ namespace CheckWebCore
     /// <summary>
     /// Run before AppHost.Configure()
     /// </summary>
-    public class ConfigureAuth : IConfigureAppHost, IConfigureServices
+    public class ConfigureAuth : IConfigureAppHost
     {
         private IConfiguration configuration;
         public ConfigureAuth(IConfiguration configuration) => this.configuration = configuration;
-
-        public void Configure(IServiceCollection services)
-        {
-            services.AddSingleton<IAuthRepository>(new InMemoryAuthRepository());
-        }
 
         public void Configure(IAppHost appHost)
         {
