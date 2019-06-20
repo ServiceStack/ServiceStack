@@ -202,7 +202,8 @@ namespace ServiceStack.Auth
                 if (IsAccountLocked(authRepo, userAuth))
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(authService.Request));
 
-                PopulateSession(authRepo as IUserAuthRepository, userAuth, session);
+                session.PopulateSession(userAuth, authRepo.GetUserAuthDetails(session.UserAuthId)
+                    .ConvertAll(x => (IAuthTokens)x));
 
                 if (session.UserAuthName == null)
                     session.UserAuthName = userAuth.UserName ?? userAuth.Email;

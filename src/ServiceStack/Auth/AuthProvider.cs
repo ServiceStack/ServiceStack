@@ -406,24 +406,6 @@ namespace ServiceStack.Auth
             return referrerUrl;
         }
         
-        public Action<IAuthSession, IUserAuth> PopulateSessionFilter { get; set; }
-
-        public virtual void PopulateSession(IUserAuthRepository authRepo, IUserAuth userAuth, IAuthSession session)
-        {
-            if (authRepo == null)
-                return;
-
-            var holdSessionId = session.Id;
-            session.PopulateWith(userAuth); //overwrites session.Id
-            session.Id = holdSessionId;
-            session.IsAuthenticated = true;
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
-            session.ProviderOAuthAccess = authRepo.GetUserAuthDetails(session.UserAuthId)
-                .ConvertAll(x => (IAuthTokens)x);
-            
-            PopulateSessionFilter?.Invoke(session, userAuth);
-        }
-
         protected virtual object ConvertToClientError(object failedResult, bool isHtml)
         {
             if (!isHtml)

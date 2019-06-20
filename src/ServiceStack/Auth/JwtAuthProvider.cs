@@ -425,7 +425,8 @@ namespace ServiceStack.Auth
                     throw new AuthenticationException(ErrorMessages.UserAccountLocked.Localize(Request));
 
                 session = SessionFeature.CreateNewSession(Request, SessionExtensions.CreateRandomSessionId());
-                jwtAuthProvider.PopulateSession(userRepo, userAuth, session);
+                session.PopulateSession(userAuth, userRepo.GetUserAuthDetails(session.UserAuthId)
+                    .ConvertAll(x => (IAuthTokens)x));
 
                 if (userRepo is IManageRoles manageRoles && session.UserAuthId != null)
                 {
