@@ -83,11 +83,15 @@ namespace ServiceStack.Auth
             if (userAuth == null)
                 return;
 
-            var originalId = session.Id;
-            session.PopulateWith(userAuth);
-            session.Id = originalId;
-            session.UserAuthId = userAuth.Id.ToString(CultureInfo.InvariantCulture);
+            var holdSessionId = session.Id;
+            session.PopulateWith(userAuth);  
+            session.Id = holdSessionId;
+            session.UserAuthId = session.UserAuthId ?? userAuth.Id.ToString(CultureInfo.InvariantCulture);
             session.ProviderOAuthAccess = authTokens;
+            session.IsAuthenticated = true;
+            
+            var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
+            existingPopulator?.Invoke(session, userAuth);
         }
 
         public static List<IUserAuthDetails> GetUserAuthDetails(this IAuthRepository authRepo, int userAuthId)
