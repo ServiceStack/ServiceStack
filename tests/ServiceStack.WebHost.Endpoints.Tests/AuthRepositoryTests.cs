@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
 using Funq;
 using NUnit.Framework;
@@ -9,19 +10,15 @@ using ServiceStack.DataAnnotations;
 using MongoDB.Driver;
 using ServiceStack.Authentication.MongoDb;
 
-using Raven.Client;
 using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Data;
 using ServiceStack.OrmLite;
 using ServiceStack.Redis;
 using ServiceStack.Text;
-#if NETCORE_SUPPORT
+using Raven.Client;
 using Raven.Client.Documents;
 using Raven.Client.Documents.Operations;
 using Raven.Client.Documents.Queries;
-#else
-using Raven.Client.Document;
-#endif
 
 namespace ServiceStack.WebHost.Endpoints.Tests
 {
@@ -35,16 +32,17 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         public DateTime? LastLoginDate { get; set; }
     }
 
+    [Index(Name = nameof(Key))]
     public class AppUserDetails : UserAuthDetails
     {
-        public DateTime? LastLoginDate { get; set; }
+        public string Key { get; set; }
     }
-    
+
     public class MemoryAuthRepositoryTests : AuthRepositoryTestsBase
     {
         public override void ConfigureAuthRepo(Container container)
         {
-            container.Register<IAuthRepository>(c => new InMemoryAuthRepository());
+            container.Register<IAuthRepository>(c => new InMemoryAuthRepository<AppUser,AppUserDetails>());
         }
     }
     
@@ -54,7 +52,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             container.Register<IRedisClientsManager>(c => new RedisManagerPool());
             container.Register<IAuthRepository>(c => 
-                new RedisAuthRepository(c.Resolve<IRedisClientsManager>()));
+                new RedisAuthRepository<AppUser,AppUserDetails>(c.Resolve<IRedisClientsManager>()));
         }
     }
     
@@ -67,7 +65,8 @@ namespace ServiceStack.WebHost.Endpoints.Tests
                     AutoDisposeConnection = false,
                 });
 
-            container.Register<IAuthRepository>(c => new OrmLiteAuthRepository(c.Resolve<IDbConnectionFactory>()));
+            container.Register<IAuthRepository>(c => 
+                new OrmLiteAuthRepository<AppUser,AppUserDetails>(c.Resolve<IDbConnectionFactory>()));
         }
     }
 
@@ -78,25 +77,15 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var store = new DocumentStore
             {
-#if NETCORE_SUPPORT
                 Urls = new[]                        // URL to the Server,
                 {                                   // or list of URLs 
                     "http://localhost:8080"         // to all Cluster Servers (Nodes)
                 },
                 Database = "test",                  // Default database that DocumentStore will interact with
-#else
-                DefaultDatabase = "test",
-                Url = "http://localhost:8080",
-#endif
                 Conventions = {
                 }
             };
-            store.Conventions.FindIdentityProperty = p => {
-                var attr = p.DeclaringType.FirstAttribute<IndexAttribute>();
-                return attr != null
-                    ? p.Name == attr.Name
-                    : p.Name == "Id";
-            };
+            store.Conventions.FindIdentityProperty = RavenDbUserAuthRepository.FindIdentityProperty;
             
             container.AddSingleton(store.Initialize());
 
@@ -162,35 +151,6 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         [OneTimeTearDown]
         public void OneTimeTearDown() => appHost.Dispose();
 
-        void SeedData(IAuthRepository authRepo)
-        {
-            var newUser = authRepo.CreateUserAuth(new UserAuth
-            {
-                DisplayName = "Test User",
-                Email = "user@gmail.com",
-                FirstName = "Test",
-                LastName = "User",
-            }, "p@55wOrd");
-
-            newUser = authRepo.CreateUserAuth(new UserAuth
-            {
-                DisplayName = "Test Manager",
-                Email = "manager@gmail.com",
-                FirstName = "Test",
-                LastName = "Manager",
-            }, "p@55wOrd");
-            authRepo.AssignRoles(newUser, roles:new[]{ "Manager" });
-
-            newUser = authRepo.CreateUserAuth(new UserAuth
-            {
-                DisplayName = "Admin User",
-                Email = "admin@gmail.com",
-                FirstName = "Admin",
-                LastName = "Super User",
-            }, "p@55wOrd");
-            authRepo.AssignRoles(newUser, roles:new[]{ "Admin" });
-        }
-
         [Test]
         public void Can_CreateUserAuth()
         {
@@ -208,6 +168,53 @@ namespace ServiceStack.WebHost.Endpoints.Tests
 
             var fromDb = authRepo.GetUserAuth((newUser as AppUser)?.Key ?? newUser.Id.ToString());
             Assert.That(fromDb.Email, Is.EqualTo("user@gmail.com"));
+
+            newUser.FirstName = "Updated";
+            authRepo.SaveUserAuth(newUser);
+            
+            var newSession = SessionFeature.CreateNewSession(null, "SESSION_ID");
+            newSession.PopulateSession(newUser, new List<IAuthTokens>());
+
+            var updatedUser = authRepo.GetUserAuth(newSession.UserAuthId);
+            Assert.That(updatedUser, Is.Not.Null);
+            Assert.That(updatedUser.FirstName, Is.EqualTo("Updated"));
         }
+
+        [Test]
+        public void Can_AddUserAuthDetails()
+        {
+            var authRepo = appHost.TryResolve<IAuthRepository>();
+            
+            var newUser = authRepo.CreateUserAuth(new AppUser
+            {
+                DisplayName = "Facebook User",
+                Email = "user@fb.com",
+                FirstName = "Face",
+                LastName = "Book",
+            }, "p@55wOrd");
+            
+            var newSession = SessionFeature.CreateNewSession(null, "SESSION_ID");
+            newSession.PopulateSession(newUser, new List<IAuthTokens>());
+            Assert.That(newSession.Email, Is.EqualTo("user@fb.com"));
+
+            var fbAuthTokens = new AuthTokens
+            {
+                Provider = FacebookAuthProvider.Name,
+                AccessTokenSecret = "AAADDDCCCoR848BAMkQIZCRIKnVWZAvcKWqo7Ibvec8ebV9vJrfZAz8qVupdu5EbjFzmMmbwUFDbcNDea9H6rOn5SVn8es7KYZD",
+                UserId = "123456",
+                DisplayName = "FB User",
+                FirstName = "FB",
+                LastName = "User",
+                Email = "user@fb.com",
+            };
+            
+            var userAuthDetails = authRepo.CreateOrMergeAuthSession(newSession, fbAuthTokens);
+            Assert.That(userAuthDetails.Email, Is.EqualTo("user@fb.com"));
+
+            var userAuthDetailsList = authRepo.GetUserAuthDetails(newSession.UserAuthId);
+            Assert.That(userAuthDetailsList.Count, Is.EqualTo(1));
+            Assert.That(userAuthDetailsList[0].Email, Is.EqualTo("user@fb.com"));
+        }
+
     }
 }

@@ -14,7 +14,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ServiceStack.AuthWeb.Tests</RootNamespace>
     <AssemblyName>ServiceStack.AuthWeb.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort />
     <IISExpressAnonymousAuthentication />
@@ -62,11 +62,20 @@
       <HintPath>..\..\src\packages\Glimpse.1.8.6\lib\net45\Glimpse.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Lambda2Js.Signed, Version=3.1.2.0, Culture=neutral, PublicKeyToken=9ba16f7edfc48fe6">
+      <HintPath>..\..\src\packages\Lambda2Js.Signed.3.1.2\lib\net40\Lambda2Js.Signed.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="mscorlib" />
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\..\src\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Npgsql, Version=4.0.5.0, Culture=neutral, PublicKeyToken=5d8b90d52f46fda7">
       <HintPath>..\..\src\packages\Npgsql.4.0.5\lib\net451\Npgsql.dll</HintPath>
       <Private>True</Private>
@@ -75,11 +84,9 @@
       <HintPath>..\..\src\packages\NUnit.3.11.0\lib\net45\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Raven.Abstractions, Version=3.5.4.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\RavenDB.Client.3.5.4\lib\net45\Raven.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Raven.Client.Lightweight, Version=3.5.4.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\RavenDB.Client.3.5.4\lib\net45\Raven.Client.Lightweight.dll</HintPath>
+    <Reference Include="Raven.Client, Version=4.2.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
+      <HintPath>..\..\src\packages\RavenDB.Client.4.2.0\lib\netstandard2.0\Raven.Client.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="ServiceStack.Common, Version=5.0.0.0, Culture=neutral, PublicKeyToken=02c12cbda47e6587">
       <HintPath>..\..\src\packages\ServiceStack.Common.5.5.1\lib\net45\ServiceStack.Common.dll</HintPath>
@@ -109,10 +116,16 @@
       <HintPath>..\..\src\packages\ServiceStack.Text.5.5.1\lib\net45\ServiceStack.Text.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Buffers, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\src\packages\System.Buffers.4.4.0\lib\netstandard1.1\System.Buffers.dll</HintPath>
+    <Reference Include="Sparrow, Version=4.2.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593">
+      <HintPath>..\..\src\packages\RavenDB.Client.4.2.0\lib\netstandard2.0\Sparrow.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>..\..\src\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.SQLite, Version=1.0.110.0, Culture=neutral, PublicKeyToken=db937bc2d44ff139">
       <HintPath>..\..\src\packages\System.Data.SQLite.Core.1.0.110.0\lib\net46\System.Data.SQLite.dll</HintPath>
@@ -123,10 +136,23 @@
       <HintPath>..\..\src\packages\System.Memory.4.5.2\lib\netstandard1.1\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Net" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Numerics.Vectors, Version=4.1.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\src\packages\System.Numerics.Vectors.4.4.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.4.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\src\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\src\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security.Cryptography.Cng, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>..\..\src\packages\System.Security.Cryptography.Cng.4.5.0\lib\net461\System.Security.Cryptography.Cng.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Threading" />
     <Reference Include="System.Threading.Tasks" />
     <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">

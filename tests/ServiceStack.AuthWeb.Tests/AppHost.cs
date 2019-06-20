@@ -8,7 +8,7 @@ using System.DirectoryServices.AccountManagement;
 using System.Threading;
 using Funq;
 using Raven.Client;
-using Raven.Client.Document;
+using Raven.Client.Documents;
 using ServiceStack.Auth;
 using ServiceStack.Authentication.RavenDb;
 using ServiceStack.Caching;
@@ -24,6 +24,8 @@ using ServiceStack.Razor;
 using ServiceStack.Redis;
 using ServiceStack.Text;
 using ServiceStack.Web;
+using ILog = log4net.ILog;
+using LogManager = log4net.LogManager;
 
 #if HTTP_LISTENER
 namespace ServiceStack.Auth.Tests
@@ -207,7 +209,11 @@ namespace ServiceStack.AuthWeb.Tests
         private static IUserAuthRepository CreateRavenDbAuthRepo(Container container, AppSettings appSettings)
         {
             container.Register<IDocumentStore>(c =>
-                new DocumentStore { Url = "http://macbook:8080/" });
+                new DocumentStore {
+                    Urls = new [] {
+                        "http://macbook:8080/"
+                    }
+                });
 
             var documentStore = container.Resolve<IDocumentStore>();
             documentStore.Initialize();
