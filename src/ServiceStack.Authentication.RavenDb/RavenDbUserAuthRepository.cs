@@ -124,12 +124,17 @@ namespace ServiceStack.Authentication.RavenDb
             var existingPopulator = AutoMappingUtils.GetPopulator(typeof(IAuthSession), typeof(IUserAuth));
             AutoMapping.RegisterPopulator((IAuthSession session, IUserAuth userAuth) => {
                 existingPopulator?.Invoke(session, userAuth);
-                var keyProp = UserAuthProps.GetAccessor(UserAuthIdentifier);
-                if (keyProp != null)
-                {
-                    session.UserAuthId = (string) keyProp.PublicGetter(userAuth);
-                }
+                UpdateSessionKey(session, userAuth);
             });
+        }
+
+        public virtual void UpdateSessionKey(IAuthSession session, IUserAuth userAuth)
+        {
+            var keyProp = UserAuthProps.GetAccessor(UserAuthIdentifier);
+            if (keyProp != null)
+            {
+                session.UserAuthId = (string) keyProp.PublicGetter(userAuth);
+            }
         }
 
         public IUserAuth CreateUserAuth(IUserAuth newUser, string password)
@@ -301,6 +306,7 @@ namespace ServiceStack.Authentication.RavenDb
 
         private void LoadUserAuth(IAuthSession session, TUserAuth userAuth)
         {
+            UpdateSessionKey(session, userAuth);
             session.PopulateSession(userAuth,
                 GetUserAuthDetails(session.UserAuthId).ConvertAll(x => (IAuthTokens)x));
         }
