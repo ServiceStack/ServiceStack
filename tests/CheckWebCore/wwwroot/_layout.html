@@ -84,6 +84,8 @@
         '/assets/js/default.js',
     ] | bundleJs({ minify:!debug, cache:!debug, disk:!debug, out:`/js/bundle${min}.js` }) }}
 
+    <script src="/js/ss-utils.js"></script>
+
     {{ scripts | raw }}
 
     <div>Copyright &copy; {{ now | dateFormat('yyyy') }}</div>
