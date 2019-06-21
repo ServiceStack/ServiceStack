@@ -17,4 +17,12 @@ namespace ServiceStack
     {
         void Configure(IAppHost appHost);
     }
+
+    /// <summary>
+    /// Run "no-touch" Startup logic after the AppHost has been initialized
+    /// </summary>
+    public interface IAfterInitAppHost
+    {
+        void AfterInit(IAppHost appHost);
+    }
 }
