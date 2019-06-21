@@ -514,7 +514,7 @@
             }
         }
     };
-    $.ss.listenOn = 'click dblclick change focus blur focusin focusout select keydown keypress keyup hover toggle';
+    $.ss.listenOn = 'click dblclick change focus blur focusin focusout select keydown keypress keyup hover toggle input';
     $.fn.bindHandlers = function (handlers) {
         $.extend($.ss.handlers, handlers || {});
         return this.each(function () {
