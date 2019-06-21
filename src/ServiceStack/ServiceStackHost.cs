@@ -206,7 +206,8 @@ namespace ServiceStack
             scanAssemblies.AddIfNotExists(GetType().Assembly);
             var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
                 .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) 
-                            || x.HasInterface(typeof(IConfigureAppHost)))
+                            || x.HasInterface(typeof(IConfigureAppHost))
+                            || x.HasInterface(typeof(IAfterInitAppHost)))
                 .ToArray();
             
             var startupConfigs = scanTypes.Select(x => x.CreateInstance()).WithPriority();
@@ -299,6 +300,9 @@ namespace ServiceStack
             {
                 callback(this);
             }
+            
+            Plugins.ForEach(RunAfterInitAppHost);
+            configInstances.ForEach(RunAfterInitAppHost);
 
             ReadyAt = DateTime.UtcNow;
 
@@ -853,6 +857,19 @@ namespace ServiceStack
             {
                 if (instance is IPostInitPlugin postPlugin)
                     postPlugin.AfterPluginsLoaded(this);
+            }
+            catch (Exception ex)
+            {
+                OnStartupException(ex);
+            }
+        }
+
+        private void RunAfterInitAppHost(object instance)
+        {
+            try
+            {
+                if (instance is IAfterInitAppHost prePlugin)
+                    prePlugin.AfterInit(this);
             }
             catch (Exception ex)
             {
