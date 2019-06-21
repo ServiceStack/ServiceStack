@@ -205,12 +205,13 @@ namespace ServiceStack
             var scanAssemblies = new List<Assembly>(ServiceAssemblies);
             scanAssemblies.AddIfNotExists(GetType().Assembly);
             var scanTypes = scanAssemblies.SelectMany(x => x.GetTypes())
-                .Where(x => x.HasInterface(typeof(IPreConfigureAppHost)) 
-                            || x.HasInterface(typeof(IConfigureAppHost))
-                            || x.HasInterface(typeof(IAfterInitAppHost)))
+                .Where(x => (x.HasInterface(typeof(IPreConfigureAppHost))
+                             || x.HasInterface(typeof(IConfigureAppHost))
+                             || x.HasInterface(typeof(IAfterInitAppHost))))
                 .ToArray();
             
-            var startupConfigs = scanTypes.Select(x => x.CreateInstance()).WithPriority();
+            var startupConfigs = scanTypes.Where(x => !x.HasInterface(typeof(IPlugin)))
+                .Select(x => x.CreateInstance()).WithPriority();
             var configInstances = startupConfigs.PriorityOrdered();
             var preStartupConfigs = startupConfigs.PriorityBelowZero();
             var postStartupConfigs = startupConfigs.PriorityZeroOrAbove();
@@ -227,6 +228,7 @@ namespace ServiceStack
                     OnStartupException(ex);
                 }
             }
+            Plugins.ForEach(RunPreConfigure);
             configInstances.ForEach(RunPreConfigure);
             
             if (ServiceController == null)
