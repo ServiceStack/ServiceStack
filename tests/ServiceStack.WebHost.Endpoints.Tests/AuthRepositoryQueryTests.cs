@@ -223,7 +223,7 @@ namespace ServiceStack.WebHost.Endpoints.Tests
         {
             var context = appHost.AssertPlugin<SharpPagesFeature>();
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths() | count }}"), Is.EqualTo("3"));
-            Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths() | map => it.Id | join }}"), Is.EqualTo("1,2,3"));
+            Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2,3"));
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ skip:1, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("2,3"));
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ take:2, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("1,2"));
             Assert.That(context.EvaluateScript("{{ authRepo.getUserAuths({ skip:1, take:2, orderBy:'Id' }) | map => it.Id | join }}"), Is.EqualTo("2,3"));
