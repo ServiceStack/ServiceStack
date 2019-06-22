@@ -140,6 +140,10 @@ namespace CheckWebCore
 //                return null;
 //            };
 
+//            TypeScriptGenerator.DeclarationTypeFilter = (type, args) => {
+//                return null;
+//            };
+
 
             //GetPlugin<SvgFeature>().ValidateFn = req => Config.DebugMode; // only allow in DebugMode
         }
@@ -202,9 +206,12 @@ namespace CheckWebCore
     {
         public Campaign Campaign { get; set; }
         public DataEvent DataEvent { get; set; }
+        public ExtendsDictionary ExtendsDictionary { get; set; }
+    }
+   
+    public class ExtendsDictionary : Dictionary<Guid, string> {
     }
 
-        
     //    [Authenticate]
     public class MyServices : Service
     {
